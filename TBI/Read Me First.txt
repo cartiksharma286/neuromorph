@@ -32,7 +32,7 @@ the models.
 
 ***Unable to upload models to github due to very large sizes.
 
-You can access them on this google drive folder at this link:
+You can access them on this google drive folder at this link (Please request access as folder is restricted to Neuromorph employees):
 https://drive.google.com/drive/folders/1dYOyr4W83_t2Tp-VrzTpwbkidtUCM4l6?usp=sharing
 
 
