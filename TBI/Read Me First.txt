@@ -30,30 +30,16 @@ Models
 These are the models I trained. See above notebooks for more information on
 the models.
 
-***Unable to upload models to github due to very large sizes.
 
-You can access them on this google drive folder at this link (Please request access to view the folder and download its files):
-https://drive.google.com/drive/folders/1dYOyr4W83_t2Tp-VrzTpwbkidtUCM4l6?usp=sharing
+CNN model  - custom CNN model. Training model took approx. an hour
 
+VGG19 model - Training model took approx. 3 hours
 
-CNNmodel.h5  - custom CNN model. Training model took approx. an hour
+InceptionresnetV2 models (4 models): Training took approx. between 1-4 hours 
 
-vgg19modela.h5 - VGG19 model. Training model took approx. 3 hours
-
-InceptionresnetV2 models:
-
-inceptionres_mode.h5 - Training took approx. 1.5 hours
-inceptionres_modela.h5 - Training approx. 1-1.5 hours
-inceptionres_modelb.h5 - Training approx. 30 minutes (note: training done on google colab platform with GPU power)
-inceptionres_modelc.h5 - Training approx. 3-4 hours
+InceptionV3 models (4 models): Training took approx. between 40 minutes and 2 hours
 
 
-InceptionV3 models: 
-
-inceptionv3model.h5  -Training took approx. 40-45 minutes
-inceptionv3modela.h5 - Training took approx. 40 minutes
-inceptionv3modelc.h5 - Training took approx. 1.5 - 2 hours
-inceptionv3modeld.h5 - Training took approx. 1.5-2 hours. 
 
 
 
