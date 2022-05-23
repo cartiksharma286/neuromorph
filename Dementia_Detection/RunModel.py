@@ -92,7 +92,7 @@ print("In_Correctly classified :",in_correct*100)
 from sklearn.metrics import plot_confusion_matrix
 
 #score_card
-#cm=classification_report(y_test,y_pred)
+#cm=classification_report(y_pred,y_test)
 #print(cm)
 #plot_confusion_matrix(gnb_model)
 #cm = confusion_matrix(y_pred,y_test)
@@ -101,11 +101,16 @@ from sklearn.metrics import plot_confusion_matrix
 #FP=cm[1,0]
 #FN=cm[0,1]
 
-acc = (TN+TP)/(TN+FP+TP+FN)
+#acc = (TN+TP)/(TN+FP+TP+FN)
 precision = TP / (TP+FP)
-recall = TP / (TP+FN)
-specificity = TN / (TN+FP)
-f1_score = 2*((precision*recall)/(precision+recall))
+#recall = TP / (TP+FN)
+#specificity = TN / (TN+FP)
+#f1_score = 2*((precision*recall)/(precision+recall))
+#print("accuracy "+acc)
+#print("precision"+precision)
+#print("specificity"+specificity)
+#print("f1_score"+f1_score)
+
 #update_score_card(algorithm_name = 'Naive Bayes', model = gnb_model)
 #score_card
 from sklearn.metrics import plot_confusion_matrix
@@ -125,6 +130,12 @@ precision = TP / (TP+FP)
 recall = TP / (TP+FN)
 specificity = TN / (TN+FP)
 f1_score = 2*((precision*recall)/(precision+recall))
+
+print("knn################################################")
+print("accuracy "+str(acc))
+print("precision"+str(precision))
+print("specificity"+str(specificity))
+print("f1_score"+str(f1_score))
 #update_score_card(algorithm_name = 'KNN ', model = knn_model)
 from sklearn.ensemble import GradientBoostingClassifier
 #score_card
@@ -132,6 +143,26 @@ gboost_model = GradientBoostingClassifier(n_estimators = 150, max_depth = 10, ra
 
 gboost_model.fit(X_train, y_train)
 y_pred=gboost_model.predict(X_test)
+
+cm = confusion_matrix(y_pred, y_test)
+TP=cm[0,0]
+TN=cm[1,1]
+FP=cm[1,0]
+FN=cm[0,1]
+
+acc = (TN+TP)/(TN+FP+TP+FN)
+precision = TP / (TP+FP)
+recall = TP / (TP+FN)
+specificity = TN / (TN+FP)
+f1_score = 2*((precision*recall)/(precision+recall))
+print("gboost_model################################################")
+print("accuracy "+str(acc))
+print("precision"+str(precision))
+print("specificity"+str(specificity))
+print("f1_score"+str(f1_score))
+#plot_confusion_matrix(xgb_model)
+
+
 #plot_confusion_matrix(gboost_model)
 #test_report = get_test_report(gboost_model)
 from xgboost import XGBClassifier
@@ -140,4 +171,20 @@ xgb_model = XGBClassifier(max_depth = 10, gamma = 1)
 
 xgb_model.fit(X_train, y_train)
 y_pred=xgb_model.predict(X_test)
+cm = confusion_matrix(y_pred, y_test)
+TP=cm[0,0]
+TN=cm[1,1]
+FP=cm[1,0]
+FN=cm[0,1]
+
+acc = (TN+TP)/(TN+FP+TP+FN)
+precision = TP / (TP+FP)
+recall = TP / (TP+FN)
+specificity = TN / (TN+FP)
+f1_score = 2*((precision*recall)/(precision+recall))
+print("xgb_model################################################")
+print("accuracy "+str(acc))
+print("precision"+str(precision))
+print("specificity"+str(specificity))
+print("f1_score"+str(f1_score))
 #plot_confusion_matrix(xgb_model)
