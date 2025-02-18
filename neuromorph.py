@@ -13,6 +13,7 @@ from matplotlib import style
 #style.use('bmh')
 print("here")
 
+num_qubits = 4
 # A 8x8 binary image represented as a numpy array
 image = np.array([ [0, 0, 0, 0, 0, 0, 0, 0],
                   [0, 1, 1, 1, 1, 1, 0, 0],
@@ -27,9 +28,9 @@ def plot_image(img, title: str):
     plt.title(title)
     plt.xticks(range(img.shape[0]))
     plt.yticks(range(img.shape[1]))
-    plt.imshow(img, extent=[0, img.shape[0], img.shape[1], 0], 
-cmap='viridis')
-    plt.show()
+#    plt.imshow(img, extent=[0, img.shape[0], img.shape[1], 0], 
+#cmap='viridis')
+#    plt.show()
 
 plot_image(image, 'Original Image')
 
@@ -261,6 +262,13 @@ for crop in crops:
         qc_h.unitary(D2n_1, range(total_qb))
         qc_h.h(0)
 
+        # Encode the second pixel whose value is (01100100):                            
+        value01 = '01100100'
+        
+        # Add the NOT gate to set the position at 01:                                   
+#        qc_h.x(qc_h.num_qubits-1)
+
+
         # Create the circuit for vertical scan
         qc_v = QuantumCircuit(total_qb)
         qc_v.initialize(image_norm_v, range(1, total_qb))
@@ -268,6 +276,7 @@ for crop in crops:
         qc_v.unitary(D2n_1, range(total_qb))
         qc_v.h(0)
 
+        
         # Combine both circuits into a single list
         circ_list = [qc_h, qc_v]
 
@@ -292,8 +301,8 @@ else 0 for i in range(2**data_qb)])).reshape(8, 8).T
     else:
         edge_crops.append(crop)
 
-#    if x%32==0:
-#        print(x)
+    if x%32==0:
+        print(x)
     x+=1
 
 tmps=[]
