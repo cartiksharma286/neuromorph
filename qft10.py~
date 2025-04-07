@@ -1,0 +1,152 @@
+import numpy as np
+from PIL import Image
+import matplotlib.pyplot as plt
+
+from qiskit_aer import Aer
+from qiskit import *
+#from qiskit.utils import QuantumInstance
+#from qiskit_algorithms import *
+#from qiskit_algorithms.optimizers import SPSA
+from qiskit.circuit.library import RealAmplitudes, ZZFeatureMap
+#from qiskit.primitives import Sampler
+from qiskit.quantum_info import Statevector
+#from qiskit.utils import algorithm_globals
+
+# Set a seed for reproducibility
+#algorithm_globals.random_seed = 42
+
+# --- 1. Load and Prepare the Image ---
+def load_and_prepare_image(image_path, target_size=(8, 8)):
+    """Loads an image, converts it to grayscale, resizes it, and flattens it."""
+    try:
+        img = Image.open(image_path).convert('L')  # Convert to grayscale
+        img = img.resize(target_size)
+        image_array = np.array(img).flatten()
+        # Normalize pixel values to [0, 1]
+        normalized_array = image_array / 255.0
+        return normalized_array, target_size
+    except FileNotFoundError:
+        print(f"Error: Image not found at {image_path}")
+        return None, None
+
+def prepare_quantum_state(image_data):
+    """Prepares a quantum state representing the image data using amplitude encoding."""
+    num_pixels = len(image_data)
+    num_qubits = int(np.ceil(np.log2(num_pixels)))
+    if 2**num_qubits != num_pixels:
+        raise ValueError("Number of pixels must be a power of 2 for direct amplitude encoding.")
+
+    # Create a quantum circuit with the required number of qubits
+    qc = QuantumCircuit(num_qubits)
+
+    # Initialize the state vector
+    initial_state = image_data / np.linalg.norm(image_data)  # Normalize amplitudes
+
+    # Apply the initialization
+    qc.initialize(initial_state, qc.qubits)
+
+    return qc
+
+# --- 2. Quantum Fourier Transform (QFT) Implementation ---
+def qft(n):
+    """Creates a Quantum Circuit implementing the Quantum Fourier Transform on n qubits."""
+    qc = QuantumCircuit(n, name='qft')
+    for j in reversed(range(n)):
+        qc.h(j)
+        for k in reversed(range(j)):
+            qc.cp(np.pi / float(2**(j - k)), k, j)
+    # Swap qubits to match the conventional QFT output order
+    for qubit in range(n // 2):
+        qc.swap(qubit, n - 1 - qubit)
+    return qc
+
+def apply_qft_to_statevector(quantum_state):
+    """Applies the QFT to a given quantum statevector."""
+    num_qubits = int(np.log2(len(quantum_state)))
+    if 2**num_qubits != len(quantum_state):
+        raise ValueError("Statevector size must be a power of 2.")
+
+    qft_circuit = qft(num_qubits)
+    # Apply the QFT circuit to the statevector
+    qft_statevector = Statevector(quantum_state).evolve(qft_circuit)
+    return qft_statevector.data
+
+# --- 3. Classical Fast Fourier Transform (FFT) ---
+def apply_classical_fft(image_data):
+    """Applies the 1D Fast Fourier Transform to the flattened image data."""
+    return np.fft.fft(image_data)
+
+# --- 4. Main Execution ---
+if __name__ == "__main__":
+    image_path = 'tux.png'  # Replace with the path to your image
+    target_size = (8, 8)  # Example target size (must be a power of 2 in each dimension)
+    num_pixels = target_size[0] * target_size[1]
+
+    if np.log2(num_pixels) % 1 != 0:
+        print("Warning: The total number of pixels is not a power of 2. Direct amplitude encoding won't work perfectly.")
+        print("Consider resizing to a power of 2 x power of 2 (e.g., 8x8, 16x16).")
+        exit()
+
+    image_data, actual_size = load_and_prepare_image(image_path, target_size)
+
+    if image_data is not None:
+        print("Loaded and prepared image of size: {actual_size}")
+        print("Flattened image data (first 10 elements): {image_data[:10]}...")
+
+        num_qubits = int(np.log2(len(image_data)))
+
+        # --- Quantum Part ---
+        try:
+            # Prepare the quantum state
+            quantum_circuit = prepare_quantum_state(image_data)
+
+            # Apply QFT using Statevector simulation
+            simulator = Aer.get_backend('statevector_simulator')
+            compiled_circuit = transpile(quantum_circuit, simulator)
+            job = simulator.run(compiled_circuit)
+            result = job.result()
+            output_statevector = result.get_statevector(compiled_circuit)
+
+            # Apply QFT to the statevector
+            qft_amplitudes = apply_qft_to_statevector(output_statevector)
+#            print("\nQuantum Fourier Transform Amplitudes (first 10 elements): 
+#{qft_amplitudes[:10]}...")
+
+            # Note: The amplitudes represent the coefficients in the Fourier basis.
+            # To visualize the "spectrum" you would typically look at the magnitudes 
+#squared.
+            qft_spectrum = np.abs(qft_amplitudes)**2
+
+        except ValueError as e:
+            print("Error during quantum processing: {e}")
+            qft_spectrum = None
+
+        # --- Classical Part ---
+        classical_fft_result = apply_classical_fft(image_data)
+        classical_spectrum = np.abs(classical_fft_result)**2
+ #       print("\nClassical FFT Result (first 10 elements): {classical_fft_result[:10]}...")
+
+        # --- Visualization ---
+        plt.figure(figsize=(12, 6))
+
+        plt.subplot(1, 2, 1)
+        plt.imshow(image_data.reshape(actual_size), cmap='gray')
+        plt.title("Original Image")
+        plt.axis('off')
+
+        if qft_spectrum is not None:
+            plt.subplot(1, 2, 2)
+            plt.plot(np.fft.fftshift(qft_spectrum))
+            plt.title("Quantum Fourier Transform Spectrum")
+            plt.xlabel("Frequency Bin")
+            plt.ylabel("Magnitude Squared")
+
+        plt.figure(figsize=(12, 6))
+        plt.subplot(1, 1, 1)
+        plt.plot(np.fft.fftshift(classical_spectrum))
+        plt.title("Classical FFT Spectrum")
+        plt.xlabel("Frequency Bin")
+        plt.ylabel("Magnitude Squared")
+
+        plt.tight_layout()
+        plt.show()
