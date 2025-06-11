@@ -147,7 +147,7 @@ qc_h.initialize(image_norm_h, range(1, total_qb))
 qc_h.h(0)
 qc_h.unitary(D2n_1, range(total_qb))
 qc_h.h(0)
-qc_h.draw('mpl', fold=-1)
+#qc_h.draw('mpl', fold=-1)
 
 # Create the circuit for vertical scan
 qc_v = QuantumCircuit(total_qb)
@@ -155,7 +155,7 @@ qc_v.initialize(image_norm_v, range(1, total_qb))
 qc_v.h(0)
 qc_v.unitary(D2n_1, range(total_qb))
 qc_v.h(0)
-qc_v.draw('mpl', fold=-1)
+#qc_v.draw('mpl', fold=-1)
 
 # Combine both circuits into a single list
 circ_list = [qc_h, qc_v]
@@ -205,7 +205,7 @@ style.use('default')
 image_crop_size = 8   # Width of each part of image for processing
 
 # Load the image from filesystem
-image_raw = np.array(Image.open('./oas2.gif'))
+image_raw = np.array(Image.open('./oas1.gif'))
 print('Raw Image info:', image_raw.shape)
 print('Raw Image datatype:', image_raw.dtype)
 image_size = image_raw.shape[1]
