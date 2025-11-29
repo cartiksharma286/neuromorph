@@ -1,20 +1,19 @@
 """
-Statistical Learning through Distributions - SNR Optimization
+RF Coil Designer with Generative AI
 
-This package implements statistical learning algorithms for optimizing
-signal-to-noise ratio (SNR) through probability distribution modeling.
-
-Key Features:
-- SNR-optimized distribution learning (Gaussian, Laplace, Student's t)
-- Adaptive distribution selection
-- Wiener-like filtering for denoising
-- Comprehensive visualization and demos
-
-Author: Generated for statistical learning research
+A comprehensive package for designing and optimizing RF coils
+using parametric modeling and generative algorithms.
 """
 
 __version__ = "1.0.0"
 
-from .snr_optimizer import SNROptimizer, AdaptiveSNRLearner
+from .coil_designer import (RFCoilDesigner, GenerativeCoilDesigner, 
+                            CoilParameters)
+from .coil_visualizer import CoilVisualizer
 
-__all__ = ['SNROptimizer', 'AdaptiveSNRLearner']
+__all__ = [
+    'RFCoilDesigner',
+    'GenerativeCoilDesigner', 
+    'CoilParameters',
+    'CoilVisualizer'
+]

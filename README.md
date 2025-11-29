@@ -1,189 +1,275 @@
-# Statistical Learning through Distributions - SNR Optimization
+# RF Coil Designer with Generative AI
 
-A Python implementation of statistical learning algorithms that optimize Signal-to-Noise Ratio (SNR) through probability distribution modeling.
+A comprehensive Python package for designing RF coils using generative AI algorithms, parametric modeling, and optimization techniques.
 
-## Overview
+## Features
 
-This package implements advanced statistical learning techniques for signal processing, focusing on maximizing SNR through optimal distribution selection and parameter learning.
+### 🧬 Generative Design
+- **Evolutionary Algorithms**: Genetic algorithm-based coil optimization
+- **Parametric Generation**: Create designs from physical constraints
+- **Multi-objective Optimization**: Balance frequency, Q-factor, size
 
-### Key Features
+### 🔧 Coil Types Supported
+- **Solenoid Coils**: Air-core cylindrical coils
+- **Planar Spiral Coils**: PCB-compatible flat spirals
+- **Helmholtz Pairs**: Dual-coil configurations
 
-- **Multiple Distribution Support**: Gaussian, Laplace, and Student's t-distributions
-- **SNR Optimization**: Iterative learning algorithm to maximize signal quality
-- **Adaptive Learning**: Automatic selection of best distribution for the data
-- **Wiener-like Filtering**: Distribution-based denoising
-- **Comprehensive Visualization**: Built-in plotting for analysis
+### 📊 Analysis & Calculation
+- Inductance calculation (Wheeler's formula)
+- Resonant frequency determination
+- Quality factor (Q) estimation
+- Skin effect compensation
+- Impedance matching
 
-## Theory
+### 🎨 Visualization
+- 2D cross-sectional views
+- 3D helix rendering
+- Circuit schematics with component values
+- Comparison plots
 
-### Signal-to-Noise Ratio (SNR)
+## Quick Start
 
-SNR is defined as:
-```
-SNR (dB) = 10 × log₁₀(P_signal / P_noise)
-```
-
-where `P_signal` and `P_noise` are the power (variance) of the signal and noise components.
-
-### Distribution-Based Learning
-
-The optimizer learns optimal distribution parameters θ* that maximize:
-```
-θ* = argmax_θ SNR(s, n | θ)
-```
-
-where:
-- `s` is the signal
-- `n` is the noise
-- `θ` are the distribution parameters
-
-### Supported Distributions
-
-1. **Gaussian**: `N(μ, σ²)` - optimal for Gaussian noise
-2. **Laplace**: `L(μ, b)` - robust to heavy-tailed noise
-3. **Student's t**: `t(ν, μ, σ)` - handles outliers effectively
-
-## Installation
-
-### Requirements
+### Installation
 
 ```bash
-pip install numpy scipy matplotlib
+pip install -r requirements.txt
 ```
 
-### Quick Start
+### Basic Usage
 
 ```python
-from snr_optimizer import SNROptimizer, AdaptiveSNRLearner
-import numpy as np
+from coil_designer import RFCoilDesigner, CoilParameters
 
-# Generate noisy signal
-signal = np.sin(np.linspace(0, 4*np.pi, 1000))
-noise = np.random.normal(0, 0.5, 1000)
+# Create designer
+designer = RFCoilDesigner()
 
-# Single distribution optimization
-optimizer = SNROptimizer(distribution_type='gaussian')
-params = optimizer.learn_optimal_distribution(signal, noise, iterations=10)
+# Define coil
+params = CoilParameters(
+    coil_type='solenoid',
+    wire_diameter=1.0,  # mm
+    turns=15,
+    diameter=30,  # mm
+    length=40  # mm
+)
 
-# Adaptive multi-distribution learning
-learner = AdaptiveSNRLearner()
-results = learner.fit(signal, noise)
-denoised = learner.denoise(signal + noise)
+# Calculate properties
+L = designer.calculate_inductance(params)
+f_res = designer.calculate_resonant_frequency(L, capacitance=100e-12)
+Q = designer.calculate_quality_factor(params, f_res)
 
-print(f"Best distribution: {results['best_distribution']}")
-print(f"Optimized SNR: {results['best_snr']:.2f} dB")
+print(f"Inductance: {L*1e6:.2f} µH")
+print(f"Resonant Frequency: {f_res/1e6:.2f} MHz")
+print(f"Quality Factor: {Q:.1f}")
 ```
 
-## Usage
+### Generative Design for Target Frequency
 
-### Running the Demo
+```python
+# Design coil for specific frequency (e.g., 13.56 MHz ISM band)
+target_freq = 13.56e6
+
+constraints = {
+    'max_diameter': 50,
+    'capacitance': 150e-12
+}
+
+optimized = designer.design_for_frequency(
+    target_freq,
+    coil_type='solenoid',
+    constraints=constraints
+)
+```
+
+### Evolutionary Optimization
+
+```python
+from coil_designer import GenerativeCoilDesigner
+
+gen_designer = GenerativeCoilDesigner(designer)
+
+# Evolve optimal design
+evolved = gen_designer.evolve_design(
+    target_freq=27.12e6,
+    population_size=50,
+    generations=20,
+    constraints=constraints
+)
+```
+
+### Visualization
+
+```python
+from coil_visualizer import CoilVisualizer
+
+visualizer = CoilVisualizer(designer)
+
+# 3D geometry
+visualizer.plot_coil_geometry(params, save_path='coil_3d.png')
+
+# Circuit schematic
+visualizer.generate_schematic(params, capacitance=100e-12, 
+                             save_path='schematic.png')
+```
+
+## Running the Demo
 
 ```bash
-cd C:\Users\User\.gemini\antigravity\scratch\snr_learning
+cd C:\Users\User\.gemini\antigravity\scratch\rf_coil_designer
 python demo.py
 ```
 
-The demo script demonstrates:
-1. Single distribution SNR optimization with Gaussian model
-2. Adaptive distribution selection with non-Gaussian noise
-3. Visualization of denoising results
-4. SNR improvement analysis
+The demo includes:
+1. **Parametric Design**: Manual coil specification and analysis
+2. **Target Frequency Design**: Optimize for 13.56 MHz ISM band
+3. **Evolutionary Design**: GA-based optimization for 27.12 MHz
+4. **Planar Spiral**: PCB coil design
+5. **Coil Comparison**: Side-by-side comparison of different types
 
-### API Reference
+## Theory
 
-#### `SNROptimizer`
+### Inductance Calculation
 
-Main class for SNR optimization with a specific distribution.
+**Solenoid (Wheeler's Formula):**
+```
+L (µH) = N² × r² / (9r + 10l)
+```
+where N = turns, r = radius (mm), l = length (mm)
 
-**Methods:**
-- `compute_snr(signal, noise)`: Calculate SNR in dB
-- `fit_distribution(data)`: Fit distribution parameters using MLE
-- `optimize_snr_params(noisy_signal, true_signal)`: Optimize parameters for maximum SNR
-- `learn_optimal_distribution(signal, noise, iterations)`: Iterative learning
-
-**Example:**
-```python
-optimizer = SNROptimizer(distribution_type='laplace')
-params = optimizer.learn_optimal_distribution(clean_signal, noise, iterations=10)
+**Planar Spiral:**
+```
+L = μ₀N²d_avg² / (8d_avg + 11(d_outer - d_inner))
 ```
 
-#### `AdaptiveSNRLearner`
-
-Adaptive learner that compares multiple distributions.
-
-**Methods:**
-- `fit(signal, noise)`: Train on all distributions and select best
-- `denoise(noisy_signal)`: Denoise using best learned model
-
-**Example:**
-```python
-learner = AdaptiveSNRLearner()
-results = learner.fit(signal, noise)
-cleaned = learner.denoise(noisy_data)
+### Resonant Frequency
+```
+f = 1 / (2π√(LC))
 ```
 
-## Output
+### Quality Factor
+```
+Q = ωL / R = 2πfL / R
+```
+where R accounts for DC resistance and skin effect.
 
-The demo generates visualization plots:
-- `single_distribution_demo.png`: Shows original, noisy, and denoised signals
-- `snr_history.png`: SNR improvement over iterations
-- `adaptive_learning_demo.png`: Comparison of different distributions
+## API Reference
+
+### `RFCoilDesigner`
+
+Main class for coil design and analysis.
+
+**Methods:**
+- `calculate_inductance(params)` - Calculate coil inductance
+- `calculate_resonant_frequency(L, C)` - Find resonant frequency
+- `calculate_quality_factor(params, freq)` - Estimate Q factor
+- `design_for_frequency(target_freq, ...)` - Optimize for target frequency
+
+### `GenerativeCoilDesigner`
+
+Generative AI-based design system.
+
+**Methods:**
+- `evolve_design(target_freq, ...)` - Evolutionary optimization
+- `generate_design_variations(params, n)` - Create design variants
+- `evaluate_fitness(params, target)` - Score design quality
+
+### `CoilVisualizer`
+
+Visualization and schematic generation.
+
+**Methods:**
+- `plot_2d_solenoid(params)` - 2D side view
+- `plot_2d_planar_spiral(params)` - 2D top view
+- `plot_3d_solenoid(params)` - 3D helix
+- `generate_schematic(params, ...)` - Circuit schematic
+- `plot_coil_geometry(params)` - Complete visualization
+
+### `CoilParameters`
+
+Dataclass for coil specifications.
+
+**Fields:**
+- `coil_type`: 'solenoid', 'planar_spiral', or 'helmholtz'
+- `wire_diameter`: Wire diameter in mm
+- `turns`: Number of turns
+- `diameter`: Outer diameter in mm
+- `length`: Length (solenoid) or spacing (planar)
+- `substrate_thickness`: PCB thickness (optional)
 
 ## Applications
 
-- **Signal Processing**: Denoise sensor data
-- **Communications**: Optimize receiver performance
-- **Image Processing**: Adaptive noise reduction
-- **Machine Learning**: Feature preprocessing with optimal SNR
-- **Scientific Data Analysis**: Clean experimental measurements
+- **RF Communications**: Antenna tuning circuits
+- **NFC/RFID**: Reader coils (13.56 MHz)
+- **Wireless Power**: Inductive charging coils
+- **Medical Imaging**: MRI RF coils
+- **Plasma Generators**: Induction heating
+- **Scientific Instruments**: NMR probes
+- **Amateur Radio**: Impedance matching networks
 
-## Algorithm Details
+## Common ISM Bands
 
-### Optimization Process
+Pre-optimized designs available for:
+- 6.78 MHz (Industrial)
+- 13.56 MHz (NFC, RFID)
+- 27.12 MHz (Industrial)
+- 40.68 MHz (Medical)
 
-1. **Initialization**: Fit distribution using Maximum Likelihood Estimation (MLE)
-2. **Iteration**:
-   - Compute current SNR
-   - Apply Wiener-like filtering based on distribution
-   - Update parameters to maximize SNR
-3. **Convergence**: Repeat until SNR stabilizes
+## Optimization Algorithms
 
-### Wiener-Like Filtering
+### Differential Evolution
+- Global optimization for continuous parameters
+- Used in `design_for_frequency()`
+- Fast convergence (typically < 100 iterations)
 
-For Gaussian distribution with parameters (μ, σ):
-
-```
-gain = σ² / (σ² + σ_noise²)
-denoised = μ + gain × (noisy - μ)
-```
-
-This shrinks the noisy signal towards the distribution mean, weighted by relative signal and noise power.
+### Genetic Algorithm
+- Population-based evolutionary search
+- Used in `evolve_design()`
+- Good for multi-objective optimization
+- Crossover + mutation + selection
 
 ## Performance
 
-Typical SNR improvements:
-- **Gaussian noise**: 3-8 dB improvement
-- **Heavy-tailed noise**: 5-12 dB with adaptive learning
-- **Convergence**: Usually within 5-10 iterations
+Typical optimization times (on modern CPU):
+- Differential Evolution: 1-3 seconds
+- Genetic Algorithm (50 pop, 20 gen): 3-5 seconds
+- Single inductance calculation: < 1 ms
+
+## Design Guidelines
+
+### Solenoid Coils
+- Length/Diameter ratio: 1-3 for optimal Q
+- Wire spacing: 1-2× wire diameter
+- Typical Q: 50-200 at HF/VHF
+
+### Planar Spirals
+- Track spacing: ≥ track width
+- Inner diameter: ≥ 30% outer diameter
+- Typical Q: 20-80 (lower than solenoid)
+
+### Quality Factor Optimization
+- Use larger wire diameter
+- Minimize length (fewer turns at larger diameter)
+- Use Litz wire for high frequency
 
 ## Future Enhancements
 
-- [ ] Add more distributions (Cauchy, Generalized Gaussian)
-- [ ] Implement EM algorithm for mixture models
-- [ ] GPU acceleration for large datasets
-- [ ] Real-time adaptive filtering
-- [ ] Bayesian parameter estimation
+- [ ] Multi-layer coil support
+- [ ] Mutual inductance calculations
+- [ ] Transformer design
+- [ ] CAD file export (DXF, STEP)
+- [ ] FEA integration
+- [ ] Temperature coefficient analysis
+- [ ] Cost optimization
 
 ## References
 
-1. Wiener, N. (1949). "Extrapolation, Interpolation, and Smoothing of Stationary Time Series"
-2. Cover, T. M., & Thomas, J. A. (2006). "Elements of Information Theory"
-3. Kay, S. M. (1993). "Fundamentals of Statistical Signal Processing"
+1. Wheeler, H. A. (1928). "Simple Inductance Formulas for Radio Coils"
+2. Terman, F. E. (1943). "Radio Engineers' Handbook"
+3. Grover, F. W. (2009). "Inductance Calculations"
 
 ## License
 
-MIT License - Free for educational and research use
+MIT License - Free for educational and commercial use
 
 ---
 
-**Contact**: For questions or improvements, please contribute to the project!
+**Developed with Generative AI for RF Engineering Applications**
