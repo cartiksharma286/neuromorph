@@ -12,7 +12,7 @@ class RFCoilConfig:
     frequency: float
     
 class StatisticalCoilEvolution:
-    def __init__(self, config: RFCoilConfig, population_size: int = 100):
+    def __init__(self, config: RFCoilConfig, population_size: int = 10000):
         self.config = config
         self.population_size = population_size
         self.distributions = np.random.normal(0, 1, (population_size, 3))
