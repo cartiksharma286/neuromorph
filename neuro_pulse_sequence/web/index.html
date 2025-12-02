@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Neuroimaging - MRI Pulse Sequence Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="quantum-icon">⚛️</div>
+                <div class="logo-text">
+                    <h1>Quantum Neuroimaging</h1>
+                    <p>MRI Pulse Sequence Generator with Quantum ML</p>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Quantum Advantage</span>
+                    <span class="stat-value">10,000x</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Feedback Latency</span>
+                    <span class="stat-value">&lt;0.5ms</span>
+                </div>
+                <div class="stat-item quantum-status">
+                    <span class="stat-label">System Status</span>
+                    <span class="stat-value status-active">Active</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-section">
+                <h3>Sequence Type</h3>
+                <div class="sequence-selector">
+                    <button class="sequence-btn active" data-sequence="gre">
+                        <span class="sequence-icon">📊</span>
+                        <span>Gradient Echo</span>
+                    </button>
+                    <button class="sequence-btn" data-sequence="se">
+                        <span class="sequence-icon">🌀</span>
+                        <span>Spin Echo</span>
+                    </button>
+                    <button class="sequence-btn" data-sequence="epi">
+                        <span class="sequence-icon">⚡</span>
+                        <span>EPI</span>
+                    </button>
+                    <button class="sequence-btn" data-sequence="fmri">
+                        <span class="sequence-icon">🧠</span>
+                        <span>fMRI</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <h3>Parameters</h3>
+                <div class="param-controls">
+                    <div class="param-group">
+                        <label for="te-slider">TE (Echo Time)</label>
+                        <div class="slider-group">
+                            <input type="range" id="te-slider" min="5" max="100" value="30" step="1">
+                            <span class="param-value"><span id="te-value">30</span> ms</span>
+                        </div>
+                    </div>
+                    
+                    <div class="param-group">
+                        <label for="tr-slider">TR (Repetition Time)</label>
+                        <div class="slider-group">
+                            <input type="range" id="tr-slider" min="100" max="5000" value="500" step="50">
+                            <span class="param-value"><span id="tr-value">500</span> ms</span>
+                        </div>
+                    </div>
+                    
+                    <div class="param-group">
+                        <label for="fa-slider">FA (Flip Angle)</label>
+                        <div class="slider-group">
+                            <input type="range" id="fa-slider" min="10" max="90" value="30" step="1">
+                            <span class="param-value"><span id="fa-value">30</span>°</span>
+                        </div>
+                    </div>
+                    
+                    <div class="param-group">
+                        <label for="matrix-slider">Matrix Size</label>
+                        <div class="slider-group">
+                            <input type="range" id="matrix-slider" min="64" max="512" value="256" step="64">
+                            <span class="param-value"><span id="matrix-value">256</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <h3>Optimization</h3>
+                <div class="optimization-toggles">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="quantum-opt" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Quantum ML (VQE)</span>
+                    </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="adaptive-opt" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Adaptive Learning</span>
+                    </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="motion-correction" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Motion Correction</span>
+                    </label>
+                </div>
+                <button class="btn-primary" id="optimize-btn">
+                    <span class="btn-icon">⚛️</span>
+                    Optimize Sequence
+                </button>
+            </div>
+        </aside>
+
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <!-- Top Cards -->
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>SNR Prediction</h3>
+                        <span class="card-icon">📈</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="metric-large">
+                            <span class="metric-value" id="snr-value">42.3</span>
+                            <span class="metric-unit">dB</span>
+                        </div>
+                        <div class="metric-change positive">+18.5% vs baseline</div>
+                        <div class="mini-chart" id="snr-chart"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Scan Time</h3>
+                        <span class="card-icon">⏱️</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="metric-large">
+                            <span class="metric-value" id="scan-time">2:14</span>
+                            <span class="metric-unit">min</span>
+                        </div>
+                        <div class="metric-change negative">-12% optimized</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 76%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Quantum Circuit</h3>
+                        <span class="card-icon">⚛️</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="quantum-stats">
+                            <div class="quantum-stat">
+                                <span class="stat-label">Qubits</span>
+                                <span class="stat-value">6</span>
+                            </div>
+                            <div class="quantum-stat">
+                                <span class="stat-label">Layers</span>
+                                <span class="stat-value">3</span>
+                            </div>
+                            <div class="quantum-stat">
+                                <span class="stat-label">Depth</span>
+                                <span class="stat-value">18</span>
+                            </div>
+                        </div>
+                        <div class="quantum-circuit-viz" id="circuit-viz"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Motion Tracking</h3>
+                        <span class="card-icon">🎯</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="motion-display">
+                            <div class="motion-magnitude" id="motion-magnitude">0.23 mm</div>
+                            <div class="motion-status status-good">Within Threshold</div>
+                        </div>
+                        <div class="motion-indicator">
+                            <div class="motion-bar">
+                                <div class="motion-fill" style="width: 15%"></div>
+                                <div class="motion-threshold"></div>
+                            </div>
+                            <div class="motion-labels">
+                                <span>0</span>
+                                <span class="threshold-label">0.5mm</span>
+                                <span>2mm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Visualization Panels -->
+            <div class="viz-grid">
+                <div class="viz-panel">
+                    <div class="panel-header">
+                        <h3>K-Space Trajectory</h3>
+                        <div class="panel-controls">
+                            <button class="panel-btn active">2D</button>
+                            <button class="panel-btn">3D</button>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <canvas id="kspace-canvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="viz-panel">
+                    <div class="panel-header">
+                        <h3>Optimization Progress</h3>
+                        <div class="panel-controls">
+                            <span class="status-badge">Running</span>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <canvas id="optimization-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Feedback Panel -->
+            <div class="feedback-panel">
+                <div class="panel-header">
+                    <h3>Quantum Proprioceptive Feedback</h3>
+                    <div class="feedback-status">
+                        <span class="status-dot pulsing"></span>
+                        <span>Active - 200 Hz</span>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="feedback-timeline" id="feedback-timeline">
+                        <!-- Timeline items will be added dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Section -->
+            <div class="export-section">
+                <h3>Export Sequence</h3>
+                <div class="export-buttons">
+                    <button class="btn-export">
+                        <span class="btn-icon">📄</span>
+                        PyPulseq (.seq)
+                    </button>
+                    <button class="btn-export">
+                        <span class="btn-icon">📊</span>
+                        Parameters (JSON)
+                    </button>
+                    <button class="btn-export">
+                        <span class="btn-icon">📈</span>
+                        Report (PDF)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
