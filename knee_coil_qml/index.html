@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Quantum Machine Learning-powered knee coil generator for MRI applications. Design and optimize orthopedic extremity coils using variational quantum circuits.">
+    <meta name="keywords"
+        content="quantum machine learning, MRI, knee coil, phased array, B1 field, coil design, optimization">
+    <title>Quantum ML Knee Coil Generator | Advanced MRI Coil Design</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Three.js for 3D visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>⚛️ Quantum ML Knee Coil Generator</h1>
+            <p class="subtitle">Design orthopedic extremity MRI coils using variational quantum circuits and hybrid
+                classical-quantum optimization</p>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <div class="main-grid">
+            <!-- Control Panels -->
+            <div class="controls-column">
+                <!-- Coil Parameters Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Coil Parameters</h3>
+                        <span class="panel-badge">Configure</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="numChannels">Number of Channels</label>
+                        <input type="range" id="numChannels" min="4" max="16" step="4" value="8">
+                        <span class="value-display" id="numChannelsValue">8</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="radius">Coil Radius (mm)</label>
+                        <input type="range" id="radius" min="40" max="100" step="5" value="60">
+                        <span class="value-display" id="radiusValue">60</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="gap">Element Gap (mm)</label>
+                        <input type="range" id="gap" min="5" max="30" step="1" value="10">
+                        <span class="value-display" id="gapValue">10</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="turns">Turns per Element</label>
+                        <input type="range" id="turns" min="1" max="8" step="1" value="3">
+                        <span class="value-display" id="turnsValue">3</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="current">Current (A)</label>
+                        <input type="range" id="current" min="0.5" max="5" step="0.1" value="1.0">
+                        <span class="value-display" id="currentValue">1.0</span>
+                    </div>
+
+                    <button class="btn btn-primary btn-block" id="generateBtn">
+                        Generate Coil
+                    </button>
+                </div>
+
+                <!-- Quantum ML Parameters Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Quantum Optimization</h3>
+                        <span class="panel-badge" style="background: var(--warning-gradient);">QML</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="circuitDepth">Circuit Depth</label>
+                        <input type="range" id="circuitDepth" min="1" max="5" step="1" value="3">
+                        <span class="value-display" id="circuitDepthValue">3</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="learningRate">Learning Rate</label>
+                        <input type="range" id="learningRate" min="0.001" max="0.1" step="0.001" value="0.01">
+                        <span class="value-display" id="learningRateValue">0.01</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="iterations">Iterations</label>
+                        <input type="range" id="iterations" min="10" max="100" step="10" value="50">
+                        <span class="value-display" id="iterationsValue">50</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="targetHomogeneity">Target Homogeneity</label>
+                        <input type="range" id="targetHomogeneity" min="0.5" max="1" step="0.05" value="0.85">
+                        <span class="value-display" id="targetHomogeneityValue">0.85</span>
+                    </div>
+
+                    <button class="btn btn-accent btn-block" id="optimizeBtn" disabled>
+                        🔬 Run Quantum Optimization
+                    </button>
+
+                    <div id="optimizationProgress" style="display: none; margin-top: 1rem;">
+                        <label>Optimization Progress</label>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+                            <span id="iterationText">Iteration: 0/50</span>
+                            <span id="costText">Cost: --</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Export</h3>
+                        <span class="panel-badge" style="background: var(--success-gradient);">Data</span>
+                    </div>
+
+                    <div class="export-section">
+                        <button class="btn btn-success" id="exportSpecsBtn" disabled>
+                            📄 Export Specs (JSON)
+                        </button>
+                        <button class="btn btn-success" id="exportFieldBtn" disabled>
+                            📊 Export Field Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics Dashboard -->
+            <div class="metrics-column">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Performance Metrics</h3>
+                        <span class="panel-badge" id="statusBadge">
+                            <span class="status-indicator status-running"></span>Ready
+                        </span>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">Homogeneity</div>
+                            <div class="metric-value" id="homogeneityMetric">--<span class="metric-unit">%</span></div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-label">SNR</div>
+                            <div class="metric-value" id="snrMetric">--</div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-label">Coupling</div>
+                            <div class="metric-value" id="couplingMetric">--</div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-label">Quantum Cost</div>
+                            <div class="metric-value" id="quantumCostMetric">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization Grid -->
+        <div class="visualization-grid">
+            <!-- 3D Coil Visualization -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">3D Coil Model</h3>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="coilCanvas"></canvas>
+                    <div class="canvas-overlay">
+                        🖱️ Click and drag to rotate
+                    </div>
+                </div>
+            </div>
+
+            <!-- B1 Field Map -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">B1 Field Distribution</h3>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="fieldCanvas"></canvas>
+                    <div class="canvas-overlay">
+                        🌡️ Field intensity heatmap
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantum Circuit Visualization -->
+        <div class="panel">
+            <div class="panel-header">
+                <h3 class="panel-title">Variational Quantum Circuit</h3>
+                <span class="panel-badge" style="background: var(--warning-gradient);">8 Qubits</span>
+            </div>
+            <div id="quantumCircuit" class="circuit-container">
+                <p style="color: var(--text-secondary); text-align: center;">Run optimization to visualize quantum
+                    circuit</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load modules -->
+    <script src="quantum-ml.js"></script>
+    <script src="coil-generator.js"></script>
+    <script src="visualization.js"></script>
+
+    <!-- Main Application Logic -->
+    <script>
+        // Initialize core systems
+        const coilGenerator = new CoilGenerator();
+        const visualizer = new Visualizer();
+        let quantumML = null;
+        let currentCoilParams = null;
+        let currentMetrics = null;
+
+        // Initialize visualizations
+        window.addEventListener('load', () => {
+            visualizer.initCoilVisualization('coilCanvas');
+            visualizer.initFieldVisualization('fieldCanvas');
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                visualizer.onWindowResize();
+            });
+        });
+
+        // Update value displays
+        function updateValueDisplays() {
+            document.getElementById('numChannelsValue').textContent = document.getElementById('numChannels').value;
+            document.getElementById('radiusValue').textContent = document.getElementById('radius').value;
+            document.getElementById('gapValue').textContent = document.getElementById('gap').value;
+            document.getElementById('turnsValue').textContent = document.getElementById('turns').value;
+            document.getElementById('currentValue').textContent = document.getElementById('current').value;
+            document.getElementById('circuitDepthValue').textContent = document.getElementById('circuitDepth').value;
+            document.getElementById('learningRateValue').textContent = parseFloat(document.getElementById('learningRate').value).toFixed(3);
+            document.getElementById('iterationsValue').textContent = document.getElementById('iterations').value;
+            document.getElementById('targetHomogeneityValue').textContent = parseFloat(document.getElementById('targetHomogeneity').value).toFixed(2);
+        }
+
+        // Add event listeners for sliders
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            slider.addEventListener('input', updateValueDisplays);
+        });
+
+        // Get current coil parameters from UI
+        function getCoilParams() {
+            return {
+                numChannels: parseInt(document.getElementById('numChannels').value),
+                radius: parseFloat(document.getElementById('radius').value),
+                gap: parseFloat(document.getElementById('gap').value),
+                turns: parseInt(document.getElementById('turns').value),
+                current: parseFloat(document.getElementById('current').value),
+                targetHomogeneity: parseFloat(document.getElementById('targetHomogeneity').value),
+                targetSNR: 50,
+                targetCoupling: 0.1
+            };
+        }
+
+        // Update metrics display
+        function updateMetrics(metrics) {
+            document.getElementById('homogeneityMetric').innerHTML =
+                `${(metrics.homogeneity * 100).toFixed(1)}<span class="metric-unit">%</span>`;
+            document.getElementById('snrMetric').textContent = metrics.snr.toFixed(1);
+            document.getElementById('couplingMetric').textContent = metrics.coupling.toFixed(3);
+        }
+
+        // Generate Coil Button
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.innerHTML = '<span class="status-indicator status-running"></span>Generating...';
+
+            currentCoilParams = getCoilParams();
+
+            // Generate coil
+            const coilElements = coilGenerator.generateCoil(currentCoilParams);
+
+            // Evaluate metrics
+            currentMetrics = coilGenerator.evaluateCoil(currentCoilParams);
+
+            // Update displays
+            updateMetrics(currentMetrics);
+            visualizer.renderCoil(coilElements);
+
+            // Generate field map (low resolution for speed)
+            const fieldMap = coilGenerator.generateFieldMap(12);
+            visualizer.renderFieldMap(fieldMap);
+
+            // Enable optimization button
+            document.getElementById('optimizeBtn').disabled = false;
+            document.getElementById('exportSpecsBtn').disabled = false;
+            document.getElementById('exportFieldBtn').disabled = false;
+
+            statusBadge.innerHTML = '<span class="status-indicator status-complete"></span>Complete';
+        });
+
+        // Optimize Coil Button
+        document.getElementById('optimizeBtn').addEventListener('click', async () => {
+            if (!currentCoilParams) return;
+
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.innerHTML = '<span class="status-indicator status-running"></span>Optimizing...';
+
+            // Show progress bar
+            const progressDiv = document.getElementById('optimizationProgress');
+            progressDiv.style.display = 'block';
+
+            // Initialize quantum ML
+            quantumML = new QuantumML({
+                numQubits: 8,
+                circuitDepth: parseInt(document.getElementById('circuitDepth').value),
+                learningRate: parseFloat(document.getElementById('learningRate').value),
+                iterations: parseInt(document.getElementById('iterations').value)
+            });
+
+            // Run optimization
+            const result = await quantumML.optimize(
+                currentCoilParams,
+                coilGenerator,
+                (progress) => {
+                    // Update progress
+                    const progressFill = document.getElementById('progressFill');
+                    progressFill.style.width = `${progress.progress * 100}%`;
+
+                    document.getElementById('iterationText').textContent =
+                        `Iteration: ${progress.iteration}/${quantumML.iterations}`;
+                    document.getElementById('costText').textContent =
+                        `Cost: ${progress.cost.toFixed(4)}`;
+                    document.getElementById('quantumCostMetric').textContent =
+                        progress.cost.toFixed(4);
+                }
+            );
+
+            // Apply optimized parameters
+            currentCoilParams = result.optimizedParams;
+
+            // Regenerate coil with optimized params
+            const coilElements = coilGenerator.generateCoil(currentCoilParams);
+            currentMetrics = coilGenerator.evaluateCoil(currentCoilParams);
+
+            // Update displays
+            updateMetrics(currentMetrics);
+            visualizer.renderCoil(coilElements);
+
+            const fieldMap = coilGenerator.generateFieldMap(12);
+            visualizer.renderFieldMap(fieldMap);
+
+            // Render quantum circuit
+            const circuit = quantumML.getCircuitDiagram();
+            visualizer.renderQuantumCircuit(circuit, 'quantumCircuit');
+
+            // Update status
+            statusBadge.innerHTML = '<span class="status-indicator status-complete"></span>Optimized';
+
+            console.log('Optimization complete:', result);
+        });
+
+        // Export Specifications
+        document.getElementById('exportSpecsBtn').addEventListener('click', () => {
+            const specs = coilGenerator.getSpecifications();
+            const dataStr = JSON.stringify(specs, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `knee-coil-specs-${Date.now()}.json`;
+            link.click();
+        });
+
+        // Export Field Data
+        document.getElementById('exportFieldBtn').addEventListener('click', () => {
+            if (!currentMetrics || !currentMetrics.fieldMap) return;
+
+            const fieldData = {
+                metrics: {
+                    homogeneity: currentMetrics.homogeneity,
+                    snr: currentMetrics.snr,
+                    coupling: currentMetrics.coupling
+                },
+                fieldMap: currentMetrics.fieldMap,
+                timestamp: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(fieldData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `b1-field-data-${Date.now()}.json`;
+            link.click();
+        });
+
+        // Initialize value displays
+        updateValueDisplays();
+    </script>
+</body>
+
+</html>
