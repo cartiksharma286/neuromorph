@@ -1,0 +1,35 @@
+{
+  "platform": {
+    "name": "EMR Platform with NVQLink",
+    "version": "1.0.0",
+    "description": "Quantum-enhanced Electronic Medical Records platform"
+  },
+  "quantum": {
+    "enabled": true,
+    "num_qubits": 6,
+    "backend": "nvqlink",
+    "optimization_iterations": 50,
+    "shots_count": 1000,
+    "variational_layers": 3
+  },
+  "templates": {
+    "default_specialty": "radiology",
+    "enable_quantum_suggestions": true,
+    "auto_validate": true,
+    "standard_terminology": ["RadLex", "SNOMED CT"]
+  },
+  "export": {
+    "formats": ["json", "pdf", "dicom_sr", "hl7_fhir"],
+    "default_format": "pdf"
+  },
+  "ui": {
+    "theme": "dark",
+    "enable_animations": true,
+    "dashboard_refresh_interval": 5000
+  },
+  "security": {
+    "hipaa_compliant": true,
+    "encryption_enabled": true,
+    "audit_logging": true
+  }
+}
