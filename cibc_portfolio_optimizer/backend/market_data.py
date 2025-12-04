@@ -243,3 +243,31 @@ class MarketDataGenerator:
             'highest_yield_stock': max(self.stocks, key=lambda x: x['dividend_yield'])['symbol'],
             'highest_yield': round(max(yields), 2)
         }
+    
+    def generate_historical_returns(self, days: int = 252) -> np.ndarray:
+        """
+        Generate simulated historical returns for ML covariance estimation
+        
+        Args:
+            days: Number of trading days to simulate (default 252 = 1 year)
+        
+        Returns:
+            Array of shape (days, num_stocks) with daily returns
+        """
+        n_stocks = len(self.stocks)
+        cov_matrix = self.generate_covariance_matrix()
+        expected_returns = self.generate_expected_returns()
+        
+        # Convert annual to daily
+        daily_returns = expected_returns / 252
+        daily_cov = cov_matrix / 252
+        
+        # Generate multivariate normal returns
+        returns = np.random.multivariate_normal(
+            daily_returns, 
+            daily_cov, 
+            size=days
+        )
+        
+        return returns
+
