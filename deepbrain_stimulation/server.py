@@ -620,15 +620,20 @@ def get_cognitive_timeline():
 @app.route('/')
 def serve_index():
     """Serve the main HTML file"""
-    return send_file('index.html')
+    file_path = os.path.join(os.path.dirname(__file__), 'index.html')
+    return send_file(file_path)
 
 @app.route('/<path:filename>')
 def serve_static(filename):
     """Serve static files (CSS, JS, etc.)"""
     try:
-        return send_file(filename)
-    except:
-        return jsonify({'error': 'File not found'}), 404
+        file_path = os.path.join(os.path.dirname(__file__), filename)
+        if os.path.exists(file_path):
+            return send_file(file_path)
+        else:
+            return jsonify({'error': 'File not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 404
 
 
 @app.route('/api/brain-regions', methods=['GET'])
