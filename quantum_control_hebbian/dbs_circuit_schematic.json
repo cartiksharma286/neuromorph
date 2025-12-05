@@ -1,0 +1,360 @@
+{
+  "system_name": "Deep Brain Stimulation Device for PTSD Treatment",
+  "architecture": "Implantable Pulse Generator (IPG) + Lead System",
+  "components": {
+    "electrode_array": {
+      "component": "Electrode Array",
+      "type": "Multi-contact DBS Lead",
+      "specifications": {
+        "contacts": 4,
+        "spacing_mm": 1.5,
+        "diameter_mm": 1.3,
+        "length_mm": 1.5,
+        "surface_area_cm2": 0.0613,
+        "impedance_ohms": 1000,
+        "material": "Platinum-Iridium"
+      },
+      "connections": [
+        {
+          "contact": 0,
+          "wire": "Lead_0",
+          "color": "Red"
+        },
+        {
+          "contact": 1,
+          "wire": "Lead_1",
+          "color": "Yellow"
+        },
+        {
+          "contact": 2,
+          "wire": "Lead_2",
+          "color": "Green"
+        },
+        {
+          "contact": 3,
+          "wire": "Lead_3",
+          "color": "Blue"
+        }
+      ],
+      "design_notes": [
+        "Directional steering capability with segmented contacts",
+        "Low impedance for efficient charge delivery",
+        "Biocompatible platinum-iridium alloy",
+        "MRI-conditional design with RF filtering"
+      ]
+    },
+    "pulse_generator": {
+      "component": "Programmable Pulse Generator",
+      "architecture": "Microcontroller-based Current Source",
+      "main_components": {
+        "microcontroller": {
+          "type": "ARM Cortex-M4",
+          "purpose": "Parameter control and timing",
+          "features": [
+            "DSP",
+            "Low power",
+            "Wireless communication"
+          ]
+        },
+        "current_source": {
+          "type": "Precision DAC + Op-Amp",
+          "topology": "Howland current pump",
+          "components": {
+            "DAC": "16-bit DAC8568 (Texas Instruments)",
+            "op_amp": "OPA2140 (Low noise, rail-to-rail)",
+            "feedback_resistor": "10k\u03a9 precision (0.1%)",
+            "output_capacitor": "100nF ceramic"
+          },
+          "specifications": {
+            "resolution": "16-bit (390 nA steps)",
+            "accuracy": "\u00b11%",
+            "compliance_voltage": "\u00b110V"
+          }
+        },
+        "h_bridge": {
+          "purpose": "Biphasic waveform generation",
+          "components": {
+            "mosfets": "4x BSS138 (N-channel)",
+            "gate_drivers": "2x TC4427 (Dual MOSFET driver)"
+          },
+          "switching_frequency": "Up to 1 MHz"
+        },
+        "output_stage": {
+          "coupling_capacitor": "10\u00b5F tantalum (DC blocking)",
+          "series_resistor": "100\u03a9 (current limiting)",
+          "protection_diodes": "2x BAV99 (Schottky, bidirectional)"
+        }
+      },
+      "timing_circuit": {
+        "pulse_width_generator": "Hardware timer with 1\u00b5s resolution",
+        "frequency_generator": "Programmable divider from 32kHz crystal",
+        "duty_cycle_control": "PWM modulation"
+      },
+      "parameter_ranges": {
+        "voltage_v": [
+          0.0,
+          10.5
+        ],
+        "current_ma": [
+          0.0,
+          25.5
+        ],
+        "frequency_hz": [
+          2,
+          250
+        ],
+        "pulse_width_us": [
+          60,
+          450
+        ]
+      },
+      "design_notes": [
+        "Constant current mode ensures consistent charge delivery",
+        "Biphasic pulses prevent charge accumulation",
+        "Active charge balancing with <1% mismatch",
+        "Isolated output stage for patient safety"
+      ]
+    },
+    "power_management": {
+      "component": "Power Management System",
+      "primary_power": {
+        "battery": {
+          "type": "Lithium-ion rechargeable",
+          "capacity_mah": 150,
+          "voltage_v": 3.7,
+          "chemistry": "LiCoO2 (medical grade)",
+          "protection": "Built-in PCM (Protection Circuit Module)"
+        },
+        "charging": {
+          "method": "Inductive (wireless)",
+          "frequency_khz": 125,
+          "coil": "Ferrite core, 10mm diameter",
+          "rectifier": "Full-bridge with Schottky diodes",
+          "charge_controller": "BQ25570 (Texas Instruments)"
+        }
+      },
+      "voltage_regulators": {
+        "digital_3v3": {
+          "ic": "TPS62740 (Ultra-low quiescent)",
+          "output_v": 3.3,
+          "current_ma": 300,
+          "efficiency": "95%"
+        },
+        "analog_5v": {
+          "ic": "TPS7A4700 (Low noise LDO)",
+          "output_v": 5.0,
+          "current_ma": 100,
+          "psrr_db": 80
+        },
+        "stimulation_boost": {
+          "ic": "TPS61099 (Boost converter)",
+          "output_v": 12.0,
+          "current_ma": 50,
+          "purpose": "High voltage for stimulation compliance"
+        }
+      },
+      "power_monitoring": {
+        "battery_gauge": "BQ27441 (Fuel gauge IC)",
+        "current_sense": "INA219 (High-side current monitor)",
+        "voltage_monitor": "ADC channels on MCU"
+      },
+      "estimated_battery_life": {
+        "continuous_stimulation_hours": 48,
+        "standby_days": 30,
+        "recharge_time_hours": 2
+      },
+      "design_notes": [
+        "Ultra-low power design for extended battery life",
+        "Wireless charging eliminates infection risk from connectors",
+        "Multiple voltage rails for clean analog/digital separation",
+        "Battery protection prevents over-discharge and thermal runaway"
+      ]
+    },
+    "safety_system": {
+      "component": "Safety and Monitoring System",
+      "current_monitoring": {
+        "sensor": "Hall effect current sensor (ACS712)",
+        "range_ma": "\u00b130",
+        "resolution_ma": 0.1,
+        "sampling_rate_hz": 10000,
+        "safety_action": "Shutoff if >110% of programmed current"
+      },
+      "impedance_monitoring": {
+        "method": "AC impedance measurement at 1kHz",
+        "frequency_hz": 1000,
+        "test_current_ua": 10,
+        "normal_range_ohms": [
+          500,
+          2000
+        ],
+        "alert_conditions": [
+          "Open circuit (>5k\u03a9): Lead disconnection",
+          "Short circuit (<200\u03a9): Insulation breach",
+          "Rapid change (>20%/hour): Tissue reaction"
+        ]
+      },
+      "temperature_monitoring": {
+        "sensor": "NTC thermistor (10k\u03a9 at 25\u00b0C)",
+        "location": "Near pulse generator output",
+        "sampling_rate_hz": 1,
+        "alert_threshold_c": 38.0,
+        "shutoff_threshold_c": 40.0
+      },
+      "charge_density_protection": {
+        "calculation": "Q = I \u00d7 PW / Area",
+        "max_charge_uc_cm2": 30.0,
+        "enforcement": "Firmware limits on I and PW combination",
+        "reference": "Shannon 1992 safe stimulation limits"
+      },
+      "emergency_shutoff": {
+        "triggers": [
+          "Temperature > 40\u00b0C",
+          "Current > 28 mA",
+          "Impedance out of range",
+          "Battery voltage < 3.0V",
+          "Watchdog timer timeout"
+        ],
+        "action": "Open all output switches, disable DAC",
+        "recovery": "Manual reset required via programmer",
+        "indicator": "LED blink pattern + wireless alert"
+      },
+      "redundancy": {
+        "dual_microcontrollers": "Primary + safety supervisor",
+        "independent_watchdog": "External watchdog IC (TPS3823)",
+        "hardware_interlocks": "Analog comparators for instant shutoff"
+      },
+      "design_notes": [
+        "Multi-layer safety approach: firmware + hardware",
+        "Fail-safe design: defaults to OFF state",
+        "Continuous monitoring during stimulation",
+        "Compliant with IEC 60601-1 medical device safety"
+      ]
+    },
+    "signal_processing": {
+      "component": "Signal Processing and Feedback System",
+      "sensing_channels": {
+        "num_channels": 4,
+        "purpose": "Local field potential (LFP) recording",
+        "amplifier": {
+          "type": "Instrumentation amplifier",
+          "ic": "INA333 (Texas Instruments)",
+          "gain": 1000,
+          "bandwidth_hz": [
+            0.5,
+            500
+          ],
+          "input_impedance_ohms": 10000000000.0,
+          "cmrr_db": 100
+        },
+        "filters": {
+          "high_pass": {
+            "type": "2nd order Butterworth",
+            "cutoff_hz": 0.5,
+            "purpose": "Remove DC offset"
+          },
+          "low_pass": {
+            "type": "4th order Butterworth",
+            "cutoff_hz": 500,
+            "purpose": "Anti-aliasing"
+          },
+          "notch": {
+            "type": "Twin-T notch filter",
+            "frequency_hz": 60,
+            "q_factor": 30,
+            "purpose": "Power line interference rejection"
+          }
+        },
+        "adc": {
+          "ic": "ADS1299 (8-channel, 24-bit)",
+          "resolution_bits": 24,
+          "sampling_rate_hz": 1000,
+          "input_referred_noise_uv": 1.0
+        }
+      },
+      "artifact_rejection": {
+        "blanking_window_ms": 2.0,
+        "purpose": "Blank ADC during stimulation pulse",
+        "recovery_time_ms": 5.0,
+        "adaptive_filtering": "Wiener filter for residual artifacts"
+      },
+      "closed_loop_control": {
+        "biomarker": "Beta band power (13-30 Hz)",
+        "feature_extraction": "FFT with Welch's method",
+        "control_algorithm": "PID controller",
+        "update_rate_hz": 10,
+        "parameters": {
+          "kp": 0.5,
+          "ki": 0.1,
+          "kd": 0.05
+        }
+      },
+      "wireless_communication": {
+        "protocol": "Bluetooth Low Energy 5.0",
+        "ic": "nRF52832 (Nordic Semiconductor)",
+        "data_rate_kbps": 1000,
+        "range_m": 10,
+        "encryption": "AES-128",
+        "transmitted_data": [
+          "LFP signals (compressed)",
+          "Stimulation parameters",
+          "Battery status",
+          "Safety alerts"
+        ]
+      },
+      "design_notes": [
+        "Closed-loop capability for adaptive stimulation",
+        "High-quality LFP recording for research",
+        "Artifact rejection enables simultaneous stim/record",
+        "Secure wireless communication for patient privacy"
+      ]
+    }
+  },
+  "system_specifications": {
+    "dimensions_mm": [
+      50,
+      40,
+      10
+    ],
+    "weight_g": 25,
+    "implant_location": "Subclavicular pocket",
+    "lead_length_cm": 40,
+    "mri_conditional": "1.5T and 3T with restrictions",
+    "biocompatibility": "ISO 10993 compliant",
+    "hermetic_seal": "Titanium case with ceramic feedthrough"
+  },
+  "target_brain_regions": {
+    "primary": "Basolateral Amygdala (BLA)",
+    "secondary": "Ventromedial Prefrontal Cortex (vmPFC)",
+    "tertiary": "Hippocampus (CA1 region)",
+    "rationale": "Fear extinction and emotional regulation circuits"
+  },
+  "clinical_parameters": {
+    "typical_settings": {
+      "amplitude_ma": 3.0,
+      "frequency_hz": 130,
+      "pulse_width_us": 90,
+      "mode": "Continuous bilateral stimulation"
+    },
+    "adjustment_range": {
+      "amplitude_ma": [
+        0.5,
+        8.0
+      ],
+      "frequency_hz": [
+        20,
+        185
+      ],
+      "pulse_width_us": [
+        60,
+        210
+      ]
+    }
+  },
+  "regulatory_compliance": [
+    "FDA 21 CFR Part 820 (Quality System Regulation)",
+    "IEC 60601-1 (Medical electrical equipment safety)",
+    "IEC 60601-2-10 (Nerve and muscle stimulators)",
+    "ISO 14708-3 (Active implantable medical devices - DBS)",
+    "ISO 13485 (Medical devices quality management)"
+  ]
+}

@@ -1,191 +1,203 @@
-# Quantum Neural Circuitry Platform
+# Deep Brain Stimulation for PTSD Treatment with Generative AI
 
-A comprehensive quantum-enhanced neural simulation platform that models Hebbian learning mechanisms in the context of traumatic brain injury (TBI), leveraging Google's CUDA-Q quantum framework, advanced statistical distributions, continued fractions, and combinatorial game theory.
+A comprehensive research and educational system for designing and optimizing deep brain stimulation (DBS) protocols for PTSD treatment using generative AI.
+
+## ⚠️ IMPORTANT DISCLAIMER
+
+**THIS IS A RESEARCH AND EDUCATIONAL TOOL ONLY**
+
+This system is designed for research, education, and conceptual exploration. It is NOT intended for clinical use. Any clinical application of deep brain stimulation requires:
+- Extensive regulatory approval (FDA, CE marking)
+- Clinical trials and validation
+- Medical oversight and expertise
+- Proper safety testing and certification
 
 ## Features
 
-### 🧠 Neural Network Simulation
-- **3D Interactive Visualization**: Real-time 3D rendering of neural networks with Three.js
-- **Multiple Neuron Models**: Leaky Integrate-and-Fire (LIF), Hodgkin-Huxley, Izhikevich
-- **Network Topologies**: Small-world, scale-free, random, 2D lattice
-- **Hebbian Learning**: Standard Hebbian, STDP, BCM rule, Oja's rule
+### 🔌 Circuit Schematic Generator
+- Professional-grade DBS device schematics
+- Electrode array design with multi-contact configurations
+- Programmable pulse generator circuits
+- Power management systems with wireless charging
+- Comprehensive safety monitoring systems
+- Signal processing for closed-loop control
 
-### ⚛️ Quantum Computing Integration
-- **CUDA-Q Framework**: Quantum circuit optimization for synaptic weights
-- **VQE Optimization**: Variational Quantum Eigensolver for network states
-- **Bloch Sphere Visualization**: Real-time quantum state representation
-- **Quantum Circuit Diagrams**: Interactive circuit visualization
+### 🤖 Generative AI Engine
+- **VAE (Variational Autoencoder)**: Learns latent representations of effective stimulation patterns
+- **GAN (Generative Adversarial Network)**: Generates optimized waveforms
+- **RL (Reinforcement Learning)**: Adaptive parameter optimization using Deep Q-Networks
 
-### 🎮 Combinatorial Game Theory
-- **TBI Recovery Game**: Two-player framework (Damage vs. Plasticity)
-- **Nash Equilibrium**: Real-time equilibrium computation and visualization
-- **Nim Games**: Neurotransmitter pools as game heaps
-- **Sprague-Grundy Theory**: Network state evaluation
+### 🧠 PTSD Neural Modeling
+- Computational models of fear conditioning and extinction circuits
+- Target brain regions: Amygdala, Hippocampus, vmPFC, Hypothalamus
+- Symptom tracking: Hyperarousal, Re-experiencing, Avoidance, Negative Cognition
+- Treatment response prediction over 12-week periods
+- Biomarker monitoring (HRV, cortisol, skin conductance, sleep quality)
 
-### 📊 Statistical Analysis
-- **Weight Distribution**: Real-time synaptic weight histograms
-- **Spike Train Raster**: Neuron firing pattern visualization
-- **Inter-Spike Intervals**: ISI histogram analysis
-- **Learning Curves**: Network performance tracking
+### 🛡️ Safety Validation
+- Charge density limits (Shannon 1992 safe stimulation guidelines)
+- Current density monitoring
+- Thermal safety calculations
+- Biocompatibility checks
+- Regulatory compliance validation (IEC 60601, ISO 14708-3, FDA 21 CFR 820)
 
-### 🔢 Continued Fractions
-- **Padé Approximants**: Rational function approximations for activation functions
-- **Convergence Analysis**: Real-time convergence tracking
-- **Error Visualization**: Logarithmic error plots
-- **Stieltjes Continued Fractions**: Moment-based distribution reconstruction
+### 💻 Premium Web Interface
+- Interactive circuit designer with component specifications
+- 3D brain visualization with target region highlighting
+- Real-time waveform generator with safety validation
+- AI-driven parameter optimization interface
+- Clinical monitoring dashboard with symptom tracking
 
-### ✅ Formal Verification
-- **Z3 SMT Solver**: Symbolic verification of algorithms
-- **Coq Proofs**: Machine-checked mathematical proofs
-- **Lean4**: Formalized game theory theorems
-- **Property-Based Testing**: Hypothesis framework with 1000+ test cases
-
-## Quick Start
+## Installation
 
 ### Prerequisites
+- Python 3.8+
 - Modern web browser (Chrome, Firefox, Edge)
-- Python 3.8+ (for backend)
-- Node.js (optional, for package management)
 
-### Running the Frontend (Demo Mode)
+### Setup
 
-1. Navigate to the web directory:
+1. **Clone or navigate to the project directory:**
 ```bash
-cd quantum-hebbian-tbi/web
+cd c:\Users\User\.gemini\antigravity\scratch\quantum-hebbian-tbi
 ```
 
-2. Open `index.html` in your browser:
-```bash
-# Windows
-start index.html
-
-# macOS
-open index.html
-
-# Linux
-xdg-open index.html
-```
-
-The frontend will run in demo mode with mock data generation.
-
-### Running with Backend (Full Functionality)
-
-1. Install Python dependencies:
+2. **Install Python dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Start the backend server:
+3. **Start the backend server:**
 ```bash
-cd backend
 python server.py
 ```
 
-3. Open the frontend in your browser at `http://localhost:5000`
+The server will start on `http://localhost:5000`
+
+4. **Open the web interface:**
+Open `index.html` in your web browser, or use a local server:
+```bash
+python -m http.server 8000
+```
+Then navigate to `http://localhost:8000`
 
 ## Usage
 
-### Network Configuration
-1. **Adjust neuron count**: Use the slider to set 10-500 neurons
-2. **Select topology**: Choose from small-world, scale-free, random, or lattice
-3. **Choose neuron model**: LIF, Hodgkin-Huxley, or Izhikevich
+### 1. Circuit Designer
+- Click on different circuit components to view detailed schematics
+- Explore electrode arrays, pulse generators, power systems, safety circuits
+- View the complete SVG circuit diagram
 
-### Hebbian Learning
-1. **Set learning rate**: Adjust η from 0.001 to 0.2
-2. **Select plasticity rule**: Hebbian, STDP, BCM, or Oja's rule
-3. **Enable quantum optimization**: Toggle quantum weight optimization
+### 2. 3D Brain Model
+- Interact with the 3D brain visualization
+- Click on target regions to highlight them
+- Rotate and zoom using mouse controls
 
-### TBI Simulation
-1. **Set damage severity**: 0-100% damage level
-2. **Choose damage type**: Diffuse axonal, focal lesion, inflammation, or combined
-3. **Apply damage**: Click "Apply TBI Damage" button
-4. **Start recovery**: Click "Start Recovery Simulation" for plasticity-driven recovery
+### 3. Waveform Generator
+- Adjust stimulation parameters (amplitude, frequency, pulse width)
+- View real-time biphasic waveform visualization
+- Check safety metrics and validation status
+- Simulate stimulation effects on neural model
 
-### Simulation Control
-- **Start**: Begin the simulation
-- **Pause**: Pause the simulation
-- **Reset**: Reset to initial state
-- **Speed**: Adjust simulation speed (0.1x - 5x)
+### 4. AI Optimizer
+- Train VAE and GAN models (50 epochs recommended)
+- Generate optimized stimulation parameters
+- Run reinforcement learning optimization
+- Visualize training progress and results
 
-## Architecture
+### 5. Clinical Dashboard
+- Monitor PTSD symptom severity in real-time
+- Track biomarkers (HRV, cortisol, etc.)
+- Predict long-term treatment response
+- Visualize neural activity across brain regions
 
-### Frontend
-- **HTML5/CSS3**: Modern, responsive UI with glassmorphism
-- **Three.js**: 3D neural network visualization
-- **Chart.js**: Statistical plots and charts
-- **D3.js**: Game theory and quantum circuit diagrams
-- **Vanilla JavaScript**: No framework dependencies
+## System Architecture
 
-### Backend (Optional)
-- **Flask**: REST API server
-- **CUDA-Q**: Quantum computing framework
-- **NumPy/SciPy**: Numerical computations
-- **NetworkX**: Graph theory for neural networks
-
-### Formal Verification
-- **Z3**: SMT solver for symbolic verification
-- **Coq**: Proof assistant for continued fractions
-- **Lean4**: Theorem prover for game theory
-- **Hypothesis**: Property-based testing
-
-## Mathematical Foundations
-
-### Hebbian Learning
 ```
-Δwᵢⱼ = η · xᵢ · xⱼ
-```
-"Neurons that fire together, wire together"
+Backend (Python/Flask)
+├── server.py                    # REST API server
+├── dbs_circuit_generator.py     # Circuit schematic generation
+├── generative_ai_engine.py      # VAE, GAN, RL models
+├── ptsd_neural_model.py         # Neural pathway simulation
+└── safety_validator.py          # Safety and compliance checks
 
-### Continued Fractions
-```
-         a₁
-x = a₀ + ────────────
-              a₂
-         a₁ + ───────
-                   a₃
-              a₂ + ──
-                   ...
+Frontend (HTML/CSS/JavaScript)
+├── index.html                   # Main application structure
+├── styles.css                   # Premium dark theme styling
+├── app.js                       # Application controller
+├── circuit_designer.js          # Circuit visualization
+├── brain_visualizer.js          # 3D brain model (Three.js)
+├── waveform_generator.js        # Waveform design and validation
+├── ai_optimizer.js              # AI model interface
+└── clinical_dashboard.js        # Clinical monitoring
 ```
 
-### Nash Equilibrium
-```
-∀i. uᵢ(s₁*, ..., sᵢ*, ..., sₙ*) ≥ uᵢ(s₁*, ..., sᵢ, ..., sₙ*) for all sᵢ
-```
+## API Endpoints
 
-### Sprague-Grundy Theorem
-```
-g(P) = mex{g(P') : P' ∈ successors(P)}
-```
+### Circuit Generation
+- `GET /api/circuit/electrode-array` - Electrode array schematic
+- `GET /api/circuit/pulse-generator` - Pulse generator circuit
+- `GET /api/circuit/complete` - Complete system schematic
+- `GET /api/circuit/svg` - SVG circuit diagram
 
-## Browser Compatibility
+### AI Engine
+- `POST /api/ai/train` - Train VAE and GAN models
+- `POST /api/ai/generate/vae` - Generate parameters with VAE
+- `POST /api/ai/generate/gan` - Generate parameters with GAN
+- `POST /api/ai/optimize/rl` - Optimize with RL agent
 
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Edge 90+
-- ✅ Safari 14+
+### Neural Model
+- `GET /api/neural/state` - Get current neural state
+- `POST /api/neural/simulate` - Simulate DBS stimulation
+- `POST /api/neural/predict` - Predict treatment response
+- `POST /api/neural/optimize` - Optimize parameters
 
-## Performance
+### Safety Validation
+- `POST /api/safety/validate` - Validate stimulation parameters
+- `POST /api/safety/charge-balance` - Check charge balance
+- `POST /api/safety/thermal` - Thermal safety check
+- `POST /api/safety/compliance` - Regulatory compliance
 
-- **Target**: >100 simulation steps/second
-- **Neurons**: Up to 500 neurons with smooth rendering
-- **Synapses**: Up to 10,000 connections visualized
-- **Real-time**: <16ms frame time for 60 FPS
+## Scientific Background
+
+### Target Brain Regions for PTSD
+- **Amygdala (BLA)**: Fear processing and emotional memory consolidation
+- **Hippocampus**: Contextual memory and fear extinction
+- **vmPFC**: Fear extinction learning and emotional regulation
+- **Hypothalamus**: Stress response via HPA axis
+
+### DBS Parameters
+- **Amplitude**: 0.5-8.0 mA (typical: 3.0 mA)
+- **Frequency**: 20-185 Hz (common: 60, 130, 185 Hz)
+- **Pulse Width**: 60-210 μs (typical: 90 μs)
+- **Waveform**: Biphasic (charge-balanced)
+
+### Safety Limits
+- **Charge Density**: <30 μC/cm² (Shannon limit)
+- **Current Density**: <2.0 mA/cm²
+- **Temperature**: <38°C
+- **Power**: <100 mW
+
+## References
+
+1. Shannon, R. V. (1992). A model of safe levels for electrical stimulation. IEEE Transactions on Biomedical Engineering.
+2. Langevin, J. P., et al. (2016). Deep brain stimulation for PTSD. Biological Psychiatry.
+3. Goodman, W. K., & Alterman, R. L. (2012). Deep brain stimulation for intractable psychiatric disorders. Annual Review of Medicine.
 
 ## License
 
-MIT License - See LICENSE file for details
+This project is for educational and research purposes only. Not licensed for clinical use.
+
+## Contributing
+
+This is a research prototype. For questions or collaboration opportunities, please contact the development team.
 
 ## Acknowledgments
 
-- **CUDA-Q**: Google Quantum AI
-- **Three.js**: Ricardo Cabello (mrdoob)
-- **Chart.js**: Chart.js Contributors
-- **D3.js**: Mike Bostock
-
-## Contact
-
-For questions or support, please open an issue on GitHub.
+- Circuit designs based on medical device industry standards
+- Neural models inspired by computational neuroscience literature
+- Safety guidelines from IEC, ISO, and FDA regulations
+- AI architectures based on state-of-the-art deep learning research
 
 ---
 
-**Built with ❤️ for neuroscience and quantum computing research**
+**Remember**: This system is a powerful educational tool for understanding DBS technology and AI-driven medical device optimization. Always prioritize patient safety and regulatory compliance in any real-world applications.
