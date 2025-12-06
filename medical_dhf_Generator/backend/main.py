@@ -13,8 +13,16 @@ import database
 from datetime import datetime
 import crud
 from quantum_optimizer import QuantumPulseOptimizer
+from document_generator import DocumentGenerator
 
 app = FastAPI(title="Medical Device Documentation System", version="1.0.0")
+
+@app.post("/api/generate-doc-pack")
+def generate_doc_pack():
+    generator = DocumentGenerator()
+    paths = generator.generate_all()
+    return {"status": "success", "generated_files": paths}
+
 
 @app.on_event("startup")
 def startup_event():
