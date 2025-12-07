@@ -81,11 +81,10 @@ class PrimeGeodesicSolver:
             
             # Prime Drift (Projection State collapse probability)
             # If we are exactly on a prime, we have a higher chance of 'projection'
-            # represented here as a slight decoherence or jump
-            if dist == 0 and i % 5 == 0:
+            if dist == 0:
                  state[0] += 0.05 # Mock jump
             
-            # Renormalize (Unitary evolution constraint, but geodesics might leave the sphere in some metrics)
+            # Renormalize
             norm = np.linalg.norm(state)
             if norm > 0:
                 state = state / norm
@@ -93,6 +92,17 @@ class PrimeGeodesicSolver:
             geodesic_x.append(state[0])
             geodesic_y.append(state[1])
             geodesic_z.append(state[2])
+
+        # Generate "Quantum Prime Dist. Key"
+        # Extract bits from the trajectory where potential is high
+        key_bits = []
+        for p in potential:
+             if p > 0.8:
+                 key_bits.append('1')
+             elif p < 0.2:
+                 key_bits.append('0')
+        
+        prime_key = "".join(key_bits[:64]) # Truncate to 64 bits
             
         return {
             "prime_potential": potential,
@@ -104,5 +114,6 @@ class PrimeGeodesicSolver:
             "projection_states": [
                 {"time": t, "probability": p} 
                 for t, p in zip(time[::50], potential[::50]) if p > 0.5
-            ]
+            ],
+            "prime_key": prime_key
         }

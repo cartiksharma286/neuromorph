@@ -1,8 +1,10 @@
 import numpy as np
+from quantum_integrals import QuantumIntegrals
 
 class PulseGenerator:
     def __init__(self):
         self.gamma = 42.58 * 1e6  # Hz/T for Hydrogen
+        self.quantum_integrals = QuantumIntegrals()
 
     def sinc_pulse(self, duration_ms, flip_angle_deg, points=100):
         t = np.linspace(-duration_ms/2, duration_ms/2, points)
@@ -18,7 +20,10 @@ class PulseGenerator:
         b1 = sinc * amplitude
         return t, b1
 
-    def generate_gre(self, te_ms, tr_ms, flip_angle_deg, fov_mm, matrix_size):
+    def generate_gre(self, te_ms, tr_ms, flip_angle_deg, fov_mm, matrix_size, optimize=False):
+        if optimize:
+            return self.optimize_gre(te_ms, tr_ms, flip_angle_deg, fov_mm, matrix_size)
+
         dt = 0.01 # ms time step
         total_time = tr_ms
         time = np.arange(0, total_time, dt)
@@ -78,7 +83,44 @@ class PulseGenerator:
             "adc": adc.tolist()
         }
 
-    def generate_se(self, te_ms, tr_ms, fov_mm, matrix_size):
+    def optimize_gre(self, te_ms, tr_ms, flip_angle_deg, fov_mm, matrix_size):
+        """
+        Optimizes GRE parameters using Quantum Surface Integrals.
+        Varies flip angle to maximize the surface integral metric.
+        """
+        best_metric = -np.inf
+        best_params = None
+        best_sequence = None
+        
+        # Grid search around the provided flip angle
+        search_range = np.linspace(max(5, flip_angle_deg - 20), min(90, flip_angle_deg + 20), 10)
+        
+        for angle in search_range:
+            # Generate temporary sequence
+            seq = self.generate_gre(te_ms, tr_ms, angle, fov_mm, matrix_size, optimize=False)
+            
+            # Calculate Quantum Metric
+            metrics = self.quantum_integrals.calculate_surface_integral(seq)
+            metric_val = metrics['surface_integral']
+            
+            if metric_val > best_metric:
+                best_metric = metric_val
+                best_sequence = seq
+                best_params = angle
+                
+        # Attach optimization metadata
+        best_sequence['optimization_metadata'] = {
+            'optimized_parameter': 'flip_angle',
+            'optimal_value': best_params,
+            'metric_value': best_metric,
+            'method': 'Quantum Surface Integral Maximization'
+        }
+        return best_sequence
+
+    def generate_se(self, te_ms, tr_ms, fov_mm, matrix_size, optimize=False):
+        if optimize:
+            return self.optimize_se(te_ms, tr_ms, fov_mm, matrix_size)
+
         # Spin Echo implementation
         dt = 0.01 # ms
         total_time = tr_ms
@@ -125,6 +167,45 @@ class PulseGenerator:
             "gz": gz.tolist(),
             "adc": adc.tolist()
         }
+
+    def optimize_se(self, te_ms, tr_ms, fov_mm, matrix_size):
+        """
+        Optimizes SE parameters.
+        Varies TE to maximize coherence metric.
+        """
+        best_metric = -np.inf
+        best_sequence = None
+        best_te = None
+
+        # Search optimal TE around the target
+        te_search = np.linspace(max(10, te_ms - 10), te_ms + 10, 5)
+
+        for te in te_search:
+            if te >= tr_ms: continue
+            
+            # Generate sequence
+            seq = self.generate_se(te, tr_ms, fov_mm, matrix_size, optimize=False)
+            
+            # Calculate Metric
+            metrics = self.quantum_integrals.calculate_surface_integral(seq)
+            metric_val = metrics['coherence_metric'] # Maximize coherence for SE
+            
+            if metric_val > best_metric:
+                best_metric = metric_val
+                best_sequence = seq
+                best_te = te
+                
+        if best_sequence is None:
+             # Fallback if optimization fails (e.g. constraints)
+             return self.generate_se(te_ms, tr_ms, fov_mm, matrix_size, optimize=False)
+
+        best_sequence['optimization_metadata'] = {
+            'optimized_parameter': 'te',
+            'optimal_value': best_te,
+            'metric_value': best_metric,
+            'method': 'Quantum Coherence Maximization'
+        }
+        return best_sequence
 
     def export_to_seq(self, pulse_data, filename="sequence.seq"):
         """
