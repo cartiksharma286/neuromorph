@@ -80,7 +80,12 @@ class PulseGenerator:
             "gx": gx.tolist(),
             "gy": gy.tolist(),
             "gz": gz.tolist(),
-            "adc": adc.tolist()
+            "adc": adc.tolist(),
+            "metadata": {
+                "te": te_ms,
+                "tr": tr_ms,
+                "type": "GRE"
+            }
         }
 
     def optimize_gre(self, te_ms, tr_ms, flip_angle_deg, fov_mm, matrix_size):
@@ -165,7 +170,12 @@ class PulseGenerator:
             "gx": gx.tolist(),
             "gy": gy.tolist(),
             "gz": gz.tolist(),
-            "adc": adc.tolist()
+            "adc": adc.tolist(),
+            "metadata": {
+                "te": te_ms,
+                "tr": tr_ms,
+                "type": "SE"
+            }
         }
 
     def optimize_se(self, te_ms, tr_ms, fov_mm, matrix_size):

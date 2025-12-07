@@ -64,7 +64,30 @@ class ReconstructionSimulator:
             
             # Simulate "Noise"
             noise = np.random.normal(0, 0.05, k_space_ideal.shape) + 1j * np.random.normal(0, 0.05, k_space_ideal.shape)
-            k_space_acquired = k_space_ideal + noise
+            
+            # Apply Contrast weighting if metadata exists
+            scale_factor = 1.0
+            if 'metadata' in pulse_data:
+                md = pulse_data['metadata']
+                te = md.get('te', 0)
+                tr = md.get('tr', 1000)
+                seq_type = md.get('type', 'GRE')
+                
+                # Approximate T1/T2 for a generic tissue (e.g. GM)
+                t1 = 1000.0
+                t2 = 100.0
+                
+                # Signal Equations
+                # GRE: Signal ~ sin(alpha) * (1-exp(-TR/T1)) / (1 - cos(alpha)*exp(-TR/T1)) * exp(-TE/T2*)
+                # SE: Signal ~ (1-exp(-TR/T1)) * exp(-TE/T2)
+                
+                # Simplified factors:
+                t1_factor = 1.0 - np.exp(-tr/t1)
+                t2_factor = np.exp(-te/t2)
+                
+                scale_factor = t1_factor * t2_factor * 2.0 # Scale up for visibility
+                
+            k_space_acquired = (k_space_ideal * scale_factor) + noise
             
             # Reconstruction (Inverse FFT)
             img_cpx = np.fft.ifft2(np.fft.ifftshift(k_space_acquired))
