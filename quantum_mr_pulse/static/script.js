@@ -135,6 +135,90 @@ btnVerify.addEventListener('click', async () => {
     }
 });
 
+// Geodesics
+btnGeodesics.addEventListener('click', async () => {
+    if (!currentPulseData) return;
+
+    log('Mapping Prime Geodesics on Bloch Manifold...', 'system');
+
+    try {
+        const res = await fetch('/api/analyze_geodesics', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentPulseData)
+        });
+
+        const results = await res.json();
+
+        document.getElementById('metrics-panel').classList.remove('hidden');
+        document.getElementById('row-prime').classList.remove('hidden');
+
+        const projections = results.projection_states.length;
+        document.getElementById('metric-prime').innerText = `${projections} States`;
+
+        log(`Geodesics Mapped. Projection States found: ${projections}`, 'success');
+
+        renderBlochSphere(results.geodesic_trajectory);
+
+    } catch (e) {
+        log('Geodesic analysis failed: ' + e, 'error');
+    }
+});
+
+// Export
+btnExport.addEventListener('click', async () => {
+    if (!currentPulseData) return;
+
+    log('Exporting to Pulseq codec...', 'system');
+
+    try {
+        const res = await fetch('/api/export_seq', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentPulseData)
+        });
+
+        const result = await res.json();
+
+        const blob = new Blob([result.content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = result.filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        log(`Sequence exported: ${result.filename}`, 'success');
+
+    } catch (e) {
+        log('Export failed: ' + e, 'error');
+    }
+});
+
+// Reconstruct
+btnReconstruct.addEventListener('click', async () => {
+    if (!currentPulseData) return;
+
+    log('Simulating K-Space Acquisition & FFT Reconstruction...', 'system');
+
+    try {
+        const res = await fetch('/api/reconstruct', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentPulseData)
+        });
+
+        const result = await res.json();
+
+        log('Reconstruction Complete.', 'success');
+
+        renderImage(result.image);
+
+    } catch (e) {
+        log('Reconstruction failed: ' + e, 'error');
+    }
+});
+
 // Visualization Helpers
 function renderPulsePlot(data) {
     const traces = [
