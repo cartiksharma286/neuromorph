@@ -40,7 +40,8 @@ btnGenerate.addEventListener('click', async () => {
         tr: parseFloat(document.getElementById('tr').value),
         flip_angle: parseFloat(document.getElementById('fa').value),
         fov: 200,
-        matrix_size: 128
+        matrix_size: 128,
+        optimize: document.getElementById('optimize').checked
     };
 
     log(`Generating ${params.sequence_type} sequence...`);
