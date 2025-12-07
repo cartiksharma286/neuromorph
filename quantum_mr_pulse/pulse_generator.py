@@ -217,6 +217,55 @@ class PulseGenerator:
         }
         return best_sequence
 
+    def generate_prime_weighted_sequence(self, duration_ms, scaling_factor, base_rf_amp=1.0):
+        """
+        Generates a pulse sequence where RF events are triggered based on Prime Number distributions.
+        Events occur when int(t * scaling_factor) is a Prime Number.
+        """
+        dt = 0.01
+        time = np.arange(0, duration_ms, dt)
+        
+        # Initialize
+        rf = np.zeros_like(time)
+        gx = np.zeros_like(time)
+        gy = np.zeros_like(time)
+        gz = np.zeros_like(time)
+        adc = np.zeros_like(time)
+        
+        # Pre-compute primes for speed using a simple sieve for the range needed
+        max_val = int(duration_ms * scaling_factor) + 100
+        # Simple Sieve
+        is_prime = np.ones(max_val, dtype=bool)
+        is_prime[0] = is_prime[1] = False
+        for i in range(2, int(np.sqrt(max_val)) + 1):
+            if is_prime[i]:
+                is_prime[i*i::i] = False
+                
+        # Generate Pulse Train
+        for i, t in enumerate(time):
+            val = int(t * scaling_factor)
+            if val < max_val and is_prime[val]:
+                # Trigger RF pulse - modulated by the "primality" stability
+                # Using a Gaussian blip for the pulse
+                rf[i] = base_rf_amp
+                
+                # Associated Gradient blip for spatial encoding of this "prime event"
+                gx[i] = 0.5 * (1 if val % 4 == 1 else -1) # Alternating gradient based on prime residue
+                
+        return {
+            "time": time.tolist(),
+            "rf": rf.tolist(),
+            "gx": gx.tolist(),
+            "gy": gy.tolist(),
+            "gz": gz.tolist(),
+            "adc": adc.tolist(),
+            "metadata": {
+                "type": "PRIME_WEIGHTED",
+                "scaling_factor": scaling_factor,
+                "duration": duration_ms
+            }
+        }
+
     def export_to_seq(self, pulse_data, filename="sequence.seq"):
         """
         Exports the pulse data to a Pulseq (.seq) compatible text file.
