@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVQLink Orthopedic Surgical System</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">NVQLink <span class="highlight">Ortho</span></div>
+            <nav>
+                <button onclick="showSection('dashboard')" class="active">Dashboard</button>
+                <button onclick="showSection('planning')">Surgical Planning</button>
+                <button onclick="showSection('analytics')">Analytics</button>
+            </nav>
+            <div class="status-indicator">Connected</div>
+        </header>
+
+        <main id="dashboard" class="section active">
+            <div class="hero">
+                <h1>Surgical Intelligence Platform</h1>
+                <p>Quantum-Optimized & Generative AI Driven Orthopedics</p>
+                <div class="action-buttons">
+                    <button class="primary-btn" onclick="runOptimization()">Optimize Plan</button>
+                    <button class="secondary-btn" onclick="fetchGeometry()">Load Geometry</button>
+                </div>
+            </div>
+
+            <div class="grid-container">
+                <div class="card">
+                    <h3>Optimization Status</h3>
+                    <div id="optimization-result" class="result-box">Ready to optimize...</div>
+                </div>
+                <div class="card">
+                    <h3>Geometry Preview</h3>
+                    <div id="geometry-preview" class="result-box">No geometry loaded</div>
+                </div>
+                <div class="card">
+                    <h3>Health Economics</h3>
+                    <div id="economics-data" class="result-box">Loading...</div>
+                </div>
+            </div>
+        </main>
+
+        <main id="planning" class="section">
+            <h2>Surgical Planning</h2>
+            <div class="controls">
+                <button onclick="simulateResection()">Simulate Resection</button>
+                <button onclick="simulateBalancing()">Simulate Balancing</button>
+            </div>
+            <div id="planning-results" class="result-area"></div>
+        </main>
+
+        <main id="analytics" class="section">
+            <h2>Post-Op Analytics</h2>
+            <button onclick="loadPostOp()">Load Projections</button>
+            <div id="analytics-results" class="result-area"></div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
