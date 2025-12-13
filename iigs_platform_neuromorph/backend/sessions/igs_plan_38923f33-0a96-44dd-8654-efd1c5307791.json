@@ -1,0 +1,21 @@
+{
+    "session_id": "38923f33-0a96-44dd-8654-efd1c5307791",
+    "registration_status": "active",
+    "target_implant_location": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "trajectory": {
+        "entry_point": [
+            0.0,
+            0.0,
+            10.0
+        ],
+        "target_point": [
+            0.0,
+            0.0,
+            0.0
+        ]
+    }
+}
