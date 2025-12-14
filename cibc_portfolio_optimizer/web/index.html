@@ -325,6 +325,61 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 4-Signal Analysis -->
+            <div class="glass-card fade-in" style="margin-top: 2rem;">
+                <div class="section-header">
+                    <h2 class="section-title">🛡️ Strategic 4-Signal Framework</h2>
+                </div>
+                <!-- Stock Selector -->
+                <div style="margin-bottom: 1rem;">
+                    <select id="signalStockSelect" class="form-select" style="max-width: 300px;">
+                        <option value="">Select a stock to analyze...</option>
+                    </select>
+                </div>
+
+                <div id="signalsContainer" class="grid-4" style="display:none;">
+                    <!-- Yield Safety -->
+                    <div class="metric-card" id="signalYield">
+                        <div class="metric-label">Yield Safety</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">--</div>
+                        <div class="metric-change" style="font-size: 0.8rem;"></div>
+                        <div class="progress-bar" style="height: 6px; margin-top: 8px;">
+                            <div class="progress-fill" style="width: 0%; background: var(--success);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Growth Trajectory -->
+                    <div class="metric-card" id="signalGrowth">
+                        <div class="metric-label">Growth Trajectory</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">--</div>
+                        <div class="metric-change" style="font-size: 0.8rem;"></div>
+                        <div class="progress-bar" style="height: 6px; margin-top: 8px;">
+                            <div class="progress-fill" style="width: 0%; background: var(--info);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Fundamental Health -->
+                    <div class="metric-card" id="signalHealth">
+                        <div class="metric-label">Fundamental Health</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">--</div>
+                        <div class="metric-change" style="font-size: 0.8rem;"></div>
+                        <div class="progress-bar" style="height: 6px; margin-top: 8px;">
+                            <div class="progress-fill" style="width: 0%; background: var(--warning);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Momentum -->
+                    <div class="metric-card" id="signalMomentum">
+                        <div class="metric-label">Momentum Score</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">--</div>
+                        <div class="metric-change" style="font-size: 0.8rem;"></div>
+                        <div class="progress-bar" style="height: 6px; margin-top: 8px;">
+                            <div class="progress-fill" style="width: 0%; background: var(--danger);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <script src="app.js"></script>

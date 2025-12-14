@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
     setupEventListeners();
     setupFlashGemini();
+    setupSignalAnalyzer();
 });
 
 async function initializeApp() {
@@ -59,6 +60,19 @@ function setupEventListeners() {
     if (tradeBtn) {
         tradeBtn.addEventListener('click', executeTrade);
     }
+
+    // Signal Analyzer
+    const signalSelect = document.getElementById('signalStockSelect');
+    if (signalSelect) {
+        signalSelect.addEventListener('change', updateSignalAnalysis);
+    }
+}
+
+async function setupSignalAnalyzer() {
+    // Populate dropdown once stocks are loaded
+    // We can wait for loadMarketData to complete, which is called in initializeApp
+    // But we need to ensure allStocks is populated.
+    // simpler: check periodically or just call it after loadMarketData returns
 }
 
 async function setupFlashGemini() {
@@ -172,6 +186,17 @@ async function loadMarketData() {
         const data = await response.json();
         allStocks = data.stocks;
         console.log(`Loaded ${allStocks.length} dividend stocks`);
+
+        // Populate Signal Analyzer Dropdown
+        const select = document.getElementById('signalStockSelect');
+        if (select) {
+            allStocks.forEach(stock => {
+                const option = document.createElement('option');
+                option.value = stock.symbol;
+                option.textContent = `${stock.symbol} - ${stock.name}`;
+                select.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error('Error loading market data:', error);
     }
@@ -797,7 +822,63 @@ function generateColors(count) {
         '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#EF4444'
     ];
 
+
     return Array.from({ length: count }, (_, i) => colors[i % colors.length]);
+}
+
+async function updateSignalAnalysis() {
+    const symbol = document.getElementById('signalStockSelect').value;
+    const container = document.getElementById('signalsContainer');
+
+    if (!symbol) {
+        container.style.display = 'none';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/stocks/${symbol}`);
+        const data = await response.json();
+        const signals = data.analysis.signals;
+
+        container.style.display = 'grid'; // grid-4 class handles layout
+
+        // 1. Yield Safety
+        updateSignalCard('signalYield', signals['Yield Safety']);
+
+        // 2. Growth Trajectory
+        updateSignalCard('signalGrowth', signals['Growth Trajectory']);
+
+        // 3. Fundamental Health
+        updateSignalCard('signalHealth', signals['Fundamental Health']);
+
+        // 4. Momentum
+        updateSignalCard('signalMomentum', signals['Momentum']);
+
+    } catch (e) {
+        console.error("Error fetching signals:", e);
+    }
+}
+
+function updateSignalCard(id, signalData) {
+    const card = document.getElementById(id);
+    const valueEl = card.querySelector('.metric-value');
+    const changeEl = card.querySelector('.metric-change');
+    const fillEl = card.querySelector('.progress-fill');
+
+    valueEl.textContent = signalData.status;
+
+    // Format metrics
+    const metrics = Object.entries(signalData.metrics)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(' | ');
+    changeEl.textContent = metrics;
+
+    fillEl.style.width = `${signalData.score}%`;
+
+    // Color coding based on score
+    if (signalData.score > 70) fillEl.style.backgroundColor = 'var(--success)';
+    else if (signalData.score < 40) fillEl.style.backgroundColor = 'var(--danger)';
+    else fillEl.style.backgroundColor = 'var(--warning)';
 }
 
 function showNotification(message, type = 'info') {
