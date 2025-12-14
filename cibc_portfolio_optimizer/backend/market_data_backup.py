@@ -42,24 +42,13 @@ class MarketDataGenerator:
         ],
         'REITs': [
             {'symbol': 'REI.UN.TO', 'name': 'RioCan REIT', 'base_yield': 6.2},
+            {'symbol': 'CAR.UN.TO', 'name': 'Canadian Apartment REIT', 'base_yield': 3.2},
             {'symbol': 'HR.UN.TO', 'name': 'H&R REIT', 'base_yield': 7.0}
         ],
         'Flash Gemini Tech': [
             {'symbol': 'NVDA', 'name': 'NVIDIA Corp', 'base_yield': 0.03},
             {'symbol': 'GOOGL', 'name': 'Alphabet Inc', 'base_yield': 0.0},
             {'symbol': 'AAPL', 'name': 'Apple Inc', 'base_yield': 0.5}
-        ],
-        'NASDAQ 100': [
-            {'symbol': 'MSFT', 'name': 'Microsoft Corp', 'base_yield': 0.8},
-            {'symbol': 'AMZN', 'name': 'Amazon.com Inc', 'base_yield': 0.0},
-            {'symbol': 'META', 'name': 'Meta Platforms', 'base_yield': 0.0},
-            {'symbol': 'TSLA', 'name': 'Tesla Inc', 'base_yield': 0.0},
-            {'symbol': 'NFLX', 'name': 'Netflix Inc', 'base_yield': 0.0},
-            {'symbol': 'AVGO', 'name': 'Broadcom Inc', 'base_yield': 1.2},
-            {'symbol': 'CSCO', 'name': 'Cisco Systems', 'base_yield': 3.1},
-            {'symbol': 'PEP', 'name': 'PepsiCo Inc', 'base_yield': 2.7},
-            {'symbol': 'COST', 'name': 'Costco Wholesale', 'base_yield': 0.6},
-            {'symbol': 'TMUS', 'name': 'T-Mobile US', 'base_yield': 0.0}
         ]
     }
     
@@ -169,8 +158,7 @@ class MarketDataGenerator:
             'Telecom': 0.18,
             'Telecom': 0.18,
             'REITs': 0.22,
-            'Flash Gemini Tech': 0.35,
-            'NASDAQ 100': 0.25
+            'Flash Gemini Tech': 0.35
         }
         
         # Create correlation matrix

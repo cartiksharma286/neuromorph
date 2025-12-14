@@ -12,9 +12,12 @@ from typing import Dict, List
 from quantum_optimizer import DividendPortfolioOptimizer
 from dividend_engine import DividendEngine
 from market_data import MarketDataGenerator
+from qiskit_optimizer import QiskitGeodesicOptimizer
 from portfolio_analytics import PortfolioAnalytics
 from ai_advisor import AIAdvisor
 from risk_classifier import RiskClassifier
+from spread_optimizer import SpreadOptimizer
+from ibkr_client import IBKRClient
 
 
 app = Flask(__name__)
@@ -22,11 +25,15 @@ CORS(app)
 
 # Initialize components
 market_data = MarketDataGenerator()
-quantum_optimizer = DividendPortfolioOptimizer(num_assets=len(market_data.get_all_stocks()))
+# quantum_optimizer = DividendPortfolioOptimizer(num_assets=len(market_data.get_all_stocks()))
+quantum_optimizer = QiskitGeodesicOptimizer(num_assets=len(market_data.get_all_stocks()))
 dividend_engine = DividendEngine()
 portfolio_analytics = PortfolioAnalytics()
 ai_advisor = AIAdvisor()
 risk_classifier = RiskClassifier()
+spread_optimizer = SpreadOptimizer()
+ibkr_client = IBKRClient()
+ibkr_client.connect()
 
 
 @app.route('/api/stocks', methods=['GET'])
@@ -73,6 +80,8 @@ def optimize_portfolio():
         "portfolio_value": 100000,
         "risk_tolerance": "moderate",
         "target_dividend_yield": 5.0,
+        "target_dividend_yield": 5.0,
+        "target_return": 0.30,
         "sector_constraints": {"Financials": 0.35}
     }
     """
@@ -81,6 +90,7 @@ def optimize_portfolio():
     portfolio_value = data.get('portfolio_value', 100000)
     risk_tolerance = data.get('risk_tolerance', 'moderate')
     target_dividend_yield = data.get('target_dividend_yield')
+    target_return = data.get('target_return', 0.30)  # Default 30% per user request
     sector_constraints = data.get('sector_constraints')
     
     # Get market data
@@ -91,14 +101,15 @@ def optimize_portfolio():
     
     # Run quantum optimization
     try:
+        # Use Qiskit Geodesic Optimizer
         optimization_result = quantum_optimizer.optimize_portfolio(
             expected_returns=expected_returns,
             covariance_matrix=covariance_matrix,
             dividend_yields=dividend_yields,
             risk_tolerance=risk_tolerance,
-            target_dividend_yield=target_dividend_yield,
+            target_return=target_return,
             sector_constraints=sector_constraints,
-            max_iterations=100
+            stock_list=stocks
         )
         
         # ML-Enhanced Optimization (Comparison)
@@ -499,6 +510,27 @@ def estimate_cvar():
     return jsonify(cvar_estimates)
 
 
+@app.route('/api/spreads', methods=['GET'])
+def get_spreads():
+    """Get optimal spread projections for Equities and Forex"""
+    stocks = market_data.get_all_stocks()
+    spreads = spread_optimizer.generate_spreads(stocks)
+    return jsonify(spreads)
+
+
+@app.route('/api/trade/execute', methods=['POST'])
+def execute_trade():
+    """Execute portfolio rebalancing via Interactive Brokers"""
+    data = request.json
+    holdings = data.get('holdings', [])
+    
+    if not holdings:
+        return jsonify({'error': 'No holdings provided'}), 400
+        
+    execution_result = ibkr_client.execute_portfolio_rebalance(holdings)
+    return jsonify(execution_result)
+
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
@@ -516,7 +548,7 @@ if __name__ == '__main__':
     print("=" * 60)
     print(f"\nLoaded {len(market_data.get_all_stocks())} dividend stocks")
     print(f"Quantum optimizer initialized with {quantum_optimizer.num_qubits} qubits")
-    print("\nServer starting on http://localhost:5000")
+    print("\nServer starting on http://localhost:5001")
     print("=" * 60)
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)
