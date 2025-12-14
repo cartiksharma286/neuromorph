@@ -357,7 +357,8 @@ class DividendEngine:
             'is_dividend_aristocrat': is_aristocrat,
             'recommendation': self._generate_recommendation(
                 current_yield, growth_5yr, sustainability['score'], is_aristocrat
-            )
+            ),
+            'signals': self.evaluate_4_signals(stock_data)
         }
     
     def _generate_recommendation(self,
@@ -370,7 +371,83 @@ class DividendEngine:
             return "Strong Buy - High yield with excellent sustainability"
         elif sustainability_score >= 65 and growth_5yr >= 5.0:
             return "Buy - Good growth with solid sustainability"
-        elif sustainability_score >= 50:
-            return "Hold - Moderate dividend quality"
-        else:
-            return "Caution - Dividend sustainability concerns"
+        elif self.calculate_sustainability_score(50, 0, 1.0)['score'] < 50:
+             return "Caution - Dividend sustainability concerns"
+        return "Hold"
+
+    def evaluate_4_signals(self, stock_data: Dict) -> Dict:
+        """
+        Evaluate stock based on 4 key signals: 
+        1. Yield Safety
+        2. Growth Trajectory
+        3. Fundamental Health
+        4. Momentum/Sentiment
+        """
+        signals = {}
+        
+        # 1. Yield Safety
+        payout = self.calculate_payout_ratio(stock_data.get('annual_dividend', 0), stock_data.get('eps', 1))
+        fcf_cov = stock_data.get('fcf_coverage', 1.5)
+        
+        safety_score = 0
+        if payout < 60: safety_score += 40
+        elif payout < 80: safety_score += 20
+        if fcf_cov > 1.2: safety_score += 40
+        elif fcf_cov > 1.0: safety_score += 20
+        if stock_data.get('debt_to_equity', 1.0) < 1.0: safety_score += 20
+        
+        signals['Yield Safety'] = {
+            'score': min(safety_score, 100),
+            'status': 'Safe' if safety_score > 70 else 'Risk' if safety_score < 40 else 'Neutral',
+            'metrics': {'Payout Ratio': f"{payout:.1f}%", 'FCF Coverage': f"{fcf_cov:.1f}x"}
+        }
+
+        # 2. Growth Trajectory
+        growth_3yr = self.calculate_dividend_growth_rate(stock_data.get('dividend_history', []), 3)
+        growth_5yr = self.calculate_dividend_growth_rate(stock_data.get('dividend_history', []), 5)
+        
+        growth_score = 0
+        if growth_3yr > 5: growth_score += 50
+        elif growth_3yr > 2: growth_score += 25
+        if growth_5yr > 5: growth_score += 50
+        elif growth_5yr > 2: growth_score += 25
+        
+        signals['Growth Trajectory'] = {
+            'score': min(growth_score, 100),
+            'status': 'High Growth' if growth_score > 70 else 'Low Growth' if growth_score < 40 else 'Steady',
+            'metrics': {'3yr CAGR': f"{growth_3yr:.1f}%", '5yr CAGR': f"{growth_5yr:.1f}%"}
+        }
+
+        # 3. Fundamental Health
+        pe_ratio = stock_data.get('pe_ratio', 15.0)
+        profit_margin = stock_data.get('profit_margin', 0.1)
+        
+        fund_score = 0
+        if 5 < pe_ratio < 20: fund_score += 50 # Valuation check
+        elif pe_ratio < 25: fund_score += 25
+        if profit_margin > 0.15: fund_score += 50
+        elif profit_margin > 0.05: fund_score += 25
+        
+        signals['Fundamental Health'] = {
+            'score': min(fund_score, 100),
+            'status': 'Strong' if fund_score > 70 else 'Weak' if fund_score < 40 else 'Stable',
+            'metrics': {'P/E Ratio': f"{pe_ratio:.1f}", 'Net Margin': f"{profit_margin*100:.1f}%"}
+        }
+
+        # 4. Momentum/Sentiment (Simulated if real data missing)
+        # Using simple moving average proxy or simulated sentiment
+        price = stock_data.get('price', 50)
+        ma_200 = stock_data.get('ma_200', price * 0.95) # Default to slightly bullish
+        rsi = stock_data.get('rsi', 55) # Neutral RSI
+        
+        mom_score = 0
+        if price > ma_200: mom_score += 50
+        if 40 < rsi < 70: mom_score += 50 # Not overbought/oversold
+        
+        signals['Momentum'] = {
+            'score': min(mom_score, 100),
+            'status': 'Bullish' if mom_score > 70 else 'Bearish' if mom_score < 40 else 'Neutral',
+            'metrics': {'vs 200MA': f"{((price/ma_200)-1)*100:.1f}%", 'RSI': f"{rsi:.0f}"}
+        }
+        
+        return signals

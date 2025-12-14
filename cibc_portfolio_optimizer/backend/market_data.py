@@ -112,7 +112,10 @@ class MarketDataGenerator:
                     'next_ex_date': self._generate_next_ex_date(),
                     'is_eligible_dividend': True,  # Most Canadian corps pay eligible dividends
                     'fcf_coverage': round(np.random.uniform(1.2, 2.5), 2),
-                    'market_cap': round(base_price * np.random.uniform(10, 100) * 1e9, 0)
+                    'market_cap': round(base_price * np.random.uniform(10, 100) * 1e9, 0),
+                    'profit_margin': round(np.random.uniform(0.05, 0.25), 2),
+                    'ma_200': round(base_price * np.random.uniform(0.9, 1.1), 2),
+                    'rsi': int(np.random.uniform(30, 80))
                 }
                 
                 stocks.append(stock)
