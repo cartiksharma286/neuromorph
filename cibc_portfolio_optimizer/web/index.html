@@ -76,6 +76,40 @@
             </div>
         </section>
 
+        <!-- Flash Gemini Projections -->
+        <section class="glass-card fade-in" style="margin-bottom: 2rem;">
+            <div class="section-header">
+                <h2 class="section-title">⚡ Flash Gemini Projections</h2>
+            </div>
+            <div class="grid-2">
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="flashGeminiChart"></canvas>
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 1rem;">Optimal Trading Spreads</h3>
+                    <table class="data-table" id="spreadsTable">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Type</th>
+                                <th>Bid</th>
+                                <th>Ask</th>
+                                <th>Spread (bps)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="spreadsBody">
+                            <tr>
+                                <td colspan="5" style="text-align:center;">Loading spreads...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 1rem; text-align: right;">
+                        <button class="btn btn-primary" id="executeTradeBtn">Execute Orders (IBKR)</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Optimization Controls & Results -->
         <div class="grid-2" style="margin-bottom: 2rem;">
             <!-- Optimization Controls -->

@@ -2,7 +2,7 @@
  * CIBC Dividend Portfolio Optimizer - Main Application
  */
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://localhost:5001/api';
 
 // State
 let currentPortfolio = null;
@@ -13,6 +13,7 @@ let charts = {};
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
     setupEventListeners();
+    setupFlashGemini();
 });
 
 async function initializeApp() {
@@ -52,6 +53,117 @@ function setupEventListeners() {
     if (generateCodeBtn) {
         generateCodeBtn.addEventListener('click', generateCode);
     }
+
+    // Trade Execution
+    const tradeBtn = document.getElementById('executeTradeBtn');
+    if (tradeBtn) {
+        tradeBtn.addEventListener('click', executeTrade);
+    }
+}
+
+async function setupFlashGemini() {
+    // 1. Fetch Optimal Spreads
+    await loadOptimalSpreads();
+
+    // 2. Initialize Flash Gemini Chart (with dummy projection initially)
+    initializeFlashGeminiChart();
+}
+
+async function loadOptimalSpreads() {
+    try {
+        const response = await fetch(`${API_BASE}/spreads`);
+        const data = await response.json();
+
+        const tbody = document.getElementById('spreadsBody');
+        tbody.innerHTML = '';
+
+        // Combine Equities and Forex
+        const allAssets = [...data.Equities.slice(0, 5), ...data.Forex];
+
+        allAssets.forEach(asset => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${asset.symbol}</strong></td>
+                <td>${asset.type || 'Equity'}</td>
+                <td>${asset.bid.toFixed(4)}</td>
+                <td>${asset.ask.toFixed(4)}</td>
+                <td><span class="badge badge-success">${asset.spread_bps} bps</span></td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (e) {
+        console.error("Error loading spreads:", e);
+    }
+}
+
+async function executeTrade() {
+    if (!currentPortfolio || !currentPortfolio.holdings) {
+        showNotification("No portfolio generated to execute.", "warning");
+        return;
+    }
+
+    const btn = document.getElementById('executeTradeBtn');
+    btn.disabled = true;
+    btn.textContent = "Executing...";
+
+    try {
+        const response = await fetch(`${API_BASE}/trade/execute`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ holdings: currentPortfolio.holdings })
+        });
+
+        const result = await response.json();
+        const count = result.orders ? result.orders.length : 0;
+        showNotification(`Executed ${count} orders via IBKR`, 'success');
+
+    } catch (e) {
+        showNotification("Trade execution failed: " + e, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Execute Orders (IBKR)";
+    }
+}
+
+function initializeFlashGeminiChart() {
+    const ctx = document.getElementById('flashGeminiChart').getContext('2d');
+
+    // Simulated "Variational Paths" for Flash Gemini Tech stocks
+    const years = [2024, 2025, 2026, 2027, 2028];
+
+    charts.flashGemini = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: [
+                {
+                    label: 'NVDA Forecast (AI Boom)',
+                    data: [100, 145, 210, 285, 390],
+                    borderColor: '#10B981', // Green
+                    tension: 0.4
+                },
+                {
+                    label: 'Standard Market Drift',
+                    data: [100, 107, 114, 122, 131],
+                    borderColor: '#6366F1', // Blue
+                    borderDash: [5, 5],
+                    tension: 0.2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: { display: true, text: 'Variational State Projections', color: '#B8C1EC' },
+                legend: { labels: { color: '#B8C1EC' } }
+            },
+            scales: {
+                y: { ticks: { color: '#B8C1EC' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                x: { ticks: { color: '#B8C1EC' }, grid: { display: false } }
+            }
+        }
+    });
 }
 
 async function loadMarketData() {
@@ -89,7 +201,8 @@ async function optimizePortfolio() {
             body: JSON.stringify({
                 portfolio_value: portfolioValue,
                 risk_tolerance: riskTolerance,
-                target_dividend_yield: targetYield
+                target_dividend_yield: targetYield,
+                target_return: 0.30 // Requested 30% Return
             })
         });
 
