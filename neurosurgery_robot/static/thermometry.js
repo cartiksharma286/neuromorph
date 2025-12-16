@@ -167,7 +167,7 @@ class ThermalViz {
     getColor(temp) { return this.getTempColorUnsafe(temp); }
     getDamageColor(val) { return this.getDamageColorUnsafe(val); }
 
-    update(tempData, damageData) {
+    update(tempData, damageData, anatomyData) {
         if (!tempData) return;
 
         let activeData = (this.mode === 'DAMAGE' && damageData) ? damageData : tempData;
@@ -186,7 +186,6 @@ class ThermalViz {
         let p = 0;
         let maxVal = 0;
 
-        // Optimize: If we find any value > threshold, we enable drawing
         let hasHeat = false;
 
         for (let y = 0; y < 64; y++) {
@@ -194,27 +193,27 @@ class ThermalViz {
                 const val = activeData[y][x];
                 if (val > maxVal) maxVal = val;
 
-                // Thresholds for rendering
+                // Color Logic
+                let r = 0, g = 0, b = 0, a = 0;
+
+                // 1. Heatmap / Damage Map
                 if (this.mode === 'DAMAGE') {
                     if (val >= 1.0) hasHeat = true;
                     const i = Math.min(255, Math.max(0, Math.floor(val))) * 4;
-                    pixels[p++] = this.damageLUT[i];
-                    pixels[p++] = this.damageLUT[i + 1];
-                    pixels[p++] = this.damageLUT[i + 2];
-                    pixels[p++] = this.damageLUT[i + 3];
+                    r = this.damageLUT[i]; g = this.damageLUT[i + 1]; b = this.damageLUT[i + 2]; a = this.damageLUT[i + 3];
                 } else {
                     if (val >= 37.05) hasHeat = true;
-                    // LUT map
                     let idx = Math.floor((val - 37.0) / 63.0 * 1000);
                     if (idx < 0) idx = 0;
                     if (idx >= 1000) idx = 999;
                     const i = idx * 4;
-
-                    pixels[p++] = this.tempLUT[i];
-                    pixels[p++] = this.tempLUT[i + 1];
-                    pixels[p++] = this.tempLUT[i + 2];
-                    pixels[p++] = this.tempLUT[i + 3];
+                    r = this.tempLUT[i]; g = this.tempLUT[i + 1]; b = this.tempLUT[i + 2]; a = this.tempLUT[i + 3];
                 }
+
+                pixels[p++] = r;
+                pixels[p++] = g;
+                pixels[p++] = b;
+                pixels[p++] = a;
             }
         }
 

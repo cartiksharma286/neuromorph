@@ -304,10 +304,20 @@ main {
     border-color: rgba(59, 130, 246, 0.3);
 }
 
-.cryo-view #cryo-canvas {
+
+.gradient-bar {
     width: 256px;
-    height: 256px;
+    height: 12px;
+    margin-top: 8px;
     border-radius: 4px;
-    image-rendering: pixelated;
-    background: #000;
+    /* Medical Turbo Gradient */
+    background: linear-gradient(to right,
+            #30123b 0%,
+            #4683f0 20%,
+            #1ad3d3 40%,
+            #6cf772 60%,
+            #feba2c 80%,
+            #f63712 90%,
+            #ffffff 100%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }

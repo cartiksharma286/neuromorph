@@ -28,46 +28,70 @@ class CryoViz {
     }
 
     generateIceColormap() {
-        // Range -200 to +50 C (250 steps approx? Let's do 10 steps per degree -> 2500)
-        // Offset +200. Index 0 = -200C. Index 2000 = 0C. Index 2500 = 50C.
+        // High-Precision Cryo Gradient
+        // Range -200 to +50 C (2500 steps, 0.1C res)
+        // Offset +200. Index 0 = -200C.
         const steps = 2500;
         const lut = new Uint8ClampedArray(steps * 4);
 
-        for (let i = 0; i < steps; i++) {
-            const temp = (i / 10.0) - 200.0; // Map index to temp
+        // Control Points: Temp -> [R, G, B, A]
+        const stops = [
+            { t: 37.0, c: [0, 0, 0, 0] },
+            { t: 30.0, c: [150, 200, 255, 30] },   // Cool Mist
+            { t: 10.0, c: [100, 180, 255, 80] },   // Cooling
+            { t: 0.0, c: [0, 150, 255, 120] },     // Freezing Point (Blue)
+            { t: -20.0, c: [0, 255, 255, 160] },   // Ice Formation (Cyan)
+            { t: -40.0, c: [150, 255, 255, 200] }, // Deep Freeze
+            { t: -100.0, c: [240, 250, 255, 240] },// Cryo Core (White-ish)
+            { t: -180.0, c: [255, 255, 255, 255] } // Max Cryo
+        ];
 
-            let r = 0, g = 0, b = 0, a = 0;
+        // Sort descending because we iterate typical range or just handle logic
+        // Stops are descending in standard "cooling" view, but let's just use standard interpolation
+        // Helper to find range
+        const getRange = (temp) => {
+            // Find s1, s2 such that s2.t <= temp <= s1.t 
+            // OR s1.t <= temp <= s2.t
 
-            if (temp > 30.0) {
-                // Body temp / Warm -> Transparent
-                a = 0;
-            } else if (temp > 0.0) {
-                // 0..30 -> Cooling Mist
-                const t = (30.0 - temp) / 30.0; // 0..1
-                r = 150; g = 200; b = 255;
-                a = Math.floor(100 * t);
-            } else {
-                // Freezing < 0
-                const absT = Math.abs(temp);
-                if (absT < 50) {
-                    // 0..-50: Blue -> Cyan
-                    const t = absT / 50.0;
-                    r = 0;
-                    g = Math.floor(150 + (105 * t));
-                    b = 255;
-                    a = Math.floor(100 + (80 * t));
-                } else if (absT < 100) {
-                    // -50..-100: Cyan -> White (Ice Ball Center)
-                    const t = (absT - 50) / 50.0;
-                    r = Math.floor(255 * t);
-                    g = 255;
-                    b = 255;
-                    a = 180;
-                } else {
-                    // Deep Freeze
-                    r = 230; g = 240; b = 255; a = 200;
+            // Stops are mixed order? No, let's look at them: 37, 30, 10... descending.
+            // Let's sort them ascending to make interpolation logic standard
+            const sortedStops = stops.sort((a, b) => a.t - b.t);
+
+            for (let i = 0; i < sortedStops.length - 1; i++) {
+                if (temp >= sortedStops[i].t && temp < sortedStops[i + 1].t) {
+                    return [sortedStops[i], sortedStops[i + 1]];
                 }
             }
+            if (temp < sortedStops[0].t) return [sortedStops[0], sortedStops[0]];
+            return [sortedStops[sortedStops.length - 1], sortedStops[sortedStops.length - 1]];
+        };
+
+        for (let i = 0; i < steps; i++) {
+            const temp = (i / 10.0) - 200.0;
+
+            // Clamping
+            if (temp > 37.0) {
+                lut[i * 4] = 0; lut[i * 4 + 1] = 0; lut[i * 4 + 2] = 0; lut[i * 4 + 3] = 0;
+                continue;
+            }
+            if (temp < -180.0) {
+                lut[i * 4] = 255; lut[i * 4 + 1] = 255; lut[i * 4 + 2] = 255; lut[i * 4 + 3] = 255;
+                continue;
+            }
+
+            const [s1, s2] = getRange(temp);
+
+            // Interpolate
+            let ratio = 0;
+            if (Math.abs(s2.t - s1.t) > 0.001) {
+                ratio = (temp - s1.t) / (s2.t - s1.t);
+            }
+
+            const r = Math.floor(s1.c[0] + (s2.c[0] - s1.c[0]) * ratio);
+            const g = Math.floor(s1.c[1] + (s2.c[1] - s1.c[1]) * ratio);
+            const b = Math.floor(s1.c[2] + (s2.c[2] - s1.c[2]) * ratio);
+            const a = Math.floor(s1.c[3] + (s2.c[3] - s1.c[3]) * ratio);
+
             lut[i * 4] = r;
             lut[i * 4 + 1] = g;
             lut[i * 4 + 2] = b;

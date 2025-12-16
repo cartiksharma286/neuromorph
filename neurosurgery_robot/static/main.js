@@ -115,8 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
             robotViz.updateJoints(data.joints);
 
             // Update Thermometry
-            // Pass both maps
-            const maxVal = thermalViz.update(data.temperature_map, data.damage_map);
+            // Pass both maps and anatomy
+            const maxVal = thermalViz.update(data.temperature_map, data.damage_map, data.mr_anatomy);
 
             if (data.temp_history) {
                 const genAiProfile = (data.gen_ai && data.gen_ai.generated_profile) ? data.gen_ai.generated_profile : [];
