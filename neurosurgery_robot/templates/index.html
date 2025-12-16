@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVQLink Neurosurgical Robot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="glass-panel">
+            <div class="logo">
+                <h1>NeuroMorph <span class="highlight">NVQLink</span></h1>
+            </div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="label">LINK STATUS</span>
+                    <span class="value" id="link-status">OFFLINE</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">LATENCY</span>
+                    <span class="value" id="link-latency">-- ms</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">LASER STATE</span>
+                    <div class="indicator" id="laser-indicator"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- 3D Robot Simulation -->
+            <section class="viewport-3d glass-panel" id="robot-container">
+                <h2>6DOF Visual Simulation</h2>
+                <div id="canvas-3d"></div>
+                <div class="overlay-controls">
+                    <button id="btn-enable-laser" class="btn-primary">ACTIVATE LASER</button>
+                    <button id="btn-start-sim" class="btn-primary"
+                        style="background: linear-gradient(135deg, #10b981, #34d399);">RUN SIMULATION</button>
+                    <p class="instruction">Move mouse over viewport to guide robot</p>
+                </div>
+            </section>
+
+            <!-- Tabbed Interface -->
+            <aside class="sidebar">
+                <div class="glass-panel">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="tab-thermo">Visual RF</button>
+                        <button class="tab-btn" data-tab="tab-cryo">N2 Cryo</button>
+                    </div>
+
+                    <!-- Thermal Tab -->
+                    <div id="tab-thermo" class="tab-content active thermal-view">
+                        <h2>Interoperative Thermometry</h2>
+                        <div class="heatmap-container">
+                            <canvas id="thermal-canvas" width="256" height="256"></canvas>
+                            <div class="gradient-bar"></div>
+                        </div>
+
+                        <!-- Temp Profile Plot -->
+                        <div class="chart-container" style="width: 100%; height: 150px; margin-top: 10px;">
+                            <canvas id="temp-profile-chart"></canvas>
+                        </div>
+
+                        <div class="metrics">
+                            <div class="metric">
+                                <span class="m-label">Peak Cortical Temp</span>
+                                <span class="m-value" id="max-temp">37.0°C</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Ablation Status</span>
+                                <span class="m-value success" id="tissue-status">Safe</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cryo Tab -->
+                    <div id="tab-cryo" class="tab-content cryo-view">
+                        <h2 style="color: #60a5fa;">Cryo-Ablation (Argon)</h2>
+                        <div class="heatmap-container" style="border-color: #60a5fa;">
+                            <canvas id="cryo-canvas" width="256" height="256"></canvas>
+                        </div>
+                        <div class="metrics">
+                            <div class="metric">
+                                <span class="m-label">Joule-Thomson PSI</span>
+                                <span class="m-value" style="color: #93c5fd;">3000</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Min Temp</span>
+                                <span class="m-value" style="color: #60a5fa;">-100°C</span>
+                            </div>
+                        </div>
+                        <div class="sidebar-controls">
+                            <button id="btn-enable-cryo" class="btn-primary"
+                                style="background: linear-gradient(135deg, #3b82f6, #93c5fd);">ACTIVATE CRYO</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel logs-view">
+                    <h2>System Logs</h2>
+                    <ul id="log-list">
+                        <li>System Initialized...</li>
+                    </ul>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='robot.js') }}"></script>
+    <script src="{{ url_for('static', filename='thermometry.js') }}"></script>
+    <script src="{{ url_for('static', filename='cryo_viz.js') }}"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+</html>
