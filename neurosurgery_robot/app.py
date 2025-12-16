@@ -9,6 +9,8 @@ from nvqlink import NVQLink
 from game_theory import GameTheoryController
 from cryo import CryoModule
 from vasculature import VasculatureSpectralAnalyzer
+from generative_heating import GenerativeTissueHeating
+from guidance_system import AutomatedGuidanceSystem
 
 app = Flask(__name__)
 
@@ -19,20 +21,41 @@ cryo = CryoModule(width=64, height=64)
 link = NVQLink()
 gt_controller = GameTheoryController()
 vasculature = VasculatureSpectralAnalyzer(num_nodes=64)
+gen_heating = GenerativeTissueHeating()
+guidance = None 
 
 # State variables
 simulation_running = True
 laser_enabled = False
 cryo_enabled = False
-target_coords = {'x': 0.5, 'y': 0.0, 'z': 0.5}
+target_coords = {'x': 0.1, 'y': 0.0, 'z': 0.6}
 
 def simulation_loop():
-    global simulation_running, laser_enabled, cryo_enabled, target_coords
+    global simulation_running, laser_enabled, cryo_enabled, target_coords, guidance
     
     # Connect Link
     link.connect()
     
     while simulation_running:
+        # Automated Guidance Logic
+        if guidance and guidance.active:
+            # We pass current robot FK (x, y, z)
+            # Robot Z is mapped to Grid Y in guidance logic
+            current_pos = robot.fk(robot.joints)
+            
+            tgt, fire_laser = guidance.get_next_target(current_pos)
+            
+            if tgt:
+                target_coords['x'] = tgt[0]
+                target_coords['z'] = tgt[1]
+                laser_enabled = fire_laser
+            else:
+                # Done or inactive
+                if guidance.completed:
+                    print("Guidance completed.")
+                    # Keep laser off
+                    laser_enabled = False
+        
         # 1. Update Robot with Game Theory
         telemetry = link.process_telemetry({}, None)
         coeffs = telemetry.get('solver_coeffs', [])
@@ -57,22 +80,24 @@ def simulation_loop():
         vasculature.update()
         vascular_spec = vasculature.get_analysis()
         
-        # 4. Apply Modalities with Quantum Surface Integral Injection
-        # We assume the 'spectral_radius' from vasculature modulates the ablation efficacy
-        # representing blood flow cooling or tissue density.
+        # 4. Apply Modalities with Generative AI & Quantum Surface Integral
         
+        # Generative AI Control Action
+        # Get the optimal heating control based on current max temperature
+        current_max_temp = np.max(thermo.get_map())
+        ai_control = gen_heating.get_control_action(current_max_temp)
+        ai_power = ai_control['power']
+        
+        # Vascular modulation
         ablation_modulator = 1.0 / (1.0 + vascular_spec['spectral_radius']) 
         
-        # QUANTUM SURFACE INTEGRAL (Approximation)
-        # S = Integral( Psi * Grad(Phi) . dA )
-        # Here we approximate 'Psi' as the thermal map state and 'Grad(Phi)' as the robot motion vector
-        # This calculates a "Flux" of ablation energy.
+        # Quantum Flux (Surface Integral Approximation)
         grad_phi = np.linalg.norm(move_vec)
         psi_avg = np.mean(thermo.get_map())
-        quantum_flux = psi_avg * grad_phi * 100.0 # Scaling factor
+        quantum_flux = psi_avg * grad_phi * 100.0 
         
-        # Modulate power by this flux (Quantum Control)
-        effective_power = 50.0 * ablation_modulator * (1.0 + quantum_flux)
+        # Combine Modalities: Generative AI + Quantum Flux + Vasculature
+        effective_power = ai_power * ablation_modulator * (1.0 + quantum_flux * 0.1)
         
         # Heat
         thermo.apply_laser(grid_x, grid_y, power=effective_power, enabled=laser_enabled)
@@ -99,19 +124,35 @@ def index():
 def get_telemetry():
     joints, end_effector = robot.joints.tolist(), robot.fk(robot.joints).tolist()
     temp_map = thermo.get_map().tolist()
+    damage_map = thermo.get_damage_map().tolist()
     cryo_map = cryo.get_map().tolist()
     mr_anatomy = cryo.anatomy_map.tolist()
     temp_hist = thermo.get_history()
     vasc_spec = vasculature.get_analysis()
     
+    # Get GenAI state
+    current_max_temp = np.max(thermo.get_map())
+    ai_state = gen_heating.get_control_action(current_max_temp) # Just to peak at state
+    
     return jsonify({
         'joints': joints,
         'position': end_effector,
         'temperature_map': temp_map,
+        'damage_map': damage_map,
         'cryo_map': cryo_map,
         'mr_anatomy': mr_anatomy,
         'temp_history': temp_hist,
         'vasculature': vasc_spec,
+        'gen_ai': {
+            'target_temp': ai_state['target_temp'],
+            'model_state': ai_state['model_state'],
+            'mode': ai_state['mode'],
+            'generated_profile': gen_heating.generated_profile.tolist() if hasattr(gen_heating, 'generated_profile') and isinstance(gen_heating.generated_profile, np.ndarray) else []
+        },
+        'guidance': {
+            'active': guidance.active if guidance else False,
+            'completed': guidance.completed if guidance else False
+        },
         'nvqlink': {
             'status': link.status,
             'latency': link.latency_ms,
@@ -134,7 +175,30 @@ def control_robot():
     if 'cryo' in data:
         cryo_enabled = bool(data['cryo'])
         
+    if 'mode' in data:
+        print(f"Switching AI Mode to: {data['mode']}")
+        gen_heating.generate_heating_curve(mode=data['mode'])
+        
+    return jsonify({'status': 'ok'})
+
+@app.route('/api/guidance', methods=['POST'])
+def toggle_guidance():
+    global guidance, laser_enabled
+    data = request.json
+    enabled = data.get('enabled', False)
+    
+    if enabled:
+        print("Initializing Automated Guidance...")
+        guidance = AutomatedGuidanceSystem(cryo.anatomy_map)
+        guidance.start()
+        # Ensure Standard heating mode is on for precision
+        gen_heating.generate_heating_curve(mode="GENTLE") 
+    else:
+        if guidance:
+            guidance.stop()
+        laser_enabled = False
+            
     return jsonify({'status': 'ok'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
