@@ -9,14 +9,69 @@ document.addEventListener('DOMContentLoaded', () => {
     const elLinkLatency = document.getElementById('link-latency');
     const elLaserInd = document.getElementById('laser-indicator');
     const elMaxTemp = document.getElementById('max-temp');
+    const elCursorVal = document.getElementById('cursor-val');
     const elTissueStatus = document.getElementById('tissue-status');
     const listLogs = document.getElementById('log-list');
-
+    const btnToggleThermo = document.getElementById('btn-toggle-thermo-mode');
+    const btnAutoAblate = document.getElementById('btn-auto-ablation');
 
     let laserActive = false;
     let cryoActive = false;
+    let thermoMode = 'TEMP';
+    let guidanceActive = false;
     let targetX = 0.5;
     let targetZ = 0.5;
+
+    // Interactive Thermometry
+    thermalViz.setHoverCallback((val) => {
+        if (val === null) {
+            elCursorVal.textContent = '--';
+            return;
+        }
+        if (thermoMode === 'TEMP') {
+            elCursorVal.textContent = val.toFixed(1) + '°C';
+        } else {
+            elCursorVal.textContent = val.toFixed(1) + ' CEM';
+        }
+    });
+
+    if (btnToggleThermo) {
+        btnToggleThermo.addEventListener('click', () => {
+            if (thermoMode === 'TEMP') {
+                thermoMode = 'DAMAGE';
+                btnToggleThermo.textContent = "VIEW TEMP MAP";
+            } else {
+                thermoMode = 'TEMP';
+                btnToggleThermo.textContent = "VIEW DAMAGE MAP";
+            }
+            thermalViz.setMode(thermoMode);
+        });
+    }
+
+    if (btnAutoAblate) {
+        btnAutoAblate.addEventListener('click', () => {
+            guidanceActive = !guidanceActive;
+            updateGuidanceState(guidanceActive);
+        });
+    }
+
+    async function updateGuidanceState(active) {
+        if (active) {
+            btnAutoAblate.textContent = "STOP AUTO-ABLATION";
+            btnAutoAblate.classList.add('active');
+            log("Automated Guidance STARTED");
+        } else {
+            btnAutoAblate.textContent = "START AUTO-ABLATION";
+            btnAutoAblate.classList.remove('active');
+            log("Automated Guidance STOPPED");
+        }
+
+        await fetch('/api/guidance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: active })
+        });
+    }
 
     // Tab Switching
     const tabs = document.querySelectorAll('.tab-btn');
@@ -46,13 +101,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/telemetry');
             const data = await res.json();
 
+            // Sync Guidance State if finished
+            if (data.guidance) {
+                if (data.guidance.completed && guidanceActive) {
+                    guidanceActive = false;
+                    btnAutoAblate.textContent = "ABLATION COMPLETE";
+                    btnAutoAblate.classList.remove('active');
+                    log("Automated Ablation COMPLETED successfully.");
+                }
+            }
+
             // Update Robot
             robotViz.updateJoints(data.joints);
 
             // Update Thermometry
-            const maxT = thermalViz.update(data.temperature_map);
+            // Pass both maps
+            const maxVal = thermalViz.update(data.temperature_map, data.damage_map);
+
             if (data.temp_history) {
-                thermalViz.updateChart(data.temp_history);
+                const genAiProfile = (data.gen_ai && data.gen_ai.generated_profile) ? data.gen_ai.generated_profile : [];
+                thermalViz.updateChart(data.temp_history, genAiProfile);
             }
 
             // Update Cryo
@@ -69,13 +137,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            elMaxTemp.textContent = maxT.toFixed(1) + '°C';
-            if (maxT > 45.0) {
-                elTissueStatus.textContent = "ABLATING";
-                elTissueStatus.style.color = "var(--danger)";
+            // Max Val Display depends on mode
+            if (thermoMode === 'TEMP') {
+                elMaxTemp.textContent = maxVal.toFixed(1) + '°C';
+                // Check safety based on temp
+                if (maxVal > 45.0) {
+                    elTissueStatus.textContent = "ABLATING";
+                    elTissueStatus.style.color = "var(--danger)";
+                } else {
+                    elTissueStatus.textContent = "NORMAL";
+                    elTissueStatus.style.color = "var(--success)";
+                }
             } else {
-                elTissueStatus.textContent = "NORMAL";
-                elTissueStatus.style.color = "var(--success)";
+                elMaxTemp.textContent = maxVal.toFixed(1) + ' CEM';
+                if (maxVal > 240.0) {
+                    elTissueStatus.textContent = "NECROSIS";
+                    elTissueStatus.style.color = "#000"; // Dead
+                } else if (maxVal > 10.0) {
+                    elTissueStatus.textContent = "DAMAGING";
+                    elTissueStatus.style.color = "orange";
+                } else {
+                    elTissueStatus.textContent = "SAFE";
+                }
             }
 
             // Laser Visual
