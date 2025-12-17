@@ -82,11 +82,21 @@ def simulation_loop():
         
         # 4. Apply Modalities with Generative AI & Quantum Surface Integral
         
-        # Generative AI Control Action
-        # Get the optimal heating control based on current max temperature
+        # Generative AI Control Action (Quantum Machine Learning)
+        # 1. Identify Tumor Target from Anatomy
+        tumor_mask = (cryo.anatomy_map > 0.8).astype(float)
+        
+        # 2. Generate Optimal Heat Pattern (QML)
+        # We perform this optimization step
+        heat_pattern = gen_heating.generate_heating_pattern(tumor_mask, mode="Standard")
+        
+        # 3. Statistical Classifier for Efficacy
+        chem_prob = gen_heating.statistical_classifier(thermo.get_map(), tumor_mask)
+        
+        # Get Power Leve
         current_max_temp = np.max(thermo.get_map())
         ai_control = gen_heating.get_control_action(current_max_temp)
-        ai_power = ai_control['power']
+        ai_power = ai_control['power'] * (1.0 + chem_prob) # Boost power if probable success
         
         # Vascular modulation
         ablation_modulator = 1.0 / (1.0 + vascular_spec['spectral_radius']) 
@@ -96,15 +106,22 @@ def simulation_loop():
         psi_avg = np.mean(thermo.get_map())
         quantum_flux = psi_avg * grad_phi * 100.0 
         
-        # Combine Modalities: Generative AI + Quantum Flux + Vasculature
+        # Combine Modalities
         effective_power = ai_power * ablation_modulator * (1.0 + quantum_flux * 0.1)
         
-        # Heat
-        thermo.apply_laser(grid_x, grid_y, power=effective_power, enabled=laser_enabled)
+        # Heat with QML Pattern
+        thermo.apply_laser(grid_x, grid_y, power=effective_power, enabled=laser_enabled, pattern=heat_pattern)
         thermo.update()
         
-        # Cold
-        cryo.apply_cryo(grid_x, grid_y, pressure_level=3000, enabled=cryo_enabled)
+        # Cold (Cryo Ablation)
+        # Automatically trigger Cryo if Laser is active to create "Thermal Shock" at tumor site
+        # or if explicitly enabled
+        auto_cryo = False
+        if laser_enabled and current_max_temp > 45.0:
+            auto_cryo = True # Dual ablation
+            
+        final_cryo_enabled = cryo_enabled or auto_cryo
+        cryo.apply_cryo(grid_x, grid_y, pressure_level=3000, enabled=final_cryo_enabled)
         cryo.update()
         
         # 5. NVQLink Telemetry Processing

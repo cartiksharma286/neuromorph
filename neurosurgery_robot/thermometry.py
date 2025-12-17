@@ -16,20 +16,27 @@ class MRIThermometry:
         self.max_temp_history = []
         self.time_step_count = 0
 
-    def apply_laser(self, x, y, power, enabled):
+    def apply_laser(self, x, y, power, enabled, pattern=None):
         """
         x, y: Coordinates in the grid (0..width, 0..height)
         power: Laser power intensity (heat source)
+        pattern: Optional 2D array of relative intensity (0..1) from QML generator.
         """
         if not enabled:
             return
 
         # Simple Gaussian distribution for laser heat source
         xx, yy = np.meshgrid(np.arange(self.width), np.arange(self.height))
-        # Center the gaussian on x,y
-        sigma = 2.0
-        # Cortical tissue absorbs differently? Let's just assume homogenous for now but higher power density
-        source = power * np.exp(-((xx - x)**2 + (yy - y)**2) / (2 * sigma**2))
+        
+        if pattern is not None:
+             # Use the QML generated pattern centered/scaled
+             # Pattern is already full frame 64x64, so just use it scaled by power
+             source = power * pattern
+        else:
+            # Center the gaussian on x,y
+            sigma = 2.0
+            # Cortical tissue absorbs differently? Let's just assume homogenous for now but higher power density
+            source = power * np.exp(-((xx - x)**2 + (yy - y)**2) / (2 * sigma**2))
         
         # Add heat
         self.temperature_map += source * self.dt
