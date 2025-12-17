@@ -79,14 +79,12 @@ class RobotViz {
         });
         const bore = new THREE.Mesh(boreGeo, boreMat);
         bore.rotation.z = Math.PI / 2;
-        bore.position.set(0, 0.5, 0); // Robot at center bottom
+        bore.position.set(0, 0.5, 0);
         this.scene.add(bore);
 
-        // MRI Housing (outer shell for context)
         const housingGeo = new THREE.BoxGeometry(3, 3, 4);
         const housingMat = new THREE.MeshStandardMaterial({ color: 0xe0e0e0 });
-        // Only show if outside, but we are inside.
-        // Let's add some "coil" details inside the bore
+
         const coilGeo = new THREE.TorusGeometry(1.15, 0.02, 16, 64);
         const coilMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
         for (let z = -1.5; z <= 1.5; z += 0.5) {
@@ -95,42 +93,77 @@ class RobotViz {
             this.scene.add(coil);
         }
 
-        // 2. Neurovasculature (Random tubes)
+        // 2. Patient Visualization
+        const patientGroup = new THREE.Group();
+        this.scene.add(patientGroup);
+
+        // Body (Simple Cylinder)
+        const bodyGeo = new THREE.CylinderGeometry(0.25, 0.25, 1.8, 16);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x8ecae6 }); // Hospital gown blue
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.rotation.z = Math.PI / 2;
+        body.position.set(-0.2, 0.25, 0); // Lying on table
+        patientGroup.add(body);
+
+        // Head (Sphere) - Transparent to see "inside"
+        const headGeo = new THREE.SphereGeometry(0.18, 32, 32);
+        const headMat = new THREE.MeshPhysicalMaterial({
+            color: 0xffdbac, // Skin tone
+            transmission: 0.4,  // Glass-like transmission
+            opacity: 0.5,
+            transparent: true,
+            roughness: 0.2,
+            metalness: 0.1,
+            clearcoat: 1.0
+        });
+        const head = new THREE.Mesh(headGeo, headMat);
+        head.position.set(0.7, 0.3, 0); // At end of body
+        patientGroup.add(head);
+
+        // Brain Surface (Inner Layer)
+        const brainGeo = new THREE.SphereGeometry(0.16, 32, 32);
+        const brainMat = new THREE.MeshStandardMaterial({
+            color: 0xf4f4f5,
+            roughness: 0.5,
+            wireframe: true, // Grid-like structure
+            transparent: true,
+            opacity: 0.1
+        });
+        const brain = new THREE.Mesh(brainGeo, brainMat);
+        brain.position.copy(head.position);
+        patientGroup.add(brain);
+
+        // 3. Neurovasculature (Inside the Head)
+        // Positioned RELATIVE to Head
+        const vesselGroup = new THREE.Group();
+        vesselGroup.position.copy(head.position);
+        this.scene.add(vesselGroup);
+
         const curve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-0.3, 0.4, 0.5),
-            new THREE.Vector3(-0.1, 0.5, 0.6),
-            new THREE.Vector3(0.1, 0.45, 0.7),
-            new THREE.Vector3(0.3, 0.55, 0.5)
+            new THREE.Vector3(-0.05, -0.05, 0),
+            new THREE.Vector3(0.0, 0.05, 0.05),
+            new THREE.Vector3(0.05, 0.0, -0.05),
+            new THREE.Vector3(0.1, 0.05, 0)
         ]);
 
-        const tubeGeo = new THREE.TubeGeometry(curve, 64, 0.02, 8, false);
+        const tubeGeo = new THREE.TubeGeometry(curve, 64, 0.015, 8, false);
         const vesselMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.3, metalness: 0.1 });
         const vessel = new THREE.Mesh(tubeGeo, vesselMat);
-        this.scene.add(vessel);
+        vesselGroup.add(vessel);
 
-        // Branching vessels
-        const curve2 = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0.1, 0.45, 0.7),
-            new THREE.Vector3(0.2, 0.3, 0.8),
-            new THREE.Vector3(0.4, 0.35, 0.9)
-        ]);
-        const vessel2 = new THREE.Mesh(new THREE.TubeGeometry(curve2, 32, 0.015, 8, false), vesselMat);
-        this.scene.add(vessel2);
-
-        // 3. Tumor Tissue (Target)
-        // Irregular shape using sphere with noise or just scaling
-        const tumorGeo = new THREE.IcosahedronGeometry(0.15, 1);
+        // 4. Tumor Tissue (Target) - Inside Head
+        const tumorGeo = new THREE.IcosahedronGeometry(0.04, 2);
         const tumorMat = new THREE.MeshStandardMaterial({
-            color: 0x8b5cf6, // Violet tumor
+            color: 0x8b5cf6, // Violet
             roughness: 0.9,
             emissive: 0x220044
         });
         this.tumor = new THREE.Mesh(tumorGeo, tumorMat);
-        this.tumor.position.set(0.35, 0.55, 0.5); // Near vessel end
-        this.tumor.scale.set(1, 0.8, 1.2);
-        this.scene.add(this.tumor);
+        // Position relative to vessel
+        this.tumor.position.set(0.05, 0.05, 0);
+        vesselGroup.add(this.tumor);
 
-        // Save path for simulation
+        // Save path
         this.simPath = curve;
     }
 
@@ -147,11 +180,19 @@ class RobotViz {
         });
         const jointMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
 
+        // Create a root group for position control
+        this.robotRoot = new THREE.Group();
+        // Position robot to the side of the patient (closer to head at x=0.7)
+        this.robotRoot.position.set(0.4, 0.0, 0.4);
+        // Rotate slightly to face patient
+        this.robotRoot.rotation.y = Math.PI / 4;
+        this.scene.add(this.robotRoot);
+
         // Base
         const baseGeo = new THREE.CylinderGeometry(0.2, 0.3, 0.2, 32);
         const base = new THREE.Mesh(baseGeo, material);
         base.position.y = 0.1;
-        this.scene.add(base);
+        this.robotRoot.add(base);
 
         // Joint 1 (Waist) - Rotates around Y
         const j1 = new THREE.Group();
