@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prostate Surgery Robot 6DOF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background: #0f172a;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        .app {
+            display: flex;
+            height: 100vh;
+        }
+
+        .viewport-3d {
+            flex: 2;
+            position: relative;
+            background: #000;
+        }
+
+        .sidebar {
+            flex: 1;
+            min-width: 350px;
+            background: #1e293b;
+            border-left: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 20px;
+            border-bottom: 1px solid #334155;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            color: #38bdf8;
+            margin: 0;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #334155;
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: white;
+            background: #334155;
+        }
+
+        .tab-btn.active {
+            color: #38bdf8;
+            border-bottom-color: #38bdf8;
+            background: #1e293b;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .panel {
+            background: #334155;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .panel h2 {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 0;
+        }
+
+        .monitor-view {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            aspect-ratio: 1;
+            background: #000;
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #475569;
+        }
+
+        canvas#thermo-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            display: grid;
+            gap: 10px;
+        }
+
+        button {
+            background: #3b82f6;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        button.active {
+            background: #ef4444;
+        }
+
+        button.cryo {
+            background: #06b6d4;
+        }
+
+        button.cryo.active {
+            background: #0891b2;
+            border: 2px solid white;
+        }
+
+        button.ai {
+            background: #8b5cf6;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            color: #cbd5e1;
+        }
+
+        .log-box {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div class="viewport-3d" id="canvas-container"></div>
+
+        <aside class="sidebar">
+            <div class="header">
+                <h1>Prostate SurgiBot 6DOF</h1>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('visuals')">Visuals</button>
+                <button class="tab-btn" onclick="switchTab('nvq')">NVQLink</button>
+                <button class="tab-btn" onclick="switchTab('genai')">Gemini AI</button>
+            </div>
+
+            <!-- Visuals Tab -->
+            <div id="tab-visuals" class="tab-content active">
+                <div class="panel">
+                    <h2>Live MRI Thermometry</h2>
+                    <div class="monitor-view">
+                        <canvas id="thermo-canvas" width="128" height="128"></canvas>
+                    </div>
+                    <div class="status-row">
+                        <span>Peak: <b id="val-temp">37.0°C</b></span>
+                        <span>State: <b id="val-status" style="color:#4ade80">Safe</b></span>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Manual Controls</h2>
+                    <div class="controls">
+                        <button id="btn-laser">FIRE LASER (25W)</button>
+                        <button id="btn-cryo" class="cryo">ACTIVATE CRYO</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Robot Telemetry</h2>
+                    <div class="status-row">
+                        <span>X: <span id="pos-x">0</span></span>
+                        <span>Y: <span id="pos-y">0</span></span>
+                        <span>Z: <span id="pos-z">0</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NVQ Tab -->
+            <div id="tab-nvq" class="tab-content">
+                <div class="panel">
+                    <h2>Link Status</h2>
+                    <div class="status-row"><span>Status:</span> <b id="nvq-status" style="color:#4ade80">OFFLINE</b>
+                    </div>
+                    <div class="status-row"><span>Latency:</span> <b id="nvq-latency">--</b> ms</div>
+                    <div class="status-row"><span>Quantum Entanglement:</span> <b id="nvq-quantum">--</b></div>
+                </div>
+                <div class="panel">
+                    <h2>Network Graph</h2>
+                    <div
+                        style="height: 100px; background: #0f172a; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 0.8rem;">
+                        [Real-time Latency Plot Placeholder]
+                    </div>
+                </div>
+            </div>
+
+            <!-- GenAI Tab -->
+            <div id="tab-genai" class="tab-content">
+                <div class="panel">
+                    <h2>Gemini 3.0 Pro-Med</h2>
+                    <p style="font-size: 0.8rem; color: #94a3b8;">Advanced predictive modeling for tissue ablation.</p>
+                    <div class="controls">
+                        <button id="btn-ai-plan" class="ai">GENERATE ABLATION PLAN</button>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h2>AI Response</h2>
+                    <div id="ai-response" class="log-box">Waiting for input...</div>
+                </div>
+            </div>
+
+        </aside>
+    </div>
+
+    <!-- Logic -->
+    <script src="/static/thermal_viz.js"></script>
+    <script src="/static/robot_scene.js"></script>
+    <script>
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const viz = new RobotScene('canvas-container');
+            const thermo = new ThermalViz('thermo-canvas');
+
+            const btnLaser = document.getElementById('btn-laser');
+            const btnCryo = document.getElementById('btn-cryo');
+
+            let laserOn = false;
+            let cryoOn = false;
+            let targetPos = { x: 0, y: 0, z: 0 };
+
+            btnLaser.addEventListener('mousedown', () => toggleLaser(true));
+            btnLaser.addEventListener('mouseup', () => toggleLaser(false));
+
+            btnCryo.addEventListener('click', () => {
+                cryoOn = !cryoOn;
+                updateButtons();
+                sendControl();
+            });
+
+            function toggleLaser(state) {
+                laserOn = state;
+                updateButtons();
+                viz.setLaser(state);
+                sendControl();
+            }
+
+            function updateButtons() {
+                if (laserOn) btnLaser.classList.add('active'); else btnLaser.classList.remove('active');
+                if (cryoOn) btnCryo.classList.add('active'); else btnCryo.classList.remove('active');
+            }
+
+            async function sendControl() {
+                await fetch('/api/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target: targetPos, laser: laserOn, cryo: cryoOn })
+                });
+            }
+
+            // AI Plan
+            document.getElementById('btn-ai-plan').addEventListener('click', async () => {
+                const el = document.getElementById('ai-response');
+                el.textContent = "Analyzing Anatomy with Gemini 3.0...";
+                const res = await fetch('/api/genai/plan', { method: 'POST' });
+                const data = await res.json();
+                el.textContent = `[${data.model}]\n${data.explanation}\nTarget: X=${data.target.x.toFixed(3)}, Y=${data.target.y.toFixed(3)}`;
+
+                // Auto-move target visual
+                targetPos = data.target;
+                sendControl();
+            });
+
+            // Mouse Interaction
+            const container = document.getElementById('canvas-container');
+            container.addEventListener('mousemove', (e) => {
+                const rect = container.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+                targetPos.x = (x - 0.5) * 0.1;
+                targetPos.y = (0.5 - y) * 0.1;
+                sendControl();
+            });
+
+            // Poll Loop
+            setInterval(async () => {
+                try {
+                    // Status
+                    const res = await fetch('/api/status');
+                    const data = await res.json();
+
+                    viz.update(data.joints);
+                    thermo.update(data.temperature, data.anatomy, data.grid_pos);
+
+                    document.getElementById('pos-x').textContent = data.position[0].toFixed(3);
+                    document.getElementById('pos-y').textContent = data.position[1].toFixed(3);
+                    document.getElementById('pos-z').textContent = data.position[2].toFixed(3);
+
+                    // Temp Max
+                    // Simplified: get max from viz or just placeholder in this loop
+
+                    // NVQ Status
+                    const nvqRes = await fetch('/api/nvq/status');
+                    const nvq = await nvqRes.json();
+                    document.getElementById('nvq-status').textContent = nvq.status;
+                    document.getElementById('nvq-latency').textContent = nvq.latency.toFixed(2);
+                    document.getElementById('nvq-quantum').textContent = nvq.quantum ? "COHERENT" : "DECOHERENT";
+
+                } catch (e) { }
+            }, 50);
+        });
+    </script>
+</body>
+
+</html>
