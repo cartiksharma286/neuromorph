@@ -84,6 +84,14 @@ t.start()
 def index():
     return render_template('index.html')
 
+@app.route('/api/init')
+def get_init():
+    return jsonify({
+        "anatomy": phantom.image.tolist(),
+        "width": phantom.width,
+        "height": phantom.height
+    })
+
 @app.route('/api/status')
 def get_status():
     pos = robot.get_end_effector().tolist()
@@ -95,7 +103,7 @@ def get_status():
         "position": pos,
         "grid_pos": [grid_x, grid_y],
         "temperature": thermo.get_temp_map_compressed(),
-        "anatomy": phantom.image.tolist(),
+        # Anatomy removed for performance/latency
         "damage": thermo.damage_map.tolist(),
         "target_est": state["filtered_target"]
     })
