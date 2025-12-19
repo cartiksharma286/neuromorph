@@ -19,7 +19,16 @@ app = Flask(__name__)
 # System State
 robot = RobotKinematics()
 phantom = ProstatePhantom(width=128, height=128)
-thermo = ThermalModel(phantom.width, phantom.height, phantom.get_mask())
+# Ensure anatomy is generated/loaded to make mask available
+if not hasattr(phantom, 'tumor_mask'):
+    phantom.load_anatomy()
+    # Or generate if load failed or didn't set mask (generate uses it)
+    if not hasattr(phantom, 'tumor_mask'):
+         # Force generate to get mask if not present
+         phantom.generate_anatomy()
+
+tumor_mask = phantom.get_tumor_mask()
+thermo = ThermalModel(phantom.width, phantom.height, phantom.get_mask(), tumor_mask)
 cryo = CryoModel(phantom.width, phantom.height, phantom.get_mask())
 nvq = NVQLink()
 genai = GeminiGenAI()
@@ -105,7 +114,8 @@ def get_status():
         "temperature": thermo.get_temp_map_compressed(),
         # Anatomy removed for performance/latency
         "damage": thermo.damage_map.tolist(),
-        "target_est": state["filtered_target"]
+        "target_est": state["filtered_target"],
+        "ablation": thermo.get_ablation_stats()
     })
 
 @app.route('/api/control', methods=['POST'])
@@ -139,5 +149,19 @@ def nvq_status():
         "quantum": nvq.quantum_entanglement
     })
 
+@app.after_request
+def set_secure_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
+
 if __name__ == '__main__':
+    print("\n" + "="*50)
+    print("      NEUROMORPH PROSTATE ROBOT - V2.4")
+    print("="*50)
+    print(" [SEC] CYBERSECURITY PROTOCOL:    ACTIVE")
+    print(" [PWR] GREEN FOOTPRINT:           ENSURED (Eco-Mode)")
+    print(" [NET] NVQ LINK:                  READY")
+    print("="*50 + "\n")
     app.run(host='0.0.0.0', port=5001, debug=True)

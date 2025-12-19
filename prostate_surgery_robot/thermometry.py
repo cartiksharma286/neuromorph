@@ -3,12 +3,13 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 
 class ThermalModel:
-    def __init__(self, w, h, tissue_mask):
+    def __init__(self, w, h, tissue_mask, tumor_mask=None):
         self.w = w
         self.h = h
         self.temp_map = np.full((w, h), 37.0)
         self.damage_map = np.zeros((w, h))
         self.tissue_mask = tissue_mask # 1 where tissue exists
+        self.tumor_mask = tumor_mask if tumor_mask is not None else np.zeros((w, h))
         
         # Physics
         self.diffusivity = 0.5 # mm^2/s approx
@@ -53,3 +54,20 @@ class ThermalModel:
     def get_temp_map_compressed(self):
         # Return as list
         return self.temp_map.tolist()
+        
+    def get_ablation_stats(self):
+        total_tumor = np.sum(self.tumor_mask)
+        if total_tumor == 0:
+            return {"ablated": 0.0, "frozen": 0.0}
+            
+        # Ablated (Heat > CEM43 thresh ~ 240 mins is usually necrosis, but > 1.0 is a start)
+        # Let's say damage > 10.0 is complete necrosis for this time scale
+        ablated = np.sum((self.damage_map > 10.0) & (self.tumor_mask > 0))
+        
+        # Frozen (Temp < -20C or -40C is lethal)
+        frozen = np.sum((self.temp_map < -40.0) & (self.tumor_mask > 0))
+        
+        return {
+            "ablated": (ablated / total_tumor) * 100.0,
+            "frozen": (frozen / total_tumor) * 100.0
+        }

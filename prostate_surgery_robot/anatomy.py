@@ -54,11 +54,22 @@ class ProstatePhantom:
         rectum = ((xx)**2 + (yy + 0.6)**2) < 0.2
         img[rectum] = 0.05
         
-        # 5. Tumor (Hypointense/Dark spot in PZ)
+        # 5. Tumor (Hypointense/Dark spot in PZ) - centered at 0.25, 0.1
         tumor = ((xx - 0.25)**2 + (yy - 0.1)**2) < 0.05
         img[tumor] = 0.2
+        
+        # SAVE MASK
+        self.tumor_mask = tumor.astype(float)
         
         return img
         
     def get_mask(self):
         return (self.image > 0.15).astype(float)
+        
+    def get_tumor_mask(self):
+        if hasattr(self, 'tumor_mask'):
+            return self.tumor_mask
+        else:
+            # Fallback for loaded images
+            xx, yy = np.meshgrid(np.linspace(-1, 1, self.width), np.linspace(-1, 1, self.height))
+            return (((xx - 0.25)**2 + (yy - 0.1)**2) < 0.05).astype(float)
