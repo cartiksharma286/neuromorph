@@ -8,10 +8,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
+        :root {
+            --bg-dark: #020617;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --accent-green: #22c55e;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         body {
             margin: 0;
-            background: #0f172a;
-            color: white;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            color: var(--text-primary);
             font-family: 'Inter', sans-serif;
             overflow: hidden;
         }
@@ -25,160 +37,306 @@
             flex: 2;
             position: relative;
             background: #000;
+            box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
         }
 
         .sidebar {
             flex: 1;
-            min-width: 350px;
-            background: #1e293b;
-            border-left: 1px solid #334155;
+            min-width: 380px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-left: var(--glass-border);
             display: flex;
             flex-direction: column;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
         }
 
         .header {
-            padding: 20px;
-            border-bottom: 1px solid #334155;
-            flex-shrink: 0;
+            padding: 24px;
+            border-bottom: var(--glass-border);
+            background: linear-gradient(90deg, rgba(6, 182, 212, 0.1) 0%, transparent 100%);
         }
 
         h1 {
-            font-size: 1.2rem;
-            color: #38bdf8;
+            font-size: 1.4rem;
+            font-weight: 700;
             margin: 0;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
         }
 
         .tabs {
             display: flex;
-            border-bottom: 1px solid #334155;
-            flex-shrink: 0;
+            border-bottom: var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
         }
 
         .tab-btn {
             flex: 1;
-            padding: 15px;
+            padding: 18px;
             background: transparent;
             border: none;
-            color: #94a3b8;
+            color: var(--text-secondary);
             cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
 
         .tab-btn:hover {
-            color: white;
-            background: #334155;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .tab-btn.active {
-            color: #38bdf8;
-            border-bottom-color: #38bdf8;
-            background: #1e293b;
+            color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--accent-cyan);
         }
 
         .tab-content {
             display: none;
-            padding: 20px;
+            padding: 24px;
             flex: 1;
             overflow-y: auto;
-            overflow-x: hidden;
         }
 
         .tab-content.active {
             display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .panel {
-            background: #334155;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            background: var(--panel-bg);
+            border: var(--glass-border);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            transition: transform 0.2s;
+        }
+
+        .panel:hover {
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
         .panel h2 {
-            font-size: 0.9rem;
-            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
             margin-top: 0;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .monitor-view {
             width: 100%;
-            max-width: 300px;
+            max-width: 280px;
             margin: 0 auto;
             aspect-ratio: 1;
             background: #000;
-            position: relative;
-            border-radius: 4px;
+            border-radius: 8px;
             overflow: hidden;
-            border: 1px solid #475569;
+            border: 1px solid #334155;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .monitor-view::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(0deg,
+                    transparent 0px,
+                    transparent 1px,
+                    rgba(6, 182, 212, 0.05) 2px,
+                    rgba(6, 182, 212, 0.05) 3px);
+            pointer-events: none;
+            z-index: 2;
         }
 
         canvas#thermo-canvas {
             width: 100%;
             height: 100%;
+            filter: contrast(1.2) brightness(1.1);
         }
 
         .controls {
             display: grid;
-            gap: 10px;
+            gap: 12px;
         }
 
         button {
-            background: #3b82f6;
-            border: none;
+            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+            border: 1px solid #60a5fa;
             color: white;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 12px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            transition: background 0.2s;
+            font-size: 0.9rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        button:hover {
-            background: #2563eb;
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
         }
 
-        button.active {
-            background: #f59e0b;
-            /* Orange/Amber for Laser Stop */
-        }
-
-        button.cryo {
-            background: #06b6d4;
-        }
-
-        button.cryo.active {
-            background: #ef4444;
-            /* Red for Cryo Stop */
-        }
-
-        button.ai {
-            background: #8b5cf6;
+        button:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         button:disabled {
-            opacity: 0.5;
+            background: #1e293b !important;
+            border-color: #334155 !important;
+            color: #475569 !important;
+            box-shadow: none !important;
             cursor: not-allowed;
-            background: #64748b !important;
-            color: #94a3b8 !important;
+        }
+
+        button.active {
+            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+            border-color: #fbbf24;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+            animation: pulse-orange 2s infinite;
+        }
+
+        button.cryo {
+            background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%);
+            border-color: #22d3ee;
+        }
+
+        button.cryo:hover:not(:disabled) {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        button.cryo.active {
+            background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%) !important;
+            border-color: #f87171 !important;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4) !important;
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-orange {
+            0% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+            }
+        }
+
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        /* Safety Switch */
+        #btn-safety {
+            font-size: 0.8rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: none;
+            box-shadow: none;
+            transition: all 0.3s;
         }
 
         .status-row {
             display: flex;
             justify-content: space-between;
-            font-size: 0.8rem;
-            margin-top: 5px;
-            color: #cbd5e1;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .status-row span b {
+            font-family: 'Courier New', monospace;
+            letter-spacing: -0.5px;
         }
 
         .log-box {
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
             font-size: 0.8rem;
-            color: #cbd5e1;
-            background: #0f172a;
-            padding: 10px;
-            border-radius: 4px;
-            min-height: 100px;
+            color: #38bdf8;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            min-height: 120px;
+            line-height: 1.5;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
         }
     </style>
 </head>
@@ -208,6 +366,14 @@
                     <div class="status-row">
                         <span>Peak: <b id="val-temp">37.0°C</b></span>
                         <span>State: <b id="val-status" style="color:#4ade80">Safe</b></span>
+                    </div>
+                    <!-- Ablation Stats -->
+                    <div class="status-row"
+                        style="border-top: 1px dashed rgba(255,255,255,0.1); margin-top: 5px; padding-top: 5px;">
+                        <span style="color: #fbbf24;">Tumor Ablated: <b id="val-ablated">0%</b></span>
+                    </div>
+                    <div class="status-row">
+                        <span style="color: #67e8f9;">Tumor Frozen: <b id="val-frozen">0%</b></span>
                     </div>
                 </div>
 
@@ -346,6 +512,12 @@
                     btnCryo.textContent = "ACTIVATE CRYO";
                     btnCryo.classList.remove('active');
                 }
+
+                // Update 3D Viz Props
+                if (viz) {
+                    // Check if setCryo exists (it will be added)
+                    if (typeof viz.setCryo === 'function') viz.setCryo(cryoOn);
+                }
             }
 
             async function sendControl() {
@@ -466,6 +638,31 @@
                     document.getElementById('pos-x').textContent = data.position[0].toFixed(3);
                     document.getElementById('pos-y').textContent = data.position[1].toFixed(3);
                     document.getElementById('pos-z').textContent = data.position[2].toFixed(3);
+
+                    // Ablation Stats / Status
+                    if (data.ablation) {
+                        const ablated = data.ablation.ablated;
+                        const frozen = data.ablation.frozen;
+                        const elAbl = document.getElementById('val-ablated');
+                        const elFrz = document.getElementById('val-frozen');
+                        if (elAbl) elAbl.textContent = ablated.toFixed(1) + '%';
+                        if (elFrz) elFrz.textContent = frozen.toFixed(1) + '%';
+
+                        // Status Logic
+                        const statusEl = document.getElementById('val-status');
+                        if (statusEl) {
+                            if (ablated > 95.0 || frozen > 95.0) {
+                                statusEl.textContent = "COMPLETE";
+                                statusEl.style.color = "#fbbf24"; // Amber
+                            } else if (laserOn || cryoOn) {
+                                statusEl.textContent = "TREATING...";
+                                statusEl.style.color = "#f472b6"; // Pink
+                            } else {
+                                statusEl.textContent = "STANDBY";
+                                statusEl.style.color = "#94a3b8"; // Gray
+                            }
+                        }
+                    }
 
                     const nvqRes = await fetch('/api/nvq/status');
                     const nvq = await nvqRes.json();
