@@ -139,7 +139,8 @@
         }
 
         button.active {
-            background: #ef4444;
+            background: #f59e0b;
+            /* Orange/Amber for Laser Stop */
         }
 
         button.cryo {
@@ -147,12 +148,19 @@
         }
 
         button.cryo.active {
-            background: #0891b2;
-            border: 2px solid white;
+            background: #ef4444;
+            /* Red for Cryo Stop */
         }
 
         button.ai {
             background: #8b5cf6;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #64748b !important;
+            color: #94a3b8 !important;
         }
 
         .status-row {
@@ -205,6 +213,14 @@
 
                 <div class="panel">
                     <h2>Manual Controls</h2>
+                    <!-- Safety Switch -->
+                    <div
+                        style="margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px; border-radius: 4px;">
+                        <span style="font-weight: 600; color: #cbd5e1;">MASTER SAFETY</span>
+                        <button id="btn-safety"
+                            style="background: #4ade80; color: #022c22; width: auto; padding: 5px 15px;">LOCKED</button>
+                    </div>
+
                     <div class="controls">
                         <button id="btn-laser">FIRE LASER (25W)</button>
                         <button id="btn-cryo" class="cryo">ACTIVATE CRYO</button>
@@ -265,63 +281,159 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + id).classList.add('active');
-            event.target.classList.add('active');
+
+            // Highlight tab button
+            const buttons = document.querySelectorAll('.tab-btn');
+            if (id === 'visuals') buttons[0].classList.add('active');
+            if (id === 'nvq') buttons[1].classList.add('active');
+            if (id === 'genai') buttons[2].classList.add('active');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const viz = new RobotScene('canvas-container');
-            const thermo = new ThermalViz('thermo-canvas');
+            // -- Init Components --
+            let viz = null;
+            let thermo = null;
+            try {
+                viz = new RobotScene('canvas-container');
+                thermo = new ThermalViz('thermo-canvas');
+                console.log("3D/Thermal Viz initialized");
+            } catch (e) { console.error("Viz Init Failed", e); }
 
+            // -- UI Elements --
+            const btnSafety = document.getElementById('btn-safety');
             const btnLaser = document.getElementById('btn-laser');
             const btnCryo = document.getElementById('btn-cryo');
 
+            // -- State --
             let laserOn = false;
             let cryoOn = false;
+            let safetyLocked = false; // Default ARMED (Safety OFF)
             let targetPos = { x: 0, y: 0, z: 0 };
 
-            btnLaser.addEventListener('mousedown', () => toggleLaser(true));
-            btnLaser.addEventListener('mouseup', () => toggleLaser(false));
+            // -- Helpers --
+            function updateButtonVisuals() {
+                // Safety
+                if (safetyLocked) {
+                    btnSafety.textContent = "LOCKED";
+                    btnSafety.style.background = "#4ade80"; // Green
+                    btnSafety.style.color = "#022c22";
+                    // Disable controls visually
+                    btnLaser.disabled = true;
+                    btnCryo.disabled = true;
+                } else {
+                    btnSafety.textContent = "ARMED";
+                    btnSafety.style.background = "#ef4444"; // Red
+                    btnSafety.style.color = "white";
+                    // Enable controls
+                    btnLaser.disabled = false;
+                    btnCryo.disabled = false;
+                }
 
-            btnCryo.addEventListener('click', () => {
-                cryoOn = !cryoOn;
-                updateButtons();
-                sendControl();
-            });
+                // Laser
+                if (laserOn) {
+                    btnLaser.textContent = "STOP LASER";
+                    btnLaser.classList.add('active'); // CSS handles orange
+                } else {
+                    btnLaser.textContent = "FIRE LASER (25W)";
+                    btnLaser.classList.remove('active');
+                }
 
-            function toggleLaser(state) {
-                laserOn = state;
-                updateButtons();
-                viz.setLaser(state);
-                sendControl();
-            }
-
-            function updateButtons() {
-                if (laserOn) btnLaser.classList.add('active'); else btnLaser.classList.remove('active');
-                if (cryoOn) btnCryo.classList.add('active'); else btnCryo.classList.remove('active');
+                // Cryo
+                if (cryoOn) {
+                    btnCryo.textContent = "STOP CRYO";
+                    btnCryo.classList.add('active'); // CSS handles red
+                } else {
+                    btnCryo.textContent = "ACTIVATE CRYO";
+                    btnCryo.classList.remove('active');
+                }
             }
 
             async function sendControl() {
-                await fetch('/api/control', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ target: targetPos, laser: laserOn, cryo: cryoOn })
-                });
+                try {
+                    await fetch('/api/control', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ target: targetPos, laser: laserOn, cryo: cryoOn })
+                    });
+                } catch (e) { console.error("Control Send Failed", e); }
             }
 
-            // AI Plan
-            document.getElementById('btn-ai-plan').addEventListener('click', async () => {
-                const el = document.getElementById('ai-response');
-                el.textContent = "Analyzing Anatomy with Gemini 3.0...";
-                const res = await fetch('/api/genai/plan', { method: 'POST' });
-                const data = await res.json();
-                el.textContent = `[${data.model}]\n${data.explanation}\nTarget: X=${data.target.x.toFixed(3)}, Y=${data.target.y.toFixed(3)}`;
+            function setLaser(state) {
+                laserOn = state;
+                if (viz) viz.setLaser(state);
+            }
 
-                // Auto-move target visual
-                targetPos = data.target;
+            // -- Initial State Update --
+            updateButtonVisuals();
+
+            // -- Event Listeners (Attached IMMEDIATELY) --
+
+            btnSafety.addEventListener('click', () => {
+                safetyLocked = !safetyLocked;
+                if (safetyLocked) {
+                    // Lock Protocol: Shutdown everything
+                    setLaser(false);
+                    cryoOn = false;
+                }
+                updateButtonVisuals();
                 sendControl();
             });
 
-            // Mouse Interaction
+            btnLaser.addEventListener('click', () => {
+                if (safetyLocked) return;
+
+                // Toggle Logic
+                const newState = !laserOn;
+                setLaser(newState);
+
+                // Mutual Exclusion
+                if (newState) cryoOn = false;
+
+                updateButtonVisuals();
+                sendControl();
+            });
+
+            btnCryo.addEventListener('click', () => {
+                if (safetyLocked) return;
+
+                // Toggle Logic
+                const newState = !cryoOn;
+                cryoOn = newState;
+
+                // Mutual Exclusion
+                if (newState) setLaser(false);
+
+                updateButtonVisuals();
+                sendControl();
+            });
+
+
+            // -- Async Data Loading (Non-Blocking) --
+            let anatomyData = null;
+            (async function loadAnatomy() {
+                try {
+                    const initRes = await fetch('/api/init');
+                    const initData = await initRes.json();
+                    anatomyData = initData.anatomy;
+                    console.log("Anatomy received");
+                } catch (e) { console.error("Failed to load anatomy", e); }
+            })();
+
+            // -- AI & Polling --
+
+            const btnAI = document.getElementById('btn-ai-plan');
+            btnAI.addEventListener('click', async () => {
+                const el = document.getElementById('ai-response');
+                el.textContent = "Analyzing Anatomy with Gemini 3.0...";
+                try {
+                    const res = await fetch('/api/genai/plan', { method: 'POST' });
+                    const data = await res.json();
+                    el.textContent = `[${data.model}]\n${data.explanation}\nTarget: X=${data.target.x.toFixed(3)}, Y=${data.target.y.toFixed(3)}`;
+                    targetPos = data.target;
+                    sendControl();
+                } catch (e) { el.textContent = "AI Error"; }
+            });
+
             const container = document.getElementById('canvas-container');
             container.addEventListener('mousemove', (e) => {
                 const rect = container.getBoundingClientRect();
@@ -329,35 +441,40 @@
                 const y = (e.clientY - rect.top) / rect.height;
                 targetPos.x = (x - 0.5) * 0.1;
                 targetPos.y = (0.5 - y) * 0.1;
-                sendControl();
+                // Throttled control updates could go here, for now direct
+                if (!safetyLocked) {
+                    // Optional: sendControl(); // Don't spam server on mousemove unless necessary
+                }
             });
+            // Update target on mousemove but maybe only sendControl on click? 
+            // Previous code sent control on mousemove. Let's keep it but maybe debounced? 
+            // For now, let's just update the local target variable. The polling loops don't send control.
+            // Wait, previous code DID sendControl() on mousemove. I'll uncomment it but perhaps the user wants to drag the target?
+            // "The user's objective... target tracking"
+            // Let's restore sendControl on mousemove for responsiveness.
+            container.addEventListener('mousemove', () => sendControl());
 
-            // Poll Loop
+            // Polling Loop
             setInterval(async () => {
                 try {
-                    // Status
                     const res = await fetch('/api/status');
                     const data = await res.json();
 
-                    viz.update(data.joints);
-                    thermo.update(data.temperature, data.anatomy, data.grid_pos);
+                    if (viz) viz.update(data.joints);
+                    if (thermo) thermo.update(data.temperature, anatomyData, data.grid_pos);
 
                     document.getElementById('pos-x').textContent = data.position[0].toFixed(3);
                     document.getElementById('pos-y').textContent = data.position[1].toFixed(3);
                     document.getElementById('pos-z').textContent = data.position[2].toFixed(3);
 
-                    // Temp Max
-                    // Simplified: get max from viz or just placeholder in this loop
-
-                    // NVQ Status
                     const nvqRes = await fetch('/api/nvq/status');
                     const nvq = await nvqRes.json();
                     document.getElementById('nvq-status').textContent = nvq.status;
                     document.getElementById('nvq-latency').textContent = nvq.latency.toFixed(2);
                     document.getElementById('nvq-quantum').textContent = nvq.quantum ? "COHERENT" : "DECOHERENT";
-
                 } catch (e) { }
             }, 50);
+
         });
     </script>
 </body>
