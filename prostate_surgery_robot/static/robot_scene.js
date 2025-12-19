@@ -178,6 +178,19 @@ class RobotScene {
         ee.castShadow = true;
         this.J5.add(ee);
 
+        // Tool Holder (Clamp/Chuck)
+        const holderGeo = new THREE.CylinderGeometry(0.015, 0.012, 0.1, 16);
+        holderGeo.rotateX(Math.PI / 2);
+        const holderMat = new THREE.MeshStandardMaterial({
+            color: 0x334155, // Dark slate
+            roughness: 0.4,
+            metalness: 0.9
+        });
+        const holder = new THREE.Mesh(holderGeo, holderMat);
+        holder.position.z = -0.05;
+        holder.castShadow = true;
+        this.J5.add(holder);
+
         // Probe
         this.probe = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.001, 0.35), probeMat);
         this.probe.rotation.x = Math.PI / 2;
@@ -269,7 +282,12 @@ class RobotScene {
             this.J1.rotation.y = joints[0] * 2.0;
             this.J2.rotation.x = -0.5 + joints[1];
             this.J3.rotation.x = 1.0 + joints[2];
-            this.J5.rotation.x = -1.5; // Always point generally towards patient
+
+            // J5 Compensation to keep probe pointing at anatomy
+            // We want global pitch roughly -2.5 rads relative to World Y-up
+            const globalTarget = -2.5;
+            const currentArmParams = this.J2.rotation.x + this.J3.rotation.x;
+            this.J5.rotation.x = globalTarget - currentArmParams;
         } else {
             // Idle breathing animation
             this.J1.rotation.y = Math.sin(t) * 0.1;

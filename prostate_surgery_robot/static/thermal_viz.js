@@ -11,43 +11,42 @@ class ThermalViz {
     }
 
     createThermoLUT() {
-        const lut = new Uint8ClampedArray(1001 * 4); // 0.0 to 100.0, 0.1 steps
-        // Turbo-like map
-        // 0-30: Blue
-        // 37: Transp
-        // 45+: Red
+        // Range: -100.0 to +100.0 C
+        // Step: 0.1 C
+        // Size: 2001 entries
+        // Index = (Temp + 100) * 10
+        const lut = new Uint8ClampedArray(2001 * 4);
 
-        for (let i = 0; i <= 1000; i++) {
-            let t = i / 10.0;
+        for (let i = 0; i <= 2000; i++) {
+            let t = (i - 1000) / 10.0;
             let r = 0, g = 0, b = 0, a = 0;
 
-            if (t < 30) {
-                // Freezing
-                // Freezing (ICE BLUE to Cyan)
-                // -100C -> 0, 30C -> close to body
-                // Maps to index 0...300
-                // Simple gradient: Deep Blue -> Cyan
+            if (t < -40) {
+                // Lethal Freeze (Necrosis) - Bright White/Cyan
+                r = 200; g = 255; b = 255; a = 200;
+            } else if (t < 0) {
+                // Ice Ball - Deep Blue/Cyan
+                // Gradient: -40 -> 0
                 r = 0;
-                g = Math.floor((t / 30.0) * 255);
+                g = Math.floor(100 + ((t + 40) / 40) * 155);
                 b = 255;
-                a = 180; // More opaque for ice ball visibility
-            } else if (t < 36) {
-                // Cool
-                b = 255;
-                g = 255;
-                a = 50;
-            } else if (t < 38) {
-                // Body
+                a = 180;
+            } else if (t < 35) {
+                // Cool Tissue - Faint Blue
+                r = 0; g = 0; b = 255; a = 60;
+            } else if (t < 40) {
+                // Body Temp (37C) - Transparent
                 a = 0;
-            } else if (t < 50) {
-                // Warm
+            } else if (t < 60) {
+                // Hyperthermia (Red)
+                // 40 -> 60
                 r = 255;
-                g = Math.floor(255 - ((t - 38) / 12) * 255);
+                g = Math.floor(255 - ((t - 40) / 20) * 255);
+                b = 0;
                 a = 150;
             } else {
-                // Hot
-                r = 255;
-                a = 200;
+                // Ablation/Char (Black/Red)
+                r = 100; g = 0; b = 0; a = 200;
             }
 
             let idx = i * 4;
@@ -74,7 +73,7 @@ class ThermalViz {
                 const sy = Math.floor(32 + (cy / 128.0) * 64);
                 const sx = Math.floor(32 + (cx / 128.0) * 64);
 
-                // --- FETCH PIXEL (COPIED LOGIC WITH sy/sx) ---
+                // --- FETCH PIXEL ---
                 let val = 0;
                 let tVal = 0;
 
@@ -90,9 +89,11 @@ class ThermalViz {
                 let gray = Math.floor(val * 255);
                 let tr = 0, tg = 0, tb = 0, ta = 0;
 
-                let lutIdx = Math.floor(tVal * 10);
-                lutIdx = Math.max(0, min(1000, lutIdx));
+                // New Index Calculation
+                let lutIdx = Math.floor((tVal + 100) * 10);
+                lutIdx = Math.max(0, Math.min(2000, lutIdx));
 
+                // Only Look up if deviation from body temp (simplifies rendering)
                 if (tVal < 36 || tVal > 38) {
                     const lutBase = lutIdx * 4;
                     tr = this.tempLUT[lutBase];
@@ -122,7 +123,7 @@ class ThermalViz {
             const x = gridPos[0];
             const y = gridPos[1];
 
-            this.ctx.strokeStyle = "#ef4444";
+            this.ctx.strokeStyle = "#fbbf24"; // Amber
             this.ctx.lineWidth = 1;
             this.ctx.beginPath();
             this.ctx.moveTo(x - 5, y); this.ctx.lineTo(x + 5, y);
@@ -132,5 +133,3 @@ class ThermalViz {
 
     }
 }
-
-function min(a, b) { return a < b ? a : b; }
