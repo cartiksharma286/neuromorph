@@ -4,12 +4,31 @@ import random
 class DataProvider:
     def __init__(self):
         self.parks = {
-            "Banff": {"lat": 51.1784, "lon": -115.5708, "biome": "Coniferous"},
-            "Jasper": {"lat": 52.8737, "lon": -118.0814, "biome": "Coniferous"},
-            "Rideau": {"lat": 45.4215, "lon": -75.6972, "biome": "Deciduous"},
-            "CapeBreton": {"lat": 46.8138, "lon": -60.6698, "biome": "Boreal"},
-            "PacificRim": {"lat": 49.0307, "lon": -125.7126, "biome": "Rainforest"}
+            "Banff": {"lat": 51.1784, "lon": -115.5708, "biome": "Coniferous", "radius_km": 50, "restricted": False},
+            "Jasper": {"lat": 52.8737, "lon": -118.0814, "biome": "Coniferous", "radius_km": 60, "restricted": False},
+            "Rideau": {"lat": 45.4215, "lon": -75.6972, "biome": "Deciduous", "radius_km": 20, "restricted": False},
+            "CapeBreton": {"lat": 46.8138, "lon": -60.6698, "biome": "Boreal", "radius_km": 40, "restricted": False},
+            "PacificRim": {"lat": 49.0307, "lon": -125.7126, "biome": "Rainforest", "radius_km": 30, "restricted": True} # Protected Zone
         }
+
+    def check_geofence(self, location):
+        """
+        Verifies if access to the location is permitted within the current geofence context.
+        """
+        park = self.parks.get(location)
+        if not park:
+            return {"allowed": False, "reason": "Unknown Location"}
+        
+        if park.get("restricted", False):
+            # In a real app, check user credentials here.
+            # For simulation, we allow but flag it.
+            return {
+                "allowed": True, 
+                "warning": "Entering Protected Geo-Zone (Pacific Rim Type-1)",
+                "geofence_id": f"GF-{location.upper()}-884"
+            }
+            
+        return {"allowed": True, "geofence_id": "PUBLIC-ACCESS"}
 
     def generate_lidar_scan(self, location, size=50):
         """
@@ -48,6 +67,8 @@ class DataProvider:
                     "lat": 0, "lon": 0 # Placeholder if needed
                 })
         
+        geofence_status = self.check_geofence(location)
+        
         return {
             "grid_metrics": {
                 "elevation": elevation.tolist(),
@@ -55,7 +76,8 @@ class DataProvider:
                 "moisture": moisture.tolist()
             },
             "points": points,
-            "location": location
+            "location": location,
+            "geofence": geofence_status
         }
 
     def generate_training_data(self, n_samples=1000):
