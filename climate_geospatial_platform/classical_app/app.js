@@ -1,273 +1,342 @@
-const API_BASE = 'http://localhost:5001/api';
+const API_URL = 'http://localhost:5005/api';
 
+// State
 let simInterval = null;
+let isSimulating = false;
 let currentGrid = null;
-let chartInstance = null;
-let featureChartInstance = null;
-let lastCoeffs = null;
+let charts = {};
+let nvqPollInterval = null;
+
+// DOM Elements (Cached)
+const els = {
+    views: {},
+    navBtns: document.querySelectorAll('.nav-btn'),
+    trainBtn: document.getElementById('trainBtn'),
+    trainingState: document.getElementById('trainingState'),
+    riskValue: document.getElementById('riskValue'),
+    inputs: ['inTemp', 'inHum', 'inWind', 'inBio'].map(id => document.getElementById(id)),
+    simStats: { ign: document.getElementById('ignCount'), burnt: document.getElementById('burntCount') },
+    nvq: {
+        statusText: document.getElementById('nvqStatusText'),
+        bandwidth: document.getElementById('nvqBandwidth'),
+        latency: document.getElementById('nvqLatency'),
+        quantum: document.getElementById('nvqQuantum'),
+        nodes: document.getElementById('nvqNodes'),
+        terminal: document.getElementById('nvqTerminal')
+    }
+};
+
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Setup Views
+    els.navBtns.forEach(btn => {
+        const viewId = btn.dataset.view;
+        els.views[viewId] = document.getElementById(viewId);
+        btn.addEventListener('click', () => switchView(viewId));
+    });
+
+    // Inputs
+    els.inputs.forEach(input => input.addEventListener('input', livePredict));
+
+    // Buttons
+    if (els.trainBtn) els.trainBtn.addEventListener('click', trainModel);
+    document.getElementById('loadTerrainBtn').addEventListener('click', loadTerrain);
+    document.getElementById('startSimBtn').addEventListener('click', startSim);
+    document.getElementById('stopSimBtn').addEventListener('click', stopSim);
+
+    // Initial Load
+    switchView('dashboard');
+    initCharts();
+    trainModel(true); // Initial training silently
+
+    // Start Global Poller
+    startNVQPoller();
+});
 
 // --- Navigation ---
-function setView(id) {
-    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+function switchView(id) {
+    // Update Buttons
+    els.navBtns.forEach(btn => {
+        if (btn.dataset.view === id) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
 
-    // Find button for this view (simple matching via ID or index manual mapping)
-    const items = document.querySelectorAll('.menu-item');
-    if (id === 'dashboard') items[0].classList.add('active');
-    if (id === 'science') items[1].classList.add('active');
-    if (id === 'simulation') items[2].classList.add('active');
-    if (id === 'nvqlink') items[3].classList.add('active');
+    // Update Section Title
+    const titles = {
+        'dashboard': 'Mission Control',
+        'science': 'Data Science Engine',
+        'simulation': 'Geospatial Fire Sim',
+        'nvqlink': 'Quantum Telemetry'
+    };
+    document.getElementById('section-title').innerText = titles[id] || 'EcoGeo';
 
-    // Trigger updates
-    if (id === 'dashboard') {
-        setTimeout(initDashboardChart, 50);
-    }
-    if (id === 'science' && lastCoeffs) {
-        setTimeout(() => updateFeatureChart(lastCoeffs), 100);
-    }
+    // Show View
+    document.querySelectorAll('.view').forEach(el => {
+        el.classList.remove('active', 'fade-in');
+        if (el.id === id) {
+            el.classList.add('active', 'fade-in');
+        }
+    });
+
+    // Chart Resizes
+    if (id === 'dashboard' && charts.main) setTimeout(() => charts.main.resize(), 50);
+    if (id === 'science' && charts.features) setTimeout(() => charts.features.resize(), 50);
 }
 
 // --- Data Science ---
-async function trainModel() {
-    const statsBox = document.getElementById('trainingStats');
-    if (statsBox) statsBox.innerHTML = "Training in progress...";
+async function trainModel(silent = false) {
+    if (!silent) {
+        els.trainBtn.disabled = true;
+        els.trainBtn.querySelector('.btn-text').innerText = 'Training...';
+        els.trainingState.innerText = 'Optimizing SGD...';
+    }
 
     try {
-        const res = await fetch(`${API_BASE}/model/train`, {
+        const res = await fetch(`${API_URL}/model/train`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ samples: 2000 })
+            body: JSON.stringify({ samples: 500 }) // Fast batch
         });
         const data = await res.json();
 
-        lastCoeffs = data.coefficients; // Store for re-render
-
-        if (statsBox) {
-            statsBox.innerHTML = `
-                <strong>${data.model_type}</strong><br>
-                Accuracy: ${(data.accuracy * 100).toFixed(1)}%<br>
-                Time: ${(data.training_time * 1000).toFixed(0)}ms
-            `;
+        if (!silent) {
+            els.trainingState.innerText = `Ready (Acc: ${(data.accuracy * 100).toFixed(1)}%)`;
+            els.trainBtn.disabled = false;
+            els.trainBtn.querySelector('.btn-text').innerText = 'Retrain Model';
         }
 
-        if (document.getElementById('dashAccuracy')) {
-            document.getElementById('dashAccuracy').innerText = (data.accuracy * 100).toFixed(1) + "%";
-        }
+        // Update Dashboard
+        const dashAcc = document.getElementById('dashAccuracy');
+        if (dashAcc) dashAcc.innerText = (data.accuracy * 100).toFixed(1) + "%";
 
         updateFeatureChart(data.coefficients);
-        livePredict();
+        livePredict(); // Refresh prediction
 
     } catch (e) {
-        if (statsBox) statsBox.innerHTML = "Error Training Model";
-        console.error(e);
+        console.error("Training Error:", e);
+        if (!silent) els.trainingState.innerText = 'Error Connecting';
+        els.trainBtn.disabled = false;
+        els.trainBtn.querySelector('.btn-text').innerText = 'Try Again';
     }
 }
 
 async function livePredict() {
-    const inTemp = document.getElementById('inTemp');
-    if (!inTemp) return;
-
-    const inputs = [
-        parseFloat(inTemp.value),
-        parseFloat(document.getElementById('inHum').value),
-        parseFloat(document.getElementById('inWind').value),
-        parseFloat(document.getElementById('inBio').value)
-    ];
+    const inputs = els.inputs.map(el => parseFloat(el.value));
 
     try {
-        const res = await fetch(`${API_BASE}/model/predict`, {
+        const res = await fetch(`${API_URL}/model/predict`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ features: inputs })
         });
         const data = await res.json();
 
-        const risk = data.fire_risk_probability;
-        const el = document.getElementById('riskValue');
-        if (el) {
-            el.innerText = (risk * 100).toFixed(1) + "%";
-            if (risk < 0.3) el.style.color = '#10b981';
-            else if (risk < 0.7) el.style.color = '#f59e0b';
-            else el.style.color = '#ef4444';
-        }
+        const prob = data.fire_risk_probability;
+        els.riskValue.innerText = (prob * 100).toFixed(1) + "%";
+
+        // Color coding
+        if (prob < 0.3) els.riskValue.style.color = '#10b981'; // Green
+        else if (prob < 0.7) els.riskValue.style.color = '#f59e0b'; // Orange
+        else els.riskValue.style.color = '#ef4444'; // Red
 
     } catch (e) { console.error(e); }
 }
 
 function updateFeatureChart(coeffs) {
-    const canvas = document.getElementById('featureChart');
-    if (!canvas) return;
+    if (!charts.features) return;
 
-    // Safety check if Chart is loaded
-    if (typeof Chart === 'undefined') return;
-
-    if (featureChartInstance) featureChartInstance.destroy();
-
-    featureChartInstance = new Chart(canvas.getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: ['Temp', 'Humidity', 'Wind', 'Biomass'],
-            datasets: [{
-                label: 'Coefficient Impact',
-                data: coeffs,
-                backgroundColor: ['#ef4444', '#3b82f6', '#f59e0b', '#10b981'],
-                borderWidth: 0,
-                borderRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleColor: '#e2e8f0',
-                    bodyColor: '#e2e8f0'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: 'rgba(255,255,255,0.05)' },
-                    ticks: { color: '#94a3b8' }
-                },
-                x: {
-                    grid: { display: false },
-                    ticks: { color: '#94a3b8' }
-                }
-            }
-        }
-    });
+    charts.features.data.datasets[0].data = coeffs;
+    charts.features.update();
 }
 
 // --- Simulation ---
-async function loadScan() {
+async function loadTerrain() {
     const loc = document.getElementById('locSelect').value;
     try {
-        const res = await fetch(`${API_BASE}/lidar/scan?location=${loc}`);
+        const res = await fetch(`${API_URL}/lidar/scan?location=${loc}`);
         const data = await res.json();
 
-        const w = 64;
+        const size = data.grid_metrics.density.length;
         currentGrid = {
             density: data.grid_metrics.density,
             moisture: data.grid_metrics.moisture,
-            fire_state: Array(w).fill().map(() => Array(w).fill(0))
+            fire_state: Array(size).fill().map(() => Array(size).fill(0))
         };
 
-        const cx = Math.floor(w / 2);
+        // Ignite Center
+        const cx = Math.floor(size / 2);
         currentGrid.fire_state[cx][cx] = 1;
 
         renderGrid();
+        updateSimStats(0, 0);
 
-    } catch (e) { console.error(e); }
+    } catch (e) { alert("Failed to load terrain: " + e); }
 }
 
 async function startSim() {
-    if (simInterval) return;
-    simInterval = setInterval(runSimStep, 100);
+    if (isSimulating) return;
+    if (!currentGrid) { await loadTerrain(); }
+    isSimulating = true;
+    simLoop();
 }
 
 function stopSim() {
-    if (simInterval) clearInterval(simInterval);
-    simInterval = null;
+    isSimulating = false;
 }
 
-async function runSimStep() {
-    if (!currentGrid) return;
+async function simLoop() {
+    if (!isSimulating) return;
+
     try {
-        const res = await fetch(`${API_BASE}/simulation/step`, {
+        const res = await fetch(`${API_URL}/simulation/step`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ grid: currentGrid })
         });
         currentGrid = await res.json();
-        renderGrid();
-        const statEl = document.getElementById('simStats');
-        if (statEl) statEl.innerText = `Burnt: ${currentGrid.nt_burnt} | Active: ${currentGrid.nt_ignitions}`;
 
-    } catch (e) { console.error(e); stopSim(); }
+        renderGrid();
+        updateSimStats(currentGrid.nt_ignitions, currentGrid.nt_burnt);
+
+        if (isSimulating) requestAnimationFrame(simLoop);
+
+    } catch (e) {
+        console.error("Sim Step Error:", e);
+        stopSim();
+    }
 }
 
 function renderGrid() {
     const canvas = document.getElementById('simCanvas');
-    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const w = canvas.width;
     const h = canvas.height;
 
+    ctx.clearRect(0, 0, w, h);
+
     if (!currentGrid) return;
 
-    const gw = currentGrid.density.length;
-    const cw = w / gw;
-    const ch = h / gw;
+    const gridSize = currentGrid.density.length;
+    const cw = w / gridSize;
+    const ch = h / gridSize;
 
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(0, 0, w, h);
-
-    for (let y = 0; y < gw; y++) {
-        for (let x = 0; x < gw; x++) {
+    for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
             const state = currentGrid.fire_state[y][x];
-            const dens = currentGrid.density[y][x];
+            const density = currentGrid.density[y][x];
+            const moisture = currentGrid.moisture[y][x];
 
-            if (state === 2) {
-                // Burnt area
-                ctx.fillStyle = '#1e293b';
-                ctx.fillRect(x * cw, y * ch, cw, ch);
-            } else if (state === 1) {
-                // Burning - Dynamic
+            if (state === 2) { // Burnt
+                ctx.fillStyle = '#0f172a'; // Dark Burnt
+            } else if (state === 1) { // Burning
                 const flicker = Math.random() * 50;
-                ctx.fillStyle = `rgb(${200 + flicker}, ${50 + flicker}, 20)`;
-                ctx.fillRect(x * cw, y * ch, cw, ch);
-            } else {
-                // Vegetation - varied green
-                const val = 20 + Math.floor(dens * 100);
-                const moistBlue = currentGrid.moisture[y][x] * 50;
-                ctx.fillStyle = `rgb(10, ${val}, ${20 + moistBlue})`;
-                ctx.fillRect(x * cw, y * ch, cw, ch);
+                ctx.fillStyle = `rgb(${220 + flicker}, ${80 + (flicker / 2)}, 0)`;
+            } else { // Vegetation
+                // Green based on density, blue tint for moisture
+                const g = 30 + (density * 100);
+                const b = 20 + (moisture * 50);
+                ctx.fillStyle = `rgb(10, ${g}, ${b})`;
             }
+            ctx.fillRect(x * cw, y * ch, cw, ch);
         }
     }
 }
 
-// --- NVQLink ---
-async function updateNVQLink() {
-    try {
-        const res = await fetch(`${API_BASE}/nvqlink/status`);
-        const data = await res.json();
-
-        const statusEl = document.getElementById('nvqStatus');
-        if (statusEl) {
-            statusEl.innerText = data.status;
-            if (data.status.includes("ONLINE")) statusEl.style.color = '#10b981';
-        }
-
-        if (document.getElementById('nvqBandwidth')) document.getElementById('nvqBandwidth').innerText = data.bandwidth;
-        if (document.getElementById('nvqLatency')) document.getElementById('nvqLatency').innerText = data.latency_ms + " ms";
-        if (document.getElementById('nvqQuantum')) document.getElementById('nvqQuantum').innerText = data.quantum_state;
-
-    } catch (e) { console.error(e); }
+function updateSimStats(ign, burnt) {
+    els.simStats.ign.innerText = ign;
+    els.simStats.burnt.innerText = burnt;
 }
 
-// --- Init ---
-function initDashboardChart() {
-    const ctx = document.getElementById('mainChart');
-    if (!ctx || chartInstance || typeof Chart === 'undefined') return;
+// --- NVQLink ---
+function startNVQPoller() {
+    setInterval(async () => {
+        // Only fetch if tab is active or just generally keep alive? 
+        // Let's fetch always but update UI only if visible for robustness
+        try {
+            const res = await fetch(`${API_URL}/nvqlink/status`);
+            const data = await res.json();
 
-    chartInstance = new Chart(ctx, {
+            if (els.nvq.statusText) {
+                els.nvq.statusText.innerText = data.status;
+                els.nvq.statusText.style.color = '#10b981'; // Success Green
+                els.nvq.bandwidth.innerText = data.bandwidth;
+                els.nvq.latency.innerText = data.latency_ms + "ms";
+                els.nvq.quantum.innerText = data.quantum_state;
+                els.nvq.nodes.innerText = data.nodes_active;
+
+                // Add log line occasionally
+                if (Math.random() > 0.7) {
+                    const line = document.createElement('div');
+                    line.innerText = `> Packet received from Node ${Math.floor(Math.random() * 12)} [${Date.now()}]`;
+                    els.nvq.terminal.appendChild(line);
+                    els.nvq.terminal.scrollTop = els.nvq.terminal.scrollHeight;
+                }
+            }
+        } catch (e) {
+            if (els.nvq.statusText) {
+                els.nvq.statusText.innerText = "OFFLINE";
+                els.nvq.statusText.style.color = "#ef4444";
+            }
+        }
+    }, 1500);
+}
+
+// --- Charts ---
+function initCharts() {
+    // Environmental Trends (Dashboard)
+    const ctxMain = document.getElementById('mainChart').getContext('2d');
+    const gradRisk = ctxMain.createLinearGradient(0, 0, 0, 300);
+    gradRisk.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+    gradRisk.addColorStop(1, 'rgba(239, 68, 68, 0)');
+
+    charts.main = new Chart(ctxMain, {
         type: 'line',
         data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            datasets: [
+                {
+                    label: 'Fire Risk',
+                    data: [0.12, 0.15, 0.25, 0.45, 0.70, 0.88, 0.92, 0.85],
+                    borderColor: '#ef4444',
+                    backgroundColor: gradRisk,
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Avg Temp (°C)',
+                    data: [4, 6, 11, 16, 22, 27, 31, 29],
+                    type: 'bar',
+                    backgroundColor: '#3b82f6',
+                    yAxisID: 'y1',
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { labels: { color: '#94a3b8' } } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                y: { type: 'linear', display: true, position: 'left', grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#ef4444' } },
+                y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#3b82f6' } },
+            }
+        }
+    });
+
+    // Feature Importance (Science)
+    const ctxFeat = document.getElementById('featureChart').getContext('2d');
+    charts.features = new Chart(ctxFeat, {
+        type: 'bar',
+        data: {
+            labels: ['Temperature', 'Humidity', 'Wind Speed', 'Biomass'],
             datasets: [{
-                label: 'Avg Fire Risk',
-                data: [0.2, 0.3, 0.45, 0.6, 0.8, 0.9],
-                borderColor: '#ef4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 4,
-                pointBackgroundColor: '#ef4444'
+                label: 'Coefficient Impact',
+                data: [0, 0, 0, 0], // Initial
+                backgroundColor: ['#ef4444', '#06b6d4', '#f59e0b', '#10b981'],
+                borderRadius: 6
             }]
         },
         options: {
@@ -275,20 +344,9 @@ function initDashboardChart() {
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+                y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
             }
         }
     });
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    setView('dashboard');
-    trainModel();
-
-    // Poller
-    setInterval(() => {
-        const nvq = document.getElementById('nvqlink');
-        if (nvq && nvq.classList.contains('active')) updateNVQLink();
-    }, 1000);
-});
