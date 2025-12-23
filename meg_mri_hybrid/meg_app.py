@@ -50,6 +50,7 @@ def index():
             <button class="btn" onclick="startSim('/run_simulation')">Run BET & SSS Analysis</button>
             <button class="btn btn-secondary" onclick="startSim('/run_dewar')">Run Dewar Quantum CFD</button>
             <button class="btn btn-accent" onclick="startSim('/run_nvqlink')">Run Real-Time NVQLink SSS</button>
+            <button class="btn btn-secondary" onclick="startSim('/run_beamformer')">Run Beamformer & Geodesics</button>
         </div>
     </body>
     </html>
@@ -62,6 +63,20 @@ def run_sim():
         return html_report
     except Exception as e:
         return f"<h1>Error Running BET Simulation</h1><pre>{str(e)}</pre>"
+        
+@app.route('/run_beamformer')
+def run_beamformer():
+    # Run the simulation script
+    import subprocess
+    # Run synchronously for now (simulation is faster with vectorization)
+    result = subprocess.run([sys.executable, 'meg_simulation.py'], cwd=os.path.dirname(os.path.abspath(__file__)))
+    
+    if result.returncode == 0:
+        # Read the generated HTML
+        with open('meg_simulation_interactive.html', 'r') as f:
+            return f.read()
+    else:
+        return "<h1>Error running Beamformer Simulation</h1>"
 
 @app.route('/run_nvqlink')
 def run_nvq():

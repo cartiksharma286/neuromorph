@@ -55,44 +55,36 @@ class ForwardPhysics:
     def __init__(self):
         self.mu0 = 4 * np.pi * 1e-7  # Vacuum permeability
         
-    def compute_lead_field(self, scanner: MEGBoreScanner, sources: list):
+    def compute_lead_field(self, scanner, sources):
         """
         Computes the lead field matrix (gain matrix) L.
-        measurement = L @ source_magnitudes
-        
-        Using the spherical conductor model (Sarvas 1987).
+        Vectorized implementation for performance.
         """
-        n_sensors = len(scanner.sensors)
-        n_sources = len(sources)
-        # Assuming rank-3 source orientation for general lead field, 
-        # or fixed orientation if sources have defined moments.
-        # Here we calculate field for the specific dipole moment given in source.
+        sensor_pos = scanner.get_sensor_positions() # (N_sens, 3)
+        sensor_orient = scanner.get_sensor_orientations() # (N_sens, 3)
         
-        B_measured = np.zeros(n_sensors)
+        # Prepare sources
+        src_pos = np.array([s.position for s in sources]) # (N_src, 3)
+        src_mom = np.array([s.moment for s in sources])   # (N_src, 3)
         
-        for i, sensor in enumerate(scanner.sensors):
-            total_flux = 0
-            for source in sources:
-                r0 = source.position
-                r = sensor.position - np.array([0, 0, 0]) # Origin at sphere center
-                rq = r - r0 
-                
-                # Sarvas formula for B outside a sphere
-                # This is a bit complex, reusing simplified Biot-Savart for vacuum (infinite homogeneous medium)
-                # as a first approximation if sphere center is unknown or geometry is complex.
-                # B(r) = (mu0 / 4pi) * (Q x rq) / |rq|^3
-                
-                rq_norm = np.linalg.norm(rq)
-                cross_prod = np.cross(source.moment, rq)
-                B_vec = (self.mu0 / (4 * np.pi)) * cross_prod / (rq_norm**3)
-                
-                # SQUID measures projection of B onto its normal vector
-                flux = np.dot(B_vec, sensor.orientation)
-                total_flux += flux
-            
-            B_measured[i] = total_flux
-            
-        return B_measured
+        # R vectors from sources to sensors (N_sens, N_src, 3)
+        R = sensor_pos[:, np.newaxis, :] - src_pos[np.newaxis, :, :]
+        dist = np.linalg.norm(R, axis=2)
+        dist[dist==0] = 1e-9 # Avoid singularity
+        
+        # Cross product Q x R
+        # Broadcast Moment: (1, N_src, 3) -> (N_sens, N_src, 3)
+        Q_broad = np.tile(src_mom[np.newaxis, :, :], (len(sensor_pos), 1, 1))
+        Cross = np.cross(Q_broad, R, axis=2)
+        
+        # B field (N_sens, N_src, 3)
+        B_vec = (self.mu0 / (4 * np.pi)) * Cross / (dist[:, :, np.newaxis]**3)
+        
+        # Project onto sensor orientation (N_sens, 1, 3)
+        flux_per_source = np.sum(B_vec * sensor_orient[:, np.newaxis, :], axis=2)
+        
+        # Sum contributions from all sources
+        return np.sum(flux_per_source, axis=1)
     
     def compute_lead_field_matrix_grid(self, scanner, grid_points):
         """
@@ -362,3 +354,192 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.savefig('meg_simulation_result.png')
     print("Simulation complete. Result saved to 'meg_simulation_result.png'")
+
+class GeodesicPathFinder:
+    """
+    Computes 'Continuable Geodesics' between regions of interest (ROI) in the brain volume.
+    Simulates white matter tracts or functional connectivity paths using a 
+    distance-weighted metric.
+    """
+    @staticmethod
+    def compute_path(start_pos, end_pos, obstacles=None, resolution=50):
+        """
+        Generates a geodesic path. In this simplified model, it's a 
+        perturbed line (arc) to simulate biological variance/folding.
+        """
+        # Linear interpolation
+        t = np.linspace(0, 1, resolution)
+        path = np.outer(1-t, start_pos) + np.outer(t, end_pos)
+        
+        # Add 'Continuable' curvature (Geodesic effect on manifold)
+        # We simulate a manifold curvature by adding a sine wave perpendicular to the path
+        direction = end_pos - start_pos
+        length = np.linalg.norm(direction)
+        if length < 1e-6: return path
+        
+        # Perpendicular vector
+        perp = np.cross(direction, np.array([0,0,1]))
+        if np.linalg.norm(perp) < 1e-6: perp = np.cross(direction, np.array([0,1,0]))
+        perp /= np.linalg.norm(perp)
+        
+        # Curvature amplitude depends on length
+        curvature = 0.2 * length * np.sin(np.pi * t)
+        
+        path_curved = path + np.outer(curvature, perp)
+        return path_curved
+
+class MRISliceGenerator:
+    """Generates 2D Grayscale MRI slices with functional overlays."""
+    
+    @staticmethod
+    def generate_slices(grid_points, power_map, grid_res):
+        """
+        Projects 3D power map onto 2D slices (Axial, Coronal, Sagittal).
+        Generates synthetic MRI background.
+        """
+        # Reshape to 3D volume
+        dim = int(round(len(grid_points)**(1/3))) # assuming cubic grid
+        if dim**3 != len(grid_points):
+            # Fallback if not perfectly cubic, try to approximate or use raw grid_res
+            dim = grid_res
+            
+        vol_power = power_map.reshape((dim, dim, dim))
+        
+        # Synthetic MRI T1 background (Skull, Gray Matter, White Matter)
+        # Simple spherical model
+        x = np.linspace(-1, 1, dim)
+        y = np.linspace(-1, 1, dim)
+        z = np.linspace(-1, 1, dim)
+        X, Y, Z = np.meshgrid(x, y, z)
+        R = np.sqrt(X**2 + Y**2 + Z**2)
+        
+        mri_vol = np.zeros_like(R)
+        mri_vol[R < 0.9] = 0.3 # Scalp
+        mri_vol[R < 0.8] = 0.1 # Skull (Dark)
+        mri_vol[R < 0.75] = 0.6 # Gray Matter
+        mri_vol[R < 0.6] = 0.8 # White Matter
+        
+        # Generate Slices at center
+        center = dim // 2
+        
+        slices = {
+            'Axial': (mri_vol[:, :, center], vol_power[:, :, center]),
+            'Coronal': (mri_vol[center, :, :].T, vol_power[center, :, :].T), # Transpose for better orientation
+            'Sagittal': (mri_vol[:, center, :].T, vol_power[:, center, :].T)
+        }
+        
+        return slices
+
+if __name__ == "__main__":
+    scanner, sources, grid, power, data = simulate_reconstruction()
+    
+    # --- Geodesic Computation ---
+    print("Computing Continuable Geodesics between sources...")
+    if len(sources) >= 2:
+        path = GeodesicPathFinder.compute_path(sources[0].position, sources[1].position)
+    else:
+        path = np.array([])
+
+    # --- 2D Grayscale Slice Generation ---
+    print("Generating Grayscale MRI Slices with Beamformer Overlay...")
+    slice_gen = MRISliceGenerator()
+    # grid_res was 10 in simulate_reconstruction, let's assume it matches or pass it
+    # We need to know grid resolution used. In simulate_reconstruction it is 10.
+    slices = slice_gen.generate_slices(grid, power, grid_res=10)
+    
+    # Plot Slices
+    fig_slices, axes = plt.subplots(1, 3, figsize=(15, 5))
+    
+    for i, (name, (mri, func)) in enumerate(slices.items()):
+        # Background: Grayscale MRI
+        axes[i].imshow(mri, cmap='gray', origin='lower', extent=[-0.1, 0.1, -0.1, 0.1])
+        
+        # Overlay: Beamformer Power (Thresholded)
+        # Mask low values for transparency
+        func_masked = np.ma.masked_where(func < 0.4, func)
+        axes[i].imshow(func_masked, cmap='jet', alpha=0.6, origin='lower', extent=[-0.1, 0.1, -0.1, 0.1])
+        
+        axes[i].set_title(f"{name} Slice\nwith Beamformer Overlay")
+        axes[i].axis('off')
+        
+    plt.tight_layout()
+    plt.savefig('meg_mri_slices.png')
+    print("Generated 'meg_mri_slices.png'")
+
+    # --- Update Interactive Visualization ---
+    try:
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+        
+        # 1. Sensors
+        sensor_pos = scanner.get_sensor_positions()
+        sensor_trace = go.Scatter3d(
+            x=sensor_pos[:, 0], y=sensor_pos[:, 1], z=sensor_pos[:, 2],
+            mode='markers', marker=dict(size=4, color='blue', opacity=0.8),
+            name='SQUID Sensors'
+        )
+        
+        # 2. True Sources
+        source_x = [s.position[0] for s in sources]
+        source_y = [s.position[1] for s in sources]
+        source_z = [s.position[2] for s in sources]
+        source_trace = go.Scatter3d(
+            x=source_x, y=source_y, z=source_z,
+            mode='markers', marker=dict(size=10, color='red', symbol='diamond'),
+            name='True Sources'
+        )
+        
+        # 3. Geodesic Path
+        if len(path) > 0:
+            geo_trace = go.Scatter3d(
+                x=path[:, 0], y=path[:, 1], z=path[:, 2],
+                mode='lines', line=dict(color='lime', width=5),
+                name='Continuable Geodesic'
+            )
+        else:
+            geo_trace = go.Scatter3d(x=[], y=[], z=[])
+        
+        # 4. Reconstructed Activity
+        threshold = 0.6 * np.max(power)
+        mask = power > threshold
+        if np.any(mask):
+            active_grid = grid[mask]
+            active_power = power[mask]
+            recon_trace = go.Scatter3d(
+                x=active_grid[:, 0], y=active_grid[:, 1], z=active_grid[:, 2],
+                mode='markers', 
+                marker=dict(size=6, color=active_power, colorscale='Hot', opacity=0.8),
+                name='Reconstructed Source'
+            )
+        else:
+            recon_trace = go.Scatter3d(x=[], y=[], z=[], mode='markers', name='No active sources')
+
+        fig = make_subplots(
+            rows=1, cols=2,
+            specs=[[{'type': 'scatter3d'}, {'type': 'scatter3d'}]],
+            subplot_titles=('MEG Scanner Geometry & True Sources', 'Source, Geodesics & Beamformer')
+        )
+
+        fig.add_trace(sensor_trace, row=1, col=1)
+        fig.add_trace(source_trace, row=1, col=1)
+        if len(path) > 0: fig.add_trace(geo_trace, row=1, col=1)
+        
+        # Right Plot
+        fig.add_trace(recon_trace, row=1, col=2)
+        if len(path) > 0: fig.add_trace(geo_trace, row=1, col=2)
+        fig.add_trace(source_trace, row=1, col=2) # Show true sources on recon too
+
+        fig.update_layout(
+            title_text="MEG Signal Reconstruction: Beamformer & Geodesics",
+            height=800,
+            showlegend=True,
+            scene=dict(aspectmode='data'),
+            scene2=dict(aspectmode='data'),
+            template='plotly_dark'
+        )
+        
+        fig.write_html("meg_simulation_interactive.html")
+        print("Interactive visualization saved to 'meg_simulation_interactive.html'")
+        
+    except ImportError:
+        print("Plotly not installed, skipping interactive visualization.")
