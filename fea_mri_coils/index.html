@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRI Head Coil Designer - Geodesic RF Coil Design System</title>
+    <meta name="description"
+        content="Advanced MRI head coil design system with geodesic mapping, circuit generation, and RF performance analysis">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="url(#logoGradient)" stroke-width="3" />
+                            <circle cx="50" cy="25" r="4" fill="url(#logoGradient)" />
+                            <circle cx="73" cy="35" r="4" fill="url(#logoGradient)" />
+                            <circle cx="27" cy="35" r="4" fill="url(#logoGradient)" />
+                            <circle cx="80" cy="60" r="4" fill="url(#logoGradient)" />
+                            <circle cx="20" cy="60" r="4" fill="url(#logoGradient)" />
+                            <circle cx="65" cy="80" r="4" fill="url(#logoGradient)" />
+                            <circle cx="35" cy="80" r="4" fill="url(#logoGradient)" />
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>MRI Coil Designer</h1>
+                        <p>Geodesic RF Coil Engineering</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="exportBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        Export Design
+                    </button>
+                    <button class="btn btn-primary" id="generateBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                        Generate
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Navigation Tabs -->
+            <nav class="tab-navigation">
+                <button class="tab-btn active" data-tab="geodesic">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 2 L12 22 M2 12 L22 12 M6 6 L18 18 M6 18 L18 6" />
+                    </svg>
+                    Geodesic Designer
+                </button>
+                <button class="tab-btn" data-tab="schematic">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="4" y="6" width="16" height="12" rx="2" />
+                        <line x1="2" y1="12" x2="6" y2="12" />
+                        <line x1="18" y1="12" x2="22" y2="12" />
+                        <circle cx="12" cy="12" r="2" />
+                    </svg>
+                    Circuit Schematic
+                </button>
+                <button class="tab-btn" data-tab="rf-calc">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18" />
+                        <path d="M7 12l3-3 4 4 5-5" />
+                    </svg>
+                    RF Calculator
+                </button>
+                <button class="tab-btn" data-tab="ai-assist">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                        <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                    AI Assistant
+                </button>
+                <button class="tab-btn" data-tab="fea-sim">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 12h20M2 12l5-5m-5 5l5 5" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    Head Coil FEA
+                </button>
+            </nav>
+
+            <!-- Tab Content -->
+            <div class="tab-content-container">
+                <!-- Geodesic Designer Tab -->
+                <div class="tab-content active" id="geodesic-tab">
+                    <div class="split-layout">
+                        <div class="control-panel">
+                            <div class="panel-section">
+                                <h2>Coil Parameters</h2>
+                                <div class="form-group">
+                                    <label for="fieldStrength">Magnetic Field Strength</label>
+                                    <select id="fieldStrength" class="input-field">
+                                        <option value="1.5">1.5 Tesla</option>
+                                        <option value="3" selected>3 Tesla</option>
+                                        <option value="7">7 Tesla</option>
+                                        <option value="9.4">9.4 Tesla</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="geodesicFreq">Geodesic Frequency (Subdivision Level)</label>
+                                    <input type="range" id="geodesicFreq" min="1" max="4" value="2" class="slider">
+                                    <div class="slider-value">
+                                        <span id="geodesicFreqValue">2</span>
+                                        <span class="hint" id="vertexCount">42 vertices</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="coilRadius">Head Coil Radius (mm)</label>
+                                    <input type="number" id="coilRadius" class="input-field" value="120" min="80"
+                                        max="200" step="5">
+                                </div>
+                                <div class="form-group">
+                                    <label for="numElements">Active Coil Elements</label>
+                                    <input type="range" id="numElements" min="8" max="64" value="32" class="slider">
+                                    <div class="slider-value">
+                                        <span id="numElementsValue">32</span>
+                                        <span class="hint">channels</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel-section">
+                                <h2>Visualization</h2>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="showWireframe" checked>
+                                        <span>Show Wireframe</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="showElements" checked>
+                                        <span>Show Coil Elements</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="autoRotate">
+                                        <span>Auto Rotate</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="panel-section stats-panel">
+                                <h2>Design Statistics</h2>
+                                <div class="stat-item">
+                                    <span class="stat-label">Larmor Frequency:</span>
+                                    <span class="stat-value" id="larmorFreq">127.74 MHz</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Total Vertices:</span>
+                                    <span class="stat-value" id="totalVertices">42</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Active Elements:</span>
+                                    <span class="stat-value" id="activeElements">32</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Coverage:</span>
+                                    <span class="stat-value" id="coverage">76%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="visualization-panel">
+                            <div class="canvas-container">
+                                <canvas id="geodesicCanvas" width="800" height="800"></canvas>
+                                <div class="canvas-controls">
+                                    <button class="icon-btn" id="resetView" title="Reset View">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M1 4v6h6M23 20v-6h-6" />
+                                            <path
+                                                d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+                                        </svg>
+                                    </button>
+                                    <button class="icon-btn" id="downloadCanvas" title="Download Image">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path
+                                                d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Circuit Schematic Tab -->
+                <div class="tab-content" id="schematic-tab">
+                    <div class="split-layout">
+                        <div class="control-panel">
+                            <div class="panel-section">
+                                <h2>Circuit Configuration</h2>
+                                <div class="form-group">
+                                    <label for="coilTopology">Coil Topology</label>
+                                    <select id="coilTopology" class="input-field">
+                                        <option value="single">Single Loop</option>
+                                        <option value="array" selected>Phased Array</option>
+                                        <option value="volume">Volume Coil</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="loopDiameter">Loop Diameter (mm)</label>
+                                    <input type="number" id="loopDiameter" class="input-field" value="80" min="30"
+                                        max="150" step="5">
+                                </div>
+                                <div class="form-group">
+                                    <label for="wireGauge">Wire Gauge (AWG)</label>
+                                    <select id="wireGauge" class="input-field">
+                                        <option value="18">18 AWG</option>
+                                        <option value="16" selected>16 AWG</option>
+                                        <option value="14">14 AWG</option>
+                                        <option value="12">12 AWG</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="includeMatching" checked>
+                                        <span>Include Matching Network</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="includeDecoupling" checked>
+                                        <span>Include Decoupling Network</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="panel-section">
+                                <h2>Component Values</h2>
+                                <div class="stat-item">
+                                    <span class="stat-label">Loop Inductance:</span>
+                                    <span class="stat-value" id="loopInductance">180 nH</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Tuning Capacitor:</span>
+                                    <span class="stat-value" id="tuningCap">8.2 pF</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Matching Capacitor:</span>
+                                    <span class="stat-value" id="matchingCap">22 pF</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Q-Factor (est):</span>
+                                    <span class="stat-value" id="qFactor">250</span>
+                                </div>
+                            </div>
+
+                            <div class="panel-section">
+                                <h2>Bill of Materials</h2>
+                                <div class="bom-list" id="bomList">
+                                    <div class="bom-item">
+                                        <span>Copper wire (16 AWG)</span>
+                                        <span>2.5 m</span>
+                                    </div>
+                                    <div class="bom-item">
+                                        <span>Ceramic capacitor (8.2 pF)</span>
+                                        <span>2×</span>
+                                    </div>
+                                    <div class="bom-item">
+                                        <span>Ceramic capacitor (22 pF)</span>
+                                        <span>2×</span>
+                                    </div>
+                                    <div class="bom-item">
+                                        <span>50Ω Coaxial cable</span>
+                                        <span>1.5 m</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="visualization-panel">
+                            <div class="schematic-container">
+                                <svg id="schematicSvg" viewBox="0 0 1000 800"></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RF Calculator Tab -->
+                <div class="tab-content" id="rf-calc-tab">
+                    <div class="calculator-layout">
+                        <div class="calc-section">
+                            <h2>Larmor Frequency Calculator</h2>
+                            <div class="form-group">
+                                <label for="calcFieldStrength">Magnetic Field (Tesla)</label>
+                                <input type="number" id="calcFieldStrength" class="input-field" value="3" step="0.1"
+                                    min="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="nucleus">Nucleus</label>
+                                <select id="nucleus" class="input-field">
+                                    <option value="1H" selected>¹H (Hydrogen)</option>
+                                    <option value="13C">¹³C (Carbon)</option>
+                                    <option value="31P">³¹P (Phosphorus)</option>
+                                    <option value="23Na">²³Na (Sodium)</option>
+                                </select>
+                            </div>
+                            <div class="result-box">
+                                <div class="result-label">Larmor Frequency:</div>
+                                <div class="result-value" id="calcLarmorFreq">127.74 MHz</div>
+                            </div>
+                        </div>
+
+                        <div class="calc-section">
+                            <h2>Loop Inductance Calculator</h2>
+                            <div class="form-group">
+                                <label for="loopShape">Loop Shape</label>
+                                <select id="loopShape" class="input-field">
+                                    <option value="circular" selected>Circular</option>
+                                    <option value="rectangular">Rectangular</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="calcLoopDiameter">Diameter (mm)</label>
+                                <input type="number" id="calcLoopDiameter" class="input-field" value="80" step="1"
+                                    min="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="calcWireDiameter">Wire Diameter (mm)</label>
+                                <input type="number" id="calcWireDiameter" class="input-field" value="1.3" step="0.1"
+                                    min="0.5">
+                            </div>
+                            <div class="result-box">
+                                <div class="result-label">Inductance:</div>
+                                <div class="result-value" id="calcInductance">180 nH</div>
+                            </div>
+                        </div>
+
+                        <div class="calc-section">
+                            <h2>Resonance Calculator</h2>
+                            <div class="form-group">
+                                <label for="resInductance">Inductance (nH)</label>
+                                <input type="number" id="resInductance" class="input-field" value="180" step="1"
+                                    min="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="targetFreq">Target Frequency (MHz)</label>
+                                <input type="number" id="targetFreq" class="input-field" value="127.74" step="0.01"
+                                    min="1">
+                            </div>
+                            <div class="result-box">
+                                <div class="result-label">Required Capacitance:</div>
+                                <div class="result-value" id="calcCapacitance">8.2 pF</div>
+                            </div>
+                        </div>
+
+                        <div class="calc-section full-width">
+                            <h2>SNR Estimation</h2>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label for="snrCoilDiameter">Coil Diameter (mm)</label>
+                                    <input type="number" id="snrCoilDiameter" class="input-field" value="80" step="5">
+                                </div>
+                                <div class="form-group">
+                                    <label for="snrDepth">Depth (mm)</label>
+                                    <input type="number" id="snrDepth" class="input-field" value="50" step="5">
+                                </div>
+                            </div>
+                            <div class="result-box">
+                                <div class="result-label">Relative SNR:</div>
+                                <div class="result-value" id="calcSNR">1.0</div>
+                                <div class="hint">Normalized to reference coil</div>
+                            </div>
+                        </div>
+
+                        <div class="calc-section full-width">
+                            <h2>B₁ Field Penetration</h2>
+                            <canvas id="fieldCanvas" width="600" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Assistant Tab -->
+                <div class="tab-content" id="ai-assist-tab">
+                    <div class="assistant-layout">
+                        <div class="assistant-panel">
+                            <div class="panel-section">
+                                <h2>Design Requirements</h2>
+                                <div class="form-group">
+                                    <label for="aiFieldStrength">Target Field Strength</label>
+                                    <select id="aiFieldStrength" class="input-field">
+                                        <option value="1.5">1.5T Clinical</option>
+                                        <option value="3" selected>3T Clinical</option>
+                                        <option value="7">7T Research</option>
+                                        <option value="9.4">9.4T Ultra-High Field</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="targetAnatomy">Target Anatomy</label>
+                                    <select id="targetAnatomy" class="input-field">
+                                        <option value="brain" selected>Brain (Adult)</option>
+                                        <option value="brain-pediatric">Brain (Pediatric)</option>
+                                        <option value="head-neck">Head & Neck</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="designGoal">Design Goal</label>
+                                    <select id="designGoal" class="input-field">
+                                        <option value="snr">Maximize SNR</option>
+                                        <option value="coverage">Maximize Coverage</option>
+                                        <option value="balanced" selected>Balanced Performance</option>
+                                        <option value="parallel">Parallel Imaging (High R)</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary full-width" id="aiGenerateBtn">
+                                    Generate Design Recommendations
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="recommendations-panel">
+                            <div class="panel-section">
+                                <h2>AI Recommendations</h2>
+                                <div id="aiOutput" class="ai-output">
+                                    <div class="placeholder-content">
+                                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="1.5">
+                                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+                                        </svg>
+                                        <p>Click "Generate Design Recommendations" to get AI-powered suggestions for
+                                            your RF coil design.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel-section">
+                                <h2>Design Documentation</h2>
+                                <div id="docOutput" class="doc-output">
+                                    <p class="hint">Technical documentation will appear here after generating
+                                        recommendations.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FEA Simulation Tab -->
+                <div class="tab-content" id="fea-sim-tab">
+                    <div class="split-layout">
+                        <div class="control-panel">
+                            <div class="panel-section">
+                                <h2>Head Coil FEA Parameters</h2>
+                                <p class="description-text">
+                                    Simulate magnetization (B0 & B1) for Head Coils at 3T and 7T.
+                                </p>
+
+                                <div class="form-group">
+                                    <label for="feaFieldStrength">Field Strength</label>
+                                    <select id="feaFieldStrength" class="input-field">
+                                        <option value="3.0">3 Tesla (Clinical)</option>
+                                        <option value="7.0">7 Tesla (Research)</option>
+                                        <option value="9.4">9.4 Tesla (Ultra-High)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="feaCoilRadius">Coil Radius (mm)</label>
+                                    <input type="number" id="feaCoilRadius" class="input-field" value="120" min="80"
+                                        max="200" step="5">
+                                </div>
+
+                                <button class="btn btn-primary full-width" id="runFeaBtn">
+                                    Run Head Coil Simulation
+                                </button>
+                            </div>
+
+                            <div class="panel-section" id="feaStatsPanel" style="display: none;">
+                                <h2>Simulation Statistics</h2>
+                                <div class="stat-item">
+                                    <span class="stat-label">B0 Strength (Iso-center):</span>
+                                    <span class="stat-value" id="feaB0">--</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Max B1 Strength:</span>
+                                    <span class="stat-value" id="feaB1">--</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Deformation:</span>
+                                    <span class="stat-value" id="feaDef">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="visualization-panel">
+                            <div class="canvas-container"
+                                style="display: flex; justify-content: center; align-items: center; background: #000;">
+                                <img id="feaResultImage" src="" alt="Run simulation to see results"
+                                    style="max-width: 100%; max-height: 100%; display: none;">
+                                <div id="feaPlaceholder" style="color: #64748b;">
+                                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                                    </svg>
+                                    <p>Simulation Visualization</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>MRI Head Coil Designer v1.0 | Geodesic RF Coil Engineering System</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="geodesic-engine.js"></script>
+    <script src="schematic-generator.js"></script>
+    <script src="rf-calculator.js"></script>
+    <script src="llm-assistant.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
