@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Neural Circuitry | QML Visualization</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <span class="q_logo">Q</span>
+                <span class="title">NEUROMORPH</span>
+                <span class="subtitle">Quantum Neural Circuitry</span>
+            </div>
+            <div class="status-panel">
+                <div class="metric">
+                    <span class="label">System State</span>
+                    <span class="value" id="system-status">Active</span>
+                </div>
+                <div class="metric">
+                    <span class="label">Coherence</span>
+                    <span class="value" id="coherence-metric">0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="label">Qubits</span>
+                    <span class="value">20</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="viz-container">
+                <canvas id="circuit-canvas"></canvas>
+                <div class="overlay-ui">
+                    <div class="node-info" id="node-info-panel">
+                        <h3>Qubit <span id="info-id">--</span></h3>
+                        <div class="data-row"><span>Excitation:</span> <span id="info-exc">0.0</span></div>
+                        <div class="data-row"><span>Phase:</span> <span id="info-phase">0.0</span> rad</div>
+                        <div class="bloch-viz">
+                            <div class="bloch-point" id="bloch-point"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="controls">
+                <button id="btn-reset" class="btn secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    Initialize
+                </button>
+                <button id="btn-step" class="btn primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    Single Step
+                </button>
+                <button id="btn-run" class="btn primary glow">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    Continuously Evolve
+                </button>
+                <button id="btn-train" class="btn accent">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    QML Optimization
+                </button>
+            </div>
+        </footer>
+    </div>
+    
+    <script type="module" src="script.js"></script>
+</body>
+</html>
