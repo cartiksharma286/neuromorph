@@ -199,6 +199,7 @@ class MRICoilApp {
         // Input Parameters
         const fieldStrength = parseFloat(document.getElementById('feaFieldStrength')?.value || 3.0);
         const coilRadius = parseFloat(document.getElementById('feaCoilRadius')?.value || 120);
+        const colormap = document.getElementById('feaColormap')?.value || 'inferno';
 
         if (btn) {
             btn.disabled = true;
@@ -213,7 +214,8 @@ class MRICoilApp {
                 },
                 body: JSON.stringify({
                     b0_strength: fieldStrength,
-                    coil_radius: coilRadius
+                    coil_radius: coilRadius,
+                    colormap: colormap
                 })
             });
 
