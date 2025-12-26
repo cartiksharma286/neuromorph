@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import random
+import json
+from server import DementiaTreatmentModel, ethics_board
 from server import QuantumCircuitModel
 
 def create_dementia_model(num_qubits=20):
@@ -10,7 +12,7 @@ def create_dementia_model(num_qubits=20):
     - Reduced connectivity (edges removed)
     - Lower entanglement strength (synaptic degradation)
     """
-    model = QuantumCircuitModel(num_qubits=num_qubits)
+    model = DementiaTreatmentModel(num_qubits=num_qubits)
     
     # Degradation: Remove 40% of edges to simulate synaptic loss
     edges = list(model.topology.edges())
@@ -93,3 +95,36 @@ if __name__ == "__main__":
     plot_circuit(dementia_model, "Degraded Neural Circuitry (Dementia)", "dementia_brain_schematic.png")
     
     print("Comparisons Generated.")
+
+    # ------------------------------------------------------------
+    # 3. Post‑treatment Brain Schematic
+    # ------------------------------------------------------------
+    print("Generating Post‑Treatment Brain Schematic...")
+    # Ensure ethical consent is granted (required before treatment)
+    ethics_board.grant_consent("STANDARD")
+    # Apply a cognitive treatment with moderate intensity
+    treatment_type = "cognitive"
+    intensity = 0.6
+    dementia_model.apply_treatment(treatment_type, intensity)
+    # Let the system evolve a few steps to integrate the treatment effects
+    for _ in range(5):
+        dementia_model.step()
+    # Plot the resulting post‑treatment connectivity
+    plot_circuit(dementia_model, "Post‑Treatment Neural Circuitry", "post_treatment_brain_schematic.png")
+    print("Post‑Treatment schematic saved.")
+    # Export the post‑treatment connectivity data to JSON
+    connectivity_data = dementia_model.get_state()
+    with open("post_treatment_connectivity.json", "w") as f:
+        json.dump(connectivity_data, f, indent=2)
+    print("Post‑treatment connectivity data saved to post_treatment_connectivity.json.")
+
+    # Apply treatment and generate post‑treatment schematic (single block)
+    print("Generating Post‑Treatment Brain Schematic...")
+    ethics_board.grant_consent("STANDARD")
+    treatment_type = "cognitive"
+    intensity = 0.6
+    dementia_model.apply_treatment(treatment_type, intensity)
+    for _ in range(5):
+        dementia_model.step()
+    plot_circuit(dementia_model, "Post‑Treatment Neural Circuitry", "post_treatment_brain_schematic.png")
+    print("Post‑Treatment schematic saved.")
