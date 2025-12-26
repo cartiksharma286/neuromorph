@@ -197,6 +197,35 @@ class DementiaTreatmentModel(QuantumCircuitModel):
                 # Calming excitation
                 q.apply_gate('RX', -0.05 * intensity)
 
+        elif treatment_type == 'ocd':
+            # OCD Treatment: Over-reinforcement of specific loops (add high-weight edges)
+            log.append("OCD Therapy: Reinforcing compulsive loop connections")
+            # Choose a small set of node pairs to strongly connect
+            num_loops = max(1, int(2 * intensity))
+            for _ in range(num_loops):
+                u = random.randint(0, self.num_qubits-1)
+                v = (u + random.randint(1, 3)) % self.num_qubits  # nearby node
+                if not self.topology.has_edge(u, v):
+                    self.topology.add_edge(u, v)
+                # Set a high entanglement strength to simulate compulsive loop
+                self.entanglements[(u, v)] = min(1.0, 0.8 + 0.2 * intensity)
+
+        elif treatment_type == 'schizophrenia':
+            # Schizophrenia Treatment: Disrupt network coherence (random edge removal & weight jitter)
+            log.append("Schizophrenia Therapy: Disrupting aberrant connectivity")
+            # Randomly remove a fraction of edges
+            edges = list(self.topology.edges())
+            num_remove = int(len(edges) * 0.2 * intensity)
+            if num_remove > 0:
+                to_remove = random.sample(edges, num_remove)
+                self.topology.remove_edges_from(to_remove)
+                for e in to_remove:
+                    self.entanglements.pop(e, None)
+            # Add jitter to remaining entanglements
+            for k in list(self.entanglements.keys()):
+                jitter = random.uniform(-0.2, 0.2) * intensity
+                self.entanglements[k] = max(0.0, min(1.0, self.entanglements[k] + jitter))
+
         # Update plasticity based on activity
         self.plasticity = min(1.0, self.plasticity + (0.01 * intensity))
         
