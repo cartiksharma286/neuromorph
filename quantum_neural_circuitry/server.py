@@ -56,7 +56,7 @@ class QuantumState:
         self.update_amplitudes()
 
 class QuantumCircuitModel:
-    def __init__(self, num_qubits=10):
+    def __init__(self, num_qubits=20):
         self.num_qubits = num_qubits
         self.qubits = [QuantumState() for _ in range(num_qubits)]
         self.topology = nx.watts_strogatz_graph(num_qubits, k=4, p=0.3)
@@ -81,6 +81,7 @@ class QuantumCircuitModel:
             
             # If control is excited, rotate target
             if control.excitation_prob > 0.5:
+                # Interaction strength modulated by entanglement
                 target.apply_gate('RX', strength * 0.2)
                 # target back-action on control (phase kickback simulation)
                 control.apply_gate('RZ', strength * 0.1)
@@ -115,8 +116,175 @@ class QuantumCircuitModel:
             # Gradient ascent simulation
             self.entanglements[k] = max(0.0, min(1.0, self.entanglements[k] + random.uniform(-0.05, 0.05)))
 
-# Global Circuit Instance
+# --- Dementia & Cognitive Resilience Extensions ---
+
+class DementiaState(BaseModel):
+    stage: str # e.g., "Early", "Moderate", "Severe", "Remission"
+    plasticity_index: float
+    synaptic_density: float
+    memory_coherence: float
+    recommended_exercise: str
+
+class TreatmentInput(BaseModel):
+    treatment_type: str # 'cognitive', 'reminiscence', 'sensory'
+    intensity: float
+
+class DementiaTreatmentModel(QuantumCircuitModel):
+    def __init__(self, num_qubits=24):
+        super().__init__(num_qubits)
+        self.plasticity = 0.5 # Ability to form new connections
+        self.degradation_rate = 0.01 # Natural decay over time
+        
+        # Simulate initial dementia state (reduced connectivity)
+        edges = list(self.topology.edges())
+        num_remove = int(len(edges) * 0.3)
+        if num_remove > 0:
+            remove_idx = random.sample(edges, num_remove)
+            self.topology.remove_edges_from(remove_idx)
+            for e in remove_idx:
+                if e in self.entanglements:
+                    del self.entanglements[e]
+
+    def natural_degradation(self):
+        """Simulates the progression of neurodegeneration."""
+        # Randomly weaken connections
+        for k in list(self.entanglements.keys()):
+            self.entanglements[k] *= (1.0 - self.degradation_rate)
+            # Prune very weak connections
+            if self.entanglements[k] < 0.05:
+                del self.entanglements[k]
+                if self.topology.has_edge(*k):
+                    self.topology.remove_edge(*k)
+
+    def apply_treatment(self, treatment_type, intensity):
+        """
+        Applies a specific cognitive behavioral exercise or therapy.
+        """
+        log = []
+        
+        if treatment_type == 'cognitive':
+            # Neuroplasticity Training: Encourages new connections
+            # Strategy: Randomly introduce new edges with low weight (learning)
+            log.append("Stimulating Neurogenesis (Edge Creation)")
+            num_new = int(5 * intensity)
+            for _ in range(num_new):
+                u, v = random.randint(0, self.num_qubits-1), random.randint(0, self.num_qubits-1)
+                if u != v and not self.topology.has_edge(u, v):
+                    self.topology.add_edge(u, v)
+                    self.entanglements[(u, v)] = 0.1 + (0.2 * self.plasticity)
+                    
+        elif treatment_type == 'reminiscence':
+            # Memory Reconstruction: Strengthens existing strong paths
+            # Strategy: Hebbian learning amplification on strong edges
+            log.append("Reinforcing Neural Pathways (Hebbian Amplification)")
+            for k in self.entanglements:
+                if self.entanglements[k] > 0.4:
+                    self.entanglements[k] = min(1.0, self.entanglements[k] + (0.1 * intensity))
+            
+            # Phase coherence for memory stability
+            for q in self.qubits:
+                q.apply_gate('RZ', -0.1 * q.phase) # Stabilize phase
+
+        elif treatment_type == 'sensory':
+            # Sensory Integration / Music Therapy
+            # Strategy: Global Coherence & stress reduction (lower entropy)
+            log.append("Harmonizing Global Oscillations (Phase Alignment)")
+            target_phase = random.uniform(0, 2*math.pi)
+            for q in self.qubits:
+                # Gentle pull towards a common phase
+                diff = target_phase - q.phi
+                q.apply_gate('RZ', diff * 0.1 * intensity)
+                # Calming excitation
+                q.apply_gate('RX', -0.05 * intensity)
+
+        # Update plasticity based on activity
+        self.plasticity = min(1.0, self.plasticity + (0.01 * intensity))
+        
+        return log
+
+    def analyze_status(self) -> DementiaState:
+        # Metrics
+        num_edges = len(self.entanglements)
+        max_edges = self.num_qubits * 4 # Approximation based on Watts-Strogatz k=4
+        density = num_edges / max_edges if max_edges > 0 else 0
+        
+        avg_strength = np.mean(list(self.entanglements.values())) if self.entanglements else 0
+        
+        # Stage estimation
+        if density < 0.3:
+            stage = "Late Stage / Severe"
+            rec = "Sensory Integration (Palliative)"
+        elif density < 0.6:
+            stage = "Moderate Decline"
+            rec = "Reminiscence Therapy (Maintenance)"
+        else:
+            stage = "Early Stage / At Risk"
+            rec = "Neuroplasticity Training (Prevention)"
+            
+        return DementiaState(
+            stage=stage,
+            plasticity_index=self.plasticity,
+            synaptic_density=density,
+            memory_coherence=avg_strength,
+            recommended_exercise=rec
+        )
+
+class EthicalOversight:
+    """
+    Simulates an Ethics Board oversight module.
+    Ensures treatments adhere to safety protocols (REB-2025-QML-DEM).
+    """
+    def __init__(self):
+        self.reb_id = "REB-2025-QML-DEM"
+        self.max_intensity_threshold = 0.8
+        self.safety_lock_active = False
+        self.patient_consent = False
+        self.study_id = None
+        self.custom_protocols_active = False
+
+    def verify_consent(self):
+        if not self.patient_consent:
+            raise HTTPException(status_code=403, detail="Ethical Violation: Patient consent not verified.")
+    
+    def check_safety(self, intensity: float, current_plasticity: float):
+        if self.safety_lock_active:
+             raise HTTPException(status_code=423, detail="Safety Lockout: Remediations in progress.")
+        
+        # Custom Study Override
+        if self.custom_protocols_active:
+             if intensity > 1.0: # Absolute hard limit even for studies
+                 self.trigger_remediation("Intensity Critical: Exceeds physical limits (1.0).")
+                 return 1.0
+             return intensity # Allow higher intensities for approved custom studies
+
+        # Standard Safety Protocols
+        if intensity > self.max_intensity_threshold:
+            # Automatic remediation: Cap intensity
+            self.trigger_remediation("Intensity exceeds ethical safety limits (0.8). Capping intervention.")
+            return 0.8 # Return capped value
+            
+        if current_plasticity < 0.2 and intensity > 0.5:
+             self.trigger_remediation("High intensity on fragile substrates. Risk of excitotoxicity.")
+             return 0.3 # Reduce significantly
+             
+        return intensity
+
+    def trigger_remediation(self, reason: str):
+        print(f"[ETHICS LOG] REMEDIATION TRIGGERED: {reason}")
+        # In a real system, this would log to an immutable ledger
+        
+    def grant_consent(self, study_id: str = "STANDARD"):
+        self.patient_consent = True
+        self.study_id = study_id
+        if "CUSTOM" in study_id.upper() or "NEURO" in study_id.upper():
+            self.custom_protocols_active = True
+            self.reb_id = f"REB-EXP-{study_id}"
+
+ethics_board = EthicalOversight()
+
+# Global Instances
 circuit = QuantumCircuitModel(num_qubits=20)
+dementia_brain = DementiaTreatmentModel(num_qubits=24)
 
 @app.get("/api/circuit")
 def get_circuit():
@@ -130,7 +298,7 @@ def evolve_circuit():
 @app.post("/api/train")
 def train_circuit():
     circuit.train_step()
-    circuit.step() # Evolve after training
+    circuit.step() 
     return circuit.get_state()
 
 @app.post("/api/reset")
@@ -139,8 +307,64 @@ def reset_circuit():
     circuit = QuantumCircuitModel(num_qubits=20)
     return circuit.get_state()
 
+# --- Dementia Treatment API ---
+
+@app.get("/api/dementia/state")
+def get_dementia_state():
+    return dementia_brain.get_state()
+
+@app.get("/api/dementia/metrics")
+def get_dementia_metrics():
+    return dementia_brain.analyze_status()
+
+@app.post("/api/dementia/treat")
+def apply_treatment(input: TreatmentInput):
+    # 1. Ethical Checks
+    ethics_board.verify_consent()
+    
+    # 2. Safety & Remediation
+    safe_intensity = ethics_board.check_safety(input.intensity, dementia_brain.plasticity)
+    remediation_note = None
+    if safe_intensity != input.intensity:
+        remediation_note = f"Treatment intensity automatically modulated from {input.intensity} to {safe_intensity} per Safety Protocol."
+
+    # Apply natural degradation first to simulate time passing
+    if random.random() < 0.2:
+        dementia_brain.natural_degradation()
+        
+    logs = dementia_brain.apply_treatment(input.treatment_type, safe_intensity)
+    
+    if remediation_note:
+        logs.insert(0, f"[REMEDIATION] {remediation_note}")
+
+    dementia_brain.step() # Evolve to integrate changes
+    
+    new_status = dementia_brain.analyze_status()
+    
+    return {
+        "treatment_logs": logs,
+        "new_metrics": new_status,
+        "brain_state": dementia_brain.get_state() # detailed visual data
+    }
+
+class ConsentInput(BaseModel):
+    study_id: str
+
+@app.post("/api/ethics/consent")
+def grant_consent(input: ConsentInput):
+    ethics_board.grant_consent(input.study_id)
+    return {"status": "Consent Verified", "reb_id": ethics_board.reb_id, "mode": "Custom Protocol" if ethics_board.custom_protocols_active else "Standard Safety"}
+
+@app.get("/api/ethics/status")
+def get_ethics_status():
+    return {
+        "reb_approval": ethics_board.reb_id,
+        "consent_verified": ethics_board.patient_consent,
+        "safety_protocols": "Active"
+    }
+
 # Serve static files for frontend
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=1001)
