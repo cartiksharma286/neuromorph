@@ -1,6 +1,6 @@
 :root {
     --bg-dark: #050510;
-    --bg-panel: rgba(15, 15, 30, 0.7);
+    --bg-panel: rgba(15, 15, 30, 0.85);
     --primary: #00f3ff;
     --primary-dim: rgba(0, 243, 255, 0.2);
     --secondary: #bc13fe;
@@ -11,9 +11,15 @@
     --border: rgba(255, 255, 255, 0.1);
     --font-heading: 'Orbitron', sans-serif;
     --font-body: 'Rajdhani', sans-serif;
+    --success: #00ff88;
+    --danger: #ff4444;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 body {
     background-color: var(--bg-dark);
@@ -21,10 +27,10 @@ body {
     font-family: var(--font-body);
     height: 100vh;
     overflow: hidden;
-    background-image: 
+    background-image:
         radial-gradient(circle at 50% 50%, rgba(10, 20, 40, 0.5) 0%, transparent 70%),
-        linear-gradient(0deg, rgba(0,0,0,0.2) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,0.2) 1px, transparent 1px);
+        linear-gradient(0deg, rgba(0, 0, 0, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.2) 1px, transparent 1px);
     background-size: 100% 100%, 40px 40px, 40px 40px;
 }
 
@@ -47,7 +53,12 @@ header {
     z-index: 10;
 }
 
-.logo { display: flex; align-items: center; gap: 10px; }
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .q_logo {
     font-family: var(--font-heading);
     font-size: 2rem;
@@ -55,12 +66,14 @@ header {
     text-shadow: 0 0 10px var(--primary);
     font-weight: 900;
 }
+
 .title {
     font-family: var(--font-heading);
     font-size: 1.2rem;
     letter-spacing: 2px;
     font-weight: 700;
 }
+
 .subtitle {
     font-size: 0.8rem;
     color: var(--text-dim);
@@ -69,20 +82,41 @@ header {
     border-left: 1px solid var(--border);
 }
 
-.status-panel { display: flex; gap: 20px; }
-.metric { display: flex; flex-direction: column; align-items: flex-end; }
-.metric .label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
-.metric .value { font-family: var(--font-heading); font-size: 1.1rem; color: var(--primary); text-shadow: 0 0 5px var(--primary-dim); }
+.status-panel {
+    display: flex;
+    gap: 20px;
+}
+
+.metric {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.metric .label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+
+.metric .value {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    color: var(--primary);
+    text-shadow: 0 0 5px var(--primary-dim);
+}
 
 /* Main */
 main {
     flex: 1;
     position: relative;
     overflow: hidden;
+    display: flex;
+    /* Flex layout for side-by-side */
 }
 
 .viz-container {
-    width: 100%;
+    flex: 1;
     height: 100%;
     position: relative;
 }
@@ -98,8 +132,157 @@ canvas {
     top: 20px;
     right: 20px;
     width: 250px;
-    pointer-events: none; /* Let clicks pass through to canvas */
+    pointer-events: none;
+    /* Let clicks pass through to canvas */
 }
+
+/* CBT Panel */
+.cbt-panel {
+    width: 350px;
+    height: 100%;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border);
+    backdrop-filter: blur(15px);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    z-index: 20;
+    box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.panel-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-header h2 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    color: var(--secondary);
+}
+
+.status-indicator {
+    font-size: 0.7rem;
+    background: rgba(0, 255, 136, 0.1);
+    color: var(--success);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+
+textarea {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 10px;
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 80px;
+    font-family: var(--font-body);
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+input[type="range"] {
+    width: 100%;
+    background: transparent;
+    cursor: pointer;
+}
+
+.full-width {
+    width: 100%;
+    justify-content: center;
+}
+
+.results-area {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 15px;
+    border: 1px solid var(--border);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.metric-box {
+    text-align: center;
+}
+
+.metric-box .state-val {
+    display: block;
+    font-size: 1.2rem;
+    color: var(--accent);
+    margin-top: 5px;
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.mini-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.mini-metric span:first-child {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+}
+
+.mini-metric span:last-child {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.intervention-log {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+}
+
+.log-entry {
+    margin-bottom: 5px;
+    padding: 5px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 2px;
+}
+
+.log-entry.placeholder {
+    color: var(--text-dim);
+    font-style: italic;
+    background: none;
+}
+
+/* Existing Styles */
 
 .node-info {
     background: var(--bg-panel);
@@ -107,7 +290,7 @@ canvas {
     border: 1px solid var(--border);
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     pointer-events: auto;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -142,7 +325,7 @@ canvas {
     border: 1px solid var(--border);
     border-radius: 50%;
     position: relative;
-    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.05), transparent);
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.05), transparent);
 }
 
 .bloch-point {
@@ -153,7 +336,8 @@ canvas {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Default center */
+    transform: translate(-50%, -50%);
+    /* Default center */
     box-shadow: 0 0 5px var(--accent);
     transition: all 0.2s ease;
 }
@@ -191,14 +375,26 @@ footer {
     text-transform: uppercase;
 }
 
-.btn:hover { background: rgba(255,255,255,0.05); border-color: var(--text-main); }
-.btn:active { transform: scale(0.98); }
+.btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--text-main);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
 .btn.primary {
     border-color: var(--primary);
     color: var(--primary);
     background: rgba(0, 243, 255, 0.05);
 }
+
 .btn.primary:hover {
     background: var(--primary);
     color: black;
@@ -209,6 +405,7 @@ footer {
     border-color: var(--secondary);
     color: var(--secondary);
 }
+
 .btn.accent:hover {
     background: var(--secondary);
     color: white;
@@ -220,7 +417,51 @@ footer {
 }
 
 @keyframes pulse-border {
-    0% { box-shadow: 0 0 0 0 rgba(0, 243, 255, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(0, 243, 255, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(0, 243, 255, 0); }
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 243, 255, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 243, 255, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 243, 255, 0);
+    }
+}/* Additions for Dementia Interface */
+
+select {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 10px;
+    border-radius: 4px;
+    font-family: var(--font-body);
+    width: 100%;
+}
+
+select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+option {
+    background: var(--bg-dark);
+    color: var(--text-main);
+}
+
+.recommendation-box {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(188, 19, 254, 0.1);
+    border-left: 3px solid var(--secondary);
+    border-radius: 0 4px 4px 0;
+    font-size: 0.9rem;
+}
+
+.highlight-text {
+    color: var(--accent);
+    font-weight: bold;
+    display: block;
+    margin-top: 5px;
 }

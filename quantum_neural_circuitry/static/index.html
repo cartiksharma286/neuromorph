@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Neural Circuitry | QML Visualization</title>
+    <title>Quantum Neural Circuitry | CBT & QML</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="app-container">
         <header>
@@ -28,7 +32,7 @@
                 </div>
                 <div class="metric">
                     <span class="label">Qubits</span>
-                    <span class="value">20</span>
+                    <span class="value">24</span>
                 </div>
             </div>
         </header>
@@ -47,30 +51,130 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Ethical Compliance Panel -->
+            <div class="cbt-panel" id="ethics-panel">
+                <div class="panel-header">
+                    <h2>Ethical Oversight</h2>
+                    <span class="status-indicator" id="ethics-status"
+                        style="border-color: var(--danger); color: var(--danger);">Pending Consent</span>
+                </div>
+                <div class="input-group">
+                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px;">
+                        <strong>REB Approval:</strong> REB-2025-QML-DEM<br>
+                        This system operates under strict ethical guidelines for AI-driven cognitive interventions.
+                        Patient consent is required to unlock treatment protocols.
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <label>Study Protocol ID (Optional)</label>
+                    <input type="text" id="study-id-input" placeholder="e.g., NEURO-CUSTOM-25"
+                        style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text-main); border-radius: 4px;">
+                </div>
+
+                <div class="input-group"
+                    style="margin-bottom: 15px; flex-direction: row; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="neuro-check">
+                    <label style="margin: 0;">Confirm Neurological Clearance</label>
+                </div>
+
+                <button id="btn-consent" class="btn full-width secondary">
+                    Verify Patient Consent
+                </button>
+            </div>
+
+            <!-- Dementia Treatment Paradigm Panel -->
+            <div class="cbt-panel" id="treatment-panel" style="opacity: 0.5; pointer-events: none;">
+                <div class="panel-header">
+                    <h2>Dementia Treatment Console</h2>
+                    <span class="status-indicator" id="treatment-status">Locked</span>
+                </div>
+
+                <div class="input-group">
+                    <label>Treatment Paradigm</label>
+                    <select id="treatment-type">
+                        <option value="cognitive">Neuroplasticity Training (Cognitive)</option>
+                        <option value="reminiscence">Memory Pathway Reinforcement (Reminiscence)</option>
+                        <option value="sensory">Global Synchronization (Sensory)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Treatment Intensity: <span id="intensity-val">0.5</span></label>
+                    <input type="range" id="intensity-slider" min="0" max="1" step="0.1" value="0.5">
+                </div>
+
+                <button id="btn-treat" class="btn full-width accent">
+                    Initiate Treatment Protocol
+                </button>
+
+                <div class="results-area" id="treatment-results">
+                    <div class="metric-box">
+                        <span class="label">Patient Status</span>
+                        <span class="value state-val" id="patient-stage">--</span>
+                    </div>
+
+                    <div class="metric-grid">
+                        <div class="mini-metric">
+                            <span>Plasticity</span>
+                            <span id="val-plasticity">0.0</span>
+                        </div>
+                        <div class="mini-metric">
+                            <span>Synaptic Density</span>
+                            <span id="val-density">0.0</span>
+                        </div>
+                        <div class="mini-metric">
+                            <span>Coherence</span>
+                            <span id="val-mem-coherence">0.0</span>
+                        </div>
+                    </div>
+
+                    <div class="recommendation-box">
+                        <span class="label">AI Recommendation:</span>
+                        <span id="ai-recommendation" class="highlight-text">--</span>
+                    </div>
+
+                    <div class="intervention-log" id="treatment-log">
+                        <div class="log-entry placeholder">Treatment logs will appear here...</div>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <footer>
             <div class="controls">
                 <button id="btn-reset" class="btn secondary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                        <path d="M3 3v5h5" />
+                    </svg>
                     Initialize
                 </button>
                 <button id="btn-step" class="btn primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
                     Single Step
                 </button>
                 <button id="btn-run" class="btn primary glow">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
                     Continuously Evolve
                 </button>
                 <button id="btn-train" class="btn accent">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    </svg>
                     QML Optimization
                 </button>
             </div>
         </footer>
     </div>
-    
+
     <script type="module" src="script.js"></script>
 </body>
+
 </html>
