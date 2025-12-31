@@ -9,6 +9,9 @@ import math
 import cmath
 import random
 import os
+from ane_simulation import ane_processor
+from prime_math_core import PrimeVortexField
+
 
 app = FastAPI()
 
@@ -132,6 +135,7 @@ class TreatmentInput(BaseModel):
 class DementiaTreatmentModel(QuantumCircuitModel):
     def __init__(self, num_qubits=24):
         super().__init__(num_qubits)
+        self.prime_field = PrimeVortexField(num_qubits)
         self.plasticity = 0.5 # Ability to form new connections
         self.degradation_rate = 0.01 # Natural decay over time
         
@@ -173,17 +177,17 @@ class DementiaTreatmentModel(QuantumCircuitModel):
                     self.topology.add_edge(u, v)
                     self.entanglements[(u, v)] = 0.1 + (0.2 * self.plasticity)
                     
-        elif treatment_type == 'reminiscence':
-            # Memory Reconstruction: Strengthens existing strong paths
-            # Strategy: Hebbian learning amplification on strong edges
-            log.append("Reinforcing Neural Pathways (Hebbian Amplification)")
+        elif treatment_type == 'memory_tags':
+            # Memory Tags & Cues: Strengthens specific paths associated with retrieval cues
+            # Strategy: Hebbian amplifications on targeted "tagged" edges
+            log.append("Applying Memory Tags & Retrieval Cues")
             for k in self.entanglements:
                 if self.entanglements[k] > 0.4:
-                    self.entanglements[k] = min(1.0, self.entanglements[k] + (0.1 * intensity))
+                    self.entanglements[k] = min(1.0, self.entanglements[k] + (0.3 * intensity)) # Boosted for rapid cure demo
             
-            # Phase coherence for memory stability
+            # Phase coherence for cue stability
             for q in self.qubits:
-                q.apply_gate('RZ', -0.1 * q.phase) # Stabilize phase
+                q.apply_gate('RZ', -0.3 * q.phase) # Stronger phase locking for tags
 
         elif treatment_type == 'sensory':
             # Sensory Integration / Music Therapy
@@ -208,23 +212,35 @@ class DementiaTreatmentModel(QuantumCircuitModel):
                 if not self.topology.has_edge(u, v):
                     self.topology.add_edge(u, v)
                 # Set a high entanglement strength to simulate compulsive loop
+                # Set a high entanglement strength to simulate compulsive loop
                 self.entanglements[(u, v)] = min(1.0, 0.8 + 0.2 * intensity)
 
-        elif treatment_type == 'schizophrenia':
-            # Schizophrenia Treatment: Disrupt network coherence (random edge removal & weight jitter)
-            log.append("Schizophrenia Therapy: Disrupting aberrant connectivity")
-            # Randomly remove a fraction of edges
-            edges = list(self.topology.edges())
-            num_remove = int(len(edges) * 0.2 * intensity)
-            if num_remove > 0:
-                to_remove = random.sample(edges, num_remove)
-                self.topology.remove_edges_from(to_remove)
-                for e in to_remove:
-                    self.entanglements.pop(e, None)
-            # Add jitter to remaining entanglements
-            for k in list(self.entanglements.keys()):
-                jitter = random.uniform(-0.2, 0.2) * intensity
-                self.entanglements[k] = max(0.0, min(1.0, self.entanglements[k] + jitter))
+        elif treatment_type == 'prime_resonance':
+            # Prime Resonance: The "God Mode" repair using Prime Distributions & Surface Integrals
+            log.append("Applying Prime Vortex Field (Surface Integral Optimization)")
+            
+            # 1. Optimize Entanglement Weights using Prime Gaps
+            optimized_weights = self.prime_field.optimize_entanglement_distribution(self.entanglements)
+            self.entanglements.update(optimized_weights)
+            log.append(" Entanglement strengths re-aligned to Prime Gap Statistics.")
+            
+            # 2. Topological Repair using Prime Gliders
+            # Find optimal new connections to minimize 'Surface Tension'
+            new_edges = self.prime_field.calculate_repair_vector(self.topology, target_density=0.8)
+            for u, v in new_edges:
+                self.topology.add_edge(u, v)
+                self.entanglements[(u, v)] = 0.5 # Strong initial bond
+            if new_edges:
+                log.append(f" Installed {len(new_edges)} Prime-Harmonic connections.")
+
+            # 3. Calculate Surface Integral acting as a clear metric of "Holistic Health"
+            flux = self.prime_field.calculate_surface_integral(self.topology, self.qubits)
+            log.append(f" Quantum Surface Flux integrated: {flux:.4f}")
+            
+            # Boost global plasticity significantly
+            self.plasticity = min(1.0, self.plasticity + 0.3 * intensity)
+
+
 
         # Update plasticity based on activity
         self.plasticity = min(1.0, self.plasticity + (0.01 * intensity))
@@ -245,7 +261,7 @@ class DementiaTreatmentModel(QuantumCircuitModel):
             rec = "Sensory Integration (Palliative)"
         elif density < 0.6:
             stage = "Moderate Decline"
-            rec = "Reminiscence Therapy (Maintenance)"
+            rec = "Memory Tags & Cues (Maintenance)"
         else:
             stage = "Early Stage / At Risk"
             rec = "Neuroplasticity Training (Prevention)"
@@ -391,6 +407,80 @@ def get_ethics_status():
         "consent_verified": ethics_board.patient_consent,
         "safety_protocols": "Active"
     }
+
+@app.post("/api/dementia/generate_3d")
+def generate_3d_projection(input: TreatmentInput):
+    """
+    Triggers the generation of the 3D neural projection file.
+    Executed via subprocess to reuse the complex logic in generate_brain_comparison.py
+    """
+    import subprocess
+    
+    # We use a specific filename for the 3D projection
+    filename = f"3d_projection_{input.treatment_type}.png"
+    
+    # Run the generation script with the --repair flag (which triggers the advanced logic)
+    # Intensity 0.95 is used for high-fidelity rendering
+    cmd = [
+        "python3", "generate_brain_comparison.py",
+        "--treatment", input.treatment_type,
+        "--intensity", str(input.intensity),
+        "--output", filename,
+        "--repair"
+    ]
+    
+    try:
+        # Run process
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        print(f"[3D GEN LOG] {result.stdout}")
+        # Since we ran with --repair, the script generates a _repaired suffix file
+        repaired_filename = filename.replace(".png", "_repaired.png")
+        return {"success": True, "filename": repaired_filename, "log": result.stdout}
+    except subprocess.CalledProcessError as e:
+        print(f"[3D GEN ERROR] {e.stderr}")
+        raise HTTPException(status_code=500, detail=f"3D Generation Failed: {e.stderr}")
+
+
+
+import threading
+import time
+
+# --- ANE Background Thread ---
+def run_ane_simulation_loop():
+    """
+    Runs the ANE simulation in a separate thread.
+    This ensures 'processor optimization' by not blocking the main server loop
+    and allows for smooth, continuous physics updates.
+    """
+    print("[SYSTEM] Starting Apple Neural Engine (ANE) Background Thread...")
+    while True:
+        ane_processor.update()
+        time.sleep(0.05) # 50ms tick rate (20Hz)
+
+@app.on_event("startup")
+def startup_event():
+    # Start the ANE simulation thread
+    t = threading.Thread(target=run_ane_simulation_loop, daemon=True)
+    t.start()
+
+# --- Apple Neural Engine API ---
+
+@app.get("/api/ane/stats")
+def get_ane_stats():
+    # Now this is a pure "Memory Read" operation with O(1) latency
+    # The complex physics update happens in the background thread (IPC via shared memory)
+    return ane_processor.get_stats()
+
+class BenchmarkRequest(BaseModel):
+    model_name: str
+    complexity_tflops: float
+
+@app.post("/api/ane/benchmark")
+def run_ane_benchmark(req: BenchmarkRequest):
+    # Convert TFLOPS to FLOPS
+    floppy = req.complexity_tflops * 1e12
+    ane_processor.submit_job(req.model_name, floppy)
+    return {"status": "Job Submitted", "job": req.model_name}
 
 # Serve static files for frontend
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

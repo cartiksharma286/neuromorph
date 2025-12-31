@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import math
 import math
 import networkx as nx
@@ -99,7 +100,46 @@ def plot_circuit(model, title, filename):
     plt.axis('off')
     plt.savefig(filename, dpi=300, bbox_inches='tight')
     plt.close()
+    plt.close()
     print(f"Saved {filename}")
+
+def plot_circuit_3d(model, title, filename):
+    fig = plt.figure(figsize=(12, 10))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_facecolor('#0d0d0d')
+    fig.patch.set_facecolor('#0d0d0d')
+    
+    # 3D Spring Layout
+    pos = nx.spring_layout(model.topology, dim=3, seed=42)
+    
+    # Extract coords
+    xs = [pos[n][0] for n in model.topology.nodes()]
+    ys = [pos[n][1] for n in model.topology.nodes()]
+    zs = [pos[n][2] for n in model.topology.nodes()]
+    
+    # Nodes
+    ax.scatter(xs, ys, zs, c='#00f3ff', s=120, edgecolors='w', alpha=0.9, depthshade=True)
+    
+    # Edges
+    for u, v in model.topology.edges():
+        x = [pos[u][0], pos[v][0]]
+        y = [pos[u][1], pos[v][1]]
+        z = [pos[u][2], pos[v][2]]
+        
+        weight = model.entanglements.get((u, v), 0.1)
+        # Dynamic color based on weight for 3D plot
+        edge_color = plt.cm.spring(weight) if "Repair" in title else '#00f3ff'
+        ax.plot(x, y, z, c=edge_color, alpha=0.4 + (weight*0.4), linewidth=weight*2.5)
+        
+    ax.set_title(title, color='white', fontsize=16, pad=10)
+    ax.axis('off')
+    
+    # optimal view angle
+    ax.view_init(elev=25, azim=135)
+    
+    plt.savefig(filename, dpi=300, bbox_inches='tight', facecolor='#0d0d0d')
+    plt.close()
+    print(f"Saved 3D Projection {filename}")
 
 if __name__ == "__main__":
     print("Initializing Quantum Neural Circuitry Models...")
@@ -133,7 +173,10 @@ if __name__ == "__main__":
     dementia_model.apply_treatment(args.treatment, args.intensity)
     for _ in range(args.steps):
         dementia_model.step()
-    plot_circuit(dementia_model, f"Post‑Treatment ({args.treatment}) Neural Circuitry", args.output)
+    if "3d" in args.output or "projection" in args.output:
+        plot_circuit_3d(dementia_model, f"3D Projection: {args.treatment}", args.output)
+    else:
+        plot_circuit(dementia_model, f"Post‑Treatment ({args.treatment}) Neural Circuitry", args.output)
     print(f"Saved {args.output}")
 
     if args.repair:
@@ -209,10 +252,35 @@ if __name__ == "__main__":
         print(" -> Statistical Classifiers: Identified and boosted weak nodes.")
         print(" -> Continued Fractions: Aligned weights to Golden Ratio optima.")
         print(" -> Quantum Surface Integrals: Maximized coherence flux.")
+
+        # --- PRIME VORTEX FIELD INTEGRATION ---
+        if hasattr(dementia_model, 'prime_field'):
+            print("Applying Prime Vortex Field Optimization...")
+            # 1. Optimize Entanglement Weights using Prime Gaps
+            optimized_weights = dementia_model.prime_field.optimize_entanglement_distribution(dementia_model.entanglements)
+            dementia_model.entanglements.update(optimized_weights)
+            
+            # 2. Topological Repair using Prime Gliders
+            prime_edges = dementia_model.prime_field.calculate_repair_vector(dementia_model.topology, target_density=0.8)
+            for u, v in prime_edges:
+                # Add with visual flair - higher weight for prime connections
+                if not dementia_model.topology.has_edge(u, v):
+                    dementia_model.topology.add_edge(u, v)
+                    dementia_model.entanglements[(u, v)] = 0.8
+            
+            # 3. Calculate Surface Integral
+            flux = dementia_model.prime_field.calculate_surface_integral(dementia_model.topology, dementia_model.qubits)
+            print(f" -> Prime Field Surface Flux: {flux:.4f}")
+            print(f" -> Installed {len(prime_edges)} Prime-Harmonic connections.")
+        # --------------------------------------
              
         # Visualize Repair
         repair_filename = args.output.replace(".png", "_repaired.png")
-        plot_circuit(dementia_model, f"Repaired Neural Circuitry (QML Optimized)", repair_filename)
+
+        if "3d" in args.output or "projection" in args.output:
+             plot_circuit_3d(dementia_model, f"Repaired 3D Projection (QML Optimized)", repair_filename)
+        else:
+             plot_circuit(dementia_model, f"Repaired Neural Circuitry (QML Optimized)", repair_filename)
         print(f"Repaired circuitry saved to {repair_filename}")
 
     # Export connectivity data to JSON
