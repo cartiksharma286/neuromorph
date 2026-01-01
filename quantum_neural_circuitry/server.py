@@ -11,6 +11,7 @@ import random
 import os
 from ane_simulation import ane_processor
 from prime_math_core import PrimeVortexField
+from generative_quantum_core import GenerativeQuantumOptimizer
 
 
 app = FastAPI()
@@ -136,6 +137,7 @@ class DementiaTreatmentModel(QuantumCircuitModel):
     def __init__(self, num_qubits=24):
         super().__init__(num_qubits)
         self.prime_field = PrimeVortexField(num_qubits)
+        self.gen_ai = GenerativeQuantumOptimizer(num_qubits, self.prime_field)
         self.plasticity = 0.5 # Ability to form new connections
         self.degradation_rate = 0.01 # Natural decay over time
         
@@ -219,9 +221,21 @@ class DementiaTreatmentModel(QuantumCircuitModel):
             # Prime Resonance: The "God Mode" repair using Prime Distributions & Surface Integrals
             log.append("Applying Prime Vortex Field (Surface Integral Optimization)")
             
-            # 1. Optimize Entanglement Weights using Prime Gaps
+            # 1. Optimize Entanglement Weights using Prime Gaps & Hebbian Learning
+            
+            # First, standard Prime Gap optimization
             optimized_weights = self.prime_field.optimize_entanglement_distribution(self.entanglements)
             self.entanglements.update(optimized_weights)
+            
+            # Second, Apply Quantum Hebbian Amplification
+            # (Fire together = Phase Alignment, Wire together = Entanglement Boost)
+            for (u, v) in list(self.entanglements.keys()):
+                current_weight = self.entanglements[(u, v)]
+                # Hebbian factor modulated by Prime Surface Integral
+                new_weight = self.prime_field.calculate_hebbian_prime_factor(u, v, self.qubits, current_weight)
+                self.entanglements[(u, v)] = new_weight
+                
+            log.append(" Applied Quantum Hebbian Amplification (Prime-Modulated).")
             log.append(" Entanglement strengths re-aligned to Prime Gap Statistics.")
             
             # 2. Topological Repair using Prime Gliders
@@ -239,6 +253,51 @@ class DementiaTreatmentModel(QuantumCircuitModel):
             
             # Boost global plasticity significantly
             self.plasticity = min(1.0, self.plasticity + 0.3 * intensity)
+
+        elif treatment_type == 'cognitive_enhancement':
+            # Cognitive Enhancement: Pushing beyond Healthy Baseline
+            # Strategy: "Twin Prime" Hyper-Criticality + NVQLink Synchronization
+            log.append("Initiating Cognitive Enhancement Protocol (Hyper-Criticality)")
+            
+            # 1. Apply Twin Prime Optimization (Super-Hubs)
+            hyper_weights = self.prime_field.optimize_for_hyper_criticality(self.entanglements)
+            self.entanglements.update(hyper_weights)
+            log.append(" Twin Prime Resonances activated (Super-Conductive Pathways).")
+            
+            # 2. Simulated NVQLink Download (Knowledge Injection)
+            # In a real app, this would query the NVQLink API for external quantum states
+            # Here we simulate an injection of "perfect coherence" from the cloud
+            log.append(" [NVQLink] Synchronizing with Quantum Cloud Cortex...")
+            for q in self.qubits:
+                # Align phase to "Universal Clock" (simulated external reference)
+                # This reduces local entropy massively
+                q.phi = 0.0 # Perfect alignment
+                q.excitation_prob = max(0.2, q.excitation_prob) # Ensure activity
+            
+            log.append(" Global Entanglement Entropy minimized.")
+            
+            # 3. Boost Plasticity to Super-Human levels
+            self.plasticity = 1.0 # Max plasticity
+            
+            # 4. Calculate Super-Flux
+            flux = self.prime_field.calculate_surface_integral(self.topology, self.qubits)
+            log.append(f" Network Surface Flux: {flux:.4f} (SUPER-CRITICAL)")
+
+        elif treatment_type == 'generative_ai':
+            # Gemini 3.0 Mode: Generative Quantum Control
+            log.append("Engaging Gemini 3.0 Generative Driver...")
+            
+            # 1. Predict Optimal Hamiltonian
+            gen_weights = self.gen_ai.predict_optimal_hamiltonian(self.entanglements)
+            self.entanglements.update(gen_weights)
+            log.append(" Hamiltonian Parameters optimized via Variational Inference.")
+            
+            # 2. Minimize Free Energy
+            current_energy = self.gen_ai.derive_variational_energy(self.topology, self.qubits)
+            log.append(f" System Free Energy Minimized to: {current_energy:.4f}")
+            
+            # 3. Aggressive Repatterning
+            self.plasticity = 0.95
 
 
 
@@ -486,4 +545,4 @@ def run_ane_benchmark(req: BenchmarkRequest):
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8081)
