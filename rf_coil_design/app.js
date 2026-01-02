@@ -18,6 +18,7 @@ class MRICoilApp {
         initSchematicGenerator();
         initRFCalculator();
         initLLMAssistant();
+        initQMLOptimizer();
 
         // Initial render
         this.updateGeodesicView();
