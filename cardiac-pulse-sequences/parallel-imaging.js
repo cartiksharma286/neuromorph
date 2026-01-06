@@ -17,7 +17,8 @@ const ParallelImaging = {
     init() {
         console.log('Parallel Imaging module initialized');
         this.bindEvents();
-        this.updateCalculations();
+        // Delay initial calculation slightly to ensure everything loaded
+        setTimeout(() => this.updateCalculations(), 100);
     },
 
     /**
@@ -82,6 +83,11 @@ const ParallelImaging = {
      * Update all calculations
      */
     updateCalculations() {
+        if (this.state.technique === 'quantum') {
+            this.performQuantumOptimization();
+            return;
+        }
+
         // Calculate g-factor
         const gResult = ParallelPhysics.calculateGFactor(
             this.state.accelerationFactor,
@@ -108,6 +114,70 @@ const ParallelImaging = {
         // Update visualization
         if (window.Visualizer) {
             Visualizer.drawKSpace(this.state);
+        }
+    },
+
+    /**
+     * Perform Quantum Optimization via Backend API
+     */
+    async performQuantumOptimization() {
+        const statusDisplay = document.getElementById('g-factor-display');
+        if (statusDisplay) statusDisplay.textContent = 'Optimizing...';
+
+        try {
+            const response = await fetch('/api/quantum-optimize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    accelerationFactor: this.state.accelerationFactor,
+                    coilElements: this.state.coilElements
+                })
+            });
+
+            if (!response.ok) throw new Error('Optimization failed');
+
+            const result = await response.json();
+
+            // Update metrics with quantum results
+            this.updateQuantumMetrics(result);
+
+            // Update visualization with quantum pattern
+            if (window.Visualizer) {
+                // We inject the custom pattern into the state for the visualizer to use
+                const quantumState = { ...this.state, customPattern: result.pattern };
+                Visualizer.drawKSpace(quantumState);
+            }
+
+        } catch (error) {
+            console.error('Quantum optimization error:', error);
+            // Fallback to standard calculation
+            const gResult = ParallelPhysics.calculateGFactor(
+                this.state.accelerationFactor,
+                this.state.coilElements
+            );
+            this.updateMetrics(gResult, { snrPenaltyPercent: 0 }, { timeSaved: 0 });
+        }
+    },
+
+    updateQuantumMetrics(result) {
+        const gFactorDisplay = document.getElementById('g-factor-display');
+        const snrDisplay = document.getElementById('snr-penalty-display');
+        const timeDisplay = document.getElementById('scan-time-display');
+
+        if (gFactorDisplay) {
+            gFactorDisplay.innerHTML = `${result.g_factor} <span style="color:#4ade80; font-size:0.8em">▼ Q-Optimized</span>`;
+        }
+
+        if (snrDisplay) {
+            // Calculate effective SNR penalty with improvement
+            snrDisplay.innerHTML = `Low <span style="color:#4ade80; font-size:0.8em">(+${result.snr_improvement})</span>`;
+        }
+
+        if (timeDisplay) {
+            const timeSeconds = this.state.scanTimeBaseline / this.state.accelerationFactor / 1000;
+            timeDisplay.textContent = Math.round(timeSeconds) + 's';
         }
     },
 

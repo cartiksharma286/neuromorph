@@ -43,6 +43,18 @@ const App = {
         if (window.ExportModule) {
             ExportModule.init();
         }
+
+        if (window.CardiacGating) {
+            CardiacGating.init();
+        }
+
+        if (window.ReconstructionSim) {
+            ReconstructionSim.init();
+        }
+
+        if (window.ProtocolReasoning) {
+            ProtocolReasoning.init();
+        }
     },
 
     /**

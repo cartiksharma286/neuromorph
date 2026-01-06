@@ -13,6 +13,10 @@ const ExportModule = {
             exportPyPulseq.addEventListener('click', () => this.exportPyPulseq());
         }
 
+        if (document.getElementById('write-seq-file')) {
+            document.getElementById('write-seq-file').addEventListener('click', () => this.writeSeqFile());
+        }
+
         if (exportVendor) {
             exportVendor.addEventListener('click', () => this.exportVendor());
         }
@@ -35,6 +39,51 @@ const ExportModule = {
 
         if (window.LLMInterface) {
             LLMInterface.addMessage('assistant', '✓ PyPulseq code exported successfully!');
+        }
+    },
+
+    /**
+     * Write .seq file on server (Auto-confirm)
+     */
+    async writeSeqFile() {
+        const config = this.gatherConfiguration();
+        const pypulseqCode = this.generatePyPulseqCode(config);
+
+        if (window.LLMInterface) {
+            LLMInterface.addMessage('assistant', '⏳ Generating and writing .seq file...');
+        }
+
+        try {
+            const response = await fetch('/api/write-seq', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: pypulseqCode
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) throw new Error(result.error || 'Failed to write file');
+
+            console.log(result.output);
+
+            // Auto-confirm via UI message without blocking alert
+            if (window.LLMInterface) {
+                LLMInterface.addMessage('assistant', '✓ ' + result.message + '\nSaved as cardiac_sequence.seq');
+            } else {
+                console.log(result.message);
+            }
+
+        } catch (error) {
+            console.error('Error writing seq file:', error);
+            if (window.LLMInterface) {
+                LLMInterface.addMessage('assistant', '❌ Error: ' + error.message);
+            } else {
+                console.error('Error: ' + error.message);
+            }
         }
     },
 

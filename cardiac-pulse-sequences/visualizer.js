@@ -79,6 +79,9 @@ const Visualizer = {
             } else if (technique === 'hybrid') {
                 // SENSE + CS
                 isSampled = (ky % Math.round(R * 0.7) === 0) || (Math.random() < 0.15 / R);
+            } else if (technique === 'quantum' && config.customPattern) {
+                // Custom Quantum Pattern coming from backend
+                isSampled = config.customPattern[ky] === 1;
             }
 
             if (isSampled) {
@@ -89,7 +92,10 @@ const Visualizer = {
                 const distFromCenter = Math.abs(ky - kSpaceSize / 2) / (kSpaceSize / 2);
                 const brightness = Math.floor(120 + (1 - distFromCenter) * 135);
 
-                ctx.fillStyle = `rgb(${brightness * 0.6}, ${brightness * 0.8}, ${brightness})`;
+                ctx.fillStyle = technique === 'quantum'
+                    ? `rgb(${brightness}, ${brightness * 0.9}, ${brightness * 0.5})` // Golden quantum color
+                    : `rgb(${brightness * 0.6}, ${brightness * 0.8}, ${brightness})`;
+
                 ctx.fillRect(offsetX, y, width * 0.7, Math.max(1, cellHeight));
             }
         }

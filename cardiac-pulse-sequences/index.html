@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cardiac Parallel Imaging Pulse Sequence Generator</title>
-    <meta name="description" content="Advanced cardiac MRI parallel imaging pulse sequence generator with LLM-powered protocol optimization">
+    <meta name="description"
+        content="Advanced cardiac MRI parallel imaging pulse sequence generator with LLM-powered protocol optimization">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="app-container">
         <!-- Header -->
@@ -59,6 +62,7 @@
                             <option value="compressed-sensing">Compressed Sensing</option>
                             <option value="sms">SMS (Simultaneous Multi-Slice)</option>
                             <option value="hybrid">Hybrid (SENSE + CS)</option>
+                            <option value="quantum">Quantum Optimization (NVQLink)</option>
                         </select>
                         <span class="control-description">Choose the parallel imaging reconstruction method</span>
                     </div>
@@ -67,19 +71,20 @@
                     <div class="control-group">
                         <label class="control-label">Acceleration Factor (R)</label>
                         <div class="range-wrapper">
-                            <input type="range" id="acceleration-factor" class="range-slider" 
-                                   min="1" max="6" step="0.5" value="2">
+                            <input type="range" id="acceleration-factor" class="range-slider" min="1" max="6" step="0.5"
+                                value="2">
                             <span class="range-value" id="acceleration-value">2.0x</span>
                         </div>
-                        <span class="control-description">Higher values = faster scans, but increased noise and artifacts</span>
+                        <span class="control-description">Higher values = faster scans, but increased noise and
+                            artifacts</span>
                     </div>
 
                     <!-- Coil Elements -->
                     <div class="control-group">
                         <label class="control-label">Coil Array Elements</label>
                         <div class="range-wrapper">
-                            <input type="range" id="coil-elements" class="range-slider" 
-                                   min="4" max="32" step="2" value="18">
+                            <input type="range" id="coil-elements" class="range-slider" min="4" max="32" step="2"
+                                value="18">
                             <span class="range-value" id="coil-value">18 channels</span>
                         </div>
                         <span class="control-description">More elements allow higher acceleration</span>
@@ -89,8 +94,8 @@
                     <div class="control-group" id="acs-group">
                         <label class="control-label">ACS Lines (Calibration)</label>
                         <div class="range-wrapper">
-                            <input type="range" id="acs-lines" class="range-slider" 
-                                   min="12" max="48" step="4" value="24">
+                            <input type="range" id="acs-lines" class="range-slider" min="12" max="48" step="4"
+                                value="24">
                             <span class="range-value" id="acs-value">24 lines</span>
                         </div>
                         <span class="control-description">Auto-calibrating signal lines for GRAPPA reconstruction</span>
@@ -142,8 +147,8 @@
                     <div class="control-group">
                         <label class="control-label">Temporal Resolution (ms)</label>
                         <div class="range-wrapper">
-                            <input type="range" id="temporal-res" class="range-slider" 
-                                   min="20" max="60" step="5" value="40">
+                            <input type="range" id="temporal-res" class="range-slider" min="20" max="60" step="5"
+                                value="40">
                             <span class="range-value" id="temporal-value">40 ms</span>
                         </div>
                         <span class="control-description">Lower values capture faster cardiac motion</span>
@@ -152,8 +157,8 @@
                     <div class="control-group">
                         <label class="control-label">Cardiac Phases</label>
                         <div class="range-wrapper">
-                            <input type="range" id="cardiac-phases" class="range-slider" 
-                                   min="15" max="40" step="5" value="25">
+                            <input type="range" id="cardiac-phases" class="range-slider" min="15" max="40" step="5"
+                                value="25">
                             <span class="range-value" id="phases-value">25 phases</span>
                         </div>
                         <span class="control-description">Number of reconstructed cardiac phases</span>
@@ -162,8 +167,8 @@
                     <div class="control-group">
                         <label class="control-label">Heart Rate (bpm)</label>
                         <div class="range-wrapper">
-                            <input type="range" id="heart-rate" class="range-slider" 
-                                   min="40" max="120" step="5" value="70">
+                            <input type="range" id="heart-rate" class="range-slider" min="40" max="120" step="5"
+                                value="70">
                             <span class="range-value" id="hr-value">70 bpm</span>
                         </div>
                     </div>
@@ -199,8 +204,8 @@
                     <div class="control-group">
                         <label class="control-label">Saturation Recovery Time (ms)</label>
                         <div class="range-wrapper">
-                            <input type="range" id="sr-time" class="range-slider" 
-                                   min="60" max="120" step="10" value="100">
+                            <input type="range" id="sr-time" class="range-slider" min="60" max="120" step="10"
+                                value="100">
                             <span class="range-value" id="sr-value">100 ms</span>
                         </div>
                     </div>
@@ -208,8 +213,8 @@
                     <div class="control-group">
                         <label class="control-label">Slices per Heartbeat</label>
                         <div class="range-wrapper">
-                            <input type="range" id="perfusion-slices" class="range-slider" 
-                                   min="3" max="8" step="1" value="4">
+                            <input type="range" id="perfusion-slices" class="range-slider" min="3" max="8" step="1"
+                                value="4">
                             <span class="range-value" id="perfusion-slices-value">4 slices</span>
                         </div>
                     </div>
@@ -217,8 +222,8 @@
                     <div class="control-group">
                         <label class="control-label">Temporal Footprint (ms)</label>
                         <div class="range-wrapper">
-                            <input type="range" id="temporal-footprint" class="range-slider" 
-                                   min="120" max="200" step="10" value="150">
+                            <input type="range" id="temporal-footprint" class="range-slider" min="120" max="200"
+                                step="10" value="150">
                             <span class="range-value" id="footprint-value">150 ms</span>
                         </div>
                         <span class="control-description">Time to acquire all slices</span>
@@ -244,8 +249,8 @@
                     <div class="control-group">
                         <label class="control-label">Inversion Time (TI) - ms</label>
                         <div class="range-wrapper">
-                            <input type="range" id="ti-value" class="range-slider" 
-                                   min="200" max="400" step="10" value="300">
+                            <input type="range" id="ti-value" class="range-slider" min="200" max="400" step="10"
+                                value="300">
                             <span class="range-value" id="ti-display">300 ms</span>
                         </div>
                         <span class="control-description">TI for myocardial nulling (typically 250-350ms at 1.5T)</span>
@@ -346,11 +351,11 @@
                     <div class="control-group">
                         <label class="control-label">VENC (cm/s)</label>
                         <div class="range-wrapper">
-                            <input type="range" id="venc" class="range-slider" 
-                                   min="50" max="300" step="10" value="150">
+                            <input type="range" id="venc" class="range-slider" min="50" max="300" step="10" value="150">
                             <span class="range-value" id="venc-value">150 cm/s</span>
                         </div>
-                        <span class="control-description">Velocity encoding sensitivity (aorta: 150-200, mitral: 80-120)</span>
+                        <span class="control-description">Velocity encoding sensitivity (aorta: 150-200, mitral:
+                            80-120)</span>
                     </div>
 
                     <div class="control-group">
@@ -371,6 +376,11 @@
                     <button class="btn btn-primary" id="export-pypulseq">
                         <span>📦</span>
                         Export PyPulseq
+                    </button>
+                    <button class="btn btn-primary" id="write-seq-file"
+                        style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <span>💾</span>
+                        Write .seq File
                     </button>
                     <button class="btn btn-secondary" id="export-vendor">
                         <span>🏭</span>
@@ -409,12 +419,8 @@
                 </div>
 
                 <div class="chat-input-wrapper">
-                    <textarea 
-                        id="chat-input" 
-                        class="chat-input" 
-                        rows="2" 
-                        placeholder="Ask me anything about cardiac protocols..."
-                    ></textarea>
+                    <textarea id="chat-input" class="chat-input" rows="2"
+                        placeholder="Ask me anything about cardiac protocols..."></textarea>
                     <button class="send-button" id="send-message">➤</button>
                 </div>
             </aside>
@@ -439,4 +445,5 @@
     <script src="pypulseq-generator.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>
