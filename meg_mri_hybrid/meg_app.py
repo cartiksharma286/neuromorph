@@ -7,7 +7,7 @@ import os
 # Add current directory to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from meg_analysis_bet_sss import run_analysis, run_realtime_nvqlink
+from meg_analysis_bet_sss import run_analysis, run_realtime_nvqlink, run_prime_vortex_simulation
 from meg_dewar_simulation import simulate_with_dewar
 
 app = Flask(__name__)
@@ -29,6 +29,7 @@ def index():
             .btn-secondary { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
             .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4); }
             .btn-accent { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+            .btn-success { background: linear-gradient(135deg, #10b981, #34d399); }
             .spinner { border: 4px solid #334155; border-top: 4px solid #818cf8; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: none; margin: 0 auto 1rem; }
             @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         </style>
@@ -51,10 +52,20 @@ def index():
             <button class="btn btn-secondary" onclick="startSim('/run_dewar')">Run Dewar Quantum CFD</button>
             <button class="btn btn-accent" onclick="startSim('/run_nvqlink')">Run Real-Time NVQLink SSS</button>
             <button class="btn btn-secondary" onclick="startSim('/run_beamformer')">Run Beamformer & Geodesics</button>
+            <button class="btn btn-success" onclick="startSim('/run_prime_vortex')">Run Prime Vortex Generator</button>
         </div>
     </body>
     </html>
     """
+
+@app.route('/run_prime_vortex')
+def run_prime():
+    try:
+        html_report = run_prime_vortex_simulation()
+        return html_report
+    except Exception as e:
+        import traceback
+        return f"<h1>Error Running Prime Vortex Simulation</h1><pre>{traceback.format_exc()}</pre>"
 
 @app.route('/run_simulation')
 def run_sim():

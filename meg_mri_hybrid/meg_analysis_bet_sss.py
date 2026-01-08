@@ -194,6 +194,93 @@ class SphericalHarmonicsSSS:
         
         return data_internal, data_external
 
+class PrimeVortexGenerator:
+    """
+    Generates a 'Prime Vortex' quantum field.
+    Mathematically represented as a toroidal vector field modulated by prime-number distribution gaps.
+    Used for 'Quantum Surface Integral' calculations.
+    """
+    def __init__(self, shape):
+        self.shape = shape
+        self.center = np.array(shape) / 2
+        
+    def get_field(self, X, Y, Z):
+        # Toroidal field flow
+        # Psi = (-y, x, 0) / (x^2 + y^2) * exp(-z^2)
+        
+        # Centered coords
+        xc = X - self.center[0]
+        yc = Y - self.center[1]
+        zc = Z - self.center[2]
+        
+        r2 = xc**2 + yc**2 + 1e-6
+        
+        # Prime Modulation (simulated by high freq harmonics)
+        # In a full implementation this would use the Riemann Zeta zeros
+        prime_mod = 1 + 0.2 * np.sin(10 * np.sqrt(r2)) * np.cos(10 * zc)
+        
+        # Vector Field components
+        Vx = -yc / r2 * np.exp(-zc**2 / 500) * prime_mod
+        Vy =  xc / r2 * np.exp(-zc**2 / 500) * prime_mod
+        Vz =  0.1 * np.sin(np.sqrt(r2)/5) * prime_mod # Slight helical component
+        
+        return np.stack([Vx, Vy, Vz], axis=-1)
+
+class QuantumHeadIntegrator:
+    """
+    Calculates Quantum Surface Integrals over the head topology.
+    Integral = Closed_Surface_Integral( (Quantum_Field . Normal) * dS )
+    """
+    def __init__(self, volume):
+        self.volume = volume
+        self.shape = volume.shape
+        
+    def calculate_surface_quantities(self):
+        """
+        Computes the isosurface normals and the quantum flux.
+        """
+        # 1. Compute Gradients to find Surface Normals
+        # The gradient of the scalar volume gives the normal to the isosurface
+        grad_z, grad_y, grad_x = np.gradient(self.volume)
+        
+        # Magnitude of gradient (Edge strength)
+        grad_mag = np.sqrt(grad_x**2 + grad_y**2 + grad_z**2)
+        
+        # Define Surface Mask (where gradient is strong)
+        # This approximates the skin surface for the integral
+        surface_mask = grad_mag > (np.max(grad_mag) * 0.2)
+        
+        # Normalize normals
+        nx = np.zeros_like(grad_x)
+        ny = np.zeros_like(grad_y)
+        nz = np.zeros_like(grad_z)
+        
+        # Avoid div by zero
+        mask_nz = grad_mag > 1e-6
+        nx[mask_nz] = grad_x[mask_nz] / grad_mag[mask_nz]
+        ny[mask_nz] = grad_y[mask_nz] / grad_mag[mask_nz]
+        nz[mask_nz] = grad_z[mask_nz] / grad_mag[mask_nz]
+        
+        # 2. Generate Quantum Field
+        X, Y, Z = np.mgrid[0:self.shape[0], 0:self.shape[1], 0:self.shape[2]]
+        pv_gen = PrimeVortexGenerator(self.shape)
+        Q_field = pv_gen.get_field(X, Y, Z) # (X,Y,Z, 3)
+        
+        # 3. Compute Flux Density: F = Q . n
+        flux_density = (Q_field[:,:,:,0] * nx + 
+                       Q_field[:,:,:,1] * ny + 
+                       Q_field[:,:,:,2] * nz)
+        
+        # Mask out non-surface values
+        flux_density[~surface_mask] = 0
+        
+        # 4. Total Quantum Surface Integral
+        # Sum of flux over surface area elements
+        total_integral = np.sum(flux_density)
+        
+        return flux_density, surface_mask, total_integral, (nx, ny, nz)
+
+
 def run_analysis():
     print("Initializing BET & SSS Pipeline (Fixed)...")
     
@@ -204,7 +291,13 @@ def run_analysis():
     
     print("BET Complete. Brain volume extracted.")
     
-    # 2. Simulate MEG Sensor Data
+    # 2. Quantum Surface Integral Calculation
+    print("Computing Quantum Surface Integrals for Headshape...")
+    q_integrator = QuantumHeadIntegrator(full_head)
+    flux_density, surface_mask, total_flux, normals = q_integrator.calculate_surface_quantities()
+    print(f"Total Quantum Flux Integral: {total_flux:.4f}")
+    
+    # 3. Simulate MEG Sensor Data
     n_sensors = 120
     # Spiral distribution on sphere
     indices = np.arange(0, n_sensors, dtype=float) + 0.5
@@ -258,21 +351,26 @@ def run_analysis():
         
         data_true[:, t_idx] = sig_internal + sig_external + noise_random
         
-    print("Data Simulated (Dipole Source + External Interference). Running SSS...")
+    print("Data Simulated. Running SSS...")
     
-    # 3. Apply SSS
+    # 4. Apply SSS
     cleaned, external_noise = sss.separate_signals(data_true, regularization=0.01)
     
     print("SSS Complete.")
     
-    # 4. Visualization
+    # 5. Visualization
     fig = make_subplots(
-        rows=2, cols=3,
+        rows=2, cols=2,
         specs=[
-            [{'type': 'volume'}, {'type': 'volume'}, {'type': 'scatter3d'}],
-            [{'colspan': 3, 'type': 'xy'}, None, None]
+            [{'type': 'volume'}, {'type': 'volume'}],
+            [{'type': 'scatter3d'}, {'type': 'volume'}]
         ],
-        subplot_titles=('Original MRI (Head)', 'BET Output (Brain)', 'SSS Basis (Sensor Space)', 'SSS Signal Separation')
+        subplot_titles=(
+            'Original Head Volume', 
+            'BET Output (Brain)', 
+            'SSS Signal Separation', 
+            f'Quantum Flux Density (Total: {total_flux:.1f})'
+        )
     )
     
     # Volumetric Plots
@@ -295,23 +393,31 @@ def run_analysis():
     ), row=1, col=2)
     
     # SSS Basis / Sensors
-    # Visualize the Cleaned Field distribution at one time point
     sample_field = cleaned[:, 50].real
     fig.add_trace(go.Scatter3d(
         x=sensors[:,0], y=sensors[:,1], z=sensors[:,2],
         mode='markers', 
         marker=dict(size=4, color=sample_field, colorscale='Viridis', showscale=True),
-        name='Sensors (Cleaned Field)'
-    ), row=1, col=3)
+        name='Cleaned Field'
+    ), row=2, col=1)
     
-    # Time Series Comparison (One Sensor)
-    monitor_idx = 0
-    fig.add_trace(go.Scatter(x=start_time, y=data_true[monitor_idx], name='Raw Signal (Noisy)', line=dict(color='gray', width=1, dash='dot')), row=2, col=1)
-    fig.add_trace(go.Scatter(x=start_time, y=cleaned[monitor_idx].real, name='SSS Internal (Clean)', line=dict(color='green', width=2)), row=2, col=1)
-    fig.add_trace(go.Scatter(x=start_time, y=external_noise[monitor_idx].real, name='SSS External Model', line=dict(color='red', width=1, dash='dot')), row=2, col=1)
+    # Quantum Flux Density
+    # We plot the Flux Density ONLY on the surface mask
+    flux_viz = flux_density.copy()
+    flux_viz[~surface_mask] = np.nan # hide non-surface
+    
+    fig.add_trace(go.Volume(
+        x=X.flatten(), y=Y.flatten(), z=Z.flatten(),
+        value=flux_density.flatten(),
+        isomin=np.min(flux_density[surface_mask]) if np.any(surface_mask) else 0, 
+        isomax=np.max(flux_density[surface_mask]) if np.any(surface_mask) else 1,
+        opacity=0.2, surface_count=20, colorscale='Plasma',
+        name='Quantum Flux'
+    ), row=2, col=2)
+    
     
     fig.update_layout(
-        title='Fixed: Brain Extraction (BET) & Spherical Harmonics SSS (Continued Fractions)',
+        title='MEG Analysis: BET, SSS & Quantum Head Surface Integrals',
         height=900,
         template='plotly_dark'
     )
@@ -428,8 +534,158 @@ def run_realtime_nvqlink():
     
     return fig.to_html(full_html=True, include_plotlyjs='cdn')
 
+    return html_content
+
+    return html_content
+
+class BoseEinsteinCondensate:
+    """
+    Simulates a BEC state interacting with the Prime Vortex Field.
+    Approximated via Gross-Pitaevskii ground state in a harmonic trap + Vortex Potential.
+    """
+    def __init__(self, shape):
+        self.shape = shape
+        self.center = np.array(shape) / 2
+        
+    def compute_wavefunction(self, vortex_field_mag):
+        X, Y, Z = np.mgrid[0:self.shape[0], 0:self.shape[1], 0:self.shape[2]]
+        
+        # Harmonic Trap Potential
+        xc = X - self.center[0]
+        yc = Y - self.center[1]
+        zc = Z - self.center[2]
+        r2 = xc**2 + yc**2 + zc**2
+        
+        # Ground state (Gaussian)
+        psi_0 = np.exp(-r2 / 400.0)
+        
+        # Interaction with Vortex Field (Phase imprinting / Density Depletion)
+        # BEC density dips at vortex cores (magnitude peaks)
+        interaction_potential = np.exp(-vortex_field_mag * 5.0)
+        
+        psi = psi_0 * interaction_potential
+        
+        # Normalize
+        psi = psi / np.sqrt(np.sum(psi**2))
+        
+        return psi
+
+class RiemannianGeometry:
+    """
+    Computes Riemannian properties over the quantum manifold.
+    Metric tensor g_uv derived from Superfluid Density.
+    """
+    def __init__(self, density_field):
+        self.rho = density_field
+        
+    def compute_metric_and_integral(self):
+        # Conformal metric approximation: g_uv = rho^(2/3) * delta_uv
+        # This relates local "distance" to the density of the condensate.
+        
+        # 1. Volume Form Integral (Riemannian Volume)
+        # dV = sqrt(det(g)) = rho
+        # Integral = Total Particle Number (Conceptually) or Manifold Volume
+        vol_form = self.rho
+        total_riemannian_volume = np.sum(vol_form)
+        
+        # 2. Scalar Curvature R
+        # For conformal metric g = e^(2f) * delta, R ~ -Laplacian(f)
+        # Here e^(2f) = rho^(2/3) => f = 1/3 ln(rho)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            f_potential = (1.0/3.0) * np.log(self.rho + 1e-12)
+        
+        grad_z, grad_y, grad_x = np.gradient(f_potential)
+        laplacian = np.gradient(grad_x)[2] + np.gradient(grad_y)[1] + np.gradient(grad_z)[0]
+        
+        curvature = -laplacian
+        
+        return total_riemannian_volume, curvature
+
+def run_prime_vortex_simulation():
+    """
+    Generates a detailed visualization of Prime Vortex Fields, BEC States, and Riemannian Geometry.
+    """
+    print("Running Prime Vortex & BEC Simulation...")
+    
+    # Grid Setup (High res for field detail)
+    shape = (40, 40, 40)
+    X, Y, Z = np.mgrid[0:shape[0], 0:shape[1], 0:shape[2]]
+    
+    # 1. Generate Prime Vortex Field
+    gen = PrimeVortexGenerator(shape)
+    field = gen.get_field(X, Y, Z) # (40,40,40,3)
+    mag = np.linalg.norm(field, axis=3)
+    
+    # 2. Simulate Bose-Einstein Condensate
+    bec = BoseEinsteinCondensate(shape)
+    psi = bec.compute_wavefunction(mag)
+    density = psi**2
+    
+    # 3. Compute Riemannian Geometry
+    riemann = RiemannianGeometry(density)
+    r_vol, curvature = riemann.compute_metric_and_integral()
+    
+    print(f"Riemannian Volume Integral: {r_vol:.6e}")
+    
+    # Visualization
+    fig = make_subplots(
+        rows=2, cols=2,
+        specs=[[{'type': 'volume'}, {'type': 'volume'}],
+               [{'type': 'volume'}, {'type': 'volume'}]],
+        subplot_titles=(
+            'Prime Vortex Magnitude', 
+            'BEC Density (Ground State)', 
+            f'Riemannian Curvature (Vol: {r_vol:.2e})', 
+            'Vortex Z-Component (Helical)'
+        )
+    )
+    
+    # 1. Vortex Magnitude
+    fig.add_trace(go.Volume(
+        x=X.flatten(), y=Y.flatten(), z=Z.flatten(),
+        value=mag.flatten(),
+        isomin=0.01, isomax=0.5, opacity=0.1, surface_count=15, colorscale='Plasma',
+        name='Vortex |B|'
+    ), row=1, col=1)
+    
+    # 2. BEC Density
+    fig.add_trace(go.Volume(
+        x=X.flatten(), y=Y.flatten(), z=Z.flatten(),
+        value=density.flatten(),
+        isomin=np.max(density)*0.1, isomax=np.max(density)*0.9, 
+        opacity=0.15, surface_count=15, colorscale='Viridis',
+        name='BEC Density'
+    ), row=1, col=2)
+    
+    # 3. Riemannian Curvature
+    # Filter extreme values for visualization
+    curv_viz = np.clip(curvature, -0.5, 0.5)
+    fig.add_trace(go.Volume(
+        x=X.flatten(), y=Y.flatten(), z=Z.flatten(),
+        value=curv_viz.flatten(),
+        isomin=-0.1, isomax=0.1, opacity=0.1, surface_count=15, colorscale='RdBu',
+        name='Curvature'
+    ), row=2, col=1)
+    
+    # 4. Z-Component (Helical Modulations)
+    fig.add_trace(go.Volume(
+        x=X.flatten(), y=Y.flatten(), z=Z.flatten(),
+        value=field[:,:,:,2].flatten(),
+        isomin=-0.05, isomax=0.05, opacity=0.1, surface_count=15, colorscale='Inferno',
+        name='Vz'
+    ), row=2, col=2)
+    
+    fig.update_layout(
+        title='Quantum Topology: Prime Vortex, BEC & Riemannian Geometry',
+        height=900,
+        template='plotly_dark'
+    )
+    
+    return fig.to_html(full_html=True, include_plotlyjs='cdn')
+
 if __name__ == "__main__":
     html = run_analysis()
     with open("meg_bet_sss_report.html", "w") as f:
         f.write(html)
     print("Report saved to meg_bet_sss_report.html")
+
