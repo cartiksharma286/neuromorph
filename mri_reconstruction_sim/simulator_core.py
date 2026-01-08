@@ -83,83 +83,105 @@ class MRIReconstructionSimulator:
         
         if coil_type == 'standard':
             # Birdcage-like mode (Uniform-ish)
-            # Simulating 1 large coil with mostly uniform field + slight dropoff
             r = np.sqrt((x - center[1])**2 + (y - center[0])**2)
-            sensitivity = np.exp(-r**2 / (2 * (N)**2)) # Very broad
+            sensitivity = np.exp(-r**2 / (2 * (N)**2)) 
             self.coils.append(sensitivity)
             
         elif coil_type == 'custom_phased_array':
             # Custom High-Res Phased Array
-            # Circular layout of coils
             for i in range(num_coils):
                 angle = 2 * np.pi * i / num_coils
-                # Coil positions at the edge of the FOV
                 cx = center[1] + (N//2) * np.cos(angle)
                 cy = center[0] + (N//2) * np.sin(angle)
-                
-                # Gaussian falloff from coil center (Biot-Savart approx)
                 dist_sq = (x - cx)**2 + (y - cy)**2
-                # Custom coils have sharper falloff but higher local SNR
                 sensitivity = np.exp(-dist_sq / (2 * (N//4)**2))
-                
-                # Phase profile (linear phase gradient for parallel imaging simulation)
                 phase = np.exp(1j * (x * np.cos(angle) + y * np.sin(angle)) * 0.05)
-                
                 self.coils.append(sensitivity * phase)
+                
+        elif coil_type == 'gemini_14t':
+            # "Gemini Head Coil": Ultra-high field, very homogeneous
+            # 14T implies strong B1 homogeneity correction
+            sensitivity = np.ones(self.dims) * 0.95
+            # Slight "standing wave" artifact simulation for 14T
+            r = np.sqrt((x - center[1])**2 + (y - center[0])**2)
+            sensitivity += 0.05 * np.cos(r * 0.1)
+            self.coils.append(sensitivity)
+            
+        elif coil_type == 'n25_array':
+            # "N25 Dense Array": 25 small elements, high surface SNR
+            sim_coils = 25
+            for i in range(sim_coils):
+                angle = 2 * np.pi * i / sim_coils
+                # Coils closer to head
+                cx = center[1] + (N//2.2) * np.cos(angle)
+                cy = center[0] + (N//2.2) * np.sin(angle)
+                dist_sq = (x - cx)**2 + (y - cy)**2
+                # Very sharp falloff
+                sensitivity = 2.0 * np.exp(-dist_sq / (2 * (N//8)**2))
+                phase = np.exp(1j * (x * np.cos(angle) + y * np.sin(angle)) * 0.1)
+                self.coils.append(sensitivity * phase)
+
+        elif coil_type == 'solenoid':
+            # Vertically oriented Solenoid (good for small samples, or specific geometries)
+            # Uniform in Y, falloff in X? Or just very strong center.
+            # Let's model a localized high-sensitivity solenoid
+            r = np.sqrt((x - center[1])**2 + (y - center[0])**2)
+            sensitivity = 1.5 * np.exp(-r**2 / (2 * (N//3)**2))
+            self.coils.append(sensitivity)
 
     def acquire_signal(self, sequence_type='SE', TR=2000, TE=100, TI=500, flip_angle=30, noise_level=0.01):
         """
         Simulates Pulse Sequence acquisition.
         Returns k-space data per coil.
         """
-        # 1. Calculate ideal Tissue Magnetization based on Sequence
+        # Quantum Noise Reduction Factor
+        q_factor = 1.0
         
         if sequence_type == 'SE':
-            # Spin Echo
-            # Signal ~ PD * (1 - exp(-TR/T1)) * exp(-TE/T2)
             M = self.pd_map * (1 - np.exp(-TR / self.t1_map)) * np.exp(-TE / self.t2_map)
             
         elif sequence_type == 'GRE':
-            # Gradient Echo
-            # Signal ~ PD * sin(FA) * (1-E1) / (1 - cos(FA)E1) * exp(-TE/T2*)
-            # Assuming T2* ~ T2/2 for simulation purposes
             t2_star = self.t2_map / 2
             FA_rad = np.radians(flip_angle)
             E1 = np.exp(-TR / self.t1_map)
-            # Steady state GRE
             numerator = (1 - E1) * np.sin(FA_rad)
             denominator = 1 - np.cos(FA_rad) * E1
             M = self.pd_map * (numerator / denominator) * np.exp(-TE / t2_star)
             
         elif sequence_type in ['InversionRecovery', 'FLAIR']:
-            # Inversion Recovery (STIR, FLAIR, etc.)
-            # M = M0 * (1 - 2*exp(-TI/T1) + exp(-TR/T1)) * exp(-TE/T2)
             M = self.pd_map * (1 - 2*np.exp(-TI/self.t1_map) + np.exp(-TR/self.t1_map)) * np.exp(-TE/self.t2_map)
             M = np.abs(M) 
             
         elif sequence_type == 'SSFP':
-            # Balanced Steady-State Free Precession (bSSFP) / FIESTA / TrueFISP
-            # High SNR, T2/T1 contrast
-            # Signal (on resonance) = M0 * sin(FA) * (1-E1) / (1 - (E1-E2)cos(FA) - E1*E2) * exp(-TE/T2)
-            # Usually TE = TR/2 for bSSFP
-            
             FA_rad = np.radians(flip_angle)
             E1 = np.exp(-TR / self.t1_map)
             E2 = np.exp(-TR / self.t2_map)
-            
             num = (1 - E1) * np.sin(FA_rad)
             den = 1 - (E1 - E2)*np.cos(FA_rad) - E1*E2
-            
-            # Simple Passband approximation
             M = self.pd_map * (num / den) * np.exp(-TE / self.t2_map)
+            
+        elif sequence_type == 'QuantumEntangled':
+            # Quantum Entangled sequence: Uses entangled photons/spins to reduce noise floor
+            # Mathematically equivalent to higher SNR or lower noise_level
+            # Also assumes ideal contrast
+            M = self.pd_map * (1 - np.exp(-TR / self.t1_map)) # T1 weight
+            q_factor = 0.1 # 10x noise reduction
+            
+        elif sequence_type == 'ZeroPointGradients':
+            # Hypothetical sequence utilizing zero-point energy fluctuations (Sci-Fi/Advanced)
+            # Incredible T2* contrast
+            M = self.pd_map * np.exp(-TE / (self.t2_map / 4.0)) * 2.0
+            q_factor = 0.05 # 20x noise reduction
             
         else:
             M = self.pd_map
             
-        M = np.nan_to_num(M) # Handle 0 T1/T2 div
+        M = np.nan_to_num(M) 
         
         # 2. Apply Coil Sensitivities and FFT
         kspace_data = []
+        effective_noise = noise_level * q_factor
+        
         for coil_map in self.coils:
             # Received Signal in Image Space = M * Sensitivity
             img_space_signal = M * coil_map
@@ -168,8 +190,8 @@ class MRIReconstructionSimulator:
             k_space = np.fft.fftshift(np.fft.fft2(img_space_signal))
             
             # Add Gaussian White Noise in K-Space
-            noise = np.random.normal(0, noise_level * np.max(np.abs(k_space)), k_space.shape) + \
-                    1j * np.random.normal(0, noise_level * np.max(np.abs(k_space)), k_space.shape)
+            noise = np.random.normal(0, effective_noise * np.max(np.abs(k_space)), k_space.shape) + \
+                    1j * np.random.normal(0, effective_noise * np.max(np.abs(k_space)), k_space.shape)
             
             kspace_data.append(k_space + noise)
             
