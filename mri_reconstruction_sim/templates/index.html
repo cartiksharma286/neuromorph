@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroPulse: MRI Reconstruction Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--bg-secondary);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 300px;
+            background-color: var(--bg-secondary);
+            padding: 1.5rem;
+            border-right: 1px solid #334155;
+            overflow-y: auto;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            background-color: #334155;
+            border: 1px solid #475569;
+            border-radius: 4px;
+            color: white;
+            font-family: inherit;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--accent);
+            color: #0f172a;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .plot-container {
+            width: 100%;
+            max-width: 1000px;
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .metric-card {
+            background-color: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-val {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 1rem auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            background: #334155;
+            border: none;
+            border-radius: 6px;
+            color: #94a3b8;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: #0f172a;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .image-display {
+            display: flex;
+            justify-content: center;
+        }
+
+        .image-display-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .download-link {
+            margin-top: 1rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+            border: 1px solid var(--accent);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+
+        .download-link:hover {
+            background: rgba(56, 189, 248, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>NeuroPulse: Signal Reconstructor</h1>
+    </header>
+    <div class="container">
+        <aside>
+            <div class="control-group">
+                <label>Pulse Sequence</label>
+                <select id="sequence">
+                    <option value="SE">Spin Echo (SE)</option>
+                    <option value="GRE">Gradient Echo (GRE)</option>
+                    <option value="InversionRecovery">Inversion Recovery (IR)</option>
+                    <option value="FLAIR">FLAIR (Fluid Attenuated)</option>
+                    <option value="SSFP">SSFP (Steady State)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>RF Coil Configuration</label>
+                <select id="coils">
+                    <option value="standard">Standard Birdcage (Uniform)</option>
+                    <option value="custom_phased_array">Custom High-Res Phased Array (8-ch)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>TR (Repetition Time) [ms]</label>
+                <input type="number" id="tr" value="2000" step="10">
+            </div>
+
+            <div class="control-group">
+                <label>TE (Echo Time) [ms]</label>
+                <input type="number" id="te" value="100" step="1">
+            </div>
+
+            <div class="control-group" id="ti-group" style="display: none;">
+                <label>TI (Inversion Time) [ms]</label>
+                <input type="number" id="ti" value="500" step="10">
+            </div>
+
+            <div class="control-group" id="fa-group" style="display: none;">
+                <label>Flip Angle [deg]</label>
+                <input type="number" id="flip_angle" value="30" step="1" min="1" max="90">
+            </div>
+
+            <div class="control-group">
+                <label>Resolution</label>
+                <select id="resolution">
+                    <option value="64">64 x 64 (Fast)</option>
+                    <option value="128" selected>128 x 128 (Standard)</option>
+                    <option value="256">256 x 256 (High Res)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Noise Level</label>
+                <input type="range" id="noise" min="0" max="0.2" step="0.01" value="0.02">
+            </div>
+
+            <button onclick="runSimulation()">Run Reconstruction</button>
+            <div class="loader" id="loader"></div>
+        </aside>
+
+        <main>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('recon', this)">Reconstructed Image</button>
+                <button class="tab-btn" onclick="switchTab('kspace', this)">Acquired K-Space</button>
+                <button class="tab-btn" onclick="switchTab('kspace_gt', this)">Ideal K-Space</button>
+                <button class="tab-btn" onclick="switchTab('phantom', this)">Ground Truth</button>
+                <button class="tab-btn" onclick="switchTab('profile', this)">Signal Profile</button>
+            </div>
+
+            <div class="plot-container">
+                <div id="tab-recon" class="tab-content active image-display-col">
+                    <img id="img-recon" src="" style="display: none;">
+                    <a id="link-recon" href="#" target="_blank" class="download-link" style="display: none;">Open in New
+                        Tab</a>
+                </div>
+                <div id="tab-kspace" class="tab-content image-display-col">
+                    <img id="img-kspace" src="" style="display: none;">
+                    <a id="link-kspace" href="#" target="_blank" class="download-link" style="display: none;">Open in
+                        New Tab</a>
+                </div>
+                <div id="tab-kspace_gt" class="tab-content image-display-col">
+                    <img id="img-kspace_gt" src="" style="display: none;">
+                    <a id="link-kspace_gt" href="#" target="_blank" class="download-link" style="display: none;">Open in
+                        New Tab</a>
+                </div>
+                <div id="tab-phantom" class="tab-content image-display-col">
+                    <img id="img-phantom" src="" style="display: none;">
+                    <a id="link-phantom" href="#" target="_blank" class="download-link" style="display: none;">Open in
+                        New Tab</a>
+                </div>
+                <div id="tab-profile" class="tab-content image-display-col">
+                    <img id="img-profile" src="" style="display: none;">
+                    <a id="link-profile" href="#" target="_blank" class="download-link" style="display: none;">Open in
+                        New Tab</a>
+                </div>
+
+                <div id="placeholder" style="text-align: center; padding: 4rem; color: #475569;">
+                    Configure parameters and click Run to simulate MRI acquisition.
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-val" id="contrastVal">--</div>
+                    <div class="metric-label">Tissue Contrast</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="sharpnessVal">--</div>
+                    <div class="metric-label">Image Sharpness</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="signalVal">--</div>
+                    <div class="metric-label">Max Signal Intensity</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Toggle Fields and Set Presets
+        document.getElementById('sequence').addEventListener('change', function () {
+            const seq = this.value;
+            const tiGroup = document.getElementById('ti-group');
+            const faGroup = document.getElementById('fa-group');
+
+            // Default visibility
+            tiGroup.style.display = 'none';
+            faGroup.style.display = 'none';
+
+            if (seq === 'InversionRecovery') {
+                tiGroup.style.display = 'block';
+                // STIR-like preset
+                document.getElementById('tr').value = 4000;
+                document.getElementById('te').value = 30;
+                document.getElementById('ti').value = 150;
+
+            } else if (seq === 'FLAIR') {
+                tiGroup.style.display = 'block';
+                // FLAIR preset (Nulls CSF)
+                document.getElementById('tr').value = 9000;
+                document.getElementById('te').value = 140;
+                document.getElementById('ti').value = 2500;
+
+            } else if (seq === 'GRE') {
+                faGroup.style.display = 'block';
+                // T1-weighted GRE
+                document.getElementById('tr').value = 150;
+                document.getElementById('te').value = 5;
+                document.getElementById('flip_angle').value = 70;
+
+            } else if (seq === 'SSFP') {
+                faGroup.style.display = 'block';
+                // TrueFISP like
+                document.getElementById('tr').value = 5;
+                document.getElementById('te').value = 2.5;
+                document.getElementById('flip_angle').value = 60;
+
+            } else if (seq === 'SE') {
+                // T2-weighted SE default
+                document.getElementById('tr').value = 4000;
+                document.getElementById('te').value = 100;
+            }
+        });
+
+        function switchTab(tabId, elt) {
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            // If elt provided use it, otherwise rely on event (fallback)
+            if (elt) {
+                elt.classList.add('active');
+            } else if (event) {
+                event.target.classList.add('active');
+            }
+
+            // Update Content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+        async function runSimulation() {
+            const btn = document.querySelector('button'); // The simulation button, not tab buttons
+            const loader = document.getElementById('loader');
+
+            // Disable main run button only
+            // btn.disabled = true; // Selector above is ambiguous with tab buttons
+
+            loader.style.display = 'block';
+
+            const payload = {
+                sequence: document.getElementById('sequence').value,
+                coils: document.getElementById('coils').value,
+                tr: document.getElementById('tr').value,
+                te: document.getElementById('te').value,
+                ti: document.getElementById('ti').value,
+                flip_angle: document.getElementById('flip_angle').value,
+                resolution: document.getElementById('resolution').value,
+                noise: document.getElementById('noise').value
+            };
+
+            try {
+                const res = await fetch('/api/simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    // Update Images and Links
+                    function updateImg(id, b64) {
+                        const src = 'data:image/png;base64,' + b64;
+                        const img = document.getElementById('img-' + id);
+                        const link = document.getElementById('link-' + id);
+
+                        img.src = src;
+                        img.style.display = 'block';
+
+                        link.href = src;
+                        link.style.display = 'inline-block';
+                    }
+
+                    updateImg('recon', data.plots.recon);
+                    updateImg('kspace', data.plots.kspace);
+                    updateImg('kspace_gt', data.plots.kspace_gt);
+                    updateImg('phantom', data.plots.phantom);
+                    updateImg('profile', data.plots.profile);
+
+                    document.getElementById('placeholder').style.display = 'none';
+
+                    // Update Metrics
+                    document.getElementById('contrastVal').textContent = data.metrics.contrast.toFixed(3);
+                    document.getElementById('sharpnessVal').textContent = data.metrics.sharpness.toFixed(1);
+                    document.getElementById('signalVal').textContent = data.metrics.max_signal.toFixed(1);
+                } else {
+                    alert('Simulation failed: ' + data.error);
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert('Connection failed');
+            } finally {
+                // btn.disabled = false;
+                loader.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>
