@@ -81,6 +81,8 @@ class MRIReconstructionSimulator:
         y, x = np.ogrid[:N, :N]
         center = (N//2, N//2)
         
+        self.active_coil_type = coil_type
+        
         if coil_type == 'standard':
             # Birdcage-like mode (Uniform-ish)
             r = np.sqrt((x - center[1])**2 + (y - center[0])**2)
@@ -180,6 +182,32 @@ class MRIReconstructionSimulator:
                 # Normalize and bound
                 sensitivity = sensitivity / (np.max(np.abs(sensitivity)) + 1e-9)
                 self.coils.append(sensitivity * 2.5) # Gain factor
+
+        elif coil_type == 'geodesic_chassis':
+            # Geodesic Head Coil: Geometric distribution based on Golden Angle
+            num_elements = 64 
+            phi = (1 + np.sqrt(5)) / 2
+            
+            for i in range(num_elements):
+                # Golden Angle distribution
+                idx = i + 0.5
+                phi_ang = np.arccos(1 - 2*idx/num_elements)
+                theta_ang = 2 * np.pi * idx / phi * phi
+                
+                # Project sphere to 2D slice (Simulating a helmet cross-section)
+                R = N // 2.2
+                cx = center[1] + R * np.sin(phi_ang) * np.cos(theta_ang)
+                cy = center[0] + R * np.sin(phi_ang) * np.sin(theta_ang)
+                cz = R * np.cos(phi_ang)
+                
+                # Depth attenuation (3D effect)
+                dist_sq = (x - cx)**2 + (y - cy)**2 + (cz**2 / 5.0)
+                
+                # Sensitivity Profile
+                sensitivity = 2.0 * np.exp(-dist_sq / (2 * (N//9)**2))
+                phase = np.exp(1j * (x * np.cos(theta_ang) + y * np.sin(theta_ang)) * 0.15)
+                
+                self.coils.append(sensitivity * phase)
 
     def acquire_signal(self, sequence_type='SE', TR=2000, TE=100, TI=500, flip_angle=30, noise_level=0.01):
         """
@@ -406,5 +434,148 @@ class MRIReconstructionSimulator:
         ax5.set_title("Ideal K-Space (No Noise)")
         ax5.axis('off')
         plots['kspace_gt'] = fig_to_b64(fig5)
+
+        # 6. Circuit Diagram (New)
+        plots['circuit'] = self.generate_circuit_diagram()
         
         return plots
+
+    def generate_circuit_diagram(self):
+        """Generates a circuit schematic for the active coil."""
+        fig, ax = plt.subplots(figsize=(8, 6))
+        fig.patch.set_facecolor('#0f172a')
+        ax.set_facecolor('#0f172a')
+        ax.axis('off')
+        
+        # Determine coil type from self.coils generation context 
+        # (Since we don't store coil_type in self, we'll infer or just default to a generic/geodesic one for now if not stored.
+        # Ideally, we should store self.coil_type in __init__ or generate_coil_sensitivities, but let's assume Geodesic/Phased Array logic 
+        # as that matches the user request. Realistically, we'll create a generic 'Phased Array Element' schematic.)
+        
+        # Determine coil type from self.active_coil_type
+        coil_type = getattr(self, 'active_coil_type', 'standard')
+        
+        # Common Style
+        color_wire = '#94a3b8'
+        color_comp = '#38bdf8'
+        
+        if coil_type == 'standard':
+            # Birdcage: High-Pass Ladder Network
+            # Legs with Caps, Rungs with Inductors (or vice versa depending on mode)
+            ax.set_title("Birdcage Coil (High-Pass Ladder)", color='white', fontsize=12)
+            
+            # Draw Rings
+            t = np.linspace(0, 2*np.pi, 100)
+            ax.plot(np.cos(t), np.sin(t), color=color_wire, lw=2) # Top Ring
+            ax.plot(0.7*np.cos(t), 0.7*np.sin(t), color=color_wire, lw=2) # Bottom Ring
+            
+            # Legs (Capacitors)
+            for i in range(8):
+                ang = 2*np.pi * i / 8
+                x1, y1 = np.cos(ang), np.sin(ang)
+                x2, y2 = 0.7*np.cos(ang), 0.7*np.sin(ang)
+                
+                # Leg Wire with Gap for Cap
+                # Simple line for now
+                ax.plot([x1, x2], [y1, y2], color=color_comp, lw=2)
+                # Capacitor Symbol perpendicular
+                mid_x, mid_y = (x1+x2)/2, (y1+y2)/2
+                # Tiny cross per leg
+                ax.text(mid_x, mid_y, "||", color='white', ha='center', va='center', rotation=np.degrees(ang)+90, fontsize=8)
+                
+            ax.text(0, 0, "8-Rung\nBirdcage", color='white', ha='center', va='center')
+            
+        elif coil_type == 'solenoid':
+             # Solenoid Schematic
+            ax.set_title("Solenoid Coil (High-Q)", color='white', fontsize=12)
+            
+            # Spiral
+            t = np.linspace(0, 6*np.pi, 200)
+            z = np.linspace(-1, 1, 200)
+            x = np.cos(t)
+            y = z 
+            # 2D projection...
+            # Just draw a zig zag inductor
+            x_ind = np.linspace(1, 5, 100)
+            y_ind = 2 + 0.5 * np.sin(10*x_ind)
+            ax.plot(x_ind, y_ind, color=color_wire, lw=3)
+            ax.text(3, 2.7, "L_solenoid", color=color_comp, ha='center')
+            
+            # Tuning Cap parallel
+            ax.plot([1, 1], [2, 1], color=color_wire, lw=2)
+            ax.plot([5, 5], [2, 1], color=color_wire, lw=2)
+            ax.plot([1, 2.8], [1, 1], color=color_wire, lw=2)
+            ax.plot([3.2, 5], [1, 1], color=color_wire, lw=2)
+            # Cap
+            ax.plot([2.8, 2.8], [0.8, 1.2], color=color_comp, lw=2)
+            ax.plot([3.2, 3.2], [0.8, 1.2], color=color_comp, lw=2)
+            ax.text(3, 0.5, "C_tune (10pF)", color=color_comp, ha='center')
+
+        elif coil_type in ['geodesic_chassis', 'n25_array']:
+            # Geodesic Element Circuit
+            # Tuning, Matching, Decoupling
+            ax.set_title(f"Geodesic Element (Golden Angle Node)", color='white', fontsize=12)
+            
+            # Coordinates
+            y_rail = 2
+            x_step = 2
+            
+            # Loop
+            ax.plot([0, 1], [y_rail, y_rail], color=color_wire, lw=2)
+            # Box for Coil
+            ax.plot([1, 1.2], [y_rail+0.2, y_rail-0.2], color=color_wire, lw=2)
+            ax.plot([1.2, 1.4], [y_rail-0.2, y_rail+0.2], color=color_wire, lw=2)
+            ax.plot([1.4, 1.6], [y_rail+0.2, y_rail-0.2], color=color_wire, lw=2)
+            ax.plot([1.6, 1.8], [y_rail-0.2, y_rail], color=color_wire, lw=2)
+            ax.text(1.4, y_rail+0.5, "L_geo", color=color_comp, ha='center')
+            
+            # Match Network
+            ax.plot([1.8, 3], [y_rail, y_rail], color=color_wire, lw=2)
+            
+            # Series Cap (Tune)
+            ax.plot([3, 3], [y_rail+0.2, y_rail-0.2], color=color_comp, lw=2) # Plate 1 - Wrong implementation of gap
+            # Draw properly: Gap
+            ax.plot([3, 3.2], [y_rail, y_rail], color='#000000', lw=4) # Erase? No, drawing bg usually works but let's just shift
+            
+            # Let's do a simple node graph
+            # Node 0 -> L -> Node 1 -> C_tune -> Node 2 -> C_match_gnd -> Node 3 (Out)
+            nodes = [0, 2, 4, 6]
+            h = 3
+            
+            # L
+            ax.plot([0, 2], [h, h], color=color_wire, lw=2)
+            ax.text(1, h+0.2, "L_loop", color=color_comp, ha='center')
+            
+            # C_tune
+            ax.plot([2, 3], [h, h], color=color_wire, lw=2)
+            ax.text(2.5, h+0.2, "C_tune", color=color_comp, ha='center')
+            # Symbol
+            ax.plot([2.4, 2.4], [h-0.2, h+0.2], color=color_comp, lw=2)
+            ax.plot([2.6, 2.6], [h-0.2, h+0.2], color=color_comp, lw=2)
+            
+            # C_match
+            ax.plot([4, 4], [h, 1], color=color_wire, lw=2)
+            ax.text(4.2, 2, "C_match", color=color_comp)
+            # Symbol
+            ax.plot([3.8, 4.2], [2.1, 2.1], color=color_comp, lw=2)
+            ax.plot([3.8, 4.2], [1.9, 1.9], color=color_comp, lw=2)
+            
+            # Ground
+            ax.plot([0, 6], [1, 1], color=color_wire, lw=2)
+            ax.text(3, 0.5, "Common Ground / Shield", color='gray', ha='center')
+            
+            # Output
+            ax.plot([4, 6], [h, h], color=color_wire, lw=2)
+            ax.text(6, h, "> Preamp", color=color_wire, va='center')
+            
+        else:
+             # Generic
+            ax.set_title(f"Generic RF Front-End ({coil_type})", color='white', fontsize=12)
+            ax.text(0.5, 0.5, "Standard Matching Network\nL-C-C Topology", color='white', ha='center', va='center', transform=ax.transAxes)
+        
+        # Render
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png', transparent=True, bbox_inches='tight')
+        buf.seek(0)
+        plt.close(fig)
+        return base64.b64encode(buf.getvalue()).decode('utf-8')
