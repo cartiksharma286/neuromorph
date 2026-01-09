@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <!-- Warning Banner -->
     <div class="warning-banner">
@@ -54,6 +56,10 @@
             <button class="nav-tab" data-module="clinical">
                 <span class="tab-icon">📈</span>
                 Clinical Dashboard
+            </button>
+            <button class="nav-tab" data-module="fea">
+                <span class="tab-icon">⚡</span>
+                FEA Simulation
             </button>
         </nav>
 
@@ -163,9 +169,9 @@
                     <div class="card">
                         <h3>Parameters</h3>
                         <div class="parameter-controls" id="parameterControls"></div>
-                        
+
                         <div class="safety-status" id="safetyStatus"></div>
-                        
+
                         <button class="btn-primary" id="simulateBtn">
                             <span>▶</span> Simulate Stimulation
                         </button>
@@ -174,7 +180,7 @@
                     <div class="card">
                         <h3>Waveform Preview</h3>
                         <canvas id="waveformCanvas" class="waveform-canvas"></canvas>
-                        
+
                         <h3 style="margin-top: 2rem;">Safety Metrics</h3>
                         <div id="safetyMetrics" class="metrics-grid"></div>
                     </div>
@@ -279,6 +285,56 @@
                     <canvas id="neuralCanvas" class="neural-canvas"></canvas>
                 </div>
             </div>
+            <!-- FEA Simulation Module -->
+            <div class="module" id="feaModule">
+                <div class="module-header">
+                    <h2>Finite Element Analysis (FEA)</h2>
+                    <p>Simulate electric field distribution and volume of tissue activated (VTA)</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Simulation Controls</h3>
+                        <div class="control-group">
+                            <label>Target Coordinates (X, Y)</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="number" id="targetX" value="32" min="0" max="63">
+                                <input type="number" id="targetY" value="32" min="0" max="63">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label>Active Contact Voltage (V)</label>
+                            <input type="number" id="voltageC1" value="-3.0" step="0.1">
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <button class="btn-primary" id="runFeaBtn">Run Simulation</button>
+                            <button class="btn-secondary" id="optimizeFeaBtn">Auto-Optimize Platform</button>
+                        </div>
+                        <div id="feaStats" style="margin-top: 20px; font-family: monospace;"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Field Visualizations</h3>
+                        <div class="grid-2" style="gap: 10px;">
+                            <div>
+                                <img id="imgPotential" style="width:100%; border-radius: 8px; border: 1px solid #333;"
+                                    alt="Potential">
+                                <div style="text-align:center; font-size: 0.8em; color: #888;">Potential Map</div>
+                            </div>
+                            <div>
+                                <img id="imgEField" style="width:100%; border-radius: 8px; border: 1px solid #333;"
+                                    alt="E-Field">
+                                <div style="text-align:center; font-size: 0.8em; color: #888;">E-Field Magnitude</div>
+                            </div>
+                            <div>
+                                <img id="imgVTA" style="width:100%; border-radius: 8px; border: 1px solid #333;"
+                                    alt="VTA">
+                                <div style="text-align:center; font-size: 0.8em; color: #888;">VTA Mask</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -290,5 +346,7 @@
     <script src="waveform_generator.js"></script>
     <script src="ai_optimizer.js"></script>
     <script src="clinical_dashboard.js"></script>
+    <script src="fea_interface.js"></script>
 </body>
+
 </html>

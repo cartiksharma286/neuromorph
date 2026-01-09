@@ -15,6 +15,7 @@ from dbs_circuit_generator import DBSCircuitGenerator
 from generative_ai_engine import GenerativeAIEngine
 from ptsd_neural_model import PTSDNeuralModel
 from safety_validator import SafetyValidator
+from fea_simulator import DBSFEASimulator
 
 # Import dementia care modules
 from dementia_neural_model import DementiaNeuralModel
@@ -29,6 +30,7 @@ circuit_generator = DBSCircuitGenerator()
 ai_engine = GenerativeAIEngine()
 neural_model = PTSDNeuralModel()
 safety_validator = SafetyValidator()
+fea_simulator = DBSFEASimulator()
 
 # Initialize dementia components
 dementia_model = DementiaNeuralModel(disease_duration_years=2.0)
@@ -612,6 +614,51 @@ def get_cognitive_timeline():
     return jsonify(trajectory)
 
 
+# ==================== FEA Simulation Endpoints ====================
+
+@app.route('/api/fea/simulate', methods=['POST'])
+def run_fea_simulation():
+    """Run Finite Element Analysis for Field Distribution"""
+    data = request.json
+    config = data.get('electrode_config', {'voltages': {'c1': -3.0}})
+    
+    try:
+        fea_simulator.generate_tissue_model()
+        phi, e_field, vta = fea_simulator.solve_electric_field(config)
+        
+        # Generate Visuals
+        phi_img = fea_simulator.generate_heatmap_plot(phi, "Electrical Potential ($\phi$)")
+        efield_img = fea_simulator.generate_heatmap_plot(e_field, "E-Field Magnitude (|E|)")
+        vta_img = fea_simulator.generate_heatmap_plot(vta, "Volume of Tissue Activated (VTA)")
+        
+        return jsonify({
+            'success': True,
+            'plots': {
+                'potential': phi_img,
+                'e_field': efield_img,
+                'vta': vta_img
+            },
+            'max_field': float(np.max(e_field))
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/fea/optimize', methods=['POST'])
+def optimize_fea_platform():
+    """Optimize Stimulation Settings based on Field Models"""
+    data = request.json
+    target = data.get('target_coords', [32, 32])
+    
+    try:
+        best_config, detailed_results = fea_simulator.optimize_stimulation(tuple(target))
+        return jsonify({
+            'success': True,
+            'recommended_config': best_config,
+            'optimization_log': detailed_results
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # ==================== Utility Endpoints ====================
 
 
@@ -684,7 +731,7 @@ if __name__ == '__main__':
     print("="*60)
     print("DBS-PTSD Treatment System Backend Server")
     print("="*60)
-    print("\nStarting server on http://localhost:5000")
+    print("\nStarting server on http://localhost:5001")
     print("\nAvailable endpoints:")
     print("  Circuit Generation: /api/circuit/*")
     print("  AI Engine: /api/ai/*")
@@ -692,6 +739,6 @@ if __name__ == '__main__':
     print("  Safety Validation: /api/safety/*")
     print("\n[!] FOR RESEARCH AND EDUCATIONAL USE ONLY")
     print("="*60)
-    print("\nOpen http://localhost:5000 in your browser")
+    print("\nOpen http://localhost:5001 in your browser")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)
