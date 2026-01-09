@@ -102,6 +102,18 @@ def md_to_pdf(md_path, pdf_path):
         elif line.strip().startswith('**') and line.strip().endswith('**'):
             text = line.strip()[2:-2]
             story.append(Paragraph(f"<b>{text}</b>", styles['Body_Custom']))
+        # Image detection ![](/path)
+        elif line.strip().startswith('![](') and line.strip().endswith(')'):
+            img_path = line.strip()[4:-1]
+            if os.path.exists(img_path):
+                # Scale image to fit page width roughly
+                img = Image(img_path, width=6*inch, height=4.5*inch, kind='proportional')
+                story.append(Spacer(1, 0.1*inch))
+                story.append(img)
+                story.append(Spacer(1, 0.2*inch))
+            else:
+                story.append(Paragraph(f"[Image not found: {os.path.basename(img_path)}]", styles['Caption']))
+
         # Regular body text
         elif line.strip():
             formatted = line
@@ -113,35 +125,14 @@ def md_to_pdf(md_path, pdf_path):
         i += 1
     
     # Add page break before images
-    story.append(PageBreak())
-    
-    # Add Simulation Images Section
-    story.append(Paragraph("Appendix: Simulation Results", styles['Title_Custom']))
-    story.append(Spacer(1, 0.2*inch))
-    
-    # Image configurations
-    image_configs = [
-        ('standard_se.png', 'Figure A1: Standard Coil + Spin Echo'),
-        ('gemini_quantum.png', 'Figure A2: Gemini 14T + Quantum Entangled Sequence'),
-        ('n25_zeropoint.png', 'Figure A3: N25 Array + Zero-Point Gradients'),
-        ('lattice_dual_berry.png', 'Figure A4: Quantum Surface Lattice + Dual Integral (Berry Phase)'),
-        ('phased_congruence.png', 'Figure A5: Phased Array + Quantum Statistical Congruence'),
-    ]
-    
-    for img_file, caption in image_configs:
-        img_path = os.path.join(IMAGE_DIR, img_file)
-        if os.path.exists(img_path):
-            # Add image (scaled to fit page width)
-            img = Image(img_path, width=6*inch, height=6*inch)
-            story.append(img)
-            story.append(Paragraph(caption, styles['Caption']))
-            story.append(Spacer(1, 0.3*inch))
+    # story.append(PageBreak()) 
+    # (Removed hardcoded appendix as the new report has inline images)
     
     doc.build(story)
     print(f"PDF generated: {pdf_path}")
 
 if __name__ == '__main__':
     md_to_pdf(
-        '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/quantum_rf_report.md',
-        '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/quantum_rf_report.pdf'
+        '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/coil_circuits_report.md',
+        '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/NeuroPulse_Circuit_Design_Report.pdf'
     )

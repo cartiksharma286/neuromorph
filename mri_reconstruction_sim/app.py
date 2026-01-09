@@ -60,5 +60,29 @@ def simulate():
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
+from flask import send_file
+import generate_pdf
+import generate_report_images
+
+@app.route('/api/report')
+def get_report():
+    try:
+        # 1. Ensure Images exist (or regenerate)
+        # Call generate_all to get circuits too
+        generate_report_images.generate_all()
+        
+        # 2. Generate PDF
+        md_path = os.path.join(os.getcwd(), 'detailed_coil_report.md')
+        pdf_path = os.path.join(os.getcwd(), 'NeuroPulse_Coil_Report.pdf')
+        
+        generate_pdf.md_to_pdf(md_path, pdf_path)
+        
+        return send_file(pdf_path, as_attachment=True, download_name='NeuroPulse_Detailed_Report.pdf')
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(port=5005, debug=True)
