@@ -22,6 +22,8 @@ def generate_simulation_images():
         {'name': 'standard_se', 'coil': 'standard', 'seq': 'SE', 'tr': 2000, 'te': 100, 'ti': 500, 'fa': 90, 'label': 'Standard Coil + Spin Echo'},
         {'name': 'gemini_quantum', 'coil': 'gemini_14t', 'seq': 'QuantumEntangled', 'tr': 2000, 'te': 50, 'ti': 500, 'fa': 90, 'label': 'Gemini 14T + Quantum Entangled'},
         {'name': 'n25_zeropoint', 'coil': 'n25_array', 'seq': 'ZeroPointGradients', 'tr': 500, 'te': 20, 'ti': 500, 'fa': 60, 'label': 'N25 Array + Zero-Point Gradients'},
+        {'name': 'lattice_dual_berry', 'coil': 'quantum_surface_lattice', 'seq': 'QuantumDualIntegral', 'tr': 3000, 'te': 30, 'ti': 500, 'fa': 45, 'label': 'Quantum Lattice + Dual Integral (Berry Phase)'},
+        {'name': 'phased_congruence', 'coil': 'custom_phased_array', 'seq': 'QuantumStatisticalCongruence', 'tr': 1500, 'te': 80, 'ti': 500, 'fa': 90, 'label': 'Phased Array + Statistical Congruence'},
     ]
     
     for cfg in configs:

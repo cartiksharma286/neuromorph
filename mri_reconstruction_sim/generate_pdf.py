@@ -124,6 +124,8 @@ def md_to_pdf(md_path, pdf_path):
         ('standard_se.png', 'Figure A1: Standard Coil + Spin Echo'),
         ('gemini_quantum.png', 'Figure A2: Gemini 14T + Quantum Entangled Sequence'),
         ('n25_zeropoint.png', 'Figure A3: N25 Array + Zero-Point Gradients'),
+        ('lattice_dual_berry.png', 'Figure A4: Quantum Surface Lattice + Dual Integral (Berry Phase)'),
+        ('phased_congruence.png', 'Figure A5: Phased Array + Quantum Statistical Congruence'),
     ]
     
     for img_file, caption in image_configs:
