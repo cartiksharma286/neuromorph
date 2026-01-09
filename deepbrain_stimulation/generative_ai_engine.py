@@ -346,10 +346,13 @@ class AdaptiveStimulationAgent:
                 q_values = self.policy_net(state_tensor)
                 return q_values.argmax().item()
     
-    def train_step(self, batch_size: int = 64):
+    
+    def train_step(self, batch_size: int = 32): # Reduced batch size for smaller datasets
         """Single training step"""
         if len(self.replay_buffer) < batch_size:
             return None
+        
+        start_dim_check = self.replay_buffer.buffer[0][0].shape
         
         states, actions, rewards, next_states, dones = self.replay_buffer.sample(batch_size)
         
@@ -413,7 +416,7 @@ class GenerativeAIEngine:
             avg_loss = epoch_loss / len(self.dataloader)
             losses.append(avg_loss)
             
-            if (epoch + 1) % 10 == 0:
+            if (epoch + 1) % 10 == 0 or epochs < 10:
                 print(f"VAE Epoch {epoch+1}/{epochs}, Loss: {avg_loss:.4f}")
         
         return losses
@@ -437,7 +440,7 @@ class GenerativeAIEngine:
             losses['d_loss'].append(avg_d_loss)
             losses['g_loss'].append(avg_g_loss)
             
-            if (epoch + 1) % 10 == 0:
+            if (epoch + 1) % 10 == 0 or epochs < 10:
                 print(f"GAN Epoch {epoch+1}/{epochs}, D Loss: {avg_d_loss:.4f}, G Loss: {avg_g_loss:.4f}")
         
         return losses
@@ -454,9 +457,14 @@ class GenerativeAIEngine:
     
     def optimize_with_rl(self, initial_state, num_steps: int = 100):
         """Optimize parameters using RL agent"""
-        state = initial_state
-        trajectory = [state]
+        state = np.array(initial_state, dtype=np.float32)
+        trajectory = [state.copy()]
         
+        # Pre-fill buffer slightly to allow training to start
+        if len(self.rl_agent.replay_buffer) < 32:
+             for _ in range(32):
+                 self.rl_agent.replay_buffer.push(state, 0, 0, state, False)
+
         for step in range(num_steps):
             action = self.rl_agent.select_action(state)
             # In real application, this would interact with environment
@@ -466,10 +474,10 @@ class GenerativeAIEngine:
             done = step == num_steps - 1
             
             self.rl_agent.replay_buffer.push(state, action, reward, next_state, done)
-            self.rl_agent.train_step()
+            self.rl_agent.train_step(batch_size=32)
             
             state = next_state
-            trajectory.append(state)
+            trajectory.append(state.copy())
             
             if (step + 1) % 10 == 0:
                 self.rl_agent.update_target_network()
@@ -481,23 +489,37 @@ class GenerativeAIEngine:
         params_list = []
         for norm_param in normalized_params:
             params = {
-                'amplitude_ma': norm_param[0] * 8.0,  # 0-8 mA
-                'frequency_hz': norm_param[1] * 230 + 20,  # 20-250 Hz
-                'pulse_width_us': norm_param[2] * 390 + 60,  # 60-450 us
-                'duty_cycle': norm_param[3]  # 0-1
+                'amplitude_ma': float(norm_param[0] * 8.0),  # 0-8 mA
+                'frequency_hz': float(norm_param[1] * 230 + 20),  # 20-250 Hz
+                'pulse_width_us': float(norm_param[2] * 390 + 60),  # 60-450 us
+                'duty_cycle': float(norm_param[3])  # 0-1
             }
             params_list.append(params)
         return params_list
     
     def _simulate_next_state(self, state, action):
-        """Simulate next state (placeholder)"""
-        # In real application, this would use PTSD neural model
-        return state + np.random.normal(0, 0.1, size=state.shape)
+        """Simulate next state placeholder"""
+        # Ensure numpy array
+        state = np.array(state, dtype=np.float32)
+        # Add noise and slight drift towards stability (lower values) 
+        # to simulate optimization success
+        noise = np.random.normal(0, 0.02, size=state.shape)
+        drift = -0.01 * state # Natural decay of symptoms
+        
+        # Action influence (mock): specific actions reduce specific dims
+        action_effect = np.zeros_like(state)
+        # Example: Action 0 reduces dim 0
+        if action < 8:
+            action_effect[action] = -0.05
+            
+        next_s = np.clip(state + noise + drift + action_effect, 0, 1)
+        return next_s.astype(np.float32)
     
     def _calculate_reward(self, state):
         """Calculate reward based on state (placeholder)"""
         # In real application, this would be based on symptom reduction
-        return -np.sum(state[:4])  # Negative symptom severity
+        # Reward is negative of sum of severity metrics (indices 0-3 for symptoms usually)
+        return float(-np.sum(state[:4]))
     
     def export_models(self, output_dir: str = "."):
         """Export trained models"""

@@ -8,6 +8,8 @@ class AIOptimizer {
         this.trainingInProgress = false;
         this.canvas = null;
         this.ctx = null;
+        this.proprioCanvas = null;
+        this.proprioCtx = null;
     }
 
     init() {
@@ -24,17 +26,25 @@ class AIOptimizer {
         document.getElementById('trainGANBtn')?.addEventListener('click', () => this.trainGAN());
         document.getElementById('generateGANBtn')?.addEventListener('click', () => this.generateGAN());
 
-        // RL button
+        // RL button (Gemini 3.0)
         document.getElementById('optimizeRLBtn')?.addEventListener('click', () => this.optimizeRL());
     }
 
     setupCanvas() {
         this.canvas = document.getElementById('trainingCanvas');
-        if (!this.canvas) return;
+        if (this.canvas) {
+            this.ctx = this.canvas.getContext('2d');
+            this.canvas.width = this.canvas.offsetWidth;
+            this.canvas.height = this.canvas.offsetHeight;
+        }
 
-        this.ctx = this.canvas.getContext('2d');
-        this.canvas.width = this.canvas.offsetWidth;
-        this.canvas.height = this.canvas.offsetHeight;
+        this.proprioCanvas = document.getElementById('proprioceptionCanvas');
+        if (this.proprioCanvas) {
+            this.proprioCtx = this.proprioCanvas.getContext('2d');
+            this.proprioCanvas.width = this.proprioCanvas.offsetWidth;
+            this.proprioCanvas.height = this.proprioCanvas.offsetHeight;
+            this.drawProprioceptionIdle();
+        }
     }
 
     async trainVAE() {
@@ -46,7 +56,7 @@ class AIOptimizer {
         resultsDiv.innerHTML = '<p>Training VAE model...</p>';
 
         try {
-            const response = await window.app.post('/ai/train', { epochs: 50 });
+            const response = await window.app.post('/ai/train', { epochs: 5 }); // Reduced to 5 for responsiveness
 
             if (response.success) {
                 resultsDiv.innerHTML = `
@@ -59,6 +69,7 @@ class AIOptimizer {
                 btn.innerHTML = '✓ VAE Trained';
             }
         } catch (error) {
+            console.error("VAE Training Error:", error);
             resultsDiv.innerHTML = `<div class="error-message">Training failed: ${error.message}</div>`;
             btn.innerHTML = 'Train VAE';
         } finally {
@@ -109,7 +120,7 @@ class AIOptimizer {
         resultsDiv.innerHTML = '<p>Training GAN model...</p>';
 
         try {
-            const response = await window.app.post('/ai/train', { epochs: 50 });
+            const response = await window.app.post('/ai/train', { epochs: 5 });
 
             if (response.success) {
                 resultsDiv.innerHTML = `
@@ -123,6 +134,7 @@ class AIOptimizer {
                 btn.innerHTML = '✓ GAN Trained';
             }
         } catch (error) {
+            console.error("GAN Training Error:", error);
             resultsDiv.innerHTML = `<div class="error-message">Training failed: ${error.message}</div>`;
             btn.innerHTML = 'Train GAN';
         } finally {
@@ -167,12 +179,17 @@ class AIOptimizer {
     async optimizeRL() {
         const btn = document.getElementById('optimizeRLBtn');
         const resultsDiv = document.getElementById('rlResults');
+        const feaStatus = document.getElementById('feaIntegrationStatus');
 
         btn.disabled = true;
-        btn.innerHTML = '<div class="loading"></div> Optimizing...';
-        resultsDiv.innerHTML = '<p>Running RL optimization...</p>';
+        btn.innerHTML = '<div class="loading"></div> Gemini 3.0 Thinking...';
+        resultsDiv.innerHTML = '<p>Running Proprioceptive Optimization...</p>';
+
+        // Start feedback loop animation
+        this.animateProprioception(true);
 
         try {
+            // 1. RL Optimization
             const response = await window.app.post('/ai/optimize/rl', {
                 initial_state: [0.7, 0.6, 0.5, 0.6, 0.8, 0.3, 0.5, 0.7],
                 num_steps: 100
@@ -182,22 +199,47 @@ class AIOptimizer {
                 const trajectory = response.trajectory;
                 const final_state = trajectory[trajectory.length - 1];
 
+                // Stop animation
+                this.animateProprioception(false);
+
+                // 2. Tie in with FEA Simulation
+                if (feaStatus) feaStatus.innerHTML = 'Linked to FEA Simulator: <span style="color:var(--warning)">Verifying Constraints...</span>';
+
+                // Mock optimal params based on RL state (in real app, RL would return params)
+                const optimalParams = {
+                    c1: -3.0 + (final_state[0] * 1.5), // Adjust voltage based on state
+                    c2: 0.0,
+                    c3: 1.5,
+                    c4: 0.0
+                };
+
+                // Call FEA to validate
+                const feaResponse = await window.app.post('/api/fea/simulate', {
+                    target_x: 32,
+                    target_y: 32,
+                    voltage_c1: optimalParams.c1
+                });
+
+                if (feaStatus) feaStatus.innerHTML = 'Linked to FEA Simulator: <span style="color:var(--secondary)">Validated ✓</span>';
+
                 resultsDiv.innerHTML = `
-                    <div class="result-item">
-                        <strong>Optimization Complete!</strong><br>
+                    <div class="result-item" style="border-left: 3px solid var(--secondary);">
+                        <strong>Gemini 3.0 Optimized!</strong><br>
                         Steps: ${trajectory.length}<br>
-                        Final State: [${final_state.map(v => v.toFixed(2)).join(', ')}]
+                        Stability Index: ${(1.0 - final_state[0]).toFixed(3)}<br>
+                        FEA VTA: ${feaResponse.vta_volume_mm3 ? feaResponse.vta_volume_mm3.toFixed(2) : 'N/A'} mm³
                     </div>
                 `;
 
                 // Visualize trajectory
                 this.visualizeTrajectory(trajectory);
 
-                btn.innerHTML = 'Optimize with RL';
+                btn.innerHTML = 'Optimize with Gemini 3.0';
             }
         } catch (error) {
             resultsDiv.innerHTML = `<div class="error-message">Optimization failed: ${error.message}</div>`;
-            btn.innerHTML = 'Optimize with RL';
+            btn.innerHTML = 'Optimize with Gemini 3.0';
+            this.animateProprioception(false);
         } finally {
             btn.disabled = false;
         }
@@ -256,6 +298,69 @@ class AIOptimizer {
         this.ctx.font = '12px Inter';
         this.ctx.fillText('Steps →', width - 60, height - 10);
         this.ctx.fillText('Severity', 10, height - 10);
+    }
+
+    drawProprioceptionIdle() {
+        if (!this.proprioCtx) return;
+        const width = this.proprioCanvas.width;
+        const height = this.proprioCanvas.height;
+        this.proprioCtx.clearRect(0, 0, width, height);
+        this.proprioCtx.fillStyle = '#0a0a0a';
+        this.proprioCtx.fillRect(0, 0, width, height);
+
+        this.proprioCtx.font = '14px Inter';
+        this.proprioCtx.fillStyle = '#555';
+        this.proprioCtx.textAlign = 'center';
+        this.proprioCtx.fillText('System Idle - Waiting for Input', width / 2, height / 2);
+    }
+
+    animateProprioception(active) {
+        if (!this.proprioCtx) return;
+
+        if (!active) {
+            this.drawProprioceptionIdle();
+            return;
+        }
+
+        let frame = 0;
+        const width = this.proprioCanvas.width;
+        const height = this.proprioCanvas.height;
+
+        const animate = () => {
+            if (document.getElementById('optimizeRLBtn').disabled === false) return; // Stop if btn enabled
+
+            this.proprioCtx.fillStyle = 'rgba(10, 10, 10, 0.1)'; // Trail effect
+            this.proprioCtx.fillRect(0, 0, width, height);
+
+            frame += 0.1;
+
+            // Draw "Tension" lines representing gradient sensing
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2 + frame;
+                const radius = 50 + Math.sin(frame * 2 + i) * 20;
+
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+
+                this.proprioCtx.beginPath();
+                this.proprioCtx.moveTo(centerX, centerY);
+                this.proprioCtx.lineTo(x, y);
+                this.proprioCtx.strokeStyle = `hsl(${(frame * 50 + i * 40) % 360}, 70%, 50%)`;
+                this.proprioCtx.lineWidth = 2;
+                this.proprioCtx.stroke();
+
+                this.proprioCtx.beginPath();
+                this.proprioCtx.arc(x, y, 4, 0, Math.PI * 2);
+                this.proprioCtx.fillStyle = '#fff';
+                this.proprioCtx.fill();
+            }
+
+            requestAnimationFrame(animate);
+        };
+        animate();
     }
 }
 

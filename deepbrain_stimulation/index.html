@@ -61,6 +61,10 @@
                 <span class="tab-icon">⚡</span>
                 FEA Simulation
             </button>
+            <button class="nav-tab" data-module="protocol">
+                <span class="tab-icon">📋</span>
+                Treatment Protocols
+            </button>
         </nav>
 
         <!-- Main Content Area -->
@@ -190,8 +194,8 @@
             <!-- AI Optimizer Module -->
             <div class="module" id="aiModule">
                 <div class="module-header">
-                    <h2>AI-Driven Parameter Optimization</h2>
-                    <p>Generative AI models for optimal stimulation protocols</p>
+                    <h2>Gemini 3.0 AI-Driven Parameter Optimization</h2>
+                    <p>Generative AI models with Proprioceptive Feedback and FEA Integration</p>
                 </div>
 
                 <div class="grid-3">
@@ -212,16 +216,28 @@
                     </div>
 
                     <div class="card">
-                        <h3>RL Agent</h3>
-                        <p class="card-desc">Reinforcement Learning for adaptive control</p>
-                        <button class="btn-primary" id="optimizeRLBtn">Optimize with RL</button>
+                        <h3>Gemini 3.0 RL Agent</h3>
+                        <p class="card-desc">Reinforcement Learning with Proprioceptive Feedback</p>
+                        <button class="btn-primary" id="optimizeRLBtn">Optimize with Gemini 3.0</button>
                         <div id="rlResults" class="results-container"></div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <h3>Training Progress</h3>
-                    <canvas id="trainingCanvas" class="training-canvas"></canvas>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Training Progress</h3>
+                        <canvas id="trainingCanvas" class="training-canvas"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3>Proprioceptive Feedback Loop</h3>
+                        <p class="card-desc">Real-time system state stability and gradient sensation</p>
+                        <canvas id="proprioceptionCanvas" class="training-canvas"
+                            style="border-color: var(--secondary);"></canvas>
+                        <div id="feaIntegrationStatus"
+                            style="margin-top:10px; font-size:0.9em; color:var(--text-secondary);">
+                            Linked to FEA Simulator: <span style="color:var(--secondary);">Active</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -335,10 +351,118 @@
                     </div>
                 </div>
             </div>
+            <!-- Protocol Module -->
+            <div class="module" id="protocolModule">
+                <div class="module-header">
+                    <h2>Multi-Stage Treatment Paradigm Optimizer</h2>
+                    <p>Design and simulate sequential treatment protocols for targeted zones</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Protocol Configuration</h3>
+                        <div class="control-group">
+                            <label>Target Zones (Hold Ctrl to select multiple)</label>
+                            <select id="protocolTargets" multiple
+                                style="width: 100%; height: 100px; background: #1c1c1e; color: white; border: 1px solid #333; padding: 5px;">
+                                <option value="amygdala" selected>Amygdala (Fear)</option>
+                                <option value="hippocampus">Hippocampus (Memory)</option>
+                                <option value="vmPFC">vmPFC (Regulation)</option>
+                                <option value="hypothalamus">Hypothalamus (Stress)</option>
+                                <option value="nucleus_basalis">Nucleus Basalis (Dementia)</option>
+                                <option value="fornix">Fornix (Alzheimer's)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Total Duration (Weeks)</label>
+                            <input type="number" id="protocolDuration" value="12" min="4" max="52">
+                        </div>
+                        <button class="btn-primary" id="optimizeProtocolBtn" style="margin-top: 20px;">Generate
+                            Optimized Protocol</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Generated Sequence</h3>
+                        <div id="protocolTimeline" style="height: 300px; overflow-y: auto; font-size: 0.9em;">
+                            <div class="empty-state">No protocol generated yet.</div>
+                        </div>
+                        <div class="metric-value" id="protocolProjection"
+                            style="margin-top: 10px; font-size: 1.2em; color: #4cd964;"></div>
+                        <div class="card" style="margin-top: 20px;">
+                            <h3>Gemini 3.0 Optimal Treatment Paradigm</h3>
+                            <div id="geminiParadigmDisplay"
+                                style="padding: 15px; background: rgba(0, 212, 255, 0.05); border-radius: 8px; border: 1px solid var(--border-color);">
+
+                                <div
+                                    style="display:flex; align-items:center; justify-content: space-between; margin-bottom:15px;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <span style="font-size:1.5em;">✨</span>
+                                        <strong style="color:var(--primary); font-size: 1.2em;">Gemini 3.0 Multimodal
+                                            Reasoning Engine</strong>
+                                    </div>
+                                    <span class="status-badge"
+                                        style="background:#32d74b33; color:#32d74b; padding:4px 8px; border-radius:4px; font-size:0.8em;">OPTIMIZED</span>
+                                </div>
+
+                                <div class="grid-2">
+                                    <!-- BEM Visualization -->
+                                    <div style="background:var(--bg-dark); padding:10px; border-radius:8px;">
+                                        <div
+                                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                            <h4 style="color:#aaa; font-size:0.9em; margin:0;">BEM Cortical Surface
+                                                Simulation</h4>
+                                            <button id="generateBemBtn"
+                                                style="background:var(--bg-elevated); border:1px solid var(--border-color); color:var(--text-secondary); padding:2px 8px; border-radius:4px; font-size:0.8em; cursor:pointer;"
+                                                title="Regenerate BEM Model">↻ Sim</button>
+                                        </div>
+                                        <canvas id="corticalCanvas" width="400" height="300"></canvas>
+                                        <div
+                                            style="display:flex; justify-content:space-between; margin-top:5px; font-size:0.8em; color:#fff;">
+                                            <span>Max E-Field: <span id="bemFieldVal"
+                                                    style="color:var(--secondary)">--</span> V/m</span>
+                                            <span>VTA Intersection: <span id="bemInterVal"
+                                                    style="color:var(--warning)">--</span>%</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Reasoning Logs & Connectome -->
+                                    <div style="display:flex; flex-direction:column; gap:10px;">
+                                        <div style="background:var(--bg-elevated); padding:10px; border-radius:8px;">
+                                            <h4 style="color:#aaa; font-size:0.9em; margin-bottom:5px;">Connectome
+                                                Constraints</h4>
+                                            <div class="metrics-grid" style="grid-template-columns: 1fr 1fr;">
+                                                <div>
+                                                    <div style="font-size:0.8em; color:#888;">Pathway Integrity</div>
+                                                    <div id="connIntegrity" style="font-size:1.2em; color:#fff;">--
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div style="font-size:0.8em; color:#888;">Struct. Conn.</div>
+                                                    <div id="connStruct" style="font-size:1.2em; color:#fff;">--</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            style="flex-grow:1; background:var(--bg-dark); padding:10px; border-radius:8px; border-left: 2px solid var(--primary);">
+                                            <h4 style="color:#aaa; font-size:0.9em; margin-bottom:5px;">Reasoning Trace
+                                            </h4>
+                                            <div id="reasoningLogs"
+                                                style="font-family:monospace; font-size:0.8em; color:#ccc; height:150px; overflow-y:auto;">
+                                                <span style="color:#555;">> Awaiting optimization...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
         </main>
     </div>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="app.js"></script>
     <script src="circuit_designer.js"></script>
@@ -347,6 +471,7 @@
     <script src="ai_optimizer.js"></script>
     <script src="clinical_dashboard.js"></script>
     <script src="fea_interface.js"></script>
+    <script src="protocol_interface.js"></script>
 </body>
 
 </html>

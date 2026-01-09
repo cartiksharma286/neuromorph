@@ -86,9 +86,12 @@ class WaveformGenerator {
         const width = this.canvas.width;
         const height = this.canvas.height;
 
-        // Clear canvas
-        this.ctx.fillStyle = '#0a0a0a';
-        this.ctx.fillRect(0, 0, width, height);
+        // Clear canvas with slight transparency for trail effect? No, clean clear.
+        this.ctx.clearRect(0, 0, width, height);
+
+        // Background
+        // this.ctx.fillStyle = '#0a0a0a';
+        // this.ctx.fillRect(0, 0, width, height);
 
         // Draw grid
         this.drawGrid();
@@ -96,60 +99,95 @@ class WaveformGenerator {
         // Calculate waveform parameters
         const period_ms = 1000 / frequency_hz;
         const pulse_width_ms = pulse_width_us / 1000;
-        const pixels_per_ms = width / (period_ms * 3); // Show 3 periods
-
-        // Draw biphasic pulses
-        this.ctx.strokeStyle = '#00d4ff';
-        this.ctx.lineWidth = 2;
-        this.ctx.beginPath();
+        const pixels_per_ms = width / (period_ms * 3.5); // Show 3.5 periods for continuity look
 
         const centerY = height / 2;
-        const scaleY = (height * 0.8) / (amplitude_ma * 2);
+        const scaleY = (height * 0.7) / (8.0); // static scale based on max amplitude 8.0 for stability
 
-        for (let period = 0; period < 3; period++) {
+        // Setup Neon Style
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = '#00d4ff';
+        this.ctx.strokeStyle = '#00d4ff';
+        this.ctx.lineWidth = 3;
+        this.ctx.lineCap = 'round';
+        this.ctx.lineJoin = 'round';
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, centerY);
+
+        for (let period = 0; period < 5; period++) {
             const offsetX = period * period_ms * pixels_per_ms;
+            if (offsetX > width) break;
 
-            // Cathodic phase
-            this.ctx.moveTo(offsetX, centerY);
-            this.ctx.lineTo(offsetX, centerY - amplitude_ma * scaleY);
-            this.ctx.lineTo(offsetX + pulse_width_ms * pixels_per_ms, centerY - amplitude_ma * scaleY);
+            // Cathodic phase (down)
+            this.ctx.lineTo(offsetX, centerY); // Start
+            this.ctx.lineTo(offsetX, centerY + amplitude_ma * scaleY); // Drop (note: Y increases downwards in canvas, but usually cathodic is drawn negative... let's stick to user preference or std. Let's draw Down as negative/cathodic)
+            // Actually, convention varies. Let's make "positive" Up.
+            // If amp is 3.0, let's draw it going UP for Anodic and DOWN for Cathodic.
+            // Wait, previous code drew: lineTo(..., centerY - amp). centerY - amp is UP.
+
+            // Let's implement symmetric biphasic charge balanced.
+            // Phase 1 (Cathodic/Negative? Usually Stim is Cathodic First)
+            // Let's draw DOWN first for Cathodic.
+
+            this.ctx.lineTo(offsetX, centerY + amplitude_ma * scaleY);
+            this.ctx.lineTo(offsetX + pulse_width_ms * pixels_per_ms, centerY + amplitude_ma * scaleY);
             this.ctx.lineTo(offsetX + pulse_width_ms * pixels_per_ms, centerY);
 
-            // Inter-phase gap
-            this.ctx.lineTo(offsetX + pulse_width_ms * pixels_per_ms * 1.2, centerY);
+            // Inter-phase gap (tiny)
+            const gap = pulse_width_ms * 0.2 * pixels_per_ms;
+            this.ctx.lineTo(offsetX + pulse_width_ms * pixels_per_ms + gap, centerY);
 
-            // Anodic phase
-            this.ctx.lineTo(offsetX + pulse_width_ms * pixels_per_ms * 1.2, centerY + amplitude_ma * scaleY);
-            this.ctx.lineTo(offsetX + pulse_width_ms * pixels_per_ms * 2.2, centerY + amplitude_ma * scaleY);
-            this.ctx.lineTo(offsetX + pulse_width_ms * pixels_per_ms * 2.2, centerY);
+            // Phase 2 (Anodic/Positive)
+            this.ctx.lineTo(offsetX + pulse_width_ms * pixels_per_ms + gap, centerY - amplitude_ma * scaleY);
+            this.ctx.lineTo(offsetX + (pulse_width_ms * 2) * pixels_per_ms + gap, centerY - amplitude_ma * scaleY);
+            this.ctx.lineTo(offsetX + (pulse_width_ms * 2) * pixels_per_ms + gap, centerY);
 
-            // Return to baseline
+            // Return to baseline until next period
             this.ctx.lineTo(offsetX + period_ms * pixels_per_ms, centerY);
         }
 
         this.ctx.stroke();
 
-        // Draw labels
-        this.ctx.fillStyle = '#b0b0b0';
+        // Reset Shadow for text/grid
+        this.ctx.shadowBlur = 0;
+
+        // Draw Area Fill (Gradient)
+        // Re-trace path for fill
+        this.ctx.lineTo(width, height);
+        this.ctx.lineTo(0, height);
+        this.ctx.closePath();
+
+        const gradient = this.ctx.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, 'rgba(0, 212, 255, 0.0)');
+        gradient.addColorStop(0.5, 'rgba(0, 212, 255, 0.1)');
+        gradient.addColorStop(1, 'rgba(0, 212, 255, 0.0)');
+        this.ctx.fillStyle = gradient;
+        // this.ctx.fill(); // Fill creates a mess with the baseline return. Keep it simple line for now or complex close path.
+        // Let's skip fill to keep it clean neon.
+
+        // Draw labels overlay
+        this.ctx.fillStyle = '#fff';
+        this.ctx.font = 'bold 14px Inter';
+        this.ctx.fillText(`${amplitude_ma.toFixed(1)} mA`, 10, 25);
         this.ctx.font = '12px Inter';
-        this.ctx.fillText(`${amplitude_ma} mA`, 10, 20);
-        this.ctx.fillText(`${frequency_hz} Hz`, 10, 35);
-        this.ctx.fillText(`${pulse_width_us} μs`, 10, 50);
+        this.ctx.fillStyle = '#888';
+        this.ctx.fillText(`${frequency_hz} Hz  |  ${pulse_width_us} μs`, 10, 45);
     }
 
     drawGrid() {
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
         this.ctx.lineWidth = 1;
 
-        // Horizontal lines
-        for (let y = 0; y < this.canvas.height; y += 40) {
+        // Horizontal lines (Voltage)
+        for (let y = 0; y < this.canvas.height; y += 20) {
             this.ctx.beginPath();
             this.ctx.moveTo(0, y);
             this.ctx.lineTo(this.canvas.width, y);
             this.ctx.stroke();
         }
 
-        // Vertical lines
+        // Vertical lines (Time)
         for (let x = 0; x < this.canvas.width; x += 40) {
             this.ctx.beginPath();
             this.ctx.moveTo(x, 0);
@@ -157,12 +195,15 @@ class WaveformGenerator {
             this.ctx.stroke();
         }
 
-        // Center line
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        // Center line (Baseline)
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        this.ctx.lineWidth = 1;
+        this.ctx.setLineDash([5, 5])
         this.ctx.beginPath();
         this.ctx.moveTo(0, this.canvas.height / 2);
         this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);
         this.ctx.stroke();
+        this.ctx.setLineDash([]);
     }
 
     async validateSafety() {

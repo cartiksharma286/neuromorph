@@ -16,6 +16,7 @@ from generative_ai_engine import GenerativeAIEngine
 from ptsd_neural_model import PTSDNeuralModel
 from safety_validator import SafetyValidator
 from fea_simulator import DBSFEASimulator
+from treatment_optimizer import TreatmentProtocolOptimizer
 
 # Import dementia care modules
 from dementia_neural_model import DementiaNeuralModel
@@ -31,6 +32,7 @@ ai_engine = GenerativeAIEngine()
 neural_model = PTSDNeuralModel()
 safety_validator = SafetyValidator()
 fea_simulator = DBSFEASimulator()
+protocol_optimizer = TreatmentProtocolOptimizer(neural_model)
 
 # Initialize dementia components
 dementia_model = DementiaNeuralModel(disease_duration_years=2.0)
@@ -655,6 +657,68 @@ def optimize_fea_platform():
             'success': True,
             'recommended_config': best_config,
             'optimization_log': detailed_results
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# ==================== Treatment Protocol Endpoints ====================
+
+@app.route('/api/protocol/optimize', methods=['POST'])
+def optimize_protocol():
+    """Generate optimized treatment protocol sequence"""
+    data = request.json
+    target_zones = data.get('target_zones', ['amygdala'])
+    duration = data.get('duration_weeks', 12)
+    
+    try:
+        result = protocol_optimizer.generate_protocol_sequence(target_zones, duration)
+        return jsonify({
+            'success': True,
+            'protocol': result['protocol'],
+            'projected_improvement': result['final_projected_symptom_reduction'],
+            'bem_data': result.get('bem_data'),
+            'connectome_data': result.get('connectome_data')
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/protocol/bem_simulation', methods=['POST'])
+def run_dedicated_bem():
+    """Run dedicated BEM simulation for cortical surface"""
+    try:
+        data = request.json or {}
+        targets = data.get('targets', ['amygdala'])
+        result = protocol_optimizer.generate_bem_surface_data(targets)
+        return jsonify({
+            'success': True,
+            'bem_data': result
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/protocol/simulate_outcome', methods=['POST'])
+def simulate_protocol_outcome():
+    """Simulate weekly progress of a protocol"""
+    data = request.json
+    protocol = data.get('protocol', [])
+    
+    # Infer condition or get from request
+    condition = 'ptsd'
+    if data.get('condition') == 'dementia':
+        condition = 'dementia'
+    else:
+        # Auto-detect if any dementia targets
+        for stage in protocol:
+            if stage.get('target_focus') in ['nucleus_basalis', 'fornix']:
+                condition = 'dementia'
+                break
+    
+    try:
+        weeks = protocol_optimizer.simulate_long_term_outcome(protocol, condition=condition)
+        return jsonify({
+            'success': True,
+            'timeline': weeks,
+            'condition': condition
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

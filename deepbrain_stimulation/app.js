@@ -3,7 +3,7 @@
  * Handles navigation, API communication, and module coordination
  */
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'http://127.0.0.1:5001/api';
 
 class DBSApplication {
     constructor() {
