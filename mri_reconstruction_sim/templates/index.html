@@ -267,6 +267,7 @@
                     <option value="n25_array">N25 Dense Array (High Surface SNR)</option>
                     <option value="solenoid">High-Q Solenoid (Local)</option>
                     <option value="quantum_surface_lattice">Quantum Surface Lattice (Berry Curvature)</option>
+                    <option value="geodesic_chassis">Geodesic Head Coil (Geometric)</option>
                 </select>
             </div>
 
@@ -315,6 +316,7 @@
                 <button class="tab-btn" onclick="switchTab('kspace_gt', this)">Ideal K-Space</button>
                 <button class="tab-btn" onclick="switchTab('phantom', this)">Ground Truth</button>
                 <button class="tab-btn" onclick="switchTab('profile', this)">Signal Profile</button>
+                <button class="tab-btn" onclick="switchTab('circuit', this)">Circuit Diagram</button>
             </div>
 
             <div class="plot-container">
@@ -341,6 +343,11 @@
                 <div id="tab-profile" class="tab-content image-display-col">
                     <img id="img-profile" src="" style="display: none;">
                     <a id="link-profile" href="#" target="_blank" class="download-link" style="display: none;">Open in
+                        New Tab</a>
+                </div>
+                <div id="tab-circuit" class="tab-content image-display-col">
+                    <img id="img-circuit" src="" style="display: none;">
+                    <a id="link-circuit" href="#" target="_blank" class="download-link" style="display: none;">Open in
                         New Tab</a>
                 </div>
 
@@ -475,6 +482,7 @@
                     updateImg('kspace_gt', data.plots.kspace_gt);
                     updateImg('phantom', data.plots.phantom);
                     updateImg('profile', data.plots.profile);
+                    updateImg('circuit', data.plots.circuit);
 
                     document.getElementById('placeholder').style.display = 'none';
 
