@@ -250,18 +250,14 @@
                     <option value="GRE">Gradient Echo (GRE)</option>
                     <option value="InversionRecovery">Inversion Recovery (IR)</option>
                     <option value="FLAIR">FLAIR (Fluid Attenuated)</option>
-                    <option value="SSFP">SSFP (Steady State)</option>
+                    <option value="SSFP">TrueFISP / bSSFP (Bright Blood)</option>
+                    <option value="GenerativeTrueFISP">Generative TrueFISP (AI Motion Corrected)</option>
                     <option value="QuantumEntangled">Quantum Entangled (Low Noise)</option>
                     <option value="ZeroPointGradients">Zero Point Gradients (T2* Extreme)</option>
                     <option value="QuantumStatisticalCongruence">Quantum Statistical Congruence (Max CNR)</option>
                     <option value="QuantumDualIntegral">Quantum Dual Integral (Berry Phase + Dual Use)</option>
                 </select>
-                <div style="margin-top:0.5rem;">
-                    <input type="text" id="pulse_prompt" placeholder="Ask AI to design sequence..."
-                        style="margin-bottom:0.2rem;">
-                    <button onclick="designPulseWithAI()" style="padding:0.4rem; font-size:0.8rem;">Auto-Design
-                        Sequence</button>
-                </div>
+                <!-- Auto-Design Removed -->
             </div>
 
             <div class="control-group">
@@ -274,7 +270,12 @@
                     <option value="solenoid">High-Q Solenoid (Local)</option>
                     <option value="quantum_surface_lattice">Quantum Surface Lattice (Berry Curvature)</option>
                     <option value="geodesic_chassis">Geodesic Head Coil (Geometric)</option>
+                    <option value="cardiothoracic_array">Cardiothoracic Array (Heart/Lung)</option>
                 </select>
+                <div style="margin-top:0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="shimming" style="width: auto;">
+                    <label for="shimming" style="margin-bottom:0; cursor:pointer;">Optimal B1 Shimming</label>
+                </div>
                 <div style="margin-top:0.5rem;">
                     <a href="#" onclick="switchTab('rf_design', null); return false;"
                         style="color:var(--accent); font-size:0.8rem;">Open Gemini RF Designer</a>
@@ -394,6 +395,26 @@
                             <pre id="rf_specs" style="color: #cbd5e1; font-size: 0.9rem; white-space: pre-wrap;"></pre>
                             <p id="rf_explanation" style="color: var(--accent); font-style: italic; margin-top:0.5rem;">
                             </p>
+                        </div>
+                    </div>
+
+                    <div id="metrics_tab" class="tab-content" style="display:none;">
+                        <div id="metrics"></div>
+                        <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <h4>Shim Report</h4>
+                            <pre id="shim_report_view"
+                                style="font-size: 0.8rem; color: #aaa; white-space: pre-wrap;">No shimming data.</pre>
+                        </div>
+                    </div>
+
+                    <div id="ecg_tab" class="tab-content" style="display:none;">
+                        <h3>Patient Monitoring: 58y Male, AFib</h3>
+                        <div style="background: #000; border: 1px solid #333; height: 200px; position: relative; overflow: hidden;"
+                            id="ecg_container">
+                            <canvas id="ecg_canvas" width="600" height="200"></canvas>
+                        </div>
+                        <div style="font-family: monospace; color: #0f0; margin-top: 5px;">
+                            HR: <span id="hr_val">--</span> BPM | Rhythm: Atrial Fibrillation | Lead: II
                         </div>
                     </div>
                 </div>
@@ -551,7 +572,8 @@
                 flip_angle: document.getElementById('flip_angle').value,
                 resolution: document.getElementById('resolution').value,
                 noise: document.getElementById('noise').value,
-                recon_method: document.getElementById('recon_method').value
+                recon_method: document.getElementById('recon_method').value,
+                shimming: document.getElementById('shimming').checked
             };
 
             try {
@@ -592,6 +614,20 @@
                     document.getElementById('signalVal').textContent = data.metrics.max_signal.toFixed(1);
                     if (data.metrics.snr_estimate) document.getElementById('snrVal').textContent = data.metrics.snr_estimate.toFixed(2);
                     if (data.metrics.entropy) document.getElementById('entropyVal').textContent = data.metrics.entropy.toFixed(3);
+
+                    // Update Shim Report
+                    if (data.shim_report) {
+                        document.getElementById('shim_report_view').textContent = JSON.stringify(data.shim_report, null, 2);
+                    }
+
+                    // Render ECG
+                    if (data.ecg_data) {
+                        try {
+                            renderECG(data.ecg_data);
+                        } catch (e) {
+                            console.error("ECG Render Error:", e);
+                        }
+                    }
                 } else {
                     alert('Simulation failed: ' + data.error);
                 }
@@ -613,6 +649,55 @@
             setTimeout(() => {
                 loader.style.display = 'none';
             }, 3000);
+        }
+
+        function renderECG(ecgData) {
+            const canvas = document.getElementById('ecg_canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Grid
+            ctx.strokeStyle = '#224422';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let x = 0; x < width; x += 25) { ctx.moveTo(x, 0); ctx.lineTo(x, height); }
+            for (let y = 0; y < height; y += 25) { ctx.moveTo(0, y); ctx.lineTo(width, y); }
+            ctx.stroke();
+
+            // Signal
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            const t = ecgData.time;
+            const y = ecgData.signal;
+            // Normalize y to fit canvas height
+
+            for (let i = 0; i < t.length; i++) {
+                const x_px = (i / t.length) * width;
+                const y_val = y[i];
+                // Scale: Assumes signal range roughly [-1, 3] from sim
+                // Map to [height, 0]
+                const y_px = height - ((y_val + 1.0) / 4.0 * height);
+
+                if (i === 0) ctx.moveTo(x_px, y_px);
+                else ctx.lineTo(x_px, y_px);
+            }
+            ctx.stroke();
+
+            const hrEl = document.getElementById('hr_val');
+            if (hrEl) {
+                if (ecgData.source_localization) {
+                    hrEl.parentElement.innerHTML = `HR: <span style="color:#fff;">108 (Irr)</span> | Lead: II <br> 
+                    <span style="color:var(--accent); font-weight:bold;">Source Localization: ${ecgData.source_localization.origin} (Conf: ${ecgData.source_localization.confidence})</span>`;
+                } else {
+                    hrEl.textContent = "108 (Irr)";
+                }
+            }
         }
     </script>
 </body>
