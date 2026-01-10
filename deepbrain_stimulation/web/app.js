@@ -33,7 +33,7 @@ const AppState = {
 
 // ===== API Client =====
 class APIClient {
-    constructor(baseURL = 'http://127.0.0.1:5000') {
+    constructor(baseURL = 'http://127.0.0.1:5002') {
         this.baseURL = baseURL;
         this.ws = null;
     }
@@ -63,7 +63,7 @@ class APIClient {
     }
 
     connectWebSocket(onMessage) {
-        this.ws = new WebSocket('ws://127.0.0.1:5000/ws');
+        this.ws = new WebSocket('ws://127.0.0.1:5002/ws');
         this.ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             onMessage(data);
