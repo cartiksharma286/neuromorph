@@ -89,6 +89,9 @@ def simulate():
         
         plots = sim.generate_plots(kspace, recon_img, M_ref)
         
+        # Add ECG Plot Image (Server-side generated)
+        plots['ecg'] = sim.generate_ecg_plot(ecg_time, ecg_signal, source_info=ecg_data['source_localization'])
+        
         return jsonify({
             "success": True,
             "metrics": metrics,

@@ -1174,3 +1174,33 @@ class MRIReconstructionSimulator:
         buf.seek(0)
         plt.close(fig)
         return base64.b64encode(buf.getvalue()).decode('utf-8')
+
+    def generate_ecg_plot(self, time, signal, source_info=None):
+        """Generates a medical-monitor style plot of the ECG."""
+        plt.style.use('dark_background')
+        fig, ax = plt.subplots(figsize=(8, 3))
+        fig.patch.set_facecolor('#000000') # Monitor black
+        ax.set_facecolor('#000000')
+        
+        ax.plot(time, signal, color='#00ff00', linewidth=1.5)
+        
+        # Grid
+        ax.grid(True, color='#224422', linestyle='-', linewidth=0.5)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['bottom'].set_color('#224422')
+        ax.spines['left'].set_color('#224422')
+        
+        ax.set_title("Lead II Monitoring (Real-time)", color='white', fontsize=10, loc='left')
+        ax.set_xlabel("Time (s)", color='#aaaaaa', fontsize=8)
+        
+        # Annotations
+        if source_info:
+            text = f"Rhythm: Atrial Fibrillation\nSource: {source_info.get('origin', 'Unknown')}\nConf: {source_info.get('confidence', '--')}"
+            ax.text(0.02, 0.95, text, transform=ax.transAxes, color='#ffff00', fontsize=9, va='top', bbox=dict(facecolor='black', alpha=0.7, edgecolor='none'))
+
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png', facecolor='#000000', bbox_inches='tight')
+        buf.seek(0)
+        plt.close(fig)
+        return base64.b64encode(buf.getvalue()).decode('utf-8')
