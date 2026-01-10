@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from simulator_core import MRIReconstructionSimulator
+from llm_modules import GeminiRFDesigner, LLMPulseDesigner
 import os
 
 app = Flask(__name__)
@@ -29,12 +30,13 @@ def simulate():
         coil_mode = data.get('coils', 'standard') # 'standard' or 'custom_phased_array'
         num_coils = int(data.get('num_coils', 8))
         noise = float(data.get('noise', 0.01))
+        recon_method = data.get('recon_method', 'SoS')
         
         # Run Simulation
         sim = MRIReconstructionSimulator(resolution=res)
         
-        # 1. Generate Phantom
-        sim.generate_brain_phantom()
+        # 1. Generate Phantom (Load Real Data if possible)
+        sim.setup_phantom(use_real_data=True)
         
         # 2. Generate Coils
         sim.generate_coil_sensitivities(num_coils=num_coils, coil_type=coil_mode)
@@ -43,10 +45,15 @@ def simulate():
         kspace, M_ref = sim.acquire_signal(sequence_type=seq_type, TR=tr, TE=te, TI=ti, flip_angle=flip_angle, noise_level=noise)
         
         # 4. Reconstruct
-        recon_img, coil_imgs = sim.reconstruct_image(kspace, method='SoS')
+        recon_img, coil_imgs = sim.reconstruct_image(kspace, method=recon_method)
         
         # 5. Metrics & Plot
         metrics = sim.compute_metrics(recon_img, M_ref)
+        
+        # Add Statistical Analysis
+        stat_metrics = sim.classifier.analyze_image(recon_img)
+        metrics.update(stat_metrics)
+        
         plots = sim.generate_plots(kspace, recon_img, M_ref)
         
         return jsonify({
@@ -58,6 +65,33 @@ def simulate():
     except Exception as e:
         import traceback
         traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/design_rf', methods=['POST'])
+def design_rf():
+    try:
+        data = request.json or {}
+        prompt = data.get('prompt', '')
+        field = data.get('field', '3T')
+        
+        designer = GeminiRFDesigner()
+        result = designer.generate_design(prompt, field)
+        
+        return jsonify({"success": True, "result": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/design_pulse', methods=['POST'])
+def design_pulse():
+    try:
+        data = request.json or {}
+        prompt = data.get('prompt', '')
+        
+        designer = LLMPulseDesigner()
+        specs = designer.interpret_request(prompt)
+        
+        return jsonify({"success": True, "specs": specs})
+    except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 from flask import send_file

@@ -6,7 +6,11 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import base64
-import base64
+import nibabel as nib
+from nibabel.testing import data_path
+import os
+from skimage.transform import resize
+from llm_modules import StatisticalClassifier
 
 class MRIReconstructionSimulator:
     def __init__(self, resolution=128):
@@ -14,10 +18,153 @@ class MRIReconstructionSimulator:
         self.dims = (resolution, resolution)
         self.t1_map = None
         self.t2_map = None
-        self.pd_map = None # Proton Density
+        self.pd_map = None 
         self.coils = []
+        self.classifier = StatisticalClassifier()
         
+
     def generate_brain_phantom(self):
+        # Legacy support
+        self.setup_phantom(use_real_data=False)
+
+    def setup_phantom(self, use_real_data=True):
+        """Generates T1, T2, PD maps. Tries to load real data first."""
+        if use_real_data:
+            if self.load_real_data():
+                return
+        
+        # Fallback to synthetic
+        self._generate_synthetic_phantom()
+
+    def load_real_data(self):
+        try:
+            # Look for a standard example file or a specific one
+            # Try finding *any* .nii file in current dir or Data dir
+            target_file = None
+            
+            common_paths = [
+                os.path.join(os.getcwd(), 'example_nifti.nii.gz'),
+                os.path.join(data_path, 'example_nifti.nii.gz'),
+                os.path.join(data_path, 'example4d.nii.gz'),
+                os.path.join(os.getcwd(), 'Data', 'structure.nii') 
+            ]
+            
+            for p in common_paths:
+                if os.path.exists(p):
+                    target_file = p
+                    break
+            
+            if not target_file:
+                # Try finding any nii in subdirs (shallow search)
+                for root, dirs, files in os.walk(os.getcwd()):
+                    for f in files:
+                        if f.endswith('.nii') or f.endswith('.nii.gz'):
+                            target_file = os.path.join(root, f)
+                            break
+                    if target_file: break
+            
+            if not target_file:
+                print("No NIfTI file found.")
+                return False
+                
+            print(f"Loading real data from {target_file}")
+            img = nib.load(target_file)
+            data = img.get_fdata()
+            
+            # Extract slice
+            if data.ndim == 4:
+                slc = data[:, :, data.shape[2]//2, 0]
+            elif data.ndim == 3:
+                slc = data[:, :, data.shape[2]//2]
+            else:
+                slc = data
+            
+            # Normalize orientation (simple rot90 if needed to match view)
+            slc = np.rot90(slc)
+            
+            # Resize
+            slc_resized = resize(slc, self.dims, mode='reflect', anti_aliasing=True)
+            
+            # Normalize 0-1
+            slc_resized = (slc_resized - slc_resized.min()) / (slc_resized.max() - slc_resized.min() + 1e-9)
+            
+            # Assign Maps based on intensity (Simple approximate segmentation)
+            # Assume T1w input: WM is bright, GM is gray, CSF/Air is dark
+            
+            self.pd_map = slc_resized
+            
+            # Model: 
+            # Air < 0.1
+            # CSF < 0.3 (in T1w? actually CSF is Dark in T1w)
+            # GM ~ 0.5-0.7
+            # WM > 0.8
+            
+            # Synthesize T1/T2 from this "Structure"
+            # T1: WM(700), GM(1200), CSF(4000)
+            # T2: WM(80), GM(110), CSF(2000)
+            
+            # Continuous mapping for simulation visual fun
+            # Invert for T1? No, T1 is short for WM (Bright signal in T1w).
+            # So Bright Input -> Short T1 (Wait, T1w signal ~ 1/T1... actually Signal ~ (1-exp(-TR/T1)). Short T1 = Bright.)
+            # So High Intensity -> Short T1.
+            
+            # Let's map Intensity (I) [0-1] to T1.
+            # I=1 (WM) -> T1=700
+            # I=0.6 (GM) -> T1=1200
+            # I=0.1 (CSF) -> T1=4000
+            # I=0 (Air) -> T1=0 (or 5000)
+            
+            # Linear interp model won't capture the CSF jump well, but code is robust.
+            # Using piecewise construction or just functional
+            self.t1_map = 4000 - 3300 * slc_resized # 0->4000, 1->700. Crude but effective for contrast.
+            self.t2_map = 2000 - 1900 * slc_resized # 0->2000, 1->100.
+            
+            # Mask Air firmly
+            mask_air = slc_resized < 0.05
+            self.t1_map[mask_air] = 0
+            self.t2_map[mask_air] = 0
+            self.pd_map[mask_air] = 0
+            
+            # Add Pathology (Plaque Burden)
+            self._add_pathology_plaques()
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error loading neuroimage: {e}")
+            return False
+
+    def _add_pathology_plaques(self):
+        """Simulates plaque burden (Amyloid/Vascular)."""
+        # Plaques are often small, focal lesions.
+        # Amyloid: Short T2* (Iron), sometimes iso-intense on T1.
+        # Let's model them as small circular regions with specific properties.
+        
+        N = self.resolution
+        num_plaques = np.random.randint(5, 15)
+        
+        for _ in range(num_plaques):
+            # Random location in "Brain" (avoiding air/edges roughly)
+            cx = np.random.randint(N//4, 3*N//4)
+            cy = np.random.randint(N//4, 3*N//4)
+            radius = np.random.randint(1, 4)
+            
+            y, x = np.ogrid[:N, :N]
+            mask = (x - cx)**2 + (y - cy)**2 <= radius**2
+            
+            # Check if we are in tissue (PD > 0.2)
+            if np.mean(self.pd_map[mask]) > 0.2:
+                # Plaque Signatures
+                # T1: Slightly Hypointense (Darker) or Iso. Let's drop T1 a bit.
+                self.t1_map[mask] *= 0.8 
+                
+                # T2: Hypointense (Dark on T2/T2* due to iron/paramagnetic)
+                self.t2_map[mask] = 40 # Very Short T2
+                
+                # PD: Can be lower (atrophy/space occupying)
+                self.pd_map[mask] *= 0.9 
+
+    def _generate_synthetic_phantom(self):
         """Generates synthetic T1, T2, and PD maps for a brain slice."""
         N = self.resolution
         self.t1_map = np.zeros(self.dims)
@@ -350,6 +497,12 @@ class MRIReconstructionSimulator:
         if method == 'SoS':
             # Root Sum of Squares
             combined = np.sqrt(sum(np.abs(img)**2 for img in coil_images))
+        elif method == 'Variational':
+            # Variational Theory Denoising
+            # First SoS
+            combined_raw = np.sqrt(sum(np.abs(img)**2 for img in coil_images))
+            # Apply Variational Denoising
+            combined = self.classifier.variational_denoise(combined_raw, lambda_tv=0.05)
         else:
             combined = np.abs(coil_images[0])
             
