@@ -256,6 +256,12 @@
                     <option value="QuantumStatisticalCongruence">Quantum Statistical Congruence (Max CNR)</option>
                     <option value="QuantumDualIntegral">Quantum Dual Integral (Berry Phase + Dual Use)</option>
                 </select>
+                <div style="margin-top:0.5rem;">
+                    <input type="text" id="pulse_prompt" placeholder="Ask AI to design sequence..."
+                        style="margin-bottom:0.2rem;">
+                    <button onclick="designPulseWithAI()" style="padding:0.4rem; font-size:0.8rem;">Auto-Design
+                        Sequence</button>
+                </div>
             </div>
 
             <div class="control-group">
@@ -269,6 +275,10 @@
                     <option value="quantum_surface_lattice">Quantum Surface Lattice (Berry Curvature)</option>
                     <option value="geodesic_chassis">Geodesic Head Coil (Geometric)</option>
                 </select>
+                <div style="margin-top:0.5rem;">
+                    <a href="#" onclick="switchTab('rf_design', null); return false;"
+                        style="color:var(--accent); font-size:0.8rem;">Open Gemini RF Designer</a>
+                </div>
             </div>
 
             <div class="control-group">
@@ -305,7 +315,20 @@
                 <input type="range" id="noise" min="0" max="0.2" step="0.01" value="0.02">
             </div>
 
+            <div class="control-group">
+                <label>Reconstruction Method</label>
+                <select id="recon_method">
+                    <option value="SoS">Sum of Squares (Standard)</option>
+                    <option value="Variational">Variational Theory (TV Denoise)</option>
+                </select>
+            </div>
+
             <button onclick="runSimulation()">Run Reconstruction</button>
+            <div style="height: 10px;"></div>
+            <button onclick="downloadReport()"
+                style="background-color: var(--bg-primary); border: 1px solid var(--accent); color: var(--accent);">
+                Download Full Report
+            </button>
             <div class="loader" id="loader"></div>
         </aside>
 
@@ -316,7 +339,9 @@
                 <button class="tab-btn" onclick="switchTab('kspace_gt', this)">Ideal K-Space</button>
                 <button class="tab-btn" onclick="switchTab('phantom', this)">Ground Truth</button>
                 <button class="tab-btn" onclick="switchTab('profile', this)">Signal Profile</button>
+                <button class="tab-btn" onclick="switchTab('profile', this)">Signal Profile</button>
                 <button class="tab-btn" onclick="switchTab('circuit', this)">Circuit Diagram</button>
+                <button class="tab-btn" onclick="switchTab('rf_design', this)">Gemini Design</button>
             </div>
 
             <div class="plot-container">
@@ -351,6 +376,28 @@
                         New Tab</a>
                 </div>
 
+                <div id="tab-rf_design" class="tab-content" style="padding: 1rem;">
+                    <h3>Gemini RF Coil Designer</h3>
+                    <p style="color: var(--text-secondary); font-size:0.9rem;">Powered by Generative AI Simulation</p>
+                    <div style="margin-bottom:1rem; display:flex; gap:0.5rem;">
+                        <input type="text" id="rf_prompt"
+                            placeholder="Describe coil (e.g., 'High density 7T head coil')..." style="flex:1;">
+                        <button onclick="generateRFDesign()" style="width: auto;">Generate</button>
+                    </div>
+
+                    <div id="rf_result" style="display:none; margin-top:1rem;">
+                        <div class="image-display-col">
+                            <img id="img-rf_gen" src="">
+                        </div>
+                        <div style="background: #334155; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                            <h4>Design Specs</h4>
+                            <pre id="rf_specs" style="color: #cbd5e1; font-size: 0.9rem; white-space: pre-wrap;"></pre>
+                            <p id="rf_explanation" style="color: var(--accent); font-style: italic; margin-top:0.5rem;">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="placeholder" style="text-align: center; padding: 4rem; color: #475569;">
                     Configure parameters and click Run to simulate MRI acquisition.
                 </div>
@@ -368,6 +415,14 @@
                 <div class="metric-card">
                     <div class="metric-val" id="signalVal">--</div>
                     <div class="metric-label">Max Signal Intensity</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="snrVal">--</div>
+                    <div class="metric-label">Est. SNR</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="entropyVal">--</div>
+                    <div class="metric-label">Entropy</div>
                 </div>
             </div>
         </main>
@@ -434,6 +489,50 @@
             document.getElementById('tab-' + tabId).classList.add('active');
         }
 
+        async function designPulseWithAI() {
+            const prompt = document.getElementById('pulse_prompt').value;
+            if (!prompt) return alert("Please enter a prompt");
+
+            try {
+                const res = await fetch('/api/design_pulse', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const specs = data.specs;
+                    if (specs.sequence) document.getElementById('sequence').value = specs.sequence;
+                    // Trigger change event to set visibility
+                    document.getElementById('sequence').dispatchEvent(new Event('change'));
+
+                    if (specs.tr) document.getElementById('tr').value = specs.tr;
+                    if (specs.te) document.getElementById('te').value = specs.te;
+                    if (specs.ti) document.getElementById('ti').value = specs.ti;
+
+                    alert("AI Design Applied: " + specs.description);
+                }
+            } catch (e) { alert("Error: " + e); }
+        }
+
+        async function generateRFDesign() {
+            const prompt = document.getElementById('rf_prompt').value;
+            try {
+                const res = await fetch('/api/design_rf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('rf_result').style.display = 'block';
+                    document.getElementById('img-rf_gen').src = 'data:image/png;base64,' + data.result.schematic;
+                    document.getElementById('rf_specs').textContent = JSON.stringify(data.result.specs, null, 2);
+                    document.getElementById('rf_explanation').textContent = data.result.explanation;
+                }
+            } catch (e) { alert("Error: " + e); }
+        }
+
         async function runSimulation() {
             const btn = document.querySelector('button'); // The simulation button, not tab buttons
             const loader = document.getElementById('loader');
@@ -451,7 +550,8 @@
                 ti: document.getElementById('ti').value,
                 flip_angle: document.getElementById('flip_angle').value,
                 resolution: document.getElementById('resolution').value,
-                noise: document.getElementById('noise').value
+                noise: document.getElementById('noise').value,
+                recon_method: document.getElementById('recon_method').value
             };
 
             try {
@@ -490,6 +590,8 @@
                     document.getElementById('contrastVal').textContent = data.metrics.contrast.toFixed(3);
                     document.getElementById('sharpnessVal').textContent = data.metrics.sharpness.toFixed(1);
                     document.getElementById('signalVal').textContent = data.metrics.max_signal.toFixed(1);
+                    if (data.metrics.snr_estimate) document.getElementById('snrVal').textContent = data.metrics.snr_estimate.toFixed(2);
+                    if (data.metrics.entropy) document.getElementById('entropyVal').textContent = data.metrics.entropy.toFixed(3);
                 } else {
                     alert('Simulation failed: ' + data.error);
                 }
@@ -501,6 +603,16 @@
                 // btn.disabled = false;
                 loader.style.display = 'none';
             }
+        }
+
+        function downloadReport() {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+            window.location.href = '/api/report';
+            // Simple timeout to hide loader since we can't easily track download finish
+            setTimeout(() => {
+                loader.style.display = 'none';
+            }, 3000);
         }
     </script>
 </body>
