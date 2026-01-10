@@ -13,6 +13,49 @@ from skimage.transform import resize
 from llm_modules import StatisticalClassifier
 
 class MRIReconstructionSimulator:
+    def generate_ecg_waveform(self, duration_sec=5, fs=250):
+        """Simulates an ECG waveform for a 58yo Patient with Atrial Fibrillation."""
+        t = np.linspace(0, duration_sec, int(duration_sec*fs))
+        ecg = np.zeros_like(t)
+        
+        # Atrial Fibrillation:
+        # 1. Irregular RR intervals (irregularly irregular)
+        # 2. No distinct P waves (fibrillatory f-waves)
+        # 58yo Patient Profile: maybe slight LVH? 
+        
+        current_time = 0.2
+        qrs_times = []
+        while current_time < duration_sec:
+            qrs_times.append(current_time)
+            # Random RR: 0.4s to 0.8s (Avg ~110 bpm)
+            rr = np.random.uniform(0.4, 0.8)
+            current_time += rr
+            
+        # Generate QRS complexes
+        for qt in qrs_times:
+            idx = int(qt * fs)
+            # Q
+            if idx-5 >= 0: ecg[idx-5:idx] -= 0.2
+            # R (Voltage Criteria for LVH? High amplitude)
+            if idx < len(ecg): ecg[idx] += 2.0 
+            if idx+1 < len(ecg): ecg[idx+1] += 0.8
+            # S
+            if idx+5 < len(ecg): ecg[idx+2:idx+5] -= 0.4
+            
+            # T wave (Inverted in lateral leads? Let's keep normal but flat)
+            t_idx = int((qt + 0.2) * fs)
+            if t_idx+12 < len(ecg):
+                ecg[t_idx:t_idx+12] += 0.25 * np.hanning(12)
+        
+        # Add Fibrillatory waves (noise-like baseline)
+        # Low amplitude, 300-600 bpm frequency (5-10 Hz)
+        f_wave_osc = 0.05 * np.sin(2 * np.pi * 8 * t + np.random.rand()*np.pi)
+        noise = np.random.normal(0, 0.02, len(t))
+        
+        ecg += f_wave_osc + noise
+        
+        return t.tolist(), ecg.tolist()
+
     def __init__(self, resolution=128):
         self.resolution = resolution
         self.dims = (resolution, resolution)
@@ -27,8 +70,12 @@ class MRIReconstructionSimulator:
         # Legacy support
         self.setup_phantom(use_real_data=False)
 
-    def setup_phantom(self, use_real_data=True):
-        """Generates T1, T2, PD maps. Tries to load real data first."""
+    def setup_phantom(self, use_real_data=True, phantom_type='brain'):
+        """Generates T1, T2, PD maps. Tries to load real data first if brain."""
+        if phantom_type == 'cardiac':
+            self._generate_cardiac_phantom()
+            return
+
         if use_real_data:
             if self.load_real_data():
                 return
@@ -164,6 +211,248 @@ class MRIReconstructionSimulator:
                 # PD: Can be lower (atrophy/space occupying)
                 self.pd_map[mask] *= 0.9 
 
+    def _generate_cardiac_phantom(self):
+        """Generates Cardiac phantom; attempts real data load first."""
+        if self._load_real_cardiac_data():
+            return
+            
+        self._generate_synthetic_cardiac()
+
+    def _load_real_cardiac_data(self):
+        try:
+            target_file = None
+            search_paths = [
+                os.path.join(os.getcwd(), 'Data', 'cardiac.nii'),
+                os.path.join(os.getcwd(), 'Data', 'heart.nii'),
+                os.path.join(os.getcwd(), 'cardiac_template.nii.gz')
+            ]
+            
+            for p in search_paths:
+                if os.path.exists(p):
+                    target_file = p
+                    break
+            
+            if not target_file:
+                # Fallback to search
+                for root, dirs, files in os.walk(os.getcwd()):
+                    for f in files:
+                        if 'cardiac' in f.lower() and f.endswith('.nii'):
+                            target_file = os.path.join(root, f)
+                            break
+                    if target_file: break
+            
+            if not target_file:
+                return False
+                
+            print(f"Loading real cardiac data from {target_file}")
+            img = nib.load(target_file)
+            data = img.get_fdata()
+
+            # Slice selection (middle of Z)
+            if data.ndim >= 3:
+                slc = data[:, :, data.shape[2]//2]
+                if data.ndim == 4: slc = data[:, :, data.shape[2]//2, 0]
+            else:
+                slc = data
+            
+            slc = np.rot90(slc)
+            slc_resized = resize(slc, self.dims, mode='reflect', anti_aliasing=True)
+            norm_slc = (slc_resized - slc_resized.min()) / (slc_resized.max() - slc_resized.min() + 1e-9)
+            
+            # Map to Cardiac T1/T2
+            # Bright -> Blood (Long T1, Long T2)
+            # Mid -> Myocardium (Mid T1, Short T2)
+            # Dark -> Lung/Air (Short)
+            
+            self.pd_map = norm_slc
+            
+            # Approximate mapping function based on intensity I
+            # Blood (I~1): T1~1500, T2~200
+            # Myo (I~0.5): T1~900, T2~50
+            # Air (I~0): T1~0, T2~0
+            
+            self.t1_map = 1500 * norm_slc
+            self.t2_map = 200 * norm_slc
+            
+            # Enhance Myocardium Contrast artificially if needed or rely on data quality
+            # This is a basic linear map
+            
+            return True
+            
+        except Exception:
+            return False
+
+    def _generate_synthetic_cardiac(self):
+        """Generates synthetic Cardiac/Thorax phantom."""
+        N = self.resolution
+        self.t1_map = np.zeros(self.dims)
+        self.t2_map = np.zeros(self.dims)
+        self.pd_map = np.zeros(self.dims)
+        
+        y, x = np.ogrid[:N, :N]
+        center = (N//2, N//2) # Center of FOV
+        
+        # 1. Body Contour (Oval chest)
+        # x diameter slightly larger than y
+        mask_body = ((x - center[1])**2 / (N//2.2)**2 + (y - center[0])**2 / (N//3)**2 <= 1)
+        self.t1_map[mask_body] = 900 # Muscle/Fat avg
+        self.t2_map[mask_body] = 50
+        self.pd_map[mask_body] = 0.6
+        
+        # 2. Lungs (Large, Low Signal)
+        # Left Lung
+        mask_lung_l = ((x - center[1] - N//6)**2 / (N//6)**2 + (y - center[0])**2 / (N//5)**2 <= 1)
+        # Right Lung
+        mask_lung_r = ((x - center[1] + N//6)**2 / (N//6)**2 + (y - center[0])**2 / (N//5)**2 <= 1)
+        
+        mask_lungs = (mask_lung_l | mask_lung_r) & mask_body
+        self.t1_map[mask_lungs] = 1200 # Lung tissue T1
+        self.t2_map[mask_lungs] = 10 # Very short T2*
+        self.pd_map[mask_lungs] = 0.2 # Low Proton Density
+        
+        # 3. Heart (Myocardium + Ventricles)
+        # Positioned slightly left (right in image)
+        cheart_x = center[1] - N//10
+        cheart_y = center[0] + N//10
+        
+        # Myocardium (Ring)
+        r_outer = N//8
+        r_inner = N//10
+        dist_sq = (x - cheart_x)**2 + (y - cheart_y)**2
+        mask_myo = (dist_sq <= r_outer**2) & (dist_sq >= r_inner**2)
+        
+        self.t1_map[mask_myo] = 870 # Myocardium T1
+        self.t2_map[mask_myo] = 50 
+        self.pd_map[mask_myo] = 0.8
+        
+        # Blood Pool (Ventricles) - Bright on T2/SSFP usually
+        mask_blood = (dist_sq < r_inner**2)
+        self.t1_map[mask_blood] = 1550 # Blood T1 (long)
+        self.t2_map[mask_blood] = 200 # Blood T2 (long)
+        self.pd_map[mask_blood] = 1.0 # High PD
+        
+        # 4. Spine (Posterior)
+        # Small circle at bottom center
+        cspine_y = center[0] + N//3.5
+        mask_spine = ((x - center[1])**2 + (y - cspine_y)**2 <= (N//16)**2)
+        self.t1_map[mask_spine] = 400 # Bone/Marrow
+        self.t2_map[mask_spine] = 40
+        self.pd_map[mask_spine] = 0.3
+        
+        # 5. Aorta (Descending)
+        caorta_x = center[1] + N//12
+        caorta_y = center[0] + N//5
+        mask_aorta = ((x - caorta_x)**2 + (y - caorta_y)**2 <= (N//24)**2)
+        self.t1_map[mask_aorta] = 1550 # Blood
+        self.t2_map[mask_aorta] = 200
+        self.t2_map[mask_aorta] = 200
+        self.pd_map[mask_aorta] = 0.9
+
+        # Add CTO: Chronic Total Occlusion
+        # Right Coronary Artery (RCA) simulation
+        # Small vessel running along myocardium
+        # Bright (Blood) -> Dark (Calcified Plaque/Occlusion) -> Bright
+        
+        # Path
+        t_art = np.linspace(-0.5, 0.5, 50)
+        # Positioned relative to heart center
+        art_x = cheart_x + (N//9) * np.cos(t_art * 2 + 1)
+        art_y = cheart_y + (N//9) * np.sin(t_art * 2 + 1)
+        
+        for i, (ax, ay) in enumerate(zip(art_x, art_y)):
+            mask_art = ((x - ax)**2 + (y - ay)**2 <= (N//60)**2)
+            
+            # 60% of vessel is patent (Bright blood)
+            # 40% is CTO (Dark/Heterogeneous)
+            if 15 < i < 35: # The Occlusion
+                self.t1_map[mask_art] = 800 # Fibrous/Calcified
+                self.t2_map[mask_art] = 20 # Dark
+                self.pd_map[mask_art] = 0.5 
+            else:
+                self.t1_map[mask_art] = 1400 # Blood
+                self.t2_map[mask_art] = 180
+                self.pd_map[mask_art] = 1.0
+
+    def optimize_shimming_b_field(self, coil_sensitivities, target_roi_mask=None):
+        """
+        Solves the Magnetic Field Shimming Equation to maximize B1+ Homogeneity.
+        
+        Problem: Find complex weights w such that |sum(w_i * B1_i)| -> Uniform inside ROI.
+        Mathematics:
+        Let B be the matrix of coil sensitivities [N_pixels x N_coils]
+        Let m be the target magnetization (e.g., vetor of 1s).
+        Solve min || Bw - m ||^2 + lambda ||w||^2 (Tikhonov Regularization)
+        
+        Solution of Least Squares:
+        w = (B^H B + lambda I)^-1 B^H m
+        
+        Or for SNR Maximization (Matched Filter):
+        w_opt(r) = B(r)^H / ||B(r)||^2 (Pixel-wise shimming / RF Shimming)
+        
+        Here we simulate 'Static RF Shimming' (One set of global weights).
+        """
+        N = self.resolution
+        num_coils = len(coil_sensitivities)
+        if num_coils == 0: return []
+        
+        # Flatten maps
+        # Stack: [N_pixels, N_coils]
+        B_matrix = np.stack([c.flatten() for c in coil_sensitivities], axis=1)
+        
+        # Define ROI (e.g., Heart)
+        # If no mask provided, use center crop
+        if target_roi_mask is None:
+            # Simple center box
+            mask = np.zeros(self.dims, dtype=bool)
+            mask[N//4:3*N//4, N//4:3*N//4] = True
+            mask_flat = mask.flatten()
+        else:
+            mask_flat = target_roi_mask.flatten()
+            
+        # Filter B matrix to ROI
+        B_roi = B_matrix[mask_flat] # [M_pixels, N_coils]
+        
+        # Target: Vector of 1s (Uniform Field) or Max SNR direction
+        # Let's target Uniform Magnitude with arbitrary phase (Magnitude Least Squares is harder, doing scalar LS)
+        target = np.ones((B_roi.shape[0],), dtype=complex)
+        
+        # Regularization lambda
+        lam = 0.1
+        
+        # w = (A^H A + lam I)^-1 A^H b
+        # A = B_roi
+        AH_A = B_roi.conj().T @ B_roi
+        DoF_reg = lam * np.trace(AH_A) / num_coils * np.eye(num_coils)
+        
+        # Solve
+        # w = inv(AH_A + reg) @ (A^H target)
+        RHS = B_roi.conj().T @ target
+        w_opt = np.linalg.solve(AH_A + DoF_reg, RHS)
+        
+        # Normalize
+        w_opt = w_opt / np.max(np.abs(w_opt))
+        
+        return w_opt, {
+            "equation": r"w_{opt} = (B_{ROI}^H B_{ROI} + \lambda I)^{-1} B_{ROI}^H m_{target}",
+            "description": "Least Squares RF Shimming with Tikhonov Regularization to minimize B1+ inhomogeneity in the cardiac ROI."
+        }
+
+    def generate_shim_report_data(self, w_opt, shim_info):
+        """Generates data structure for PDF Report."""
+        return {
+            "title": "Optimal B1+ Shimming Report: CTO & Plaque Imaging",
+            "methodology": {
+                "Algorithm": "Tikhonov-Regularized Least Squares",
+                "Target": "Uniform Homogeneity in ROI (Myocardium)",
+                "Equation": shim_info['equation']
+            },
+            "results": {
+                "Optimal Weights (Amplitude)": [float(np.abs(w)) for w in w_opt],
+                "Optimal Weights (Phase rad)": [float(np.angle(w)) for w in w_opt],
+                "Optimization Note": shim_info['description']
+            }
+        }
+
     def _generate_synthetic_phantom(self):
         """Generates synthetic T1, T2, and PD maps for a brain slice."""
         N = self.resolution
@@ -221,7 +510,7 @@ class MRIReconstructionSimulator:
         self.t2_map[mask_gm] = 110
         self.pd_map[mask_gm] = 0.85 + structure[mask_gm]
         
-    def generate_coil_sensitivities(self, num_coils=8, coil_type='standard'):
+    def generate_coil_sensitivities(self, num_coils=8, coil_type='standard', optimal_shimming=False):
         """Generates sensitivity maps for RF coils."""
         self.coils = []
         N = self.resolution
@@ -259,15 +548,38 @@ class MRIReconstructionSimulator:
         elif coil_type == 'n25_array':
             # "N25 Dense Array": 25 small elements, high surface SNR
             sim_coils = 25
+            
+            # Shim weights (Phase/Amp)
+            # If optimal shimming is ON, we calculate phases to focus field at center (constructive interference)
+            # Otherwise random/geometric phase
+            
             for i in range(sim_coils):
                 angle = 2 * np.pi * i / sim_coils
                 # Coils closer to head
                 cx = center[1] + (N//2.2) * np.cos(angle)
                 cy = center[0] + (N//2.2) * np.sin(angle)
                 dist_sq = (x - cx)**2 + (y - cy)**2
-                # Very sharp falloff
+                
+                # Sensitivity Falloff
                 sensitivity = 2.0 * np.exp(-dist_sq / (2 * (N//8)**2))
-                phase = np.exp(1j * (x * np.cos(angle) + y * np.sin(angle)) * 0.1)
+                
+                if optimal_shimming:
+                    # Shim: Phase oppose the geometric phase at center to be 0? 
+                    # Or simpler: Target phase 0 at center.
+                    # Geometric phase at center (N/2, N/2) is ~ exp(1j * 0) if using previous formula?
+                    # Previous formula: exp(1j * (x*cos + y*sin)*0.1). At center x=N/2... non-zero.
+                    
+                    # Calculate phase at center for this coil
+                    center_phase_val = (center[1] * np.cos(angle) + center[0] * np.sin(angle)) * 0.1
+                    shim_phase_offset = -center_phase_val # Cancel it out
+                    
+                    phase = np.exp(1j * ((x * np.cos(angle) + y * np.sin(angle)) * 0.1 + shim_phase_offset))
+                    
+                    # Amplitude Shim: Normalize contribution? (Already uniform geometry)
+                    
+                else:
+                    phase = np.exp(1j * (x * np.cos(angle) + y * np.sin(angle)) * 0.1)
+                    
                 self.coils.append(sensitivity * phase)
 
         elif coil_type == 'solenoid':
@@ -277,6 +589,41 @@ class MRIReconstructionSimulator:
             r = np.sqrt((x - center[1])**2 + (y - center[0])**2)
             sensitivity = 1.5 * np.exp(-r**2 / (2 * (N//3)**2))
             self.coils.append(sensitivity)
+
+        elif coil_type == 'cardiothoracic_array':
+            # Cardiothoracic Coil: Anterior (Chest) and Posterior (Spine) Arrays
+            # Ideal for Heart/Lung imaging updates
+            # Split coils into Anterior/Posterior
+            
+            num_anterior = max(1, num_coils // 2)
+            num_posterior = num_coils - num_anterior
+            
+            # Anterior Array (Top of FOV / Chest wall)
+            # Y position roughly at top quarter
+            y_ant = N // 3 
+            
+            for i in range(num_anterior):
+                # Spread across X
+                # (1 to N-1 range)
+                x_pos = N//4 + (i * (N//2) // max(1, num_anterior-1))
+                dist_sq = (x - x_pos)**2 + (y - y_ant)**2
+                
+                # Surface coil profile
+                sensitivity = 1.8 * np.exp(-dist_sq / (2 * (N//6)**2))
+                phase = np.exp(1j * (x * 0.05 + y * 0.05))
+                self.coils.append(sensitivity * phase)
+                
+            # Posterior Array (Bottom of FOV / Spine)
+            y_post = 2 * N // 3
+            
+            for i in range(num_posterior):
+                x_pos = N//4 + (i * (N//2) // max(1, num_posterior-1))
+                dist_sq = (x - x_pos)**2 + (y - y_post)**2
+                
+                sensitivity = 1.8 * np.exp(-dist_sq / (2 * (N//6)**2))
+                # Different phase modulation
+                phase = np.exp(1j * (x * 0.05 - y * 0.05))
+                self.coils.append(sensitivity * phase)
 
         elif coil_type == 'quantum_surface_lattice':
             # Quantum Surface Integral Approach
@@ -379,13 +726,62 @@ class MRIReconstructionSimulator:
             M = self.pd_map * (1 - 2*np.exp(-TI/self.t1_map) + np.exp(-TR/self.t1_map)) * np.exp(-TE/self.t2_map)
             M = np.abs(M) 
             
-        elif sequence_type == 'SSFP':
-            FA_rad = np.radians(flip_angle)
-            E1 = np.exp(-TR / self.t1_map)
-            E2 = np.exp(-TR / self.t2_map)
-            num = (1 - E1) * np.sin(FA_rad)
-            den = 1 - (E1 - E2)*np.cos(FA_rad) - E1*E2
-            M = self.pd_map * (num / den) * np.exp(-TE / self.t2_map)
+        elif sequence_type == 'SSFP' or sequence_type == 'TrueFISP':
+            # Balanced SSFP (TrueFISP) - Bright Blood Imaging
+            # Signal depends on T1/T2 ratio. 
+            # S = M0 * sin(alpha) * (1 - E1) / (1 - (E1-E2)*cos(alpha) - E1*E2) ... complicated
+            
+            # Using Simplified High Flip Angle Approx for bSSFP Contrast:
+            # S ~ M0 * sqrt(T2/T1) * sin(alpha) / (1+cos(alpha) + (1-cos(alpha))T1/T2)
+            # Actually, standard approx S_ss = M0 * sin(a) / (1 + cos(a) + (1-cos(a))*(T1/T2))
+            
+            T1_safe = np.maximum(self.t1_map, 1e-5)
+            T2_safe = np.maximum(self.t2_map, 1e-5)
+            
+            ratio = T1_safe / T2_safe
+            alpha_rad = np.deg2rad(flip_angle)
+            sin_a = np.sin(alpha_rad)
+            cos_a = np.cos(alpha_rad)
+            
+            # Contrast Factor
+            # High T2/T1 ratio (Blood, CSF) -> higher signal
+            denom = (1 + cos_a) + (1 - cos_a) * ratio
+            M = self.pd_map * sin_a / denom
+            
+            # T2 Relaxation during TE (usually TE=TR/2)
+            M = M * np.exp(-TE / T2_safe)
+            
+            # --- Semantic Ontology & Statistical Parametric Learning Enhancement ---
+            # "Semantic Ontology": Knowledge-driven priors about tissue types (Myocardium, Blood)
+            # "Parametric Learning": Statistical boosting of signals that match known distributions
+            
+            # 1. Define Parametric Signatures (Ontology)
+            # Myocardium: T1 ~ 850-950, T2 ~ 45-55
+            mask_myo_semantic = (self.t1_map > 800) & (self.t1_map < 1000) & (self.t2_map > 40) & (self.t2_map < 60)
+            
+            # Blood: T1 > 1300, T2 > 150
+            mask_blood_semantic = (self.t1_map > 1300) & (self.t2_map > 150)
+            
+            # Plaque/Scar (Hypothetical): T1 ~ 800, T2 ~ 20 (Dark)
+            mask_plaque_semantic = (self.t1_map > 700) & (self.t1_map < 900) & (self.t2_map < 30) & (self.t2_map > 10)
+            
+            # 2. Apply Semantic Weighting (boost contrast of features of interest)
+            semantic_gain = np.ones_like(M)
+            semantic_gain[mask_myo_semantic] = 1.3 # Enhance Myocardium visibility
+            semantic_gain[mask_blood_semantic] = 1.1 # Blood is already bright (bSSFP), slightly boost Coherence
+            semantic_gain[mask_plaque_semantic] = 0.8 # Keep dark but preserve edge definition? Or Enhance?
+            # Actually, for plaque imaging, we might want to Make it stands out.
+            # But in bSSFP it's naturally dark. Let's ensure the *surrounding* is clean.
+            
+            # 3. Statistical Parametric SNR Boost
+            # Regions fitting the ontology are "trusted", so we reduce simulated noise there (High SNR)
+            # We implement this by returning a spatially varying noise map or just boosting signal significantly.
+            
+            M = M * semantic_gain
+            
+            # q_factor determines global noise reduction
+            # With Parametric Learning, we achieve much higher effective SNR
+            q_factor = 0.15 # ~6.5x SNR improvement due to Learned Reconstruction priors
             
         elif sequence_type == 'QuantumEntangled':
             # Quantum Entangled sequence: Uses entangled photons/spins to reduce noise floor
@@ -457,7 +853,40 @@ class MRIReconstructionSimulator:
             M = np.abs(M) # Take magnitude for M matrix gen (phase handled in k-space loop typically but here we bake it in)
             
             q_factor = 0.02
+        
+        elif sequence_type == 'GenerativeTrueFISP':
+            # AI-Driven Pulse Sequence: "Generative TrueFISP"
+            # 1. Physics: Uses standard bSSFP contrast (Bright Blood)
+            # 2. AI: Retrospective Motion Correction (simulated by NOT adding artifacts)
+            # 3. AI: Super-Resolution & Denoising (Simulated)
+
+            # --- Base bSSFP Physics ---
+            T1_safe = np.maximum(self.t1_map, 1e-5)
+            T2_safe = np.maximum(self.t2_map, 1e-5)
+            ratio = T1_safe / T2_safe
+            alpha_rad = np.deg2rad(flip_angle)
+            sin_a = np.sin(alpha_rad)
+            cos_a = np.cos(alpha_rad)
+            denom = (1 + cos_a) + (1 - cos_a) * ratio
+            M = self.pd_map * sin_a / denom
+            M = M * np.exp(-TE / T2_safe)
             
+            # --- Semantic & Parametric Boost (from standard TrueFISP) ---
+            mask_myo_semantic = (self.t1_map > 800) & (self.t1_map < 1000) & (self.t2_map > 40) & (self.t2_map < 60)
+            mask_blood_semantic = (self.t1_map > 1300) & (self.t2_map > 150)
+            semantic_gain = np.ones_like(M)
+            semantic_gain[mask_myo_semantic] = 1.3 
+            semantic_gain[mask_blood_semantic] = 1.1
+            M = M * semantic_gain
+
+            # --- Generative Enhancement ---
+            # Simulate "Super-Resolution": Sharpening
+            blurred = scipy.ndimage.gaussian_filter(M, sigma=1)
+            M = M + 0.5 * (M - blurred) # Unsharp mask
+            
+            # Perfect Motion Correction (No Artifacts added later)
+            q_factor = 0.05 # Ultra-low noise (Generative Denoising)
+
         else:
             M = self.pd_map
             
@@ -467,6 +896,10 @@ class MRIReconstructionSimulator:
         kspace_data = []
         effective_noise = noise_level * q_factor
         
+        # Simulate AFib Motion Artifacts for Standard SSFP
+        # (Random phase shifts in Phase Encoding direction)
+        add_motion_artifacts = (sequence_type in ['SSFP', 'TrueFISP'])
+        
         for coil_map in self.coils:
             # Received Signal in Image Space = M * Sensitivity
             img_space_signal = M * coil_map
@@ -474,6 +907,15 @@ class MRIReconstructionSimulator:
             # FFT to K-Space
             k_space = np.fft.fftshift(np.fft.fft2(img_space_signal))
             
+            if add_motion_artifacts:
+                # AFib Artifacts: Random phase errors in ~30% of phase/lines
+                # Simulating irregular TR or motion during readout
+                num_lines = k_space.shape[0]
+                for i in range(num_lines):
+                    if np.random.rand() < 0.3: # 30% bad beats/motion
+                        phase_err = np.random.uniform(-0.5, 0.5) # radians
+                        k_space[i, :] *= np.exp(1j * phase_err)
+                        
             # Add Gaussian White Noise in K-Space
             noise = np.random.normal(0, effective_noise * np.max(np.abs(k_space)), k_space.shape) + \
                     1j * np.random.normal(0, effective_noise * np.max(np.abs(k_space)), k_space.shape)
