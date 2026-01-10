@@ -350,6 +350,19 @@
                     <img id="img-recon" src="" style="display: none;">
                     <a id="link-recon" href="#" target="_blank" class="download-link" style="display: none;">Open in New
                         Tab</a>
+
+                    <div style="margin-top: 1.5rem; width: 100%; border-top: 1px solid #333; padding-top: 1rem;">
+                        <span
+                            style="font-size: 0.9rem; font-weight: 600; color: #0f0; display: block; margin-bottom: 0.5rem;">
+                            Live Monitor Sync: ECG (Lead II)
+                        </span>
+                        <img id="img-ecg_main" src=""
+                            style="display: none; width: 100%; border: 1px solid #222; border-radius: 4px;">
+                        <div style="font-size: 0.8rem; color: #aaa; margin-top: 0.25rem;">
+                            <i>Clinical Note:</i> Irregular rhythm correlates with atrial pathology visible in
+                            reconstruction.
+                        </div>
+                    </div>
                 </div>
                 <div id="tab-kspace" class="tab-content image-display-col">
                     <img id="img-kspace" src="" style="display: none;">
@@ -371,82 +384,81 @@
                     <a id="link-profile" href="#" target="_blank" class="download-link" style="display: none;">Open in
                         New Tab</a>
                 </div>
-                <div id="tab-circuit" class="tab-content image-display-col">
-                    <img id="img-circuit" src="" style="display: none;">
-                    <a id="link-circuit" href="#" target="_blank" class="download-link" style="display: none;">Open in
-                        New Tab</a>
+
+                <!-- NEW: Integrated ECG Image to resonate with MRI -->
+                <!-- Moved ECG to Recon Tab -->
+            </div>
+
+            <div id="tab-rf_design" class="tab-content" style="padding: 1rem;">
+                <h3>Gemini RF Coil Designer</h3>
+                <p style="color: var(--text-secondary); font-size:0.9rem;">Powered by Generative AI Simulation</p>
+                <div style="margin-bottom:1rem; display:flex; gap:0.5rem;">
+                    <input type="text" id="rf_prompt" placeholder="Describe coil (e.g., 'High density 7T head coil')..."
+                        style="flex:1;">
+                    <button onclick="generateRFDesign()" style="width: auto;">Generate</button>
                 </div>
 
-                <div id="tab-rf_design" class="tab-content" style="padding: 1rem;">
-                    <h3>Gemini RF Coil Designer</h3>
-                    <p style="color: var(--text-secondary); font-size:0.9rem;">Powered by Generative AI Simulation</p>
-                    <div style="margin-bottom:1rem; display:flex; gap:0.5rem;">
-                        <input type="text" id="rf_prompt"
-                            placeholder="Describe coil (e.g., 'High density 7T head coil')..." style="flex:1;">
-                        <button onclick="generateRFDesign()" style="width: auto;">Generate</button>
+                <div id="rf_result" style="display:none; margin-top:1rem;">
+                    <div class="image-display-col">
+                        <img id="img-rf_gen" src="">
                     </div>
-
-                    <div id="rf_result" style="display:none; margin-top:1rem;">
-                        <div class="image-display-col">
-                            <img id="img-rf_gen" src="">
-                        </div>
-                        <div style="background: #334155; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                            <h4>Design Specs</h4>
-                            <pre id="rf_specs" style="color: #cbd5e1; font-size: 0.9rem; white-space: pre-wrap;"></pre>
-                            <p id="rf_explanation" style="color: var(--accent); font-style: italic; margin-top:0.5rem;">
-                            </p>
-                        </div>
-                    </div>
-
-                    <div id="metrics_tab" class="tab-content" style="display:none;">
-                        <div id="metrics"></div>
-                        <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
-                            <h4>Shim Report</h4>
-                            <pre id="shim_report_view"
-                                style="font-size: 0.8rem; color: #aaa; white-space: pre-wrap;">No shimming data.</pre>
-                        </div>
-                    </div>
-
-                    <div id="ecg_tab" class="tab-content" style="display:none;">
-                        <h3>Patient Monitoring: 58y Male, AFib</h3>
-                        <div style="background: #000; border: 1px solid #333; height: 200px; position: relative; overflow: hidden;"
-                            id="ecg_container">
-                            <canvas id="ecg_canvas" width="600" height="200"></canvas>
-                        </div>
-                        <div style="font-family: monospace; color: #0f0; margin-top: 5px;">
-                            HR: <span id="hr_val">--</span> BPM | Rhythm: Atrial Fibrillation | Lead: II
-                        </div>
+                    <div style="background: #334155; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                        <h4>Design Specs</h4>
+                        <pre id="rf_specs" style="color: #cbd5e1; font-size: 0.9rem; white-space: pre-wrap;"></pre>
+                        <p id="rf_explanation" style="color: var(--accent); font-style: italic; margin-top:0.5rem;">
+                        </p>
                     </div>
                 </div>
 
-                <div id="placeholder" style="text-align: center; padding: 4rem; color: #475569;">
-                    Configure parameters and click Run to simulate MRI acquisition.
+                <div id="metrics_tab" class="tab-content" style="display:none;">
+                    <div id="metrics"></div>
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        <h4>Shim Report</h4>
+                        <pre id="shim_report_view"
+                            style="font-size: 0.8rem; color: #aaa; white-space: pre-wrap;">No shimming data.</pre>
+                    </div>
+                </div>
+
+                <div id="ecg_tab" class="tab-content" style="display:none;">
+                    <h3>Patient Monitoring: 58y Male, AFib</h3>
+                    <div style="background: #000; border: 1px solid #333; height: 200px; position: relative; overflow: hidden;"
+                        id="ecg_container">
+                        <canvas id="ecg_canvas" width="600" height="200"></canvas>
+                    </div>
+                    <div style="font-family: monospace; color: #0f0; margin-top: 5px;">
+                        HR: <span id="hr_val">--</span> BPM | Rhythm: Atrial Fibrillation | Lead: II
+                    </div>
                 </div>
             </div>
 
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-val" id="contrastVal">--</div>
-                    <div class="metric-label">Tissue Contrast</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val" id="sharpnessVal">--</div>
-                    <div class="metric-label">Image Sharpness</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val" id="signalVal">--</div>
-                    <div class="metric-label">Max Signal Intensity</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val" id="snrVal">--</div>
-                    <div class="metric-label">Est. SNR</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val" id="entropyVal">--</div>
-                    <div class="metric-label">Entropy</div>
-                </div>
+            <div id="placeholder" style="text-align: center; padding: 4rem; color: #475569;">
+                Configure parameters and click Run to simulate MRI acquisition.
             </div>
-        </main>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-val" id="contrastVal">--</div>
+            <div class="metric-label">Tissue Contrast</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-val" id="sharpnessVal">--</div>
+            <div class="metric-label">Image Sharpness</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-val" id="signalVal">--</div>
+            <div class="metric-label">Max Signal Intensity</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-val" id="snrVal">--</div>
+            <div class="metric-label">Est. SNR</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-val" id="entropyVal">--</div>
+            <div class="metric-label">Entropy</div>
+        </div>
+    </div>
+    </main>
     </div>
 
     <script>
@@ -592,11 +604,15 @@
                         const img = document.getElementById('img-' + id);
                         const link = document.getElementById('link-' + id);
 
-                        img.src = src;
-                        img.style.display = 'block';
+                        if (img) {
+                            img.src = src;
+                            img.style.display = 'block';
+                        }
 
-                        link.href = src;
-                        link.style.display = 'inline-block';
+                        if (link) {
+                            link.href = src;
+                            link.style.display = 'inline-block';
+                        }
                     }
 
                     updateImg('recon', data.plots.recon);
@@ -605,6 +621,13 @@
                     updateImg('phantom', data.plots.phantom);
                     updateImg('profile', data.plots.profile);
                     updateImg('circuit', data.plots.circuit);
+                    updateImg('circuit', data.plots.circuit);
+
+                    if (data.plots.ecg) {
+                        updateImg('ecg_plot', data.plots.ecg);
+                        // Update Main View Sync
+                        updateImg('ecg_main', data.plots.ecg);
+                    }
 
                     document.getElementById('placeholder').style.display = 'none';
 
