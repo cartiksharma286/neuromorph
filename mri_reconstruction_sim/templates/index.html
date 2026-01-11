@@ -8,455 +8,454 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
+            --bg-primary: #020617;
+            --bg-secondary: #0f172a;
             --accent: #38bdf8;
-            --accent-hover: #0ea5e9;
+            --accent-hover: #7dd3fc;
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
+            --glass: rgba(30, 41, 59, 0.7);
+            --border: rgba(56, 189, 248, 0.2);
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-primary);
+            background: radial-gradient(circle at top right, #1e293b, #020617);
             color: var(--text-primary);
             margin: 0;
             padding: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         header {
-            background-color: var(--bg-secondary);
-            padding: 1rem 2rem;
-            border-bottom: 1px solid #334155;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            padding: 0.75rem 2rem;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 100;
         }
 
         h1 {
             margin: 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--accent);
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .container {
             display: flex;
             flex: 1;
-            overflow: hidden;
+            height: calc(100vh - 60px);
         }
 
         aside {
-            width: 300px;
-            background-color: var(--bg-secondary);
-            padding: 1.5rem;
-            border-right: 1px solid #334155;
+            width: 280px;
+            background: var(--bg-secondary);
+            padding: 1.25rem;
+            border-right: 1px solid var(--border);
             overflow-y: auto;
+            scrollbar-width: thin;
         }
 
         .control-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
         }
 
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
             color: var(--text-secondary);
         }
 
         select,
         input {
             width: 100%;
-            padding: 0.5rem;
-            background-color: #334155;
-            border: 1px solid #475569;
-            border-radius: 4px;
+            padding: 0.6rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
             color: white;
-            font-family: inherit;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
         }
 
         button {
             width: 100%;
             padding: 0.75rem;
-            background-color: var(--accent);
-            color: #0f172a;
+            background: var(--accent);
+            color: #020617;
             font-weight: 600;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         button:hover {
-            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
         }
 
         main {
             flex: 1;
-            padding: 2rem;
+            padding: 1.5rem;
             overflow-y: auto;
+            position: relative;
+        }
+
+        /* Fluid Grid Dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .output-box {
+            background: var(--glass);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: transform 0.3s, border-color 0.3s;
         }
 
-        .plot-container {
-            width: 100%;
-            max-width: 1000px;
-            background-color: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-            margin-bottom: 2rem;
+        .output-box:hover {
+            border-color: var(--accent);
         }
 
-        img {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            width: 100%;
-            max-width: 1000px;
-        }
-
-        .metric-card {
-            background-color: var(--bg-secondary);
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .metric-val {
-            font-size: 1.5rem;
+        .output-title {
+            font-size: 0.75rem;
             font-weight: 600;
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-        }
-
-        .metric-label {
-            font-size: 0.875rem;
             color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            align-self: flex-start;
         }
 
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--accent);
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            display: none;
-            margin: 1rem auto;
+        .img-window {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #020617;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+        .img-window img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s ease-in-out;
         }
 
         /* Tabs */
-        .tabs {
+        .nav-tabs {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            background: var(--bg-secondary);
+            padding: 0.25rem;
+            border-radius: 10px;
+            width: fit-content;
         }
 
-        .tab-btn {
-            padding: 0.5rem 1rem;
-            background: #334155;
+        .tab-trigger {
+            padding: 0.5rem 1.25rem;
+            background: transparent;
             border: none;
-            border-radius: 6px;
-            color: #94a3b8;
+            border-radius: 8px;
+            color: var(--text-secondary);
             cursor: pointer;
+            font-size: 0.875rem;
             font-weight: 500;
+            transition: all 0.3s;
         }
 
-        .tab-btn.active {
-            background: var(--accent);
-            color: #0f172a;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .image-display {
-            display: flex;
-            justify-content: center;
-        }
-
-        .image-display-col {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .download-link {
-            margin-top: 1rem;
+        .tab-trigger.active {
+            background: #1e293b;
             color: var(--accent);
-            text-decoration: none;
-            font-size: 0.9rem;
-            border: 1px solid var(--accent);
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        .download-link:hover {
-            background: rgba(56, 189, 248, 0.1);
+        .view-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .view-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .metrics-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .metric-mini {
+            background: var(--glass);
+            padding: 0.75rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .metric-mini-val {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .metric-mini-label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(56, 189, 248, 0.1);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+            z-index: 1000;
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
         }
     </style>
+</head>
+</style>
 </head>
 
 <body>
     <header>
-        <h1>NeuroPulse: Signal Reconstructor</h1>
+        <h1>NeuroPulse Recon Lab</h1>
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">
+            Gemini Physics Engine v3.0
+        </div>
     </header>
+
     <div class="container">
         <aside>
             <div class="control-group">
-                <label>Pulse Sequence</label>
+                <label>Sequence Protocol</label>
                 <select id="sequence">
                     <option value="SE">Spin Echo (SE)</option>
                     <option value="GRE">Gradient Echo (GRE)</option>
-                    <option value="InversionRecovery">Inversion Recovery (IR)</option>
-                    <option value="FLAIR">FLAIR (Fluid Attenuated)</option>
-                    <option value="SSFP">TrueFISP / bSSFP (Bright Blood)</option>
-                    <option value="GenerativeTrueFISP">Generative TrueFISP (AI Motion Corrected)</option>
-                    <option value="QuantumEntangled">Quantum Entangled (Low Noise)</option>
-                    <option value="ZeroPointGradients">Zero Point Gradients (T2* Extreme)</option>
-                    <option value="QuantumStatisticalCongruence">Quantum Statistical Congruence (Max CNR)</option>
-                    <option value="QuantumDualIntegral">Quantum Dual Integral (Berry Phase + Dual Use)</option>
+                    <option value="InversionRecovery">Inversion Recovery</option>
+                    <option value="FLAIR">FLAIR</option>
+                    <option value="SSFP">TrueFISP / bSSFP</option>
+                    <option value="QuantumNVQLink">Quantum NVQLink</option>
+                    <option value="Gemini3.0">Gemini 3.0 (Context-Aware)</option>
+                    <option value="GenerativeTrueFISP">Generative TrueFISP (AI)</option>
+                    <option value="QuantumBerryPhase">Quantum Berry Phase (Topological)</option>
+                    <option value="QuantumLowEnergyBeam">Quantum Low Energy Beam (Entangled)</option>
                 </select>
-                <!-- Auto-Design Removed -->
             </div>
 
             <div class="control-group">
-                <label>RF Coil Configuration</label>
+                <label>RF Coil Topology</label>
                 <select id="coils">
-                    <option value="standard">Standard Birdcage (Uniform)</option>
-                    <option value="custom_phased_array">Custom Phase Array (8-ch)</option>
-                    <option value="gemini_14t">Gemini Head Coil (14T Homogeneous)</option>
-                    <option value="n25_array">N25 Dense Array (High Surface SNR)</option>
-                    <option value="solenoid">High-Q Solenoid (Local)</option>
-                    <option value="quantum_surface_lattice">Quantum Surface Lattice (Berry Curvature)</option>
-                    <option value="geodesic_chassis">Geodesic Head Coil (Geometric)</option>
-                    <option value="cardiothoracic_array">Cardiothoracic Array (Heart/Lung)</option>
+                    <option value="standard">Birdcage (Uniform)</option>
+                    <option value="custom_phased_array">8-ch Array</option>
+                    <option value="gemini_optimized_3t">Gemini 32-ch AI</option>
+                    <option value="n25_array">N25 Dense Array</option>
+                    <option value="quantum_surface_lattice">Quantum Lattice</option>
+                    <option value="geodesic_chassis">Geodesic Chassis</option>
+                    <option value="cardiothoracic_array">Cardiothoracic</option>
                 </select>
-                <div style="margin-top:0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <div style="margin-top:0.6rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
                     <input type="checkbox" id="shimming" style="width: auto;">
-                    <label for="shimming" style="margin-bottom:0; cursor:pointer;">Optimal B1 Shimming</label>
-                </div>
-                <div style="margin-top:0.5rem;">
-                    <a href="#" onclick="switchTab('rf_design', null); return false;"
-                        style="color:var(--accent); font-size:0.8rem;">Open Gemini RF Designer</a>
+                    <span>Waitable B1+ Shimming</span>
                 </div>
             </div>
 
             <div class="control-group">
-                <label>TR (Repetition Time) [ms]</label>
-                <input type="number" id="tr" value="2000" step="10">
+                <label>Volume Orientation</label>
+                <select id="slice_orientation" onchange="debouncedRun()">
+                    <option value="axial">Axial</option>
+                    <option value="coronal">Coronal</option>
+                    <option value="sagittal">Sagittal</option>
+                </select>
+                <input type="range" id="slice_pos" min="0" max="1" step="0.05" value="0.5" oninput="debouncedRun()"
+                    style="margin-top: 0.5rem;">
             </div>
 
             <div class="control-group">
-                <label>TE (Echo Time) [ms]</label>
-                <input type="number" id="te" value="100" step="1">
-            </div>
-
-            <div class="control-group" id="ti-group" style="display: none;">
-                <label>TI (Inversion Time) [ms]</label>
-                <input type="number" id="ti" value="500" step="10">
-            </div>
-
-            <div class="control-group" id="fa-group" style="display: none;">
-                <label>Flip Angle [deg]</label>
-                <input type="number" id="flip_angle" value="30" step="1" min="1" max="90">
-            </div>
-
-            <div class="control-group">
-                <label>Resolution</label>
-                <select id="resolution">
-                    <option value="64">64 x 64 (Fast)</option>
-                    <option value="128" selected>128 x 128 (Standard)</option>
-                    <option value="256">256 x 256 (High Res)</option>
+                <label>Execution Method</label>
+                <select id="recon_method">
+                    <option value="SoS">Standard Recon</option>
+                    <option value="Variational">TV Variational</option>
+                    <option value="DeepLearning">Generative AI Recon</option>
                 </select>
             </div>
 
             <div class="control-group">
-                <label>Noise Level</label>
+                <label>Scan Parameters</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+                    <input type="number" id="tr" value="2000" placeholder="TR">
+                    <input type="number" id="te" value="100" placeholder="TE">
+                </div>
+                <div id="ti-group" style="display:none; margin-top:0.5rem;">
+                    <label>Inversion Time (TI)</label>
+                    <input type="number" id="ti" value="500">
+                </div>
+                <div id="fa-group" style="display:none; margin-top:0.5rem;">
+                    <label>Flip Angle</label>
+                    <input type="number" id="flip_angle" value="30">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Image Noise</label>
                 <input type="range" id="noise" min="0" max="0.2" step="0.01" value="0.02">
             </div>
 
-            <div class="control-group">
-                <label>Reconstruction Method</label>
-                <select id="recon_method">
-                    <option value="SoS">Sum of Squares (Standard)</option>
-                    <option value="Variational">Variational Theory (TV Denoise)</option>
-                </select>
-            </div>
-
-            <button onclick="runSimulation()">Run Reconstruction</button>
-            <div style="height: 10px;"></div>
+            <button onclick="runSimulation()">Initiate System</button>
+            <button onclick="renderCortical()" style="margin-top: 0.5rem; background: #f472b6;">Cortical Pulse</button>
             <button onclick="downloadReport()"
-                style="background-color: var(--bg-primary); border: 1px solid var(--accent); color: var(--accent);">
-                Download Full Report
-            </button>
+                style="margin-top: 0.5rem; background: transparent; border: 1px solid var(--accent); color: var(--accent);">PDF
+                Report</button>
+
             <div class="loader" id="loader"></div>
         </aside>
 
         <main>
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('recon', this)">Reconstructed Image</button>
-                <button class="tab-btn" onclick="switchTab('kspace', this)">Acquired K-Space</button>
-                <button class="tab-btn" onclick="switchTab('kspace_gt', this)">Ideal K-Space</button>
-                <button class="tab-btn" onclick="switchTab('phantom', this)">Ground Truth</button>
-                <button class="tab-btn" onclick="switchTab('profile', this)">Signal Profile</button>
-                <button class="tab-btn" onclick="switchTab('profile', this)">Signal Profile</button>
-                <button class="tab-btn" onclick="switchTab('circuit', this)">Circuit Diagram</button>
-                <button class="tab-btn" onclick="switchTab('rf_design', this)">Gemini Design</button>
+            <div class="nav-tabs">
+                <button class="tab-trigger active" onclick="switchView('dashboard', this)">Dashboard</button>
+                <button class="tab-trigger" onclick="switchView('rf_design', this)">Gemini Design</button>
+                <button class="tab-trigger" onclick="switchView('study', this)">Signal AI</button>
+                <button class="tab-trigger" onclick="switchView('cortical', this)">Cortical View</button>
             </div>
 
-            <div class="plot-container">
-                <div id="tab-recon" class="tab-content active image-display-col">
-                    <img id="img-recon" src="" style="display: none;">
-                    <a id="link-recon" href="#" target="_blank" class="download-link" style="display: none;">Open in New
-                        Tab</a>
+            <!-- View: Dashboard (Grid Layout) -->
+            <div id="view-dashboard" class="view-content active">
+                <div class="dashboard-grid">
+                    <div class="output-box">
+                        <div class="output-title">Reconstructed Image (Fluid)</div>
+                        <div class="img-window"><img id="img-recon" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Acquired k-Space</div>
+                        <div class="img-window"><img id="img-kspace" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Ground Truth Anatomy</div>
+                        <div class="img-window"><img id="img-phantom" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">RF Coil Circuit Topology</div>
+                        <div class="img-window"><img id="img-circuit" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Center Line Signal Profile</div>
+                        <div class="img-window"><img id="img-profile" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Ideal k-Space (Ref)</div>
+                        <div class="img-window"><img id="img-kspace_gt" src=""></div>
+                    </div>
+                </div>
 
-                    <div style="margin-top: 1.5rem; width: 100%; border-top: 1px solid #333; padding-top: 1rem;">
-                        <span
-                            style="font-size: 0.9rem; font-weight: 600; color: #0f0; display: block; margin-bottom: 0.5rem;">
-                            Live Monitor Sync: ECG (Lead II)
-                        </span>
-                        <img id="img-ecg_main" src=""
-                            style="display: none; width: 100%; border: 1px solid #222; border-radius: 4px;">
-                        <div style="font-size: 0.8rem; color: #aaa; margin-top: 0.25rem;">
-                            <i>Clinical Note:</i> Irregular rhythm correlates with atrial pathology visible in
-                            reconstruction.
+                <div class="metrics-bar">
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="snrVal">--</div>
+                        <div class="metric-mini-label">SNR</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="contrastVal">--</div>
+                        <div class="metric-mini-label">Contrast</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="sharpnessVal">--</div>
+                        <div class="metric-mini-label">Sharpness</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="entropyVal">--</div>
+                        <div class="metric-mini-label">Entropy</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: RF Design -->
+            <div id="view-rf_design" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>Gemini AI Coil Architect</h3>
+                    <div style="display:flex; gap:1rem; width:100%; margin: 1rem 0;">
+                        <input type="text" id="rf_prompt" placeholder="Define coil requirements..." style="flex:1;">
+                        <button onclick="generateRFDesign()" style="width: auto;">Synthesize</button>
+                    </div>
+                    <div id="rf_result" style="display:none; width:100%;">
+                        <div class="img-window" style="aspect-ratio: 16/9; height: 300px;"><img id="img-rf_gen" src="">
                         </div>
-                    </div>
-                </div>
-                <div id="tab-kspace" class="tab-content image-display-col">
-                    <img id="img-kspace" src="" style="display: none;">
-                    <a id="link-kspace" href="#" target="_blank" class="download-link" style="display: none;">Open in
-                        New Tab</a>
-                </div>
-                <div id="tab-kspace_gt" class="tab-content image-display-col">
-                    <img id="img-kspace_gt" src="" style="display: none;">
-                    <a id="link-kspace_gt" href="#" target="_blank" class="download-link" style="display: none;">Open in
-                        New Tab</a>
-                </div>
-                <div id="tab-phantom" class="tab-content image-display-col">
-                    <img id="img-phantom" src="" style="display: none;">
-                    <a id="link-phantom" href="#" target="_blank" class="download-link" style="display: none;">Open in
-                        New Tab</a>
-                </div>
-                <div id="tab-profile" class="tab-content image-display-col">
-                    <img id="img-profile" src="" style="display: none;">
-                    <a id="link-profile" href="#" target="_blank" class="download-link" style="display: none;">Open in
-                        New Tab</a>
-                </div>
-
-                <!-- NEW: Integrated ECG Image to resonate with MRI -->
-                <!-- Moved ECG to Recon Tab -->
-            </div>
-
-            <div id="tab-rf_design" class="tab-content" style="padding: 1rem;">
-                <h3>Gemini RF Coil Designer</h3>
-                <p style="color: var(--text-secondary); font-size:0.9rem;">Powered by Generative AI Simulation</p>
-                <div style="margin-bottom:1rem; display:flex; gap:0.5rem;">
-                    <input type="text" id="rf_prompt" placeholder="Describe coil (e.g., 'High density 7T head coil')..."
-                        style="flex:1;">
-                    <button onclick="generateRFDesign()" style="width: auto;">Generate</button>
-                </div>
-
-                <div id="rf_result" style="display:none; margin-top:1rem;">
-                    <div class="image-display-col">
-                        <img id="img-rf_gen" src="">
-                    </div>
-                    <div style="background: #334155; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                        <h4>Design Specs</h4>
-                        <pre id="rf_specs" style="color: #cbd5e1; font-size: 0.9rem; white-space: pre-wrap;"></pre>
-                        <p id="rf_explanation" style="color: var(--accent); font-style: italic; margin-top:0.5rem;">
-                        </p>
-                    </div>
-                </div>
-
-                <div id="metrics_tab" class="tab-content" style="display:none;">
-                    <div id="metrics"></div>
-                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
-                        <h4>Shim Report</h4>
-                        <pre id="shim_report_view"
-                            style="font-size: 0.8rem; color: #aaa; white-space: pre-wrap;">No shimming data.</pre>
-                    </div>
-                </div>
-
-                <div id="ecg_tab" class="tab-content" style="display:none;">
-                    <h3>Patient Monitoring: 58y Male, AFib</h3>
-                    <div style="background: #000; border: 1px solid #333; height: 200px; position: relative; overflow: hidden;"
-                        id="ecg_container">
-                        <canvas id="ecg_canvas" width="600" height="200"></canvas>
-                    </div>
-                    <div style="font-family: monospace; color: #0f0; margin-top: 5px;">
-                        HR: <span id="hr_val">--</span> BPM | Rhythm: Atrial Fibrillation | Lead: II
+                        <pre id="rf_specs"
+                            style="background:#020617; padding:1rem; border-radius:8px; margin-top:1rem; font-size:0.8rem; overflow:auto;"></pre>
                     </div>
                 </div>
             </div>
 
-            <div id="placeholder" style="text-align: center; padding: 4rem; color: #475569;">
-                Configure parameters and click Run to simulate MRI acquisition.
+            <!-- View: Study/AI -->
+            <div id="view-study" class="view-content">
+                <div class="output-box" style="width: 100%; align-items: flex-start;">
+                    <h3>Signal Interaction Analysis</h3>
+                    <div id="study_content"
+                        style="font-family:'Courier New', monospace; line-height:1.6; color: var(--text-secondary);">
+                        Awaiting system initialization...
+                    </div>
+                </div>
             </div>
-    </div>
 
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-val" id="contrastVal">--</div>
-            <div class="metric-label">Tissue Contrast</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-val" id="sharpnessVal">--</div>
-            <div class="metric-label">Image Sharpness</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-val" id="signalVal">--</div>
-            <div class="metric-label">Max Signal Intensity</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-val" id="snrVal">--</div>
-            <div class="metric-label">Est. SNR</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-val" id="entropyVal">--</div>
-            <div class="metric-label">Entropy</div>
-        </div>
+            <!-- View: Cortical -->
+            <div id="view-cortical" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>3D Cortical Mesh Projection</h3>
+                    <div class="img-window" style="aspect-ratio: 1/1; height: 400px;"><img id="img-cortical" src="">
+                    </div>
+                    <div id="cortical-metadata" style="margin-top:1rem; font-size:0.8rem; color:var(--accent);"></div>
+                </div>
+            </div>
+        </main>
     </div>
     </main>
     </div>
@@ -507,49 +506,23 @@
             }
         });
 
-        function switchTab(tabId, elt) {
-            // Update Buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            // If elt provided use it, otherwise rely on event (fallback)
-            if (elt) {
-                elt.classList.add('active');
-            } else if (event) {
-                event.target.classList.add('active');
-            }
+        function switchView(viewId, trigger) {
+            // Update Triggers
+            document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
+            trigger.classList.add('active');
 
-            // Update Content
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-        }
-
-        async function designPulseWithAI() {
-            const prompt = document.getElementById('pulse_prompt').value;
-            if (!prompt) return alert("Please enter a prompt");
-
-            try {
-                const res = await fetch('/api/design_pulse', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    const specs = data.specs;
-                    if (specs.sequence) document.getElementById('sequence').value = specs.sequence;
-                    // Trigger change event to set visibility
-                    document.getElementById('sequence').dispatchEvent(new Event('change'));
-
-                    if (specs.tr) document.getElementById('tr').value = specs.tr;
-                    if (specs.te) document.getElementById('te').value = specs.te;
-                    if (specs.ti) document.getElementById('ti').value = specs.ti;
-
-                    alert("AI Design Applied: " + specs.description);
-                }
-            } catch (e) { alert("Error: " + e); }
+            // Update Views
+            document.querySelectorAll('.view-content').forEach(v => {
+                v.classList.remove('active');
+            });
+            const target = document.getElementById('view-' + viewId);
+            target.classList.add('active');
         }
 
         async function generateRFDesign() {
             const prompt = document.getElementById('rf_prompt').value;
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
             try {
                 const res = await fetch('/api/design_rf', {
                     method: 'POST',
@@ -561,18 +534,19 @@
                     document.getElementById('rf_result').style.display = 'block';
                     document.getElementById('img-rf_gen').src = 'data:image/png;base64,' + data.result.schematic;
                     document.getElementById('rf_specs').textContent = JSON.stringify(data.result.specs, null, 2);
-                    document.getElementById('rf_explanation').textContent = data.result.explanation;
                 }
-            } catch (e) { alert("Error: " + e); }
+            } catch (e) { alert("Synthesize Failed"); }
+            loader.style.display = 'none';
+        }
+
+        let debounceTimer;
+        function debouncedRun() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => { runSimulation(); }, 300);
         }
 
         async function runSimulation() {
-            const btn = document.querySelector('button'); // The simulation button, not tab buttons
             const loader = document.getElementById('loader');
-
-            // Disable main run button only
-            // btn.disabled = true; // Selector above is ambiguous with tab buttons
-
             loader.style.display = 'block';
 
             const payload = {
@@ -582,10 +556,12 @@
                 te: document.getElementById('te').value,
                 ti: document.getElementById('ti').value,
                 flip_angle: document.getElementById('flip_angle').value,
-                resolution: document.getElementById('resolution').value,
+                resolution: 128,
                 noise: document.getElementById('noise').value,
                 recon_method: document.getElementById('recon_method').value,
-                shimming: document.getElementById('shimming').checked
+                shimming: document.getElementById('shimming').checked,
+                slice_orientation: document.getElementById('slice_orientation').value,
+                slice_pos: document.getElementById('slice_pos').value
             };
 
             try {
@@ -596,131 +572,57 @@
                 });
 
                 const data = await res.json();
-
                 if (data.success) {
-                    // Update Images and Links
-                    function updateImg(id, b64) {
-                        const src = 'data:image/png;base64,' + b64;
+                    const update = (id, b) => {
                         const img = document.getElementById('img-' + id);
-                        const link = document.getElementById('link-' + id);
+                        if (img) img.src = 'data:image/png;base64,' + b;
+                    };
 
-                        if (img) {
-                            img.src = src;
-                            img.style.display = 'block';
-                        }
+                    const plots = data.plots;
+                    update('recon', plots.recon);
+                    update('kspace', plots.kspace);
+                    update('phantom', plots.phantom);
+                    update('circuit', plots.circuit);
+                    update('profile', plots.profile);
+                    update('kspace_gt', plots.kspace_gt);
 
-                        if (link) {
-                            link.href = src;
-                            link.style.display = 'inline-block';
-                        }
+                    if (data.signal_study) {
+                        const s = data.signal_study;
+                        document.getElementById('study_content').innerHTML = `
+                            <div style="color:var(--accent); font-weight:700;">${s.title}</div>
+                            <div style="margin: 0.5rem 0;">${s.physics_model}</div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; font-size:0.75rem;">
+                                ${Object.entries(s.metrics).map(([k, v]) => `<div>${k}: ${v}</div>`).join('')}
+                            </div>
+                        `;
                     }
 
-                    updateImg('recon', data.plots.recon);
-                    updateImg('kspace', data.plots.kspace);
-                    updateImg('kspace_gt', data.plots.kspace_gt);
-                    updateImg('phantom', data.plots.phantom);
-                    updateImg('profile', data.plots.profile);
-                    updateImg('circuit', data.plots.circuit);
-                    updateImg('circuit', data.plots.circuit);
-
-                    if (data.plots.ecg) {
-                        updateImg('ecg_plot', data.plots.ecg);
-                        // Update Main View Sync
-                        updateImg('ecg_main', data.plots.ecg);
-                    }
-
-                    document.getElementById('placeholder').style.display = 'none';
-
-                    // Update Metrics
+                    document.getElementById('snrVal').textContent = (data.metrics.snr_estimate || 0).toFixed(2);
                     document.getElementById('contrastVal').textContent = data.metrics.contrast.toFixed(3);
                     document.getElementById('sharpnessVal').textContent = data.metrics.sharpness.toFixed(1);
-                    document.getElementById('signalVal').textContent = data.metrics.max_signal.toFixed(1);
-                    if (data.metrics.snr_estimate) document.getElementById('snrVal').textContent = data.metrics.snr_estimate.toFixed(2);
-                    if (data.metrics.entropy) document.getElementById('entropyVal').textContent = data.metrics.entropy.toFixed(3);
-
-                    // Update Shim Report
-                    if (data.shim_report) {
-                        document.getElementById('shim_report_view').textContent = JSON.stringify(data.shim_report, null, 2);
-                    }
-
-                    // Render ECG
-                    if (data.ecg_data) {
-                        try {
-                            renderECG(data.ecg_data);
-                        } catch (e) {
-                            console.error("ECG Render Error:", e);
-                        }
-                    }
-                } else {
-                    alert('Simulation failed: ' + data.error);
+                    document.getElementById('entropyVal').textContent = (data.metrics.entropy || 0).toFixed(3);
                 }
-
-            } catch (err) {
-                console.error(err);
-                alert('Connection failed');
-            } finally {
-                // btn.disabled = false;
-                loader.style.display = 'none';
-            }
+            } catch (err) { alert('Core Link Fault'); }
+            loader.style.display = 'none';
         }
 
         function downloadReport() {
-            const loader = document.getElementById('loader');
-            loader.style.display = 'block';
             window.location.href = '/api/report';
-            // Simple timeout to hide loader since we can't easily track download finish
-            setTimeout(() => {
-                loader.style.display = 'none';
-            }, 3000);
         }
 
-        function renderECG(ecgData) {
-            const canvas = document.getElementById('ecg_canvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
-
-            ctx.clearRect(0, 0, width, height);
-
-            // Grid
-            ctx.strokeStyle = '#224422';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            for (let x = 0; x < width; x += 25) { ctx.moveTo(x, 0); ctx.lineTo(x, height); }
-            for (let y = 0; y < height; y += 25) { ctx.moveTo(0, y); ctx.lineTo(width, y); }
-            ctx.stroke();
-
-            // Signal
-            ctx.strokeStyle = '#00ff00';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-
-            const t = ecgData.time;
-            const y = ecgData.signal;
-            // Normalize y to fit canvas height
-
-            for (let i = 0; i < t.length; i++) {
-                const x_px = (i / t.length) * width;
-                const y_val = y[i];
-                // Scale: Assumes signal range roughly [-1, 3] from sim
-                // Map to [height, 0]
-                const y_px = height - ((y_val + 1.0) / 4.0 * height);
-
-                if (i === 0) ctx.moveTo(x_px, y_px);
-                else ctx.lineTo(x_px, y_px);
-            }
-            ctx.stroke();
-
-            const hrEl = document.getElementById('hr_val');
-            if (hrEl) {
-                if (ecgData.source_localization) {
-                    hrEl.parentElement.innerHTML = `HR: <span style="color:#fff;">108 (Irr)</span> | Lead: II <br> 
-                    <span style="color:var(--accent); font-weight:bold;">Source Localization: ${ecgData.source_localization.origin} (Conf: ${ecgData.source_localization.confidence})</span>`;
-                } else {
-                    hrEl.textContent = "108 (Irr)";
+        async function renderCortical() {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+            try {
+                const res = await fetch('/api/render_cortical', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('img-cortical').src = 'data:image/png;base64,' + data.plot;
+                    document.getElementById('cortical-metadata').textContent = data.metadata.geometry;
+                    switchView('cortical', document.querySelector('.tab-trigger[onclick*="cortical"]'));
                 }
-            }
+            } catch (e) { alert("Cortical Fault"); }
+            loader.style.display = 'none';
         }
     </script>
 </body>
