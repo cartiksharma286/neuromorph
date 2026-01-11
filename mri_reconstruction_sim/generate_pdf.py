@@ -11,7 +11,35 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 import re
 import os
 
+import matplotlib.pyplot as plt
+
 IMAGE_DIR = '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/report_images'
+
+def render_equation_img(tex, path):
+    """Renders a LaTeX equation to an image file using Matplotlib."""
+    try:
+        # Create figure
+        # Estimate width/height based on length? hard...
+        # Matplotlib bbox_inches='tight' handles it mostly.
+        fig = plt.figure(figsize=(6, 1))
+        
+        # Clean tex
+        tex = tex.strip()
+        
+        # Render
+        # We need to wrap in $ if not present, but usually block math uses $ or $$.
+        # Matplotlib expects $...$ for math mode.
+        # If user provided $$ ... $$, remove them and wrap in $ ... $ for rendering in matplotlib text
+        clean_tex = tex.replace('$$', '').replace('\\[', '').replace('\\]', '').strip()
+        
+        plt.text(0.5, 0.5, f"${clean_tex}$", fontsize=16, ha='center', va='center')
+        plt.axis('off')
+        plt.savefig(path, dpi=300, bbox_inches='tight', pad_inches=0.1)
+        plt.close(fig)
+        return True
+    except Exception as e:
+        print(f"Failed to render eq: {e}")
+        return False
 
 def md_to_pdf(md_path, pdf_path):
     # Read markdown
@@ -55,7 +83,48 @@ def md_to_pdf(md_path, pdf_path):
         # H3
         elif line.startswith('### '):
             story.append(Paragraph(line[4:], styles['Heading2_Custom']))
-        # Equation block (indented with 4 spaces)
+        # Equation block ($$)
+        elif line.strip().startswith('$$'):
+            eq_text = line.strip().replace('$$', '')
+            # If it opens and closes on same line
+            if line.count('$$') == 2:
+                pass # eq_text is ready
+            else:
+                # Multi-line
+                while i + 1 < len(lines) and not'$$' in lines[i+1]:
+                    i += 1
+                    eq_text += ' ' + lines[i].strip() # Join with space for matplotlib
+                if i + 1 < len(lines):
+                    i += 1
+                    eq_text += ' ' + lines[i].replace('$$', '').strip()
+            
+            # Render Image
+            eq_filename = f"eq_{i}.png"
+            eq_path = os.path.join(os.path.dirname(pdf_path), eq_filename)
+            
+            if render_equation_img(eq_text, eq_path):
+                img = Image(eq_path, height=0.5*inch, kind='proportional') # Let width match proportional
+                # Check aspect to avoid tiny images? or Huge?
+                # reportlab Image kind='proportional' works well if we set one dim.
+                # Actually, set width to something reasonable, let height scale?
+                # Or set height cap.
+                # Let's set max width 6 inch, max height 2 inch?
+                # Image(path, width=.., height=..)
+                
+                # We don't know the aspect ratio without opening it, assume matplotlib saved it well.
+                # Let's try inserting it without fixed size? ReportLab might complain.
+                # Better: fix width to None (auto) and height to None? No.
+                
+                # Let reportlab figure it out? "width=6*inch, height=2*inch, kind='proportional'"
+                # It will fit within that box.
+                story.append(Spacer(1, 0.1*inch))
+                story.append(Image(eq_path, width=4*inch, height=1.5*inch, kind='proportional'))
+                story.append(Spacer(1, 0.1*inch))
+            else:
+                # Fallback
+                story.append(Preformatted(eq_text.strip(), styles['Equation']))
+
+        # Equation block (indented with 4 spaces) - Legacy support
         elif line.startswith('    ') and line.strip():
             eq_text = line.strip()
             while i + 1 < len(lines) and lines[i+1].startswith('    ') and lines[i+1].strip():
@@ -102,17 +171,27 @@ def md_to_pdf(md_path, pdf_path):
         elif line.strip().startswith('**') and line.strip().endswith('**'):
             text = line.strip()[2:-2]
             story.append(Paragraph(f"<b>{text}</b>", styles['Body_Custom']))
-        # Image detection ![](/path)
-        elif line.strip().startswith('![](') and line.strip().endswith(')'):
-            img_path = line.strip()[4:-1]
-            if os.path.exists(img_path):
-                # Scale image to fit page width roughly
-                img = Image(img_path, width=6*inch, height=4.5*inch, kind='proportional')
-                story.append(Spacer(1, 0.1*inch))
-                story.append(img)
-                story.append(Spacer(1, 0.2*inch))
-            else:
-                story.append(Paragraph(f"[Image not found: {os.path.basename(img_path)}]", styles['Caption']))
+        # Image detection ![Alt](Path)
+        elif re.match(r'!\[.*?\]\(.*?\)', line.strip()):
+            match = re.search(r'!\[(.*?)\]\((.*?)\)', line.strip())
+            if match:
+                alt = match.group(1)
+                img_path = match.group(2)
+                
+                # Resolve relative path
+                if not os.path.isabs(img_path):
+                    img_path = os.path.abspath(img_path)
+                    
+                if os.path.exists(img_path):
+                    # Scale image to fit page width roughly
+                    # Try to maintain aspect ratio
+                    img = Image(img_path, width=6*inch, height=4.5*inch, kind='proportional')
+                    story.append(Spacer(1, 0.1*inch))
+                    story.append(img)
+                    story.append(Paragraph(alt, styles['Caption'])) 
+                    story.append(Spacer(1, 0.2*inch))
+                else:
+                    story.append(Paragraph(f"[Image not found: {os.path.basename(img_path)}]", styles['Caption']))
 
         # Regular body text
         elif line.strip():

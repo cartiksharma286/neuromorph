@@ -127,6 +127,16 @@ class LLMPulseDesigner:
             params["tr"] = 3000
             params["te"] = 80
             params["description"] = "Quantum Statistical Optimization"
+            
+        elif "cortical" in text_prompt or "brain surface" in text_prompt:
+            params["sequence"] = "GRE"
+            params["tr"] = 150
+            params["te"] = 10
+            params["description"] = "High-Res GRE for Cortical Mapping"
+            
+        elif "deep learning" in text_prompt or "ai recon" in text_prompt:
+            params["recon_method"] = "DeepLearning"
+            params["description"] = "AI-Driven Reconstruction Protocol"
         
         return params
 
