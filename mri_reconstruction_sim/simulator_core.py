@@ -74,6 +74,10 @@ class MRIReconstructionSimulator:
         if phantom_type == 'cardiac':
             self._generate_cardiac_phantom()
             return
+        
+        if phantom_type == 'knee':
+            self._generate_knee_phantom()
+            return
 
         if use_real_data:
             if self.load_real_data():
@@ -599,6 +603,144 @@ class MRIReconstructionSimulator:
                 self.t2_map[mask_art] = 180
                 self.pd_map[mask_art] = 1.0
 
+    def _generate_knee_phantom(self):
+        """Generates anatomically accurate knee phantom with vascular structures."""
+        N = self.resolution
+        self.t1_map = np.zeros(self.dims)
+        self.t2_map = np.zeros(self.dims)
+        self.pd_map = np.zeros(self.dims)
+        
+        y, x = np.ogrid[:N, :N]
+        center = (N//2, N//2)
+        
+        # 1. Femur (distal) - superior portion
+        mask_femur = ((x - center[1])**2 + (y - center[0] + N//6)**2 < (N//8)**2) & (y < center[0])
+        self.t1_map[mask_femur] = 365  # Bone marrow T1
+        self.t2_map[mask_femur] = 133  # Bone marrow T2
+        self.pd_map[mask_femur] = 0.9
+        
+        # 2. Tibia (proximal) - inferior portion
+        mask_tibia = ((x - center[1])**2 + (y - center[0] - N//6)**2 < (N//7)**2) & (y > center[0])
+        self.t1_map[mask_tibia] = 365
+        self.t2_map[mask_tibia] = 133
+        self.pd_map[mask_tibia] = 0.9
+        
+        # 3. Patella - anterior
+        mask_patella = ((x - center[1] + N//5)**2 + (y - center[0])**2 < (N//12)**2)
+        self.t1_map[mask_patella] = 365
+        self.t2_map[mask_patella] = 133
+        self.pd_map[mask_patella] = 0.9
+        
+        # 4. Femoral Cartilage
+        mask_fem_cart = ((x - center[1])**2 + (y - center[0] + N//6)**2 < (N//7.5)**2) & \
+                        ((x - center[1])**2 + (y - center[0] + N//6)**2 > (N//8)**2) & \
+                        (y < center[0] + N//12)
+        self.t1_map[mask_fem_cart] = 1240  # Cartilage T1
+        self.t2_map[mask_fem_cart] = 27    # Cartilage T2
+        self.pd_map[mask_fem_cart] = 0.7
+        
+        # 5. Tibial Cartilage
+        mask_tib_cart = ((x - center[1])**2 + (y - center[0] - N//6)**2 < (N//6.5)**2) & \
+                        ((x - center[1])**2 + (y - center[0] - N//6)**2 > (N//7)**2) & \
+                        (y > center[0] - N//12)
+        self.t1_map[mask_tib_cart] = 1240
+        self.t2_map[mask_tib_cart] = 27
+        self.pd_map[mask_tib_cart] = 0.7
+        
+        # 6. Medial Meniscus
+        mask_med_meniscus = ((x - center[1] + N//10)**2 + (y - center[0])**2 < (N//16)**2)
+        self.t1_map[mask_med_meniscus] = 1050  # Meniscus T1
+        self.t2_map[mask_med_meniscus] = 18    # Meniscus T2
+        self.pd_map[mask_med_meniscus] = 0.6
+        
+        # 7. Lateral Meniscus
+        mask_lat_meniscus = ((x - center[1] - N//10)**2 + (y - center[0])**2 < (N//16)**2)
+        self.t1_map[mask_lat_meniscus] = 1050
+        self.t2_map[mask_lat_meniscus] = 18
+        self.pd_map[mask_lat_meniscus] = 0.6
+        
+        # 8. ACL (Anterior Cruciate Ligament)
+        for i in range(-N//8, N//8):
+            mask_acl = ((x - center[1] + i//3)**2 + (y - center[0] + i)**2 < (N//40)**2)
+            self.t1_map[mask_acl] = 1070  # Ligament T1
+            self.t2_map[mask_acl] = 24    # Ligament T2
+            self.pd_map[mask_acl] = 0.65
+        
+        # 9. PCL (Posterior Cruciate Ligament)
+        for i in range(-N//8, N//8):
+            mask_pcl = ((x - center[1] - i//3)**2 + (y - center[0] + i)**2 < (N//40)**2)
+            self.t1_map[mask_pcl] = 1070
+            self.t2_map[mask_pcl] = 24
+            self.pd_map[mask_pcl] = 0.65
+        
+        # 10. Synovial Fluid
+        mask_fluid = ((x - center[1] + N//6)**2 + (y - center[0])**2 < (N//18)**2)
+        self.t1_map[mask_fluid] = 4000  # Synovial fluid T1
+        self.t2_map[mask_fluid] = 500   # Synovial fluid T2
+        self.pd_map[mask_fluid] = 1.0
+        
+        # 11. Surrounding Muscle
+        r = np.sqrt((x - center[1])**2 + (y - center[0])**2)
+        mask_muscle = (r < N//2.2) & (self.pd_map == 0)
+        self.t1_map[mask_muscle] = 1420  # Muscle T1
+        self.t2_map[mask_muscle] = 50    # Muscle T2
+        self.pd_map[mask_muscle] = 0.8
+        
+        # 12. Vascular Structures
+        # Popliteal Artery (posterior, vertical)
+        for i in range(-N//4, N//4):
+            mask_pop_art = ((x - center[1] - N//4)**2 + (y - center[0] + i)**2 < (N//50)**2)
+            self.t1_map[mask_pop_art] = 1650  # Blood T1
+            self.t2_map[mask_pop_art] = 275   # Blood T2
+            self.pd_map[mask_pop_art] = 1.2   # Bright for TOF
+        
+        # Superior Lateral Genicular Artery
+        for i in range(N//8):
+            angle = np.pi/4
+            px = center[1] - N//4 + int(i * np.cos(angle))
+            py = center[0] - N//8 + int(i * np.sin(angle))
+            mask_gen = ((x - px)**2 + (y - py)**2 < (N//80)**2)
+            self.t1_map[mask_gen] = 1650
+            self.t2_map[mask_gen] = 275
+            self.pd_map[mask_gen] = 1.2
+        
+        # Superior Medial Genicular Artery
+        for i in range(N//8):
+            angle = 3*np.pi/4
+            px = center[1] - N//4 + int(i * np.cos(angle))
+            py = center[0] - N//8 + int(i * np.sin(angle))
+            mask_gen = ((x - px)**2 + (y - py)**2 < (N//80)**2)
+            self.t1_map[mask_gen] = 1650
+            self.t2_map[mask_gen] = 275
+            self.pd_map[mask_gen] = 1.2
+        
+        # Inferior Lateral Genicular Artery
+        for i in range(N//8):
+            angle = -np.pi/4
+            px = center[1] - N//4 + int(i * np.cos(angle))
+            py = center[0] + N//8 + int(i * np.sin(angle))
+            mask_gen = ((x - px)**2 + (y - py)**2 < (N//90)**2)
+            self.t1_map[mask_gen] = 1650
+            self.t2_map[mask_gen] = 275
+            self.pd_map[mask_gen] = 1.2
+        
+        # Inferior Medial Genicular Artery
+        for i in range(N//8):
+            angle = -3*np.pi/4
+            px = center[1] - N//4 + int(i * np.cos(angle))
+            py = center[0] + N//8 + int(i * np.sin(angle))
+            mask_gen = ((x - px)**2 + (y - py)**2 < (N//90)**2)
+            self.t1_map[mask_gen] = 1650
+            self.t2_map[mask_gen] = 275
+            self.pd_map[mask_gen] = 1.2
+        
+        # Popliteal Vein (parallel to artery, slightly lateral)
+        for i in range(-N//4, N//4):
+            mask_pop_vein = ((x - center[1] - N//3.5)**2 + (y - center[0] + i)**2 < (N//45)**2)
+            self.t1_map[mask_pop_vein] = 1550  # Venous blood T1
+            self.t2_map[mask_pop_vein] = 250   # Venous blood T2
+            self.pd_map[mask_pop_vein] = 1.0
+
     def optimize_shimming_b_field(self, coil_sensitivities, target_roi_mask=None):
         """
         Solves the Magnetic Field Shimming Equation to maximize B1+ Homogeneity.
@@ -946,6 +1088,32 @@ class MRIReconstructionSimulator:
                 # Sensitivity Profile
                 sensitivity = 2.0 * np.exp(-dist_sq / (2 * (N//9)**2))
                 phase = np.exp(1j * (x * np.cos(theta_ang) + y * np.sin(theta_ang)) * 0.15)
+                
+                self.coils.append(sensitivity * phase)
+
+        elif coil_type == 'knee_vascular_array':
+            # Knee Vascular Array: 16-element cylindrical coil for knee imaging
+            # Optimized for vascular reconstruction with TOF/PC sequences
+            num_elements = 16
+            coil_radius = N // 2.5  # 12cm equivalent for knee
+            
+            for i in range(num_elements):
+                angle = 2 * np.pi * i / num_elements
+                
+                # Cylindrical arrangement with slight z-variation
+                cx = center[1] + coil_radius * np.cos(angle)
+                cy = center[0] + coil_radius * np.sin(angle)
+                
+                # Element size: 8cm equivalent
+                element_size = N // 6
+                
+                dist_sq = (x - cx)**2 + (y - cy)**2
+                
+                # Sensitivity profile for surface coil element
+                sensitivity = 2.2 * np.exp(-dist_sq / (2 * element_size**2))
+                
+                # Phase for parallel imaging
+                phase = np.exp(1j * np.arctan2(y - cy, x - cx))
                 
                 self.coils.append(sensitivity * phase)
 
