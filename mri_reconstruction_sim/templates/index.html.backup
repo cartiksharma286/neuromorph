@@ -333,12 +333,6 @@
                 <label>Execution Method</label>
                 <select id="recon_method">
                     <option value="SoS">Standard Recon</option>
-                    <option value="StatLLM">🤖 Statistical LLM Optimization</option>
-                    <option value="QuantumML">⚛️ Quantum ML (NVIDIA GPU Cloud)</option>
-                    <option value="Geodesic">🌐 Geodesic Diffeomorphic Mapping</option>
-                    <option value="Pareto">📊 Pareto Frontier (Magnetism/GW)</option>
-                    <option value="Multimodal">🔬 Multimodal Reasoning</option>
-                    <option value="Unified">🚀 Unified (All Methods)</option>
                     <option value="Variational">TV Variational</option>
                     <option value="DeepLearning">Generative AI Recon</option>
                 </select>
