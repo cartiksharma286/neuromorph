@@ -1,12 +1,22 @@
 from flask import Flask, render_template, request, jsonify, send_file
 from simulator_core import MRIReconstructionSimulator
 from llm_modules import GeminiRFDesigner, LLMPulseDesigner
+from statistical_adaptive_pulse import create_adaptive_sequence, ADAPTIVE_SEQUENCES
+from quantum_vascular_coils import get_coil_summary, QUANTUM_VASCULAR_COIL_LIBRARY
 import os
 import generate_pdf
 import generate_report_images
+import numpy as np
 
 app = Flask(__name__)
 LATEST_CONTEXT = {}
+NVQLINK_STATUS = {
+    'enabled': False,
+    'bandwidth_gbps': 400,
+    'latency_ns': 12,
+    'quantum_state': 'Entangled',
+    'uptime_hours': 0
+}
 
 @app.route('/')
 def index():
@@ -36,6 +46,8 @@ def simulate():
         phantom_type = 'brain'
         if coil_mode == 'cardiothoracic_array':
             phantom_type = 'cardiac'
+        elif coil_mode == 'knee_vascular_array':
+            phantom_type = 'knee'
 
         sim.setup_phantom(use_real_data=True, phantom_type=phantom_type)
         sim.generate_coil_sensitivities(num_coils=num_coils, coil_type=coil_mode, optimal_shimming=use_shimming)
