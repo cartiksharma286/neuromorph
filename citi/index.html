@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citibank | Mineral Alpha</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest"></script>
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <i data-lucide="globe" style="color: var(--accent-cyan)"></i>
+            Citibank | <span>Mineral Alpha</span>
+        </div>
+        <nav class="nav-tabs">
+            <button class="nav-btn active" onclick="switchTab('portfolio')">Portfolio</button>
+            <button class="nav-btn" onclick="switchTab('analysis')">Statistical Analysis</button>
+            <button class="nav-btn" onclick="switchTab('settings')">Settings</button>
+        </nav>
+        <div class="user-profile">
+            <button id="connectBtn" class="btn-primary" onclick="connectIBKR()">
+                Connect NVQLink
+            </button>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <!-- Portfolio View -->
+        <div id="portfolio-view" class="view-section">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>Total Dividend Yield (Proj.)</h2>
+                    <div class="metric">4.82%</div>
+                    <div class="metric-sub">+1.2% vs Benchmark</div>
+                </div>
+                <div class="card">
+                    <h2>Greenland/Arctic Exposure</h2>
+                    <div class="metric">$1.2M</div>
+                    <div class="metric-sub">Strategic Metals (Optimized)</div>
+                </div>
+                <div class="card">
+                    <h2>AI Confidence Score</h2>
+                    <div class="metric">87/100</div>
+                    <div class="metric-sub">Strong Buy Signals</div>
+                </div>
+            </div>
+
+            <div class="card animate-fade-in">
+                <h2><i data-lucide="bar-chart-2" style="display:inline; margin-right:8px; width:20px;"></i>Optimized
+                    Mineral Ore Portfolio</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Company</th>
+                            <th>Yield</th>
+                            <th>Risk Metrics</th>
+                            <th>AI Score</th>
+                            <th>Recommendation</th>
+                            <th>Allocation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfolio-body">
+                        <tr>
+                            <td colspan="7">Loading portfolio data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Analysis View (Gold Rush) -->
+        <div id="analysis-view" class="view-section" style="display: none;">
+            <div class="card animate-fade-in">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h2><i data-lucide="trending-up" style="display:inline; margin-right:8px; width:20px;"></i>Gold Rush
+                        Simulation</h2>
+                    <button class="btn-primary" onclick="loadGoldPrices()"
+                        style="padding:0.5rem 1rem; font-size:0.85rem;">Run Simulation</button>
+                </div>
+
+                <div style="display:flex; gap:2rem; align-items:flex-end; height:300px; padding:1rem; background:rgba(0,0,0,0.2); border-radius:12px; border:1px solid var(--glass-border); overflow-x: auto;"
+                    id="gold-chart">
+                    <div style="color:var(--text-secondary); width:100%; text-align:center; align-self:center;">Click
+                        'Run Simulation' to forecast spot prices</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid" style="margin-top:1.5rem;">
+                <div class="card">
+                    <h2>Proj. Spot Price (1Y)</h2>
+                    <div class="metric" id="gold-spot">$2,450</div>
+                    <div class="metric-sub" style="color:var(--accent-gold);">Bullish Trajectory</div>
+                </div>
+                <div class="card">
+                    <h2>Miner Sensitivity</h2>
+                    <div class="metric">1.4x</div>
+                    <div class="metric-sub">Leverage to Gold Price</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settings-view" class="view-section" style="display: none;">
+            <div class="card animate-fade-in">
+                <h2>Settings</h2>
+                <p style="color:var(--text-secondary);">Configuration options coming soon.</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="status-modal" class="status-modal">
+        <div id="status-indicator" class="status-indicator"></div>
+        <span id="status-text">Disconnected</span>
+    </div>
+
+    <!-- JS Logic -->
+    <script>
+        // Define functions first
+        async function loadPortfolio() {
+            try {
+                console.log("Fetching portfolio data...");
+                const response = await fetch('/api/portfolio');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                console.log("Data received:", data);
+
+                const tbody = document.getElementById('portfolio-body');
+                tbody.innerHTML = '';
+
+                data.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.style.animation = `fadeIn 0.3s ease forwards ${index * 0.1}s`;
+                    row.style.opacity = '0'; // Initial state for animation
+                    
+                    let badgeClass = 'badge-hold';
+                    if (item.recommendation === 'STRATEGIC BUY') badgeClass = 'badge-buy'; 
+                    else if (item.recommendation === 'ACCUMULATE') badgeClass = 'badge-buy';
+                    else if (item.recommendation === 'STRONG BUY') badgeClass = 'badge-buy';
+                    
+                    const isGreenland = item.region === 'Greenland';
+                    const countryIcon = isGreenland ? '❄️' : '🍁';
+                    
+                    // Subtle highlight for Greenland rows
+                    if (isGreenland) {
+                         row.style.background = 'rgba(34, 211, 238, 0.03)';
+                         badgeClass = 'badge-buy'; // Ensure green/cyan
+                    }
+
+                    row.innerHTML = `
+                        <td style="font-weight:600; color:var(--text-primary)">
+                            ${item.ticker}
+                            <div style="font-size:0.75rem; color:var(--text-secondary)">${item.region} ${countryIcon}</div>
+                        </td>
+                        <td>${item.name}</td>
+                        <td>
+                            <div style="display:flex; flex-direction:column;">
+                                <span style="color:var(--accent-gold); font-weight:700; font-size:1.05rem;">${item.dividend_yield}%</span>
+                                <span style="font-size:0.75rem; color:var(--accent-green);">+${item.geodesic_alpha}% Geo. Boost</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size:0.8rem; color:var(--text-secondary)">
+                                β: <span style="color:var(--text-primary)">${item.stats.beta}</span> 
+                                | SR: <span style="color:var(--text-primary)">${item.stats.sharpe}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:60px; height:4px; background:rgba(255,255,255,0.1); border-radius:2px;">
+                                    <div style="width:${item.ai_score}%; height:100%; background:var(--accent-cyan); border-radius:2px;"></div>
+                                </div>
+                                <span style="font-weight:600">${item.ai_score}</span>
+                            </div>
+                        </td>
+                        <td><span class="badge ${badgeClass}" style="${item.recommendation === 'STRATEGIC BUY' ? 'background:rgba(34, 211, 238, 0.2); color:var(--accent-cyan); border:1px solid var(--accent-cyan); box-shadow:0 0 10px rgba(34,211,238,0.1); transition:all 0.3s' : ''}">${item.recommendation}</span></td>
+                        <td>${item.suggested_allocation}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Refresh icons
+                if (window.lucide) window.lucide.createIcons();
+            } catch (err) {
+                console.error("Failed to load portfolio", err);
+                const tbody = document.getElementById('portfolio-body');
+                if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="color: #ef4444; text-align: center;">Error loading data: ${err.message}. Ensure backend is running.</td></tr>`;
+            }
+        }
+
+        async function connectIBKR() {
+            const btn = document.getElementById('connectBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Connecting...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/connect_ibkr', { method: 'POST' });
+                const result = await response.json();
+
+                const modal = document.getElementById('status-modal');
+                const indicator = document.getElementById('status-indicator');
+                const text = document.getElementById('status-text');
+
+                modal.classList.add('visible');
+
+                if (result.status === 'connected') {
+                    btn.innerText = "NVQLink Active";
+                    btn.style.background = "rgba(52, 211, 153, 0.2)";
+                    btn.style.color = "#34d399";
+                    btn.style.border = "1px solid #34d399";
+                    
+                    indicator.classList.add('connected');
+                    text.innerText = result.message;
+                    
+                    setTimeout(() => { modal.classList.remove('visible'); }, 3000);
+                } else {
+                    btn.innerText = "Retry Connection";
+                    btn.disabled = false;
+                    text.innerText = "Connection Failed";
+                }
+            } catch (e) {
+                console.error(e);
+                btn.innerText = "Retry Connection";
+                btn.disabled = false;
+            }
+        }
+
+        function switchTab(tabName) {
+            // Update Tab Buttons
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            // Find the button that called this, or find by onclick attribute if programmatic
+            const buttons = Array.from(document.querySelectorAll('.nav-btn'));
+            const activeBtn = buttons.find(b => b.getAttribute('onclick').includes(tabName));
+            if(activeBtn) activeBtn.classList.add('active');
+
+            // Update Views
+            document.querySelectorAll('.view-section').forEach(view => {
+                view.style.display = 'none';
+            });
+            
+            const targetView = document.getElementById(`${tabName}-view`);
+            if (targetView) {
+                targetView.style.display = 'block';
+                // Re-trigger animations
+                targetView.querySelectorAll('.animate-fade-in').forEach(el => {
+                    el.style.animation = 'none';
+                    el.offsetHeight; /* trigger reflow */
+                    el.style.animation = 'fadeIn 0.5s ease forwards';
+                });
+                
+                // Re-init icons if needed
+                if(window.lucide) window.lucide.createIcons();
+            }
+        }
+
+        async function loadGoldPrices() {
+            const chartDiv = document.getElementById('gold-chart');
+            chartDiv.innerHTML = '<div style="color:var(--text-secondary); width:100%; text-align:center; align-self:center;">Running probabilistic models...</div>';
+            
+            try {
+                const response = await fetch('/api/gold_prices');
+                const data = await response.json();
+                
+                chartDiv.innerHTML = ''; // Clear loading
+                
+                // Find min/max for scaling
+                const prices = data.map(d => d.price);
+                const maxPrice = Math.max(...prices);
+                const minPrice = Math.min(...prices);
+                
+                // Render Bars
+                data.forEach((point, i) => {
+                    // Simple normalization for visualization height
+                    const heightPct = ((point.price - (minPrice * 0.95)) / (maxPrice - (minPrice * 0.95))) * 100;
+                    
+                    const bar = document.createElement('div');
+                    bar.style.flex = '1';
+                    bar.style.minWidth = '40px';
+                    bar.style.background = 'linear-gradient(to top, var(--accent-gold), #fef08a)';
+                    bar.style.height = '0%'; // Start at 0 for animation
+                    bar.style.borderRadius = '4px 4px 0 0';
+                    bar.style.opacity = '0.8';
+                    bar.style.transition = 'height 1s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    bar.style.position = 'relative';
+                    bar.style.cursor = 'pointer';
+                    
+                    // Tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.innerText = `${point.month}: $${point.price}`;
+                    tooltip.style.position = 'absolute';
+                    tooltip.style.bottom = '100%';
+                    tooltip.style.left = '50%';
+                    tooltip.style.transform = 'translateX(-50%)';
+                    tooltip.style.background = 'var(--bg-dark)';
+                    tooltip.style.padding = '4px 8px';
+                    tooltip.style.borderRadius = '4px';
+                    tooltip.style.fontSize = '0.75rem';
+                    tooltip.style.whiteSpace = 'nowrap';
+                    tooltip.style.border = '1px solid var(--accent-gold)';
+                    tooltip.style.marginBottom = '4px';
+                    tooltip.style.display = 'none';
+                    bar.appendChild(tooltip);
+                    
+                    bar.onmouseenter = () => { bar.style.opacity = '1'; tooltip.style.display = 'block'; };
+                    bar.onmouseleave = () => { bar.style.opacity = '0.8'; tooltip.style.display = 'none'; };
+                    
+                    chartDiv.appendChild(bar);
+                    
+                    // Animate in
+                    setTimeout(() => {
+                        bar.style.height = `${heightPct}%`;
+                    }, i * 100);
+                });
+                
+                // Update Spot Summary
+                const lastPrice = prices[prices.length - 1];
+                document.getElementById('gold-spot').innerText = `$${lastPrice}`;
+                
+            } catch (err) {
+                console.error(err);
+                chartDiv.innerHTML = '<div style="color:var(--accent-red); width:100%; text-align:center; align-self:center;">Simulation Failed</div>';
+            }
+        }
+        
+        // Initialize safely
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                try { window.lucide.createIcons(); } catch (e) { console.warn("Lucide init error", e); }
+            }
+            loadPortfolio();
+        });
+    </script>
+</body>
+
+</html>
