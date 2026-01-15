@@ -242,6 +242,12 @@ tr:last-child td {
     }
 }
 
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .animate-fade-in {
     animation: fadeIn 0.5s ease forwards;
 }

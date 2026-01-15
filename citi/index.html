@@ -23,7 +23,11 @@
             <button class="nav-btn" onclick="switchTab('analysis')">Statistical Analysis</button>
             <button class="nav-btn" onclick="switchTab('settings')">Settings</button>
         </nav>
-        <div class="user-profile">
+        <div class="user-profile" style="display:flex; gap:1rem;">
+            <button class="btn-primary" onclick="openOptimizer()"
+                style="background:linear-gradient(135deg, var(--accent-gold), #f59e0b); border:none; box-shadow:0 0 10px rgba(245, 158, 11, 0.3);">
+                <i data-lucide="zap" style="width:16px; margin-right:4px;"></i> Optimize
+            </button>
             <button id="connectBtn" class="btn-primary" onclick="connectIBKR()">
                 Connect NVQLink
             </button>
@@ -120,6 +124,64 @@
         <span id="status-text">Disconnected</span>
     </div>
 
+    <!-- Optimization Modal -->
+    <div id="optimization-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+        <div class="card" style="width:500px; max-width:90%; animation: fadeIn 0.3s ease;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:1.5rem;">
+                <h2><i data-lucide="zap" style="color:var(--accent-gold); display:inline; margin-right:8px;"></i>Quantum
+                    Trade Optimizer</h2>
+                <button onclick="document.getElementById('optimization-modal').style.display='none'"
+                    style="background:none; border:none; color:var(--text-secondary); cursor:pointer;">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div id="opt-loading" style="text-align:center; padding:2rem;">
+                <div style="font-size:3rem; margin-bottom:1rem; animation: spin 2s linear infinite;">⚛️</div>
+                <p>Calculating Feynman Path Integrals...</p>
+                <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.5rem;">Integrating over 500
+                    potential market histories</div>
+            </div>
+
+            <div id="opt-results" style="display:none;">
+                <div style="display:flex; gap:1rem; margin-bottom:1.5rem;">
+                    <div
+                        style="flex:1; background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; text-align:center;">
+                        <div style="font-size:0.8rem; color:var(--text-secondary);">Black-Scholes (Baseline)</div>
+                        <div style="font-size:1.2rem; font-weight:700;" id="bs-sig">--</div>
+                    </div>
+                    <div
+                        style="flex:1; background:rgba(34, 211, 238, 0.1); border:1px solid var(--accent-cyan); padding:1rem; border-radius:8px; text-align:center;">
+                        <div style="font-size:0.8rem; color:var(--accent-cyan);">Feynman Propagator</div>
+                        <div style="font-size:1.2rem; font-weight:700; color:var(--accent-cyan);" id="feyn-sig">--</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:1.5rem;">
+                    <div id="ramanujan-plot"
+                        style="width:100%; height:150px; background:rgba(0,0,0,0.3); border-radius:8px; margin-bottom:1rem; padding:10px;">
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                        <span>Quantum Alpha Detected</span>
+                        <span style="color:var(--accent-green); font-weight:700;" id="q-alpha">--</span>
+                    </div>
+                    <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px;">
+                        <div
+                            style="width:100%; height:100%; background:linear-gradient(90deg, transparent, var(--accent-green));">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" style="width:100%; display:flex; justify-content:center; gap:0.5rem;"
+                    onclick="executeTrade()">
+                    <i data-lucide="play"></i> Execute Optimal Limit Order (<span id="opt-entry">--</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- JS Logic -->
     <script>
         // Define functions first
@@ -141,16 +203,23 @@
                     
                     let badgeClass = 'badge-hold';
                     if (item.recommendation === 'STRATEGIC BUY') badgeClass = 'badge-buy'; 
+                    else if (item.recommendation === 'TIER-1 BUY') badgeClass = 'badge-buy';
                     else if (item.recommendation === 'ACCUMULATE') badgeClass = 'badge-buy';
                     else if (item.recommendation === 'STRONG BUY') badgeClass = 'badge-buy';
                     
                     const isGreenland = item.region === 'Greenland';
-                    const countryIcon = isGreenland ? '❄️' : '🍁';
+                    const isOntario = item.region === 'N. Ontario';
                     
-                    // Subtle highlight for Greenland rows
+                    let countryIcon = '🍁';
+                    if (isGreenland) countryIcon = '❄️';
+                    if (isOntario) countryIcon = '🌲';
+                    
+                    // Subtle highlight for Greenland/Ontario rows
                     if (isGreenland) {
                          row.style.background = 'rgba(34, 211, 238, 0.03)';
                          badgeClass = 'badge-buy'; // Ensure green/cyan
+                    } else if (isOntario) {
+                        row.style.background = 'rgba(52, 211, 153, 0.03)';
                     }
 
                     row.innerHTML = `
@@ -179,7 +248,7 @@
                                 <span style="font-weight:600">${item.ai_score}</span>
                             </div>
                         </td>
-                        <td><span class="badge ${badgeClass}" style="${item.recommendation === 'STRATEGIC BUY' ? 'background:rgba(34, 211, 238, 0.2); color:var(--accent-cyan); border:1px solid var(--accent-cyan); box-shadow:0 0 10px rgba(34,211,238,0.1); transition:all 0.3s' : ''}">${item.recommendation}</span></td>
+                        <td><span class="badge ${badgeClass}" style="${item.recommendation.includes('BUY') ? 'background:rgba(34, 211, 238, 0.2); color:var(--accent-cyan); border:1px solid var(--accent-cyan); box-shadow:0 0 10px rgba(34,211,238,0.1); transition:all 0.3s' : ''}">${item.recommendation}</span></td>
                         <td>${item.suggested_allocation}</td>
                     `;
                     tbody.appendChild(row);
@@ -327,6 +396,110 @@
                 console.error(err);
                 chartDiv.innerHTML = '<div style="color:var(--accent-red); width:100%; text-align:center; align-self:center;">Simulation Failed</div>';
             }
+        }
+
+        function openOptimizer() {
+            document.getElementById('optimization-modal').style.display = 'flex';
+            document.getElementById('opt-loading').style.display = 'block';
+            document.getElementById('opt-results').style.display = 'none';
+            
+            // Trigger Optimization automatically when opened
+            runTradeOptimization();
+        }
+
+        async function runTradeOptimization() {
+            try {
+                const response = await fetch('/api/optimize_trade', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticker: 'AMRQ.TO' })
+                });
+                const data = await response.json();
+
+                setTimeout(() => {
+                    document.getElementById('opt-loading').style.display = 'none';
+                    document.getElementById('opt-results').style.display = 'block';
+
+                    document.getElementById('bs-sig').innerText = `$${data.bs_signature}`;
+                    document.getElementById('feyn-sig').innerText = `$${data.feynman_integral}`;
+                    document.getElementById('q-alpha').innerText = data.quantum_alpha;
+                    document.getElementById('opt-entry').innerText = `$${data.optimal_entry}`;
+                    
+                    // Render Ramanujan Visualization
+                    const plotDiv = document.getElementById('ramanujan-plot');
+                    if(plotDiv) {
+                        const plotData = data.comparative_plot;
+                        const width = plotDiv.clientWidth || 450;
+                        const height = 120;
+                        
+                        const maxVal = Math.max(...plotData.map(d => Math.max(d.bs_val, d.ramanujan_val))) || 100;
+                        const minVal = Math.min(...plotData.map(d => Math.min(d.bs_val, d.ramanujan_val))) * 0.98 || 90;
+                        
+                        // Scale function
+                        const getX = (i) => (i / (plotData.length - 1)) * width;
+                        const getY = (val) => height - ((val - minVal) / (maxVal - minVal)) * height;
+                        
+                        let bsPath = `M 0 ${getY(data.bs_signature)} `;
+                        plotData.forEach((d, i) => bsPath += `L ${getX(i)} ${getY(d.bs_val)} `);
+                        
+                        let ramPath = `M 0 ${getY(data.feynman_integral)} `;
+                        plotData.forEach((d, i) => ramPath += `L ${getX(i)} ${getY(d.ramanujan_val)} `);
+                        
+                        // SVG Graph
+                        plotDiv.innerHTML = `
+                            <svg width="100%" height="${height}" style="overflow:visible;" viewBox="0 0 ${width} ${height}">
+                                <!-- Grid -->
+                                <line x1="0" y1="${height}" x2="${width}" y2="${height}" stroke="rgba(255,255,255,0.1)" />
+                                <line x1="0" y1="0" x2="${width}" y2="0" stroke="rgba(255,255,255,0.1)" />
+                                
+                                <!-- Paths -->
+                                <path d="${bsPath}" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-dasharray="4,4" opacity="0.5" />
+                                <path d="${ramPath}" fill="none" stroke="var(--accent-gold)" stroke-width="3" filter="drop-shadow(0 0 4px var(--accent-gold))"/>
+                                
+                                <!-- Labels -->
+                                <text x="${width-10}" y="${getY(data.ramanujan_projection)-10}" fill="var(--accent-gold)" text-anchor="end" font-size="10">Ramanujan: $${data.ramanujan_projection}</text>
+                                <text x="${width-10}" y="${getY(data.bs_signature)+15}" fill="var(--text-secondary)" text-anchor="end" font-size="10">Black-Scholes: $${data.bs_signature}</text>
+                            </svg>
+                            <div style="margin-top:10px; font-size:0.8rem; display:flex; justify-content:space-between; color:var(--text-secondary);">
+                                <span>12-Month Harmonic Projection</span>
+                                <span style="color:var(--accent-green)">Congruence Boost: ${data.ramanujan_yield_boost}</span>
+                            </div>
+                        `;
+                    }
+
+                }, 2000);
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('opt-loading').innerHTML = '<span style="color:var(--accent-red)">Optimization Failed</span>';
+            }
+        }
+        
+        function executeTrade() {
+            const btn = document.querySelector('#opt-results .btn-primary');
+            btn.innerHTML = '<i data-lucide="loader" style="animation:spin 1s linear infinite"></i> Routing to NVQLink...';
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i data-lucide="check"></i> Order Filled';
+                btn.style.background = 'var(--accent-green)';
+                
+                // Show notification modal
+                const modal = document.getElementById('status-modal');
+                const indicator = document.getElementById('status-indicator');
+                const text = document.getElementById('status-text');
+                
+                modal.classList.add('visible');
+                indicator.classList.add('connected');
+                text.innerText = "Order Executed via NVQLink";
+                
+                setTimeout(() => { 
+                    modal.classList.remove('visible'); 
+                    document.getElementById('optimization-modal').style.display = 'none';
+                    // Reset button state
+                    btn.innerHTML = '<i data-lucide="play"></i> Execute Optimal Limit Order';
+                    btn.style.background = '';
+                }, 2000);
+            }, 1500);
         }
         
         // Initialize safely
