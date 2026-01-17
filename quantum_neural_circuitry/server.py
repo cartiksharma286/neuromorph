@@ -236,6 +236,17 @@ class DementiaTreatmentModel(QuantumCircuitModel):
                 self.entanglements[(u, v)] = new_weight
                 
             log.append(" Applied Quantum Hebbian Amplification (Prime-Modulated).")
+            
+            # Third, Apply Elliptic Phi Resonance (The "Golden Ratio" Tuning)
+            phi_updates = self.prime_field.apply_elliptic_phi_resonance(self.entanglements)
+            self.entanglements.update(phi_updates)
+            log.append(" Tuned Synapses with Elliptic Integrals & Phi Resonances.")
+
+            # Fourth, Apply Ramanujan Statistical Congruence (Modular Filter)
+            cong_updates = self.prime_field.apply_ramanujan_congruence(self.entanglements)
+            self.entanglements.update(cong_updates)
+            log.append(" Enforced Quantum Statistical Congruence (Mod 24).")
+
             log.append(" Entanglement strengths re-aligned to Prime Gap Statistics.")
             
             # 2. Topological Repair using Prime Gliders

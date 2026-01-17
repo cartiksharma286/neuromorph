@@ -250,8 +250,106 @@ class PrimeVortexField:
             elif is_twin_u or is_twin_v:
                 boost = 1.25
                 
-            # Apply boost, allowing > 1.0 for "Super-Synapses" (simulating quantum tunneling)
-            # We cap at 1.5 to prevent numeric instability in simulation
             optimized[(u, v)] = min(1.5, optimized[(u, v)] * boost)
             
         return optimized
+
+    def apply_elliptic_phi_resonance(self, entanglements):
+        """
+        Enhances connectivity using Elliptic Integrals and Golden Ratio (Phi) resonances.
+        
+        Theory:
+        The Golden Ratio (Phi) represents optimal packing and minimal interference.
+        Elliptic Integrals K(k) describe the period of a pendulum and fields in toroidal topology.
+        Combining them creates 'Phi-Resonant' standing waves that minimize energy loss.
+        """
+        import scipy.special as sp
+        phi = (1 + math.sqrt(5)) / 2
+        golden_angle = 2 * math.pi * (1 - 1/phi)
+        
+        updates = {}
+        for (u, v), w in entanglements.items():
+            # Calculate a 'resonance' based on node indices and Phi
+            # Using discrete golden angle steps
+            delta = abs(u - v)
+            
+            # Map delta to a modulus k for the elliptic integral
+            # We want k in [0, 1). 
+            # Use k = |sin(delta * golden_angle)|
+            k = abs(math.sin(delta * golden_angle))
+            
+            # Complete Elliptic Integral of the First Kind K(k^2) in scipy notation usually m=k^2
+            # ellipk(m)
+            # Handle potential edge cases where k approaches 1
+            if k > 0.999: k = 0.999
+            
+            ellip_val = sp.ellipk(k * k)
+            
+            # Cap for stability
+            if ellip_val > 6.0: ellip_val = 6.0
+            
+            # Resonance factor
+            # Elliptic integral represents the 'period' of the connection
+            # We normalize it relative to a baseline of pi/2 (1.57)
+            resonance = ellip_val / 1.57
+            
+            # Apply resonance boost
+            # w' = w + alpha * log(resonance)
+            # This favors connections with specific Phi-harmonic distances
+            boost = 0.1 * math.log(resonance) if resonance > 1.0 else 0
+            
+            new_w = w + boost
+            
+            updates[(u, v)] = min(1.0, max(0.0, new_w))
+            
+        return updates
+
+    def apply_ramanujan_congruence(self, entanglements):
+        """
+        Applies 'Quantum Statistical Congruence' to the network.
+        
+        Theory:
+        Ramanujan's congruences for the partition function p(n) and the Tau function
+        suggest that quantum modular forms govern the density of states.
+        We strictly enforce the 'Dimension 24' constraint (from Dedekind Eta function)
+        to filter out 'noise' synapses that do not align with the modular symmetry.
+        """
+        filtered_updates = {}
+        
+        # Modular discriminant modulus (Bosonic string theory / Leech Lattice analogy)
+        MODULUS = 24 
+        
+        for (u, v), w in entanglements.items():
+            # Get prime indices
+            p_u = self.primes[u] if u < len(self.primes) else u*2+1
+            p_v = self.primes[v] if v < len(self.primes) else v*2+1
+            
+            # Calculate the modular residue of the connection
+            # We treat the sum of primes as the energy state index
+            energy_index = p_u + p_v
+            
+            residue = energy_index % MODULUS
+            
+            # Ramanujan-style Statistical Congruence Boost
+            # Connections satisfying specific modular congruences are 'preferred' vacuum states
+            if residue == 0:
+                # Perfect cancellation of modular noise -> Super-Conducting channel
+                # "Ramanujan Prime Force"
+                boost = 1.618 # Phi again, or just a strong constant
+            elif residue in [1, 5, 7, 11, 13, 17, 19, 23]:
+                # Coprime to 24 (Unit group) -> Stable transmission
+                boost = 1.1
+            else:
+                # Divisors of 24 -> Potential resonance interference (damping)
+                boost = 0.95 
+            
+            # Apply the Congruence Factor
+            new_w = w * boost
+            
+            # Non-linear activation "Beyond Hebbian"
+            # w_{new} = tanh(w_{old} * boost) to saturate cleanly
+            new_w = math.tanh(new_w * 1.5)
+            
+            filtered_updates[(u, v)] = min(1.0, max(0.0, new_w))
+            
+        return filtered_updates
