@@ -32,6 +32,12 @@ class OCDDashboard {
         if (schematicBtn) {
             schematicBtn.addEventListener('click', () => this.loadSchematic());
         }
+
+        // Quantum FEA Button
+        const qFeaBtn = document.getElementById('runQuantumFeaBtn');
+        if (qFeaBtn) {
+            qFeaBtn.addEventListener('click', () => this.runQuantumOptimization());
+        }
     }
 
     async runSingleSimulation() {
@@ -236,6 +242,58 @@ class OCDDashboard {
             console.error("Failed to load schematic", error);
             alert("Could not load schematic.");
         } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async runQuantumOptimization() {
+        const btn = document.getElementById('runQuantumFeaBtn');
+        const outputDiv = document.getElementById('quantumFeaResults');
+
+        btn.innerHTML = 'Optimizing Surface Integrals...';
+        btn.disabled = true;
+
+        try {
+            // Simplified inputs for demo
+            const result = await window.app.post('/ocd/optimize_quantum_fea', {
+                max_field: 1.8,
+                vta: 0.75
+            });
+
+            if (result.success) {
+                const opt = result.optimization;
+                outputDiv.style.display = 'block';
+                outputDiv.innerHTML = `
+                    <div style="background:var(--bg-elevated); padding:10px; border-radius:5px; margin-top:10px;">
+                        <h4 style="color:var(--primary); margin:0 0 5px 0;">Quantum Surface Optimization</h4>
+                        <div style="font-size:0.9em; display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                            <div>Surface Integral:</div><div style="text-align:right">${opt.quantum_surface_integral.toFixed(4)}</div>
+                            <div>Transition Prob:</div><div style="text-align:right; color:var(--secondary)">${(opt.transition_probability * 100).toFixed(2)}%</div>
+                            <div>Correlation Idx:</div><div style="text-align:right">${opt.correlation_index.toFixed(3)}</div>
+                        </div>
+                        <div style="margin-top:5px; font-size:0.85em; color:#aaa; border-top:1px solid #333; padding-top:5px;">
+                            <em>${opt.recommended_adjustment}</em>
+                        </div>
+                        
+                        <div style="margin-top: 10px;">
+                            <h5 style="color: #ccc; margin: 5px 0;">Stress Strain Magnetism Profiles</h5>
+                            <div style="display: flex; gap: 10px; justify-content: center;">
+                                ${Object.keys(opt.cortical_profiles || {}).map(k => `
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 0.8em; color: #888; margin-bottom: 2px; text-transform: capitalize;">${k}</div>
+                                        <img src="${opt.cortical_profiles[k]}" style="width: 100px; height: 100px; border: 1px solid #444; border-radius: 4px;" alt="${k}">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Optimization Failed');
+        } finally {
+            btn.innerHTML = '<span>⚛️</span> Optimize Quantum-FEA Protocol';
             btn.disabled = false;
         }
     }

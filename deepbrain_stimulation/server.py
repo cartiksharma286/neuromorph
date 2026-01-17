@@ -23,6 +23,7 @@ from dementia_neural_model import DementiaNeuralModel
 from nvqlink_quantum_optimizer import NVQLinkQuantumOptimizer
 from dementia_biomarkers import DementiaBiomarkerTracker
 from ocd_neural_model import OCDNeuralModel
+from ocd_quantum_optimizer import OCDQuantumOptimizer
 
 app = Flask(__name__)
 CORS(app)
@@ -40,6 +41,7 @@ dementia_model = DementiaNeuralModel(disease_duration_years=2.0)
 quantum_optimizer = NVQLinkQuantumOptimizer()
 biomarker_tracker = DementiaBiomarkerTracker()
 ocd_model = OCDNeuralModel()
+ocd_quantum = OCDQuantumOptimizer()
 
 # Global state
 ai_models_trained = False
@@ -566,6 +568,28 @@ def get_ocd_schematic():
         return jsonify({
             'success': True,
             'schematic': schematic
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/ocd/optimize_quantum_fea', methods=['POST'])
+def optimize_ocd_quantum():
+    """Optimize OCD protocol using Quantum Surface Integrals and FEA"""
+    data = request.json
+    
+    # In a full system, we would get the raw FEA array here.
+    # For now, we accept summary stats and generating a synthetic field in the optimizer.
+    fea_input = {
+        'max_field': data.get('max_field', 1.5),
+        'vta': data.get('vta', 0.8)
+    }
+    
+    try:
+        result = ocd_quantum.optimize_protocol_with_fea(fea_input)
+        return jsonify({
+            'success': True,
+            'optimization': result
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
