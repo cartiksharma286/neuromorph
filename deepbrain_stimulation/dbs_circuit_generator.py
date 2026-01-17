@@ -401,6 +401,57 @@ class DBSCircuitGenerator:
         
         return system
     
+    def generate_ocd_specific_schematic(self) -> Dict:
+        """Generate OCD-specific circuit schematic and specifications"""
+        
+        schematic = {
+            "application": "Obsessive-Compulsive Disorder (OCD) Treatment",
+            "target_structures": [
+                "Anterior Limb of Internal Capsule (ALIC)",
+                "Ventral Capsule / Ventral Striatum (VC/VS)",
+                "Nucleus Accumbens (NAc)",
+                "Subthalamic Nucleus (STN) - Antero-medial"
+            ],
+            "electrical_specifications": {
+                "stimulation_mode": "Voltage-Controlled or Current-Controlled (Constant Current preferred)",
+                "waveform": "Biphasic, Charge-Balanced, Square Wave",
+                "frequency_range": {
+                    "min": "100 Hz",
+                    "max": "180 Hz",
+                    "optimal": "130-140 Hz (High Frequency for functional lesioning)"
+                },
+                "amplitude_range": {
+                    "voltage_mode": "2.0 V - 8.0 V",
+                    "current_mode": "1.0 mA - 6.0 mA",
+                    "typical_therapeutic": "3.0 - 5.0 V / 2.5 - 4.5 mA"
+                },
+                "pulse_width": {
+                    "range": "60 µs - 210 µs",
+                    "typical": "90 µs - 120 µs"
+                },
+                "impedance_load": "500 Ω - 1500 Ω"
+            },
+            "electrode_configuration": {
+                "type": "Quadripolar Lead (4 contacts)",
+                "spacing": "1.5 mm or 3.0 mm (Wider spacing often used for ALIC)",
+                "contact_active_selection": "Monopolar (Case Return) or Bipolar (Adjacent Contact)",
+                "field_shaping": "Current Steering required for precise VC/VS targeting"
+            },
+            "safety_limits": {
+                "max_charge_density": "30 µC/cm²/phase",
+                "max_voltage_compliance": "12.0 V",
+                "protection_features": [
+                    "Soft-start ramping (2-4 seconds)",
+                    "Open-circuit detection",
+                    "Thermal monitoring"
+                ]
+            },
+            "mechanism_of_action": "Disruption of hyperactive orbitofrontal-thalamic connectivity loops via high-frequency depolarization block or axonal jamming.",
+            "svg_schematic": self.generate_svg_schematic(component="ocd")
+        }
+        
+        return schematic
+    
     def generate_svg_schematic(self, component: str = "complete") -> str:
         """Generate SVG circuit diagram"""
         

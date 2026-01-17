@@ -555,6 +555,22 @@ def run_ocd_trial():
     })
 
 
+@app.route('/api/ocd/schematic', methods=['GET'])
+def get_ocd_schematic():
+    """Get OCD-specific circuit schematic and specs"""
+    # Using the global circuit_generator instance
+    # We rely on the method we just added
+    
+    try:
+        schematic = circuit_generator.generate_ocd_specific_schematic()
+        return jsonify({
+            'success': True,
+            'schematic': schematic
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 # ==================== Quantum Optimization Endpoints ====================
 
 @app.route('/api/quantum/optimize/vqe', methods=['POST'])

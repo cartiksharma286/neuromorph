@@ -26,6 +26,12 @@ class OCDDashboard {
         if (trialBtn) {
             trialBtn.addEventListener('click', () => this.runStatisticalTrial());
         }
+
+        // Schematic Button
+        const schematicBtn = document.getElementById('loadOcdSchematicBtn');
+        if (schematicBtn) {
+            schematicBtn.addEventListener('click', () => this.loadSchematic());
+        }
     }
 
     async runSingleSimulation() {
@@ -183,5 +189,54 @@ class OCDDashboard {
                 }
             }
         });
+    }
+
+    async loadSchematic() {
+        const btn = document.getElementById('loadOcdSchematicBtn');
+        const container = document.getElementById('ocdSchematicContent');
+
+        if (container.style.display === 'block') {
+            container.style.display = 'none';
+            btn.textContent = 'Show Schematic';
+            return;
+        }
+
+        btn.textContent = 'Loading...';
+        btn.disabled = true;
+
+        try {
+            const response = await window.app.get('/ocd/schematic');
+            if (response.success) {
+                const s = response.schematic;
+
+                // Render Specs
+                let specsHtml = `<strong>Application:</strong> ${s.application}<br/><br/>`;
+                specsHtml += `<strong>Target Structures:</strong><br/>${s.target_structures.map(t => `- ${t}`).join('<br/>')}<br/><br/>`;
+
+                specsHtml += `<strong>Electrical Specs:</strong><br/>`;
+                specsHtml += `- Mode: ${s.electrical_specifications.stimulation_mode}<br/>`;
+                specsHtml += `- Freq: ${s.electrical_specifications.frequency_range.optimal}<br/>`;
+                specsHtml += `- Amp: ${s.electrical_specifications.amplitude_range.typical_therapeutic}<br/>`;
+                specsHtml += `- Pulse Width: ${s.electrical_specifications.pulse_width.typical}<br/><br/>`;
+
+                specsHtml += `<strong>Safety:</strong><br/>`;
+                specsHtml += `- Max Charge: ${s.safety_limits.max_charge_density}<br/>`;
+                specsHtml += `- Compliance: ${s.safety_limits.max_voltage_compliance}<br/>`;
+
+                document.getElementById('ocdSpecsList').innerHTML = specsHtml;
+
+                // Render SVG
+                document.getElementById('ocdSvgContainer').innerHTML = s.svg_schematic;
+
+                // Show
+                container.style.display = 'block';
+                btn.textContent = 'Hide Schematic';
+            }
+        } catch (error) {
+            console.error("Failed to load schematic", error);
+            alert("Could not load schematic.");
+        } finally {
+            btn.disabled = false;
+        }
     }
 }
