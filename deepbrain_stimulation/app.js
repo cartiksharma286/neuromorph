@@ -39,6 +39,9 @@ class DBSApplication {
         if (typeof QuantumOptimizerUI !== 'undefined') {
             window.quantumOptimizerUI = new QuantumOptimizerUI();
         }
+        if (typeof OCDDashboard !== 'undefined') {
+            window.ocdDashboard = new OCDDashboard();
+        }
     }
 
     setupNavigation() {
@@ -92,6 +95,9 @@ class DBSApplication {
                 break;
             case 'quantum':
                 if (window.quantumOptimizerUI) window.quantumOptimizerUI.init();
+                break;
+            case 'ocd':
+                if (window.ocdDashboard) window.ocdDashboard.init();
                 break;
         }
     }

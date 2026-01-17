@@ -22,6 +22,7 @@ from treatment_optimizer import TreatmentProtocolOptimizer
 from dementia_neural_model import DementiaNeuralModel
 from nvqlink_quantum_optimizer import NVQLinkQuantumOptimizer
 from dementia_biomarkers import DementiaBiomarkerTracker
+from ocd_neural_model import OCDNeuralModel
 
 app = Flask(__name__)
 CORS(app)
@@ -38,6 +39,7 @@ protocol_optimizer = TreatmentProtocolOptimizer(neural_model)
 dementia_model = DementiaNeuralModel(disease_duration_years=2.0)
 quantum_optimizer = NVQLinkQuantumOptimizer()
 biomarker_tracker = DementiaBiomarkerTracker()
+ocd_model = OCDNeuralModel()
 
 # Global state
 ai_models_trained = False
@@ -57,7 +59,8 @@ def health_check():
             'safety_validator': True,
             'dementia_model': True,
             'quantum_optimizer': True,
-            'biomarker_tracker': True
+            'biomarker_tracker': True,
+            'ocd_model': True
         },
         'quantum_available': quantum_optimizer.cudaq_available
     })
@@ -499,6 +502,56 @@ def get_dementia_biomarkers():
     return jsonify({
         'model_biomarkers': biomarkers,
         'tracker_summary': tracker_summary
+    })
+
+
+# ==================== OCD Model Endpoints ====================
+
+@app.route('/api/ocd/simulate', methods=['POST'])
+def simulate_ocd_dbs():
+    """Simulate OCD DBS treatment on a single subject"""
+    data = request.json
+    
+    # Create a fresh model instance for simulation
+    sim_model = OCDNeuralModel()
+    
+    pre_gain = sim_model.calculate_cycle_gain()
+    pre_ybocs = sim_model.calculate_ybocs()
+    
+    sim_model.apply_dbs(
+        target=data.get('target', 'caudate'),
+        frequency=data.get('frequency', 130),
+        amplitude=data.get('amplitude', 3.0)
+    )
+    
+    post_gain = sim_model.calculate_cycle_gain()
+    post_ybocs = sim_model.calculate_ybocs()
+    
+    return jsonify({
+        'success': True,
+        'pre': {'gain': pre_gain, 'ybocs': pre_ybocs},
+        'post': {'gain': post_gain, 'ybocs': post_ybocs},
+        'reduction_eff': (pre_ybocs - post_ybocs) / pre_ybocs * 100
+    })
+
+
+@app.route('/api/ocd/trial', methods=['POST'])
+def run_ocd_trial():
+    """Run a statistical clinical trial simulation for OCD DBS"""
+    data = request.json
+    
+    n_subjects = data.get('n_subjects', 20)
+    target = data.get('target', 'caudate')
+    freq = data.get('frequency', 130)
+    amp = data.get('amplitude', 3.0)
+    
+    # Use the model class method (or instance method we made)
+    # We can use the global instance to run the trial method since it creates new subjects inside
+    results = ocd_model.run_clinical_trial(n_subjects, target, freq, amp)
+    
+    return jsonify({
+        'success': True,
+        'results': results
     })
 
 
