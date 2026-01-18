@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cell Tracking & Differentiation System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="6"/>
+                        <circle cx="12" cy="12" r="2"/>
+                    </svg>
+                </div>
+                <h1>Cell<span>Track</span></h1>
+            </div>
+
+            <div class="nav-menu">
+                <button class="nav-item active" data-view="upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <span>Upload Data</span>
+                </button>
+
+                <button class="nav-item" data-view="tracking">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                    <span>Cell Tracking</span>
+                </button>
+
+                <button class="nav-item" data-view="optimization">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    <span>Heuristic Optimization</span>
+                </button>
+
+                <button class="nav-item" data-view="differentiation">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    <span>Differentiation</span>
+                </button>
+
+                <button class="nav-item" data-view="generative">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    <span>Generative AI</span>
+                </button>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>System Ready</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h2 id="view-title">Upload Microscopy Data</h2>
+                    <p id="view-subtitle">Begin by uploading time-lapse microscopy images or use sample data</p>
+                </div>
+                <div class="header-right">
+                    <div class="stats-pill">
+                        <span class="stat-label">Frames</span>
+                        <span class="stat-value" id="frame-count">0</span>
+                    </div>
+                    <div class="stats-pill">
+                        <span class="stat-label">Tracks</span>
+                        <span class="stat-value" id="track-count">0</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- View: Upload Data -->
+            <div class="view-container active" id="view-upload">
+                <div class="upload-section">
+                    <div class="upload-card glass-card">
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <h3>Upload Microscopy Data</h3>
+                        <p>Drag and drop time-lapse images or click to browse</p>
+                        <input type="file" id="file-input" multiple accept="image/*" hidden>
+                        <button class="btn-primary" onclick="document.getElementById('file-input').click()">
+                            Browse Files
+                        </button>
+                    </div>
+
+                    <div class="divider-text">
+                        <span>OR</span>
+                    </div>
+
+                    <div class="sample-data-card glass-card">
+                        <h3>Use Sample Data</h3>
+                        <p>Load synthetic cell tracking data for demonstration</p>
+                        <button class="btn-secondary" id="load-sample-btn">
+                            Load Sample Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Cell Tracking -->
+            <div class="view-container" id="view-tracking">
+                <div class="tracking-layout">
+                    <div class="tracking-viewer glass-card">
+                        <div class="viewer-header">
+                            <h3>Time-Lapse Viewer</h3>
+                            <div class="viewer-controls">
+                                <button class="icon-btn" id="play-btn">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5 3 19 12 5 21 5 3"/>
+                                    </svg>
+                                </button>
+                                <button class="icon-btn" id="prev-frame-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="15 18 9 12 15 6"/>
+                                    </svg>
+                                </button>
+                                <span class="frame-indicator" id="current-frame-display">Frame 0 / 0</span>
+                                <button class="icon-btn" id="next-frame-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9 18 15 12 9 6"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="viewer-canvas">
+                            <img id="tracking-canvas" src="" alt="Tracking visualization">
+                            <div class="loading-overlay" id="tracking-loading">
+                                <div class="spinner"></div>
+                                <p>Processing...</p>
+                            </div>
+                        </div>
+                        <input type="range" class="frame-slider" id="frame-slider" min="0" max="0" value="0">
+                    </div>
+
+                    <div class="tracking-sidebar">
+                        <div class="glass-card">
+                            <h3>Tracking Controls</h3>
+                            <button class="btn-primary full-width" id="run-tracking-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"/>
+                                </svg>
+                                Run Tracking
+                            </button>
+                        </div>
+
+                        <div class="glass-card">
+                            <h3>Track Statistics</h3>
+                            <div class="stat-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Total Tracks</span>
+                                    <span class="stat-value" id="total-tracks">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Active Tracks</span>
+                                    <span class="stat-value" id="active-tracks">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Avg Length</span>
+                                    <span class="stat-value" id="avg-track-length">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card track-list-container">
+                            <h3>Active Tracks</h3>
+                            <div class="track-list" id="track-list">
+                                <p class="empty-state">No tracks available</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Heuristic Optimization -->
+            <div class="view-container" id="view-optimization">
+                <div class="optimization-grid">
+                    <div class="glass-card">
+                        <h3>Genetic Algorithm</h3>
+                        <p class="card-description">Optimize cell-track associations using evolutionary algorithms</p>
+                        <div class="param-group">
+                            <label>Generations</label>
+                            <input type="number" class="input-field" id="ga-generations" value="50" min="10" max="200">
+                        </div>
+                        <button class="btn-primary full-width" id="run-ga-btn">Run GA Optimization</button>
+                        <div class="chart-container">
+                            <canvas id="ga-chart"></canvas>
+                        </div>
+                        <div class="result-display" id="ga-result"></div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3>Particle Swarm Optimization</h3>
+                        <p class="card-description">Fine-tune tracking parameters using swarm intelligence</p>
+                        <div class="param-group">
+                            <label>Iterations</label>
+                            <input type="number" class="input-field" id="pso-iterations" value="50" min="10" max="200">
+                        </div>
+                        <button class="btn-primary full-width" id="run-pso-btn">Run PSO Optimization</button>
+                        <div class="chart-container">
+                            <canvas id="pso-chart"></canvas>
+                        </div>
+                        <div class="result-display" id="pso-result"></div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3>Ant Colony Optimization</h3>
+                        <p class="card-description">Reconstruct cell lineage trees using ant colony algorithms</p>
+                        <div class="param-group">
+                            <label>Iterations</label>
+                            <input type="number" class="input-field" id="aco-iterations" value="30" min="10" max="100">
+                        </div>
+                        <button class="btn-primary full-width" id="run-aco-btn">Run ACO Lineage</button>
+                        <div class="chart-container">
+                            <canvas id="aco-chart"></canvas>
+                        </div>
+                        <div class="result-display" id="aco-result"></div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3>Hybrid Optimization</h3>
+                        <p class="card-description">Combine multiple heuristics for robust solutions</p>
+                        <div class="optimization-status">
+                            <div class="status-row">
+                                <span>GA Status:</span>
+                                <span class="status-badge" id="hybrid-ga-status">Pending</span>
+                            </div>
+                            <div class="status-row">
+                                <span>PSO Status:</span>
+                                <span class="status-badge" id="hybrid-pso-status">Pending</span>
+                            </div>
+                            <div class="status-row">
+                                <span>ACO Status:</span>
+                                <span class="status-badge" id="hybrid-aco-status">Pending</span>
+                            </div>
+                        </div>
+                        <button class="btn-primary full-width" id="run-hybrid-btn">Run Hybrid Optimization</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Differentiation Analysis -->
+            <div class="view-container" id="view-differentiation">
+                <div class="differentiation-layout">
+                    <div class="glass-card large-card">
+                        <h3>Trajectory Analysis</h3>
+                        <button class="btn-primary" id="analyze-diff-btn">Analyze Trajectories</button>
+                        <div class="chart-container large">
+                            <canvas id="trajectory-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3>Differentiation Metrics</h3>
+                        <div class="metric-grid" id="diff-metrics">
+                            <div class="metric-card">
+                                <span class="metric-label">Mean Rate</span>
+                                <span class="metric-value">--</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Tortuosity</span>
+                                <span class="metric-value">--</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Path Length</span>
+                                <span class="metric-value">--</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Trajectories</span>
+                                <span class="metric-value">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3>Cell Fate Prediction</h3>
+                        <div class="param-group">
+                            <label>Prediction Steps</label>
+                            <input type="number" class="input-field" id="predict-steps" value="10" min="5" max="50">
+                        </div>
+                        <button class="btn-primary full-width" id="predict-fate-btn">Predict Cell Fate</button>
+                        <div class="prediction-result" id="fate-prediction"></div>
+                    </div>
+
+                    <div class="glass-card large-card">
+                        <h3>Lineage Tree</h3>
+                        <div class="lineage-tree" id="lineage-tree">
+                            <p class="empty-state">Run lineage optimization to view tree</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Generative AI -->
+            <div class="view-container" id="view-generative">
+                <div class="generative-grid">
+                    <div class="glass-card">
+                        <h3>Generate Trajectories</h3>
+                        <p class="card-description">Create synthetic cell trajectories using generative models</p>
+                        <div class="param-group">
+                            <label>Number of Samples</label>
+                            <input type="number" class="input-field" id="gen-traj-samples" value="5" min="1" max="20">
+                        </div>
+                        <div class="param-group">
+                            <label>Trajectory Length</label>
+                            <input type="number" class="input-field" id="gen-traj-length" value="50" min="10" max="100">
+                        </div>
+                        <button class="btn-primary full-width" id="gen-traj-btn">Generate Trajectories</button>
+                        <div class="chart-container">
+                            <canvas id="gen-traj-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3>Generate Morphologies</h3>
+                        <p class="card-description">Create cell morphology variations using VAE</p>
+                        <div class="param-group">
+                            <label>Number of Samples</label>
+                            <input type="number" class="input-field" id="gen-morph-samples" value="6" min="1" max="12">
+                        </div>
+                        <button class="btn-primary full-width" id="gen-morph-btn">Generate Morphologies</button>
+                        <div class="morphology-gallery" id="morph-gallery">
+                            <p class="empty-state">Click generate to create morphologies</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
