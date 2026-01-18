@@ -446,6 +446,85 @@ def generate_morphology():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
+from immunoassay_engine import PlateAnalyzer, CurveFitter
+
+# Global immunoassay instances
+plate_analyzer = PlateAnalyzer()
+curve_fitter = CurveFitter()
+
+@app.route('/api/immunoassay/analyze_plate', methods=['POST'])
+def analyze_plate():
+    """Analyze microplate image"""
+    try:
+        data = request.json
+        if 'image' not in data:
+            # Generate synthetic plate for demo
+            img = np.zeros((400, 600), dtype=np.uint8) + 240
+            wells = plate_analyzer._generate_synthetic_grid((400, 600))
+            
+            # Draw wells with varying intensities (gradient)
+            for i, well in enumerate(wells):
+                # Add randomness to make it look different each time
+                random_factor = np.random.uniform(0.8, 1.2)
+                base_intensity = 255 * (1 - (i / len(wells)) * 0.8)
+                intensity = int(np.clip(base_intensity * random_factor, 0, 255))
+                cv2.circle(img, (int(well['x']), int(well['y'])), int(well['r']), intensity, -1)
+                cv2.circle(img, (int(well['x']), int(well['y'])), int(well['r']), 50, 2)
+                
+            img_b64 = image_to_base64(img)
+            results = plate_analyzer.quantify_wells(img, wells)
+            
+            return jsonify({
+                'success': True,
+                'image': img_b64,
+                'results': results,
+                'message': 'Generated synthetic plate'
+            })
+            
+        # Handle uploaded image (omitted for brevity, using synthetic fallback)
+        return jsonify({'success': False, 'message': 'Image upload not implemented yet'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/immunoassay/fit_curve', methods=['POST'])
+def fit_curve():
+    """Fit standard curve"""
+    try:
+        data = request.json
+        concentrations = np.array(data.get('concentrations', [0, 10, 50, 100, 500, 1000]))
+        
+        # Generate synthetic signals if not provided
+        if 'signals' not in data:
+            # True params: a=0.1, b=1.0, c=100, d=2.5
+            signals = CurveFitter.four_pl(concentrations, 0.1, 1.2, 100, 2.5)
+            signals += np.random.normal(0, 0.05, len(signals)) # Add noise
+            signals = signals.tolist()
+        else:
+            signals = data['signals']
+            
+        fit_result = curve_fitter.fit_standard_curve(concentrations, signals)
+        
+        # Generate curve points for plotting
+        x_plot = np.logspace(np.log10(max(0.1, min(concentrations))), np.log10(max(concentrations)), 100)
+        y_plot = CurveFitter.four_pl(x_plot, *fit_result['params'])
+        
+        return jsonify({
+            'success': True,
+            'fit_result': fit_result,
+            'plot_data': {
+                'x': x_plot.tolist(),
+                'y': y_plot.tolist()
+            },
+            'standards': {
+                'x': concentrations.tolist(),
+                'y': signals
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 if __name__ == '__main__':
     print("Cell Tracking and Differentiation System")
     print("=" * 50)
