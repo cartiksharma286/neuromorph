@@ -5,13 +5,15 @@ import sys
 # Add backend to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'backend'))
 
-from nvqlink_optimizer import NVQLinkKneeOptimizer
+from gemini_optimizer import GeminiKneeOptimizer
 from health_economics import HealthEconomicsEngine
+from robot_kinematics import OrthoRobotController
 
 app = Flask(__name__, static_folder='frontend', static_url_path='')
 
-optimizer = NVQLinkKneeOptimizer()
+optimizer = GeminiKneeOptimizer()
 economics = HealthEconomicsEngine()
+robot = OrthoRobotController()
 
 @app.route('/')
 def home():
@@ -112,10 +114,64 @@ def get_hip_genai():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+# --- New Workflow Endpoints ---
+
+@app.route('/api/workflow/acquire', methods=['GET'])
+def run_acquisition():
+    try:
+        data = optimizer.simulate_image_acquisition()
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/workflow/register', methods=['POST'])
+def run_registration():
+    try:
+        data = optimizer.perform_registration([])
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/workflow/track', methods=['GET'])
+def run_tracking():
+    try:
+        data = optimizer.track_tools()
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/planning/generate', methods=['GET'])
+def run_gemini_planning():
+    try:
+        data = optimizer.generate_resction_plan()
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/planning/optimize_fit', methods=['POST'])
+def run_implant_fit():
+    try:
+        constraints = request.json or {}
+        data = optimizer.optimize_implant_fit(constraints)
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/robot/trajectory', methods=['POST'])
+def get_robot_trajectory():
+    try:
+        cut_type = request.json.get('cut_type', 'distal')
+        data = optimizer.genai_robot_trajectory(cut_type)
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/api/workflow/resection', methods=['POST'])
 def run_resection():
     try:
-        result = optimizer.simulate_resection()
+        # Pass plan from request if needed
+        plan = request.json or {}
+        result = optimizer.simulate_resection_process(plan)
         return jsonify({'status': 'success', 'data': result})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
@@ -123,18 +179,45 @@ def run_resection():
 @app.route('/api/workflow/balancing', methods=['POST'])
 def run_balancing():
     try:
-        result = optimizer.simulate_balancing()
+        # Full kinematic curve
+        result = optimizer.generate_kinematics_simulation()
         return jsonify({'status': 'success', 'data': result})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+@app.route('/api/workflow/implant', methods=['POST'])
+def run_implant():
+    try:
+        result = optimizer.simulate_implant_insertion()
+        return jsonify({'status': 'success', 'data': result})
+    except Exception as e:
+         return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/api/workflow/postop', methods=['GET'])
 def get_postop_data():
     try:
-        result = optimizer.generate_post_op_data()
+        # Generate 5000 procedure stats
+        result = optimizer.simulate_postop_analytics()
         return jsonify({'status': 'success', 'data': result})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/robot/resect', methods=['POST'])
+def run_robot_resection():
+    try:
+        plan = request.json or {}
+        result = robot.execute_knee_resection(plan)
+        return jsonify({'status': 'success', 'data': result})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/robot/status', methods=['GET'])
+def get_robot_status():
+    return jsonify({
+        'status': robot.status,
+        'serial_joints': robot.serial_arm.joint_angles,
+        'parallel_base': robot.parallel_arm.base_radius
+    })
 
 
 
