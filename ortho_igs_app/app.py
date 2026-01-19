@@ -170,8 +170,9 @@ def get_robot_trajectory():
 def run_resection():
     try:
         # Pass plan from request if needed
-        plan = request.json or {}
-        result = optimizer.simulate_resection_process(plan)
+        req_data = request.json or {}
+        profile_type = req_data.get('profile', 'CR')
+        result = optimizer.simulate_resection_process(plan_type=profile_type)
         return jsonify({'status': 'success', 'data': result})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
