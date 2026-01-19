@@ -1,65 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NVQLink Orthopedic Surgical System</title>
+    <title>Gemini 3.0 Orthopedic Surgical System</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="app-container">
         <header>
-            <div class="logo">NVQLink <span class="highlight">Ortho</span></div>
+            <div class="logo">Gemini 3.0 <span class="highlight">Ortho</span></div>
             <nav>
-                <button onclick="showSection('dashboard')" class="active">Dashboard</button>
-                <button onclick="showSection('planning')">Surgical Planning</button>
-                <button onclick="showSection('analytics')">Analytics</button>
-            </nav>
-            <div class="status-indicator">Connected</div>
+                <nav>
+                    <button onclick="showSection('acquisition')" class="active">Acquisition</button>
+                    <button onclick="showSection('registration')">Registration</button>
+                    <button onclick="showSection('planning')">Planning</button>
+                    <button onclick="showSection('fit')">Implant Fit</button>
+                    <button onclick="showSection('robot')">Robot</button>
+                    <button onclick="showSection('analytics')">Post-Op</button>
+                </nav>
+                <div class="status-indicator">Connected</div>
         </header>
 
-        <main id="dashboard" class="section active">
-            <div class="hero">
-                <h1>Surgical Intelligence Platform</h1>
-                <p>Quantum-Optimized & Generative AI Driven Orthopedics</p>
-                <div class="action-buttons">
-                    <button class="primary-btn" onclick="runOptimization()">Optimize Plan</button>
-                    <button class="secondary-btn" onclick="fetchGeometry()">Load Geometry</button>
-                </div>
+        <!-- New Workflow Sections -->
+        <main id="acquisition" class="section active">
+            <h2>Image Acquisition (CT/MRI)</h2>
+            <button class="primary-btn" onclick="runAcquisition()">Start Volumetric Scan</button>
+            <div class="card"
+                style="margin-top:20px; height: 350px; background: #000; display:flex; justify-content:center; align-items:center;">
+                <canvas id="scanCanvas" width="500" height="300"></canvas>
             </div>
+            <div id="scan-status" class="status-box">Waiting...</div>
+        </main>
 
+        <main id="registration" class="section">
+            <h2>Registration & Tracking</h2>
             <div class="grid-container">
                 <div class="card">
-                    <h3>Optimization Status</h3>
-                    <div id="optimization-result" class="result-box">Ready to optimize...</div>
+                    <h3>ICP Registration</h3>
+                    <button onclick="runRegistration()">Run Registration</button>
+                    <div id="reg-status" class="result-box">Not Registered</div>
                 </div>
                 <div class="card">
-                    <h3>Geometry Preview</h3>
-                    <div id="geometry-preview" class="result-box">No geometry loaded</div>
-                </div>
-                <div class="card">
-                    <h3>Health Economics</h3>
-                    <div id="economics-data" class="result-box">Loading...</div>
+                    <h3>Optical Tracking</h3>
+                    <button onclick="startTracking()">Start Tracking</button>
+                    <div id="track-data" class="result-box">--</div>
                 </div>
             </div>
         </main>
 
         <main id="planning" class="section">
-            <h2>Surgical Planning</h2>
-            <div class="controls">
-                <button onclick="simulateResection()">Simulate Resection</button>
-                <button onclick="simulateBalancing()">Simulate Balancing</button>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2>Surgical Planning & Simulation</h2>
+                <div class="controls">
+                    <button onclick="simulateResection()" class="secondary-btn">1. Resection Profile</button>
+                    <button onclick="simulateImplant()" class="secondary-btn">2. Implant Insertion</button>
+                    <button onclick="simulateBalancing()" class="primary-btn">3. Kinematic Balancing</button>
+                </div>
             </div>
-            <div id="planning-results" class="result-area"></div>
+
+            <div class="planning-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
+                <!-- Left: Anatomy/Resection -->
+                <div class="card">
+                    <h3>Femoral Resection Profile</h3>
+                    <div id="resection-viz"
+                        style="height:250px; background:#111; position:relative; overflow:hidden; border-radius:4px;">
+                        <canvas id="resectionCanvas" width="400" height="250"></canvas>
+                    </div>
+                    <div id="resection-info" style="font-size:0.9em; margin-top:10px; color:#aaa;"></div>
+                </div>
+
+                <!-- Right: Kinematics/Flexion -->
+                <div class="card">
+                    <h3>Flexion & Ligament Balancing</h3>
+                    <div id="kinematics-viz"
+                        style="height:250px; background:#111; position:relative; border-radius:4px;">
+                        <canvas id="kinematicsCanvas" width="400" height="250"></canvas>
+                        <div id="flexion-angle"
+                            style="position:absolute; top:10px; right:10px; font-weight:bold; color:#fff;">0°</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lower: Implant Info -->
+            <div class="card" style="margin-top:20px;">
+                <h3>Implant Simulation</h3>
+                <div id="implant-status" style="display:flex; gap:20px; align-items:center; min-height:60px;">
+                    <div style="flex:1; border:1px dashed #444; padding:10px; text-align:center; color:#666;">
+                        Select "Implant Insertion" to visualize placement
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <main id="robot" class="section">
+            <h2>IGS Robot Control</h2>
+            <div class="robot-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <h3>Generative AI Path Planning</h3>
+                    <div id="genai-viz" style="height:200px; background:#111; margin-bottom:10px;">
+                        <canvas id="robotCanvas" width="300" height="200"></canvas>
+                    </div>
+                    <button onclick="genAiRobotPath()">Generate Automated Cuts</button>
+                </div>
+                <div class="card">
+                    <h3>Parallel Arm (Execution)</h3>
+                    <div id="parallel-status" class="status-box">Status: Idle</div>
+                    <button class="primary-btn" onclick="executeRobotResection()">Execute Resection</button>
+                </div>
+            </div>
+            <div id="robot-logs" class="log-console"
+                style="background: #111; padding: 10px; margin-top: 20px; font-family: monospace; height: 150px; overflow-y: auto;">
+                > System Ready...
+            </div>
+        </main>
+
+        <main id="fit" class="section">
+            <h2>Implant Fit Optimization</h2>
+            <p>Gemini 3.0 Conformal Surface Matching</p>
+            <div class="grid-container">
+                <div class="card">
+                    <h3>Optimization Controls</h3>
+                    <label>Implant Family: <select>
+                            <option>Gemini Conformal</option>
+                            <option>Standard</option>
+                        </select></label>
+                    <br /><br />
+                    <button class="primary-btn" onclick="runImplantOptimization()">Run Optimization</button>
+                </div>
+                <div class="card">
+                    <h3>Fit Analysis</h3>
+                    <div id="fit-results" class="result-box">Waiting for input...</div>
+                    <div id="fit-viz" style="margin-top:10px; height:150px; background:#111;"></div>
+                </div>
+            </div>
         </main>
 
         <main id="analytics" class="section">
-            <h2>Post-Op Analytics</h2>
-            <button onclick="loadPostOp()">Load Projections</button>
-            <div id="analytics-results" class="result-area"></div>
+            <h2>Post-Op Analytics & Health Economics</h2>
+            <div style="margin-bottom:20px;">
+                <button class="primary-btn" onclick="loadPostOp()">Load 5000-Patient Simulation</button>
+            </div>
+
+            <div class="grid-container" id="analytics-grid" style="display:none; grid-template-columns: 1fr 1fr 1fr;">
+                <div class="card">
+                    <h3>Flexion Statistics</h3>
+                    <div id="flexion-stats" class="result-box"></div>
+                    <div id="flexion-hist" style="height:150px; background:#111; margin-top:10px;"></div>
+                </div>
+                <div class="card">
+                    <h3>Extension Statistics</h3>
+                    <div id="extension-stats" class="result-box"></div>
+                </div>
+                <div class="card">
+                    <h3>Cost Analysis</h3>
+                    <div id="cost-stats" class="result-box"></div>
+                    <div id="cost-hist" style="height:150px; background:#111; margin-top:10px;"></div>
+                </div>
+            </div>
         </main>
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>
