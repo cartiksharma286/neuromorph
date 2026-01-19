@@ -3,6 +3,7 @@ from simulator_core import MRIReconstructionSimulator
 from llm_modules import GeminiRFDesigner, LLMPulseDesigner
 from statistical_adaptive_pulse import create_adaptive_sequence, ADAPTIVE_SEQUENCES
 from quantum_vascular_coils import get_coil_summary, QUANTUM_VASCULAR_COIL_LIBRARY
+from circuit_schematic_generator import CircuitSchematicGenerator
 import os
 import generate_pdf
 import generate_report_images
@@ -100,8 +101,9 @@ def simulate():
             "seq_type": seq_type,
             "metrics": metrics,
             "signal_study": signal_study,
-            "timestamp": "January 12, 2026",
-            "shim_report": shim_report
+            "timestamp": "January 14, 2026",
+            "shim_report": shim_report,
+            "circuit_schematic": plots['circuit']
         })
         
         return jsonify({
@@ -401,6 +403,9 @@ This report details the simulation results for the **{coil_name}** operating wit
 ## 2. Physics & Circuit Topology
 {physics_desc}
 
+### Circuit Schematic
+![Schematic](current_schematic.png)
+
 ### Coil Derivation
 {math_block}
 
@@ -412,7 +417,33 @@ This report details the simulation results for the **{coil_name}** operating wit
 * **Quantum Vascular Enabled:** {c['metrics'].get('quantum_vascular_enabled', False)}
 * **50-Turn Head Coil Enabled:** {c['metrics'].get('head_coil_50_enabled', False)}
 * **NVQLink Enabled:** {c['metrics'].get('nvqlink_enabled', False)}
+
+## 4. Finite Math Calculations
+The simulation employs discrete finite mathematical operators for signal reconstruction.
+
+### Discrete Fourier Transform (Finite Summation)
+The image space $M(x,y)$ is recovered from the discretized k-space $S(u,v)$ via the Inverse Discrete Fourier Transform (IDFT):
+
+$$ M(x,y) = \\frac{{1}}{{N^2}} \\sum_{{u=0}}^{{N-1}} \\sum_{{v=0}}^{{N-1}} S(u,v) \\cdot e^{{i 2\\pi (\\frac{{ux}}{{N}} + \\frac{{vy}}{{N}})}} $$
+
+### Finite Difference Gradient (Edge Detection)
+To assess sharpness, we compute the discrete gradient magnitude $|\\nabla M|$ using central finite differences:
+
+$$ \\frac{{\\partial M}}{{\\partial x}} \\approx \\frac{{M_{{i+1,j}} - M_{{i-1,j}}}}{{2\\Delta x}}, \\quad \\frac{{\\partial M}}{{\\partial y}} \\approx \\frac{{M_{{i,j+1}} - M_{{i,j-1}}}}{{2\\Delta y}} $$
+
+$$ |\\nabla M|_{{i,j}} = \\sqrt{{ \\left(\\frac{{M_{{i+1,j}} - M_{{i-1,j}}}}{{2}}\\right)^2 + \\left(\\frac{{M_{{i,j+1}} - M_{{i,j-1}}}}{{2}}\\right)^2 }} $$
+
+### Quantum Finite Element (For Vascular Coils)
+For the quantum vascular coils, the magnetic flux $\\Phi$ is discretized over the loop elements $E_k$:
+
+$$ \\Phi \\approx \\sum_{{k=1}}^{{N_{{elem}}}} \\mathbf{{B}}_k \\cdot \\mathbf{{n}}_k A_k $$
+
 """
+        
+        import base64
+        if 'circuit_schematic' in c:
+            with open(os.path.join(os.getcwd(), 'current_schematic.png'), 'wb') as f:
+                f.write(base64.b64decode(c['circuit_schematic']))
         
         md_path = os.path.join(os.getcwd(), 'detailed_coil_report.md')
         with open(md_path, 'w') as f:
@@ -426,6 +457,18 @@ This report details the simulation results for the **{coil_name}** operating wit
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/schematics/generate', methods=['GET'])
+def generate_schematics():
+    """Generates circuit schematics for all coil types."""
+    try:
+        gen = CircuitSchematicGenerator()
+        schematics = gen.generate_all()
+        return jsonify({'success': True, 'schematics': schematics})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     print("=" * 80)
