@@ -44,6 +44,13 @@
                     <button onclick="runRegistration()">Run Registration</button>
                     <div id="reg-status" class="result-box">Not Registered</div>
                 </div>
+                <!-- New Repeatability Stat Card -->
+                <div class="card">
+                    <h3>Repeatability Analysis</h3>
+                    <div id="reg-stats" class="result-box" style="font-size:0.9em; line-height:1.6;">
+                        <span style="color:#aaa">Run registration to generate repeatability score.</span>
+                    </div>
+                </div>
                 <div class="card">
                     <h3>Optical Tracking</h3>
                     <button onclick="startTracking()">Start Tracking</button>
@@ -53,45 +60,61 @@
         </main>
 
         <main id="planning" class="section">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h2>Surgical Planning & Simulation</h2>
-                <div class="controls">
-                    <button onclick="simulateResection()" class="secondary-btn">1. Resection Profile</button>
-                    <button onclick="simulateImplant()" class="secondary-btn">2. Implant Insertion</button>
-                    <button onclick="simulateBalancing()" class="primary-btn">3. Kinematic Balancing</button>
+                <div class="controls" style="display:flex; gap:10px; align-items:center;">
+                    <label style="color:#aaa;">Implant Type:
+                        <select id="profile-select"
+                            style="background:#222; color:#fff; border:1px solid #444; padding:5px; border-radius:4px;">
+                            <option value="CR">Cruciate Retaining (CR)</option>
+                            <option value="PS">Posterior Stabilized (PS)</option>
+                        </select>
+                    </label>
+                    <button onclick="simulateResection()" class="primary-btn">Compute Resection</button>
+                    <button onclick="simulateBalancing()" class="secondary-btn">Check Kinematics</button>
                 </div>
             </div>
 
-            <div class="planning-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
-                <!-- Left: Anatomy/Resection -->
-                <div class="card">
-                    <h3>Femoral Resection Profile</h3>
+            <!-- Main Workspace -->
+            <div class="planning-grid" style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+
+                <!-- Left: Master Plan (Resection + Implant) -->
+                <div class="card" style="height:450px; display:flex; flex-direction:column;">
+                    <h3>Conformal Resection Profile</h3>
                     <div id="resection-viz"
-                        style="height:250px; background:#111; position:relative; overflow:hidden; border-radius:4px;">
-                        <canvas id="resectionCanvas" width="400" height="250"></canvas>
+                        style="flex:1; background:#0f0f11; position:relative; overflow:hidden; border-radius:4px; border:1px solid #333;">
+                        <canvas id="resectionCanvas" width="600" height="350"></canvas>
+
+                        <!-- Overlay Info -->
+                        <div id="plan-overlay"
+                            style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.7); padding:10px; border-radius:4px; font-size:0.85em; display:none;">
+                            <div style="color:#4da6ff;">Native Bone</div>
+                            <div style="color:#ffcc00;">Implant Profile</div>
+                            <div style="color:#aaa;">Cut Depth: 9mm</div>
+                        </div>
                     </div>
-                    <div id="resection-info" style="font-size:0.9em; margin-top:10px; color:#aaa;"></div>
                 </div>
 
-                <!-- Right: Kinematics/Flexion -->
-                <div class="card">
-                    <h3>Flexion & Ligament Balancing</h3>
-                    <div id="kinematics-viz"
-                        style="height:250px; background:#111; position:relative; border-radius:4px;">
-                        <canvas id="kinematicsCanvas" width="400" height="250"></canvas>
-                        <div id="flexion-angle"
-                            style="position:absolute; top:10px; right:10px; font-weight:bold; color:#fff;">0°</div>
-                    </div>
-                </div>
-            </div>
+                <!-- Right: Analysis (Kinematics & Insertion) -->
+                <div style="display:flex; flex-direction:column; gap:20px;">
 
-            <!-- Lower: Implant Info -->
-            <div class="card" style="margin-top:20px;">
-                <h3>Implant Simulation</h3>
-                <div id="implant-status" style="display:flex; gap:20px; align-items:center; min-height:60px;">
-                    <div style="flex:1; border:1px dashed #444; padding:10px; text-align:center; color:#666;">
-                        Select "Implant Insertion" to visualize placement
+                    <div class="card" style="flex:1;">
+                        <h3>Insertion Haptics (Cement/Press-Fit)</h3>
+                        <div id="implant-viz"
+                            style="height:150px; background:#111; display:flex; align-items:center; justify-content:center; color:#555;">
+                            Click "Compute" to simulate
+                        </div>
                     </div>
+
+                    <div class="card" style="flex:1;">
+                        <h3>Ligament Balancing</h3>
+                        <div id="kinematics-viz" style="height:150px; background:#111; position:relative;">
+                            <canvas id="kinematicsCanvas" width="300" height="150"></canvas>
+                        </div>
+                        <div id="flexion-angle" style="text-align:right; font-size:0.8em; color:#aaa; margin-top:5px;">
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </main>
