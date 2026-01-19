@@ -11,6 +11,7 @@ from nibabel.testing import data_path
 import os
 from skimage.transform import resize
 from llm_modules import StatisticalClassifier
+from circuit_schematic_generator import CircuitSchematicGenerator
 
 GLOBAL_VOLUME_CACHE = {}
 
@@ -1607,7 +1608,7 @@ class MRIReconstructionSimulator:
             berry_phase = np.exp(1j * 10 * curvature)
             
             # Contrast is a mix of T2* and Geometric Phase
-            t2_star = self.t2_map / 2.0
+            t2_star = (self.t2_map / 2.0) + 1e-12
             M_base = self.pd_map * np.exp(-TE / t2_star)
             
             # The signal in a Berry sequence is insensitive to local B0 offsets
@@ -1823,7 +1824,32 @@ class MRIReconstructionSimulator:
         else:
             combined = np.abs(coil_images[0])
             
-        return self._adaptive_windowing(combined), coil_images
+        # Apply White Pixel Artifact Removal (User Requested)
+        cleaned = self._remove_white_pixel_artifacts(combined)
+            
+        return self._adaptive_windowing(cleaned), coil_images
+
+    def _remove_white_pixel_artifacts(self, image):
+        """
+        Removes artifacts using Gemini 3.0 Statistical Reasoning.
+        Purely statistical method optimized for cloud performance.
+        """
+        try:
+            # 1. Gemini 3.0 Signal Enhancement
+            from advanced_reconstruction import Gemini3SignalEnhancer
+            
+            enhancer = Gemini3SignalEnhancer()
+            clean_image = enhancer.enhance_signal(image)
+            
+            return clean_image
+
+        except Exception as e:
+            print(f"Gemini Enhancement Failed: {e}. Using Fallback.")
+            # Fallback: Simple Median + Threshold Masking
+            median = scipy.ndimage.median_filter(image, size=3)
+            p10 = np.percentile(median, 10)
+            mask = (median > p10 * 1.5).astype(np.float32)
+            return median * mask
 
     def _adaptive_windowing(self, image):
         """
@@ -1985,157 +2011,31 @@ class MRIReconstructionSimulator:
         return plots
 
     def generate_circuit_diagram(self):
-        """Generates a circuit schematic for the active coil."""
-        fig, ax = plt.subplots(figsize=(8, 6))
-        fig.patch.set_facecolor('#0f172a')
-        ax.set_facecolor('#0f172a')
-        ax.axis('off')
-        
-        # Determine coil type from self.coils generation context 
-        # (Since we don't store coil_type in self, we'll infer or just default to a generic/geodesic one for now if not stored.
-        # Ideally, we should store self.coil_type in __init__ or generate_coil_sensitivities, but let's assume Geodesic/Phased Array logic 
-        # as that matches the user request. Realistically, we'll create a generic 'Phased Array Element' schematic.)
-        
-        # Determine coil type from self.active_coil_type
-        coil_type = getattr(self, 'active_coil_type', 'standard')
-        
-        # Schematic Drawing Helpers
-        def draw_capacitor(center, width=0.1, orient='h'):
-            x, y = center
-            if orient == 'h':
-                ax.plot([x-width, x-width/3], [y, y], color=color_wire)
-                ax.plot([x+width/3, x+width], [y, y], color=color_wire)
-                ax.plot([x-width/3, x-width/3], [y-width/2, y+width/2], color=color_comp, lw=2)
-                ax.plot([x+width/3, x+width/3], [y-width/2, y+width/2], color=color_comp, lw=2)
+        """Generates a circuit schematic for the active coil using the new Generator."""
+        try:
+            # Determine coil type from self.active_coil_type or heuristic
+            coil_type = getattr(self, 'active_coil_type', 'standard')
+            
+            gen = CircuitSchematicGenerator()
+            
+            if 'quantum' in coil_type or 'vascular' in coil_type:
+                return gen.generate_quantum_lattice_schematic()
+            elif 'array' in coil_type or 'phased' in coil_type or 'gemini' in coil_type or 'cardiothoracic' in coil_type:
+                return gen.generate_surface_array_schematic()
+            elif 'head_coil_50' in coil_type or 'solenoid' in coil_type:
+                return gen.generate_solenoid_schematic()
             else:
-                ax.plot([x, x], [y-width, y-width/3], color=color_wire)
-                ax.plot([x, x], [y+width/3, y+width], color=color_wire)
-                ax.plot([x-width/2, x+width/2], [y-width/3, y-width/3], color=color_comp, lw=2)
-                ax.plot([x-width/2, x+width/2], [y+width/3, y+width/3], color=color_comp, lw=2)
-
-        def draw_inductor(start, end, loops=4):
-            x = np.linspace(start[0], end[0], 100)
-            y = np.linspace(start[1], end[1], 100)
-            amp = 0.05
-            # ZigZag / Helix
-            perp_x, perp_y = -(end[1]-start[1]), (end[0]-start[0])
-            norm = np.sqrt(perp_x**2 + perp_y**2)
-            perp_x, perp_y = perp_x/norm, perp_y/norm
-            
-            w = np.sin(np.linspace(0, loops*2*np.pi, 100))
-            x_w = x + w * perp_x * amp
-            y_w = y + w * perp_y * amp
-            ax.plot(x_w, y_w, color=color_comp)
-
-        color_wire = '#94a3b8'
-        color_comp = '#38bdf8'
-        
-        ax.set_xlim(-1, 5)
-        ax.set_ylim(-1, 5)
-
-        if coil_type == 'standard':
-            ax.set_title("Birdcage Coil (High-Pass Ladder) Schematic", color='white', fontsize=12)
-            # Draw Rings (top and bot) - approximated as parallel lines for schematic
-            ax.plot([0, 4], [4, 4], color=color_wire, lw=2, label="End Ring")
-            ax.plot([0, 4], [0, 0], color=color_wire, lw=2)
-            
-            # Rungs (Legs)
-            for i in range(5):
-                 x = i
-                 ax.plot([x, x], [0, 4], color=color_wire, alpha=0.5)
-                 # Capacitors on Rungs (Low Pass) or Ring (High Pass)?
-                 # High Pass: Caps on Ring segments. 
-                 # Let's draw Caps on the Ring segments between legs
-                 if i < 4:
-                     draw_capacitor((x+0.5, 4), width=0.2, orient='h')
-                     draw_capacitor((x+0.5, 0), width=0.2, orient='h')
-                 
-                 # Inductors on Legs
-                 draw_inductor((x, 1), (x, 3), loops=3)
-                 
-        elif coil_type in ['custom_phased_array', 'cardiothoracic_array']:
-            title = "8-Ch Phased Array" if coil_type == 'custom_phased_array' else "Cardiothoracic Array (Heart/Lung)"
-            ax.set_title(f"{title} - Decoupled Loop Schematic", color='white', fontsize=12)
-            
-            # Draw 4 overlapping loops
-            for i in range(4):
-                cx, cy = 0.5 + i*1.2, 2
+                # Default Birdcage
+                return gen.generate_birdcage_schematic()
                 
-                # Loop
-                theta = np.linspace(0, 2*np.pi, 100)
-                r = 0.5
-                ax.plot(cx + r*np.cos(theta), cy + r*np.sin(theta), color=color_wire)
-                
-                # Tuning Cap (Top)
-                draw_capacitor((cx, cy+r), width=0.15, orient='h')
-                
-                # Matching Cap (Bottom)
-                draw_capacitor((cx, cy-r), width=0.15, orient='h')
-                
-                # Preamp (Triangle) at bottom output
-                ax.plot([cx, cx], [cy-r-0.2, cy-r-0.5], color=color_wire) # Feedline
-                tx, ty = cx, cy-r-0.6
-                ax.plot([tx-0.1, tx+0.1, tx, tx-0.1], [ty, ty, ty-0.2, ty], color=color_comp) # Amp symbol
-                ax.text(tx+0.15, ty-0.1, "LNA", color=color_comp, fontsize=8)
-                
-                # Decoupling Inductor shared?
-                # Draw overlapping region mark
-                if i < 3:
-                     # Mutual Inductance M
-                     mx = cx + 0.6
-                     ax.text(mx, cy, "M", color='#f472b6', fontsize=10, ha='center')
-                     ax.plot([mx, mx], [cy-0.2, cy+0.2], color='#f472b6', linestyle='--')
-
-        elif coil_type == 'quantum_surface_lattice':
-            ax.set_title("Quantum Surface Lattice (Berry Phase Topology)", color='white', fontsize=12)
-            # Hexagonal Mesh
-            def hex_corner(center, size, i):
-                angle_deg = 60 * i
-                angle_rad = np.pi / 180 * angle_deg
-                return (center[0] + size * np.cos(angle_rad), center[1] + size * np.sin(angle_rad))
-            
-            for row in range(3):
-                for col in range(3):
-                    cx = col * 1.5 + (row % 2) * 0.75
-                    cy = row * 1.3
-                    
-                    # Draw Hexagon
-                    pts = [hex_corner((cx, cy), 0.5, k) for k in range(6)]
-                    pts.append(pts[0]) # Close
-                    xs, ys = zip(*pts)
-                    ax.plot(xs, ys, color=color_wire, alpha=0.8)
-                    
-                    # Berry Phase Flux (Spiral in center)
-                    theta = np.linspace(0, 4*np.pi, 50)
-                    r_spiral = np.linspace(0, 0.2, 50)
-                    ax.plot(cx + r_spiral*np.cos(theta), cy + r_spiral*np.sin(theta), color='#a78bfa', lw=1)
-                    
-                    # Josephson Junctions on edges?
-                    draw_capacitor((cx, cy+0.5), width=0.1, orient='h')
-
-        else: 
-            # Generic / Geodesic
-            ax.set_title("Geodesic Chassis Distribution", color='white', fontsize=12)
-            phi = (1 + np.sqrt(5)) / 2
-            for i in range(20):
-                 r = 0.2 + i * 0.15
-                 theta = 2 * np.pi * i / phi
-                 x = 2 + r * np.cos(theta)
-                 y = 2 + r * np.sin(theta)
-                 ax.plot(x, y, 'o', color=color_comp, markersize=8)
-                 # Connections
-                 if i > 0:
-                     prev_r = 0.2 + (i-1)*0.15
-                     prev_theta = 2 * np.pi * (i-1) / phi
-                     prev_x = 2 + prev_r * np.cos(prev_theta)
-                     prev_y = 2 + prev_r * np.sin(prev_theta)
-                     ax.plot([prev_x, x], [prev_y, y], color=color_wire, lw=0.5)
-
-        buf = io.BytesIO()
-        fig.savefig(buf, format='png', transparent=True, bbox_inches='tight')
-        buf.seek(0)
-        plt.close(fig)
-        return base64.b64encode(buf.getvalue()).decode('utf-8')
+        except Exception as e:
+            print(f"Error generating schematic: {e}")
+            # Fallback to empty plot
+            fig, ax = plt.subplots(figsize=(6, 4))
+            fig.patch.set_facecolor('#0f172a')
+            ax.axis('off')
+            ax.text(0.5, 0.5, "Schematic Unavailable", color='white', ha='center')
+            return fig_to_b64(fig)
 
     def deep_learning_reconstruct(self, kspace_data):
         """
