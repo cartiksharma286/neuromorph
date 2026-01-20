@@ -83,7 +83,19 @@
 
         <!-- Analysis View (Gold Rush) -->
         <div id="analysis-view" class="view-section" style="display: none;">
-            <!-- ... (existing analysis content) ... -->
+            <div class="dashboard-grid">
+                <div class="card" style="grid-column: span 2;">
+                    <h2 style="color:var(--accent-gold); display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="line-chart"></i> Market Forecast (S&P 500 / Lithium / VIX)
+                    </h2>
+                    <div id="market-chart"
+                        style="height:300px; display:flex; align-items:flex-end; gap:8px; padding-top:20px;"></div>
+                </div>
+                <div class="card">
+                    <h2>Spot Price (S&P Target)</h2>
+                    <div class="metric" id="market-spot">--</div>
+                </div>
+            </div>
         </div>
 
         <!-- Minerals View -->
@@ -176,8 +188,53 @@
     <div id="optimization-modal"
         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
         <!-- ... existing modal content ... -->
-        <div class="card" style="width:500px; max-width:90%; animation: fadeIn 0.3s ease;">
-            <!-- ... -->
+        <div class="card" style="width:500px; max-width:90%; animation: fadeIn 0.3s ease; position:relative;">
+            <button onclick="document.getElementById('optimization-modal').style.display='none'"
+                style="position:absolute; top:10px; right:15px; background:none; border:none; color:var(--text-secondary); cursor:pointer;">
+                <i data-lucide="x"></i>
+            </button>
+            <h2 style="margin-bottom:1.5rem; display:flex; align-items:center; gap:10px;">
+                <i data-lucide="zap" style="color:var(--accent-gold)"></i> Trade Optimizer
+            </h2>
+
+            <div id="opt-loading" style="text-align:center; padding:2rem;">
+                <i data-lucide="loader"
+                    style="animation:spin 1s linear infinite; width:32px; height:32px; color:var(--accent-cyan); margin-bottom:1rem;"></i>
+                <p>Running Feynman Path Integrals...</p>
+            </div>
+
+            <div id="opt-results" style="display:none;">
+                <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:1.5rem;">
+                    <div>
+                        <div class="metric-sub">Black-Scholes</div>
+                        <div class="metric" id="bs-sig" style="font-size:1.2rem;">--</div>
+                    </div>
+                    <div>
+                        <div class="metric-sub">Feynman Integral</div>
+                        <div class="metric" id="feyn-sig" style="font-size:1.2rem; color:var(--accent-cyan);">--</div>
+                    </div>
+                </div>
+
+                <div style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:8px; margin-bottom:1.5rem;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                        <span>Quantum Alpha</span>
+                        <span id="q-alpha" style="color:var(--accent-green)">--</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Optimal Entry</span>
+                        <span id="opt-entry" style="font-weight:bold;">--</span>
+                    </div>
+                </div>
+
+                <div id="ramanujan-plot"
+                    style="width:100%; height:100px; background:rgba(0,0,0,0.3); border-radius:4px; margin-bottom:1.5rem; position:relative;">
+                    <!-- SVG Plot will be injected here -->
+                </div>
+
+                <button class="btn-primary" onclick="executeTrade()" style="width:100%;">
+                    <i data-lucide="play"></i> Execute Optimal Limit Order
+                </button>
+            </div>
         </div>
     </div>
 
@@ -369,6 +426,11 @@
                     el.style.animation = 'fadeIn 0.5s ease forwards';
                 });
 
+                // Load Data for specific tabs
+                if (tabName === 'analysis') {
+                    loadMarketData();
+                }
+
                 // Re-init icons if needed
                 if (window.lucide) window.lucide.createIcons();
             }
@@ -376,7 +438,7 @@
 
         async function loadMarketData() {
             const chartDiv = document.getElementById('market-chart');
-            chartDiv.innerHTML = '<div style="color:var(--text-secondary); width:100%; text-align:center; align-self:center;">Running probabilistic models...</div>';
+            chartDiv.innerHTML = '<div style="color:var(--text-secondary); width:100%; text-align:center; align-self:center;">Running probabilistic models (S&P 500, Lithium, VIX)...</div>';
 
             try {
                 const response = await fetch('/api/market_data');
@@ -384,14 +446,17 @@
 
                 chartDiv.innerHTML = ''; // Clear loading
 
-                // Find min/max for scaling
-                const prices = data.map(d => d.price);
+                // We'll render S&P 500 (Bars) and Lithium (Line Overlay) in this simplified view
+                const spData = data.sp500;
+
+                // Find min/max for scaling S&P
+                const prices = spData.map(d => d.price);
                 const maxPrice = Math.max(...prices);
                 const minPrice = Math.min(...prices);
 
-                // Render Bars
-                data.forEach((point, i) => {
-                    // Simple normalization for visualization height
+                // Render Bars (S&P)
+                spData.forEach((point, i) => {
+                    // Normalization
                     const heightPct = ((point.price - (minPrice * 0.95)) / (maxPrice - (minPrice * 0.95))) * 100;
 
                     const bar = document.createElement('div');
@@ -407,19 +472,25 @@
 
                     // Tooltip
                     const tooltip = document.createElement('div');
-                    tooltip.innerText = `${point.month}: $${point.price}`;
+                    tooltip.innerHTML = `
+                        <div style="font-weight:bold">${point.month}</div>
+                        <div>S&P: $${point.price}</div>
+                        <div style="color:#a78bfa">Lithium: $${data.lithium[i].price}</div>
+                        <div style="color:#f472b6">VIX: ${data.vix[i].price}</div>
+                    `;
                     tooltip.style.position = 'absolute';
                     tooltip.style.bottom = '100%';
                     tooltip.style.left = '50%';
                     tooltip.style.transform = 'translateX(-50%)';
                     tooltip.style.background = 'var(--bg-dark)';
-                    tooltip.style.padding = '4px 8px';
+                    tooltip.style.padding = '6px 10px';
                     tooltip.style.borderRadius = '4px';
                     tooltip.style.fontSize = '0.75rem';
                     tooltip.style.whiteSpace = 'nowrap';
                     tooltip.style.border = '1px solid var(--accent-gold)';
                     tooltip.style.marginBottom = '4px';
                     tooltip.style.display = 'none';
+                    tooltip.style.zIndex = '10';
                     bar.appendChild(tooltip);
 
                     bar.onmouseenter = () => { bar.style.opacity = '1'; tooltip.style.display = 'block'; };
@@ -433,9 +504,23 @@
                     }, i * 100);
                 });
 
-                // Update Spot Summary
-                const lastPrice = prices[prices.length - 1];
-                document.getElementById('market-spot').innerText = `$${lastPrice}`;
+                // Update Spot Summaries
+                document.getElementById('market-spot').innerText = `$${data.meta.sp_target}`;
+                // Update VIX Card if exists (assuming existing structure)
+
+                // Add Lithium Metric Card dynamically if not present
+                const parentGrid = document.querySelector('#analysis-view .dashboard-grid');
+                if (!document.getElementById('lithium-card')) {
+                    const div = document.createElement('div');
+                    div.className = 'card';
+                    div.id = 'lithium-card';
+                    div.innerHTML = `
+                        <h2>Lithium (Forecast)</h2>
+                        <div class="metric">$${data.meta.lithium_target}</div>
+                        <div class="metric-sub" style="color:var(--accent-cyan);">Battery Demand Surge</div>
+                     `;
+                    parentGrid.appendChild(div);
+                }
 
             } catch (err) {
                 console.error(err);

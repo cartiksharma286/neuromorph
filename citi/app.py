@@ -161,17 +161,48 @@ def connect_ibkr():
 def get_market_data():
     # Generalized market curve (replacing gold)
     # Simulate S&P 500 futures
-    current_price = 5200
-    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    forecast = []
+    # Generalized market curve 
+    # Simulate S&P 500 futures, Lithium Carbonate, and VIX
     
-    price = current_price
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    
+    # 1. S&P 500
+    sp_price = 5200
+    sp_forecast = []
+    
+    # 2. Lithium Carbonate ($/tonne)
+    lithium_price = 14500
+    lithium_forecast = []
+    
+    # 3. VIX
+    vix = 14.5
+    vix_forecast = []
+
     for m in months:
-        change = np.random.normal(20, 50) 
-        price += change
-        forecast.append({"month": m, "price": int(price)})
+        # S&P Trend (Bullish)
+        sp_change = np.random.normal(35, 40)
+        sp_price += sp_change
+        sp_forecast.append({"month": m, "price": int(sp_price)})
         
-    return jsonify(forecast)
+        # Lithium Trend (Volatile Bullish)
+        lith_change = np.random.normal(200, 350)
+        lithium_price += lith_change
+        lithium_forecast.append({"month": m, "price": int(lithium_price)})
+        
+        # VIX Trend (Mean Reverting)
+        vix = vix * 0.9 + 14.0 * 0.1 + np.random.normal(0, 0.8)
+        vix_forecast.append({"month": m, "price": round(vix, 2)})
+        
+    return jsonify({
+        "sp500": sp_forecast,
+        "lithium": lithium_forecast,
+        "vix": vix_forecast,
+        "meta": {
+             "sp_target": int(sp_price),
+             "lithium_target": int(lithium_price),
+             "vix_target": round(vix, 2)
+        }
+    })
 
 @app.route('/api/optimize_trade', methods=['POST'])
 def optimize_trade():
