@@ -555,15 +555,15 @@
                     document.getElementById('q-alpha').innerText = data.quantum_alpha;
                     document.getElementById('opt-entry').innerText = `$${data.optimal_entry}`;
 
-                    // Render Ramanujan Visualization
+                    // Render Comparison Visualization (BS vs Feynman)
                     const plotDiv = document.getElementById('ramanujan-plot');
                     if (plotDiv) {
                         const plotData = data.comparative_plot;
                         const width = plotDiv.clientWidth || 450;
                         const height = 120;
 
-                        const maxVal = Math.max(...plotData.map(d => Math.max(d.bs_val, d.ramanujan_val))) || 100;
-                        const minVal = Math.min(...plotData.map(d => Math.min(d.bs_val, d.ramanujan_val))) * 0.98 || 90;
+                        const maxVal = Math.max(...plotData.map(d => Math.max(d.bs_val, d.feynman_val))) || 100;
+                        const minVal = Math.min(...plotData.map(d => Math.min(d.bs_val, d.feynman_val))) * 0.98 || 90;
 
                         // Scale function
                         const getX = (i) => (i / (plotData.length - 1)) * width;
@@ -572,8 +572,8 @@
                         let bsPath = `M 0 ${getY(data.bs_signature)} `;
                         plotData.forEach((d, i) => bsPath += `L ${getX(i)} ${getY(d.bs_val)} `);
 
-                        let ramPath = `M 0 ${getY(data.feynman_integral)} `;
-                        plotData.forEach((d, i) => ramPath += `L ${getX(i)} ${getY(d.ramanujan_val)} `);
+                        let feynPath = `M 0 ${getY(data.feynman_integral)} `;
+                        plotData.forEach((d, i) => feynPath += `L ${getX(i)} ${getY(d.feynman_val)} `);
 
                         // SVG Graph
                         plotDiv.innerHTML = `
@@ -584,15 +584,15 @@
                                 
                                 <!-- Paths -->
                                 <path d="${bsPath}" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-dasharray="4,4" opacity="0.5" />
-                                <path d="${ramPath}" fill="none" stroke="var(--accent-gold)" stroke-width="3" filter="drop-shadow(0 0 4px var(--accent-gold))"/>
+                                <path d="${feynPath}" fill="none" stroke="var(--accent-cyan)" stroke-width="3" filter="drop-shadow(0 0 4px var(--accent-cyan))"/>
                                 
                                 <!-- Labels -->
-                                <text x="${width - 10}" y="${getY(data.ramanujan_projection) - 10}" fill="var(--accent-gold)" text-anchor="end" font-size="10">Ramanujan: $${data.ramanujan_projection}</text>
+                                <text x="${width - 10}" y="${getY(data.feynman_integral) - 10}" fill="var(--accent-cyan)" text-anchor="end" font-size="10">Feynman: $${data.feynman_integral}</text>
                                 <text x="${width - 10}" y="${getY(data.bs_signature) + 15}" fill="var(--text-secondary)" text-anchor="end" font-size="10">Black-Scholes: $${data.bs_signature}</text>
                             </svg>
                             <div style="margin-top:10px; font-size:0.8rem; display:flex; justify-content:space-between; color:var(--text-secondary);">
-                                <span>12-Month Harmonic Projection</span>
-                                <span style="color:var(--accent-green)">Congruence Boost: ${data.ramanujan_yield_boost}</span>
+                                <span>12-Month Path Integral</span>
+                                <span style="color:var(--accent-green)">Quantum Alpha: ${data.quantum_alpha}</span>
                             </div>
                         `;
                     }

@@ -234,43 +234,42 @@ def optimize_trade():
     feynman_price = np.median(final_prices)
     quantum_alpha = round(((feynman_price - bs_price) / bs_price) * 100, 2)
     
-    # Ramanujan's Elliptic Integral Projection
-    ram_val = feynman_price
+    # 3. Projection for visualization
+    # Compare Classical Growth vs Quantum Realization over 12 steps
     steps = 12
     comparison_plot = []
     
-    bs_val = bs_price
+    current_bs = bs_price
+    current_feyn = feynman_price
     
-    # Simplified modular form
-    def theta_proxy(n, volatility):
-        q = np.exp(-np.pi * volatility) 
-        term = 1 + 2 * (q ** (n**2)) 
-        return term
+    # Simple linear interpolation for visualization
+    step_bs = (bs_price - spot) / steps
+    step_feyn = (feynman_price - spot) / steps
+    
+    val_bs = spot
+    val_feyn = spot
 
     for i in range(1, steps + 1):
-        bs_val *= np.exp(0.05/12) 
-        harmonic_factor = theta_proxy(i, vol)
-        drift_correction = (harmonic_factor - 1) * 0.5
-        ram_val *= (1 + (0.05/12) + drift_correction)
+        # Deterministic BS path
+        val_bs += step_bs
+        
+        # Stochastic Feynman path (Visual approximation of the median path)
+        val_feyn += step_feyn + np.random.normal(0, 1.0)
         
         comparison_plot.append({
             "step": i,
-            "bs_val": round(bs_val, 2),
-            "ramanujan_val": round(ram_val, 2)
+            "bs_val": round(val_bs, 2),
+            "feynman_val": round(val_feyn, 2)
         })
-        
-    ramanujan_yield_alpha = round(((ram_val - bs_val) / bs_val) * 100, 2)
-    
+
     return jsonify({
         "ticker": ticker,
+        "optimal_entry": round(spot * 0.98, 2), # Recommend entry 2% below spot
         "bs_signature": round(bs_price, 2),
         "feynman_integral": round(feynman_price, 2),
-        "ramanujan_projection": round(ram_val, 2),
         "quantum_alpha": f"{quantum_alpha}%",
-        "ramanujan_yield_boost": f"{ramanujan_yield_alpha}%",
         "optimization_status": "CONVERGED",
-        "comparative_plot": comparison_plot,
-        "optimal_entry": round(feynman_price * 0.99, 2) 
+        "comparative_plot": comparison_plot
     })
 
 @app.route('/api/gemini/optimize', methods=['POST'])
