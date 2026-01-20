@@ -294,6 +294,10 @@
                     <option value="AdaptiveSE">📊 Adaptive Spin Echo (Statistical)</option>
                     <option value="AdaptiveGRE">📊 Adaptive GRE (Ernst Angle)</option>
                     <option value="AdaptiveFLAIR">📊 Adaptive FLAIR (TI Optimized)</option>
+                    <option value="ZTE">Zero Echo Time (ZTE) - Bone</option>
+                    <option value="UTE">Ultra Short TE (UTE) - Connective</option>
+                    <option value="SWI">Susceptibility Weighted (SWI) - Venous</option>
+                    <option value="DWI">Diffusion Weighted (DWI) - Stroke</option>
                 </select>
             </div>
 
@@ -362,7 +366,7 @@
 
             <div class="control-group">
                 <label>Image Noise</label>
-                <input type="range" id="noise" min="0" max="0.2" step="0.01" value="0.02">
+                <input type="range" id="noise" min="0" max="0.2" step="0.01" value="0">
             </div>
 
             <button onclick="runSimulation()">Initiate System</button>
@@ -427,6 +431,10 @@
                     <div class="metric-mini">
                         <div class="metric-mini-val" id="entropyVal">--</div>
                         <div class="metric-mini-label">Entropy</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="noiseStdVal">--</div>
+                        <div class="metric-mini-label">Noise Floor (σ)</div>
                     </div>
                 </div>
             </div>
@@ -614,6 +622,7 @@
                     document.getElementById('contrastVal').textContent = data.metrics.contrast.toFixed(3);
                     document.getElementById('sharpnessVal').textContent = data.metrics.sharpness.toFixed(1);
                     document.getElementById('entropyVal').textContent = (data.metrics.entropy || 0).toFixed(3);
+                    document.getElementById('noiseStdVal').textContent = (data.metrics.background_noise_std || 0).toExponential(2);
                 }
             } catch (err) { alert('Core Link Fault'); }
             loader.style.display = 'none';
