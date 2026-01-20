@@ -267,7 +267,7 @@ def create_economic_projections(base_dir):
 def create_ultimate_report():
     """Create the ultimate comprehensive report"""
     
-    base_dir = '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstruction_sim'
+    base_dir = os.path.dirname(os.path.abspath(__file__))
     pdf_path = os.path.join(base_dir, 'Ultimate_Knee_MRI_Quantum_Report.pdf')
     
     # Create visualizations

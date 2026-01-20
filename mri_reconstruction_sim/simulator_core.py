@@ -1457,6 +1457,42 @@ class MRIReconstructionSimulator:
             # High T2/T1 ratio (Blood, CSF) -> higher signal
             denom = (1 + cos_a) + (1 - cos_a) * ratio
             M = self.pd_map * sin_a / denom
+
+        elif sequence_type == 'ZTE':
+            # Zero Echo Time - Captures short T2 components (Bone/Meniscus)
+            # T2* decay is negligible due to near-zero TE
+            t1 = np.maximum(self.t1_map, 1e-6)
+            alpha = np.radians(flip_angle) # Typically small (<5 deg)
+            E1 = np.exp(-TR / t1)
+            M = self.pd_map * ((1 - E1) * np.sin(alpha)) / (1 - E1 * np.cos(alpha))
+            noise_level *= 0.8 # Silent scanning advantage
+
+        elif sequence_type == 'UTE':
+            # Ultra Short TE - Similar to ZTE but with radial trajectory (simulated here via contrast)
+            t1 = np.maximum(self.t1_map, 1e-6)
+            t2_star = np.maximum(self.t2_map / 3, 1e-6) # Simulate fast decay components
+            M = self.pd_map * (1 - np.exp(-TR/t1)) * np.exp(-0.01 / t2_star) # TE ~ 10us
+
+        elif sequence_type == 'SWI':
+            # Susceptibility Weighted Imaging - Venous blood phase enhancement
+            # Enhances T2* contrast
+            t2_star = np.maximum(self.t2_map / 2, 1e-6)
+            magnitude = self.pd_map * np.exp(-TE / t2_star)
+            # Simulated Phase Mask (Venous structures dark)
+            phase_mask = np.ones_like(magnitude)
+            phase_mask[magnitude < 0.3 * np.max(magnitude)] = 0.5 # Darken veins
+            M = magnitude * (phase_mask ** 4) # Phase mask multiplication
+
+        elif sequence_type == 'DWI':
+             # Diffusion Weighted Imaging
+             # Simulate ADC map (Apparent Diffusion Coefficient) based on tissue type
+             # CSF (high ADC) -> Dark, Tissue (medium ADC) -> Grey, Stroke (low ADC) -> Bright
+            adc_map = np.zeros_like(self.t1_map)
+            adc_map[self.t1_map > 2000] = 3.0e-3 # CSF
+            adc_map[(self.t1_map > 600) & (self.t1_map <= 2000)] = 0.8e-3 # GM/WM
+            
+            b_value = 1000 # s/mm^2
+            M = self.pd_map * np.exp(-b_value * adc_map)
             
             # T2 Relaxation during TE (usually TE=TR/2)
             M = M * np.exp(-TE / T2_safe)
@@ -1824,9 +1860,25 @@ class MRIReconstructionSimulator:
         else:
             combined = np.abs(coil_images[0])
             
+        # Apply Quantum Surface Manifold Signal Boosting (universal)
+        try:
+            from advanced_reconstruction import QuantumManifoldSignalBooster
+            booster = QuantumManifoldSignalBooster()
+            combined = booster.boost_signal(combined)
+        except Exception as e:
+            print(f"Manifold Boosting Warning: {e}")
+
+        # Apply GPT-based signal enhancement (placeholder LLM)
+        try:
+            from advanced_reconstruction import GPTSignalEnhancer
+            gpt_enhancer = GPTSignalEnhancer()
+            combined = gpt_enhancer.enhance_signal(combined)
+        except Exception as e:
+            print(f"GPT Enhancement Warning: {e}")
+
         # Apply White Pixel Artifact Removal (User Requested)
         cleaned = self._remove_white_pixel_artifacts(combined)
-            
+
         return self._adaptive_windowing(cleaned), coil_images
 
     def _remove_white_pixel_artifacts(self, image):
@@ -1835,11 +1887,22 @@ class MRIReconstructionSimulator:
         Purely statistical method optimized for cloud performance.
         """
         try:
-            # 1. Gemini 3.0 Signal Enhancement
+            # 1. Supervised Machine Learning Artifact Prediction (Attention Network)
+            from advanced_reconstruction import SupervisedArtifactPredictor
+            predictor = SupervisedArtifactPredictor()
+            
+            # Predict artifact mask
+            artifact_mask = predictor.predict_artifact_mask(image)
+            
+            # Reduce artifacts using supervised mask
+            ml_cleaned_image = predictor.reduce_artifacts(image, artifact_mask)
+
+            # 2. Gemini 3.0 Signal Enhancement (Statistical Reasoning refinement)
             from advanced_reconstruction import Gemini3SignalEnhancer
             
             enhancer = Gemini3SignalEnhancer()
-            clean_image = enhancer.enhance_signal(image)
+            # Pass the ML-cleaned image to Gemini for final statistical polish
+            clean_image = enhancer.enhance_signal(ml_cleaned_image)
             
             return clean_image
 
@@ -1897,10 +1960,27 @@ class MRIReconstructionSimulator:
         grads = np.gradient(rec_norm)
         sharpness = np.mean(np.sqrt(grads[0]**2 + grads[1]**2))
         
+        # SNR Estimation
+        # Signal region: > 10% of max intensity
+        # Noise region: < 10% of max intensity (approximation for phantom)
+        signal_mask = rec_norm > 0.1
+        background_mask = rec_norm <= 0.1
+        
+        signal_mean = np.mean(rec_norm[signal_mask]) if np.any(signal_mask) else 0
+        background_std = np.std(rec_norm[background_mask]) if np.any(background_mask) else 1e-9
+        
+        # Avoid division by zero
+        if background_std < 1e-9: 
+            background_std = 1e-9
+            
+        snr_est = signal_mean / background_std
+
         return {
             "contrast": float(contrast),
             "sharpness": float(sharpness) * 100, # Scale up
-            "max_signal": float(np.max(reconstructed))
+            "max_signal": float(np.max(reconstructed)),
+            "snr_estimate": float(snr_est),
+            "background_noise_std": float(background_std)
         }
 
     def generate_signal_study(self, sequence_type):

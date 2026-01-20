@@ -403,7 +403,10 @@ def generate_innovative_sequence_report():
     protocol = optimizer.generate_optimal_protocol()
     
     # Save protocol
-    protocol_path = '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/quantum_game_protocol.json'
+    import os
+    # Save protocol
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    protocol_path = os.path.join(base_dir, 'quantum_game_protocol.json')
     with open(protocol_path, 'w') as f:
         json.dump(protocol, f, indent=2)
     

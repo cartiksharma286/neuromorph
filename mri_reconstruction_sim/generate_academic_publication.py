@@ -47,7 +47,7 @@ class NumberedCanvas(canvas.Canvas):
 def create_academic_publication():
     """Create academic publication in IEEE/Nature format"""
     
-    base_dir = '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstruction_sim'
+    base_dir = os.path.dirname(os.path.abspath(__file__))
     pdf_path = os.path.join(base_dir, 'Academic_Publication_Quantum_Game_MRI.pdf')
     
     # Create PDF

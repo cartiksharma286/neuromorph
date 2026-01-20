@@ -595,7 +595,7 @@ def create_cost_analysis_doc(base_dir, cost_data, circuit_image):
 if __name__ == '__main__':
     import os
     
-    base_dir = '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstruction_sim'
+    base_dir = os.path.dirname(os.path.abspath(__file__))
     
     print("=" * 80)
     print("GENERATING COIL CIRCUIT SCHEMATICS & ECONOMIC ANALYSIS")
