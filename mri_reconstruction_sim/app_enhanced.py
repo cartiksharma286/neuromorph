@@ -11,13 +11,7 @@ import numpy as np
 
 app = Flask(__name__)
 LATEST_CONTEXT = {}
-NVQLINK_STATUS = {
-    'enabled': False,
-    'bandwidth_gbps': 400,
-    'latency_ns': 12,
-    'quantum_state': 'Entangled',
-    'uptime_hours': 0
-}
+# NVQLink option removed per user request
 
 @app.route('/')
 def index():
@@ -25,7 +19,7 @@ def index():
 
 @app.route('/human_readable_status')
 def status():
-    return "MRI Simulator Online - Enhanced with Quantum Vascular Coils & NVQLink"
+    return "MRI Simulator Online - Enhanced with Quantum Vascular Coils"
 
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
@@ -39,16 +33,13 @@ def simulate():
         flip_angle = float(data.get('flip_angle', 30))
         coil_mode = data.get('coils', 'standard')
         num_coils = int(data.get('num_coils', 8))
-        noise = float(data.get('noise', 0.01))
+        noise = float(data.get('noise', 0.0))
         recon_method = data.get('recon_method', 'SoS')
         use_shimming = data.get('shimming', False)
         
         sim = MRIReconstructionSimulator(resolution=res)
         
-        # Enable NVQLink if requested
-        if data.get('nvqlink', False):
-            sim.nvqlink_enabled = True
-            NVQLINK_STATUS['enabled'] = True
+        # NVQLink disabled (removed per user request)
         
         phantom_type = 'brain'
         if coil_mode == 'cardiothoracic_array':
@@ -135,14 +126,28 @@ def render_cortical():
     try:
         sim = MRIReconstructionSimulator()
         pd_surface = sim.renderCorticalSurface2D()
-        metadata = sim.renderCorticalSurface3D()
+        
+        # We need to capture the 3D metadata if available, otherwise just use 2D info
+        if hasattr(sim, 'renderCorticalSurface3D'):
+            metadata = sim.renderCorticalSurface3D()
+        else:
+            metadata = {'geometry': '2D Projected Surface'}
+            
         import matplotlib.pyplot as plt
-        ax.set_title("Cortical Surface Reconstruction")
+        import io
+        import base64
+        
+        fig, ax = plt.subplots(figsize=(6, 6))
+        fig.patch.set_facecolor('#0f172a')
+        ax.imshow(pd_surface, cmap='magma')
+        ax.set_title("Cortical Surface Reconstruction", color='white')
         ax.axis('off')
+        
         buf = io.BytesIO()
         fig.savefig(buf, format='png', transparent=True, bbox_inches='tight')
         buf.seek(0)
         plt.close(fig)
+        
         plot_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
         return jsonify({"success": True, "plot": plot_b64, "metadata": metadata})
     except Exception as e:
@@ -188,7 +193,7 @@ def generate_adaptive_sequence():
     try:
         data = request.json or {}
         sequence_type = data.get('type', 'adaptive_se')
-        nvqlink_enabled = data.get('nvqlink', NVQLINK_STATUS['enabled'])
+        nvqlink_enabled = False  # NVQLink removed
         
         # Create adaptive sequence
         adaptive_seq = create_adaptive_sequence(sequence_type, nvqlink_enabled)
@@ -214,30 +219,12 @@ def generate_adaptive_sequence():
 @app.route('/api/nvqlink/status', methods=['GET'])
 def nvqlink_status():
     """Returns NVQLink status."""
-    try:
-        NVQLINK_STATUS['uptime_hours'] += 0.001
-        return jsonify({'success': True, 'nvqlink': NVQLINK_STATUS})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+# NVQLink status endpoint removed
 
 @app.route('/api/nvqlink/toggle', methods=['POST'])
 def nvqlink_toggle():
     """Toggles NVQLink on/off."""
-    try:
-        data = request.json or {}
-        enabled = data.get('enabled', not NVQLINK_STATUS['enabled'])
-        NVQLINK_STATUS['enabled'] = enabled
-        
-        if enabled:
-            NVQLINK_STATUS['quantum_state'] = 'Entangled'
-            NVQLINK_STATUS['latency_ns'] = 12
-        else:
-            NVQLINK_STATUS['quantum_state'] = 'Classical'
-            NVQLINK_STATUS['latency_ns'] = 150
-        
-        return jsonify({'success': True, 'nvqlink': NVQLINK_STATUS})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+# NVQLink toggle endpoint removed
 
 @app.route('/api/signal_reconstruction/coil_geometry', methods=['POST'])
 def signal_reconstruction_coil_geometry():
@@ -478,7 +465,7 @@ if __name__ == '__main__':
     print("  ✓ Quantum Vascular Coils (25 designs)")
     print("  ✓ 50-Turn Head Coil (3.2x SNR, 300μm resolution)")
     print("  ✓ Statistical Adaptive Pulse Sequences")
-    print("  ✓ NVQLink Quantum Communication (400 Gbps, 12ns latency)")
+
     print("  ✓ Ultra-High Resolution Neurovasculature")
     print("=" * 80)
     print("Server running on http://127.0.0.1:5050")
