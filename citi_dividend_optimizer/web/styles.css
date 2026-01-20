@@ -1,0 +1,223 @@
+:root {
+    --citi-blue: #003b70;
+    --citi-dark-blue: #002d56;
+    --citi-red: #da291c;
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --text-primary: #f8fafc;
+    --text-sec: #94a3b8;
+    --accent-cyan: #06b6d4;
+    --accent-green: #10b981;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+header {
+    background: rgba(15, 23, 42, 0.9);
+    border-bottom: 1px solid #334155;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(10px);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.citi-logo {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -1px;
+    position: relative;
+}
+
+.citi-logo::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 14px;
+    width: 20px;
+    height: 10px;
+    border-top: 3px solid var(--citi-red);
+    border-radius: 50% 50% 0 0;
+    transform: rotate(-10deg);
+}
+
+.app-name {
+    font-size: 1.1rem;
+    color: var(--text-sec);
+    border-left: 1px solid #334155;
+    padding-left: 1.5rem;
+}
+
+/* Dashboard Layout */
+.dashboard {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    flex: 1;
+    overflow: hidden;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+h3 {
+    color: var(--accent-cyan);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+}
+
+/* Controls */
+.control-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-sec);
+    margin-bottom: 0.5rem;
+}
+
+select {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid #475569;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, var(--citi-blue), var(--citi-dark-blue));
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 15px rgba(0, 59, 112, 0.5);
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    color: var(--text-sec);
+    font-size: 0.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #334155;
+}
+
+td {
+    padding: 0.75rem 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #1e293b;
+    color: #e2e8f0;
+}
+
+.holdings-table th {
+    padding: 1rem;
+    background: #1e293b;
+    position: sticky;
+    top: 0;
+}
+
+.holdings-table td {
+    padding: 1rem;
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+}
+
+.holdings-container {
+    flex: 1;
+    overflow-y: auto;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* NVQ Specifics */
+.nvq-panel .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.nvq-panel h3 {
+    margin: 0;
+}
+
+.badge {
+    background: rgba(6, 182, 212, 0.1);
+    color: var(--accent-cyan);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+tr {
+    animation: fadeIn 0.3s ease forwards;
+}

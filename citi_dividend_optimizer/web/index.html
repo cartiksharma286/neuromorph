@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citi Global Wealth | Dividend Optimizer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-container">
+            <div class="citi-logo">Citi</div>
+            <div class="app-name">Global Wealth | Statistical Dividend Optimizer</div>
+        </div>
+        <div class="user-status">
+            <span>NVQLink: <strong style="color:#00ff9d">ONLINE</strong></span>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="dashboard">
+
+        <!-- Left Panel: Controls & Market -->
+        <div class="panel left-panel">
+            <div class="card market-context">
+                <h3>Market Context</h3>
+                <div class="metric-row">
+                    <span class="label">SPX Trend</span>
+                    <span class="value" id="spxTrend">--</span>
+                </div>
+                <div class="metric-row">
+                    <span class="label">VIX</span>
+                    <span class="value" id="vixVal">--</span>
+                </div>
+            </div>
+
+            <div class="card optimizer-controls">
+                <h3>Portfolio Controls</h3>
+                <div class="control-group">
+                    <label>Risk Profile</label>
+                    <select id="riskProfile">
+                        <option value="conservative">Conservative (Income)</option>
+                        <option value="moderate" selected>Moderate (Growth & Inc)</option>
+                        <option value="aggressive">Aggressive (Total Return)</option>
+                    </select>
+                </div>
+                <button class="btn-primary" onclick="runOptimization()">
+                    Run Statistical Optimization
+                </button>
+            </div>
+
+            <div class="card nvq-panel">
+                <div class="card-header">
+                    <h3>💎 NVQLink Minerals</h3>
+                    <span class="badge">Elliptic Curve</span>
+                </div>
+                <table class="nvq-table" id="nvqTable">
+                    <thead>
+                        <tr>
+                            <th>Ore</th>
+                            <th>Spot</th>
+                            <th>Signal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3">Loading Link...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Panel: Results -->
+        <div class="panel right-panel">
+            <div class="results-header">
+                <h2>Optimized Allocation</h2>
+                <div class="model-badge">Model: Ridge Regression + NVQ Sensitivity</div>
+            </div>
+
+            <div class="holdings-container">
+                <table class="holdings-table">
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Sector</th>
+                            <th>ML Forecast (Ann.)</th>
+                            <th>Weight</th>
+                            <th>Value ($100k)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="holdingsBody">
+                        <tr>
+                            <td colspan="5" style="text-align:center; padding: 2rem;">Run optimization to generate
+                                portfolio.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
