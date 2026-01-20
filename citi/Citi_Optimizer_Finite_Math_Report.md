@@ -1,7 +1,7 @@
 # Finite Mathematics Report: Citi Optimizer & Quantum Trader
 
-**Date:** January 20, 2026  
-**Subject:** Mathematical Derivations of the Feynman-Path Integral Trading Algorithm  
+**Date:** January 20, 2026
+**Subject:** Mathematical Derivations of the Feynman-Path Integral Trading Algorithm
 **Application:** Citi Global Markets | Gemini Trader 3.0
 
 ---
