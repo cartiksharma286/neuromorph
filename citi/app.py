@@ -19,6 +19,11 @@ ASSETS = [
     {"symbol": "USD/JPY", "name": "US Dollar / Japanese Yen", "type": "Forex", "sector": "Currency", "currency": "JPY"},
     {"symbol": "USD/CAD", "name": "US Dollar / Canadian Dollar", "type": "Forex", "sector": "Currency", "currency": "CAD"},
     {"symbol": "AUD/USD", "name": "Aust. Dollar / USD", "type": "Forex", "sector": "Currency", "currency": "USD"},
+    {"symbol": "LITH", "name": "Lithium Carbonate", "type": "Commodity", "sector": "Minerals", "currency": "USD"},
+    {"symbol": "COBT", "name": "Cobalt Futures", "type": "Commodity", "sector": "Minerals", "currency": "USD"},
+    {"symbol": "NICK", "name": "Nickel Spot", "type": "Commodity", "sector": "Minerals", "currency": "USD"},
+    {"symbol": "VALE", "name": "Vale S.A.", "type": "Stock", "sector": "Mining", "currency": "USD"},
+    {"symbol": "RIO", "name": "Rio Tinto", "type": "Stock", "sector": "Mining", "currency": "USD"},
 ]
 
 @app.route('/')
@@ -35,21 +40,27 @@ def get_portfolio():
         base_price = 100.0
         if asset['type'] == 'Forex':
             base_price = 1.05 if 'EUR' in asset['symbol'] else 145.0 if 'JPY' in asset['symbol'] else 0.75
+        elif asset['type'] == 'Commodity':
+            base_price = 25000.0 if 'LITH' in asset['symbol'] else 30000.0 if 'COBT' in asset['symbol'] else 18000.0
         else:
-            base_price = random.uniform(150, 800)
+            base_price = random.uniform(50, 800)
             
-        volatility = 0.02 if asset['type'] == 'Forex' else 0.05
+        volatility = 0.02 if asset['type'] == 'Forex' else (0.08 if asset['type'] == 'Commodity' else 0.05)
         
         # Simulate current stats
-        change_pct = np.random.normal(0, 1.5)
+        change_pct = np.random.normal(0, 1.5 if asset['type'] != 'Commodity' else 3.0)
         current_price = base_price * (1 + change_pct/100)
         
-        # Beta calculation (Forex usually uncorrelated to S&P)
-        beta = round(random.uniform(0.8, 1.5), 2) if asset['type'] == 'Stock' else round(random.uniform(-0.2, 0.2), 2)
+        # Beta calculation
+        if asset['type'] == 'Stock':
+             beta = round(random.uniform(0.8, 1.5), 2)
+        elif asset['type'] == 'Commodity':
+             beta = round(random.uniform(0.5, 1.2), 2)
+        else:
+             beta = round(random.uniform(-0.2, 0.2), 2)
         
         # Simple signal generation
         ma_50 = base_price * (1 + np.random.normal(0, 0.02))
-        ma_200 = base_price * (1 + np.random.normal(0, 0.05))
         
         # AI Logic
         score = 50 + change_pct * 5 + (10 if current_price > ma_50 else -10)
@@ -74,7 +85,7 @@ def get_portfolio():
             "change": round(change_pct, 2),
             "stats": {
                 "beta": beta,
-                "volatility": f"{int(volatility*100 * (10 if asset['type']=='Forex' else 1))}%" # Scaling for display
+                "volatility": f"{int(volatility*100 * (10 if asset['type']=='Forex' else 1))}%" 
             },
             "ai_score": round(ai_confidence, 1),
             "recommendation": recommendation,
@@ -84,6 +95,51 @@ def get_portfolio():
     # Sort by AI Score
     portfolio.sort(key=lambda x: x['ai_score'], reverse=True)
     return jsonify(portfolio)
+
+@app.route('/api/minerals/strategy', methods=['POST'])
+def generate_mineral_strategy():
+    """
+    Generates a specialized trading strategy for Mineral Ores.
+    Includes Dividend Portfolio Optimization.
+    """
+    # 1. Select High-Yield Mining Stocks
+    mining_stocks = [
+        {"ticker": "RIO", "yield": 6.5, "price": 68.50, "volatility": 0.25},
+        {"ticker": "BHP", "yield": 5.8, "price": 59.20, "volatility": 0.22},
+        {"ticker": "VALE", "yield": 7.2, "price": 14.10, "volatility": 0.35},
+        {"ticker": "GLNCY", "yield": 4.5, "price": 10.80, "volatility": 0.28},
+        {"ticker": "SCCO", "yield": 3.2, "price": 75.40, "volatility": 0.20}
+    ]
+    
+    # 2. Simulate Dividend Optimization (Kevin's Method / Mean-Variance)
+    # Objective: Maximize Yield / Risk
+    optimized_portfolio = []
+    total_score = 0
+    
+    for stock in mining_stocks:
+        # Score = Yield / Volatility (Sharpe-like metric for income)
+        score = stock['yield'] / stock['volatility']
+        stock['score'] = score
+        total_score += score
+        
+    # Allocate based on score
+    for stock in mining_stocks:
+        weight = (stock['score'] / total_score) * 100
+        optimized_portfolio.append({
+            "ticker": stock['ticker'],
+            "dividend_yield": f"{stock['yield']}%",
+            "allocation": f"{weight:.1f}%",
+            "projected_income": f"${(100000 * (weight/100) * (stock['yield']/100)):,.2f} /yr",
+            "risk_adjusted_score": round(stock['score'], 2)
+        })
+        
+    return jsonify({
+        "strategy_name": "High-Yield Mineral Dividend Maximizer",
+        "description": "Optimizes allocation in major mining conglomerates to maximize dividend income while minimizing commodity cycle volatility.",
+        "target_yield": "5.9%",
+        "optimized_portfolio": optimized_portfolio,
+        "market_context": "Commodity Supercycle: Demand for battery metals (Lithium, Nickel) supports long-term valuations for diversified miners."
+    })
 
 @app.route('/api/connect_ibkr', methods=['POST'])
 def connect_ibkr():

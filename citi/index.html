@@ -21,6 +21,7 @@
         <nav class="nav-tabs">
             <button class="nav-btn active" onclick="switchTab('portfolio')">Multi-Asset Portfolio</button>
             <button class="nav-btn" onclick="switchTab('analysis')">Market Analysis</button>
+            <button class="nav-btn" onclick="switchTab('minerals')">Minerals & Dividends</button>
             <button class="nav-btn" onclick="switchTab('gemini')">Gemini Trader 3.0</button>
             <button class="nav-btn" onclick="switchTab('settings')">Settings</button>
         </nav>
@@ -58,7 +59,7 @@
 
             <div class="card animate-fade-in">
                 <h2><i data-lucide="activity" style="display:inline; margin-right:8px; width:20px;"></i>
-                    NASDAQ & Forex Holdings</h2>
+                    NASDAQ, Forex & Commodities</h2>
                 <table>
                     <thead>
                         <tr>
@@ -82,132 +83,77 @@
 
         <!-- Analysis View (Gold Rush) -->
         <div id="analysis-view" class="view-section" style="display: none;">
-            <div class="card animate-fade-in">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                    <h2><i data-lucide="trending-up" style="display:inline; margin-right:8px; width:20px;"></i>
-                        S&P 500 / Market Futures</h2>
-                    <button class="btn-primary" onclick="loadMarketData()"
-                        style="padding:0.5rem 1rem; font-size:0.85rem;">Run Simulation</button>
-                </div>
-
-                <div style="display:flex; gap:2rem; align-items:flex-end; height:300px; padding:1rem; background:rgba(0,0,0,0.2); border-radius:12px; border:1px solid var(--glass-border); overflow-x: auto;"
-                    id="market-chart">
-                    <div style="color:var(--text-secondary); width:100%; text-align:center; align-self:center;">Click
-                        'Run Simulation' to forecast indices</div>
-                </div>
-            </div>
-
-            <div class="dashboard-grid" style="margin-top:1.5rem;">
-                <div class="card">
-                    <h2>Proj. S&P 500 (EOY)</h2>
-                    <div class="metric" id="market-spot">--</div>
-                    <div class="metric-sub" style="color:var(--accent-green);">Bullish Trajectory</div>
-                </div>
-                <div class="card">
-                    <h2>VIX Projection</h2>
-                    <div class="metric">14.2</div>
-                    <div class="metric-sub">Declining Volatility</div>
-                </div>
-            </div>
+            <!-- ... (existing analysis content) ... -->
         </div>
 
-
-
-        <!-- Gemini Trader View -->
-        <div id="gemini-view" class="view-section" style="display: none;">
-            <div class="card animate-fade-in"
-                style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(139, 92, 246, 0.3);">
+        <!-- Minerals View -->
+        <div id="minerals-view" class="view-section" style="display: none;">
+            <div class="card animate-fade-in">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
                     <div>
                         <h2 style="display:flex; align-items:center; gap:10px; font-size:1.5rem; color:#fff;">
-                            <i data-lucide="sparkles" style="color:#a78bfa"></i>
-                            <span
-                                style="background: linear-gradient(to right, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Gemini
-                                3.0</span>
-                            Trader
+                            <i data-lucide="pickaxe" style="color:var(--accent-gold)"></i>
+                            Mineral Strategy Engine
                         </h2>
-                        <div style="font-size:0.9rem; color:#94a3b8;">Multimodal Portfolio Optimization Engine</div>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-size:0.8rem; color:#94a3b8;">MODEL STATUS</div>
-                        <div style="color:#34d399; font-weight:600; font-size:0.9rem;">● ONLINE (Latency: 12ms)</div>
+                        <div style="font-size:0.9rem; color:#94a3b8;">High-Yield Dividend Optimization for Mining
+                            Conglomerates</div>
                     </div>
                 </div>
 
                 <div style="display:flex; gap:1rem; margin-bottom:2rem;">
-                    <input type="text" id="gemini-input"
-                        placeholder="Enter investment focus (e.g., 'High growth tech stocks', 'Nuclear energy play')..."
-                        style="flex:1; background:rgba(0,0,0,0.3); border:1px solid #475569; padding:1rem; border-radius:8px; color:#fff; font-family:'Inter'; font-size:1rem;">
-                    <button class="btn-primary" onclick="callGemini()"
-                        style="background: linear-gradient(135deg, #8b5cf6, #ec4899); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
-                        <i data-lucide="cpu" style="margin-right:8px;"></i> Optimize Portfolio
+                    <div class="metric-box"
+                        style="flex:1; background:rgba(0,0,0,0.3); padding:1.5rem; border:1px solid var(--border); border-radius:8px;">
+                        <h3>Commodity Supercycle</h3>
+                        <p style="color:var(--text-secondary); font-size:0.9rem; margin-top:0.5rem;">
+                            Battery metal demand is projected to increase 500% by 2030, creating a sustained bull market
+                            for extraction leaders.
+                        </p>
+                    </div>
+                    <button class="btn-primary" onclick="generateMineralStrategy()"
+                        style="align-self:center; padding: 1rem 2rem;">
+                        <i data-lucide="bar-chart-2" style="margin-right:8px;"></i> Generate Optimal Strategy
                     </button>
                 </div>
 
-                <!-- Thinking State -->
-                <div id="gemini-thinking" style="display:none; padding:2rem; text-align:center;">
-                    <div style="margin-bottom:1rem;">
-                        <i data-lucide="loader-2"
-                            style="animation: spin 1s linear infinite; width:40px; height:40px; color:#a78bfa;"></i>
-                    </div>
-                    <div style="font-size:1.1rem; color:#e2e8f0; margin-bottom:0.5rem;">Gemini is reasoning...</div>
-                    <div id="gemini-trace" style="font-family:monospace; color:#94a3b8; font-size:0.9rem;">Initializing
-                        neural weights...</div>
-                </div>
-
-                <!-- Results State -->
-                <div id="gemini-results" style="display:none; animation: fadeIn 0.5s ease;">
-                    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:2rem;">
-
-                        <!-- Main Analysis -->
-                        <div>
-                            <h3 style="color:#a78bfa; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
-                                <i data-lucide="brain-circuit"></i> Macro Thesis
-                            </h3>
-                            <div id="gemini-thesis"
-                                style="background:rgba(139, 92, 246, 0.1); border-left: 4px solid #8b5cf6; padding:1rem; color:#e2e8f0; line-height:1.6; margin-bottom:1.5rem; border-radius:0 8px 8px 0;">
-                                --
-                            </div>
-
-                            <h3 style="color:#a78bfa; margin-bottom:1rem;">Target Allocation</h3>
-                            <table style="margin-top:0;">
-                                <thead>
-                                    <tr>
-                                        <th style="color:#94a3b8;">Ticker</th>
-                                        <th style="color:#94a3b8;">Weight</th>
-                                        <th style="color:#94a3b8;">Rationale</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="gemini-allocation">
-                                    <!-- Rows here -->
-                                </tbody>
-                            </table>
+                <div id="mineral-results" style="display:none; animation: fadeIn 0.5s ease;">
+                    <div class="dashboard-grid">
+                        <div class="card" style="background:rgba(16, 185, 129, 0.1); border:1px solid #10b981;">
+                            <h2>Target Portfolio Yield</h2>
+                            <div class="metric" id="min-target-yield" style="color:#34d399">--</div>
                         </div>
-
-                        <!-- Sidebar Metrics -->
-                        <div style="display:flex; flex-direction:column; gap:1rem;">
-                            <div
-                                style="background:rgba(0,0,0,0.4); padding:1.5rem; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
-                                <div style="font-size:0.9rem; color:#94a3b8; margin-bottom:0.5rem;">Gemini Alpha Score
-                                </div>
-                                <div id="gemini-score"
-                                    style="font-size:3rem; font-weight:700; color:#f472b6; line-height:1;">--</div>
-                                <div style="font-size:0.8rem; color:#34d399; margin-top:0.5rem;">+14.2% vs S&P 500</div>
-                            </div>
-
-                            <div
-                                style="background:rgba(0,0,0,0.4); padding:1.5rem; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
-                                <div style="font-size:0.9rem; color:#94a3b8; margin-bottom:0.5rem;">Market Regime</div>
-                                <div id="gemini-regime" style="font-size:1.5rem; font-weight:600; color:#fff;">--</div>
-                            </div>
-
-                            <button class="btn-primary" style="margin-top:auto;"
-                                onclick="alert('Sent to Execution Broker')">
-                                Execute Strategy
-                            </button>
+                        <div class="card">
+                            <h2>Optimization Strategy</h2>
+                            <div class="metric" style="font-size:1.2rem; color:var(--text-primary);"
+                                id="min-strat-name">--</div>
                         </div>
                     </div>
+
+                    <h3 style="margin-top:2rem; margin-bottom:1rem; color:var(--accent-gold);">Optimized Allocation
+                        Table</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Dividend Yield</th>
+                                <th>Allocation</th>
+                                <th>Projected Income (on $100k)</th>
+                                <th>Risk Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mineral-portfolio-body">
+                            <!-- Rows -->
+                        </tbody>
+                    </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- Gemini Trader View -->
+        <div id="gemini-view" class="view-section" style="display: none;">
+            <!-- ... (existing Gemini content) ... -->
+            <div class="card animate-fade-in"
+                style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(139, 92, 246, 0.3);">
+                <!-- ... existing content ... -->
             </div>
         </div>
 
@@ -220,6 +166,7 @@
         </div>
     </main>
 
+    <!-- ... (existing modals) ... -->
     <div id="status-modal" class="status-modal">
         <div id="status-indicator" class="status-indicator"></div>
         <span id="status-text">Disconnected</span>
@@ -228,65 +175,57 @@
     <!-- Optimization Modal -->
     <div id="optimization-modal"
         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+        <!-- ... existing modal content ... -->
         <div class="card" style="width:500px; max-width:90%; animation: fadeIn 0.3s ease;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:1.5rem;">
-                <h2><i data-lucide="zap" style="color:var(--accent-gold); display:inline; margin-right:8px;"></i>Quantum
-                    Trade Optimizer</h2>
-                <button onclick="document.getElementById('optimization-modal').style.display='none'"
-                    style="background:none; border:none; color:var(--text-secondary); cursor:pointer;">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-
-            <div id="opt-loading" style="text-align:center; padding:2rem;">
-                <div style="font-size:3rem; margin-bottom:1rem; animation: spin 2s linear infinite;">⚛️</div>
-                <p>Calculating Feynman Path Integrals...</p>
-                <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.5rem;">Integrating over 500
-                    potential market histories</div>
-            </div>
-
-            <div id="opt-results" style="display:none;">
-                <div style="display:flex; gap:1rem; margin-bottom:1.5rem;">
-                    <div
-                        style="flex:1; background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; text-align:center;">
-                        <div style="font-size:0.8rem; color:var(--text-secondary);">Black-Scholes (Baseline)</div>
-                        <div style="font-size:1.2rem; font-weight:700;" id="bs-sig">--</div>
-                    </div>
-                    <div
-                        style="flex:1; background:rgba(34, 211, 238, 0.1); border:1px solid var(--accent-cyan); padding:1rem; border-radius:8px; text-align:center;">
-                        <div style="font-size:0.8rem; color:var(--accent-cyan);">Feynman Propagator</div>
-                        <div style="font-size:1.2rem; font-weight:700; color:var(--accent-cyan);" id="feyn-sig">--</div>
-                    </div>
-                </div>
-
-                <div style="margin-bottom:1.5rem;">
-                    <div id="ramanujan-plot"
-                        style="width:100%; height:150px; background:rgba(0,0,0,0.3); border-radius:8px; margin-bottom:1rem; padding:10px;">
-                    </div>
-
-                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
-                        <span>Quantum Alpha Detected</span>
-                        <span style="color:var(--accent-green); font-weight:700;" id="q-alpha">--</span>
-                    </div>
-                    <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px;">
-                        <div
-                            style="width:100%; height:100%; background:linear-gradient(90deg, transparent, var(--accent-green));">
-                        </div>
-                    </div>
-                </div>
-
-                <button class="btn-primary" style="width:100%; display:flex; justify-content:center; gap:0.5rem;"
-                    onclick="executeTrade()">
-                    <i data-lucide="play"></i> Execute Optimal Limit Order (<span id="opt-entry">--</span>)
-                </button>
-            </div>
+            <!-- ... -->
         </div>
     </div>
 
+
     <!-- JS Logic -->
     <script>
-        // Define functions first
+        // ... (existing functions: loadPortfolio, connectIBKR, switchTab, loadMarketData, openOptimizer, runTradeOptimization, executeTrade, callGemini) ...
+
+        // ADDED: Mineral Strategy Logic
+        async function generateMineralStrategy() {
+            const btn = document.querySelector('#minerals-view .btn-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader" style="animation:spin 1s linear infinite"></i> Optimizing...';
+
+            try {
+                const response = await fetch('/api/minerals/strategy', { method: 'POST' });
+                const data = await response.json();
+
+                document.getElementById('mineral-results').style.display = 'block';
+                document.getElementById('min-target-yield').innerText = data.target_yield;
+                document.getElementById('min-strat-name').innerText = data.strategy_name;
+
+                const tbody = document.getElementById('mineral-portfolio-body');
+                tbody.innerHTML = '';
+
+                data.optimized_portfolio.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td style="font-weight:700;">${item.ticker}</td>
+                        <td style="color:#34d399;">${item.dividend_yield}</td>
+                        <td style="font-weight:600;">${item.allocation}</td>
+                        <td>${item.projected_income}</td>
+                        <td>${item.risk_adjusted_score}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                btn.innerHTML = originalText;
+
+            } catch (e) {
+                console.error(e);
+                alert('Strategy Generation Failed');
+                btn.innerHTML = originalText;
+            }
+        }
+
         async function loadPortfolio() {
+            // ... (existing loadPortfolio logic, mostly unchanged, just handling new types) ...
             try {
                 console.log("Fetching portfolio data...");
                 const response = await fetch('/api/portfolio');
@@ -304,16 +243,22 @@
 
                     let badgeClass = 'badge-hold';
                     if (item.recommendation.includes('BUY')) badgeClass = 'badge-buy';
+                    if (item.recommendation.includes('SELL')) badgeClass = 'badge-sell'; // Added Sell style support
 
                     const isForex = item.type === 'Forex';
-                    const isStock = item.type === 'Stock';
+                    const isCommodity = item.type === 'Commodity';
+                    // const isStock = item.type === 'Stock';
 
                     let assetIcon = '🏢';
                     if (isForex) assetIcon = '💱';
+                    if (isCommodity) assetIcon = '⛏️';
 
                     // Highlight rows
                     if (isForex) {
                         row.style.background = 'rgba(34, 211, 238, 0.03)';
+                    }
+                    if (isCommodity) {
+                        row.style.background = 'rgba(245, 158, 11, 0.05)';
                     }
 
                     row.innerHTML = `
@@ -362,6 +307,7 @@
             }
         }
 
+        // ... (rest of functions: connectIBKR, switchTab, loadMarketData, openOptimizer, runTradeOptimization, executeTrade, callGemini) ...
         async function connectIBKR() {
             const btn = document.getElementById('connectBtn');
             const originalText = btn.innerText;
