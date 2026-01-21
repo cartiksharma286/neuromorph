@@ -4,25 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Citibank | Global Markets</title>
+    <title>TraderBot_Can | AI Trading Assistant</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest"></script>
 </head>
 
 <body>
     <header>
         <div class="brand">
-            <i data-lucide="layers" style="color: var(--accent-cyan)"></i>
-            Citibank | <span>Global Markets</span>
+            <i data-lucide="bot" style="color: var(--accent-cyan)"></i>
+            TraderBot_Can | <span>AI Markets</span>
         </div>
         <nav class="nav-tabs">
             <button class="nav-btn active" onclick="switchTab('portfolio')">Multi-Asset Portfolio</button>
             <button class="nav-btn" onclick="switchTab('analysis')">Market Analysis</button>
             <button class="nav-btn" onclick="switchTab('minerals')">Minerals & Dividends</button>
-            <button class="nav-btn" onclick="switchTab('gemini')">Gemini Trader 3.0</button>
+
             <button class="nav-btn" onclick="switchTab('settings')">Settings</button>
         </nav>
         <div class="user-profile" style="display:flex; gap:1rem;">
@@ -156,169 +157,294 @@
                             <!-- Rows -->
                         </tbody>
                     </table>
+
+                    <!-- Derivatives Table -->
+                    <h3 style="margin-top:2rem; margin-bottom:1rem; color:var(--accent-cyan);">Derivatives Chain & Spot
+                        Targets (Real-Time)</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="color:#94a3b8">Asset</th>
+                                <th>Spot Price</th>
+                                <th>Trend</th>
+                                <th style="color:var(--accent-green)">Call (3M)</th>
+                                <th style="color:var(--accent-red)">Put (3M)</th>
+                                <th style="color:var(--accent-gold)">Entry</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="derivatives-body">
+                            <!-- Rows -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </div>
+        </div> <!-- End Minerals View -->
 
-        <!-- Gemini Trader View -->
-        <div id="gemini-view" class="view-section" style="display: none;">
-            <!-- ... (existing Gemini content) ... -->
-            <div class="card animate-fade-in"
-                style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(139, 92, 246, 0.3);">
-                <!-- ... existing content ... -->
-            </div>
-        </div>
-
-        <!-- Settings View -->
+        <!-- Settings View (For App Store Compliance) -->
         <div id="settings-view" class="view-section" style="display: none;">
             <div class="card animate-fade-in">
-                <h2>Settings</h2>
-                <p style="color:var(--text-secondary);">Configuration options coming soon.</p>
+                <h2>App Settings & Compliance</h2>
+                <div style="margin-top:1rem;">
+                    <h3 style="color:var(--text-secondary); font-size:0.9rem; text-transform:uppercase;">Legal</h3>
+                    <ul style="list-style:none; margin-top:0.5rem; display:flex; flex-direction:column; gap:10px;">
+                        <li>
+                            <a href="#"
+                                style="color:var(--accent-cyan); text-decoration:none; display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;">
+                                Privacy Policy <i data-lucide="chevron-right" style="width:16px;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#"
+                                style="color:var(--accent-cyan); text-decoration:none; display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px;">
+                                Terms of Use (EULA) <i data-lucide="chevron-right" style="width:16px;"></i>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <h3
+                        style="color:var(--text-secondary); font-size:0.9rem; text-transform:uppercase; margin-top:2rem;">
+                        Support</h3>
+                    <div style="margin-top:0.5rem; padding:1rem; background:rgba(255,255,255,0.05); border-radius:8px;">
+                        <p style="font-size:0.9rem; margin-bottom:0.5rem;">For support, please contact:</p>
+                        <a href="mailto:support@traderbotcan.com"
+                            style="color:var(--accent-gold);">support@traderbotcan.com</a>
+                    </div>
+
+                    <div style="margin-top:2rem; font-size:0.8rem; color:var(--text-secondary); text-align:center;">
+                        v1.0.0 (Build 2026.1)
+                    </div>
+                </div>
             </div>
         </div>
-    </main>
 
-    <!-- ... (existing modals) ... -->
-    <div id="status-modal" class="status-modal">
-        <div id="status-indicator" class="status-indicator"></div>
-        <span id="status-text">Disconnected</span>
-    </div>
+        <!-- ... (Gemini View) ... -->
 
-    <!-- Optimization Modal -->
-    <div id="optimization-modal"
-        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
-        <!-- ... existing modal content ... -->
-        <div class="card" style="width:500px; max-width:90%; animation: fadeIn 0.3s ease; position:relative;">
-            <button onclick="document.getElementById('optimization-modal').style.display='none'"
-                style="position:absolute; top:10px; right:15px; background:none; border:none; color:var(--text-secondary); cursor:pointer;">
-                <i data-lucide="x"></i>
-            </button>
-            <h2 style="margin-bottom:1.5rem; display:flex; align-items:center; gap:10px;">
-                <i data-lucide="zap" style="color:var(--accent-gold)"></i> Trade Optimizer
-            </h2>
 
-            <div id="opt-loading" style="text-align:center; padding:2rem;">
-                <i data-lucide="loader"
-                    style="animation:spin 1s linear infinite; width:32px; height:32px; color:var(--accent-cyan); margin-bottom:1rem;"></i>
-                <p>Running Feynman Path Integrals...</p>
-            </div>
-
-            <div id="opt-results" style="display:none;">
-                <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:1.5rem;">
-                    <div>
-                        <div class="metric-sub">Black-Scholes</div>
-                        <div class="metric" id="bs-sig" style="font-size:1.2rem;">--</div>
-                    </div>
-                    <div>
-                        <div class="metric-sub">Feynman Integral</div>
-                        <div class="metric" id="feyn-sig" style="font-size:1.2rem; color:var(--accent-cyan);">--</div>
-                    </div>
-                </div>
-
-                <div style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:8px; margin-bottom:1.5rem;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
-                        <span>Quantum Alpha</span>
-                        <span id="q-alpha" style="color:var(--accent-green)">--</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Optimal Entry</span>
-                        <span id="opt-entry" style="font-weight:bold;">--</span>
-                    </div>
-                </div>
-
-                <div id="ramanujan-plot"
-                    style="width:100%; height:100px; background:rgba(0,0,0,0.3); border-radius:4px; margin-bottom:1.5rem; position:relative;">
-                    <!-- SVG Plot will be injected here -->
-                </div>
-
-                <button class="btn-primary" onclick="executeTrade()" style="width:100%;">
-                    <i data-lucide="play"></i> Execute Optimal Limit Order
+        <!-- Optimisation Modal -->
+        <div id="optimization-modal"
+            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
+            <div class="card"
+                style="width:500px; max-width:90%; border:1px solid var(--accent-gold); position:relative;">
+                <button onclick="document.getElementById('optimization-modal').style.display='none'"
+                    style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-secondary); cursor:pointer;">
+                    <i data-lucide="x"></i>
                 </button>
+
+                <h2
+                    style="color:var(--text-primary); margin-bottom:1.5rem; display:flex; align-items:center; gap:10px;">
+                    <i data-lucide="cpu" style="color:var(--accent-cyan)"></i>
+                    Quantum Trade Optimizer
+                </h2>
+
+                <div id="opt-loading" style="text-align:center; padding:2rem;">
+                    <i data-lucide="loader"
+                        style="width:32px; height:32px; animation:spin 1s linear infinite; color:var(--accent-gold)"></i>
+                    <p style="margin-top:1rem; color:var(--text-secondary);">Calculating Feynman Path Integrals...</p>
+                </div>
+
+                <div id="opt-results" style="display:none;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+                        <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px;">
+                            <div style="font-size:0.8rem; color:var(--text-secondary);">Black-Scholes</div>
+                            <div id="bs-sig" style="font-size:1.2rem; font-weight:bold;">--</div>
+                        </div>
+                        <div
+                            style="background:rgba(34,211,238,0.1); padding:1rem; border-radius:8px; border:1px solid var(--accent-cyan);">
+                            <div style="font-size:0.8rem; color:var(--text-secondary);">Feynman Integral</div>
+                            <div id="feyn-sig" style="font-size:1.2rem; font-weight:bold; color:var(--accent-cyan);">--
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="ramanujan-plot" style="width:100%; height:120px; margin-bottom:1.5rem; position:relative;">
+                    </div>
+
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; padding-top:1rem; border-top:1px solid var(--glass-border);">
+                        <div>
+                            <div style="font-size:0.8rem; color:var(--text-secondary);">Optimal Entry</div>
+                            <div id="opt-entry" style="font-size:1.1rem; color:var(--accent-green);">--</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:0.8rem; color:var(--text-secondary);">Quantum Alpha</div>
+                            <div id="q-alpha" style="font-size:1.1rem; color:var(--accent-gold);">--</div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="executeTrade()"
+                        style="width:100%; display:flex; justify-content:center; align-items:center; gap:8px;">
+                        <i data-lucide="play"></i> Execute Optimal Limit Order
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 
+        <!-- Status Notification Modal -->
+        <div id="status-modal" class="status-modal">
+            <div id="status-indicator" class="status-indicator"></div>
+            <div id="status-text" style="font-size:0.9rem; font-weight:500;">System Ready</div>
+        </div>
+        <!-- JS Logic -->
+        <script>
+            // ... (existing functions) ...
 
-    <!-- JS Logic -->
-    <script>
-        // ... (existing functions: loadPortfolio, connectIBKR, switchTab, loadMarketData, openOptimizer, runTradeOptimization, executeTrade, callGemini) ...
+            // NEW: Place Order Function
+            async function placeOrder(ticker, action, price) {
+                const btnId = `btn-${action}-${ticker.replace(/[^a-zA-Z0-9]/g, '')}`;
+                const btn = document.getElementById(btnId);
+                const originalContent = btn ? btn.innerHTML : action;
 
-        // ADDED: Mineral Strategy Logic
-        async function generateMineralStrategy() {
-            const btn = document.querySelector('#minerals-view .btn-primary');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="loader" style="animation:spin 1s linear infinite"></i> Optimizing...';
+                if (btn) {
+                    btn.innerHTML = '<i data-lucide="loader" style="width:12px; animation:spin 1s linear infinite"></i>';
+                    btn.disabled = true;
+                }
 
-            try {
-                const response = await fetch('/api/minerals/strategy', { method: 'POST' });
-                const data = await response.json();
+                try {
+                    const response = await fetch('/api/trade/place', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ticker, action, price })
+                    });
+                    const result = await response.json();
 
-                document.getElementById('mineral-results').style.display = 'block';
-                document.getElementById('min-target-yield').innerText = data.target_yield;
-                document.getElementById('min-strat-name').innerText = data.strategy_name;
+                    // Show floating notification
+                    const modal = document.getElementById('status-modal');
+                    const text = document.getElementById('status-text');
+                    const indicator = document.getElementById('status-indicator');
 
-                const tbody = document.getElementById('mineral-portfolio-body');
-                tbody.innerHTML = '';
+                    modal.classList.add('visible');
+                    indicator.classList.remove('connected'); // Reset style
+                    indicator.style.background = action === 'BUY' ? 'var(--accent-green)' : 'var(--accent-red)';
+                    text.innerHTML = `<strong>${result.status}</strong>: ${ticker} ${action} @ ${result.filled_price}`;
 
-                data.optimized_portfolio.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
+                    setTimeout(() => modal.classList.remove('visible'), 4000);
+
+                } catch (e) {
+                    console.error(e);
+                    alert("Order Failed");
+                } finally {
+                    if (btn) {
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
+                    }
+                }
+            }
+
+            // ADDED: Mineral Strategy Logic
+            async function generateMineralStrategy() {
+                const btn = document.querySelector('#minerals-view .btn-primary');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="loader" style="animation:spin 1s linear infinite"></i> Optimizing...';
+
+                try {
+                    const response = await fetch('/api/minerals/strategy', { method: 'POST' });
+                    const data = await response.json();
+
+                    document.getElementById('mineral-results').style.display = 'block';
+                    document.getElementById('min-target-yield').innerText = data.target_yield;
+                    document.getElementById('min-strat-name').innerText = data.strategy_name;
+
+                    // 1. Populate Dividend Portfolio
+                    const tbody = document.getElementById('mineral-portfolio-body');
+                    tbody.innerHTML = '';
+
+                    data.optimized_portfolio.forEach(item => {
+                        const cleanTicker = item.ticker.replace(/[^a-zA-Z0-9]/g, '');
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
                         <td style="font-weight:700;">${item.ticker}</td>
                         <td style="color:#34d399;">${item.dividend_yield}</td>
                         <td style="font-weight:600;">${item.allocation}</td>
                         <td>${item.projected_income}</td>
-                        <td>${item.risk_adjusted_score}</td>
+                        <td>
+                             <button id="btn-BUY-${cleanTicker}" class="badge badge-buy" onclick="placeOrder('${item.ticker}', 'BUY', 'MKT')" style="cursor:pointer; border:1px solid var(--accent-green);">
+                                BUY
+                             </button>
+                        </td>
                     `;
-                    tbody.appendChild(row);
-                });
+                        tbody.appendChild(row);
+                    });
 
-                btn.innerHTML = originalText;
+                    // 2. Populate Derivatives Chain
+                    const derivBody = document.getElementById('derivatives-body');
+                    if (derivBody && data.derivatives_chain) {
+                        derivBody.innerHTML = '';
+                        data.derivatives_chain.forEach(item => {
+                            const cleanTicker = item.ticker.replace(/[^a-zA-Z0-9]/g, '');
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                            <td style="font-weight:700;">${item.ticker}</td>
+                            <td>${item.spot_price}</td>
+                            <td><span class="badge ${item.trend == 'BULLISH' ? 'badge-buy' : 'badge-sell'}">${item.trend}</span></td>
+                            <td>
+                                <div style="font-size:0.8rem; color:var(--text-secondary)">Strike: ${item.call_opt.strike}</div>
+                                <div style="color:var(--accent-green)">${item.call_opt.price}</div>
+                            </td>
+                            <td>
+                                <div style="font-size:0.8rem; color:var(--text-secondary)">Strike: ${item.put_opt.strike}</div>
+                                <div style="color:var(--accent-red)">${item.put_opt.price}</div>
+                            </td>
+                            <td><span style="border-bottom:1px solid var(--accent-gold);">${item.signals.entry}</span></td>
+                            <td>
+                                <div style="display:flex; gap:4px;">
+                                    <button id="btn-BUY-${cleanTicker}" class="badge badge-buy" onclick="placeOrder('${item.ticker}', 'BUY', '${item.spot_price}')" style="cursor:pointer; padding:4px 8px;">B</button>
+                                    <button id="btn-SELL-${cleanTicker}" class="badge badge-sell" onclick="placeOrder('${item.ticker}', 'SELL', '${item.spot_price}')" style="cursor:pointer; padding:4px 8px;">S</button>
+                                </div>
+                            </td>
+                        `;
+                            derivBody.appendChild(row);
+                        });
+                    }
 
-            } catch (e) {
-                console.error(e);
-                alert('Strategy Generation Failed');
-                btn.innerHTML = originalText;
+                    btn.innerHTML = originalText;
+                    if (window.lucide) window.lucide.createIcons();
+
+                } catch (e) {
+                    console.error(e);
+                    alert('Strategy Generation Failed');
+                    btn.innerHTML = originalText;
+                }
             }
-        }
 
-        async function loadPortfolio() {
-            // ... (existing loadPortfolio logic, mostly unchanged, just handling new types) ...
-            try {
-                console.log("Fetching portfolio data...");
-                const response = await fetch('/api/portfolio');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
-                console.log("Data received:", data);
+            async function loadPortfolio() {
+                // ... (existing loadPortfolio logic, mostly unchanged, just handling new types) ...
+                try {
+                    console.log("Fetching portfolio data...");
+                    const response = await fetch('/api/portfolio');
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+                    console.log("Data received:", data);
 
-                const tbody = document.getElementById('portfolio-body');
-                tbody.innerHTML = '';
+                    const tbody = document.getElementById('portfolio-body');
+                    tbody.innerHTML = '';
 
-                data.forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    row.style.animation = `fadeIn 0.3s ease forwards ${index * 0.1}s`;
-                    row.style.opacity = '0'; // Initial state for animation
+                    data.forEach((item, index) => {
+                        const row = document.createElement('tr');
+                        row.style.animation = `fadeIn 0.3s ease forwards ${index * 0.1}s`;
+                        row.style.opacity = '0'; // Initial state for animation
 
-                    let badgeClass = 'badge-hold';
-                    if (item.recommendation.includes('BUY')) badgeClass = 'badge-buy';
-                    if (item.recommendation.includes('SELL')) badgeClass = 'badge-sell'; // Added Sell style support
+                        let badgeClass = 'badge-hold';
+                        if (item.recommendation.includes('BUY')) badgeClass = 'badge-buy';
+                        if (item.recommendation.includes('SELL')) badgeClass = 'badge-sell'; // Added Sell style support
 
-                    const isForex = item.type === 'Forex';
-                    const isCommodity = item.type === 'Commodity';
-                    // const isStock = item.type === 'Stock';
+                        const isForex = item.type === 'Forex';
+                        const isCommodity = item.type === 'Commodity';
+                        // const isStock = item.type === 'Stock';
 
-                    let assetIcon = '🏢';
-                    if (isForex) assetIcon = '💱';
-                    if (isCommodity) assetIcon = '⛏️';
+                        let assetIcon = '🏢';
+                        if (isForex) assetIcon = '💱';
+                        if (isCommodity) assetIcon = '⛏️';
 
-                    // Highlight rows
-                    if (isForex) {
-                        row.style.background = 'rgba(34, 211, 238, 0.03)';
-                    }
-                    if (isCommodity) {
-                        row.style.background = 'rgba(245, 158, 11, 0.05)';
-                    }
+                        // Highlight rows
+                        if (isForex) {
+                            row.style.background = 'rgba(34, 211, 238, 0.03)';
+                        }
+                        if (isCommodity) {
+                            row.style.background = 'rgba(245, 158, 11, 0.05)';
+                        }
 
-                    row.innerHTML = `
+                        row.innerHTML = `
                         <td style="font-weight:600; color:var(--text-primary)">
                             ${item.ticker}
                             <div style="font-size:0.75rem; color:var(--text-secondary)">${item.type}</div>
@@ -352,231 +478,231 @@
                         <td><span class="badge ${badgeClass}" style="${item.recommendation.includes('BUY') ? 'background:rgba(34, 211, 238, 0.2); color:var(--accent-cyan); border:1px solid var(--accent-cyan)' : ''}">${item.recommendation}</span></td>
                         <td>${item.suggested_allocation}</td>
                     `;
-                    tbody.appendChild(row);
-                });
+                        tbody.appendChild(row);
+                    });
 
-                // Refresh icons
-                if (window.lucide) window.lucide.createIcons();
-            } catch (err) {
-                console.error("Failed to load portfolio", err);
-                const tbody = document.getElementById('portfolio-body');
-                if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="color: #ef4444; text-align: center;">Error loading data: ${err.message}. Ensure backend is running.</td></tr>`;
+                    // Refresh icons
+                    if (window.lucide) window.lucide.createIcons();
+                } catch (err) {
+                    console.error("Failed to load portfolio", err);
+                    const tbody = document.getElementById('portfolio-body');
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="color: #ef4444; text-align: center;">Error loading data: ${err.message}. Ensure backend is running.</td></tr>`;
+                }
             }
-        }
 
-        // ... (rest of functions: connectIBKR, switchTab, loadMarketData, openOptimizer, runTradeOptimization, executeTrade, callGemini) ...
-        async function connectIBKR() {
-            const btn = document.getElementById('connectBtn');
-            const originalText = btn.innerText;
-            btn.innerText = "Connecting...";
-            btn.disabled = true;
+            // ... (rest of functions: connectIBKR, switchTab, loadMarketData, openOptimizer, runTradeOptimization, executeTrade, callGemini) ...
+            async function connectIBKR() {
+                const btn = document.getElementById('connectBtn');
+                const originalText = btn.innerText;
+                btn.innerText = "Connecting...";
+                btn.disabled = true;
 
-            try {
-                const response = await fetch('/api/connect_ibkr', { method: 'POST' });
-                const result = await response.json();
+                try {
+                    const response = await fetch('/api/connect_ibkr', { method: 'POST' });
+                    const result = await response.json();
 
-                const modal = document.getElementById('status-modal');
-                const indicator = document.getElementById('status-indicator');
-                const text = document.getElementById('status-text');
+                    const modal = document.getElementById('status-modal');
+                    const indicator = document.getElementById('status-indicator');
+                    const text = document.getElementById('status-text');
 
-                modal.classList.add('visible');
+                    modal.classList.add('visible');
 
-                if (result.status === 'connected') {
-                    btn.innerText = "NVQLink Active";
-                    btn.style.background = "rgba(52, 211, 153, 0.2)";
-                    btn.style.color = "#34d399";
-                    btn.style.border = "1px solid #34d399";
+                    if (result.status === 'connected') {
+                        btn.innerText = "NVQLink Active";
+                        btn.style.background = "rgba(52, 211, 153, 0.2)";
+                        btn.style.color = "#34d399";
+                        btn.style.border = "1px solid #34d399";
 
-                    indicator.classList.add('connected');
-                    text.innerText = result.message;
+                        indicator.classList.add('connected');
+                        text.innerText = result.message;
 
-                    setTimeout(() => { modal.classList.remove('visible'); }, 3000);
-                } else {
+                        setTimeout(() => { modal.classList.remove('visible'); }, 3000);
+                    } else {
+                        btn.innerText = "Retry Connection";
+                        btn.disabled = false;
+                        text.innerText = "Connection Failed";
+                    }
+                } catch (e) {
+                    console.error(e);
                     btn.innerText = "Retry Connection";
                     btn.disabled = false;
-                    text.innerText = "Connection Failed";
                 }
-            } catch (e) {
-                console.error(e);
-                btn.innerText = "Retry Connection";
-                btn.disabled = false;
             }
-        }
 
-        function switchTab(tabName) {
-            // Update Tab Buttons
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            // Find the button that called this, or find by onclick attribute if programmatic
-            const buttons = Array.from(document.querySelectorAll('.nav-btn'));
-            const activeBtn = buttons.find(b => b.getAttribute('onclick').includes(tabName));
-            if (activeBtn) activeBtn.classList.add('active');
+            function switchTab(tabName) {
+                // Update Tab Buttons
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                // Find the button that called this, or find by onclick attribute if programmatic
+                const buttons = Array.from(document.querySelectorAll('.nav-btn'));
+                const activeBtn = buttons.find(b => b.getAttribute('onclick').includes(tabName));
+                if (activeBtn) activeBtn.classList.add('active');
 
-            // Update Views
-            document.querySelectorAll('.view-section').forEach(view => {
-                view.style.display = 'none';
-            });
-
-            const targetView = document.getElementById(`${tabName}-view`);
-            if (targetView) {
-                targetView.style.display = 'block';
-                // Re-trigger animations
-                targetView.querySelectorAll('.animate-fade-in').forEach(el => {
-                    el.style.animation = 'none';
-                    el.offsetHeight; /* trigger reflow */
-                    el.style.animation = 'fadeIn 0.5s ease forwards';
+                // Update Views
+                document.querySelectorAll('.view-section').forEach(view => {
+                    view.style.display = 'none';
                 });
 
-                // Load Data for specific tabs
-                if (tabName === 'analysis') {
-                    loadMarketData();
+                const targetView = document.getElementById(`${tabName}-view`);
+                if (targetView) {
+                    targetView.style.display = 'block';
+                    // Re-trigger animations
+                    targetView.querySelectorAll('.animate-fade-in').forEach(el => {
+                        el.style.animation = 'none';
+                        el.offsetHeight; /* trigger reflow */
+                        el.style.animation = 'fadeIn 0.5s ease forwards';
+                    });
+
+                    // Load Data for specific tabs
+                    if (tabName === 'analysis') {
+                        loadMarketData();
+                    }
+
+                    // Re-init icons if needed
+                    if (window.lucide) window.lucide.createIcons();
                 }
-
-                // Re-init icons if needed
-                if (window.lucide) window.lucide.createIcons();
             }
-        }
 
-        async function loadMarketData() {
-            const chartDiv = document.getElementById('market-chart');
-            chartDiv.innerHTML = '<div style="color:var(--text-secondary); width:100%; text-align:center; align-self:center;">Running probabilistic models (S&P 500, Lithium, VIX)...</div>';
+            async function loadMarketData() {
+                const chartDiv = document.getElementById('market-chart');
+                chartDiv.innerHTML = '<div style="color:var(--text-secondary); width:100%; text-align:center; align-self:center;">Running probabilistic models (S&P 500, Lithium, VIX)...</div>';
 
-            try {
-                const response = await fetch('/api/market_data');
-                const data = await response.json();
+                try {
+                    const response = await fetch('/api/market_data');
+                    const data = await response.json();
 
-                chartDiv.innerHTML = ''; // Clear loading
+                    chartDiv.innerHTML = ''; // Clear loading
 
-                // We'll render S&P 500 (Bars) and Lithium (Line Overlay) in this simplified view
-                const spData = data.sp500;
+                    // We'll render S&P 500 (Bars) and Lithium (Line Overlay) in this simplified view
+                    const spData = data.sp500;
 
-                // Find min/max for scaling S&P
-                const prices = spData.map(d => d.price);
-                const maxPrice = Math.max(...prices);
-                const minPrice = Math.min(...prices);
+                    // Find min/max for scaling S&P
+                    const prices = spData.map(d => d.price);
+                    const maxPrice = Math.max(...prices);
+                    const minPrice = Math.min(...prices);
 
-                // Render Bars (S&P)
-                spData.forEach((point, i) => {
-                    // Normalization
-                    const heightPct = ((point.price - (minPrice * 0.95)) / (maxPrice - (minPrice * 0.95))) * 100;
+                    // Render Bars (S&P)
+                    spData.forEach((point, i) => {
+                        // Normalization
+                        const heightPct = ((point.price - (minPrice * 0.95)) / (maxPrice - (minPrice * 0.95))) * 100;
 
-                    const bar = document.createElement('div');
-                    bar.style.flex = '1';
-                    bar.style.minWidth = '40px';
-                    bar.style.background = 'linear-gradient(to top, var(--accent-gold), #fef08a)';
-                    bar.style.height = '0%'; // Start at 0 for animation
-                    bar.style.borderRadius = '4px 4px 0 0';
-                    bar.style.opacity = '0.8';
-                    bar.style.transition = 'height 1s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                    bar.style.position = 'relative';
-                    bar.style.cursor = 'pointer';
+                        const bar = document.createElement('div');
+                        bar.style.flex = '1';
+                        bar.style.minWidth = '40px';
+                        bar.style.background = 'linear-gradient(to top, var(--accent-gold), #fef08a)';
+                        bar.style.height = '0%'; // Start at 0 for animation
+                        bar.style.borderRadius = '4px 4px 0 0';
+                        bar.style.opacity = '0.8';
+                        bar.style.transition = 'height 1s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                        bar.style.position = 'relative';
+                        bar.style.cursor = 'pointer';
 
-                    // Tooltip
-                    const tooltip = document.createElement('div');
-                    tooltip.innerHTML = `
+                        // Tooltip
+                        const tooltip = document.createElement('div');
+                        tooltip.innerHTML = `
                         <div style="font-weight:bold">${point.month}</div>
                         <div>S&P: $${point.price}</div>
                         <div style="color:#a78bfa">Lithium: $${data.lithium[i].price}</div>
                         <div style="color:#f472b6">VIX: ${data.vix[i].price}</div>
                     `;
-                    tooltip.style.position = 'absolute';
-                    tooltip.style.bottom = '100%';
-                    tooltip.style.left = '50%';
-                    tooltip.style.transform = 'translateX(-50%)';
-                    tooltip.style.background = 'var(--bg-dark)';
-                    tooltip.style.padding = '6px 10px';
-                    tooltip.style.borderRadius = '4px';
-                    tooltip.style.fontSize = '0.75rem';
-                    tooltip.style.whiteSpace = 'nowrap';
-                    tooltip.style.border = '1px solid var(--accent-gold)';
-                    tooltip.style.marginBottom = '4px';
-                    tooltip.style.display = 'none';
-                    tooltip.style.zIndex = '10';
-                    bar.appendChild(tooltip);
+                        tooltip.style.position = 'absolute';
+                        tooltip.style.bottom = '100%';
+                        tooltip.style.left = '50%';
+                        tooltip.style.transform = 'translateX(-50%)';
+                        tooltip.style.background = 'var(--bg-dark)';
+                        tooltip.style.padding = '6px 10px';
+                        tooltip.style.borderRadius = '4px';
+                        tooltip.style.fontSize = '0.75rem';
+                        tooltip.style.whiteSpace = 'nowrap';
+                        tooltip.style.border = '1px solid var(--accent-gold)';
+                        tooltip.style.marginBottom = '4px';
+                        tooltip.style.display = 'none';
+                        tooltip.style.zIndex = '10';
+                        bar.appendChild(tooltip);
 
-                    bar.onmouseenter = () => { bar.style.opacity = '1'; tooltip.style.display = 'block'; };
-                    bar.onmouseleave = () => { bar.style.opacity = '0.8'; tooltip.style.display = 'none'; };
+                        bar.onmouseenter = () => { bar.style.opacity = '1'; tooltip.style.display = 'block'; };
+                        bar.onmouseleave = () => { bar.style.opacity = '0.8'; tooltip.style.display = 'none'; };
 
-                    chartDiv.appendChild(bar);
+                        chartDiv.appendChild(bar);
 
-                    // Animate in
-                    setTimeout(() => {
-                        bar.style.height = `${heightPct}%`;
-                    }, i * 100);
-                });
+                        // Animate in
+                        setTimeout(() => {
+                            bar.style.height = `${heightPct}%`;
+                        }, i * 100);
+                    });
 
-                // Update Spot Summaries
-                document.getElementById('market-spot').innerText = `$${data.meta.sp_target}`;
-                // Update VIX Card if exists (assuming existing structure)
+                    // Update Spot Summaries
+                    document.getElementById('market-spot').innerText = `$${data.meta.sp_target}`;
+                    // Update VIX Card if exists (assuming existing structure)
 
-                // Add Lithium Metric Card dynamically if not present
-                const parentGrid = document.querySelector('#analysis-view .dashboard-grid');
-                if (!document.getElementById('lithium-card')) {
-                    const div = document.createElement('div');
-                    div.className = 'card';
-                    div.id = 'lithium-card';
-                    div.innerHTML = `
+                    // Add Lithium Metric Card dynamically if not present
+                    const parentGrid = document.querySelector('#analysis-view .dashboard-grid');
+                    if (!document.getElementById('lithium-card')) {
+                        const div = document.createElement('div');
+                        div.className = 'card';
+                        div.id = 'lithium-card';
+                        div.innerHTML = `
                         <h2>Lithium (Forecast)</h2>
                         <div class="metric">$${data.meta.lithium_target}</div>
                         <div class="metric-sub" style="color:var(--accent-cyan);">Battery Demand Surge</div>
                      `;
-                    parentGrid.appendChild(div);
+                        parentGrid.appendChild(div);
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    chartDiv.innerHTML = '<div style="color:var(--accent-red); width:100%; text-align:center; align-self:center;">Simulation Failed</div>';
                 }
-
-            } catch (err) {
-                console.error(err);
-                chartDiv.innerHTML = '<div style="color:var(--accent-red); width:100%; text-align:center; align-self:center;">Simulation Failed</div>';
             }
-        }
 
-        function openOptimizer() {
-            document.getElementById('optimization-modal').style.display = 'flex';
-            document.getElementById('opt-loading').style.display = 'block';
-            document.getElementById('opt-results').style.display = 'none';
+            function openOptimizer() {
+                document.getElementById('optimization-modal').style.display = 'flex';
+                document.getElementById('opt-loading').style.display = 'block';
+                document.getElementById('opt-results').style.display = 'none';
 
-            // Trigger Optimization automatically when opened
-            runTradeOptimization();
-        }
+                // Trigger Optimization automatically when opened
+                runTradeOptimization();
+            }
 
-        async function runTradeOptimization() {
-            try {
-                const response = await fetch('/api/optimize_trade', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ticker: 'NVDA' })
-                });
-                const data = await response.json();
+            async function runTradeOptimization() {
+                try {
+                    const response = await fetch('/api/optimize_trade', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ticker: 'NVDA' })
+                    });
+                    const data = await response.json();
 
-                setTimeout(() => {
-                    document.getElementById('opt-loading').style.display = 'none';
-                    document.getElementById('opt-results').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('opt-loading').style.display = 'none';
+                        document.getElementById('opt-results').style.display = 'block';
 
-                    document.getElementById('bs-sig').innerText = `$${data.bs_signature}`;
-                    document.getElementById('feyn-sig').innerText = `$${data.feynman_integral}`;
-                    document.getElementById('q-alpha').innerText = data.quantum_alpha;
-                    document.getElementById('opt-entry').innerText = `$${data.optimal_entry}`;
+                        document.getElementById('bs-sig').innerText = `$${data.bs_signature}`;
+                        document.getElementById('feyn-sig').innerText = `$${data.feynman_integral}`;
+                        document.getElementById('q-alpha').innerText = data.quantum_alpha;
+                        document.getElementById('opt-entry').innerText = `$${data.optimal_entry}`;
 
-                    // Render Comparison Visualization (BS vs Feynman)
-                    const plotDiv = document.getElementById('ramanujan-plot');
-                    if (plotDiv) {
-                        const plotData = data.comparative_plot;
-                        const width = plotDiv.clientWidth || 450;
-                        const height = 120;
+                        // Render Comparison Visualization (BS vs Feynman)
+                        const plotDiv = document.getElementById('ramanujan-plot');
+                        if (plotDiv) {
+                            const plotData = data.comparative_plot;
+                            const width = plotDiv.clientWidth || 450;
+                            const height = 120;
 
-                        const maxVal = Math.max(...plotData.map(d => Math.max(d.bs_val, d.feynman_val))) || 100;
-                        const minVal = Math.min(...plotData.map(d => Math.min(d.bs_val, d.feynman_val))) * 0.98 || 90;
+                            const maxVal = Math.max(...plotData.map(d => Math.max(d.bs_val, d.feynman_val))) || 100;
+                            const minVal = Math.min(...plotData.map(d => Math.min(d.bs_val, d.feynman_val))) * 0.98 || 90;
 
-                        // Scale function
-                        const getX = (i) => (i / (plotData.length - 1)) * width;
-                        const getY = (val) => height - ((val - minVal) / (maxVal - minVal)) * height;
+                            // Scale function
+                            const getX = (i) => (i / (plotData.length - 1)) * width;
+                            const getY = (val) => height - ((val - minVal) / (maxVal - minVal)) * height;
 
-                        let bsPath = `M 0 ${getY(data.bs_signature)} `;
-                        plotData.forEach((d, i) => bsPath += `L ${getX(i)} ${getY(d.bs_val)} `);
+                            let bsPath = `M 0 ${getY(data.bs_signature)} `;
+                            plotData.forEach((d, i) => bsPath += `L ${getX(i)} ${getY(d.bs_val)} `);
 
-                        let feynPath = `M 0 ${getY(data.feynman_integral)} `;
-                        plotData.forEach((d, i) => feynPath += `L ${getX(i)} ${getY(d.feynman_val)} `);
+                            let feynPath = `M 0 ${getY(data.feynman_integral)} `;
+                            plotData.forEach((d, i) => feynPath += `L ${getX(i)} ${getY(d.feynman_val)} `);
 
-                        // SVG Graph
-                        plotDiv.innerHTML = `
+                            // SVG Graph
+                            plotDiv.innerHTML = `
                             <svg width="100%" height="${height}" style="overflow:visible;" viewBox="0 0 ${width} ${height}">
                                 <!-- Grid -->
                                 <line x1="0" y1="${height}" x2="${width}" y2="${height}" stroke="rgba(255,255,255,0.1)" />
@@ -595,125 +721,55 @@
                                 <span style="color:var(--accent-green)">Quantum Alpha: ${data.quantum_alpha}</span>
                             </div>
                         `;
-                    }
+                        }
 
-                }, 2000);
+                    }, 2000);
 
-            } catch (e) {
-                console.error(e);
-                document.getElementById('opt-loading').innerHTML = '<span style="color:var(--accent-red)">Optimization Failed</span>';
+                } catch (e) {
+                    console.error(e);
+                    document.getElementById('opt-loading').innerHTML = '<span style="color:var(--accent-red)">Optimization Failed</span>';
+                }
             }
-        }
 
-        function executeTrade() {
-            const btn = document.querySelector('#opt-results .btn-primary');
-            btn.innerHTML = '<i data-lucide="loader" style="animation:spin 1s linear infinite"></i> Routing to NVQLink...';
-
-            setTimeout(() => {
-                btn.innerHTML = '<i data-lucide="check"></i> Order Filled';
-                btn.style.background = 'var(--accent-green)';
-
-                // Show notification modal
-                const modal = document.getElementById('status-modal');
-                const indicator = document.getElementById('status-indicator');
-                const text = document.getElementById('status-text');
-
-                modal.classList.add('visible');
-                indicator.classList.add('connected');
-                text.innerText = "Order Executed via NVQLink";
+            function executeTrade() {
+                const btn = document.querySelector('#opt-results .btn-primary');
+                btn.innerHTML = '<i data-lucide="loader" style="animation:spin 1s linear infinite"></i> Routing to NVQLink...';
 
                 setTimeout(() => {
-                    modal.classList.remove('visible');
-                    document.getElementById('optimization-modal').style.display = 'none';
-                    // Reset button state
-                    btn.innerHTML = '<i data-lucide="play"></i> Execute Optimal Limit Order';
-                    btn.style.background = '';
-                }, 2000);
-            }, 1500);
-        }
+                    btn.innerHTML = '<i data-lucide="check"></i> Order Filled';
+                    btn.style.background = 'var(--accent-green)';
 
+                    // Show notification modal
+                    const modal = document.getElementById('status-modal');
+                    const indicator = document.getElementById('status-indicator');
+                    const text = document.getElementById('status-text');
 
-        async function callGemini() {
-            const input = document.getElementById('gemini-input').value;
-            const thinking = document.getElementById('gemini-thinking');
-            const results = document.getElementById('gemini-results');
-            const trace = document.getElementById('gemini-trace');
+                    modal.classList.add('visible');
+                    indicator.classList.add('connected');
+                    text.innerText = "Order Executed via NVQLink";
 
-            if (!input) {
-                alert("Please enter a focus area.");
-                return;
+                    setTimeout(() => {
+                        modal.classList.remove('visible');
+                        document.getElementById('optimization-modal').style.display = 'none';
+                        // Reset button state
+                        btn.innerHTML = '<i data-lucide="play"></i> Execute Optimal Limit Order';
+                        btn.style.background = '';
+                    }, 2000);
+                }, 1500);
             }
 
-            results.style.display = 'none';
-            thinking.style.display = 'block';
 
-            // Simulate trace updates
-            const traces = [
-                "Ingesting real-time market data...",
-                "Running Monte Carlo simulations...",
-                "Synthesizing analyst reports...",
-                "Optimizing for Sharpe Ratio..."
-            ];
 
-            let t = 0;
-            const traceInterval = setInterval(() => {
-                if (t < traces.length) {
-                    trace.innerText = traces[t];
-                    t++;
+
+
+            // Initialize safely
+            document.addEventListener('DOMContentLoaded', () => {
+                if (window.lucide) {
+                    try { window.lucide.createIcons(); } catch (e) { console.warn("Lucide init error", e); }
                 }
-            }, 500);
-
-            try {
-                const response = await fetch('/api/gemini/optimize', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ context: input })
-                });
-
-                const data = await response.json();
-
-                clearInterval(traceInterval);
-                thinking.style.display = 'none';
-                results.style.display = 'block';
-
-                // Populate data
-                document.getElementById('gemini-thesis').innerText = data.analysis.macro_thesis;
-                document.getElementById('gemini-score').innerText = data.gemini_alpha_score;
-                document.getElementById('gemini-regime').innerText = data.market_regime;
-
-                const tbody = document.getElementById('gemini-allocation');
-                tbody.innerHTML = '';
-
-                data.analysis.suggested_allocation.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td style="font-weight:bold; color:#fff;">${item.ticker}</td>
-                        <td style="color:#a78bfa;">${item.weight}</td>
-                        <td style="color:#cbd5e1; font-size:0.9rem;">${item.reason}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-
-                if (window.lucide) window.lucide.createIcons();
-
-            } catch (e) {
-                console.error(e);
-                clearInterval(traceInterval);
-                thinking.style.display = 'none';
-                trace.innerText = "Error contacting Gemini Neural Core.";
-                alert("Optimization Failed");
-            }
-        }
-
-
-        // Initialize safely
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.lucide) {
-                try { window.lucide.createIcons(); } catch (e) { console.warn("Lucide init error", e); }
-            }
-            loadPortfolio();
-        });
-    </script>
+                loadPortfolio();
+            });
+        </script>
 </body>
 
 </html>
