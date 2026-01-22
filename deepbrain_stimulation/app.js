@@ -3,7 +3,7 @@
  * Handles navigation, API communication, and module coordination
  */
 
-const API_BASE = 'http://127.0.0.1:5001/api';
+const API_BASE = '/api';
 
 class DBSApplication {
     constructor() {
@@ -32,9 +32,6 @@ class DBSApplication {
         }
         if (typeof ClinicalDashboard !== 'undefined') {
             window.clinicalDashboard = new ClinicalDashboard();
-        }
-        if (typeof DementiaDashboard !== 'undefined') {
-            window.dementiaDashboard = new DementiaDashboard();
         }
         if (typeof QuantumOptimizerUI !== 'undefined') {
             window.quantumOptimizerUI = new QuantumOptimizerUI();
@@ -90,14 +87,15 @@ class DBSApplication {
             case 'clinical':
                 if (window.clinicalDashboard) window.clinicalDashboard.init();
                 break;
-            case 'dementia':
-                if (window.dementiaDashboard) window.dementiaDashboard.init();
-                break;
+
             case 'quantum':
                 if (window.quantumOptimizerUI) window.quantumOptimizerUI.init();
                 break;
             case 'ocd':
                 if (window.ocdDashboard) window.ocdDashboard.init();
+                break;
+            case 'asd':
+                if (window.asdDashboard) window.asdDashboard.init();
                 break;
         }
     }

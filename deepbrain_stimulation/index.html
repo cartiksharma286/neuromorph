@@ -69,6 +69,10 @@
                 <span class="tab-icon">🔄</span>
                 OCD Treatment
             </button>
+            <button class="nav-tab" data-module="asd">
+                <span class="tab-icon">🧩</span>
+                ASD Treatment
+            </button>
         </nav>
 
         <!-- Main Content Area -->
@@ -580,10 +584,267 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="app.js"></script>
+    <!-- ASD Treatment Module -->
+    <div class="module" id="asdModule">
+        <div class="module-header">
+            <h2>🧩 Autism Spectrum Disorder: Quantum Neural Repair</h2>
+            <p>Deep Brain Stimulation with Quantum Surface Integrals & Stochastic Correlations for Correlational Repair
+            </p>
+        </div>
+
+        <!-- Treatment Configuration -->
+        <div class="grid-2">
+            <div class="card">
+                <h3>DBS Configuration for ASD</h3>
+                <div class="control-group">
+                    <label>Severity Level</label>
+                    <select id="asdSeverity"
+                        style="width: 100%; padding: 8px; background: #333; color: white; border: 1px solid #555;">
+                        <option value="mild">Mild (Level 1)</option>
+                        <option value="moderate" selected>Moderate (Level 2)</option>
+                        <option value="severe">Severe (Level 3)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Target Brain Region</label>
+                    <select id="asdTarget"
+                        style="width: 100%; padding: 8px; background: #333; color: white; border: 1px solid #555;">
+                        <option value="ACC" selected>Anterior Cingulate Cortex (ACC)</option>
+                        <option value="amygdala">Amygdala (Social Processing)</option>
+                        <option value="striatum">Striatum (Repetitive Behaviors)</option>
+                        <option value="thalamus">Thalamus (Sensory Integration)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Stimulation Frequency (Hz)</label>
+                    <input type="number" id="asdFreq" value="130" min="20" max="185">
+                </div>
+                <div class="control-group">
+                    <label>Amplitude (mA)</label>
+                    <input type="number" id="asdAmp" value="2.5" step="0.1" min="0.5" max="5.0">
+                </div>
+                <button class="btn-primary" id="runAsdOptimizationBtn" style="width: 100%; margin-top: 15px;">
+                    <span>⚛️</span> Run Quantum Neural Repair
+                </button>
+            </div>
+
+            <div class="card">
+                <h3>Continued Fraction Correlational Repair</h3>
+                <p style="font-size: 0.9em; color: #aaa; margin-bottom: 15px;">
+                    Using continued fractions to model neural connectivity repair dynamics
+                </p>
+                <canvas id="continuedFractionCanvas" width="400" height="300"
+                    style="width: 100%; border: 1px solid #333; border-radius: 8px;"></canvas>
+                <div id="fractionMetrics" style="margin-top: 10px; font-family: monospace; font-size: 0.85em;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <div style="color: #888;">Convergence Rate:</div>
+                            <div id="convRate" style="color: var(--secondary); font-size: 1.1em;">--</div>
+                        </div>
+                        <div>
+                            <div style="color: #888;">Repair Index:</div>
+                            <div id="repairIdx" style="color: var(--primary); font-size: 1.1em;">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantum Surface Integrals -->
+        <div class="card">
+            <h3>⚛️ Quantum Surface Integral Analysis</h3>
+            <p style="font-size: 0.9em; color: #aaa;">
+                Computing quantum mechanical surface integrals over neural connectivity manifolds
+            </p>
+            <div class="grid-3" style="margin-top: 15px;">
+                <div
+                    style="background: var(--bg-elevated); padding: 15px; border-radius: 8px; border-left: 3px solid var(--primary);">
+                    <div style="font-size: 0.8em; color: #888; margin-bottom: 5px;">Surface Integral</div>
+                    <div id="surfaceIntegral" style="font-size: 1.5em; color: var(--primary); font-family: monospace;">
+                        --</div>
+                    <div style="font-size: 0.75em; color: #666; margin-top: 5px;">∮∮ ψ*∇ψ · dS</div>
+                </div>
+                <div
+                    style="background: var(--bg-elevated); padding: 15px; border-radius: 8px; border-left: 3px solid var(--secondary);">
+                    <div style="font-size: 0.8em; color: #888; margin-bottom: 5px;">Transition Probability</div>
+                    <div id="transProb" style="font-size: 1.5em; color: var(--secondary); font-family: monospace;">--
+                    </div>
+                    <div style="font-size: 0.75em; color: #666; margin-top: 5px;">|⟨ψ_f|H|ψ_i⟩|²</div>
+                </div>
+                <div
+                    style="background: var(--bg-elevated); padding: 15px; border-radius: 8px; border-left: 3px solid var(--warning);">
+                    <div style="font-size: 0.8em; color: #888; margin-bottom: 5px;">Correlation Energy</div>
+                    <div id="corrEnergy" style="font-size: 1.5em; color: var(--warning); font-family: monospace;">--
+                    </div>
+                    <div style="font-size: 0.75em; color: #666; margin-top: 5px;">E_corr = ⟨Ψ|V|Ψ⟩</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stochastic Correlation Analysis -->
+        <div class="grid-2">
+            <div class="card">
+                <h3>📊 Stochastic Correlation Matrix</h3>
+                <p style="font-size: 0.9em; color: #aaa;">
+                    Neural connectivity correlations with stochastic dynamics and Gedanken state superpositions.
+                </p>
+                <canvas id="correlationMatrixCanvas" width="400" height="400"
+                    style="width: 100%; border: 1px solid #333; border-radius: 8px;"></canvas>
+                <div style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 0.85em;">
+                    <span style="color: #888;">Low Correlation</span>
+                    <span style="color: var(--primary);">High Correlation</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>💭 Quantum Gedanken Experiments</h3>
+                <p style="font-size: 0.9em; color: #aaa; margin-bottom: 10px;">
+                    "Schrödinger's Connectivity" Thought Experiment Results
+                </p>
+
+                <div
+                    style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="font-family: monospace; color: var(--secondary); font-size: 1.1em; margin-bottom: 10px;"
+                        id="gedankenSuperposition">
+                        |Ψ⟩ = α|Repaired⟩ + β|Disordered⟩
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em;">
+                        <div>
+                            <div style="color: #888;">Collapse Prob:</div>
+                            <div id="gedankenCollapse" style="color: #fff;">--</div>
+                        </div>
+                        <div>
+                            <div style="color: #888;">Entropy (S):</div>
+                            <div id="gedankenEntropy" style="color: #fff;">--</div>
+                        </div>
+                        <div>
+                            <div style="color: #888;">Coherence:</div>
+                            <div id="gedankenCoherence" style="color: #fff;">--</div>
+                        </div>
+                        <div>
+                            <div style="color: #888;">Zeno Effect:</div>
+                            <div id="gedankenZeno" style="color: var(--warning);">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="margin-top: 20px; font-size: 1em;">Statistical Improvement Metrics</h4>
+                <div id="asdStatistics"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+                    <!-- Replaced bars with pure metric cards -->
+                    <div class="metric-card" style="padding: 10px; background: rgba(0,0,0,0.3);">
+                        <div class="metric-label">Social Comm.</div>
+                        <div class="metric-value" id="socialScore" style="color: var(--primary);">--</div>
+                    </div>
+                    <div class="metric-card" style="padding: 10px; background: rgba(0,0,0,0.3);">
+                        <div class="metric-label">Repetitive Behav.</div>
+                        <div class="metric-value" id="repetitiveScore" style="color: var(--secondary);">--</div>
+                    </div>
+                    <div class="metric-card" style="padding: 10px; background: rgba(0,0,0,0.3);">
+                        <div class="metric-label">Sensory Proc.</div>
+                        <div class="metric-value" id="sensoryScore" style="color: var(--warning);">--</div>
+                    </div>
+                    <div class="metric-card" style="padding: 10px; background: rgba(0,0,0,0.3);">
+                        <div class="metric-label">Executive Func.</div>
+                        <div class="metric-value" id="executiveScore" style="color: #00d4ff;">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistical Congruence & Inflection Reasoning -->
+        <div class="card">
+            <h3>📈 Statistical Congruences & Inflection Reasoning</h3>
+            <p style="font-size: 0.9em; color: #aaa; margin-bottom: 20px;">
+                Analysis of recovery trajectory congruency with ideal plasticity models and identification of critical
+                reasoning shifts (inflection points).
+            </p>
+            <div class="grid-2" style="gap: 20px;">
+                <div>
+                    <h4 style="color: #aaa; font-size: 0.9em; margin-bottom: 10px;">
+                        Recovery Congruence Trajectory
+                        <span id="congScore" style="float: right; color: var(--primary);">Corr: --</span>
+                    </h4>
+                    <canvas id="congruenceCanvas" width="400" height="300" style="width: 100%;"></canvas>
+                    <div style="margin-top: 10px; font-size: 0.85em; color: #888;">
+                        Comparing <span style="color: #00d4ff;">Actual Neural Repair</span> vs <span
+                            style="color: #666; border-bottom: 1px dashed #666;">Ideal Sigmoid Model</span>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="color: #aaa; font-size: 0.9em; margin-bottom: 10px;">
+                        Inflection Point Derivatives
+                    </h4>
+                    <canvas id="inflectionCanvas" width="400" height="300" style="width: 100%;"></canvas>
+                    <div id="inflectionReasoning"
+                        style="margin-top: 10px; font-size: 0.85em; color: #ccc; border-top: 1px solid #333; padding-top: 5px;">
+                        Reasoning Phases will appear here...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Circuit Schematic -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>🔌 ASD-Specific DBS Circuit Schematic</h3>
+                <button id="loadAsdSchematicBtn" class="btn-secondary" style="font-size: 0.8em;">
+                    Show Circuit Design
+                </button>
+            </div>
+            <div id="asdSchematicContent" style="display: none; margin-top: 15px;">
+                <div class="grid-2">
+                    <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                        <h4>Electrical Specifications</h4>
+                        <div id="asdSpecsList"
+                            style="font-family: monospace; font-size: 0.9em; line-height: 1.6; color: #ccc;">
+                            <!-- Specs injected here -->
+                        </div>
+                    </div>
+                    <div id="asdSvgContainer"
+                        style="background: #000; border: 1px solid #333; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <!-- SVG injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mathematical Derivations -->
+        <div class="card">
+            <h3>📐 Mathematical Framework</h3>
+            <div
+                style="background: var(--bg-elevated); padding: 20px; border-radius: 8px; border-left: 3px solid var(--primary);">
+                <h4 style="color: var(--primary); margin-bottom: 15px;">Continued Fraction Repair Dynamics</h4>
+                <div style="font-family: 'Courier New', monospace; font-size: 0.9em; line-height: 1.8; color: #ccc;">
+                    <div style="margin-bottom: 10px;">
+                        <strong style="color: var(--secondary);">Connectivity Repair Function:</strong><br>
+                        C(t) = a₀ + 1/(a₁ + 1/(a₂ + 1/(a₃ + ...)))
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong style="color: var(--secondary);">Quantum Surface Integral:</strong><br>
+                        Φ = ∮∮_S ψ*(r)∇ψ(r) · n̂ dS
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong style="color: var(--secondary);">Stochastic Correlation:</strong><br>
+                        ρ(i,j) = ⟨(X_i - μ_i)(X_j - μ_j)⟩ / (σ_i σ_j)
+                    </div>
+                    <div>
+                        <strong style="color: var(--secondary);">Repair Convergence:</strong><br>
+                        lim(n→∞) C_n = C* where |C_n - C*| &lt; ε
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Three.js for 3D brain visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+    <!-- Module Scripts -->
     <script src="circuit_designer.js"></script>
     <script src="brain_visualizer.js"></script>
     <script src="waveform_generator.js"></script>
@@ -591,7 +852,12 @@
     <script src="clinical_dashboard.js"></script>
     <script src="fea_interface.js"></script>
     <script src="protocol_interface.js"></script>
+    <script src="quantum_optimizer_ui.js"></script>
     <script src="ocd_dashboard.js"></script>
+    <script src="asd_dashboard.js"></script>
+
+    <!-- Main Application Controller (must be last) -->
+    <script src="app.js"></script>
 </body>
 
 </html>

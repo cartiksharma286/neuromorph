@@ -20,15 +20,16 @@ from treatment_optimizer import TreatmentProtocolOptimizer
 
 # Import dementia care modules
 from dementia_neural_model import DementiaNeuralModel
-from nvqlink_quantum_optimizer import NVQLinkQuantumOptimizer
+from gemini_optimizer import GeminiQuantumOptimizer
 from dementia_biomarkers import DementiaBiomarkerTracker
 from ocd_neural_model import OCDNeuralModel
 from ocd_quantum_optimizer import OCDQuantumOptimizer
+from asd_neural_model import ASDNeuralRepairModel
 
 app = Flask(__name__)
 CORS(app)
 
-# Initialize components
+# Initialize lightweight components immediately
 circuit_generator = DBSCircuitGenerator()
 ai_engine = GenerativeAIEngine()
 neural_model = PTSDNeuralModel()
@@ -36,15 +37,54 @@ safety_validator = SafetyValidator()
 fea_simulator = DBSFEASimulator()
 protocol_optimizer = TreatmentProtocolOptimizer(neural_model)
 
-# Initialize dementia components
-dementia_model = DementiaNeuralModel(disease_duration_years=2.0)
-quantum_optimizer = NVQLinkQuantumOptimizer()
-biomarker_tracker = DementiaBiomarkerTracker()
-ocd_model = OCDNeuralModel()
-ocd_quantum = OCDQuantumOptimizer()
+# Lazy-load heavy components (quantum optimizers, neural models)
+# These will be initialized on first use to speed up server startup
+_dementia_model = None
+_quantum_optimizer = None
+_biomarker_tracker = None
+_ocd_model = None
+_ocd_quantum = None
+_asd_model = None
 
 # Global state
 ai_models_trained = False
+
+# Lazy initialization helpers
+def get_dementia_model():
+    global _dementia_model
+    if _dementia_model is None:
+        _dementia_model = DementiaNeuralModel(disease_duration_years=2.0)
+    return _dementia_model
+
+def get_quantum_optimizer():
+    global _quantum_optimizer
+    if _quantum_optimizer is None:
+        _quantum_optimizer = GeminiQuantumOptimizer()
+    return _quantum_optimizer
+
+def get_biomarker_tracker():
+    global _biomarker_tracker
+    if _biomarker_tracker is None:
+        _biomarker_tracker = DementiaBiomarkerTracker()
+    return _biomarker_tracker
+
+def get_ocd_model():
+    global _ocd_model
+    if _ocd_model is None:
+        _ocd_model = OCDNeuralModel()
+    return _ocd_model
+
+def get_ocd_quantum():
+    global _ocd_quantum
+    if _ocd_quantum is None:
+        _ocd_quantum = OCDQuantumOptimizer()
+    return _ocd_quantum
+
+def get_asd_model():
+    global _asd_model
+    if _asd_model is None:
+        _asd_model = ASDNeuralRepairModel(severity='severe')
+    return _asd_model
 
 
 
@@ -64,7 +104,7 @@ def health_check():
             'biomarker_tracker': True,
             'ocd_model': True
         },
-        'quantum_available': quantum_optimizer.cudaq_available
+        'quantum_available': False  # Don't initialize on health check
     })
 
 
@@ -437,7 +477,7 @@ def generate_safety_report():
 @app.route('/api/dementia/state', methods=['GET'])
 def get_dementia_state():
     """Get current dementia model state"""
-    state = dementia_model.export_state()
+    state = get_dementia_model().export_state()
     return jsonify(state)
 
 
@@ -447,7 +487,7 @@ def simulate_dementia_stimulation():
     data = request.json
     
     try:
-        result = dementia_model.apply_dbs_stimulation(
+        result = get_dementia_model().apply_dbs_stimulation(
             target_region=data['target_region'],
             amplitude_ma=data['amplitude_ma'],
             frequency_hz=data['frequency_hz'],
@@ -477,7 +517,7 @@ def predict_dementia_treatment():
     data = request.json
     
     try:
-        prediction = dementia_model.predict_treatment_response(
+        prediction = get_dementia_model().predict_treatment_response(
             target_region=data['target_region'],
             amplitude_ma=data['amplitude_ma'],
             frequency_hz=data['frequency_hz'],
@@ -498,8 +538,8 @@ def predict_dementia_treatment():
 @app.route('/api/dementia/biomarkers', methods=['GET'])
 def get_dementia_biomarkers():
     """Get dementia biomarkers"""
-    biomarkers = dementia_model.get_biomarkers()
-    tracker_summary = biomarker_tracker.get_biomarker_summary()
+    biomarkers = get_dementia_model().get_biomarkers()
+    tracker_summary = get_biomarker_tracker().get_biomarker_summary()
     
     return jsonify({
         'model_biomarkers': biomarkers,
@@ -549,7 +589,7 @@ def run_ocd_trial():
     
     # Use the model class method (or instance method we made)
     # We can use the global instance to run the trial method since it creates new subjects inside
-    results = ocd_model.run_clinical_trial(n_subjects, target, freq, amp)
+    results = get_ocd_model().run_clinical_trial(n_subjects, target, freq, amp)
     
     return jsonify({
         'success': True,
@@ -586,11 +626,57 @@ def optimize_ocd_quantum():
     }
     
     try:
-        result = ocd_quantum.optimize_protocol_with_fea(fea_input)
+        result = get_ocd_quantum().optimize_protocol_with_fea(fea_input)
         return jsonify({
             'success': True,
             'optimization': result
         })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ==================== ASD Model Endpoints ====================
+
+@app.route('/api/asd/optimize', methods=['POST'])
+def optimize_asd_treatment():
+    """Optimize ASD treatment using Gemini 3.0 with Quantum Surface Integrals & Continued Fractions"""
+    try:
+        data = request.json
+        severity = data.get('severity', 'moderate')
+        target = data.get('target', 'ACC')
+        frequency = data.get('frequency', 130)
+        amplitude = data.get('amplitude', 2.5)
+        
+        # Get or reinitialize model if severity changed
+        global _asd_model
+        if _asd_model is None or _asd_model.severity != severity:
+            _asd_model = ASDNeuralRepairModel(severity=severity)
+        
+        # Run Repair Session with parameters
+        result = _asd_model.simulate_repair_session(
+            target_region=target,
+            frequency=frequency,
+            amplitude=amplitude
+        )
+        
+        # Get plotting data
+        plot_data = _asd_model.get_plotting_data()
+        
+        return jsonify({
+            'success': True,
+            'optimization': result,
+            'plot_data': plot_data
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/asd/plotting_data', methods=['GET'])
+def get_asd_plot_data():
+    """Get connectivity matrices for ASD plotting"""
+    try:
+        return jsonify(get_asd_model().get_plotting_data())
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -609,7 +695,7 @@ def optimize_with_vqe():
         # Create objective function (simplified)
         def objective(params):
             # Simulate with dementia model
-            result = dementia_model.apply_dbs_stimulation(
+            result = get_dementia_model().apply_dbs_stimulation(
                 target_region=params.get('target_region', 'nucleus_basalis'),
                 amplitude_ma=params['amplitude_ma'],
                 frequency_hz=params['frequency_hz'],
@@ -618,7 +704,7 @@ def optimize_with_vqe():
             # Negative efficacy (minimize)
             return -result['efficacy']
         
-        result = quantum_optimizer.optimize_vqe(
+        result = get_quantum_optimizer().optimize_vqe(
             objective_function=objective,
             initial_params=initial_params,
             bounds=bounds,
@@ -630,16 +716,18 @@ def optimize_with_vqe():
             'optimal_parameters': result.optimal_parameters,
             'energy': result.energy,
             'iterations': result.iterations,
-            'method': result.method
+            'method': result.method,
+            'gemini_insights': result.gemini_insights,
+            'confidence_score': result.confidence_score
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@app.route('/api/quantum/circuit', methods=['GET'])
-def get_quantum_circuit_info():
-    """Get quantum circuit information"""
-    info = quantum_optimizer.get_quantum_circuit_info()
+@app.route('/api/quantum/info', methods=['GET'])
+def get_quantum_optimizer_info():
+    """Get Gemini optimizer information"""
+    info = get_quantum_optimizer().get_optimizer_info()
     return jsonify(info)
 
 
@@ -653,7 +741,7 @@ def compare_quantum_classical():
         bounds = data['bounds']
         
         def objective(params):
-            result = dementia_model.apply_dbs_stimulation(
+            result = get_dementia_model().apply_dbs_stimulation(
                 target_region='nucleus_basalis',
                 amplitude_ma=params['amplitude_ma'],
                 frequency_hz=params['frequency_hz'],
@@ -661,7 +749,7 @@ def compare_quantum_classical():
             )
             return -result['efficacy']
         
-        comparison = quantum_optimizer.compare_quantum_classical(
+        comparison = get_quantum_optimizer().compare_quantum_classical(
             objective_function=objective,
             initial_params=initial_params,
             bounds=bounds
@@ -670,10 +758,14 @@ def compare_quantum_classical():
         return jsonify({
             'success': True,
             'comparison': {
-                'classical_energy': comparison['classical'].energy,
-                'quantum_energy': comparison.get('quantum', {}).get('energy') if comparison.get('quantum') else None,
+                'gemini_energy': comparison.get('gemini_energy'),
+                'classical_energy': comparison.get('classical_energy'),
+                'gemini_iterations': comparison.get('gemini_iterations'),
+                'classical_iterations': comparison.get('classical_iterations'),
                 'speedup': comparison.get('speedup'),
-                'quantum_advantage': comparison.get('quantum_advantage')
+                'quality_improvement': comparison.get('quality_improvement'),
+                'gemini_advantage': comparison.get('gemini_advantage'),
+                'gemini_insights': comparison.get('gemini_insights')
             }
         })
     except Exception as e:
@@ -898,4 +990,4 @@ if __name__ == '__main__':
     print("="*60)
     print("\nOpen http://localhost:5001 in your browser")
     
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5002)
