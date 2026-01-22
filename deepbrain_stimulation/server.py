@@ -644,8 +644,15 @@ def optimize_asd_treatment():
         data = request.json
         severity = data.get('severity', 'moderate')
         target = data.get('target', 'ACC')
-        frequency = data.get('frequency', 130)
-        amplitude = data.get('amplitude', 2.5)
+        
+        # Handle cases where frontend might send null/None for numeric values
+        frequency = data.get('frequency')
+        if frequency is None: frequency = 130.0
+        else: frequency = float(frequency)
+        
+        amplitude = data.get('amplitude')
+        if amplitude is None: amplitude = 2.5
+        else: amplitude = float(amplitude)
         
         # Get or reinitialize model if severity changed
         global _asd_model
@@ -668,6 +675,7 @@ def optimize_asd_treatment():
             'plot_data': plot_data
         })
     except Exception as e:
+        print(f"Error in ASD optimization: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -922,6 +930,10 @@ def serve_index():
 @app.route('/<path:filename>')
 def serve_static(filename):
     """Serve static files (CSS, JS, etc.)"""
+    # Prevent API routes from falling through to static serving (which would cause 405 if POST)
+    if filename.startswith('api/'):
+        return jsonify({'error': 'API endpoint not found'}), 404
+        
     try:
         file_path = os.path.join(os.path.dirname(__file__), filename)
         if os.path.exists(file_path):
