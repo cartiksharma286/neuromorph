@@ -1,34 +1,34 @@
 """
 Report Generation Engine
-Quantum-optimized report generation with multi-format export
+Gemini 3.0-optimized report generation with multi-format export
 """
 
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 import json
 import uuid
-from quantum_reporter import QuantumReporter
+from gemini_reporter import GeminiReporter
 from structured_templates import StructuredTemplates
 from patient_manager import PatientManager
 
 
 class ReportGenerator:
     """
-    Advanced report generation engine with quantum optimization
+    Advanced report generation engine with Gemini 3.0 reasoning
     Supports template-based creation and multi-format export
     """
     
     def __init__(self):
-        self.quantum_reporter = QuantumReporter(num_qubits=6)
+        self.gemini_reporter = GeminiReporter()
         self.templates = StructuredTemplates()
         self.reports = {}
     
     def create_report(self, template_id: str, patient_id: str, 
                      initial_data: Optional[Dict] = None,
-                     use_quantum_optimization: bool = True) -> str:
+                     use_gemini_optimization: bool = True) -> str:
         """
         Create a new report from template
-        Optionally uses quantum optimization for field suggestions
+        Optionally uses Gemini 3.0 for field suggestions
         """
         report_id = str(uuid.uuid4())
         
@@ -45,32 +45,32 @@ class ReportGenerator:
             'data': initial_data or {},
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat(),
-            'created_by': 'Current User',  # In production, use actual user
-            'quantum_optimized': use_quantum_optimization,
+            'created_by': 'Current User', 
+            'gemini_optimized': use_gemini_optimization,
             'optimization_metrics': {}
         }
         
-        # Apply quantum optimization if requested
-        if use_quantum_optimization and patient_id:
+        # Apply Gemini optimization if requested
+        if use_gemini_optimization and patient_id:
             try:
                 patient_manager = PatientManager()
                 patient_context = patient_manager.get_patient_context(patient_id)
                 
-                optimization_result = self.quantum_reporter.optimize_report_fields(
+                analysis_result = self.gemini_reporter.analyze_report_context(
                     template, patient_context
                 )
                 
                 report['optimization_metrics'] = {
-                    'confidence': optimization_result['confidence'],
-                    'quantum_advantage': optimization_result['quantum_advantage'],
-                    'suggestions_count': len(optimization_result['suggestions'])
+                    'confidence': analysis_result['confidence'],
+                    'reasoning_trace': analysis_result['reasoning_trace'],
+                    'suggestions_count': len(analysis_result['suggestions'])
                 }
                 
-                report['suggestions'] = optimization_result['suggestions']
+                report['suggestions'] = analysis_result['suggestions']
                 
             except Exception as e:
-                print(f"Warning: Quantum optimization failed: {e}")
-                report['quantum_optimized'] = False
+                print(f"Warning: Gemini optimization failed: {e}")
+                report['gemini_optimized'] = False
         
         self.reports[report_id] = report
         return report_id
@@ -85,7 +85,7 @@ class ReportGenerator:
         report['updated_at'] = datetime.now().isoformat()
         
         # Recalculate quality score
-        quality_score = self.quantum_reporter.generate_report_quality_score(report)
+        quality_score = self.gemini_reporter.generate_report_quality_score(report)
         report['quality_score'] = quality_score
         
         return True
@@ -112,7 +112,7 @@ class ReportGenerator:
         report['completeness'] = validation['completeness']
         
         # Generate final quality score
-        quality_score = self.quantum_reporter.generate_report_quality_score(report)
+        quality_score = self.gemini_reporter.generate_report_quality_score(report)
         report['final_quality_score'] = quality_score
         
         return True
@@ -151,7 +151,7 @@ class ReportGenerator:
             'created_at': report['created_at'],
             'data': report['data'],
             'quality_score': report.get('final_quality_score', report.get('quality_score', 0)),
-            'quantum_optimized': report['quantum_optimized']
+            'gemini_optimized': report['gemini_optimized']
         }
         return json.dumps(export_data, indent=2)
     
@@ -168,8 +168,8 @@ class ReportGenerator:
         pdf_content.append(f"Date: {report['created_at']}")
         pdf_content.append(f"Status: {report['status'].upper()}")
         
-        if report.get('quantum_optimized'):
-            pdf_content.append(f"\n[QUANTUM OPTIMIZED - Confidence: {report['optimization_metrics'].get('confidence', 0):.3f}]")
+        if report.get('gemini_optimized'):
+            pdf_content.append(f"\n[GEMINI 3.0 OPTIMIZED - Confidence: {report['optimization_metrics'].get('confidence', 0):.3f}]")
         
         pdf_content.append("\n" + "-" * 80)
         
@@ -231,8 +231,8 @@ class ReportGenerator:
             "issued": report.get('finalized_at', report['created_at']),
             "conclusion": report['data'].get('impression', ''),
             "extension": [{
-                "url": "http://example.org/fhir/StructureDefinition/quantum-optimized",
-                "valueBoolean": report['quantum_optimized']
+                "url": "http://google.com/fhir/StructureDefinition/gemini-optimized",
+                "valueBoolean": report['gemini_optimized']
             }]
         }
         
@@ -255,7 +255,7 @@ class ReportGenerator:
             'last_updated': report['updated_at'],
             'completeness': validation['completeness'] * 100,
             'quality_score': report.get('final_quality_score', report.get('quality_score', 0)),
-            'quantum_optimized': report['quantum_optimized'],
+            'gemini_optimized': report['gemini_optimized'],
             'validation': {
                 'valid': validation['valid'],
                 'errors': len(validation['errors']),
@@ -283,7 +283,7 @@ class ReportGenerator:
 # Example usage
 if __name__ == "__main__":
     print("=" * 80)
-    print("EMR Platform - Report Generation Engine")
+    print("EMR Platform - Gemini 3.0 Report Generation Engine")
     print("=" * 80)
     
     rg = ReportGenerator()
@@ -297,17 +297,17 @@ if __name__ == "__main__":
             'indication': 'Headache, rule out intracranial hemorrhage',
             'contrast': 'Non-contrast'
         },
-        use_quantum_optimization=True
+        use_gemini_optimization=True
     )
     
     print(f"✓ Report created: {report_id}")
     
     report = rg.get_report(report_id)
-    if report.get('quantum_optimized'):
+    if report.get('gemini_optimized'):
         metrics = report['optimization_metrics']
-        print(f"\n🔬 Quantum Optimization Metrics:")
+        print(f"\n🔬 Gemini 3.0 Optimization Metrics:")
         print(f"  Confidence: {metrics['confidence']:.3f}")
-        print(f"  Quantum Advantage: {metrics['quantum_advantage']:.3f}")
+        print(f"  Reasoning Trace: {metrics['reasoning_trace'][0]}")
         print(f"  Suggestions: {metrics['suggestions_count']}")
     
     # Update report with findings

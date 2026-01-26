@@ -146,7 +146,7 @@ class PatientManager:
             return None
     
     def get_patient_context(self, patient_id: str) -> Dict[str, Any]:
-        """Get patient context for quantum optimization"""
+        """Get patient context for AI-enhanced reasoning and workflow optimization"""
         patient = self.get_patient(patient_id)
         if not patient:
             return {}
@@ -259,7 +259,7 @@ if __name__ == "__main__":
     print(f"✓ Found {len(results)} patient(s)")
     
     # Get patient context
-    print("\n\n📋 Patient Context for Quantum Optimization:")
+    print("\n\n📋 Patient Context for Gemini 3.0 Reasoning:")
     context = pm.get_patient_context(patient1_id)
     print(f"  Age: {context['age']} years")
     print(f"  Gender: {context['gender']}")

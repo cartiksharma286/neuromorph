@@ -1,25 +1,36 @@
 {
   "platform": {
-    "name": "EMR Platform with NVQLink",
+    "name": "EMR Platform with Gemini 3.0",
     "version": "1.0.0",
-    "description": "Quantum-enhanced Electronic Medical Records platform"
+    "description": "AI-enhanced Electronic Medical Records platform with Neuromorph PACS Integration"
   },
-  "quantum": {
+  "gemini": {
     "enabled": true,
-    "num_qubits": 6,
-    "backend": "nvqlink",
-    "optimization_iterations": 50,
-    "shots_count": 1000,
-    "variational_layers": 3
+    "model": "gemini-3.0-pro",
+    "context_window": 1000000,
+    "multimodal": true
+  },
+  "neuromorph_pacs": {
+    "enabled": true,
+    "gateway_url": "https://neuromorph.ai/gateway",
+    "simulation_mode": true
   },
   "templates": {
     "default_specialty": "radiology",
-    "enable_quantum_suggestions": true,
+    "enable_ai_suggestions": true,
     "auto_validate": true,
-    "standard_terminology": ["RadLex", "SNOMED CT"]
+    "standard_terminology": [
+      "RadLex",
+      "SNOMED CT"
+    ]
   },
   "export": {
-    "formats": ["json", "pdf", "dicom_sr", "hl7_fhir"],
+    "formats": [
+      "json",
+      "pdf",
+      "dicom_sr",
+      "hl7_fhir"
+    ],
     "default_format": "pdf"
   },
   "ui": {
