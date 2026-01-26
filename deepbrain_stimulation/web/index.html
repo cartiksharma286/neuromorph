@@ -417,16 +417,72 @@
         </div>
     </footer>
 
+    <!-- SAD Treatment Module -->
+    <div class="module" id="sadModule">
+        <div class="module-header">
+            <h2>❄️ Seasonal Affective Disorder Treatment</h2>
+            <p>Circadian Rhythm Entrainment with Statistically Optimized DBS</p>
+        </div>
+
+        <div class="grid-2">
+            <!-- Simulation Controls -->
+            <div class="card">
+                <h3>Treatment Configuration</h3>
+                <div class="control-group">
+                    <label>Target Region</label>
+                    <select id="sad-target"
+                        style="width: 100%; padding: 8px; background: #333; color: white; border: 1px solid #555;">
+                        <option value="Lateral Habenula" selected>Lateral Habenula (LHb)</option>
+                        <option value="SCN">Suprachiasmatic Nucleus (SCN)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Stimulation Frequency (Hz)</label>
+                    <input type="number" id="sad-frequency" value="135" min="2" max="250">
+                </div>
+                <div class="control-group">
+                    <label>Amplitude (mA)</label>
+                    <input type="number" id="sad-amplitude" value="2.5" step="0.1">
+                </div>
+
+                <button class="btn-primary" id="run-sad-sim" style="width: 100%; margin-top: 20px;">
+                    <span>⏯</span> Run SAD Treatment Simulation
+                </button>
+            </div>
+
+            <!-- Neural Dynamics Plot -->
+            <div class="card">
+                <h3>Circadian & Neural Dynamics</h3>
+                <canvas id="sad-chart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Analysis Results -->
+        <div class="card" style="margin-top: 20px;">
+            <h3>📊 Post-Treatment Analysis & FEA</h3>
+            <div id="sad-ml-results" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div
+                    style="color: #aaa; padding: 20px; text-align: center; border: 1px dashed #444; border-radius: 8px;">
+                    Simulation results will appear here...
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="neural_visualization.js"></script>
-    <script src="quantum_viz.js"></script>
-    <script src="statistical_plots.js"></script>
-    <script src="game_theory_viz.js"></script>
-    <script src="continued_fraction_viz.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
+    <script src="circuit_designer.js"></script>
+    <script src="brain_visualizer.js"></script>
+    <script src="waveform_generator.js"></script>
+    <script src="ai_optimizer.js"></script>
+    <script src="clinical_dashboard.js"></script>
+    <script src="protocol_interface.js"></script>
+    <script src="fea_interface.js"></script>
+    <script src="ocd_dashboard.js"></script>
+    <script src="asd_dashboard.js"></script>
+    <script src="sad_dashboard.js"></script>
 </body>
 
 </html>
