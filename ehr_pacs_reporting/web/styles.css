@@ -10,7 +10,7 @@
     --accent-secondary: #8b5cf6;
     --accent-tertiary: #ec4899;
 
-    --quantum-glow: #60a5fa;
+    --gemini-glow: #60a5fa;
     --success: #10b981;
     --warning: #f59e0b;
     --error: #ef4444;
@@ -112,7 +112,7 @@ body::before {
     gap: var(--spacing-sm);
 }
 
-.quantum-logo {
+.gemini-logo {
     font-size: 2rem;
     animation: rotate 4s linear infinite;
 }
@@ -150,7 +150,7 @@ body::before {
     letter-spacing: 0.5px;
 }
 
-.quantum-badge {
+.gemini-badge {
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
     color: white;
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
@@ -212,7 +212,7 @@ body::before {
     gap: var(--spacing-md);
 }
 
-.quantum-status {
+.gemini-status {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -451,7 +451,7 @@ body::before {
     color: var(--text-muted);
 }
 
-.quantum-metrics {
+.gemini-metrics {
     display: flex;
     gap: var(--spacing-md);
 }
@@ -474,7 +474,7 @@ body::before {
 .metric-value {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--quantum-glow);
+    color: var(--gemini-glow);
 }
 
 /* Search Bar */
@@ -589,20 +589,20 @@ body::before {
     gap: var(--spacing-lg);
 }
 
-.quantum-panel {
+.gemini-panel {
     padding: var(--spacing-md);
 }
 
-.quantum-panel h4 {
+.gemini-panel h4 {
     margin-bottom: var(--spacing-md);
 }
 
-.loading-quantum {
+.loading-gemini {
     text-align: center;
     padding: var(--spacing-lg);
 }
 
-.quantum-spinner {
+.gemini-spinner {
     width: 50px;
     height: 50px;
     border: 4px solid rgba(99, 102, 241, 0.2);
@@ -660,18 +660,18 @@ body::before {
     resize: vertical;
 }
 
-/* Quantum Dashboard */
-.quantum-dashboard {
+/* Gemini Dashboard */
+.gemini-dashboard {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: var(--spacing-md);
 }
 
-.quantum-card {
+.gemini-card {
     padding: var(--spacing-lg);
 }
 
-.quantum-card.full-width {
+.gemini-card.full-width {
     grid-column: 1 / -1;
 }
 
@@ -706,7 +706,7 @@ body::before {
 }
 
 .stat-item .value {
-    color: var(--quantum-glow);
+    color: var(--gemini-glow);
     font-weight: 700;
 }
 
@@ -745,7 +745,7 @@ body::before {
 .gauge-value {
     min-width: 60px;
     text-align: right;
-    color: var(--quantum-glow);
+    color: var(--gemini-glow);
     font-weight: 700;
 }
 
@@ -845,7 +845,7 @@ body::before {
 @media (max-width: 1024px) {
 
     .dashboard-grid,
-    .quantum-dashboard {
+    .gemini-dashboard {
         grid-template-columns: 1fr;
     }
 

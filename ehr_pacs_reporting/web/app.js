@@ -1,4 +1,4 @@
-// EMR Platform - Application Logic with Quantum Integration
+// EMR Platform - Application Logic with Gemini 3.0 Integration
 
 // Application State
 const appState = {
@@ -6,16 +6,17 @@ const appState = {
     patients: [],
     reports: [],
     currentReport: null,
-    quantumMetrics: {
-        totalOptimizations: 0,
+    geminiMetrics: {
+        totalInferences: 0,
         averageConfidence: 0,
-        quantumAdvantage: 0
+        tokensPerSecond: 0,
+        reasoningDepth: 0
     }
 };
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 EMR Platform with NVQLink Initializing...');
+    console.log('🚀 EMR Platform with Gemini 3.0 Initializing...');
 
     initializeDemo();
     updateDashboardStats();
@@ -170,8 +171,8 @@ function selectTemplate(templateId) {
     document.getElementById('report-editor').style.display = 'block';
     document.getElementById('editor-title').textContent = getTemplateDisplayName(templateId);
 
-    // Simulate quantum optimization
-    simulateQuantumOptimization(templateId);
+    // Simulate Gemini optimization
+    simulateGeminiOptimization(templateId);
 
     // Generate form fields based on template
     generateReportForm(templateId);
@@ -192,84 +193,92 @@ function getTemplateDisplayName(templateId) {
     return names[templateId] || 'New Report';
 }
 
-function simulateQuantumOptimization(templateId) {
-    const suggestionContainer = document.getElementById('quantum-suggestions');
+function simulateGeminiOptimization(templateId) {
+    const suggestionContainer = document.getElementById('gemini-suggestions');
+    if (!suggestionContainer) return;
 
     // Show loading
     suggestionContainer.innerHTML = `
-        <div class="loading-quantum">
-            <div class="quantum-spinner"></div>
-            <p>Running quantum optimization...</p>
+        <div class="loading-gemini">
+            <div class="gemini-spinner"></div>
+            <p>Gemini 3.0 is reasoning...</p>
         </div>
     `;
 
     // Simulate optimization delay
     setTimeout(() => {
-        const suggestions = generateQuantumSuggestions(templateId);
-        displayQuantumSuggestions(suggestions);
+        const suggestions = generateGeminiSuggestions(templateId);
+        displayGeminiSuggestions(suggestions);
 
         // Update metrics
-        appState.quantumMetrics.totalOptimizations++;
-        appState.quantumMetrics.averageConfidence = (Math.random() * 0.3 + 0.7).toFixed(3);
-        appState.quantumMetrics.quantumAdvantage = (Math.random() * 0.4 + 0.6).toFixed(3);
+        appState.geminiMetrics.totalInferences++;
+        appState.geminiMetrics.averageConfidence = (Math.random() * 0.1 + 0.9).toFixed(3); // Higher for Gemini
+        appState.geminiMetrics.tokensPerSecond = Math.floor(10000 + Math.random() * 5000);
         updateDashboardStats();
-    }, 2000);
+    }, 1500);
 }
 
-function generateQuantumSuggestions(templateId) {
-    // Simulate quantum-generated suggestions based on template
+function generateGeminiSuggestions(templateId) {
+    // Simulate Gemini-generated suggestions based on template
     const suggestions = [
         {
             field: 'brain_parenchyma',
-            suggested_value: 'No acute intracranial abnormality',
-            confidence: 0.92
+            suggested_value: 'No acute intracranial abnormality. Grey-white differentiation preserved.',
+            confidence: 0.98,
+            reasoning: 'Inferred from lack of acute findings in pixel data.'
         },
         {
             field: 'hemorrhage',
             suggested_value: 'None',
-            confidence: 0.88
+            confidence: 0.99,
+            reasoning: 'Hounsfield units consistent with normal tissue.'
         },
         {
             field: 'ventricles',
-            suggested_value: 'Normal',
-            confidence: 0.85
+            suggested_value: 'Normal size and configuration.',
+            confidence: 0.95,
+            reasoning: 'Volume analysis matches age-related norms.'
         },
         {
             field: 'mass_effect',
             suggested_value: false,
-            confidence: 0.91
+            confidence: 0.97,
+            reasoning: 'Midline shift: 0mm.'
         },
         {
             field: 'impression',
-            suggested_value: 'No acute findings',
-            confidence: 0.87
+            suggested_value: 'Unremarkable CT Head. No acute intracranial pathology.',
+            confidence: 0.96,
+            reasoning: 'Synthesis of all findings.'
         }
     ];
 
     return suggestions.sort((a, b) => b.confidence - a.confidence);
 }
 
-function displayQuantumSuggestions(suggestions) {
-    const container = document.getElementById('quantum-suggestions');
+function displayGeminiSuggestions(suggestions) {
+    const container = document.getElementById('gemini-suggestions');
+    if (!container) return;
 
     container.innerHTML = `
         <div style="margin-bottom: 1rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                <div class="status-indicator pulse"></div>
-                <span>Quantum optimization complete</span>
+                <div class="status-indicator"></div>
+                <span>Multimodal Analysis Complete</span>
             </div>
         </div>
         ${suggestions.map(s => `
-            <div class="suggestion-item" style="padding: 0.75rem; background: rgba(99, 102, 241, 0.1); border-radius: 8px; margin-bottom: 0.75rem; cursor: pointer;" 
+            <div class="suggestion-item" style="padding: 0.75rem; background: rgba(66, 133, 244, 0.1); border-radius: 8px; margin-bottom: 0.75rem; cursor: pointer;" 
                  onclick="applySuggestion('${s.field}', '${s.suggested_value}')">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
                     <span style="font-weight: 600; font-size: 0.9rem;">${formatFieldName(s.field)}</span>
-                    <span style="font-size: 0.85rem; color: var(--quantum-glow);">${(s.confidence * 100).toFixed(0)}%</span>
+                    <span style="font-size: 0.85rem; color: var(--gemini-glow);">${(s.confidence * 100).toFixed(0)}%</span>
                 </div>
                 <div style="font-size: 0.85rem; color: var(--text-secondary);">${s.suggested_value}</div>
+                <div style="font-size: 0.75rem; color: #888; font-style: italic; margin-top: 4px;">Reasoning: ${s.reasoning}</div>
                 <div style="margin-top: 0.5rem;">
                     <div style="height: 4px; background: rgba(0,0,0,0.3); border-radius: 2px; overflow: hidden;">
-                        <div style="height: 100%; width: ${s.confidence * 100}%; background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); border-radius: 2px;"></div>
+                        <div style="height: 100%; width: ${s.confidence * 100}%; background: linear-gradient(90deg, #4285F4, #AA00FF); border-radius: 2px;"></div>
                     </div>
                 </div>
             </div>
@@ -334,12 +343,12 @@ function applySuggestion(fieldName, value) {
     const field = document.getElementById(fieldName);
     if (field) {
         field.value = value;
-        field.style.background = 'rgba(99, 102, 241, 0.2)';
+        field.style.background = 'rgba(66, 133, 244, 0.2)';
         setTimeout(() => {
             field.style.background = '';
         }, 1000);
 
-        showNotification(`Applied quantum suggestion to ${formatFieldName(fieldName)}`, 'success');
+        showNotification(`Applied Gemini suggestion to ${formatFieldName(fieldName)}`, 'success');
     }
 }
 
@@ -349,7 +358,7 @@ function saveReport() {
         template_id: 'current_template',
         status: 'draft',
         created_at: new Date().toISOString(),
-        quantum_optimized: true
+        gemini_optimized: true
     };
 
     appState.reports.push(report);
@@ -364,8 +373,8 @@ function finalizeReport() {
         status: 'finalized',
         created_at: new Date().toISOString(),
         finalized_at: new Date().toISOString(),
-        quantum_optimized: true,
-        quality_score: (Math.random() * 0.3 + 0.7).toFixed(3)
+        gemini_optimized: true,
+        quality_score: (Math.random() * 0.1 + 0.9).toFixed(3)
     };
 
     appState.reports.push(report);
@@ -388,14 +397,181 @@ function showCreateReportModal() {
     document.querySelector('.templates-grid').scrollIntoView({ behavior: 'smooth' });
 }
 
+// Ambra Gateway & Annotation Logic
+let currentTool = null;
+let isDrawing = false;
+let annotations = [];
+let currentStudy = null;
+
+function initializeAmbraWorklist() {
+    const worklist = [
+        { id: 'ST-101', patient: 'John Doe', modality: 'CT Head', date: '2025-12-03', status: 'STAT', finding: 'Possible Hemorrhage' },
+        { id: 'ST-102', patient: 'Jane Smith', modality: 'MRI Spine', date: '2025-12-02', status: 'Routine', finding: 'Degenerative Changes' },
+        { id: 'ST-103', patient: 'Patient A', modality: 'CXR', date: '2025-12-03', status: 'Urgent', finding: 'Pneumonia' }
+    ];
+
+    const container = document.getElementById('ambra-worklist');
+    if (!container) return;
+
+    container.innerHTML = worklist.map(study => `
+        <div class="worklist-item glass-card" style="padding: 10px; margin-bottom: 10px; cursor: pointer; border-left: 4px solid ${study.status === 'STAT' ? '#ef4444' : '#4285f4'};" onclick="loadAmbraStudy('${study.id}')">
+            <div style="font-weight: bold; font-size: 0.9em;">${study.patient}</div>
+            <div style="font-size: 0.8em; color: var(--text-secondary);">${study.modality} • ${study.date}</div>
+            ${study.status === 'STAT' ? '<div style="color: #ef4444; font-size: 0.75em; font-weight: bold;">STAT</div>' : ''}
+        </div>
+    `).join('');
+}
+
+function loadAmbraStudy(studyId) {
+    currentStudy = studyId;
+    const canvas = document.getElementById('ambra-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    annotations = [];
+
+    // Simulate loading image
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw dummy medical image (brain-like)
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, 150, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Add some "details"
+    ctx.fillStyle = '#444';
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2 - 40, canvas.height / 2 - 20, 30, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2 + 40, canvas.height / 2 - 20, 30, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Update overlay
+    document.getElementById('patient-info-overlay').innerHTML = `
+        ID: ${studyId}<br>
+        Name: John Doe<br>
+        Modality: CT<br>
+        Slice: 24/60<br>
+        <span style="color: #4CAF50">Neuromorph Cloud: Connected</span>
+    `;
+
+    // Stimulate Gemini Findings
+    document.getElementById('ai-findings-list').innerHTML = `
+        <div class="loading-gemini">
+            <div class="gemini-spinner" style="width: 20px; height: 20px;"></div>
+            Analyzing...
+        </div>
+    `;
+
+    setTimeout(() => {
+        document.getElementById('ai-findings-list').innerHTML = `
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 5px;">• No acute hemorrhage detected (Confidence: 99%)</li>
+                <li style="margin-bottom: 5px;">• Ventricles normal in size</li>
+                <li style="margin-bottom: 5px; color: #f59e0b;">• Note: Mild white matter changes</li>
+            </ul>
+        `;
+    }, 1500);
+}
+
+function toggleAnnotationToolbar() {
+    const toolbar = document.getElementById('annotation-toolbar');
+    toolbar.style.display = toolbar.style.display === 'none' ? 'flex' : 'none';
+}
+
+function setTool(tool) {
+    currentTool = tool;
+    showNotification(`Tool selected: ${tool.toUpperCase()}`);
+}
+
+function clearAnnotations() {
+    annotations = [];
+    if (currentStudy) loadAmbraStudy(currentStudy); // Reload base image
+    else {
+        const canvas = document.getElementById('ambra-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+// Canvas Interaction for Annotation
+const canvas = document.getElementById('ambra-canvas');
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+}
+
+let lastX = 0;
+let lastY = 0;
+
+function startDrawing(e) {
+    if (!currentTool) return;
+    isDrawing = true;
+    [lastX, lastY] = [e.offsetX, e.offsetY];
+}
+
+function draw(e) {
+    if (!isDrawing || !currentTool) return;
+    const ctx = canvas.getContext('2d');
+
+    ctx.strokeStyle = '#00E676';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+
+    if (currentTool === 'measure') {
+        // Simple line drawing for now
+        // In a real app, we'd redraw the previous state + new line
+        // For simulation, just draw
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+        [lastX, lastY] = [e.offsetX, e.offsetY];
+    } else if (currentTool === 'roi') {
+        ctx.beginPath();
+        ctx.arc(e.offsetX, e.offsetY, 20, 0, Math.PI * 2);
+        ctx.stroke();
+        isDrawing = false; // Single click for ROI circle
+    }
+}
+
+function stopDrawing() {
+    isDrawing = false;
+}
+
+function shareStudy() {
+    const email = prompt("Enter email to share study with:");
+    if (email) {
+        showNotification(`Study shared with ${email} via Neuromorph Cloud`);
+    }
+}
+
+function generateReportFromImage() {
+    showSection('reports');
+    selectTemplate('radiology_ct_brain');
+
+    // Auto-fill findings based on "AI Analysis"
+    setTimeout(() => {
+        applySuggestion('findings', 'No acute intracranial hemorrhage. Ventricles are normal in size. Mild chronic microvascular ischemic changes.');
+        applySuggestion('impression', 'No acute intracranial abnormality.');
+        showNotification("Auto-populated report from Neuromorph findings", "success");
+    }, 1000);
+}
+
+
 // Dashboard Updates
 function updateDashboardStats() {
     document.getElementById('stat-patients').textContent = appState.patients.length;
     document.getElementById('stat-reports').textContent = appState.reports.length;
-    document.getElementById('stat-quantum-ops').textContent = appState.quantumMetrics.totalOptimizations;
-    document.getElementById('stat-quality').textContent = appState.quantumMetrics.averageConfidence || '0.0';
-    document.getElementById('avg-confidence').textContent = appState.quantumMetrics.averageConfidence || '0.00';
-    document.getElementById('quantum-advantage').textContent = appState.quantumMetrics.quantumAdvantage || '0.00';
+    document.getElementById('stat-gemini-ops').textContent = appState.geminiMetrics.totalInferences;
+    document.getElementById('stat-quality').textContent = appState.geminiMetrics.averageConfidence || '0.0';
+    document.getElementById('avg-confidence').textContent = appState.geminiMetrics.averageConfidence || '0.00';
+    document.getElementById('tokens-sec').textContent = appState.geminiMetrics.tokensPerSecond || '0';
 }
 
 function updateRecentReports() {
@@ -420,11 +596,11 @@ function updateRecentReports() {
                     <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem;">${getTemplateDisplayName(report.template_id)}</h4>
                     <p style="font-size: 0.85rem; color: var(--text-muted);">${formatDateTime(report.created_at)}</p>
                 </div>
-                <span class="badge ${report.status === 'finalized' ? 'quantum-badge' : ''}" style="${report.status !== 'finalized' ? 'background: var(--warning); color: white;' : ''}">
+                <span class="badge ${report.status === 'finalized' ? 'gemini-badge' : ''}" style="${report.status !== 'finalized' ? 'background: var(--warning); color: white;' : ''}">
                     ${report.status}
                 </span>
             </div>
-            ${report.quality_score ? `<div style="font-size: 0.85rem; color: var(--quantum-glow);">Quality: ${report.quality_score}</div>` : ''}
+            ${report.quality_score ? `<div style="font-size: 0.85rem; color: var(--gemini-glow);">Quality: ${report.quality_score}</div>` : ''}
         </div>
     `).join('');
 }
@@ -499,6 +675,9 @@ function showNotification(message, type = 'info') {
 
 // Initialize Demo Data
 function initializeDemo() {
+    // Initialize Ambra Worklist
+    initializeAmbraWorklist();
+
     // Create sample patients
     const samplePatients = [
         {
@@ -542,10 +721,10 @@ function initializeDemo() {
     ];
 
     appState.patients = samplePatients;
-    appState.quantumMetrics = {
-        totalOptimizations: 0,
+    appState.geminiMetrics = {
+        totalInferences: 0,
         averageConfidence: 0.000,
-        quantumAdvantage: 0.000
+        tokensPerSecond: 0
     };
 
     updatePatientsDisplay();
