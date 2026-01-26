@@ -73,6 +73,11 @@
                 <span class="tab-icon">🧩</span>
                 ASD Treatment
             </button>
+
+            <button class="nav-tab" data-module="sad">
+                <span class="tab-icon">❄️</span>
+                Seasonal Affective Disorder
+            </button>
         </nav>
 
         <!-- Main Content Area -->
@@ -752,7 +757,36 @@
             </div>
         </div>
 
-        <!-- Statistical Congruence & Inflection Reasoning - REMOVED -->
+        <!-- Statistical Congruence & Inflection Reasoning -->
+        <div class="grid-2">
+            <div class="card">
+                <h3>📈 Statistical Congruence Analysis</h3>
+                <p style="font-size: 0.9em; color: #aaa;">
+                    Recovery trajectory congruence with ideal sigmoidal models.
+                </p>
+                <div style="position: relative; height: 250px; width: 100%;">
+                    <canvas id="congruenceCanvas"></canvas>
+                </div>
+                <div id="congScore"
+                    style="text-align: right; margin-top: 5px; font-family: monospace; color: var(--primary);">
+                    Corr: --
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>mj Reasoning Inflection Points</h3>
+                <p style="font-size: 0.9em; color: #aaa;">
+                    Second-derivative analysis of recovery velocity.
+                </p>
+                <div style="position: relative; height: 250px; width: 100%;">
+                    <canvas id="inflectionCanvas"></canvas>
+                </div>
+                <div id="inflectionReasoning"
+                    style="margin-top: 10px; font-size: 0.85em; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px;">
+                    Awaiting theoretical derivation...
+                </div>
+            </div>
+        </div>
 
         <!-- Circuit Schematic -->
         <div class="card">
@@ -804,30 +838,113 @@
                     </div>
                 </div>
             </div>
+            <!-- SAD Treatment Module -->
+            <div class="module" id="sadModule">
+                <div class="module-header">
+                    <h2>❄️ Seasonal Affective Disorder Treatment</h2>
+                    <p>Circadian Rhythm Entrainment with Statistically Optimized DBS</p>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Simulation Controls -->
+                    <div class="card">
+                        <h3>Treatment Configuration</h3>
+                        <div class="control-group">
+                            <label>Target Region</label>
+                            <select id="sad-target"
+                                style="width: 100%; padding: 8px; background: #333; color: white; border: 1px solid #555;">
+                                <option value="Lateral Habenula" selected>Lateral Habenula (LHb)</option>
+                                <option value="SCN">Suprachiasmatic Nucleus (SCN)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Stimulation Frequency (Hz)</label>
+                            <input type="number" id="sad-frequency" value="135" min="2" max="250">
+                        </div>
+                        <div class="control-group">
+                            <label>Treatment Paradigm</label>
+                            <select id="sad-paradigm"
+                                style="width: 100%; padding: 8px; background: #333; color: white; border: 1px solid #555;">
+                                <option value="Standard" selected>Standard Protocols</option>
+                                <option value="Adaptive">Adaptive (Bio-Feedback)</option>
+                                <option value="Entrainment">Circadian Entrainment</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Amplitude (mA)</label>
+                            <input type="number" id="sad-amplitude" value="2.5" step="0.1">
+                        </div>
+
+                        <button class="btn-primary" id="run-sad-sim" style="width: 100%; margin-top: 20px;">
+                            <span>⏯</span> Run SAD Treatment Simulation
+                        </button>
+                    </div>
+
+                    <!-- Neural Dynamics Plot -->
+                    <div class="card">
+                        <h3>Dynamics & Recovery</h3>
+                        <div style="margin-bottom: 5px; font-size: 0.85em; color: #888;">Neural Oscillations</div>
+                        <canvas id="sad-chart" height="120"></canvas>
+
+                        <div style="margin-top: 15px; margin-bottom: 5px; font-size: 0.85em; color: #888;">Projected
+                            Recovery Rate (12 Weeks)</div>
+                        <canvas id="sad-recovery-chart" height="120"></canvas>
+                    </div>
+                </div>
+
+                <!-- Analysis Results -->
+                <div class="card" style="margin-top: 20px;">
+                    <h3>📊 Post-Treatment Analysis & FEA</h3>
+                    <div id="sad-ml-results" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+                        <!-- DBS Profile Column -->
+                        <div class="card" style="background: rgba(0,0,0,0.2); border: 1px solid #444;">
+                            <h4 style="color: var(--primary);">⚡ DBS Stimulation Profile</h4>
+                            <div id="dbs-profile-content" style="font-size: 0.9em; margin-top: 10px;">
+                                <div style="color: #888; text-align: center; padding: 20px;">Awaiting simulation...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Post-Treatment Column -->
+                        <div class="card" style="background: rgba(0,0,0,0.2); border: 1px solid #444;">
+                            <h4 style="color: var(--secondary);">📈 Post-Treatment Parameters</h4>
+                            <div id="post-treatment-content" style="font-size: 0.9em; margin-top: 10px;">
+                                <div style="color: #888; text-align: center; padding: 20px;">Awaiting simulation...
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            </main>
         </div>
-    </div>
-    </div>
 
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <!-- Chart.js for visualizations -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-    <!-- Three.js for 3D brain visualization -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+        <!-- Three.js for 3D brain visualization -->
+        <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
-    <!-- Module Scripts -->
-    <script src="circuit_designer.js"></script>
-    <script src="brain_visualizer.js"></script>
-    <script src="waveform_generator.js"></script>
-    <script src="ai_optimizer.js"></script>
-    <script src="clinical_dashboard.js"></script>
-    <script src="fea_interface.js"></script>
-    <script src="protocol_interface.js"></script>
-    <script src="quantum_optimizer_ui.js"></script>
-    <script src="ocd_dashboard.js"></script>
-    <script src="asd_dashboard.js"></script>
+        <!-- Module Scripts -->
+        <script src="circuit_designer.js"></script>
+        <script src="brain_visualizer.js"></script>
+        <script src="waveform_generator.js"></script>
+        <script src="ai_optimizer.js"></script>
+        <script src="clinical_dashboard.js"></script>
+        <script src="fea_interface.js"></script>
+        <script src="protocol_interface.js"></script>
+        <script src="quantum_optimizer_ui.js"></script>
+        <script src="ocd_dashboard.js"></script>
+        <script src="asd_dashboard.js"></script>
 
-    <!-- Main Application Controller (must be last) -->
-    <script src="app.js"></script>
+
+        <!-- Main Application Controller (must be last) -->
+        <script src="sad_dashboard.js"></script>
+        <script src="app.js"></script>
 </body>
 
 </html>

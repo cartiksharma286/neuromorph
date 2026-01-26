@@ -77,8 +77,8 @@ class ASDDashboard {
                 // Bar plot removed: this.renderDistributionPlot(result.pre_treatment, result.post_treatment);
 
                 // New Statistical Visualizations
-                // Removed by user request: this.renderCongruencePlot(result.repair_timeline, result.statistical_congruence);
-                // Removed by user request: this.renderInflectionPlot(result.statistical_congruence);
+                this.renderCongruencePlot(result.repair_timeline, result.statistical_congruence);
+                this.renderInflectionPlot(result.statistical_congruence);
 
             }
         } catch (error) {

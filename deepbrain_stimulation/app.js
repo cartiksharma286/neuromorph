@@ -3,7 +3,7 @@
  * Handles navigation, API communication, and module coordination
  */
 
-const API_BASE = '/api';
+const API_BASE = 'http://localhost:5002/api';
 
 class DBSApplication {
     constructor() {
@@ -38,6 +38,10 @@ class DBSApplication {
         }
         if (typeof OCDDashboard !== 'undefined') {
             window.ocdDashboard = new OCDDashboard();
+        }
+
+        if (typeof SADDashboard !== 'undefined') {
+            window.sadDashboard = new SADDashboard();
         }
     }
 
@@ -97,6 +101,10 @@ class DBSApplication {
             case 'asd':
                 if (window.asdDashboard) window.asdDashboard.init();
                 break;
+            case 'sad':
+                if (window.sadDashboard) window.sadDashboard.init();
+                break;
+
         }
     }
 

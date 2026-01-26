@@ -8,7 +8,10 @@ from flask_cors import CORS
 import json
 import os
 import numpy as np
-import torch
+from concurrent.futures import ThreadPoolExecutor
+import matplotlib
+matplotlib.use('Agg')  # Optimize for server-side non-GUI rendering
+import matplotlib.pyplot as plt
 
 # Import our modules
 from dbs_circuit_generator import DBSCircuitGenerator
@@ -26,8 +29,10 @@ from ocd_neural_model import OCDNeuralModel
 from ocd_quantum_optimizer import OCDQuantumOptimizer
 from asd_neural_model import ASDNeuralRepairModel
 
+
+
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Initialize lightweight components immediately
 circuit_generator = DBSCircuitGenerator()
@@ -36,6 +41,7 @@ neural_model = PTSDNeuralModel()
 safety_validator = SafetyValidator()
 fea_simulator = DBSFEASimulator()
 protocol_optimizer = TreatmentProtocolOptimizer(neural_model)
+executor = ThreadPoolExecutor(max_workers=4)
 
 # Lazy-load heavy components (quantum optimizers, neural models)
 # These will be initialized on first use to speed up server startup
@@ -45,7 +51,6 @@ _biomarker_tracker = None
 _ocd_model = None
 _ocd_quantum = None
 _asd_model = None
-
 # Global state
 ai_models_trained = False
 
@@ -84,7 +89,15 @@ def get_asd_model():
     global _asd_model
     if _asd_model is None:
         _asd_model = ASDNeuralRepairModel(severity='severe')
+    if _asd_model is None:
+        _asd_model = ASDNeuralRepairModel(severity='severe')
     return _asd_model
+
+
+
+
+
+
 
 
 
@@ -487,13 +500,15 @@ def simulate_dementia_stimulation():
     data = request.json
     
     try:
-        result = get_dementia_model().apply_dbs_stimulation(
+        # Offload Dementia Step
+        future = executor.submit(get_dementia_model().apply_dbs_stimulation, 
             target_region=data['target_region'],
             amplitude_ma=data['amplitude_ma'],
             frequency_hz=data['frequency_hz'],
             pulse_width_us=data['pulse_width_us'],
             duration_s=data.get('duration_s', 1.0)
         )
+        result = future.result()
         
         return jsonify({
             'success': True,
@@ -560,11 +575,17 @@ def simulate_ocd_dbs():
     pre_gain = sim_model.calculate_cycle_gain()
     pre_ybocs = sim_model.calculate_ybocs()
     
-    sim_model.apply_dbs(
-        target=data.get('target', 'caudate'),
-        frequency=data.get('frequency', 130),
-        amplitude=data.get('amplitude', 3.0)
-    )
+    # Offload OCD simulation
+    def _run_ocd_sim():
+        sim_model.apply_dbs(
+            target=data.get('target', 'caudate'),
+            frequency=data.get('frequency', 130),
+            amplitude=data.get('amplitude', 3.0)
+        )
+        return sim_model
+
+    future = executor.submit(_run_ocd_sim)
+    sim_model = future.result()
     
     post_gain = sim_model.calculate_cycle_gain()
     post_ybocs = sim_model.calculate_ybocs()
@@ -660,11 +681,15 @@ def optimize_asd_treatment():
             _asd_model = ASDNeuralRepairModel(severity=severity)
         
         # Run Repair Session with parameters
-        result = _asd_model.simulate_repair_session(
-            target_region=target,
-            frequency=frequency,
-            amplitude=amplitude
-        )
+        def _run_asd_repair():
+             return _asd_model.simulate_repair_session(
+                target_region=target,
+                frequency=frequency,
+                amplitude=amplitude
+            )
+        
+        future = executor.submit(_run_asd_repair)
+        result = future.result()
         
         # Get plotting data
         plot_data = _asd_model.get_plotting_data()
@@ -685,6 +710,48 @@ def get_asd_plot_data():
     """Get connectivity matrices for ASD plotting"""
     try:
         return jsonify(get_asd_model().get_plotting_data())
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+
+
+
+
+
+
+from sad_neural_model import SADNeuralModel
+
+# ... (imports continue) ...
+
+# Lazy-load global
+_sad_model = None
+
+def get_sad_model():
+    global _sad_model
+    if _sad_model is None:
+        _sad_model = SADNeuralModel()
+    return _sad_model
+
+
+# ==================== SAD Model Endpoints ====================
+
+@app.route('/api/sad/treat', methods=['POST'])
+def treat_sad():
+    """Simulate SAD Treatment with DBS and Statistical ML"""
+    try:
+        data = request.json
+        target = data.get('target', 'Lateral Habenula')
+        freq = float(data.get('frequency', 135.0))
+        amp = float(data.get('amplitude', 2.5))
+        duration = float(data.get('duration', 1.0))
+        
+        result = get_sad_model().simulate_treatment_session(target, freq, amp, duration)
+        
+        return jsonify({
+            'success': True,
+            'result': result
+        })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -712,12 +779,14 @@ def optimize_with_vqe():
             # Negative efficacy (minimize)
             return -result['efficacy']
         
-        result = get_quantum_optimizer().optimize_vqe(
+        future = executor.submit(
+            get_quantum_optimizer().optimize_vqe,
             objective_function=objective,
             initial_params=initial_params,
             bounds=bounds,
             max_iterations=data.get('max_iterations', 50)
         )
+        result = future.result()
         
         return jsonify({
             'success': True,
@@ -992,7 +1061,7 @@ if __name__ == '__main__':
     print("="*60)
     print("DBS-PTSD Treatment System Backend Server")
     print("="*60)
-    print("\nStarting server on http://localhost:5001")
+    print("\nStarting server on http://localhost:5002")
     print("\nAvailable endpoints:")
     print("  Circuit Generation: /api/circuit/*")
     print("  AI Engine: /api/ai/*")
@@ -1000,6 +1069,7 @@ if __name__ == '__main__':
     print("  Safety Validation: /api/safety/*")
     print("\n[!] FOR RESEARCH AND EDUCATIONAL USE ONLY")
     print("="*60)
-    print("\nOpen http://localhost:5001 in your browser")
+    print("\nOpen http://localhost:5002 in your browser")
     
-    app.run(debug=True, host='0.0.0.0', port=5002)
+    # Run with threading enabled and debug off for performance
+    app.run(debug=False, host='0.0.0.0', port=5002, threaded=True)

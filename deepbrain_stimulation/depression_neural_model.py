@@ -11,147 +11,136 @@ from fea_simulator import DBSFEASimulator
 
 @dataclass
 class NeurotransmitterState:
-    serotonin: float  # 5-HT: Mood stability, inhibition of negative affect
-    dopamine: float   # DA: Motivation, Reward, Executive gating in PFC
-    glutamate: float  # Excitatory drive (often overactive in depression circuits like sgACC)
-    
+    serotonin: float  # 5-HT: Mood stability
+    dopamine: float   # DA: Motivation & Reward
+    glutamate: float  # Excitatory drive (target for reduction)
+    hippocampal_activity: float # New: Memory encoding & Neurogenesis marker
+
 @dataclass
 class ExecutiveMetrics:
     decision_speed: float
     working_memory: float
     cognitive_flexibility: float
+    emotional_regulation: float # New metric
 
 class DepressionNeuralModel:
     def __init__(self):
-        # Baseline: Depression typically characterized by low 5-HT, low/dysregulated DA, high Glutamate in local circuitry
+        # Baseline: High Glutamate, Low 5-HT/DA, Low Hippocampal Activity (atrophy risk)
         self.state = NeurotransmitterState(
             serotonin=0.3,
             dopamine=0.4,
-            glutamate=0.8
+            glutamate=0.85, 
+            hippocampal_activity=0.3
         )
         
         self.executive_function = ExecutiveMetrics(
             decision_speed=0.4,
             working_memory=0.5,
-            cognitive_flexibility=0.3
+            cognitive_flexibility=0.3,
+            emotional_regulation=0.2
         )
         
-        # FEA Simulator for Cortical Profiles
+        # FEA Simulator
         self.fea = DBSFEASimulator(resolution=64)
         
-        # Target specific coordinates in the FEA grid
+        # Expanded Targets including Frontal Lobe regions
         self.targets = {
-            'sgACC': (32, 45),     # Subgenual Anterior Cingulate (Area 25)
-            'NAc': (32, 20),       # Nucleus Accumbens
-            'dlPFC': (20, 10),     # Dorsolateral Prefrontal Cortex (indirect)
-            'mFB': (32, 32)        # Medial Forebrain Bundle
+            'sgACC': (32, 45),     # Subgenual Cingulate (Area 25)
+            'dlPFC': (20, 10),     # Dorsolateral Prefrontal Cortex (Executive)
+            'vmPFC': (32, 55),     # Ventromedial PFC (Emotion Regulation)
+            'NAc': (32, 20),       # Nucleus Accumbens (Reward)
+            'HP': (32, 32)         # Hippocampus (Direct - theoretical/modeling)
         }
         
-        # Simulation History
         self.history = []
 
     def simulate_treatment_step(self, target: str, frequency: float, amplitude: float):
         """
-        Simulate one treatment step:
-        1. Run FEA to determine activation volume and profile.
-        2. Adjust Neurotransmitters based on target activation.
-        3. Update Executive Function based on transmitters.
+        Simulate treatment step with focus on Frontal Lobe & Hippocampal regulation.
         """
         
         # 1. Run FEA
         target_coords = self.targets.get(target, (32, 32))
         self.fea.generate_tissue_model(target_center=target_coords)
         
-        # Configure electrode (simplified mapping of amplitude to voltage)
-        # Higher amplitude = higher voltage spread
         voltage = -1.0 * amplitude
         config = {'voltages': {'c1': voltage}}
         
         phi, e_field, vta_mask = self.fea.solve_electric_field(config)
         
-        # Calculate Activation metrics
+        # Activation metrics
         activation_volume = np.sum(vta_mask)
         max_field = np.max(e_field)
         
-        # 2. Neurotransmitter Dynamics
-        # Mechanism: High Freq DBS interacts with reuptake and release
-        
-        # Frequency efficacy (similar to OCD model, tuned for 130Hz)
+        # 2. Dynamics
+        # Frequency tuning (130Hz optimal for depression)
         freq_factor = np.exp(-((frequency - 130)**2) / (2 * 40**2))
-        
-        # Intensity factor from FEA
-        intensity_factor = min(1.0, activation_volume / 200.0) * (abs(voltage)/5.0)
-        
-        treatment_efficacy = freq_factor * intensity_factor
-        
-        # Regulatory changes based on Target
-        if target == 'sgACC':
-            # Area 25 suppression leads to 5-HT normalization and Glutamate reduction
-            self.state.glutamate -= 0.1 * treatment_efficacy * self.state.glutamate
-            self.state.serotonin += 0.05 * treatment_efficacy * (1.0 - self.state.serotonin)
-            # Indirectly helps Dopamine due to reduced inhibition/stress
-            self.state.dopamine += 0.02 * treatment_efficacy * (1.0 - self.state.dopamine)
-            
+        intensity_factor = min(1.0, activation_volume / 250.0) * (abs(voltage)/4.0)
+        efficacy = freq_factor * intensity_factor
+
+        # Target-Specific Logic
+        if target == 'dlPFC' or target == 'Frontal Lobe': # Frontal Lobe Acute DBS
+            # Top-down regulation: Increases Hippocampal activity via control pathways
+            # Reduces excess Glutamate in limbic loops
+            self.state.hippocampal_activity += 0.15 * efficacy * (1.0 - self.state.hippocampal_activity)
+            self.state.glutamate -= 0.12 * efficacy * self.state.glutamate
+            self.state.dopamine += 0.05 * efficacy
+            self.executive_function.working_memory += 0.1 * efficacy
+            self.executive_function.emotional_regulation += 0.08 * efficacy
+
+        elif target == 'vmPFC':
+            # Strong emotional regulation, glutamatergic dampening
+            self.state.glutamate -= 0.15 * efficacy * self.state.glutamate
+            self.state.serotonin += 0.08 * efficacy * (1.0 - self.state.serotonin)
+            self.executive_function.emotional_regulation += 0.15 * efficacy
+            self.state.hippocampal_activity += 0.05 * efficacy # Mild boost
+
+        elif target == 'sgACC':
+            # Classic target: Reduces sadness, normalizes metabolic activity
+            self.state.glutamate -= 0.1 * efficacy * self.state.glutamate
+            self.state.serotonin += 0.1 * efficacy * (1.0 - self.state.serotonin)
+            self.executive_function.decision_speed += 0.05 * efficacy
+
         elif target == 'NAc':
-            # Reward pathway -> Dopamine boost
-            self.state.dopamine += 0.08 * treatment_efficacy * (1.0 - self.state.dopamine)
-            self.state.serotonin += 0.02 * treatment_efficacy
-            
-        elif target == 'mFB':
-            # Major highway -> global boost
-            self.state.dopamine += 0.06 * treatment_efficacy
-            self.state.serotonin += 0.06 * treatment_efficacy
-            
-        # Homestasis / Decay (tendency to return to baseline without persistent treatment)
-        # Modeled as a slow leak back to pathology if treatment efficacy is low
-        
-        # 3. Update Executive Function (Derived from Neurotransmitters)
-        # DA drives flexibility and memory; 5-HT drives decision stability/speed (less hesitation)
-        
-        self.executive_function.working_memory = 0.3 + 0.6 * self.state.dopamine
-        self.executive_function.cognitive_flexibility = 0.2 + 0.8 * self.state.dopamine
-        self.executive_function.decision_speed = 0.3 + 0.4 * self.state.serotonin + 0.3 * self.state.dopamine
+            # Reward boost
+            self.state.dopamine += 0.2 * efficacy * (1.0 - self.state.dopamine)
+            self.executive_function.cognitive_flexibility += 0.1 * efficacy
+
+        # General Hippocampal decay if untreated
+        if efficacy < 0.1:
+            self.state.hippocampal_activity *= 0.99
+
+        # 3. Update Metrics based on new state
+        self.executive_function.decision_speed = 0.3 + 0.5 * self.state.serotonin
+        self.executive_function.cognitive_flexibility = 0.2 + 0.6 * self.state.dopamine + 0.2 * self.state.hippocampal_activity
         
         # Generate Visualization
-        fea_heatmap = self.fea.generate_heatmap_plot(e_field, title=f"Cortical Profile: {target} (E-Field)")
+        fea_heatmap = self.fea.generate_heatmap_plot(e_field, title=f"Cortical: {target} | Glu: {self.state.glutamate:.2f}")
         
-        # Post Treatment Paradigms (Suggestions based on state)
         paradigms = self._generate_paradigms()
         
-        result = {
+        return {
             'neurotransmitters': self.state.__dict__,
             'executive': self.executive_function.__dict__,
             'fea_heatmap': fea_heatmap,
             'activation_stats': {
-                'volume_mm3': float(activation_volume * 0.5), # Approx scaling
+                'volume_mm3': float(activation_volume * 0.5),
                 'max_field_v_mm': float(max_field)
             },
             'paradigms': paradigms
         }
-        
-        return result
 
     def _generate_paradigms(self) -> List[str]:
-        """Generate post-treatment behavioral paradigms based on current state."""
         paradigms = []
-        
-        if self.state.dopamine > 0.6:
-            paradigms.append("Reward Learning Integration: Engage in goal-directed tasks immediately post-stimulation.")
-        else:
-            paradigms.append("Motivation Priming: Low-effort reward tasks recommended.")
-            
-        if self.state.serotonin > 0.6:
-            paradigms.append("Affective Resilience: Cognitive Behavioral Therapy (CBT) consolidation window open.")
-        
-        if self.executive_function.cognitive_flexibility > 0.6:
-            paradigms.append("Cognitive Reappraisal: Active reframing of negative thought patterns.")
-            
+        if self.state.hippocampal_activity > 0.6:
+            paradigms.append("Neurogenesis Protocol: Engage in spatial navigation tasks to boost hippocampal volume.")
         if self.state.glutamate < 0.6:
-            paradigms.append("Neuroplasticity Maintenance: Sleep hygiene critical for consolidating synaptic LTD.");
-            
+            paradigms.append("Excitotoxicity Reduced: Maintenance phase - prioritize sleep and stress reduction.")
+        if self.executive_function.emotional_regulation > 0.6:
+            paradigms.append("Affective Control: Practice mindfulness to consolidate vmPFC-Amygdala connectivity.")
+        if self.state.dopamine > 0.6:
+            paradigms.append("Reward Integration: Goal-directed behavioral activation.")
         return paradigms
 
     def get_cortical_profile_data(self):
-        """Return raw data for frontend custom rendering if needed."""
-        # For now, we rely on the server-side heatmap generation
         pass

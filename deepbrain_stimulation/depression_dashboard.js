@@ -20,19 +20,21 @@ class DepressionDashboard {
         this.chart = new Chart(this.ctx, {
             type: 'bar',
             data: {
-                labels: ['Serotonin (5-HT)', 'Dopamine (DA)', 'Glutamate'],
+                labels: ['Serotonin', 'Dopamine', 'Glutamate', 'Hippocampal Act.'],
                 datasets: [{
-                    label: 'Neurotransmitter Levels',
-                    data: [0.3, 0.4, 0.8], // Initial mock data
+                    label: 'Biomarkers',
+                    data: [0.3, 0.4, 0.85, 0.3], // Updated mock data
                     backgroundColor: [
                         'rgba(75, 192, 192, 0.7)', // Serotonin - Teal
                         'rgba(54, 162, 235, 0.7)', // Dopamine - Blue
-                        'rgba(255, 99, 132, 0.7)'  // Glutamate - Red
+                        'rgba(255, 99, 132, 0.7)', // Glutamate - Red
+                        'rgba(153, 102, 255, 0.7)' // Hippocampus - Purple
                     ],
                     borderColor: [
                         'rgba(75, 192, 192, 1)',
                         'rgba(54, 162, 235, 1)',
-                        'rgba(255, 99, 132, 1)'
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(153, 102, 255, 1)'
                     ],
                     borderWidth: 1
                 }]
@@ -54,7 +56,7 @@ class DepressionDashboard {
                 },
                 plugins: {
                     legend: { display: false },
-                    title: { display: true, text: 'Synaptic Balance', color: '#aaa' }
+                    title: { display: true, text: 'Neurotransmitter & Activity Profile', color: '#aaa' }
                 }
             }
         });
@@ -64,7 +66,6 @@ class DepressionDashboard {
         document.getElementById('simDepressionBtn').addEventListener('click', () => this.runSimulation());
         document.getElementById('resetDepressionBtn').addEventListener('click', () => this.resetSimulation());
 
-        // Input Sync
         const sync = (id, valId) => {
             document.getElementById(id).addEventListener('input', (e) => {
                 document.getElementById(valId).textContent = e.target.value + (id.includes('Freq') ? ' Hz' : ' mA');
@@ -101,12 +102,16 @@ class DepressionDashboard {
         try {
             const response = await window.app.post('/depression/reset', {});
             if (response.success) {
-                // Reset UI visualization manually or re-fetch basic state if endpoint existed
-                // For now, reload chart with defaults
-                this.chart.data.datasets[0].data = [0.3, 0.4, 0.8];
+                this.chart.data.datasets[0].data = [0.3, 0.4, 0.85, 0.3];
                 this.chart.update();
                 document.getElementById('feaContainer').innerHTML = '<span style="color: #666;">Ready</span>';
                 document.getElementById('paradigmList').innerHTML = '<li>Baseline Restored.</li>';
+                document.getElementById('balanceStatus').textContent = '--';
+                // Reset bars
+                document.getElementById('flexMeter').style.width = '30%';
+                document.getElementById('memMeter').style.width = '50%';
+                document.getElementById('speedMeter').style.width = '40%';
+                if (document.getElementById('regMeter')) document.getElementById('regMeter').style.width = '20%';
             }
         } catch (e) { console.error(e); }
     }
@@ -114,15 +119,19 @@ class DepressionDashboard {
     updateUI(results) {
         // 1. Update Chart
         const nt = results.neurotransmitters;
-        this.chart.data.datasets[0].data = [nt.serotonin, nt.dopamine, nt.glutamate];
+        this.chart.data.datasets[0].data = [
+            nt.serotonin,
+            nt.dopamine,
+            nt.glutamate,
+            nt.hippocampal_activity
+        ];
         this.chart.update();
 
         // Update Status Text
-        const ratio = nt.serotonin / (nt.dopamine + 0.01);
-        let status = "Imbalanced";
-        if (ratio > 0.8 && ratio < 1.2) status = "Balanced";
-        else if (ratio < 0.5) status = "Dopaminergic Dominance (Agitation Risk)";
-        else if (ratio > 1.5) status = "Serotonergic Dominance (Sedation Risk)";
+        let status = "Analyzing...";
+        if (nt.glutamate < 0.6 && nt.hippocampal_activity > 0.5) status = "Optimal Regulation";
+        else if (nt.glutamate > 0.7) status = "Excitatory Excess (Risk)";
+        else status = "Modulating...";
 
         document.getElementById('balanceStatus').textContent = status;
 
@@ -144,9 +153,14 @@ class DepressionDashboard {
 
         // 3. Update Executive Metrics
         const exec = results.executive;
-        document.getElementById('flexMeter').style.width = (exec.cognitive_flexibility * 100) + '%';
-        document.getElementById('memMeter').style.width = (exec.working_memory * 100) + '%';
-        document.getElementById('speedMeter').style.width = (exec.decision_speed * 100) + '%';
+        document.getElementById('flexMeter').style.width = Math.min(100, (exec.cognitive_flexibility * 100)) + '%';
+        document.getElementById('memMeter').style.width = Math.min(100, (exec.working_memory * 100)) + '%';
+        document.getElementById('speedMeter').style.width = Math.min(100, (exec.decision_speed * 100)) + '%';
+        // Check if emotional regulation bar exists, if so update it
+        const regMeter = document.getElementById('regMeter');
+        if (regMeter) {
+            regMeter.style.width = Math.min(100, (exec.emotional_regulation * 100)) + '%';
+        }
 
         // 4. Update Paradigms
         const pList = document.getElementById('paradigmList');
