@@ -1926,10 +1926,18 @@ class MRIReconstructionSimulator:
         img_clipped = np.clip(image, p2, p98)
         
         # 3. Stretch to 0-1
-        if p98 - p2 < 1e-9:
-            return image # Uniform image
-            
-        img_norm = (img_clipped - p2) / (p98 - p2)
+        range_val = p98 - p2
+        if range_val < 1e-9:
+            # Fallback for sparse high-intensity images (where p99 is still 0 or low)
+            # Use absolute min/max to ensure normalization
+            min_val = np.min(image)
+            max_val = np.max(image)
+            if (max_val - min_val) > 1e-9:
+                img_norm = (image - min_val) / (max_val - min_val)
+            else:
+                return image # Truly uniform
+        else:
+            img_norm = (img_clipped - p2) / range_val
         
         # 4. Gamma Correction (Adaptive)
         # Check brightness
@@ -2042,8 +2050,13 @@ class MRIReconstructionSimulator:
         # 1. Reconstructed Image
         fig1, ax1 = plt.subplots(figsize=(6, 6))
         fig1.patch.set_facecolor('#0f172a')
-        ax1.imshow(reconstructed_img, cmap='gray', origin='lower', aspect='equal')
-        # Title removed for dashboard cleanliness as UI cards already have titles
+        
+        # Robust Normalization for Display
+        disp_img = np.nan_to_num(reconstructed_img)
+        if np.max(disp_img) - np.min(disp_img) > 1e-9:
+             disp_img = (disp_img - np.min(disp_img)) / (np.max(disp_img) - np.min(disp_img))
+             
+        ax1.imshow(disp_img, cmap='gray', origin='lower', aspect='equal', vmin=0, vmax=1, interpolation='bicubic')
         ax1.axis('off')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plots['recon'] = fig_to_b64(fig1, tight=False)
@@ -2052,7 +2065,7 @@ class MRIReconstructionSimulator:
         fig2, ax2 = plt.subplots(figsize=(6, 6))
         fig2.patch.set_facecolor('#0f172a')
         avg_k = np.mean(np.abs(np.array(kspace_data)), axis=0)
-        ax2.imshow(np.log(avg_k + 1e-5), cmap='viridis', origin='lower', aspect='equal')
+        ax2.imshow(np.log(avg_k + 1e-5), cmap='gray', origin='lower', aspect='equal')
         ax2.axis('off')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plots['kspace'] = fig_to_b64(fig2, tight=False)
@@ -2061,17 +2074,33 @@ class MRIReconstructionSimulator:
         fig3, ax3 = plt.subplots(figsize=(6, 6))
         fig3.patch.set_facecolor('#0f172a')
         mid = reconstructed_img.shape[0] // 2
-        ax3.plot(reconstructed_img[mid, :], color='#38bdf8', label='Recon')
-        ax3.plot(reference_M[mid, :], color='#94a3b8', linestyle='--', alpha=0.5, label='Ground Truth')
-        ax3.set_title("Center Line Profile")
+        
+        # Safe plotting
+        recon_profile = reconstructed_img[mid, :]
+        ref_profile = reference_M[mid, :]
+        # Normalize profiles for comparison if needed, but raw keeps units
+        
+        ax3.plot(recon_profile, color='#38bdf8', label='Recon')
+        ax3.plot(ref_profile, color='#94a3b8', linestyle='--', alpha=0.5, label='Ground Truth')
+        ax3.set_title("Center Line Profile", color='white')
         ax3.legend()
         ax3.grid(True, alpha=0.2)
+        ax3.tick_params(colors='white') # White text for axes
+        # Make spines white
+        for spine in ax3.spines.values():
+            spine.set_edgecolor('white')
+            
         plots['profile'] = fig_to_b64(fig3)
         
         # 4. Ground Truth (Ideal Magnetization)
         fig4, ax4 = plt.subplots(figsize=(6, 6))
         fig4.patch.set_facecolor('#0f172a')
-        ax4.imshow(reference_M, cmap='gray', origin='lower', aspect='equal')
+        
+        disp_ref = np.nan_to_num(reference_M)
+        if np.max(disp_ref) - np.min(disp_ref) > 1e-9:
+             disp_ref = (disp_ref - np.min(disp_ref)) / (np.max(disp_ref) - np.min(disp_ref))
+             
+        ax4.imshow(disp_ref, cmap='gray', origin='lower', aspect='equal', vmin=0, vmax=1, interpolation='bicubic')
         ax4.axis('off')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plots['phantom'] = fig_to_b64(fig4, tight=False)
@@ -2080,7 +2109,7 @@ class MRIReconstructionSimulator:
         fig5, ax5 = plt.subplots(figsize=(6, 6))
         fig5.patch.set_facecolor('#0f172a')
         k_gt = np.fft.fftshift(np.fft.fft2(reference_M))
-        ax5.imshow(np.log(np.abs(k_gt) + 1e-5), cmap='viridis', origin='lower', aspect='equal')
+        ax5.imshow(np.log(np.abs(k_gt) + 1e-5), cmap='gray', origin='lower', aspect='equal')
         ax5.axis('off')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plots['kspace_gt'] = fig_to_b64(fig5, tight=False)
