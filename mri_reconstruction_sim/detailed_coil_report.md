@@ -1,30 +1,30 @@
 
 # NeuroPulse Clinical Physics Report
 **Date:** January 14, 2026
-**Simulation ID:** SE-quantum_vascular
+**Simulation ID:** SE-standard
 
 ---
 
 ## 1. Executive Summary
-This report details the simulation results for the **Quantum Vascular** operating with **SE**.
+This report details the simulation results for the **Standard** operating with **SE**.
 
 ## 2. Physics & Circuit Topology
-Quantum Vascular Coil with elliptic integral coupling for enhanced SNR.
+Standard MRI Acquisition Loop.
 
 ### Circuit Schematic
 ![Schematic](current_schematic.png)
 
 ### Coil Derivation
-$$ M = \mu_0 \sqrt{ab}[(2-k^2)K(k) - 2E(k)]/k $$
+$$ S(k) = \int M(r) e^{-i k r} dr $$
 
 ---
 
 ## 3. Metrics
-* **Contrast:** 0.0752
-* **SNR Estimate:** 1.00
-* **Quantum Vascular Enabled:** True
+* **Contrast:** 0.0000
+* **SNR Estimate:** 0.00
+* **Quantum Vascular Enabled:** False
 * **50-Turn Head Coil Enabled:** False
-* **NVQLink Enabled:** True
+* **NVQLink Enabled:** False
 
 ## 4. Finite Math Calculations
 The simulation employs discrete finite mathematical operators for signal reconstruction.

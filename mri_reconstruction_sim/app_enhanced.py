@@ -47,7 +47,7 @@ def simulate():
         elif coil_mode == 'knee_vascular_array':
             phantom_type = 'knee'
 
-        sim.setup_phantom(use_real_data=True, phantom_type=phantom_type)
+        sim.setup_phantom(use_real_data=False, phantom_type=phantom_type)
         sim.generate_coil_sensitivities(num_coils=num_coils, coil_type=coil_mode, optimal_shimming=use_shimming)
         
         shim_report = None
@@ -139,7 +139,7 @@ def render_cortical():
         
         fig, ax = plt.subplots(figsize=(6, 6))
         fig.patch.set_facecolor('#0f172a')
-        ax.imshow(pd_surface, cmap='magma')
+        ax.imshow(pd_surface, cmap='gray')
         ax.set_title("Cortical Surface Reconstruction", color='white')
         ax.axis('off')
         
@@ -258,11 +258,11 @@ def signal_reconstruction_coil_geometry():
             fig.patch.set_facecolor('#0f172a')
             
             if len(sim.coils) > 0:
-                axes[0].imshow(np.abs(sim.coils[0]), cmap='viridis')
+                axes[0].imshow(np.abs(sim.coils[0]), cmap='gray')
                 axes[0].set_title(f'{coil_type} - Sensitivity', color='white')
                 axes[0].axis('off')
             
-            axes[1].imshow(np.log(np.abs(kspace[0]) + 1), cmap='hot')
+            axes[1].imshow(np.log(np.abs(kspace[0]) + 1), cmap='gray')
             axes[1].set_title('K-Space', color='white')
             axes[1].axis('off')
             
@@ -320,7 +320,7 @@ def render_neurovasculature():
             ax = axes.flatten()[idx]
             sim.set_view(orientation, 0.5)
             
-            ax.imshow(sim.pd_map, cmap='hot', vmin=0, vmax=1.5)
+            ax.imshow(sim.pd_map, cmap='gray', vmin=0, vmax=1.5)
             ax.set_title(f'{orientation.title()} - Neurovasculature', color='white')
             ax.axis('off')
             ax.set_facecolor('#0f172a')

@@ -596,6 +596,10 @@ class Gemini3SignalEnhancer:
         recon_image[mask_anatomy] = anatomy_sharp[mask_anatomy]
         # Background remains 0 (perfect cleaning)
         
+        if np.sum(mask_anatomy) < 0.01 * image.size:
+            # Safety Fallback: If segmentation failed (too aggressive), return smoothed original
+            return anatomy_sharp
+            
         return recon_image
 
 
