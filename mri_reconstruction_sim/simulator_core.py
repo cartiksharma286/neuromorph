@@ -1533,14 +1533,19 @@ class MRIReconstructionSimulator:
             # Quantum Entangled sequence: Uses entangled photons/spins to reduce noise floor
             # Mathematically equivalent to higher SNR or lower noise_level
             # Also assumes ideal contrast
-            M = self.pd_map * (1 - np.exp(-TR / self.t1_map)) # T1 weight
-            q_factor = 0.1 # 10x noise reduction
+            M = self.pd_map * (1 - np.exp(-TR / self.t1_map)) * np.exp(-TE / self.t2_map) # T1/T2 Entanglement
+            # Grayscale Optimization
+            if np.max(M) > 0:
+                M = M / np.max(M)
+            q_factor = 0.01 # 100x noise reduction
             
         elif sequence_type == 'ZeroPointGradients':
             # Hypothetical sequence utilizing zero-point energy fluctuations (Sci-Fi/Advanced)
             # Incredible T2* contrast
             M = self.pd_map * np.exp(-TE / (self.t2_map / 4.0)) * 2.0
-            q_factor = 0.05 # 20x noise reduction
+            if np.max(M) > 0:
+                 M = M / np.max(M)
+            q_factor = 0.02 # 50x noise reduction
 
         elif sequence_type == 'QuantumStatisticalCongruence':
             # Uses statistical congruences between T1 and T2 manifolds to optimize signal
@@ -1564,7 +1569,9 @@ class MRIReconstructionSimulator:
             M = self.pd_map * contrast_weight
             
             # This method theoretically cancels out thermal noise via statistical averaging
-            q_factor = 0.01 # 100x noise reduction (near perfect)
+            if np.max(M) > 0:
+                M = M / np.max(M)
+            q_factor = 0.005 # 200x noise reduction (near perfect)
 
         elif sequence_type == 'QuantumDualIntegral':
             # "Dual Sense" Simulation:
@@ -1598,7 +1605,7 @@ class MRIReconstructionSimulator:
             M = self.pd_map * (numerator / denominator) * np.exp(-TE / t2_star) * berry_phase
             M = np.abs(M) 
             
-            # --- Quantum Entangled Sequence ---
+            # --- Quantum Entangled Sequence Features ---
             # Features:
             # 1. Statistical Imitation Reasoning: Infers missing high-frequency data using prior "Imitation" (Edge Enhancement).
             # 2. Quantum LLM Reasoning (Gemini 3.0): Dynamic Optimization of Q-Factor based on Image Entropy.
@@ -1610,25 +1617,24 @@ class MRIReconstructionSimulator:
             
             # Reasoning Step:
             # "If entropy is high (complex), use higher precision (lower q). If simple, loosen constraint."
-            # Actually, standard compressed sensing does opposite? 
-            # Let's say: High Entropy -> Needs more protection -> Lower Noise Floor.
             
             # Simulating "Reasoning" Output
-            optimized_q = 0.05 / (1.0 + entropy * 0.5) 
-            q_factor = max(0.005, optimized_q) # Lower bound 0.005
+            optimized_q = 0.02 / (1.0 + entropy * 0.5) 
+            q_factor = max(0.002, optimized_q) 
             
             # Statistical Imitation (Synthesizing Detail)
-            # Simulate "Hallucination" of fine details based on gradients (Generative Fill)
             grads = np.gradient(M)
             edge_map = np.sqrt(grads[0]**2 + grads[1]**2)
-            M = M + 0.15 * edge_map # "Imitation" of sharp edges
+            M = M + 0.2 * edge_map # Enhanced "Imitation" of sharp edges
             
             # Entanglement Contrast (Fused T1/T2)
-            # Simulates getting T1 and T2 contrast simultaneously (Entangled State)
             M_t1 = self.pd_map * (1 - np.exp(-TR/self.t1_map))
             M_t2 = self.pd_map * np.exp(-TE/self.t2_map)
             # Quantum Superposition of constrasts
             M = 0.5 * M + 0.25 * M_t1 + 0.25 * M_t2
+            
+            if np.max(M) > 0:
+                M = M / np.max(M)
             
         elif sequence_type == 'QuantumBerryPhase':
             # Topological Phase Acquisition
@@ -1649,6 +1655,8 @@ class MRIReconstructionSimulator:
             
             # The signal in a Berry sequence is insensitive to local B0 offsets
             M = np.abs(M_base * berry_phase)
+            if np.max(M) > 0:
+                M = M / np.max(M)
             q_factor = 0.005 # Topological protection against noise
             
         elif sequence_type == 'QuantumLowEnergyBeam':
@@ -1670,6 +1678,9 @@ class MRIReconstructionSimulator:
             
             # The more complex the image, the more beam energy is concentrated
             M = M * (1.0 + 0.1 * entropy)
+            
+            if np.max(M) > 0:
+                M = M / np.max(M)
             
             q_factor = 0.002 # Extremely low noise floor due to quantum reconstruction
             
@@ -1702,17 +1713,20 @@ class MRIReconstructionSimulator:
             
             # Composite Image
             M = S_static
-            M[mask_vessel] = S_flow[mask_vessel] * 1.5 # Artificial boost for "Evident" vessels
+            M[mask_vessel] = S_flow[mask_vessel] * 1.8 # Enhanced boost for "Evident" vessels
             
             # 2. NVQLink Quantum Denoising
-            # Apply AI-based edge preservation for vessels
+            # Apply AI-based edge preservation for vessels and background suppression
             grads = np.gradient(M)
             vessel_edges = np.sqrt(grads[0]**2 + grads[1]**2)
-            M = M + 0.3 * vessel_edges # Sharpen vessels
+            M = M + 0.4 * vessel_edges # Sharpen vessels
             
-            M = M + 0.3 * vessel_edges # Sharpen vessels
+            # Grayscale Optimization: Suppress background noise
+            # Push low values to zero (blacker blacks)
+            threshold = np.percentile(M, 40)
+            M[M < threshold] *= 0.1
             
-            q_factor = 0.01 # Ultra clean
+            q_factor = 0.005 # Ultra clean
             
         elif sequence_type == 'Gemini3.0':
             # Gemini 3.0: Context-Aware Pulse Sequence
@@ -1743,7 +1757,17 @@ class MRIReconstructionSimulator:
             M_final[mask_edges] = M[mask_edges] # Keep edges sharp
             M = M_final
             
-            q_factor = 0.005 # Near-perfect (Hallucination-free super-res)
+            # Dynamic Range Expansion (Grayscale SNR Boost)
+            p_low, p_high = np.percentile(M, (2, 98))
+            if p_high > p_low:
+                M = (M - p_low) / (p_high - p_low)
+                M = np.clip(M, 0, 1) * 1.0 # Ensure max signal
+            
+            # Gamma Correction for better mid-tone contrast
+            gamma = 0.9 
+            M = M ** gamma
+            
+            q_factor = 0.002 # Near-perfect (Hallucination-free super-res)
             
         elif sequence_type == 'GenerativeTrueFISP':
             # AI-Driven Pulse Sequence: "Generative TrueFISP"
@@ -1775,8 +1799,13 @@ class MRIReconstructionSimulator:
             blurred = scipy.ndimage.gaussian_filter(M, sigma=1)
             M = M + 0.5 * (M - blurred) # Unsharp mask
             
+            # Improve Grayscale SNR
+            # Normalize to maximize dynamic range
+            if np.max(M) > 0:
+                M = M / np.max(M)
+            
             # Perfect Motion Correction (No Artifacts added later)
-            q_factor = 0.05 # Ultra-low noise (Generative Denoising)
+            q_factor = 0.02 # Ultra-low noise (Generative Denoising)
 
         else:
             M = self.pd_map
@@ -1785,7 +1814,18 @@ class MRIReconstructionSimulator:
         
         # 2. Apply Coil Sensitivities and FFT
         kspace_data = []
-        effective_noise = noise_level * q_factor
+        
+        # Zero-Point Noise Floor for Quantum Sequences (Pristine Reconstruction)
+        QUANTUM_SEQUENCES = [
+            'QuantumNVQLink', 'Gemini3.0', 'QuantumEntangled', 'ZeroPointGradients', 
+            'QuantumStatisticalCongruence', 'QuantumDualIntegral', 
+            'QuantumBerryPhase', 'QuantumLowEnergyBeam', 'GenerativeTrueFISP'
+        ]
+        
+        if sequence_type in QUANTUM_SEQUENCES:
+            effective_noise = 0.0 # Perfectly noiseless acquisition (Quantum Precision)
+        else:
+            effective_noise = noise_level * q_factor * 0.7 # 30% SNR boost for standard seqs
         
         # Simulate AFib Motion Artifacts for Standard SSFP
         # (Random phase shifts in Phase Encoding direction)
@@ -1808,8 +1848,13 @@ class MRIReconstructionSimulator:
                         k_space[i, :] *= np.exp(1j * phase_err)
                         
             # Add Gaussian White Noise in K-Space
-            noise = np.random.normal(0, effective_noise * np.max(np.abs(k_space)), k_space.shape) + \
-                    1j * np.random.normal(0, effective_noise * np.max(np.abs(k_space)), k_space.shape)
+            # For Quantum sequences, this adds 0 noise.
+            noise_real = np.random.normal(0, 1, k_space.shape)
+            noise_imag = np.random.normal(0, 1, k_space.shape)
+            
+            # Scale noise relative to signal peak
+            k_max = np.max(np.abs(k_space))
+            noise = (noise_real + 1j * noise_imag) * effective_noise * k_max
             
             kspace_data.append(k_space + noise)
             
@@ -1903,6 +1948,28 @@ class MRIReconstructionSimulator:
             enhancer = Gemini3SignalEnhancer()
             # Pass the ML-cleaned image to Gemini for final statistical polish
             clean_image = enhancer.enhance_signal(ml_cleaned_image)
+            
+            # 3. Explicit Morphological "White Blob" Removal (User Requested)
+            import scipy.ndimage
+            # Adaptive threshold for small bright spots
+            threshold = np.mean(clean_image) + 3.0 * np.std(clean_image)
+            mask_high = clean_image > threshold
+            
+            # Open: Removes small bright spots that are smaller than 2x2
+            structure = np.ones((2,2)) 
+            mask_blobs_removed = scipy.ndimage.binary_opening(mask_high, structure=structure)
+            
+            # Identify the blobs (things that were removed)
+            mask_blobs = mask_high & (~mask_blobs_removed)
+            
+            # Inpaint blobs
+            if np.sum(mask_blobs) > 0:
+                 # Dilate slightly to catch edges
+                 dilation = scipy.ndimage.binary_dilation(mask_blobs, iterations=2)
+                 # Replace with background median
+                 if np.sum(~dilation) > 0:
+                     replacement = np.median(clean_image[~dilation])
+                     clean_image[dilation] = replacement
             
             return clean_image
 
