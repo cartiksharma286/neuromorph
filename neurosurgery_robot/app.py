@@ -2,8 +2,18 @@ from flask import Flask, render_template, jsonify, request
 import numpy as np
 import threading
 import time
+import os
 
-from robot_kinematics import Robot6DOF
+# Try to import quantum-enhanced robot, fallback to classical
+try:
+    from robot_kinematics_quantum import QuantumEnhancedRobot6DOF
+    QUANTUM_AVAILABLE = True
+    print("Quantum-enhanced kinematics loaded successfully!")
+except ImportError:
+    from robot_kinematics import Robot6DOF
+    QUANTUM_AVAILABLE = False
+    print("Using classical kinematics (quantum module not available)")
+
 from thermometry import MRIThermometry
 from nvqlink import NVQLink
 from game_theory import GameTheoryController
@@ -15,7 +25,11 @@ from guidance_system import AutomatedGuidanceSystem
 app = Flask(__name__)
 
 # Global Simulation State
-robot = Robot6DOF()
+if QUANTUM_AVAILABLE:
+    robot = QuantumEnhancedRobot6DOF()
+else:
+    robot = Robot6DOF()
+    
 thermo = MRIThermometry(width=64, height=64)
 cryo = CryoModule(width=64, height=64)
 link = NVQLink()
@@ -29,6 +43,7 @@ simulation_running = True
 laser_enabled = False
 cryo_enabled = False
 target_coords = {'x': 0.1, 'y': 0.0, 'z': 0.6}
+use_quantum_mode = QUANTUM_AVAILABLE
 
 def simulation_loop():
     global simulation_running, laser_enabled, cryo_enabled, target_coords, guidance
@@ -149,7 +164,17 @@ def get_telemetry():
     
     # Get GenAI state
     current_max_temp = np.max(thermo.get_map())
-    ai_state = gen_heating.get_control_action(current_max_temp) # Just to peak at state
+    ai_state = gen_heating.get_control_action(current_max_temp)
+    
+    # Get quantum metrics if available
+    quantum_metrics = {}
+    if QUANTUM_AVAILABLE and hasattr(robot, 'get_quantum_metrics'):
+        quantum_metrics = robot.get_quantum_metrics()
+    
+    # Get thermometry performance metrics
+    thermo_perf = {}
+    if hasattr(thermo, 'get_performance_metrics'):
+        thermo_perf = thermo.get_performance_metrics()
     
     return jsonify({
         'joints': joints,
@@ -174,6 +199,14 @@ def get_telemetry():
             'status': link.status,
             'latency': link.latency_ms,
             'active': link.active
+        },
+        'quantum': {
+            'enabled': QUANTUM_AVAILABLE,
+            'metrics': quantum_metrics
+        },
+        'thermometry': {
+            'high_performance': True,
+            'metrics': thermo_perf
         }
     })
 
@@ -216,6 +249,59 @@ def toggle_guidance():
         laser_enabled = False
             
     return jsonify({'status': 'ok'})
+
+@app.route('/api/quantum/status')
+def quantum_status():
+    """Get quantum system status and metrics"""
+    if not QUANTUM_AVAILABLE:
+        return jsonify({'enabled': False, 'message': 'Quantum mode not available'})
+    
+    metrics = robot.get_quantum_metrics() if hasattr(robot, 'get_quantum_metrics') else {}
+    
+    return jsonify({
+        'enabled': True,
+        'coherence': metrics.get('coherence', 0.0),
+        'uncertainty': metrics.get('uncertainty', 0.0),
+        'qml_fidelity': metrics.get('qml_fidelity', 0.0),
+        'tracking_error': metrics.get('tracking_error', 0.0),
+        'avg_tracking_error': metrics.get('avg_tracking_error', 0.0)
+    })
+
+@app.route('/api/quantum/train', methods=['POST'])
+def train_quantum():
+    """Train quantum ML component"""
+    if not QUANTUM_AVAILABLE:
+        return jsonify({'error': 'Quantum mode not available'}), 400
+    
+    data = request.json
+    num_steps = data.get('steps', 10)
+    
+    if hasattr(robot, 'train_qml'):
+        losses = robot.train_qml(num_steps)
+        return jsonify({
+            'status': 'training_complete',
+            'steps': num_steps,
+            'final_loss': losses[-1] if losses else 0.0,
+            'loss_history': losses
+        })
+    else:
+        return jsonify({'error': 'Training not supported'}), 400
+
+@app.route('/api/reports/quantum_kalman')
+def get_quantum_report():
+    """Get path to quantum Kalman technical report"""
+    report_path = os.path.join(os.path.dirname(__file__), 
+                               'Quantum_Kalman_Surgical_Robotics_Report.tex')
+    
+    if os.path.exists(report_path):
+        return jsonify({
+            'available': True,
+            'path': report_path,
+            'format': 'LaTeX',
+            'title': 'Quantum Kalman Operators for Advanced Pose Estimation in Neurosurgical Robotics'
+        })
+    else:
+        return jsonify({'available': False})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
