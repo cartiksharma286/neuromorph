@@ -353,3 +353,72 @@ class PrimeVortexField:
             filtered_updates[(u, v)] = min(1.0, max(0.0, new_w))
             
         return filtered_updates
+
+    def get_continued_fraction(self, x, depth=10):
+        """
+        Computes the continued fraction representation of x up to a given depth.
+        Returns a list of coefficients [a0, a1, ..., an].
+        """
+        coeffs = []
+        for _ in range(depth):
+            a = int(x)
+            coeffs.append(a)
+            rem = x - a
+            if abs(rem) < 1e-9:
+                break
+            x = 1.0 / rem
+        return coeffs
+
+    def evaluate_continued_fraction(self, coeffs):
+        """
+        Evaluates a continued fraction [a0, a1, ...] back to a float.
+        """
+        val = 0.0
+        for a in reversed(coeffs[1:]):
+            val = 1.0 / (a + val)
+        return coeffs[0] + val
+
+    def apply_continued_fraction_stabilization(self, entanglements, target_ratio=None):
+        """
+        Optimizes network weights using Continued Fraction approximations towards a 'Noble Number'.
+        
+        Theory:
+        By adjusting weights so their ratios or values approximate noble numbers (like Phi),
+        we maximize stability against perturbative noise (KAM Theorem).
+        This is crucial for DBS where we want to lock the brain into a stable, non-epileptic attractor.
+        """
+        if target_ratio is None:
+            # Default to Golden Ratio (Most Noble Number) = (1 + sqrt(5))/2
+            # Use conjugate 1/Phi approx 0.618 for weights < 1
+            target_ratio = (math.sqrt(5) - 1) / 2 
+            
+        updates = {}
+        
+        # Get target continued fraction expansion
+        target_coeffs = self.get_continued_fraction(target_ratio)
+        
+        for (u, v), w in entanglements.items():
+            # We want the weight w to be a 'convergent' of the noble number
+            # derived from local topology indices to allow diversity
+            
+            # Use node indices to determine 'depth' of approximation required
+            # Deeper in the network (higher index) = More stable needed = Deeper approximation
+            depth = (u + v) % 5 + 3 
+            
+            local_coeffs = target_coeffs[:depth]
+            
+            # Calculate the rational approximation (the convergent)
+            convergent = self.evaluate_continued_fraction(local_coeffs)
+            
+            # Move weight towards this convergent
+            # w_new = w + beta * (convergent - w)
+            # This 'pulls' the weight into a KAM stability island
+            
+            # Check if current weight is already "chaotic" (far from any rational convergent)
+            # For this metaphor, we just nudge it
+            drift = convergent - w
+            new_w = w + (0.15 * drift) # Nudge factor
+            
+            updates[(u, v)] = min(1.0, max(0.01, new_w))
+            
+        return updates

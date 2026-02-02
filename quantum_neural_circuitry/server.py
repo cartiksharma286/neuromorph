@@ -203,19 +203,30 @@ class DementiaTreatmentModel(QuantumCircuitModel):
                 # Calming excitation
                 q.apply_gate('RX', -0.05 * intensity)
 
-        elif treatment_type == 'ocd':
-            # OCD Treatment: Over-reinforcement of specific loops (add high-weight edges)
-            log.append("OCD Therapy: Reinforcing compulsive loop connections")
-            # Choose a small set of node pairs to strongly connect
-            num_loops = max(1, int(2 * intensity))
-            for _ in range(num_loops):
-                u = random.randint(0, self.num_qubits-1)
-                v = (u + random.randint(1, 3)) % self.num_qubits  # nearby node
-                if not self.topology.has_edge(u, v):
-                    self.topology.add_edge(u, v)
-                # Set a high entanglement strength to simulate compulsive loop
-                # Set a high entanglement strength to simulate compulsive loop
-                self.entanglements[(u, v)] = min(1.0, 0.8 + 0.2 * intensity)
+        elif treatment_type == 'ptsd':
+            # PTSD Treatment: Decoupling Traumatic Associates via Continued Fractions
+            # Theory: Trauma represents a "stuck" resonance or chaotic attractor.
+            # We use Continued Fractions to shift weights towards "Noble Numbers",
+            # creating stability islands (KAM Theorem) that are resistant to the chaotic trauma triggers.
+            log.append("Protocol: PTSD Trauma Decoupling (KAM Stability via Continued Fractions)")
+            
+            # 1. continued fraction stabilization
+            kam_updates = self.prime_field.apply_continued_fraction_stabilization(self.entanglements)
+            self.entanglements.update(kam_updates)
+            log.append(" Synaptic weights tuned to Noble Number convergents (Golden Ratio).")
+            
+            # 2. Dampen "Hot" Amygdala-like loops (High degree nodes)
+            # We identify hubs and slightly dampen their connections to reduce "over-reaction"
+            degrees = dict(self.topology.degree())
+            hubs = sorted(degrees, key=degrees.get, reverse=True)[:3]
+            for h in hubs:
+                for neighbor in self.topology.neighbors(h):
+                    if (h, neighbor) in self.entanglements:
+                        self.entanglements[(h, neighbor)] *= 0.85
+            log.append(f" Dampened hyper-active hubs: {hubs}")
+            
+            # 3. Enhance Plasticity for extinction learning
+            self.plasticity = min(1.0, self.plasticity + 0.15 * intensity)
 
         elif treatment_type == 'prime_resonance':
             # Prime Resonance: The "God Mode" repair using Prime Distributions & Surface Integrals
@@ -246,6 +257,11 @@ class DementiaTreatmentModel(QuantumCircuitModel):
             cong_updates = self.prime_field.apply_ramanujan_congruence(self.entanglements)
             self.entanglements.update(cong_updates)
             log.append(" Enforced Quantum Statistical Congruence (Mod 24).")
+            
+            # Fifth, Final Polish with Continued Fraction Stabilization (KAM)
+            kam_updates = self.prime_field.apply_continued_fraction_stabilization(self.entanglements)
+            self.entanglements.update(kam_updates)
+            log.append(" Stabilized Topology with Continued Fraction Convergents.")
 
             log.append(" Entanglement strengths re-aligned to Prime Gap Statistics.")
             
@@ -316,6 +332,42 @@ class DementiaTreatmentModel(QuantumCircuitModel):
         self.plasticity = min(1.0, self.plasticity + (0.01 * intensity))
         
         return log
+
+    def get_detailed_stats(self):
+        """
+        Generates comprehensive post-treatment statistical characteristics.
+        """
+        # 1. Surface Flux
+        flux = self.prime_field.calculate_surface_integral(self.topology, self.qubits)
+        
+        # 2. KAM Stability (Mean deviation from Golden Ratio convergents)
+        golden_ratio = (math.sqrt(5) - 1) / 2
+        deviations = []
+        for w in self.entanglements.values():
+            deviations.append(abs(w - golden_ratio))
+        kam_stability = 1.0 - (np.mean(deviations) if deviations else 0)
+        
+        # 3. Ramanujan Congruence Ratio (Dimension 24 alignment)
+        # Fraction of connections satisfying Mod 24 conditions
+        matches = 0
+        total = 0
+        for (u, v) in self.entanglements:
+            p_u = self.prime_field.primes[u] if u < len(self.prime_field.primes) else u*2+1
+            p_v = self.prime_field.primes[v] if v < len(self.prime_field.primes) else v*2+1
+            res = (p_u + p_v) % 24
+            if res == 0 or res in [1, 5, 7, 11, 13, 17, 19, 23]:
+               matches += 1
+            total += 1
+        congruence_ratio = matches / total if total > 0 else 0
+        
+        return {
+            "surface_integral_flux": flux,
+            "kam_stability_index": kam_stability,
+            "ramanujan_congruence_ratio": congruence_ratio,
+            "plasticity_index": self.plasticity,
+            "synaptic_density": len(self.entanglements) / (self.num_qubits * 4),
+            "global_coherence": np.mean([q.excitation_prob for q in self.qubits])
+        }
 
     def analyze_status(self) -> DementiaState:
         # Metrics
@@ -431,6 +483,10 @@ def get_dementia_state():
 @app.get("/api/dementia/metrics")
 def get_dementia_metrics():
     return dementia_brain.analyze_status()
+
+@app.get("/api/dementia/detailed_stats")
+def get_detailed_stats():
+    return dementia_brain.get_detailed_stats()
 
 @app.post("/api/dementia/treat")
 def apply_treatment(input: TreatmentInput):
