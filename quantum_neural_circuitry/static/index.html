@@ -4,13 +4,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Neural Circuitry | CBT & QML</title>
+    <title>Quantum Neural Circuitry | Quantum Theoretic Statistics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;500;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="ane_style.css">
+    <style>
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-dim);
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+        }
+
+        .tab:hover {
+            background: rgba(0, 255, 255, 0.2);
+            color: var(--accent);
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .manifold-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .pathology-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .pathology-card h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .stat-value {
+            color: var(--text-main);
+            font-weight: bold;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .stat-value.improved {
+            color: var(--success);
+        }
+
+        .stat-value.degraded {
+            color: var(--danger);
+        }
+
+        .repair-controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .topology-viz {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            min-height: 150px;
+        }
+
+        .betti-display {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .betti-number {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .betti-number .label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .betti-number .value {
+            font-size: 1.5rem;
+            color: var(--accent);
+            font-family: 'Orbitron', monospace;
+        }
+    </style>
 </head>
 
 <body>
@@ -37,147 +168,516 @@
             </div>
         </header>
 
+        <!-- HPC / ANE Stats Bar -->
+        <div id="ane-stats-bar" class="ane-stats-bar">
+            <div class="ane-metric">
+                <span class="ane-label">High Performance ANE-X Engine</span>
+                <span class="ane-status" id="ane-status">INITIALIZING</span>
+            </div>
+            <div class="ane-metric">
+                <span class="ane-label">Active Cores</span>
+                <span class="ane-value" id="ane-cores">--</span>
+            </div>
+            <div class="ane-metric">
+                <span class="ane-label">Throughput</span>
+                <span class="ane-value"><span id="ane-tops">0.0</span> <span style="font-size:0.7em">TOPS</span></span>
+            </div>
+            <div class="ane-metric">
+                <span class="ane-label">Memory Bandwidth</span>
+                <span class="ane-value"><span id="ane-mem">0.0</span> <span style="font-size:0.7em">GB/s</span></span>
+            </div>
+            <div class="ane-metric" style="border-right: none;">
+                <span class="ane-label">Thermal Efficiency</span>
+                <span class="ane-value"><span id="ane-temp">35.0</span>°C</span>
+            </div>
+            <div class="ane-viz">
+                <!-- Real-time Core Map Visualization -->
+                <div id="ane-core-viz" class="ane-core-grid"></div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <div class="tab active" data-tab="quantum">Quantum Circuit</div>
+            <div class="tab" data-tab="treatment">Dementia Treatment</div>
+            <div class="tab" data-tab="prime">Prime Resonance Repair</div>
+            <div class="tab" data-tab="quantum-stat">Quantum Theoretical Statistic</div>
+        </div>
+
         <main>
-            <div class="viz-container">
-                <canvas id="circuit-canvas"></canvas>
-                <div class="overlay-ui">
-                    <div class="node-info" id="node-info-panel">
-                        <h3>Qubit <span id="info-id">--</span></h3>
-                        <div class="data-row"><span>Excitation:</span> <span id="info-exc">0.0</span></div>
-                        <div class="data-row"><span>Phase:</span> <span id="info-phase">0.0</span> rad</div>
-                        <div class="bloch-viz">
-                            <div class="bloch-point" id="bloch-point"></div>
+            <!-- Quantum Circuit Tab -->
+            <div class="tab-content active" id="quantum-tab">
+                <div class="viz-container">
+                    <canvas id="circuit-canvas"></canvas>
+                    <div class="overlay-ui">
+                        <div class="node-info" id="node-info-panel">
+                            <h3>Qubit <span id="info-id">--</span></h3>
+                            <div class="data-row"><span>Excitation:</span> <span id="info-exc">0.0</span></div>
+                            <div class="data-row"><span>Phase:</span> <span id="info-phase">0.0</span> rad</div>
+                            <div class="bloch-viz">
+                                <div class="bloch-point" id="bloch-point"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Ethical Compliance Panel -->
-            <div class="cbt-panel" id="ethics-panel">
-                <div class="panel-header">
-                    <h2>Ethical Oversight</h2>
-                    <span class="status-indicator" id="ethics-status"
-                        style="border-color: var(--danger); color: var(--danger);">Pending Consent</span>
-                </div>
-                <div class="input-group">
-                    <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px;">
-                        <strong>REB Approval:</strong> REB-2025-QML-DEM<br>
-                        This system operates under strict ethical guidelines for AI-driven cognitive interventions.
-                        Patient consent is required to unlock treatment protocols.
+            <!-- Treatment Tab -->
+            <div class="tab-content" id="treatment-tab">
+                <!-- Ethical Compliance Panel -->
+                <div class="cbt-panel" id="ethics-panel">
+                    <div class="panel-header">
+                        <h2>Ethical Oversight</h2>
+                        <span class="status-indicator" id="ethics-status"
+                            style="border-color: var(--danger); color: var(--danger);">Pending Consent</span>
                     </div>
-                </div>
-
-                <div class="input-group" style="margin-bottom: 15px;">
-                    <label>Study Protocol ID (Optional)</label>
-                    <input type="text" id="study-id-input" placeholder="e.g., NEURO-CUSTOM-25"
-                        style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text-main); border-radius: 4px;">
-                </div>
-
-                <div class="input-group"
-                    style="margin-bottom: 15px; flex-direction: row; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="neuro-check">
-                    <label style="margin: 0;">Confirm Neurological Clearance</label>
-                </div>
-
-                <button id="btn-consent" class="btn full-width secondary">
-                    Verify Patient Consent
-                </button>
-            </div>
-
-            <!-- Dementia Treatment Paradigm Panel -->
-            <div class="cbt-panel" id="treatment-panel" style="opacity: 0.5; pointer-events: none;">
-                <div class="panel-header">
-                    <h2>Dementia Treatment Console</h2>
-                    <span class="status-indicator" id="treatment-status">Locked</span>
-                </div>
-
-                <div class="input-group">
-                    <label>Treatment Paradigm</label>
-                    <select id="treatment-type">
-                        <option value="cognitive">Neuroplasticity Training (Cognitive)</option>
-                        <option value="reminiscence">Memory Pathway Reinforcement (Reminiscence)</option>
-                        <option value="sensory">Global Synchronization (Sensory)</option>
-                        <option value="ocd">Compulsive Loop Reinforcement (OCD)</option>
-                        <option value="ptsd">PTSD Trauma Decoupling (KAM Stability)</option>
-                        <option value="schizophrenia">Network Disruption (Schizophrenia)</option>
-                        <option value="prime_resonance">Prime Resonance (God Mode Repair)</option>
-                        <option value="cognitive_enhancement">Cognitive Enhancement (Hyper-Criticality)</option>
-                        <option value="generative_ai">Generative AI (Gemini 3.0 Driver)</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label>Treatment Intensity: <span id="intensity-val">0.5</span></label>
-                    <input type="range" id="intensity-slider" min="0" max="1" step="0.1" value="0.5">
-                </div>
-
-                <button id="btn-treat" class="btn full-width accent">
-                    Initiate Treatment Protocol
-                </button>
-
-                <div class="results-area" id="treatment-results">
-                    <div class="metric-box">
-                        <span class="label">Patient Status</span>
-                        <span class="value state-val" id="patient-stage">--</span>
-                    </div>
-
-                    <div class="metric-grid">
-                        <div class="mini-metric">
-                            <span>Plasticity</span>
-                            <span id="val-plasticity">0.0</span>
-                        </div>
-                        <div class="mini-metric">
-                            <span>Synaptic Density</span>
-                            <span id="val-density">0.0</span>
-                        </div>
-                        <div class="mini-metric">
-                            <span>Coherence</span>
-                            <span id="val-mem-coherence">0.0</span>
+                    <div class="input-group">
+                        <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px;">
+                            <strong>REB Approval:</strong> REB-2025-QML-DEM<br>
+                            This system operates under strict ethical guidelines for AI-driven cognitive interventions.
+                            Patient consent is required to unlock treatment protocols.
                         </div>
                     </div>
 
-                    <div class="recommendation-box">
-                        <span class="label">AI Recommendation:</span>
-                        <span id="ai-recommendation" class="highlight-text">--</span>
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>Study Protocol ID (Optional)</label>
+                        <input type="text" id="study-id-input" placeholder="e.g., NEURO-CUSTOM-25"
+                            style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text-main); border-radius: 4px;">
                     </div>
 
-                    <div class="intervention-log" id="treatment-log">
-                        <div class="log-entry placeholder">Treatment logs will appear here...</div>
+                    <div class="input-group"
+                        style="margin-bottom: 15px; flex-direction: row; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="neuro-check">
+                        <label style="margin: 0;">Confirm Neurological Clearance</label>
+                    </div>
+
+                    <button id="btn-consent" class="btn full-width secondary">
+                        Verify Patient Consent
+                    </button>
+                </div>
+
+                <!-- Dementia Treatment Paradigm Panel -->
+                <div class="cbt-panel" id="treatment-panel" style="opacity: 0.5; pointer-events: none;">
+                    <div class="panel-header">
+                        <h2>Dementia Treatment Console</h2>
+                        <span class="status-indicator" id="treatment-status">Locked</span>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Treatment Paradigm</label>
+                        <select id="treatment-type">
+                            <option value="cognitive">Neuroplasticity Training (Cognitive)</option>
+                            <option value="memory_tags">Memory Pathway Reinforcement</option>
+                            <option value="sensory">Global Synchronization (Sensory)</option>
+                            <option value="ptsd">PTSD Trauma Decoupling (KAM Stability)</option>
+                            <option value="prime_resonance">Prime Resonance (God Mode Repair)</option>
+                            <option value="cognitive_enhancement">Cognitive Enhancement (Hyper-Criticality)</option>
+                            <option value="generative_ai">Generative AI (Gemini 3.0 Driver)</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Treatment Intensity: <span id="intensity-val">0.5</span></label>
+                        <input type="range" id="intensity-slider" min="0" max="1" step="0.1" value="0.5">
+                    </div>
+
+                    <button id="btn-treat" class="btn full-width accent">
+                        Initiate Treatment Protocol
+                    </button>
+
+                    <div class="results-area" id="treatment-results">
+                        <div class="metric-box">
+                            <span class="label">Patient Status</span>
+                            <span class="value state-val" id="patient-stage">--</span>
+                        </div>
+
+                        <div class="metric-grid">
+                            <div class="mini-metric">
+                                <span>Plasticity</span>
+                                <span id="val-plasticity">0.0</span>
+                            </div>
+                            <div class="mini-metric">
+                                <span>Synaptic Density</span>
+                                <span id="val-density">0.0</span>
+                            </div>
+                            <div class="mini-metric">
+                                <span>Coherence</span>
+                                <span id="val-mem-coherence">0.0</span>
+                            </div>
+                        </div>
+
+                        <div class="recommendation-box">
+                            <span class="label">AI Recommendation:</span>
+                            <span id="ai-recommendation" class="highlight-text">--</span>
+                        </div>
+
+                        <div class="intervention-log" id="treatment-log">
+                            <div class="log-entry placeholder">Treatment logs will appear here...</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </main>
 
-        <footer>
-            <div class="controls">
-                <button id="btn-reset" class="btn secondary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                        <path d="M3 3v5h5" />
-                    </svg>
-                    Initialize
-                </button>
-                <button id="btn-step" class="btn primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                    Single Step
-                </button>
-                <button id="btn-run" class="btn primary glow">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="5 3 19 12 5 21 5 3" />
-                    </svg>
-                    Continuously Evolve
-                </button>
-                <button id="btn-train" class="btn accent">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path
-                            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-                    </svg>
-                    QML Optimization
-                </button>
+            <!-- Prime Resonance Repair Tab -->
+            <div class="tab-content" id="prime-tab">
+                <div class="cbt-panel">
+                    <div class="panel-header">
+                        <h2>Prime Resonance Repair Protocol</h2>
+                        <span class="status-indicator" style="border-color: var(--accent); color: var(--accent);">Prime
+                            Vortex Field Active</span>
+                    </div>
+
+                    <div
+                        style="margin-bottom: 20px; padding: 15px; background: rgba(0, 255, 255, 0.05); border-radius: 8px; border-left: 3px solid var(--accent);">
+                        <strong style="color: var(--accent);">Theory:</strong>
+                        <span style="color: var(--text-dim); font-size: 0.9rem;">
+                            Prime Resonance Repair uses prime number distributions, surface integrals, and Hebbian
+                            amplification
+                            to optimize neural network topology. This "God Mode" repair protocol combines:
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>Prime Gap Statistics for optimal weight distribution</li>
+                                <li>Quantum Surface Integrals for holistic health metrics</li>
+                                <li>Elliptic Phi Resonance (Golden Ratio tuning)</li>
+                                <li>Ramanujan Congruences (Mod 24 filters)</li>
+                                <li>Continued Fractions for KAM stability</li>
+                            </ul>
+                        </span>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Prime Modulus</label>
+                        <select id="prime-modulus">
+                            <option value="7">Prime 7 (Balanced)</option>
+                            <option value="11">Prime 11 (Fine Resolution)</option>
+                            <option value="13">Prime 13 (High Precision)</option>
+                            <option value="17">Prime 17 (Ultra Fine)</option>
+                            <option value="19">Prime 19 (Maximum Resolution)</option>
+                            <option value="23">Prime 23 (Extreme Precision)</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Repair Intensity: <span id="prime-intensity-val">0.8</span></label>
+                        <input type="range" id="prime-intensity-slider" min="0" max="1" step="0.1" value="0.8">
+                    </div>
+
+                    <button id="btn-prime-repair" class="btn full-width accent">
+                        Apply Prime Resonance Repair (Dementia Cure)
+                    </button>
+
+                    <div class="results-area" id="prime-results" style="margin-top: 20px;">
+                        <h3 style="color: var(--accent); margin-bottom: 15px;">Prime Field Metrics</h3>
+
+                        <div class="metric-grid">
+                            <div class="mini-metric">
+                                <span>Surface Flux</span>
+                                <span id="val-surface-flux">0.0</span>
+                            </div>
+                            <div class="mini-metric">
+                                <span>KAM Stability</span>
+                                <span id="val-kam-stability">0.0</span>
+                            </div>
+                            <div class="mini-metric">
+                                <span>Ramanujan Ratio</span>
+                                <span id="val-ramanujan">0.0</span>
+                            </div>
+                        </div>
+
+                        <div
+                            style="margin-top: 20px; padding: 15px; background: rgba(0, 0, 0, 0.3); border-radius: 8px;">
+                            <h4 style="color: var(--accent); margin-bottom: 10px;">Network Health Analysis</h4>
+                            <div class="stat-row">
+                                <span class="stat-label">Plasticity Index</span>
+                                <span class="stat-value" id="prime-plasticity">0.0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Synaptic Density</span>
+                                <span class="stat-value" id="prime-density">0.0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Global Coherence</span>
+                                <span class="stat-value" id="prime-coherence">0.0</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Prime Harmonic Connections</span>
+                                <span class="stat-value improved" id="prime-connections">0</span>
+                            </div>
+                        </div>
+
+                        <div class="intervention-log" id="prime-log">
+                            <div class="log-entry placeholder">Prime resonance logs will appear here...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </footer>
+
+            <!-- Quantum Theoretical Statistic Tab -->
+            <div class="tab-content" id="quantum-stat-tab">
+                <div class="cbt-panel">
+                    <div class="panel-header">
+                        <h2>Quantum Theoretical Statistic Engine</h2>
+                        <span class="status-indicator"
+                            style="border-color: var(--accent); color: var(--accent);">Quantum
+                            Statistical Mechanics</span>
+                    </div>
+
+                    <div
+                        style="margin-bottom: 20px; padding: 15px; background: rgba(0, 255, 255, 0.05); border-radius: 8px; border-left: 3px solid var(--accent);">
+                        <strong style="color: var(--accent);">Theory:</strong>
+                        <span style="color: var(--text-dim); font-size: 0.9rem;">
+                            Applies Bose-Einstein and Fermi-Dirac statistics to neural manifolds.
+                            Uses Nash Equilibrium and Prime Congruences to optimize quantum statistical states.
+                        </span>
+                    </div>
+
+                    <div class="manifold-grid">
+                        <!-- Dementia Card -->
+                        <div class="pathology-card">
+                            <h3>🧠 Dementia (Bose-Einstein Condensate)</h3>
+                            <div class="topology-viz">
+                                <div class="betti-display">
+                                    <div class="betti-number">
+                                        <div class="label">β₀</div>
+                                        <div class="value" id="dementia-beta0">--</div>
+                                    </div>
+                                    <div class="betti-number">
+                                        <div class="label">β₁</div>
+                                        <div class="value" id="dementia-beta1">--</div>
+                                    </div>
+                                    <div class="betti-number">
+                                        <div class="label">β₂</div>
+                                        <div class="value" id="dementia-beta2">--</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 15px;">
+                                <div class="stat-row">
+                                    <span class="stat-label">Nodes</span>
+                                    <span class="stat-value" id="dementia-nodes">--</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Edges</span>
+                                    <span class="stat-value" id="dementia-edges">--</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Nash Stability Index</span>
+                                    <span class="stat-value" id="dementia-nash">--</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Pathological Nodes</span>
+                                    <span class="stat-value degraded" id="dementia-pathological">--</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Neurogenesis Events</span>
+                                    <span class="stat-value improved" id="dementia-added">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Repair Cycles</span>
+                                    <span class="stat-value" id="dementia-cycles">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Pathology Reduction</span>
+                                    <span class="stat-value improved" id="dementia-reduction">0%</span>
+                                </div>
+                            </div>
+
+                            <div class="repair-controls">
+                                <button id="btn-dementia-init" class="btn secondary"
+                                    style="flex: 1;">Initialize</button>
+                                <button id="btn-dementia-repair" class="btn accent" style="flex: 2;">Apply Repair (5
+                                    cycles)</button>
+                            </div>
+
+                            <!-- Repair Log -->
+                            <div id="dementia-repair-log"
+                                style="margin-top: 10px; height: 80px; overflow-y: auto; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 4px; padding: 5px; font-family: monospace; font-size: 0.8rem; color: var(--text-dim); display: none;">
+                                <div style="color: var(--accent); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    Neural Event Log:</div>
+                            </div>
+
+                            <!-- Visual Projections -->
+                            <div class="manifold-visuals" style="margin-top:15px; display:flex; gap:10px;">
+                                <div style="flex:1;">
+                                    <div style="font-size:0.8rem; color:var(--text-dim); margin-bottom:5px;">Baseline
+                                        Projection</div>
+                                    <img id="dementia-viz-baseline" src=""
+                                        style="width:100%; border-radius:4px; border:1px solid var(--border); display:none;">
+                                    <div id="dementia-viz-placeholder"
+                                        style="width:100%; height:120px; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:0.8rem;">
+                                        Initialize to View</div>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-size:0.8rem; color:var(--text-dim); margin-bottom:5px;">Repaired
+                                        State
+                                    </div>
+                                    <img id="dementia-viz-repaired" src=""
+                                        style="width:100%; border-radius:4px; border:1px solid var(--border); display:none;">
+                                    <div id="dementia-viz-repaired-placeholder"
+                                        style="width:100%; height:120px; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:0.8rem;">
+                                        Pending Repair</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PTSD Card -->
+                        <div class="pathology-card">
+                            <h3>⚡ PTSD (Fermi-Dirac Statistical Filter)</h3>
+                            <div class="topology-viz">
+                                <div class="betti-display">
+                                    <div class="betti-number">
+                                        <div class="label">β₀</div>
+                                        <div class="value" id="ptsd-beta0">--</div>
+                                    </div>
+                                    <div class="betti-number">
+                                        <div class="label">β₁</div>
+                                        <div class="value" id="ptsd-beta1">--</div>
+                                    </div>
+                                    <div class="betti-number">
+                                        <div class="label">β₂</div>
+                                        <div class="value" id="ptsd-beta2">--</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 15px;">
+                                <div class="stat-row">
+                                    <span class="stat-label">Nodes</span>
+                                    <span class="stat-value" id="ptsd-nodes">--</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Edges</span>
+                                    <span class="stat-value" id="ptsd-edges">--</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Nash Stability Index</span>
+                                    <span class="stat-value" id="ptsd-nash">--</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Pathological Nodes</span>
+                                    <span class="stat-value degraded" id="ptsd-pathological">--</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Neurons Added</span>
+                                    <span class="stat-value improved" id="ptsd-added">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Repair Cycles</span>
+                                    <span class="stat-value" id="ptsd-cycles">0</span>
+                                </div>
+                                <span class="stat-label">Pathology Reduction</span>
+                                <span class="stat-value improved" id="ptsd-reduction">0%</span>
+                            </div>
+
+                            <div class="advanced-metrics"
+                                style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed rgba(0,255,255,0.2); display: none;"
+                                id="ptsd-advanced-metrics">
+                                <div style="font-size: 0.8rem; color: var(--accent); margin-bottom: 5px;">Post-Treatment
+                                    Parameters</div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Curvature Homogeneity</span>
+                                    <span class="stat-value" id="ptsd-curvature">--</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Spectral Gap</span>
+                                    <span class="stat-value" id="ptsd-spectral">--</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Prime Resonance</span>
+                                    <span class="stat-value" id="ptsd-prime-res">--</span>
+                                </div>
+                            </div>
+
+                            <div class="projection-container"
+                                style="margin-top: 15px; text-align: center; display: none;"
+                                id="ptsd-projection-container">
+                                <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;">Manifold
+                                    Projection (Real-Time)</div>
+                                <img id="ptsd-projection-img" src=""
+                                    style="width: 100%; border-radius: 4px; border: 1px solid var(--border);">
+                            </div>
+
+                        </div>
+
+                        <div class="repair-controls">
+                            <button id="btn-ptsd-init" class="btn secondary" style="flex: 1;">Initialize</button>
+                            <button id="btn-ptsd-repair" class="btn accent" style="flex: 2;">Apply Repair (5
+                                cycles)</button>
+                        </div>
+
+                        <!-- Repair Log -->
+                        <div id="ptsd-repair-log"
+                            style="margin-top: 10px; height: 80px; overflow-y: auto; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 4px; padding: 5px; font-family: monospace; font-size: 0.8rem; color: var(--text-dim); display: none;">
+                            <div style="color: var(--accent); border-bottom: 1px solid rgba(255,255,255,0.1);">Neural
+                                Event Log:</div>
+                        </div>
+
+                        <!-- Visual Projections -->
+                        <div class="manifold-visuals" style="margin-top:15px; display:flex; gap:10px;">
+                            <div style="flex:1;">
+                                <div style="font-size:0.8rem; color:var(--text-dim); margin-bottom:5px;">Baseline
+                                    Projection
+                                </div>
+                                <img id="ptsd-viz-baseline" src=""
+                                    style="width:100%; border-radius:4px; border:1px solid var(--border); display:none;">
+                                <div id="ptsd-viz-placeholder"
+                                    style="width:100%; height:120px; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:0.8rem;">
+                                    Initialize to View</div>
+                            </div>
+                            <div style="flex:1;">
+                                <div style="font-size:0.8rem; color:var(--text-dim); margin-bottom:5px;">Repaired State
+                                </div>
+                                <img id="ptsd-viz-repaired" src=""
+                                    style="width:100%; border-radius:4px; border:1px solid var(--border); display:none;">
+                                <div id="ptsd-viz-repaired-placeholder"
+                                    style="width:100%; height:120px; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:0.8rem;">
+                                    Pending Repair</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparative Analysis -->
+                <div style="margin-top: 30px; padding: 20px; background: rgba(0, 0, 0, 0.4); border-radius: 8px;">
+                    <h3 style="color: var(--accent); margin-bottom: 15px;">📊 Comparative Analysis</h3>
+                    <div id="comparison-results" style="color: var(--text-dim); font-size: 0.9rem;">
+                        Run repair cycles on both pathologies to see comparative analysis...
+                    </div>
+                </div>
+            </div>
+    </div>
+    </main>
+
+    <footer>
+        <div class="controls">
+            <button id="btn-reset" class="btn secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                    <path d="M3 3v5h5" />
+                </svg>
+                Initialize
+            </button>
+            <button id="btn-step" class="btn primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6" />
+                </svg>
+                Single Step
+            </button>
+            <button id="btn-run" class="btn primary glow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Continuously Evolve
+            </button>
+            <button id="btn-train" class="btn accent">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                </svg>
+                QML Optimization
+            </button>
+        </div>
+    </footer>
     </div>
 
     <script type="module" src="script.js"></script>

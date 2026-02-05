@@ -486,6 +486,86 @@ document.getElementById('intensity-slider').addEventListener('input', (e) => {
 document.getElementById('btn-treat').addEventListener('click', applyTreatment);
 document.getElementById('btn-consent').addEventListener('click', verifyConsent);
 
+// Prime Resonance controls
+document.getElementById('prime-intensity-slider').addEventListener('input', (e) => {
+    document.getElementById('prime-intensity-val').innerText = e.target.value;
+});
+
+document.getElementById('btn-prime-repair').addEventListener('click', async () => {
+    const prime = parseInt(document.getElementById('prime-modulus').value);
+    const intensity = parseFloat(document.getElementById('prime-intensity-slider').value);
+
+    const btn = document.getElementById('btn-prime-repair');
+    btn.disabled = true;
+    btn.innerText = 'Applying Prime Resonance...';
+
+    try {
+        // Apply prime_resonance treatment
+        const res = await fetch('/api/dementia/treat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                treatment_type: 'prime_resonance',
+                intensity: intensity,
+                prime_modulus: prime
+            })
+        });
+
+        if (!res.ok) {
+            throw new Error('Prime repair failed');
+        }
+
+        const data = await res.json();
+
+        // Update logs
+        const logContainer = document.getElementById('prime-log');
+        logContainer.innerHTML = '';
+
+        const header = document.createElement('div');
+        header.className = 'log-entry';
+        header.innerText = `--- Prime ${prime} Resonance Repair (Intensity: ${intensity}) ---`;
+        header.style.color = '#ffee00';
+        logContainer.appendChild(header);
+
+        data.treatment_logs.forEach(log => {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerText = `> ${log}`;
+            logContainer.appendChild(entry);
+        });
+
+        // Get detailed stats
+        const statsRes = await fetch('/api/dementia/detailed_stats');
+        const stats = await statsRes.json();
+
+        // Update metrics
+        document.getElementById('val-surface-flux').innerText = stats.surface_integral_flux.toFixed(4);
+        document.getElementById('val-kam-stability').innerText = stats.kam_stability_index.toFixed(4);
+        document.getElementById('val-ramanujan').innerText = stats.ramanujan_congruence_ratio.toFixed(4);
+        document.getElementById('prime-plasticity').innerText = stats.plasticity_index.toFixed(2);
+        document.getElementById('prime-density').innerText = stats.synaptic_density.toFixed(2);
+        document.getElementById('prime-coherence').innerText = stats.global_coherence.toFixed(4);
+
+        // Update visual graph
+        updateGraphData(data.brain_state);
+
+        btn.innerText = 'Apply Prime Resonance Repair';
+
+    } catch (e) {
+        console.error('Prime repair failed', e);
+        const logContainer = document.getElementById('prime-log');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerText = `[ERROR] ${e.message}`;
+        entry.style.color = '#ff4444';
+        logContainer.appendChild(entry);
+        btn.innerText = 'Apply Prime Resonance Repair';
+    } finally {
+        btn.disabled = false;
+    }
+});
+
+
 const btnRun = document.getElementById('btn-run');
 btnRun.addEventListener('click', () => {
     if (isRunning) {
@@ -504,6 +584,324 @@ btnRun.addEventListener('click', () => {
         document.getElementById('system-status').style.color = COLORS.primary;
     }
 });
+
+// --- HPC / ANE Stats Logic ---
+async function pollANEStats() {
+    try {
+        const res = await fetch('/api/ane/stats');
+        const data = await res.json();
+
+        // Update Text
+        document.getElementById('ane-status').innerText = data.status;
+        document.getElementById('ane-cores').innerText = data.active_cores;
+        document.getElementById('ane-tops').innerText = data.tops_utilization.toFixed(1);
+        document.getElementById('ane-mem').innerText = data.memory_bandwidth_gbps.toFixed(1);
+        document.getElementById('ane-temp').innerText = data.temperature_c.toFixed(1);
+
+        // Update Core Grid Map
+        const viz = document.getElementById('ane-core-viz');
+        viz.innerHTML = ''; // efficient enough for 32 items
+
+        data.core_map.forEach(util => {
+            const cell = document.createElement('div');
+            cell.className = 'core-cell';
+            const alpha = util;
+            cell.style.backgroundColor = `rgba(0, 255, 136, ${0.1 + alpha * 0.9})`;
+            if (util > 0.5) cell.style.boxShadow = `0 0 5px rgba(0, 255, 136, ${alpha})`;
+            viz.appendChild(cell);
+        });
+
+    } catch (e) {
+        console.error("ANE Poll failed", e);
+    }
+}
+
+// Start ANE Polling (High Frequency for Real-time feel)
+setInterval(pollANEStats, 500);
+
+// --- Tab Switching ---
+const tabs = document.querySelectorAll('.tab');
+const tabContents = document.querySelectorAll('.tab-content');
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        const targetTab = tab.dataset.tab;
+
+        // Update active states
+        tabs.forEach(t => t.classList.remove('active'));
+        tabContents.forEach(tc => tc.classList.remove('active'));
+
+        tab.classList.add('active');
+        document.getElementById(`${targetTab}-tab`).classList.add('active');
+    });
+});
+
+// --- Combinatorial Manifold Functions ---
+
+async function initializeManifold(pathologyType) {
+    const btnId = `btn-${pathologyType}-init`;
+    const btn = document.getElementById(btnId);
+    btn.disabled = true;
+    btn.innerText = 'Initializing...';
+
+    try {
+        const res = await fetch('/api/manifold/initialize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                pathology_type: pathologyType,
+                num_neurons: 100
+            })
+        });
+
+        const data = await res.json();
+        updateManifoldUI(pathologyType, data.baseline_topology);
+
+        // Trigger Visualization
+        document.getElementById(`${pathologyType}-viz-placeholder`).innerText = "Generating Projection...";
+        const viz = await fetchManifoldVisuals(pathologyType);
+
+        btn.innerText = 'Re-initialize';
+    } catch (e) {
+        console.error(`Failed to initialize ${pathologyType}`, e);
+        btn.innerText = 'Error - Retry';
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function fetchManifoldVisuals(pathologyType) {
+    try {
+        const res = await fetch('/api/manifold/visualize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pathology_type: pathologyType, num_neurons: 100 })
+        });
+        const data = await res.json();
+
+        const baselineImg = document.getElementById(`${pathologyType}-viz-baseline`);
+        const repairedImg = document.getElementById(`${pathologyType}-viz-repaired`);
+
+        if (data.baseline_image) {
+            baselineImg.src = data.baseline_image + "?t=" + new Date().getTime();
+            baselineImg.style.display = 'block';
+            document.getElementById(`${pathologyType}-viz-placeholder`).style.display = 'none';
+        }
+
+        // Store repaired image URL for later use if available
+        if (data.repaired_image) {
+            repairedImg.dataset.src = data.repaired_image + "?t=" + new Date().getTime();
+        } else {
+            repairedImg.dataset.src = ""; // Clear if not available
+        }
+
+        return data;
+    } catch (e) {
+        console.error("Visuals failed", e);
+        document.getElementById(`${pathologyType}-viz-placeholder`).innerText = "Viz Gen Failed";
+    }
+}
+
+async function applyManifoldRepair(pathologyType) {
+    const btnId = `btn-${pathologyType}-repair`;
+    const btn = document.getElementById(btnId);
+    btn.disabled = true;
+    btn.innerText = 'Applying Repair...';
+
+    // Clear previous log
+    const logId = `${pathologyType}-repair-log`;
+    const logEl = document.getElementById(logId);
+    if (logEl) {
+        logEl.style.display = 'block';
+        logEl.innerHTML = `<div style="color: var(--accent); border-bottom: 1px solid rgba(255,255,255,0.1);">Neural Event Log:</div><div style="color: var(--text-dim);">Initializing repair cycles...</div>`;
+    }
+
+    try {
+        const res = await fetch('/api/manifold/repair', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                pathology_type: pathologyType,
+                num_cycles: 5
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.final_statistics) {
+            updateManifoldRepairUI(pathologyType, data.final_statistics);
+        }
+
+        if (data.repair_history) {
+            updateManifoldLog(pathologyType, data.repair_history);
+        }
+
+        if (data.projection_image) {
+            updateManifoldProjection(pathologyType, data.projection_image);
+
+            // Show Repaired Image in the comparison view
+            const repairedImg = document.getElementById(`${pathologyType}-viz-repaired`);
+            repairedImg.src = data.projection_image + "?t=" + new Date().getTime();
+            repairedImg.style.display = 'block';
+            document.getElementById(`${pathologyType}-viz-repaired-placeholder`).style.display = 'none';
+        }
+
+        // Update comparison
+        updateComparison();
+
+        btn.innerText = 'Apply Repair (5 cycles)';
+    } catch (e) {
+        console.error(`Failed to repair ${pathologyType}`, e);
+        if (logEl) logEl.innerHTML += `<div style="color: red;">Error: ${e.message}</div>`;
+        btn.innerText = 'Error - Retry';
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+function updateManifoldLog(pathologyType, history) {
+    const logId = `${pathologyType}-repair-log`;
+    const logEl = document.getElementById(logId);
+    if (!logEl) return;
+
+    logEl.style.display = 'block';
+    logEl.innerHTML = `<div style="color: var(--accent); border-bottom: 1px solid rgba(255,255,255,0.1);">Neural Event Log:</div>`;
+
+    history.forEach(h => {
+        const line = document.createElement('div');
+        line.style.marginTop = '4px';
+        line.innerHTML = `> Cycle ${h.cycle + 1}: <span style="color: #00ff88">+${h.neurons_added} neurons</span> (Pathology: ${h.pathological_nodes_remaining})`;
+        logEl.appendChild(line);
+    });
+
+    logEl.scrollTop = logEl.scrollHeight;
+}
+
+function updateManifoldUI(pathologyType, topology) {
+    const prefix = pathologyType;
+
+    // Update Betti numbers
+    document.getElementById(`${prefix}-beta0`).innerText = topology.betti_numbers.beta_0;
+    document.getElementById(`${prefix}-beta1`).innerText = topology.betti_numbers.beta_1;
+    document.getElementById(`${prefix}-beta2`).innerText = topology.betti_numbers.beta_2;
+
+    // Update basic stats
+    document.getElementById(`${prefix}-nodes`).innerText = topology.num_nodes;
+    document.getElementById(`${prefix}-edges`).innerText = topology.num_edges;
+    document.getElementById(`${prefix}-pathological`).innerText =
+        topology.pathological_regions.nodes.length;
+
+    if (topology.nash_stability_index !== undefined) {
+        const el = document.getElementById(`${prefix}-nash`);
+        if (el) el.innerText = topology.nash_stability_index.toFixed(4);
+    }
+}
+
+function updateManifoldRepairUI(pathologyType, stats) {
+    const prefix = pathologyType;
+
+    // Update repair statistics
+    document.getElementById(`${prefix}-added`).innerText = stats.total_neurons_added;
+    document.getElementById(`${prefix}-cycles`).innerText = stats.repair_cycles;
+    document.getElementById(`${prefix}-reduction`).innerText =
+        `${stats.pathology_reduction_percent.toFixed(1)}%`;
+
+    // Update final topology
+    if (stats.final_topology) {
+        updateManifoldUI(pathologyType, stats.final_topology);
+    }
+
+    // Update Post Treatment Parameters
+    if (stats.post_treatment_parameters) {
+        const params = stats.post_treatment_parameters;
+        document.getElementById(`${prefix}-advanced-metrics`).style.display = 'block';
+        document.getElementById(`${prefix}-curvature`).innerText = params.curvature_homogeneity.toFixed(4);
+        document.getElementById(`${prefix}-spectral`).innerText = params.spectral_gap.toFixed(4);
+        document.getElementById(`${prefix}-prime-res`).innerText = params.prime_resonance_index.toFixed(4);
+    }
+}
+
+function updateManifoldProjection(pathologyType, filename) {
+    const container = document.getElementById(`${pathologyType}-projection-container`);
+    const img = document.getElementById(`${pathologyType}-projection-img`);
+
+    // Add timestamp to prevent caching
+    img.src = `${filename}?t=${new Date().getTime()}`;
+    container.style.display = 'block';
+}
+
+async function updateComparison() {
+    try {
+        const res = await fetch('/api/manifold/comparison');
+        const data = await res.json();
+
+        const comparisonDiv = document.getElementById('comparison-results');
+
+        if (data.dementia && data.ptsd) {
+            const dStats = data.dementia;
+            const pStats = data.ptsd;
+
+            comparisonDiv.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h4 style="color: var(--accent); margin-bottom: 10px;">🧠 Dementia Repair</h4>
+                        <div style="font-size: 0.85rem;">
+                            <div style="margin-bottom: 5px;">✓ Neurons Added: <strong>${dStats.total_neurons_added}</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Repair Cycles: <strong>${dStats.repair_cycles}</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Pathology Reduction: <strong style="color: var(--success);">${dStats.pathology_reduction_percent.toFixed(1)}%</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Nodes Resolved: <strong>${dStats.nodes_resolved}</strong> / ${dStats.initial_pathological_nodes}</div>
+                            <div style="margin-bottom: 5px;">✓ Edge Improvement: <strong style="color: var(--success);">${dStats.edge_improvement_percent.toFixed(1)}%</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Connectivity Gain: <strong style="color: var(--success);">${dStats.connectivity_improvement_percent.toFixed(1)}%</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Repair Efficiency: <strong>${dStats.repair_efficiency.toFixed(2)}</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Network Health: <strong style="color: var(--accent);">${dStats.network_health_score.toFixed(1)}/100</strong></div>
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,255,255,0.2);">
+                                <div style="font-size: 0.8rem; color: var(--text-dim);">Betti Changes:</div>
+                                <div style="font-size: 0.8rem;">Δβ₀: ${dStats.betti_improvement.beta_0}, Δβ₁: ${dStats.betti_improvement.beta_1}, Δβ₂: ${dStats.betti_improvement.beta_2}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--accent); margin-bottom: 10px;">⚡ PTSD Repair</h4>
+                        <div style="font-size: 0.85rem;">
+                            <div style="margin-bottom: 5px;">✓ Neurons Added: <strong>${pStats.total_neurons_added}</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Repair Cycles: <strong>${pStats.repair_cycles}</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Pathology Reduction: <strong style="color: var(--success);">${pStats.pathology_reduction_percent.toFixed(1)}%</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Nodes Resolved: <strong>${pStats.nodes_resolved}</strong> / ${pStats.initial_pathological_nodes}</div>
+                            <div style="margin-bottom: 5px;">✓ Edge Improvement: <strong style="color: var(--success);">${pStats.edge_improvement_percent.toFixed(1)}%</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Connectivity Gain: <strong style="color: var(--success);">${pStats.connectivity_improvement_percent.toFixed(1)}%</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Repair Efficiency: <strong>${pStats.repair_efficiency.toFixed(2)}</strong></div>
+                            <div style="margin-bottom: 5px;">✓ Network Health: <strong style="color: var(--accent);">${pStats.network_health_score.toFixed(1)}/100</strong></div>
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,255,255,0.2);">
+                                <div style="font-size: 0.8rem; color: var(--text-dim);">Betti Changes:</div>
+                                <div style="font-size: 0.8rem;">Δβ₀: ${pStats.betti_improvement.beta_0}, Δβ₁: ${pStats.betti_improvement.beta_1}, Δβ₂: ${pStats.betti_improvement.beta_2}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: rgba(0, 255, 255, 0.05); border-radius: 8px; border-left: 3px solid var(--accent);">
+                    <strong style="color: var(--accent);">Key Findings:</strong>
+                    <div style="color: var(--text-main); margin-top: 8px; font-size: 0.9rem;">
+                        <div style="margin-bottom: 5px;">• <strong>Dementia</strong> shows ${dStats.pathology_reduction_percent > pStats.pathology_reduction_percent ? 'superior' : 'comparable'} pathology reduction (${dStats.pathology_reduction_percent.toFixed(1)}% vs ${pStats.pathology_reduction_percent.toFixed(1)}%)</div>
+                        <div style="margin-bottom: 5px;">• <strong>Network Health</strong>: Dementia ${dStats.network_health_score.toFixed(0)}/100, PTSD ${pStats.network_health_score.toFixed(0)}/100</div>
+                        <div style="margin-bottom: 5px;">• <strong>Repair Efficiency</strong>: ${dStats.repair_efficiency > pStats.repair_efficiency ? 'Dementia' : 'PTSD'} demonstrates higher efficiency (${Math.max(dStats.repair_efficiency, pStats.repair_efficiency).toFixed(2)} nodes/neuron)</div>
+                        <div style="margin-bottom: 5px;">• Both pathologies show significant improvement through prime congruence-based neurogenesis</div>
+                        <div>• Dementia repair focuses on connectivity restoration, while PTSD repair rebalances hyperconnected trauma networks</div>
+                    </div>
+                </div>
+            `;
+        } else if (data.dementia || data.ptsd) {
+            comparisonDiv.innerHTML = '<span style="color: var(--text-dim);">Run repair on both pathologies for comparative analysis...</span>';
+        }
+    } catch (e) {
+        console.error('Failed to update comparison', e);
+    }
+}
+
+// Manifold event listeners
+document.getElementById('btn-dementia-init').addEventListener('click', () => initializeManifold('dementia'));
+document.getElementById('btn-dementia-repair').addEventListener('click', () => applyManifoldRepair('dementia'));
+document.getElementById('btn-ptsd-init').addEventListener('click', () => initializeManifold('ptsd'));
+document.getElementById('btn-ptsd-repair').addEventListener('click', () => applyManifoldRepair('ptsd'));
 
 // Start
 fetchCircuit();
