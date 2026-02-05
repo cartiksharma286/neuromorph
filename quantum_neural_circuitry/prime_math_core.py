@@ -304,7 +304,7 @@ class PrimeVortexField:
             
         return updates
 
-    def apply_ramanujan_congruence(self, entanglements):
+    def apply_ramanujan_congruence(self, entanglements, modulus=24):
         """
         Applies 'Quantum Statistical Congruence' to the network.
         
@@ -317,7 +317,7 @@ class PrimeVortexField:
         filtered_updates = {}
         
         # Modular discriminant modulus (Bosonic string theory / Leech Lattice analogy)
-        MODULUS = 24 
+        MODULUS = modulus 
         
         for (u, v), w in entanglements.items():
             # Get prime indices
