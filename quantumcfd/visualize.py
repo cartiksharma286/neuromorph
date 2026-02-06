@@ -27,7 +27,7 @@ def load_data(output_dir):
         
     return data
 
-def plot_frame(step, u, v, p, output_dir, save_static=False):
+def plot_frame(step, u, v, p, output_dir, save_static=False, filename=None):
     """
     Plot velocity magnitude and pressure field.
     Handles 2D data (ny, nx) or 4D data (nw, nz, ny, nx) via slicing.
@@ -62,7 +62,11 @@ def plot_frame(step, u, v, p, output_dir, save_static=False):
     
     plt.suptitle(f'Timestep {step}')
     
-    path = os.path.join(output_dir, f'frame_{step:04d}.png')
+    if filename:
+        path = os.path.join(output_dir, filename)
+    else:
+        path = os.path.join(output_dir, f'frame_{step:04d}.png')
+    
     plt.savefig(path)
     plt.close()
     

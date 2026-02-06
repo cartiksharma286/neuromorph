@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import uuid
 import os
@@ -18,27 +20,37 @@ OUTPUT_DIR = "simulation_results"
 if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
+# Mount static files for UI
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Mount simulation results so they are accessible via URL
+app.mount("/simulation_results", StaticFiles(directory=OUTPUT_DIR), name="simulation_results")
+
 class SimulationConfig(BaseModel):
     naca_code: str = "0012" # e.g. 0012, 2412
     angle_of_attack: float = 0.0
-    steps: int = 50
+    steps: int = 10
     reynolds: float = 1000.0
     grid_size: int = 32 # assumes cubic nx=ny=nz
     forcing: bool = False
     forcing_intensity: float = 0.0
 
+
+# Global status tracker
+SIM_STATUS = {}
+
 def run_simulation_task(sim_id: str, config: SimulationConfig):
     sim_dir = os.path.join(OUTPUT_DIR, sim_id)
     os.makedirs(sim_dir, exist_ok=True)
     
+    SIM_STATUS[sim_id] = {"status": "running", "progress": 0, "current_step": 0, "total_steps": config.steps}
+    
     print(f"[{sim_id}] Starting Turbine Simulation (NACA {config.naca_code})")
     
     # 1. Generate Geometry
-    # Shape: (nw=1, nz=grid, ny=grid, nx=grid) for 3D/pseudo-4D
     nw, nz, ny, nx = 3, config.grid_size, config.grid_size, config.grid_size
     shape = (nw, nz, ny, nx)
     
-    # Generate mask for the blade
     print(f"[{sim_id}] Generating Airfoil...")
     obstacle_mask = generate_naca_airfoil(
         shape, 
@@ -55,37 +67,47 @@ def run_simulation_task(sim_id: str, config: SimulationConfig):
         nx=nx, ny=ny, nz=nz, nw=nw,
         nu=nu,
         lid_velocity=lid_vel,
-        obstacles=obstacle_mask, # Pass mask
+        obstacles=obstacle_mask, 
         forcing_intensity=config.forcing_intensity if config.forcing else 0.0
     )
     
     # 3. Time Loop
     lift_history = []
     drag_history = []
-    
     frames = []
+    
+    import visualize 
     
     print(f"[{sim_id}] Running {config.steps} steps...")
     for n in range(config.steps):
         solver.step(n)
         
-        # Compute Forces (Quantum Surface Integral)
+        # Compute Forces
         forces = solver.compute_quantum_surface_integral()
         lift_history.append(forces['lift'])
         drag_history.append(forces['drag'])
         
+        # Real-time updates
+        SIM_STATUS[sim_id]["progress"] = int((n / config.steps) * 100)
+        SIM_STATUS[sim_id]["current_step"] = n
+        
         if n % 2 == 0:
-            # Capture frame (Middle Z, Middle W)
-            # Velocity magnitude
+            # Capture frame data
             mid_w = nw // 2
             mid_z = nz // 2
             u_slice = solver.u[mid_w, mid_z, :, :]
             v_slice = solver.v[mid_w, mid_z, :, :]
             mag = np.sqrt(u_slice**2 + v_slice**2)
             frames.append(mag.copy())
-
+            
+            # Save latest frame for real-time viewing
+            # We use p for pressure field visualization in plot_frame, let's grab it
+            p_slice = solver.p[mid_w, mid_z, :, :]
+            
+            # Save "latest.png"
+            visualize.plot_frame(n, u_slice, v_slice, p_slice, sim_dir, save_static=False, filename="latest.png")
+            
     # 4. Save Results
-    # Plots
     plt.figure()
     plt.plot(lift_history, label='Lift')
     plt.plot(drag_history, label='Drag')
@@ -96,19 +118,37 @@ def run_simulation_task(sim_id: str, config: SimulationConfig):
     
     # Animation
     if len(frames) > 0:
-        fig, ax = plt.subplots()
-        im = ax.imshow(frames[0], animated=True, origin='lower', cmap='viridis')
+        all_frames = np.array(frames)
+        v_min, v_max = np.min(all_frames), np.max(all_frames)
+        if v_max == v_min: v_max = v_min + 1e-5
+
+        fig, ax = plt.subplots(figsize=(6, 5))
+        im = ax.imshow(frames[0], animated=True, origin='lower', cmap='plasma', vmin=v_min, vmax=v_max)
         ax.set_title(f"Velocity Field (NACA {config.naca_code})")
+        fig.colorbar(im, ax=ax, label="Magnitude")
         
         def update(frame):
             im.set_array(frame)
             return [im]
             
         anim = FuncAnimation(fig, update, frames=frames, blit=True)
-        anim.save(os.path.join(sim_dir, "flow.gif"), writer='pillow', fps=10)
+        anim.save(os.path.join(sim_dir, "flow.gif"), writer='pillow', fps=15)
         plt.close()
         
+    SIM_STATUS[sim_id]["status"] = "complete"
+    SIM_STATUS[sim_id]["progress"] = 100
     print(f"[{sim_id}] Simulation Complete.")
+
+@app.get("/status/{sim_id}")
+async def get_status(sim_id: str):
+    if sim_id in SIM_STATUS:
+        return SIM_STATUS[sim_id]
+    return {"status": "unknown"}
+
+
+@app.get("/")
+async def read_root():
+    return FileResponse('static/index.html')
 
 @app.post("/simulate")
 async def start_simulation(config: SimulationConfig, background_tasks: BackgroundTasks):
