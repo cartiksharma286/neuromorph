@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oil Refinery Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --secondary: #64748b;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo svg {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .card-content {
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-content img,
+        .card-content svg {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* Trading Ticker */
+        .ticker-bar {
+            background: var(--text-main);
+            color: white;
+            padding: 0.5rem 2rem;
+            font-size: 0.875rem;
+            display: flex;
+            gap: 2rem;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .ticker-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .positive {
+            color: #4ade80;
+        }
+
+        .negative {
+            color: #f87171;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+            background-color: #f0f9ff;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid var(--primary);
+            width: 24px;
+            height: 24px;
+            -webkit-animation: spin 1s linear infinite;
+            /* Safari */
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Component View Area */
+        #component-view {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            min-height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #component-view svg {
+            width: 100%;
+            height: auto;
+            max-height: 600px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Trading Ticker -->
+    <div class="ticker-bar" id="market-ticker">
+        Loading Market Data...
+    </div>
+
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            RefineryOS
+        </div>
+        <nav class="nav-links">
+            <a class="nav-link active" onclick="switchTab('dashboard')">Dashboard</a>
+            <a class="nav-link" onclick="switchTab('drawings')">Engineering Drawings</a>
+            <a class="nav-link" onclick="switchTab('simulation')">CFD Simulation</a>
+            <a class="nav-link" onclick="switchTab('network')">Pipeline Network</a>
+        </nav>
+    </header>
+
+    <main id="main-content">
+        <!-- Content injected by JS -->
+    </main>
+
+    <script>
+        // State
+        let currentTab = 'dashboard';
+        let marketInterval;
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('dashboard');
+            startMarketTicker();
+        });
+
+        // Ticker
+        function startMarketTicker() {
+            const updateTicker = async () => {
+                try {
+                    const res = await fetch('/api/trading/market');
+                    const data = await res.json();
+
+                    const tickerHTML = `
+                        <span class="ticker-item">Spot Price: $${data.spot_price_usd} <span class="${data.change_percent >= 0 ? 'positive' : 'negative'}">(${data.change_percent}%)</span></span>
+                        <span class="ticker-item">Brent: $${data.brent_crude}</span>
+                        <span class="ticker-item">WTI: $${data.wti_crude}</span>
+                        <span class="ticker-item">Trend: ${data.trend}</span>
+                    `;
+                    document.getElementById('market-ticker').innerHTML = tickerHTML;
+                } catch (e) {
+                    console.error("Ticker error", e);
+                }
+            };
+            updateTicker();
+            marketInterval = setInterval(updateTicker, 3000);
+        }
+
+        // Navigation
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            // This assumes simple onClick handling, meant for demo. 
+            // Better to use data attributes but this works for simple script.
+            // Finding the link that called this function is tricky without event, doing by text content is fragile but okay here.
+
+            const main = document.getElementById('main-content');
+            main.innerHTML = '<div style="display:flex;justify-content:center;padding:2rem;"><div class="loader"></div></div>';
+
+            if (tab === 'dashboard') loadDashboard();
+            else if (tab === 'drawings') loadDrawings();
+            else if (tab === 'simulation') loadSimulation();
+            else if (tab === 'network') loadNetwork();
+        }
+
+        // Views
+        async function loadDashboard() {
+            const main = document.getElementById('main-content');
+
+            // Should be a grid of mini-views
+            main.innerHTML = `
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Plant Overview (Isometric)</div>
+                        </div>
+                        <div class="card-content" id="dash-iso">Loading...</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Live Pipeline Flow</div>
+                        </div>
+                        <div class="card-content" id="dash-flow">Loading...</div>
+                    </div>
+                    <div class="card">
+                         <div class="card-header">
+                            <div class="card-title">Master Plan Layout</div>
+                        </div>
+                        <div class="card-content" id="dash-master">Loading...</div>
+                    </div>
+                </div>
+            `;
+
+            // Load concurrent content
+            Promise.all([
+                fetch('/api/drawings/plant_isometric').then(r => r.json()).then(d => {
+                    document.getElementById('dash-iso').innerHTML = d.svg;
+                }),
+                fetch('/api/simulation/cfd').then(r => r.json()).then(d => {
+                    document.getElementById('dash-flow').innerHTML = `<img src="data:image/png;base64,${d.image}" />`;
+                }),
+                fetch('/api/drawings/master_plan').then(r => r.json()).then(d => {
+                    document.getElementById('dash-master').innerHTML = d.svg;
+                })
+            ]);
+        }
+
+        async function loadDrawings() {
+            const main = document.getElementById('main-content');
+            main.innerHTML = `
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="loadDrawing('heat_exchanger', this)">Heat Exchanger</button>
+                    <button class="tab-btn" onclick="loadDrawing('reactor', this)">Reactor</button>
+                    <button class="tab-btn" onclick="loadDrawing('valve', this)">Control Valve</button>
+                    <button class="tab-btn" onclick="loadDrawing('pipeline_assembly', this)">Pipeline Assembly</button>
+                    <button class="tab-btn" onclick="loadDrawing('plant_orthographic', this)">Orthographic Views</button>
+                    <button class="tab-btn" onclick="loadDrawing('chemical_plant', this)">Process Flow Diagram</button>
+                </div>
+                <div id="component-view">
+                    Select a component to view blueprint.
+                </div>
+            `;
+            // Load first default
+            loadDrawing('heat_exchanger', document.querySelector('.tab-btn'));
+        }
+
+        async function loadDrawing(type, btnElement) {
+            // Update active state
+            if (btnElement) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btnElement.classList.add('active');
+            }
+
+            const view = document.getElementById('component-view');
+            view.innerHTML = '<div class="loader"></div>';
+
+            try {
+                const res = await fetch(`/api/drawings/${type}`);
+                const data = await res.json();
+                view.innerHTML = data.svg;
+            } catch (e) {
+                view.innerHTML = 'Error loading drawing.';
+            }
+        }
+
+        async function loadSimulation() {
+            const main = document.getElementById('main-content');
+            main.innerHTML = `
+                <h2>Computational Fluid Dynamics (CFD)</h2>
+                <div class="card">
+                     <div class="card-content" style="height: 500px;" id="sim-view">Loading Simulation...</div>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button class="tab-btn active" onclick="loadSimulation()">Generate New Frame</button>
+                </div>
+            `;
+            try {
+                const res = await fetch('/api/simulation/cfd');
+                const data = await res.json();
+                document.getElementById('sim-view').innerHTML = `<img src="data:image/png;base64,${data.image}" style="width:100%; height:100%; object-fit:contain;" />`;
+            } catch (e) {
+                document.getElementById('sim-view').innerHTML = 'Error running simulation.';
+            }
+        }
+
+        async function loadNetwork() {
+            const main = document.getElementById('main-content');
+            main.innerHTML = `
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="loadNetworkGraph('jamnagar', this)">Jamnagar Refinery</button>
+                    <button class="tab-btn" onclick="loadNetworkGraph('abbc', this)">Trans-Regional Pipeline</button>
+                </div>
+                <div id="component-view">
+                    Loading Network...
+                </div>
+            `;
+            loadNetworkGraph('jamnagar', document.querySelector('.tab-btn'));
+        }
+
+        async function loadNetworkGraph(type, btn) {
+            if (btn) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+            const view = document.getElementById('component-view');
+            view.innerHTML = '<div class="loader"></div>';
+
+            try {
+                const res = await fetch(`/api/network/${type}`);
+                const data = await res.json();
+                view.innerHTML = `<img src="data:image/png;base64,${data.image}" style="width:100%; height:auto;" />`;
+            } catch (e) {
+                view.innerHTML = 'Error loading network graph.';
+            }
+        }
+
+    </script>
+</body>
+
+</html>
