@@ -104,8 +104,8 @@ class CFDSolver:
         
         plt.figure(figsize=(10, 5))
         plt.style.use('dark_background')
-        plt.contourf(X, Y, U, 50, cmap='jet')
-        plt.colorbar(label='Velocity Magnitude (m/s)')
+        cs = plt.contourf(X, Y, U, 50, cmap='jet')
+        plt.colorbar(cs, label='Velocity Magnitude (m/s)')
         plt.streamplot(X, Y, U, np.zeros_like(U), color='white', density=0.5, linewidth=0.5)
         
         # Draw valve
