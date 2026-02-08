@@ -64,6 +64,11 @@ def draw_chemical_plant():
     svg_content = RefineryDesigner.draw_chemical_plant_schematic()
     return jsonify({'svg': svg_content})
 
+@app.route('/api/drawings/abbc_systematic')
+def draw_abbc_systematic():
+    svg_content = RefineryDesigner.draw_abbc_pipeline_systematic()
+    return jsonify({'svg': svg_content})
+
 @app.route('/api/simulation/cfd')
 def simulation_cfd():
     # Helper to generate a new frame

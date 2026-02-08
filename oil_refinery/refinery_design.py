@@ -122,54 +122,62 @@ class RefineryDesigner:
 
     @staticmethod
     def draw_isometric_plant():
-        """Draw 3D Isometric View of Refinery Unit with Enhanced Geometry"""
+        """Draw 3D Isometric View of Eco-Friendly Refinery Unit"""
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection='3d')
         
-        # Simplified representations
-        # Tower 1 (Main Distillation)
+        # 1. Main Distillation Tower (Recycled Steel)
         z = np.linspace(0, 10, 20)
         theta = np.linspace(0, 2*np.pi, 20)
         theta_grid, z_grid = np.meshgrid(theta, z)
         x_grid = 2 + np.cos(theta_grid)
         y_grid = 2 + np.sin(theta_grid)
-        ax.plot_surface(x_grid, y_grid, z_grid, color='silver', alpha=0.9, edgecolor='k', linewidth=0.1)
+        ax.plot_surface(x_grid, y_grid, z_grid, color='#CFD8DC', alpha=0.9, edgecolor='#455A64', linewidth=0.1) # Recycled Steel
         
-        # Tower 2 (Stripper) - smaller and offset
+        # 2. Stripper Tower (Bio-Catalyst Unit)
         z2 = np.linspace(0, 8, 20)
         x_grid2 = 5 + 0.8 * np.cos(theta_grid)
         y_grid2 = 2 + 0.8 * np.sin(theta_grid)
-        ax.plot_surface(x_grid2, y_grid2, np.tile(z2[:,np.newaxis], (1,20)), color='darkgrey', alpha=0.9, edgecolor='k', linewidth=0.1)
+        ax.plot_surface(x_grid2, y_grid2, np.tile(z2[:,np.newaxis], (1,20)), color='#A5D6A7', alpha=0.9, edgecolor='#2E7D32', linewidth=0.1) # Green Body
 
-        # Storage Tank 1
+        # 3. Storage Tank (Solar Powered)
         z_tank = np.linspace(0, 4, 10)
         theta_grid_t, z_grid_t = np.meshgrid(theta, z_tank)
         x_grid_t = 6 + 2*np.cos(theta_grid_t)
         y_grid_t = 6 + 2*np.sin(theta_grid_t)
-        ax.plot_surface(x_grid_t, y_grid_t, z_grid_t, color='white', alpha=0.9, edgecolor='k', linewidth=0.1)
+        ax.plot_surface(x_grid_t, y_grid_t, z_grid_t, color='white', alpha=0.9, edgecolor='#1B5E20', linewidth=0.1)
         
-        # Horizontal Drum
-        u = np.linspace(0, 2 * np.pi, 20)
-        v = np.linspace(0, 3, 10)
-        U, V = np.meshgrid(u, v)
-        X = 2 + 0.8 * np.cos(U)
-        Z = 2 + 0.8 * np.sin(U) # Elevated
-        Y = 6 + V
-        ax.plot_surface(X, Y, Z, color='lightblue', alpha=0.9, edgecolor='k', linewidth=0.1)
+        # Solar Panel on Tank Roof
+        r_solar = np.linspace(0, 2, 5)
+        R_solar, The_solar = np.meshgrid(r_solar, theta)
+        X_solar = 6 + R_solar * np.cos(The_solar)
+        Y_solar = 6 + R_solar * np.sin(The_solar)
+        Z_solar = np.full_like(X_solar, 4.1)
+        ax.plot_surface(X_solar, Y_solar, Z_solar, color='#0288D1', alpha=1.0) # Blue Solar Panel
 
-        # Pipe Racks / Connecting Lines
+        # 4. Carbon Capture Unit (New Addition)
+        z_cc = np.linspace(0, 6, 10)
+        x_grid_cc = 2 + 1 * np.cos(theta_grid)
+        y_grid_cc = 7 + 1 * np.sin(theta_grid)
+        ax.plot_surface(x_grid_cc, y_grid_cc, np.tile(z_cc[:,np.newaxis], (1,20)), color='#81C784', alpha=0.9, edgecolor='#1B5E20', linewidth=0.1)
+
+        # 5. Eco-Piping (Zero-Leak Composite)
         # Tower 1 to Tank
-        ax.plot([2, 2, 6, 6], [2, 4, 4, 6], [9, 9, 3.8, 3.8], color='red', linewidth=3)
-        # Tower 1 to Tower 2
-        ax.plot([2, 5], [2, 2], [5, 5], color='blue', linewidth=3)
+        ax.plot([2, 2, 6, 6], [2, 4, 4, 6], [9, 9, 3.8, 3.8], color='#2E7D32', linewidth=3) # Green Pipe
+        # Tower 1 to CC Unit
+        ax.plot([2, 2], [2, 7], [8, 5], color='#43A047', linewidth=2, linestyle='--') # Capture Line
+
+        # Annotations
+        ax.text(2, 2, 11, "H2-Steel Tower", fontsize=8, ha='center')
+        ax.text(6, 6, 5, "Solar Array", fontsize=8, ha='center', color='#0277BD')
+        ax.text(2, 7, 7, "Carbon Capture\nModule", fontsize=8, ha='center', color='#1B5E20')
 
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Height')
-        ax.set_title('Jamnagar Unit 3D Process Isometric', fontsize=12, weight='bold')
-        ax.view_init(elev=35, azim=-45) # Classic Isometric Angle
+        ax.set_title('Eco-Refinery 3D Isometric View\n(Net-Zero Design)', fontsize=12, weight='bold', color='#1B5E20')
+        ax.view_init(elev=35, azim=-45)
         
-        # Make pane background white
         ax.xaxis.pane.fill = False
         ax.yaxis.pane.fill = False
         ax.zaxis.pane.fill = False
@@ -182,32 +190,42 @@ class RefineryDesigner:
 
     @staticmethod
     def draw_orthographic_plant():
-        """Draw Orthographic Projections (Top, Front, Side)"""
+        """Draw Orthographic Projections (Top, Front, Side) with Eco-Friendly Layout"""
         fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
         
         # TOP VIEW
         ax1.set_axis_off()
-        ax1.set_title("TOP VIEW")
-        ax1.add_patch(patches.Circle((3, 3), 1, fc='silver', ec='black')) # Tower
-        ax1.add_patch(patches.Circle((7, 7), 2, fc='white', ec='black')) # Tank
-        ax1.plot([3, 7], [3, 7], 'r-', linewidth=2) # Pipe
+        ax1.set_title("TOP VIEW (Eco-Plan)")
+        ax1.add_patch(patches.Circle((3, 3), 1, fc='#CFD8DC', ec='#455A64')) # Tower
+        ax1.add_patch(patches.Circle((7, 7), 2, fc='white', ec='#1B5E20')) # Tank
+        ax1.add_patch(patches.Rectangle((6, 6), 2, 2, fc='#0288D1', alpha=0.3)) # Solar Panel Outline
+        ax1.add_patch(patches.Circle((3, 8), 1, fc='#81C784', ec='#1B5E20')) # Carbon Capture
+        
+        ax1.plot([3, 7], [3, 7], color='#2E7D32', linewidth=2) # Green Pipe
+        ax1.plot([3, 3], [3, 7], color='#43A047', linewidth=1, linestyle='--') # CC Line
         ax1.set_xlim(0, 10)
         ax1.set_ylim(0, 10)
         
         # FRONT VIEW
         ax2.set_axis_off()
         ax2.set_title("FRONT VIEW")
-        ax2.add_patch(patches.Rectangle((2, 0), 2, 8, fc='silver', ec='black')) # Tower
-        ax2.add_patch(patches.Rectangle((5, 0), 4, 3, fc='white', ec='black')) # Tank
-        ax2.plot([3, 7], [7, 3], 'r-', linewidth=2) # Pipe
+        ax2.add_patch(patches.Rectangle((2, 0), 2, 8, fc='#CFD8DC', ec='#455A64')) # Tower
+        ax2.add_patch(patches.Rectangle((5, 0), 4, 3, fc='white', ec='#1B5E20')) # Tank
+        ax2.add_patch(patches.Rectangle((5.5, 3), 3, 0.2, fc='#0288D1')) # Solar
+        ax2.add_patch(patches.Rectangle((2, 8), 1, 1, fc='#81C784', ec='none')) # CC Vent
+        
+        ax2.plot([3, 7], [7, 3], color='#2E7D32', linewidth=2) # Pipe
         ax2.set_xlim(0, 10)
         ax2.set_ylim(0, 10)
         
         # SIDE VIEW
         ax3.set_axis_off()
         ax3.set_title("SIDE VIEW")
-        ax3.add_patch(patches.Rectangle((2, 0), 2, 8, fc='silver', ec='black')) # Tower
-        ax3.add_patch(patches.Rectangle((4, 0), 4, 3, fc='white', ec='black')) # Tank Side
+        ax3.add_patch(patches.Rectangle((2, 0), 2, 8, fc='#CFD8DC', ec='#455A64')) # Tower
+        ax3.add_patch(patches.Rectangle((4, 0), 4, 3, fc='white', ec='#1B5E20')) # Tank Side
+        ax3.add_patch(patches.Rectangle((4.5, 3), 3, 0.2, fc='#0288D1')) # Solar
+        ax3.add_patch(patches.Rectangle((1, 4), 1, 4, fc='#81C784', ec='#1B5E20')) # CCU Side
+        
         ax3.set_xlim(0, 10)
         ax3.set_ylim(0, 10)
 
@@ -391,6 +409,91 @@ class RefineryDesigner:
         ax.set_xlim(0, 18)
         ax.set_ylim(0, 13)
         
+        buf = BytesIO()
+        plt.savefig(buf, format='svg', bbox_inches='tight')
+        plt.close()
+        return buf.getvalue().decode('utf-8')
+
+    @staticmethod
+    def draw_abbc_pipeline_systematic():
+        """
+        Draw AB-BC Pipeline Systematic with Compressible Flow & Green Footprint
+        """
+        fig, ax = plt.subplots(figsize=(16, 8))
+        ax.set_axis_off()
+        ax.set_title("AB-BC CORRIDOR: SYSTEMATIC PIPELINE & FLOW DYNAMICS", fontsize=16, weight='bold', color='#2E7D32')
+        
+        # 1. Green Canadian Footprint (Terrain Background)
+        # Rocky Mountains stylized
+        x_mtn = np.linspace(0, 16, 100)
+        y_mtn = 2 + 1.5 * np.sin(x_mtn * 1.5) * np.exp(-0.1 * (x_mtn - 8)**2) + 0.5 * np.random.rand(100)
+        ax.fill_between(x_mtn, 0, y_mtn, color='#C8E6C9', alpha=0.6) # Light Green Footer
+        
+        # Specific Peaks
+        peaks = [(4, 6), (7, 8), (10, 7), (13, 5)]
+        for px, py in peaks:
+            ax.add_patch(patches.Polygon([[px-1.5, 2], [px, py], [px+1.5, 2]], fc='#81C784', ec='#2E7D32', alpha=0.8))
+
+        # 2. Pipeline Path (Edmonton -> Burnaby)
+        # Curve representing the route
+        path_x = np.linspace(1, 15, 100)
+        # A path that navigates 'through' the mountains
+        path_y = 5 - 0.15 * (path_x - 1) - 0.5 * np.sin(path_x) 
+        
+        # 3. Compressible Fluid Flow Visualization
+        # Use a scatter plot with changing color/size to represent pressure/density drop
+        # High Pressure (Red/Dense) -> Low Pressure (Blue/Expanded)
+        cmap = plt.get_cmap('RdYlBu')
+        for i in range(len(path_x)-1):
+            color = cmap(i / len(path_x))
+            ax.plot(path_x[i:i+2], path_y[i:i+2], color=color, linewidth=6, solid_capstyle='round')
+            
+        # 4. Points of Interest (POIs)
+        pois = [
+            (1, 5, "Edmonton\nTerminal", "Inlet"),
+            (5, 5.5, "Jasper\nPump Station", "Boost"),
+            (10, 4.5, "Kamloops\nTerminal", "Distribution"),
+            (15, 2.5, "Burnaby\nExport", "Outlet")
+        ]
+        
+        for x, y, label, type_ in pois:
+            # Station Marker
+            ax.add_patch(patches.Circle((x, y), 0.3, fc='white', ec='black', zorder=10))
+            ax.text(x, y + 0.5, label, ha='center', fontsize=9, weight='bold', bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
+            
+            # Valve Dynamics Visualization at POIs
+            if type_ in ["Boost", "Distribution"]:
+                # Draw control valve symbol with 'dynamics' (e.g. percentage open)
+                ax.add_patch(patches.Polygon([[x-0.4, y+0.8], [x+0.4, y+0.8], [x, y+0.4]], fc='#FF9800', ec='black'))
+                ax.text(x, y+1.0, "CV-Active", fontsize=7, ha='center', color='#E65100')
+                # Pressure Gauge
+                ax.add_patch(patches.Circle((x+0.5, y+0.5), 0.2, fc='#ECEFF1', ec='black'))
+                ax.plot([x+0.5, x+0.5+0.15], [y+0.5, y+0.5+0.15], 'r-', linewidth=1) 
+
+        # 5. Flow Vectors & Annotations
+        # Show flow direction
+        for i in range(0, 100, 15):
+            ax.arrow(path_x[i], path_y[i], path_x[i+1]-path_x[i], path_y[i+1]-path_y[i], 
+                     head_width=0.2, color='white', alpha=0.8)
+
+        # Environmental Note
+        ax.text(8, 0.5, "Eco-Friendly Corridor Monitoring • Carbon Neutral Operations", 
+                ha='center', fontsize=10, color='#1B5E20', style='italic')
+
+        # Legend for Flow
+        # Gradient Bar
+        grad_x = np.linspace(12, 15, 50)
+        for i in range(len(grad_x)):
+            color = cmap(i / len(grad_x))
+            ax.add_patch(patches.Rectangle((grad_x[i], 8.5), 0.1, 0.5, color=color, linewidth=0))
+        ax.text(12, 9.1, "High Pressure (Liquid)", fontsize=8)
+        ax.text(15, 9.1, "Low Pressure (Gas)", fontsize=8, ha='right')
+        ax.text(13.5, 8.2, "Compressible Flow Gradient", ha='center', fontsize=8)
+
+
+        ax.set_xlim(0, 16)
+        ax.set_ylim(0, 10)
+
         buf = BytesIO()
         plt.savefig(buf, format='svg', bbox_inches='tight')
         plt.close()
