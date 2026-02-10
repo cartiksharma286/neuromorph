@@ -38,7 +38,7 @@ def simulate():
         flip_angle = float(data.get('flip_angle', 30))
         coil_mode = data.get('coils', 'standard')
         num_coils = int(data.get('num_coils', 8))
-        noise = float(data.get('noise', 0.01))
+        noise = 0.0 # Force remove noise
         recon_method = data.get('recon_method', 'SoS')
         use_shimming = data.get('shimming', False)
         
@@ -134,7 +134,7 @@ def render_cortical():
         plt.style.use('dark_background')
         fig, ax = plt.subplots(figsize=(6,6))
         fig.patch.set_facecolor('#0f172a')
-        ax.imshow(pd_surface, cmap='magma', origin='lower')
+        ax.imshow(pd_surface, cmap='gray', origin='lower')
         ax.set_title("Cortical Surface Reconstruction")
         ax.axis('off')
         buf = io.BytesIO()
