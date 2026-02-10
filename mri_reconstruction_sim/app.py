@@ -26,8 +26,11 @@ def index():
 def status():
     return "MRI Simulator Online"
 
+GLOBAL_SIM = None
+
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
+    global GLOBAL_SIM
     try:
         data = request.json or {}
         res = int(data.get('resolution', 128))
@@ -38,54 +41,88 @@ def simulate():
         flip_angle = float(data.get('flip_angle', 30))
         coil_mode = data.get('coils', 'standard')
         num_coils = int(data.get('num_coils', 8))
-        noise = 0.0 # Force remove noise
+        noise = float(data.get('noise_level', 0.0)) # Allow noise from UI
         recon_method = data.get('recon_method', 'SoS')
         use_shimming = data.get('shimming', False)
         
-        sim = MRIReconstructionSimulator(resolution=res)
+        slice_orientation = data.get('slice_orientation', 'axial')
+        slice_pos = float(data.get('slice_pos', 0.5))
+        
         phantom_type = 'brain'
         if coil_mode == 'cardiothoracic_array':
             phantom_type = 'cardiac'
         elif coil_mode == 'knee_vascular_array':
             phantom_type = 'knee'
 
-        sim.setup_phantom(use_real_data=True, phantom_type=phantom_type)
-        sim.generate_coil_sensitivities(num_coils=num_coils, coil_type=coil_mode, optimal_shimming=use_shimming)
+        # Initialize or Re-initialize Simulator if resolution changes
+        if GLOBAL_SIM is None or GLOBAL_SIM.resolution != res:
+            GLOBAL_SIM = MRIReconstructionSimulator(resolution=res)
+            # Reset state trackers
+            GLOBAL_SIM.last_phantom_type = None
+            GLOBAL_SIM.last_coil_config = None
+            GLOBAL_SIM.last_shim_report = None
         
-        shim_report = None
-        if use_shimming:
-            w_opt, shim_info = sim.optimize_shimming_b_field(sim.coils)
-            shim_report = sim.generate_shim_report_data(w_opt, shim_info)
-            if coil_mode != 'n25_array':
-                new_coils = []
-                for i, c in enumerate(sim.coils):
-                    if i < len(w_opt):
-                        new_coils.append(c * w_opt[i])
-                sim.coils = new_coils
+        sim = GLOBAL_SIM
         
-        slice_orientation = data.get('slice_orientation', 'axial')
-        slice_pos = float(data.get('slice_pos', 0.5))
+        # 1. Update Phantom if needed
+        if getattr(sim, 'last_phantom_type', None) != phantom_type:
+            sim.setup_phantom(use_real_data=True, phantom_type=phantom_type)
+            sim.last_phantom_type = phantom_type
+            # If phantom changes, we might need to redo coils if they depend on phantom geometry (shimming does)
+            # But generate_coil_sensitivities mainly uses grid. 
+            # However, optimize_shimming uses the phantom. So invalidate coils.
+            sim.last_coil_config = None 
+
+        # 2. Update Coils if needed
+        # Config tuple: (coil_mode, num_coils, use_shimming)
+        current_coil_config = (coil_mode, num_coils, use_shimming)
+        
+        if getattr(sim, 'last_coil_config', None) != current_coil_config:
+            sim.generate_coil_sensitivities(num_coils=num_coils, coil_type=coil_mode, optimal_shimming=use_shimming)
+            
+            shim_report = None
+            if use_shimming:
+                w_opt, shim_info = sim.optimize_shimming_b_field(sim.coils)
+                shim_report = sim.generate_shim_report_data(w_opt, shim_info)
+                if coil_mode != 'n25_array':
+                    new_coils = []
+                    for i, c in enumerate(sim.coils):
+                        if i < len(w_opt):
+                            new_coils.append(c * w_opt[i])
+                    sim.coils = new_coils
+            
+            sim.last_shim_report = shim_report
+            sim.last_coil_config = current_coil_config
+        else:
+            shim_report = getattr(sim, 'last_shim_report', None)
+
+        # 3. Set View (Slicing) - Fast operation
         sim.set_view(slice_orientation, slice_pos)
         
+        # 4. Acquire Signal & Reconstruct (Sequence Dependent)
         kspace, M_ref = sim.acquire_signal(sequence_type=seq_type, TR=tr, TE=te, TI=ti, flip_angle=flip_angle, noise_level=noise)
         
         if recon_method == 'DeepLearning':
             recon_img = sim.deep_learning_reconstruct(kspace)
-            coil_imgs = []
         else:
             recon_img, coil_imgs = sim.reconstruct_image(kspace, method=recon_method)
         
         metrics = sim.compute_metrics(recon_img, M_ref)
+        # Statistical Classifier might be fast enough, or we can cache?
+        # It analyzes the image content. Since image changes with sequence, we must run it.
         stat_metrics = sim.classifier.analyze_image(recon_img)
         metrics.update(stat_metrics)
         
         plots = sim.generate_plots(kspace, recon_img, M_ref)
         signal_study = sim.generate_signal_study(seq_type)
         
+        # Save plots to disk (Optional for persistence, but slow? Let's keep it for report generation)
         img_dir = os.path.join(os.getcwd(), 'static', 'report_images')
         os.makedirs(img_dir, exist_ok=True)
         import base64
         for key, b64_str in plots.items():
+            # Optimize: Only save if requested? 
+            # The original code saved them. We keep it for now.
             with open(os.path.join(img_dir, f"{key}.png"), "wb") as f:
                 f.write(base64.b64decode(b64_str))
                 

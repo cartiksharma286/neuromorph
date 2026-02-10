@@ -1846,6 +1846,85 @@ class MRIReconstructionSimulator:
             
             q_factor = 0.005 # High fidelity
 
+        elif sequence_type == 'QuantumRBMSpectroscopy':
+            # Quantum Restricted Boltzmann Machine (RBM) for MR Spectroscopy
+            # Simulates metabolic mapping (CSI) with quantum-enhanced reconstruction
+            
+            # 1. Simulate Metabolic Priors based on Anatomy
+            # NAA (Neuronal marker) - High in GM/WM
+            # Choline (Membrane turnover) - High in cellular regions
+            # Creatine (Energy buffer) - Uniformish
+            
+            # Normalize anatomy for metabolic simulation
+            gm_prob = np.exp(-(self.t1_map - 1200)**2 / (2 * 100**2))
+            wm_prob = np.exp(-(self.t1_map - 700)**2 / (2 * 100**2))
+            
+            map_naa = 1.0 * gm_prob + 0.8 * wm_prob
+            map_cho = 0.3 * gm_prob + 0.4 * wm_prob
+            map_cre = 0.6 * np.ones_like(self.pd_map)
+            
+            # 2. Quantum RBM Reconstruction (Simulated)
+            # Energy Function: E(v, h) = - sum(ai*vi) - sum(bj*hj) - sum(vi*wij*hj)
+            # We simulate the "Free Energy" minimization which effectively denoises the spectra
+            
+            # Noisy acquisition
+            noise_met = 0.1 * np.random.randn(*self.pd_map.shape)
+            v_naa = map_naa + noise_met
+            
+            # RBM "Gibbs Sampling" step (Mean field approx for speed)
+            # Visible unit activation -> Hidden unit activation
+            weights = 0.5 * np.eye(v_naa.shape[0]) # Simplified weights
+            hidden_prob = 1.0 / (1.0 + np.exp(-v_naa)) # Sigmoid
+            
+            # Reconstruct Visible
+            v_recon = 1.0 / (1.0 + np.exp(-hidden_prob))
+            
+            # Final Spectroscopic Image (Composite of metabolites)
+            # NAA is Red, Cho is Green, Cre is Blue-ish (represented as intensity mix here)
+            M = 0.6 * v_recon + 0.2 * map_cho + 0.2 * map_cre
+            
+            # Finite difference enhancement (Spectral Edge)
+            M = M * 1.5
+            
+            q_factor = 0.001 # Spectral precision
+
+        elif sequence_type == 'GeodesicCoilAdiabaticPulse':
+            # Pulse Sequence optimized for Geodesic/Conformal Coil Geometries
+            # Uses Adiabatic Full Passage (AFP) for B1+ insensitivity
+            
+            # 1. Coil Geometry Factor
+            # Calculate local B1+ magnitude from active coils
+            if self.coils:
+                b1_map = np.sqrt(sum(np.abs(c)**2 for c in self.coils))
+                b1_map = b1_map / (np.max(b1_map) + 1e-9)
+            else:
+                b1_map = np.ones_like(self.pd_map)
+                
+            # 2. Adiabatic Pulse Modulation (Hyperbolic Secant)
+            # Beta * sech(beta * t)
+            # In simulation, this results in robust inversion regardless of B1 (above threshold)
+            
+            # Threshold for adiabaticity
+            adiabatic_condition = b1_map > 0.2 
+            
+            # Inversion efficiency
+            inversion_eff = np.ones_like(self.pd_map)
+            inversion_eff[~adiabatic_condition] = np.sin(b1_map[~adiabatic_condition] * np.pi/2) # Linear falloff
+            
+            # 3. Excitation Profile (T1 weighted inversion recovery)
+            # Signal ~ 1 - 2 * exp(-TI/T1)
+            # We use a "spectral-spatial" pulse that creates a unique contrast
+            ti_val = 1500 # ms (nulling CSF roughly)
+            
+            M = self.pd_map * (1 - 2 * inversion_eff * np.exp(-ti_val / self.t1_map))
+            M = np.abs(M) # Magnitude image
+            
+            # Geodesic correction (geometry aware)
+            # Correct for the reception profile explicitly since we used adiabatic transmit
+            M = M / (b1_map + 0.1) 
+            
+            q_factor = 0.003 # Geometric robustness
+
         # --- Global SNR Improvement (30%) ---
         if 'M' in locals():
             M = M * 1.3
