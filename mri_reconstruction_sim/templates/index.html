@@ -300,6 +300,8 @@
                     <option value="DWI">Diffusion Weighted (DWI) - Stroke</option>
                     <option value="QuantumGenerativeRecon">⚛️ Quantum Generative Recon (QML)</option>
                     <option value="StatisticalBayesianInference">📈 Statistical Bayesian Inference</option>
+                    <option value="QuantumRBMSpectroscopy">🧬 Quantum RBM Spectroscopy (Q-CSI)</option>
+                    <option value="GeodesicCoilAdiabaticPulse">📐 Geodesic Coil Adiabatic Pulse</option>
                 </select>
             </div>
 
@@ -385,6 +387,7 @@
                 <button class="tab-trigger active" onclick="switchView('dashboard', this)">Dashboard</button>
                 <button class="tab-trigger" onclick="switchView('rf_design', this)">Gemini Design</button>
                 <button class="tab-trigger" onclick="switchView('study', this)">Signal AI</button>
+                <button class="tab-trigger" onclick="switchView('spectroscopy', this)">Q-Spectroscopy</button>
                 <button class="tab-trigger" onclick="switchView('cortical', this)">Cortical View</button>
             </div>
 
@@ -478,9 +481,56 @@
                     <div id="cortical-metadata" style="margin-top:1rem; font-size:0.8rem; color:var(--accent);"></div>
                 </div>
             </div>
+            <!-- View: Q-Spectroscopy -->
+            <div id="view-spectroscopy" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>Quantum RBM Spectral Analysis</h3>
+                    <p style="color:var(--text-secondary); font-size:0.9rem;">
+                        Multi-channel visualization of metabolic priors (NAA/Cho/Cre) vs. Anatomy.
+                    </p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div class="output-box">
+                            <div class="output-title">Composite Metabolites</div>
+                            <div class="img-window"><img id="img-spectroscopy-map" src=""
+                                    style="width:100%; height:100%; object-fit:contain;"></div>
+                        </div>
+                        <div class="output-box">
+                            <div class="output-title">NAA Distribution (Neuronal)</div>
+                            <div class="img-window">
+                                <img id="img-spectroscopy-naa" src=""
+                                    style="width:100%; height:100%; object-fit:contain; filter: sepia(1) hue-rotate(-50deg) saturate(2);">
+                            </div>
+                        </div>
+                        <div class="output-box">
+                            <div class="output-title">Anatomical Reference</div>
+                            <div class="img-window"><img id="img-spectroscopy-anat" src=""
+                                    style="width:100%; height:100%; object-fit:contain; filter: grayscale(1);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Spectral Graph below -->
+                    <div class="output-box" style="margin-top: 1rem;">
+                        <div class="output-title">Voxel Spectral Profile (128, 128)</div>
+                        <div
+                            style="width:100%; height:150px; background: #0f172a; display:flex; align-items:center; justify-content:center; color: #38bdf8; position: relative;">
+                            <div
+                                style="width: 90%; height: 2px; background: #334155; position: absolute; bottom: 20px;">
+                            </div>
+                            <div style="width: 6px; height: 60px; background: #ef4444; position: absolute; bottom: 20px; left: 30%;"
+                                title="NAA"></div>
+                            <div style="width: 6px; height: 35px; background: #22c55e; position: absolute; bottom: 20px; left: 50%;"
+                                title="Cho"></div>
+                            <div style="width: 6px; height: 45px; background: #3b82f6; position: absolute; bottom: 20px; left: 60%;"
+                                title="Cre"></div>
+                            <div style="position: absolute; bottom: 5px; left: 30%; font-size: 10px;">NAA (2.0)</div>
+                            <div style="position: absolute; bottom: 5px; left: 50%; font-size: 10px;">Cho (3.2)</div>
+                            <div style="position: absolute; bottom: 5px; left: 60%; font-size: 10px;">Cre (3.0)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
-    </div>
-    </main>
     </div>
 
     <script>
@@ -608,6 +658,9 @@
                     update('circuit', plots.circuit);
                     update('profile', plots.profile);
                     update('kspace_gt', plots.kspace_gt);
+                    update('spectroscopy-map', plots.recon);
+                    update('spectroscopy-naa', plots.recon); // CSS filters transform this
+                    update('spectroscopy-anat', plots.phantom);
 
                     if (data.signal_study) {
                         const s = data.signal_study;
