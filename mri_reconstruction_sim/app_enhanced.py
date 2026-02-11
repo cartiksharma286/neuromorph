@@ -55,11 +55,8 @@ def simulate():
             w_opt, shim_info = sim.optimize_shimming_b_field(sim.coils)
             shim_report = sim.generate_shim_report_data(w_opt, shim_info)
             if coil_mode != 'n25_array':
-                new_coils = []
-                for i, c in enumerate(sim.coils):
-                    if i < len(w_opt):
-                        new_coils.append(c * w_opt[i])
-                sim.coils = new_coils
+                # Apply optimized weights AND localized 25% SNR boost
+                sim.apply_localized_shimming(w_opt)
         
         slice_orientation = data.get('slice_orientation', 'axial')
         slice_pos = float(data.get('slice_pos', 0.5))
