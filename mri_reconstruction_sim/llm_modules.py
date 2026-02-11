@@ -137,6 +137,17 @@ class LLMPulseDesigner:
         elif "deep learning" in text_prompt or "ai recon" in text_prompt:
             params["recon_method"] = "DeepLearning"
             params["description"] = "AI-Driven Reconstruction Protocol"
+
+        elif "thermometry" in text_prompt:
+            params["sequence"] = "GenerativeThermometry"
+            params["tr"] = 45 
+            params["te"] = 15
+            params["flip_angle"] = 25
+            params["description"] = "Generative AI Phase-Shift Thermometry"
+
+        elif "neurovascular" in text_prompt and "generative" in text_prompt:
+            params["coil_mode"] = "rec_engine_coil"
+            params["description"] = "Generative AI Neurovascular Coil Recommendation"
         
         return params
 

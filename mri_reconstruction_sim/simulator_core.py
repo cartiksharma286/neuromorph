@@ -1439,6 +1439,42 @@ class MRIReconstructionSimulator:
                 phase = np.exp(1j * (angle + np.pi))
                 self.coils.append(sens * phase)
 
+        elif coil_type == 'rec_engine_coil':
+            # Recommendation Engine based Neurovascular Coil
+            # Dynamically places elements based on vascular density (simulated)
+            # Find center of mass of provisional vascular map (based on T1/PD)
+            mask_vasc = (self.t1_map > 1500) & (self.pd_map > 0.9) # Rough vascular mask
+            if np.sum(mask_vasc) > 0:
+                coords = np.argwhere(mask_vasc)
+                # K-Means to find 16 optimal clusters/hotspots
+                # Simplified: Just random sampling from vascular points for "smart" placement
+                # mixed with surface elements
+                
+                # 8 Surface elements
+                for i in range(8):
+                    angle = 2 * np.pi * i / 8
+                    cx = center[1] + (N//2) * np.cos(angle)
+                    cy = center[0] + (N//2) * np.sin(angle)
+                    dist_sq = (x - cx)**2 + (y - cy)**2
+                    sens = np.exp(-dist_sq / (2 * (N//4)**2))
+                    self.coils.append(sens * np.exp(1j * angle))
+                    
+                # 8 "Recommended" Focal Elements (Virtual/Beamformed)
+                indices = np.linspace(0, len(coords)-1, 8, dtype=int)
+                for i in indices:
+                    py, px = coords[i]
+                    # Create a focused sensitivity beam
+                    dist_sq = (x - px)**2 + (y - py)**2
+                    # Sharp gaussian
+                    sens = 3.0 * np.exp(-dist_sq / (2 * (N//16)**2)) 
+                    # Phase coherence with location
+                    phase = np.exp(1j * (px/N + py/N) * np.pi)
+                    self.coils.append(sens * phase)
+            else:
+                 # Fallback if no vaculature found
+                 sensitivity = np.ones(self.dims)
+                 self.coils.append(sensitivity)
+
     def acquire_signal(self, sequence_type='SE', TR=2000, TE=100, TI=500, flip_angle=30, noise_level=0.01):
         """
         Simulates Pulse Sequence acquisition.
@@ -1462,6 +1498,44 @@ class MRIReconstructionSimulator:
             denominator = 1 - np.cos(FA_rad) * E1
             denominator = np.maximum(denominator, 1e-9) # Visual stability
             M = self.pd_map * (numerator / denominator) * np.exp(-TE / t2_star)
+        
+        elif sequence_type == 'GenerativeThermometry':
+            # MR Thermometry with Generative AI
+            # Simulates PRF shift thermometry + Generative enhancement of hot spots
+            t1 = np.maximum(self.t1_map, 1e-6)
+            t2 = np.maximum(self.t2_map, 1e-6)
+            
+            # Base Anatomical Image (GRE-like)
+            M_base = self.pd_map * np.exp(-TE / (t2 / 2)) # T2* weighting
+            
+            # Simulate Temperature Map (dT)
+            # Create a "hotspot" artifact (e.g., focused ultrasound heating simulation)
+            cx, cy = self.dims[1]//2, self.dims[0]//2
+            y, x = np.ogrid[:self.dims[0], :self.dims[1]]
+            
+            # Simulated Heating Pattern (3 hotspots)
+            temp_map = np.zeros(self.dims)
+            for ox, oy in [(0,0), (20, 20), (-20, -10)]:
+                 r2 = (x - (cx+ox))**2 + (y - (cy+oy))**2
+                 temp_map += 5.0 * np.exp(-r2 / 100.0) # 5 degrees heating
+            
+            # PRF Shift: Phase change is proportional to Temp change
+            # phi = gamma * alpha * B0 * TE * dT
+            # We skip constants and just map dT to phase
+            phase_shift = temp_map * 0.5 # 0.5 rad per degree (exaggerated for vis)
+            
+            # Apply phase to M
+            M = M_base * np.exp(1j * phase_shift)
+            
+            # Generative AI Enhancement:
+            # "Hallucinate" thermal texture in the hot regions to indicate "AI Prediction"
+            # Add subtle high-freq noise in hot regions to simulate "predicted microstructure"
+            noise = np.random.randn(*self.dims) * 0.1
+            M += M * (temp_map > 0.5) * noise * 0.2
+            
+            # Continue to acquisition simulation
+
+
             
         elif sequence_type in ['InversionRecovery', 'FLAIR']:
             t1 = np.maximum(self.t1_map, 1e-6)
@@ -2336,6 +2410,10 @@ class MRIReconstructionSimulator:
         plots = {}
         plt.style.use('dark_background')
         
+        # Ensure reference is magnitude for display
+        if np.iscomplexobj(reference_M):
+            reference_M = np.abs(reference_M)
+            
         def fig_to_b64(fig, tight=True):
             buf = io.BytesIO()
             if tight:
