@@ -1406,6 +1406,39 @@ class MRIReconstructionSimulator:
                 
                 self.coils.append(sensitivity * phase)
 
+        elif coil_type == 'optimized_vascular_tradeoff':
+            # Optimized Vascular Tradeoff Coil
+            # Implements the trade-off between Resolution (small elements) and SNR (large coverage)
+            # Default to a mix of small and large elements
+            
+            # 1. High-Res Elements (Inner Ring)
+            num_inner = 16
+            r_inner = N // 2.5
+            for i in range(num_inner):
+                angle = 2 * np.pi * i / num_inner
+                cx = center[1] + r_inner * np.cos(angle)
+                cy = center[0] + r_inner * np.sin(angle)
+                
+                # Small, focused elements
+                dist_sq = (x - cx)**2 + (y - cy)**2
+                sens = 2.5 * np.exp(-dist_sq / (2 * (N//10)**2))
+                phase = np.exp(1j * angle)
+                self.coils.append(sens * phase)
+                
+            # 2. High-SNR Elements (Outer Ring / Volume)
+            num_outer = 8
+            r_outer = N // 1.8
+            for i in range(num_outer):
+                angle = 2 * np.pi * i / num_outer + np.pi/num_outer # Offset
+                cx = center[1] + r_outer * np.cos(angle)
+                cy = center[0] + r_outer * np.sin(angle)
+                
+                # Large, broad elements
+                dist_sq = (x - cx)**2 + (y - cy)**2
+                sens = 1.2 * np.exp(-dist_sq / (2 * (N//4)**2))
+                phase = np.exp(1j * (angle + np.pi))
+                self.coils.append(sens * phase)
+
     def acquire_signal(self, sequence_type='SE', TR=2000, TE=100, TI=500, flip_angle=30, noise_level=0.01):
         """
         Simulates Pulse Sequence acquisition.
@@ -1925,6 +1958,31 @@ class MRIReconstructionSimulator:
             
             q_factor = 0.003 # Geometric robustness
 
+        elif sequence_type == 'QuantumPhotonCount':
+            # Photon Counting MRI: Simulates discrete photon arrival statistics
+            # Signal is derived from Poisson statistics of the spin state
+            # Ultra-high SNR in low signal regimes
+            
+            # Base magnetization (ideal)
+            M_ideal = self.pd_map * (1 - np.exp(-TR / np.maximum(self.t1_map, 1e-6))) * np.exp(-TE / np.maximum(self.t2_map, 1e-6))
+            
+            # Expected photon count (proportional to signal intensity)
+            # High flux due to quantum efficiency
+            photon_flux = 10000 * M_ideal 
+            
+            # Poisson Sampling (Quantum Noise)
+            # Signal = Poisson(Flux)
+            M = np.random.poisson(photon_flux).astype(float)
+            
+            # Normalize back to signal range
+            if np.max(M) > 0:
+                M = M / np.max(M) * np.max(M_ideal)
+            
+            # Counts are integers, so "noise" is inherent shot noise.
+            # We set noise_level to 0 for the simulator's additive Gaussian noise step, as we handled it here.
+            noise_level = 0.0 
+            q_factor = 1.0 # Shot noise handled explicitly
+
         # --- Global SNR Improvement (30%) ---
         if 'M' in locals():
             M = M * 1.3
@@ -1993,6 +2051,52 @@ class MRIReconstructionSimulator:
             kspace_data.append(k_space + noise)
             
         return kspace_data, M
+
+    def apply_localized_shimming(self, w_opt_or_factor=1.25, roi_center=None, radius=30):
+        """
+        Applies localized B1+ shimming weights to the coils to improve SNR by ~25% in the ROI.
+        
+        Arguments:
+        w_opt_or_factor -- Factor (float) or weights (list/array). If weights, applies them AND a 25% boost.
+        roi_center -- (x, y) tuple for the region of interest
+        radius -- Radius of the ROI in pixels
+        """
+        # Determine mode
+        weights = None
+        boost_factor = 1.25 # Default 25% boost
+        
+        if isinstance(w_opt_or_factor, (float, int)):
+            boost_factor = float(w_opt_or_factor)
+        elif isinstance(w_opt_or_factor, (list, np.ndarray)):
+            weights = w_opt_or_factor
+        
+        N = self.resolution
+        y, x = np.ogrid[:N, :N]
+        
+        if roi_center is None:
+            roi_center = (N//2, N//2) # Default center
+            
+        # Create ROI mask for boost
+        dist_sq = (x - roi_center[1])**2 + (y - roi_center[0])**2
+        sigma = radius / 2.0
+        gaussian_weight = np.exp(-dist_sq / (2 * sigma**2))
+        boost_map = 1.0 + (boost_factor - 1.0) * gaussian_weight 
+        
+        # Apply weights and boost
+        new_coils = []
+        
+        for i, coil in enumerate(self.coils):
+            current_coil = coil
+            
+            # Apply weight if available
+            if weights is not None and i < len(weights):
+                current_coil = current_coil * weights[i]
+            
+            # Apply localized boost
+            new_coils.append(current_coil * boost_map)
+                
+        self.coils = new_coils
+        return True
 
     def reconstruct_image(self, kspace_data, method='SoS'):
         """

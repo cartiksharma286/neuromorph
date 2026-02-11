@@ -18,21 +18,19 @@ IMAGE_DIR = '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstructio
 def render_equation_img(tex, path):
     """Renders a LaTeX equation to an image file using Matplotlib."""
     try:
+        # Use a serif font for math to look like LaTeX/Nature
+        plt.rcParams['mathtext.fontset'] = 'cm'
+        plt.rcParams['font.family'] = 'serif'
+        
         # Create figure
-        # Estimate width/height based on length? hard...
-        # Matplotlib bbox_inches='tight' handles it mostly.
         fig = plt.figure(figsize=(6, 1))
         
         # Clean tex
         tex = tex.strip()
-        
-        # Render
-        # We need to wrap in $ if not present, but usually block math uses $ or $$.
-        # Matplotlib expects $...$ for math mode.
-        # If user provided $$ ... $$, remove them and wrap in $ ... $ for rendering in matplotlib text
         clean_tex = tex.replace('$$', '').replace('\\[', '').replace('\\]', '').strip()
         
-        plt.text(0.5, 0.5, f"${clean_tex}$", fontsize=16, ha='center', va='center')
+        # Render
+        plt.text(0.5, 0.5, f"${clean_tex}$", fontsize=18, ha='center', va='center')
         plt.axis('off')
         plt.savefig(path, dpi=300, bbox_inches='tight', pad_inches=0.1)
         plt.close(fig)
@@ -52,14 +50,15 @@ def md_to_pdf(md_path, pdf_path):
                             topMargin=72, bottomMargin=72)
     
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='Title_Custom', fontSize=18, leading=22, spaceAfter=20, alignment=TA_CENTER, textColor=colors.darkblue))
-    styles.add(ParagraphStyle(name='Heading1_Custom', fontSize=14, leading=18, spaceAfter=12, spaceBefore=16, textColor=colors.darkblue, fontName='Helvetica-Bold'))
-    styles.add(ParagraphStyle(name='Heading2_Custom', fontSize=12, leading=15, spaceAfter=8, spaceBefore=10, textColor=colors.Color(0.2, 0.3, 0.5), fontName='Helvetica-Bold'))
-    styles.add(ParagraphStyle(name='Body_Custom', fontSize=10, leading=14, spaceAfter=6))
-    styles.add(ParagraphStyle(name='Equation', fontSize=10, leading=14, fontName='Courier', backColor=colors.Color(0.95, 0.95, 0.98), leftIndent=20, rightIndent=20, spaceBefore=8, spaceAfter=8, borderPadding=6))
-    styles.add(ParagraphStyle(name='BulletItem', fontSize=10, leading=14, leftIndent=20, bulletIndent=10))
+    # Nature-like formatting: Serif for body, Sans for specific elements if needed, but usually Serif dominates.
+    styles.add(ParagraphStyle(name='Title_Custom', fontSize=24, leading=28, spaceAfter=20, alignment=TA_LEFT, fontName='Times-Bold', textColor=colors.black))
+    styles.add(ParagraphStyle(name='Heading1_Custom', fontSize=14, leading=18, spaceAfter=10, spaceBefore=16, fontName='Times-Bold', textColor=colors.black))
+    styles.add(ParagraphStyle(name='Heading2_Custom', fontSize=12, leading=15, spaceAfter=8, spaceBefore=10, fontName='Times-Bold', textColor=colors.black))
+    styles.add(ParagraphStyle(name='Body_Custom', fontSize=10, leading=14, spaceAfter=6, fontName='Times-Roman', alignment=TA_LEFT))
+    styles.add(ParagraphStyle(name='Equation', fontSize=10, leading=14, fontName='Courier', backColor=colors.whitesmoke, leftIndent=20, rightIndent=20, spaceBefore=8, spaceAfter=8, borderPadding=6))
+    styles.add(ParagraphStyle(name='BulletItem', fontSize=10, leading=14, leftIndent=20, bulletIndent=10, fontName='Times-Roman'))
     styles.add(ParagraphStyle(name='Separator', fontSize=6, spaceAfter=10, spaceBefore=10, textColor=colors.grey))
-    styles.add(ParagraphStyle(name='Caption', fontSize=9, leading=12, alignment=TA_CENTER, textColor=colors.grey, spaceAfter=12))
+    styles.add(ParagraphStyle(name='Caption', fontSize=9, leading=12, alignment=TA_CENTER, textColor=colors.grey, spaceAfter=12, fontName='Times-Italic'))
     
     story = []
     
@@ -103,22 +102,11 @@ def md_to_pdf(md_path, pdf_path):
             eq_path = os.path.join(os.path.dirname(pdf_path), eq_filename)
             
             if render_equation_img(eq_text, eq_path):
-                img = Image(eq_path, height=0.5*inch, kind='proportional') # Let width match proportional
-                # Check aspect to avoid tiny images? or Huge?
-                # reportlab Image kind='proportional' works well if we set one dim.
-                # Actually, set width to something reasonable, let height scale?
-                # Or set height cap.
-                # Let's set max width 6 inch, max height 2 inch?
-                # Image(path, width=.., height=..)
-                
-                # We don't know the aspect ratio without opening it, assume matplotlib saved it well.
-                # Let's try inserting it without fixed size? ReportLab might complain.
-                # Better: fix width to None (auto) and height to None? No.
-                
-                # Let reportlab figure it out? "width=6*inch, height=2*inch, kind='proportional'"
-                # It will fit within that box.
+                # Adjust size relative to page width
+                # Use a larger width relative to previous to make it readable
+                img = Image(eq_path, width=4.5*inch, height=1.2*inch, kind='proportional')
                 story.append(Spacer(1, 0.1*inch))
-                story.append(Image(eq_path, width=4*inch, height=1.5*inch, kind='proportional'))
+                story.append(img)
                 story.append(Spacer(1, 0.1*inch))
             else:
                 # Fallback
