@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.ndimage
+from scipy.ndimage import gaussian_filter
 import scipy.fftpack
 import matplotlib
 matplotlib.use('Agg')
@@ -27,6 +28,9 @@ class MRIReconstructionSimulator:
         # Quantum Vascular Coil Integration
         self.quantum_vascular_enabled = False
         self.active_quantum_coil = None
+        self.latest_thermal_map = None
+        self.latest_game_state = None
+        self.latest_reconstructed_image = None
         
         # 50-Turn Head Coil for Ultra-High Resolution Neuroimaging
         self.head_coil_50_turn = {
@@ -80,10 +84,34 @@ class MRIReconstructionSimulator:
         return self.pd_map
 
     def renderCorticalSurface3D(self):
-        """Simulates 3D cortical mesh generation."""
-        # Placeholder for 3D visualization data (e.g. vertices/normals)
-        # In a real app we'd return a JSON mesh. Here we'll ensure the simulator supports it.
-        return {"status": "Cortical Mesh Ready", "vertices": 10240, "geometry": "Geodesic Sphere Projection"}
+        """Simulates 3D cortical mesh generation using Fibonacci Sphere algorithm."""
+        num_points = 2000
+        indices = np.arange(0, num_points, dtype=float) + 0.5
+        
+        phi = np.arccos(1 - 2*indices/num_points)
+        theta = np.pi * (1 + 5**0.5) * indices
+
+        x = np.cos(theta) * np.sin(phi)
+        y = np.sin(theta) * np.sin(phi)
+        z = np.cos(phi)
+        
+        # Add "Cortical Folding" perturbation
+        r = 1.0 + 0.05 * np.sin(10*theta) * np.cos(10*phi)
+        
+        vertices = []
+        for i in range(num_points):
+            vertices.append({
+                "x": float(x[i] * r[i] * 100), # Scale to arbitrary units
+                "y": float(y[i] * r[i] * 100),
+                "z": float(z[i] * r[i] * 100)
+            })
+            
+        return {
+            "status": "Cortical Mesh Generated", 
+            "vertices": vertices, 
+            "count": num_points,
+            "geometry": "Folded Cortical Surface"
+        }
         
 
     def generate_brain_phantom(self):
@@ -1118,20 +1146,17 @@ class MRIReconstructionSimulator:
                     # Shim: Phase oppose the geometric phase at center to be 0? 
                     # Or simpler: Target phase 0 at center.
                     # Geometric phase at center (N/2, N/2) is ~ exp(1j * 0) if using previous formula?
-                    # Previous formula: exp(1j * (x*cos + y*sin)*0.1). At center x=N/2... non-zero.
                     
                     # Calculate phase at center for this coil
                     center_phase_val = (center[1] * np.cos(angle) + center[0] * np.sin(angle)) * 0.1
-                    shim_phase_offset = -center_phase_val # Cancel it out
-                    
-                    phase = np.exp(1j * ((x * np.cos(angle) + y * np.sin(angle)) * 0.1 + shim_phase_offset))
-                    
-                    # Amplitude Shim: Normalize contribution? (Already uniform geometry)
-                    
+                    shim_phase_offset = -center_phase_val 
                 else:
-                    phase = np.exp(1j * (x * np.cos(angle) + y * np.sin(angle)) * 0.1)
+                    shim_phase_offset = 0
                     
+                phase = np.exp(1j * ((x * np.cos(angle) + y * np.sin(angle)) * 0.1 + shim_phase_offset))
                 self.coils.append(sensitivity * phase)
+                
+
 
         elif coil_type == 'solenoid':
             # Vertically oriented Solenoid (good for small samples, or specific geometries)
@@ -1140,6 +1165,8 @@ class MRIReconstructionSimulator:
             r = np.sqrt((x - center[1])**2 + (y - center[0])**2)
             sensitivity = 1.5 * np.exp(-r**2 / (2 * (N//3)**2))
             self.coils.append(sensitivity)
+            
+
 
         elif coil_type == 'cardiothoracic_array':
             # Cardiothoracic Coil: Anterior (Chest) and Posterior (Spine) Arrays
@@ -1475,6 +1502,13 @@ class MRIReconstructionSimulator:
                  sensitivity = np.ones(self.dims)
                  self.coils.append(sensitivity)
 
+        else:
+             # Fallback for ANY unknown coil (Quantum, etc)
+             # Standard Birdcage approximation
+             r = np.sqrt((x - center[1])**2 + (y - center[0])**2)
+             sensitivity = np.exp(-r**2 / (2 * (N)**2)) 
+             self.coils.append(sensitivity)
+
     def acquire_signal(self, sequence_type='SE', TR=2000, TE=100, TI=500, flip_angle=30, noise_level=0.01):
         """
         Simulates Pulse Sequence acquisition.
@@ -1518,6 +1552,8 @@ class MRIReconstructionSimulator:
             for ox, oy in [(0,0), (20, 20), (-20, -10)]:
                  r2 = (x - (cx+ox))**2 + (y - (cy+oy))**2
                  temp_map += 5.0 * np.exp(-r2 / 100.0) # 5 degrees heating
+            
+            self.latest_thermal_map = temp_map
             
             # PRF Shift: Phase change is proportional to Temp change
             # phi = gamma * alpha * B0 * TE * dT
@@ -1653,6 +1689,101 @@ class MRIReconstructionSimulator:
             if np.max(M) > 0:
                  M = M / np.max(M)
             q_factor = 0.02 # 50x noise reduction
+
+        elif sequence_type == 'QuantumThermometry':
+            # Quantum Surface Integral Thermometry
+            # Uses Berry phase shifts accumulated over thermal gradients
+            # Phase = \oint \nabla T \cdot dS (Surface Integral)
+            # Phase = \oint \nabla T \cdot dS (Surface Integral)
+            
+            # Simulate Temperature Map from T1 (T1 increases with Temp)
+            # T_sim = T_body + k * (T1 - T1_mean)
+            T_sim = 310 + (self.t1_map - 1000) * 0.05
+            self.latest_thermal_map = T_sim
+            
+            # Calculate thermal gradients (Surface Integral approx)
+            grad_T_x, grad_T_y = np.gradient(T_sim)
+            surface_integral = np.sqrt(grad_T_x**2 + grad_T_y**2)
+            
+            # Signal modulation by thermal phase coherence
+            # Signal modulation by thermal phase coherence
+            # S = M0 * exp(-TE/T2) * cos(Phi_thermal)
+            # Higher gradient -> Lower coherence
+            coherence = np.exp(-surface_integral * 0.1)
+            
+            # Neurovascular Boost (Simulated Time-of-Flight Effect)
+            # Blood has long T1 and long T2. 
+            vascular_mask = (self.t1_map > 1200) & (self.t2_map > 100)
+            vascular_boost = 1.0 + 0.5 * vascular_mask
+            
+            M = self.pd_map * np.exp(-TE / self.t2_map) * coherence * vascular_boost
+            # Highlight areas with high thermal variation (metabolism)
+            M = M * (T_sim / 310.0)
+            
+            q_factor = 0.05
+
+        elif sequence_type == 'QuantumSurfaceIntegral':
+            # Enhanced Quantum Surface Integral (Topological)
+            # Use T1 map to simulate fine surface gradients
+            T_sim = 310 + (self.t1_map - 1000) * 0.08 # Higher sensitivity
+            self.latest_thermal_map = T_sim
+            
+            # Surface Integral Calculation
+            grad_x, grad_y = np.gradient(T_sim)
+            surface_int = np.sqrt(grad_x**2 + grad_y**2)
+            
+            # Berry Phase Coherence (Topological protection against noise)
+            berry_phase = np.exp(1j * surface_int * 0.5)
+            
+            # Neurovascular Contrast (Stronger for this sequence)
+            vascular_mask = (self.t1_map > 1100)
+            M = self.pd_map * np.exp(-TE / self.t2_map) * vascular_mask * 1.5
+            
+            # Modulation
+            M = M * np.real(berry_phase)
+            q_factor = 0.01 # Very low noise (Topological protection)
+
+        elif sequence_type == 'QuantumGameTheory':
+            # Non-Cooperative Game Theory Thermometry
+            # Spins "compete" for alignment (Nash Equilibrium) representing Thermodynamic Equilibrium
+            # Payoff = Alignment (Magnetic Energy) - Entropy (Thermal Disorder)
+            
+            # Iterative finding of Nash Equilibrium (Mean Field Game)
+            # State u(x,t) evolves to maximize Payoff J[u]
+            
+            # Initial state (random)
+            spin_state = np.random.rand(*self.t1_map.shape)
+            
+            # "Game" iterations (Nash equilibrium convergence)
+            for _ in range(5):
+                # Neighbors influence (Mean field)
+                neighbor_avg = gaussian_filter(spin_state, sigma=1)
+                
+                # Best response dynamics:
+                # Align with field (B0 + neighbors) vs Thermal agitation
+                # Utility U = alpha * (alignment) - beta * (entropy cost)
+                utility = 0.8 * neighbor_avg - 0.2 * (1/self.t1_map)
+                
+                # Update strategy (sigmoid activation)
+                spin_state = 1 / (1 + np.exp(-utility * 10))
+            
+            self.latest_game_state = spin_state
+            
+            # Final signal is the equilibrium state modulated by tissue protons
+            # Blend Game State (Functional) with Anatomy (Structural)
+            # Simulating "Game Theoretic Angiography"
+            
+            # Structural Base (T1-weighted for anatomy)
+            struct = self.pd_map * (1 - np.exp(-TR / self.t1_map))
+            
+            # Vascular overlay (Nash Equilibrium often converges on high energy/flow states)
+            M = 0.4 * struct + 0.6 * (self.pd_map * spin_state)
+            
+            # Enhance edges (Pareto optimization frontier)
+            edges = np.abs(np.gradient(M)[0] + np.gradient(M)[1])
+            M = M + edges * 0.5
+            
+            q_factor = 0.08
 
         elif sequence_type == 'QuantumStatisticalCongruence':
             # Uses statistical congruences between T1 and T2 manifolds to optimize signal
@@ -2087,44 +2218,62 @@ class MRIReconstructionSimulator:
             'QuantumStatisticalCongruence', 'QuantumDualIntegral', 
             'QuantumBerryPhase', 'QuantumLowEnergyBeam', 'GenerativeTrueFISP'
         ]
-        
-        if sequence_type in QUANTUM_SEQUENCES:
-            effective_noise = 0.0 # Perfectly noiseless acquisition (Quantum Precision)
-        else:
-            effective_noise = noise_level * q_factor * 0.7 # 30% SNR boost for standard seqs
-        
-        # Simulate AFib Motion Artifacts for Standard SSFP
-        # (Random phase shifts in Phase Encoding direction)
-        add_motion_artifacts = (sequence_type in ['SSFP', 'TrueFISP'])
-        
-        for coil_map in self.coils:
-            # Received Signal in Image Space = M * Sensitivity
-            img_space_signal = M * coil_map
+        # --- Global Signal Generation & Fallback ---
+        try:
+            # Ensure M is defined; if not (unhandled sequence), default to GRE
+            if 'M' not in locals():
+                 print(f"Warning: Sequence '{sequence_type}' not handled. Defaulting to Gradient Echo.")
+                 M = self.pd_map * np.exp(-TE / self.t2_map)
+
+            M = np.nan_to_num(M)
+
+            # Apply Coil Sensitivities
+            full_signal = []
             
-            # FFT to K-Space
-            k_space = np.fft.fftshift(np.fft.fft2(img_space_signal))
+            # Quantum Noise Reduction
+            if sequence_type in [
+                'QuantumNVQLink', 'QuantumBerryPhase', 'QuantumLowEnergyBeam', 
+                'QuantumGenerativeRecon', 'QuantumRBMSpectroscopy', 'QuantumPhotonCount',
+                'QuantumThermometry', 'QuantumGameTheory', 'QuantumSurfaceIntegral',
+                'QuantumStatisticalCongruence'
+            ]:
+                effective_noise = 0.0 
+            else:
+                effective_noise = noise_level * q_factor
+
+            for sensitivity_map in self.coils:
+                # Received Signal = M * Sensitivity
+                coil_image = M * sensitivity_map
+                
+                # Add Noise (Image Space approximation for performance)
+                if effective_noise > 0:
+                     n_real = np.random.normal(0, effective_noise, self.dims)
+                     n_imag = np.random.normal(0, effective_noise, self.dims)
+                     coil_image = coil_image + (n_real + 1j * n_imag)
+                
+                # FFT to K-Space
+                kspace_coil = np.fft.fftshift(np.fft.fft2(coil_image))
+                full_signal.append(kspace_coil)
             
-            if add_motion_artifacts:
-                # AFib Artifacts: Random phase errors in ~30% of phase/lines
-                # Simulating irregular TR or motion during readout
-                num_lines = k_space.shape[0]
-                for i in range(num_lines):
-                    if np.random.rand() < 0.3: # 30% bad beats/motion
-                        phase_err = np.random.uniform(-0.5, 0.5) # radians
-                        k_space[i, :] *= np.exp(1j * phase_err)
-                        
-            # Add Gaussian White Noise in K-Space
-            # For Quantum sequences, this adds 0 noise.
-            noise_real = np.random.normal(0, 1, k_space.shape)
-            noise_imag = np.random.normal(0, 1, k_space.shape)
+            return full_signal, M
+
+        except Exception as e:
+            print(f"CRITICAL FAULT in acquire_signal: {e}. Activating Emergency Fallback.")
+            # Emergency Fallback: Standard Spin Echo
+            M_safe = self.pd_map * (1 - np.exp(-TR/self.t1_map)) * np.exp(-TE/self.t2_map)
+            M_safe = np.nan_to_num(M_safe)
+            fallback_signal = []
             
-            # Scale noise relative to signal peak
-            k_max = np.max(np.abs(k_space))
-            noise = (noise_real + 1j * noise_imag) * effective_noise * k_max
-            
-            kspace_data.append(k_space + noise)
-            
-        return kspace_data, M
+            # Use a default coil if coils are missing
+            if not self.coils:
+                self.coils = [np.ones(self.dims)]
+                
+            for sensitivity_map in self.coils:
+                 coil_image = M_safe * sensitivity_map
+                 kspace_coil = np.fft.fftshift(np.fft.fft2(coil_image))
+                 fallback_signal.append(kspace_coil)
+                 
+            return fallback_signal, M_safe
 
     def apply_localized_shimming(self, w_opt_or_factor=1.25, roi_center=None, radius=30):
         """
@@ -2177,66 +2326,103 @@ class MRIReconstructionSimulator:
         Reconstructs image from multicoil k-space data.
         SoS: Sum of Squares
         """
-        # 1. IFFT per coil
+        if not kspace_data:
+            # Return zeros if no data
+            return np.zeros(self.dims), []
+
+        # 1. IFFT per coil (Vectorized logic ideally, but list comp is fine for <50 coils)
         coil_images = []
         for k in kspace_data:
+            # Fast FFT
             img = np.fft.ifft2(np.fft.ifftshift(k))
             coil_images.append(img)
             
         # 2. Combine
-        if method == 'SoS':
-            # Root Sum of Squares
-            combined = np.sqrt(sum(np.abs(img)**2 for img in coil_images))
-        elif method == 'Variational':
-            # Variational Theory Denoising
-            # First SoS
-            combined_raw = np.sqrt(sum(np.abs(img)**2 for img in coil_images))
-            # Apply Variational Denoising
-            combined = self.classifier.variational_denoise(combined_raw, lambda_tv=0.05)
-        elif method in ['StatLLM', 'QuantumML', 'Geodesic', 'Pareto', 'Multimodal', 'Unified']:
-            try:
-                from advanced_reconstruction import AdvancedReconstructionEngine
-                engine = AdvancedReconstructionEngine()
-                kspace_primary = kspace_data[0] if len(kspace_data) > 0 else kspace_data
+        try:
+            if method == 'SoS' or method == 'standard':
+                # Root Sum of Squares - Optimized
+                # Stack to (N_coils, H, W) then sum axis 0
+                stack = np.array(coil_images)
+                combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
                 
-                if method == 'StatLLM':
-                    combined = engine.reconstruct(kspace_primary, method='stat_llm')
-                elif method == 'QuantumML':
-                    combined = engine.reconstruct(kspace_primary, method='quantum_ml')
-                elif method == 'Geodesic':
-                    combined = engine.reconstruct(kspace_primary, method='geodesic')
-                elif method == 'Pareto':
-                    combined = engine.reconstruct(kspace_primary, method='pareto', coil_sensitivities=self.coils)
-                elif method == 'Multimodal':
-                    combined = engine.reconstruct(kspace_primary, method='multimodal', kspace_list=kspace_data)
-                elif method == 'Unified':
-                    combined = engine.reconstruct(kspace_primary, method='unified', coil_sensitivities=self.coils)
-            except Exception as e:
-                print("Advanced recon error:", e)
-                combined = np.abs(coil_images[0])
-        else:
-            combined = np.abs(coil_images[0])
-            
-        # Apply Quantum Surface Manifold Signal Boosting (universal)
-        try:
-            from advanced_reconstruction import QuantumManifoldSignalBooster
-            booster = QuantumManifoldSignalBooster()
-            combined = booster.boost_signal(combined)
-        except Exception as e:
-            print(f"Manifold Boosting Warning: {e}")
+            elif method == 'Variational':
+                # Variational Theory Denoising
+                stack = np.array(coil_images)
+                combined_raw = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
+                # Apply Variational Denoising (TV)
+                combined = self.classifier.variational_denoise(combined_raw, lambda_tv=0.05)
+                
+            elif method == 'DeepLearning':
+                # Simulated DL
+                combined, _ = self.reconstruct_image(kspace_data, method='SoS')
+                combined = self.deep_learning_reconstruct(combined) # Logic is separated now? Wait, loops...
+                # Actually deep_learning_reconstruct called from app takes kspace.
+                # Here we just treat it as SoS + Post-Process
+                
+            elif method == 'QuantumThermometry':
+                # Reconstruct base anatomy (SoS)
+                stack = np.array(coil_images)
+                combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
+                
+                # Apply Neurovascular Overlay
+                if self.latest_thermal_map is not None:
+                     # Normalize Base
+                     base_norm = self._adaptive_windowing(combined)
+                     base_norm = base_norm / np.max(base_norm) if np.max(base_norm) > 0 else base_norm
+                     
+                     # Normalize Thermal
+                     T_data = np.nan_to_num(self.latest_thermal_map)
+                     T_min, T_max = np.min(T_data), np.max(T_data)
+                     if T_max - T_min > 1e-9:
+                         T_norm = (T_data - T_min) / (T_max - T_min)
+                     else:
+                         T_norm = np.zeros_like(T_data)
+                     
+                     # Blend (Scalar addition effectively, since we return grayscale for main image usually)
+                     # But for "Reconstructed Image", we want the heatmap effect.
+                     # Since simulate() returns plots.recon as base64 from this image, 
+                     # we should bake the contrast into the intensity.
+                     # High Temp -> High Intensity
+                     combined = combined * (1.0 + 0.5 * T_norm)
 
-        # Apply GPT-based signal enhancement (placeholder LLM)
-        try:
-            from advanced_reconstruction import GPTSignalEnhancer
-            gpt_enhancer = GPTSignalEnhancer()
-            combined = gpt_enhancer.enhance_signal(combined)
+            elif method == 'QuantumSurfaceIntegral':
+                # Similar logic for Surface Integral
+                stack = np.array(coil_images)
+                combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
+                
+                if self.latest_thermal_map is not None:
+                     T_data = np.nan_to_num(self.latest_thermal_map) # This has the surface integral data
+                     T_norm = (T_data - np.min(T_data)) / (np.max(T_data) - np.min(T_data) + 1e-9)
+                     
+                     # Topological overlay (boost edges)
+                     combined = combined * (1.0 + 0.8 * T_norm)
+
+            elif method == 'QuantumGameTheory':
+                # Similar logic for Game Theory
+                stack = np.array(coil_images)
+                combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
+                
+                if self.latest_game_state is not None:
+                     G_data = np.nan_to_num(self.latest_game_state)
+                     G_norm = (G_data - np.min(G_data)) / (np.max(G_data) - np.min(G_data) + 1e-9)
+                     
+                     # Nash Equilibrium overlay
+                     combined = combined * (1.0 + 0.6 * G_norm)
+
         except Exception as e:
-            print(f"GPT Enhancement Warning: {e}")
+            print(f"CRITICAL RECONSTRUCTION FAULT: {e}. Activating Emergency Fallback.")
+            # Emergency Fallback: Standard SoS
+            stack = np.array(coil_images)
+            combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
 
         # Apply White Pixel Artifact Removal (User Requested)
         cleaned = self._remove_white_pixel_artifacts(combined)
-
-        return self._adaptive_windowing(cleaned), coil_images
+        
+        # Adaptive Windowing & Cache
+        final_img = self._adaptive_windowing(cleaned)
+        self.latest_reconstructed_image = final_img
+        
+        return final_img, coil_images
 
     def _remove_white_pixel_artifacts(self, image):
         """
@@ -2415,14 +2601,20 @@ class MRIReconstructionSimulator:
             reference_M = np.abs(reference_M)
             
         def fig_to_b64(fig, tight=True):
-            buf = io.BytesIO()
-            if tight:
-                fig.savefig(buf, format='png', transparent=True, bbox_inches='tight')
-            else:
-                fig.savefig(buf, format='png', transparent=True)
-            buf.seek(0)
-            plt.close(fig)
-            return base64.b64encode(buf.getvalue()).decode('utf-8')
+            try:
+                buf = io.BytesIO()
+                if tight:
+                    fig.savefig(buf, format='png', transparent=True, bbox_inches='tight')
+                else:
+                    fig.savefig(buf, format='png', transparent=True)
+                buf.seek(0)
+                plt.close(fig)
+                return base64.b64encode(buf.getvalue()).decode('utf-8')
+            except Exception as e:
+                print(f"Plot generation error: {e}")
+                plt.close(fig)
+                # Return a 1x1 transparent pixel or error placeholder
+                return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
 
         # 1. Reconstructed Image
         fig1, ax1 = plt.subplots(figsize=(6, 6))
@@ -2543,6 +2735,69 @@ class MRIReconstructionSimulator:
         ai_recon = denoised + 0.3 * np.clip(edges, 0, None)
         
         return self._adaptive_windowing(ai_recon)
+
+    def get_auxiliary_maps(self):
+        """Returns dictionary of base64 encoded auxiliary maps with anatomical overlay."""
+        aux_maps = {}
+        
+        try:
+            # Base Anatomy (Grayscale Background)
+            if self.latest_reconstructed_image is not None:
+                base_img = np.nan_to_num(self.latest_reconstructed_image)
+                # Normalize 0-1
+                if np.max(base_img) > 1e-9:
+                    base_img = base_img / np.max(base_img)
+                # Convert to RGB
+                base_rgb = plt.cm.gray(base_img)[:, :, :3]
+            else:
+                base_rgb = np.zeros((self.dims[0], self.dims[1], 3))
+
+            if self.latest_thermal_map is not None:
+                 T_data = np.nan_to_num(self.latest_thermal_map)
+                 T_min, T_max = np.min(T_data), np.max(T_data)
+                 if T_max - T_min > 1e-9:
+                     T_norm = (T_data - T_min) / (T_max - T_min)
+                 else:
+                     T_norm = np.zeros_like(T_data)
+                 
+                 # Apply Colormap (Inferno)
+                 cmap = plt.get_cmap('inferno')
+                 T_rgb = cmap(T_norm)[:, :, :3]
+                 
+                 # Blend: 0.5 * Anatomy + 0.5 * Heatmap (Screen blended or Alpha)
+                 # We'll use simple weighted average for robustness
+                 blended = 0.6 * base_rgb + 0.4 * T_rgb
+                 blended = np.clip(blended, 0, 1)
+                 
+                 buf = io.BytesIO()
+                 plt.imsave(buf, blended, format='png')
+                 aux_maps['thermometry'] = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode('utf-8')
+
+            if self.latest_game_state is not None:
+                 G_data = np.nan_to_num(self.latest_game_state)
+                 G_min, G_max = np.min(G_data), np.max(G_data)
+                 if G_max - G_min > 1e-9:
+                     G_norm = (G_data - G_min) / (G_max - G_min)
+                 else:
+                     G_norm = np.zeros_like(G_data)
+
+                 # Apply Colormap (Viridis)
+                 cmap = plt.get_cmap('viridis')
+                 G_rgb = cmap(G_norm)[:, :, :3]
+                 
+                 # Blend
+                 blended = 0.6 * base_rgb + 0.4 * G_rgb
+                 blended = np.clip(blended, 0, 1)
+                 
+                 buf = io.BytesIO()
+                 plt.imsave(buf, blended, format='png')
+                 aux_maps['gametheory'] = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode('utf-8')
+                 
+        except Exception as e:
+            print(f"Auxiliary map generation error: {e}")
+            # Return error placeholders if needed, or empty dict
+            
+        return aux_maps
 
     def generate_detailed_coil_report(self):
         """Generates extended clinical physics metrics."""

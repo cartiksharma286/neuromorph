@@ -3,16 +3,16 @@
 Generate simulation images for the report and create PDF with embedded figures.
 """
 import sys
-sys.path.insert(0, '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstruction_sim')
+import os
+sys.path.insert(0, os.getcwd())
 
 from simulator_core import MRIReconstructionSimulator
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 
-OUTPUT_DIR = '/Users/cartik_sharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/report_images'
+OUTPUT_DIR = os.path.join(os.getcwd(), 'report_images')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def generate_simulation_images():

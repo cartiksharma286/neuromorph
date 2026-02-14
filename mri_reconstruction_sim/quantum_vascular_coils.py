@@ -574,10 +574,22 @@ class OptimizedVascularTradeoffCoil(QuantumVascularCoil):
         self.tradeoff_alpha = tradeoff_alpha
         
     def sensitivity(self, x, y, center_x, center_y, sim_res):
-        """Calculate sensitivity based on tradeoff."""
-        # This is logical implementation, actual spatial profile would be used in simulator
-        # We simulate this via the num_elements or effective q-factor in usage
-        return self.tradeoff_alpha
+        # Calculate sensitivity based on tradeoff alpha
+        # S(r) = alpha * SNR_profile(r) + (1-alpha) * Res_profile(r)
+        
+        # Distance from center
+        dx = x - center_x
+        dy = y - center_y
+        r_sq = dx**2 + dy**2
+        
+        # SNR Profile: Broad, low falloff (Volume Coil like)
+        snr_profile = np.exp(-r_sq / (2 * (sim_res//2)**2))
+        
+        # Res Profile: Sharp, localized (Surface Coil like)
+        # We simulate "Resolution" as sensitivity that drops off quickly but has high peak
+        res_profile = 2.0 * np.exp(-r_sq / (2 * (sim_res//8)**2))
+        
+        return self.tradeoff_alpha * snr_profile + (1 - self.tradeoff_alpha) * res_profile
 
 # ============================================================================
 # Coil Registry
