@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify, send_file
 from simulator_core import MRIReconstructionSimulator
-from llm_modules import GeminiRFDesigner, LLMPulseDesigner
 from statistical_adaptive_pulse import create_adaptive_sequence, ADAPTIVE_SEQUENCES
 from quantum_vascular_coils import get_coil_summary, QUANTUM_VASCULAR_COIL_LIBRARY
 from circuit_schematic_generator import CircuitSchematicGenerator
@@ -8,6 +7,24 @@ import os
 import generate_pdf
 import generate_report_images
 import numpy as np
+import json
+
+def sanitize_for_json(obj):
+    """Recursively replace NaNs and Infs with None."""
+    if isinstance(obj, float):
+        if np.isnan(obj) or np.isinf(obj):
+            return None
+        return obj
+    elif isinstance(obj, dict):
+        return {k: sanitize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize_for_json(v) for v in obj]
+    elif isinstance(obj, np.ndarray):
+        return sanitize_for_json(obj.tolist())
+    elif isinstance(obj, np.generic): # Handle numpy scalars
+        return sanitize_for_json(obj.item())
+    return obj
+
 
 app = Flask(__name__)
 LATEST_CONTEXT = {}
@@ -47,7 +64,7 @@ def simulate():
         elif coil_mode == 'knee_vascular_array':
             phantom_type = 'knee'
 
-        sim.setup_phantom(use_real_data=False, phantom_type=phantom_type)
+        sim.setup_phantom(use_real_data=True, phantom_type=phantom_type)
         sim.generate_coil_sensitivities(num_coils=num_coils, coil_type=coil_mode, optimal_shimming=use_shimming)
         
         shim_report = None
@@ -84,6 +101,7 @@ def simulate():
         
         # Images are returned directly as base64 strings in the JSON response
         # No need to write to disk, avoiding "No space left on device" errors
+        aux_maps = sim.get_auxiliary_maps()
         LATEST_CONTEXT.update({
             "coil_mode": coil_mode,
             "seq_type": seq_type,
@@ -91,31 +109,21 @@ def simulate():
             "signal_study": signal_study,
             "timestamp": "January 14, 2026",
             "shim_report": shim_report,
-            "circuit_schematic": plots['circuit']
+            "circuit_schematic": plots['circuit'],
+            "auxiliary_maps": aux_maps
         })
         
-        return jsonify({
+        return jsonify(sanitize_for_json({
             "success": True,
             "metrics": metrics,
             "plots": plots,
             "shim_report": shim_report,
+            "auxiliary_maps": aux_maps,
             "signal_study": signal_study
-        })
+        }))
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return jsonify({"success": False, "error": str(e)}), 500
-
-@app.route('/api/design_rf', methods=['POST'])
-def design_rf():
-    try:
-        data = request.json or {}
-        prompt = data.get('prompt', '')
-        field = data.get('field', '3T')
-        designer = GeminiRFDesigner()
-        result = designer.generate_design(prompt, field)
-        return jsonify({"success": True, "result": result})
-    except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/render_cortical', methods=['POST'])
@@ -465,6 +473,7 @@ if __name__ == '__main__':
 
     print("  ✓ Ultra-High Resolution Neurovasculature")
     print("=" * 80)
-    print("Server running on http://127.0.0.1:5050")
+    print("Server running on http://0.0.0.0:5002")
+    print("External Access: http://192.168.2.14:5002")
     print("=" * 80)
-    app.run(port=5050, debug=True)
+    app.run(host='0.0.0.0', port=5002, debug=True)
