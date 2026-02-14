@@ -304,6 +304,7 @@
                     <option value="GeodesicCoilAdiabaticPulse">📐 Geodesic Coil Adiabatic Pulse</option>
                     <option value="QuantumPhotonCount">✨ Quantum Photon Counting (Zero Noise)</option>
                     <option value="GenerativeThermometry">🌡️ Generative MR Thermometry (LLM)</option>
+                    <option value="QuantumSurfaceIntegral">∫ Quantum Surface Integral (Topological)</option>
                 </select>
             </div>
 
@@ -350,6 +351,8 @@
                     <option value="Geodesic">🌐 Geodesic Diffeomorphic Mapping</option>
                     <option value="Pareto">📊 Pareto Frontier (Magnetism/GW)</option>
                     <option value="Multimodal">🔬 Multimodal Reasoning</option>
+                    <option value="QuantumThermometry">🌡️ Quantum Surface Thermometry</option>
+                    <option value="QuantumGameTheory">🎮 Non-Cooperative Game Theory</option>
                     <option value="Unified">🚀 Unified (All Methods)</option>
                     <option value="Variational">TV Variational</option>
                     <option value="DeepLearning">Generative AI Recon</option>
@@ -387,13 +390,10 @@
         </aside>
 
         <main>
-            <div class="nav-tabs">
-                <button class="tab-trigger active" onclick="switchView('dashboard', this)">Dashboard</button>
-                <button class="tab-trigger" onclick="switchView('rf_design', this)">Gemini Design</button>
-                <button class="tab-trigger" onclick="switchView('study', this)">Signal AI</button>
-                <button class="tab-trigger" onclick="switchView('spectroscopy', this)">Q-Spectroscopy</button>
-                <button class="tab-trigger" onclick="switchView('cortical', this)">Cortical View</button>
-            </div>
+            <button class="tab-trigger active" onclick="switchView('dashboard', this)">Dashboard</button>
+            <button class="tab-trigger" onclick="switchView('study', this)">Signal AI</button>
+            <button class="tab-trigger" onclick="switchView('spectroscopy', this)">Q-Spectroscopy</button>
+            <button class="tab-trigger" onclick="switchView('cortical', this)">Cortical View</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -448,23 +448,6 @@
                 </div>
             </div>
 
-            <!-- View: RF Design -->
-            <div id="view-rf_design" class="view-content">
-                <div class="output-box" style="width: 100%;">
-                    <h3>Gemini AI Coil Architect</h3>
-                    <div style="display:flex; gap:1rem; width:100%; margin: 1rem 0;">
-                        <input type="text" id="rf_prompt" placeholder="Define coil requirements..." style="flex:1;">
-                        <button onclick="generateRFDesign()" style="width: auto;">Synthesize</button>
-                    </div>
-                    <div id="rf_result" style="display:none; width:100%;">
-                        <div class="img-window" style="aspect-ratio: 16/9; height: 300px;"><img id="img-rf_gen" src="">
-                        </div>
-                        <pre id="rf_specs"
-                            style="background:#020617; padding:1rem; border-radius:8px; margin-top:1rem; font-size:0.8rem; overflow:auto;"></pre>
-                    </div>
-                </div>
-            </div>
-
             <!-- View: Study/AI -->
             <div id="view-study" class="view-content">
                 <div class="output-box" style="width: 100%; align-items: flex-start;">
@@ -485,6 +468,8 @@
                     <div id="cortical-metadata" style="margin-top:1rem; font-size:0.8rem; color:var(--accent);"></div>
                 </div>
             </div>
+
+
             <!-- View: Q-Spectroscopy -->
             <div id="view-spectroscopy" class="view-content">
                 <div class="output-box" style="width: 100%;">
@@ -597,23 +582,7 @@
         }
 
         async function generateRFDesign() {
-            const prompt = document.getElementById('rf_prompt').value;
-            const loader = document.getElementById('loader');
-            loader.style.display = 'block';
-            try {
-                const res = await fetch('/api/design_rf', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById('rf_result').style.display = 'block';
-                    document.getElementById('img-rf_gen').src = 'data:image/png;base64,' + data.result.schematic;
-                    document.getElementById('rf_specs').textContent = JSON.stringify(data.result.specs, null, 2);
-                }
-            } catch (e) { alert("Synthesize Failed"); }
-            loader.style.display = 'none';
+            // Feature removed
         }
 
         let debounceTimer;
@@ -652,7 +621,20 @@
                 if (data.success) {
                     const update = (id, b) => {
                         const img = document.getElementById('img-' + id);
-                        if (img) img.src = 'data:image/png;base64,' + b;
+                        if (img) {
+                            if (b && b.length > 100) { // Basic length check for valid base64
+                                img.src = 'data:image/png;base64,' + b;
+                                img.onerror = function () {
+                                    this.src = 'https://placehold.co/400x400/0f172a/white?text=Image+Load+Error';
+                                    console.error('Failed to load image: ' + id);
+                                };
+                            } else {
+                                console.warn('Image data missing or too short for ' + id);
+                                img.src = 'https://placehold.co/400x400/0f172a/white?text=No+Data';
+                            }
+                        } else {
+                            console.warn('Image element not found: img-' + id);
+                        }
                     };
 
                     const plots = data.plots;
@@ -665,6 +647,15 @@
                     update('spectroscopy-map', plots.recon);
                     update('spectroscopy-naa', plots.recon); // CSS filters transform this
                     update('spectroscopy-anat', plots.phantom);
+
+                    if (data.auxiliary_maps) {
+                        if (data.auxiliary_maps.thermometry) {
+                            document.getElementById('img-thermometry').src = data.auxiliary_maps.thermometry;
+                        }
+                        if (data.auxiliary_maps.gametheory) {
+                            document.getElementById('img-gametheory').src = data.auxiliary_maps.gametheory;
+                        }
+                    }
 
                     if (data.signal_study) {
                         const s = data.signal_study;
