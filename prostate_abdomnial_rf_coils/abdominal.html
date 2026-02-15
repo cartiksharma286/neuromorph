@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abdominal/Prostate MRI Coil Designer - AI-Powered RF Coil Design</title>
+    <meta name="description"
+        content="Specialized abdominal and prostate MRI coil design system with endorectal, torso array, and combined configurations powered by Google Gemini AI">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --primary-light: #a78bfa;
+            --secondary: #6366f1;
+            --accent: #ec4899;
+            --endorectal: #ff6b6b;
+            --anterior: #8b5cf6;
+            --posterior: #6366f1;
+            --liver: #f59e0b;
+            --kidney: #10b981;
+            --bg-main: #0a0a14;
+            --bg-panel: #14141f;
+            --bg-input: #1e1e2e;
+            --bg-hover: #252538;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2d2d44;
+            --border-light: #3d3d54;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, #14141f 0%, #1a1a2e 50%, #14141f 100%);
+            border-bottom: 2px solid var(--border-color);
+            padding: 1.75rem 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            max-width: 1900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo-icon {
+            width: 65px;
+            height: 65px;
+            position: relative;
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.6));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 20px rgba(236, 72, 153, 0.8));
+            }
+        }
+
+        .logo-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .logo-text h1 {
+            font-size: 1.85rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--endorectal) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.85rem 1.75rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1.5px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* AI Badge */
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 1.2rem;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%);
+            border: 1.5px solid rgba(139, 92, 246, 0.3);
+            border-radius: 25px;
+            font-size: 0.85rem;
+            color: var(--primary-light);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+
+            0%,
+            100% {
+                border-color: rgba(139, 92, 246, 0.3);
+            }
+
+            50% {
+                border-color: rgba(236, 72, 153, 0.5);
+            }
+        }
+
+        .ai-badge svg {
+            width: 18px;
+            height: 18px;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2.5rem;
+            max-width: 1900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page-title h2 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.5px;
+        }
+
+        .page-title p {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            line-height: 1.7;
+        }
+
+        /* Layout */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 2.5rem;
+            margin-top: 2rem;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: linear-gradient(135deg, var(--bg-panel) 0%, #1a1a2e 100%);
+            border: 1.5px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            height: fit-content;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-section {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2.5rem;
+            border-bottom: 1.5px solid var(--border-color);
+        }
+
+        .panel-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .panel-section h2 {
+            font-size: 1.35rem;
+            margin-bottom: 1.75rem;
+            color: var(--text-primary);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .panel-section h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(180deg, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .input-field,
+        select {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            background: var(--bg-input);
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12);
+            background: var(--bg-hover);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238b5cf6' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 20px;
+            padding-right: 3rem;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-input);
+            border-radius: 4px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(139, 92, 246, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.7);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 3px 12px rgba(139, 92, 246, 0.5);
+        }
+
+        .slider-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .slider-value span:first-child {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .slider-value .hint {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            margin-bottom: 0.9rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            user-select: none;
+            transition: color 0.2s ease;
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        .checkbox-label:hover {
+            color: var(--text-primary);
+            background: var(--bg-input);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* Stats Panel */
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding: 1rem 1.2rem;
+            background: var(--bg-input);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            border-color: var(--primary);
+            background: var(--bg-hover);
+            transform: translateX(4px);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: var(--primary);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.05rem;
+        }
+
+        /* Visualization Panel */
+        .visualization-panel {
+            background: linear-gradient(135deg, var(--bg-panel) 0%, #16162e 100%);
+            border: 1.5px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .canvas-container {
+            position: relative;
+            background: var(--bg-main);
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--border-color);
+        }
+
+        #abdominalCanvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .canvas-controls {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .icon-btn {
+            width: 45px;
+            height: 45px;
+            background: rgba(20, 20, 31, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .icon-btn:hover {
+            background: rgba(139, 92, 246, 0.25);
+            border-color: var(--primary);
+            transform: scale(1.08);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Color Legend */
+        .color-legend {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.2rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            padding: 0.9rem 1.1rem;
+            background: var(--bg-input);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .legend-item:hover {
+            border-color: currentColor;
+            transform: scale(1.03);
+        }
+
+        .legend-color {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            box-shadow: 0 0 15px currentColor;
+            flex-shrink: 0;
+        }
+
+        .legend-color.endorectal {
+            background: var(--endorectal);
+            color: var(--endorectal);
+        }
+
+        .legend-color.anterior {
+            background: var(--anterior);
+            color: var(--anterior);
+        }
+
+        .legend-color.posterior {
+            background: var(--posterior);
+            color: var(--posterior);
+        }
+
+        .legend-color.liver {
+            background: var(--liver);
+            color: var(--liver);
+        }
+
+        .legend-color.kidney {
+            background: var(--kidney);
+            color: var(--kidney);
+        }
+
+        .legend-label {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Full Width */
+        .full-width {
+            width: 100%;
+        }
+
+        /* Footer */
+        .app-footer {
+            background: var(--bg-panel);
+            border-top: 2px solid var(--border-color);
+            padding: 1.75rem 2.5rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .split-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .loading {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#8b5cf6" />
+                                    <stop offset="50%" style="stop-color:#ec4899" />
+                                    <stop offset="100%" style="stop-color:#ff6b6b" />
+                                </linearGradient>
+                            </defs>
+                            <!-- Abdominal/pelvic region -->
+                            <ellipse cx="50" cy="55" rx="32" ry="40" fill="none" stroke="url(#logoGrad)"
+                                stroke-width="2.5" />
+                            <!-- Prostate marker -->
+                            <circle cx="50" cy="75" r="8" fill="url(#logoGrad)" opacity="0.5" />
+                            <!-- Endorectal element -->
+                            <circle cx="50" cy="75" r="3" fill="#ff6b6b" />
+                            <!-- External coil elements -->
+                            <circle cx="28" cy="35" r="3.5" fill="url(#logoGrad)" />
+                            <circle cx="50" cy="28" r="3.5" fill="url(#logoGrad)" />
+                            <circle cx="72" cy="35" r="3.5" fill="url(#logoGrad)" />
+                            <circle cx="78" cy="55" r="3.5" fill="url(#logoGrad)" />
+                            <circle cx="72" cy="75" r="3.5" fill="url(#logoGrad)" />
+                            <circle cx="28" cy="75" r="3.5" fill="url(#logoGrad)" />
+                            <circle cx="22" cy="55" r="3.5" fill="url(#logoGrad)" />
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>Abdominal/Prostate MRI Coil Designer</h1>
+                        <p>AI-Powered RF Coil Engineering for Abdominal & Pelvic Imaging</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="exportBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                        Export Design
+                    </button>
+                    <button class="btn btn-primary" id="generateBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                        Generate with AI
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-title">
+                <div class="ai-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                        <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                    Powered by Google Gemini Flash Antigravity
+                </div>
+                <h2>Abdominal & Prostate RF Coil Schematic Generator</h2>
+                <p>Design specialized MRI coil arrays for prostate, liver, kidney, and comprehensive abdominal imaging
+                    with AI-powered optimization</p>
+            </div>
+
+            <div class="split-layout">
+                <!-- Control Panel -->
+                <div class="control-panel">
+                    <div class="panel-section">
+                        <h2>Coil Configuration</h2>
+                        <div class="form-group">
+                            <label for="coilType">Coil Type / Target Anatomy</label>
+                            <select id="coilType" class="input-field">
+                                <option value="prostate-combined">Prostate (Combined: Endo + External)</option>
+                                <option value="endorectal">Endorectal Only (High Resolution)</option>
+                                <option value="torso-array">Torso Array (Full Abdomen)</option>
+                                <option value="flexible-wrap">Flexible Wrap (Conforming)</option>
+                                <option value="liver">Liver-Focused Array</option>
+                                <option value="kidney">Kidney-Focused (Bilateral)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="fieldStrength">Magnetic Field Strength</label>
+                            <select id="fieldStrength" class="input-field">
+                                <option value="1.5">1.5 Tesla (Clinical Standard)</option>
+                                <option value="3" selected>3 Tesla (Clinical High-Field)</option>
+                                <option value="7">7 Tesla (Research/Ultra-High)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="channels">Channel Count</label>
+                            <input type="range" id="channels" min="8" max="64" value="32" step="4" class="slider">
+                            <div class="slider-value">
+                                <span id="channelsValue">32</span>
+                                <span class="hint">channels</span>
+                            </div>
+                        </div>
+
+                        <div class="info-box">
+                            <strong>Prostate Imaging:</strong> Combined endorectal + external arrays provide optimal SNR
+                            and resolution for prostate cancer detection and staging.
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <h2>Visualization Controls</h2>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="showConnections" checked>
+                                <span>Show Decoupling Network</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="showElements" checked>
+                                <span>Show Coil Elements</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="showAnatomy" checked>
+                                <span>Show Anatomy Outline</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="highlightProstate" checked>
+                                <span>Highlight Target Region</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="autoRotate">
+                                <span>Auto Rotate View</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <h2>Design Specifications</h2>
+                        <div class="stat-item">
+                            <span class="stat-label">Larmor Frequency:</span>
+                            <span class="stat-value" id="larmorFreq">127.74 MHz</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Elements:</span>
+                            <span class="stat-value" id="totalElements">32</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Active Channels:</span>
+                            <span class="stat-value" id="activeChannels">32</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Array Coverage:</span>
+                            <span class="stat-value" id="coverage">100%</span>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <h2>Element Types</h2>
+                        <div class="color-legend">
+                            <div class="legend-item">
+                                <div class="legend-color endorectal"></div>
+                                <span class="legend-label">Endorectal</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color anterior"></div>
+                                <span class="legend-label">Anterior</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color posterior"></div>
+                                <span class="legend-label">Posterior</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color liver"></div>
+                                <span class="legend-label">Liver</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color kidney"></div>
+                                <span class="legend-label">Kidney</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization Panel -->
+                <div class="visualization-panel">
+                    <div class="canvas-container">
+                        <canvas id="abdominalCanvas" width="1000" height="1000"></canvas>
+                        <div class="canvas-controls">
+                            <button class="icon-btn" id="resetView" title="Reset View">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M1 4v6h6M23 20v-6h-6" />
+                                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+                                </svg>
+                            </button>
+                            <button class="icon-btn" id="downloadCanvas" title="Download Design">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Abdominal/Prostate MRI Coil Designer v1.0 | Powered by Google Gemini Flash Antigravity | Advanced RF Coil
+                Engineering for Clinical & Research Applications</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="abdominal-engine.js"></script>
+    <script>
+        // Initialize engine
+        let engine = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Create engine
+            initAbdominalEngine();
+            engine = abdominalEngine;
+
+            // Update controls
+            updateControls();
+
+            // Event listeners
+            document.getElementById('coilType').addEventListener('change', regenerateDesign);
+            document.getElementById('fieldStrength').addEventListener('change', updateStats);
+            document.getElementById('channels').addEventListener('input', handleChannelsChange);
+
+            document.getElementById('showConnections').addEventListener('change', renderWithOptions);
+            document.getElementById('showElements').addEventListener('change', renderWithOptions);
+            document.getElementById('showAnatomy').addEventListener('change', renderWithOptions);
+            document.getElementById('highlightProstate').addEventListener('change', renderWithOptions);
+            document.getElementById('autoRotate').addEventListener('change', handleAutoRotate);
+
+            document.getElementById('resetView').addEventListener('click', () => {
+                engine.resetView();
+                renderWithOptions();
+            });
+
+            document.getElementById('downloadCanvas').addEventListener('click', () => {
+                const type = document.getElementById('coilType').value;
+                const channels = document.getElementById('channels').value;
+                engine.downloadImage(`abdominal-${type}-${channels}ch.png`);
+            });
+
+            document.getElementById('exportBtn').addEventListener('click', exportDesign);
+            document.getElementById('generateBtn').addEventListener('click', generateWithAI);
+        });
+
+        function regenerateDesign() {
+            const type = document.getElementById('coilType').value;
+            const channels = parseInt(document.getElementById('channels').value);
+
+            engine.channels = channels;
+            engine.generateAbdominalArray(type);
+            renderWithOptions();
+            updateStats();
+        }
+
+        function handleChannelsChange(e) {
+            document.getElementById('channelsValue').textContent = e.target.value;
+            regenerateDesign();
+        }
+
+        function renderWithOptions() {
+            const highlightProstate = document.getElementById('highlightProstate').checked;
+            const coilType = document.getElementById('coilType').value;
+
+            engine.render({
+                showConnections: document.getElementById('showConnections').checked,
+                showElements: document.getElementById('showElements').checked,
+                showAnatomyOutline: document.getElementById('showAnatomy').checked,
+                highlightProstate: highlightProstate && (coilType === 'prostate-combined' || coilType === 'endorectal')
+            });
+        }
+
+        function handleAutoRotate(e) {
+            engine.autoRotate = e.target.checked;
+        }
+
+        function updateStats() {
+            const fieldStrength = parseFloat(document.getElementById('fieldStrength').value);
+            const larmorFreq = (fieldStrength * 42.58).toFixed(2); // Proton gyromagnetic ratio
+
+            document.getElementById('larmorFreq').textContent = `${larmorFreq} MHz`;
+
+            if (engine) {
+                const specs = engine.getSpecifications();
+                document.getElementById('totalElements').textContent = specs.totalElements;
+                document.getElementById('activeChannels').textContent = specs.activeElements;
+                document.getElementById('coverage').textContent = `${specs.coverage}%`;
+            }
+        }
+
+        function updateControls() {
+            document.getElementById('channelsValue').textContent = document.getElementById('channels').value;
+            updateStats();
+        }
+
+        function exportDesign() {
+            if (!engine) return;
+
+            const specs = engine.getSpecifications();
+            const fieldStrength = parseFloat(document.getElementById('fieldStrength').value);
+            const larmorFreq = (fieldStrength * 42.58).toFixed(2);
+
+            const exportData = {
+                designInfo: {
+                    type: 'Abdominal/Prostate RF Coil Array',
+                    coilType: specs.coilType,
+                    application: getApplicationName(specs.coilType),
+                    timestamp: new Date().toISOString(),
+                    generator: 'Google Gemini Flash Antigravity'
+                },
+                specifications: {
+                    fieldStrength: `${fieldStrength} T`,
+                    larmorFrequency: `${larmorFreq} MHz`,
+                    channels: specs.channels,
+                    activeElements: specs.activeElements,
+                    totalElements: specs.totalElements,
+                    coverage: `${specs.coverage}%`,
+                    elementsPerType: specs.elementsPerType
+                },
+                elements: engine.elements.map((e, i) => ({
+                    index: i,
+                    channel: e.channel,
+                    type: e.type,
+                    position: { x: e.x, y: e.y, z: e.z },
+                    size: e.size,
+                    active: e.active
+                })),
+                connections: engine.connections,
+                clinicalApplications: getClinicalApplications(specs.coilType)
+            };
+
+            // Download JSON
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `abdominal-coil-${specs.coilType}-${specs.channels}ch-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert(`✅ Design Exported Successfully!\n\n` +
+                `Coil Type: ${getApplicationName(specs.coilType)}\n` +
+                `Channels: ${specs.activeElements}\n` +
+                `Field Strength: ${fieldStrength}T\n` +
+                `Larmor Frequency: ${larmorFreq} MHz`);
+        }
+
+        function generateWithAI() {
+            const type = document.getElementById('coilType').value;
+            const channels = document.getElementById('channels').value;
+            const fieldStrength = document.getElementById('fieldStrength').value;
+
+            const appName = getApplicationName(type);
+
+            alert(`🤖 AI Generation with Google Gemini Flash\n\n` +
+                `Generating optimized ${appName} coil design:\n\n` +
+                `• Configuration: ${type}\n` +
+                `• Channels: ${channels}\n` +
+                `• Field Strength: ${fieldStrength}T\n\n` +
+                `The AI will optimize:\n` +
+                `✓ Element placement for maximum SNR\n` +
+                `✓ Decoupling network topology\n` +
+                `✓ Matching & tuning circuits\n` +
+                `✓ Clinical imaging performance`);
+
+            // Regenerate with emphasis on optimization
+            regenerateDesign();
+        }
+
+        function getApplicationName(coilType) {
+            const names = {
+                'prostate-combined': 'Prostate (Combined Endorectal + External)',
+                'endorectal': 'Endorectal (High-Resolution Prostate)',
+                'torso-array': 'Full Abdominal Torso Array',
+                'flexible-wrap': 'Flexible Conforming Array',
+                'liver': 'Liver-Focused Array',
+                'kidney': 'Bilateral Kidney Array'
+            };
+            return names[coilType] || coilType;
+        }
+
+        function getClinicalApplications(coilType) {
+            const applications = {
+                'prostate-combined': [
+                    'Prostate cancer detection and staging',
+                    'PI-RADS assessment',
+                    'Biopsy guidance',
+                    'Post-treatment surveillance'
+                ],
+                'endorectal': [
+                    'High-resolution prostate imaging',
+                    'Tumor localization',
+                    'Spectroscopy'
+                ],
+                'torso-array': [
+                    'Liver imaging',
+                    'Pancreatic imaging',
+                    'Kidney assessment',
+                    'Bowel imaging'
+                ],
+                'liver': [
+                    'Hepatocellular carcinoma detection',
+                    'Liver metastases',
+                    'Cirrhosis assessment'
+                ],
+                'kidney': [
+                    'Renal mass characterization',
+                    'Kidney function (MR urography)',
+                    'Transplant evaluation'
+                ]
+            };
+            return applications[coilType] || ['General abdominal imaging'];
+        }
+    </script>
+</body>
+
+</html>

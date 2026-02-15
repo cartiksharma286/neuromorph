@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardiac Parallel Imaging Pulse Sequence Generator</title>
+    <meta name="description"
+        content="Advanced cardiac MRI parallel imaging pulse sequence generator with LLM-powered protocol optimization">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div>
+                    <h1 class="app-title">
+                        <span class="heartbeat-icon">❤️</span>
+                        Cardiac Parallel Imaging Generator
+                    </h1>
+                    <p class="header-subtitle">
+                        Advanced MRI Pulse Sequences with LLM-Powered Protocol Optimization
+                    </p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sequence Designer Panel -->
+            <div class="sequence-panel">
+                <!-- Tab Navigation -->
+                <nav class="tab-navigation">
+                    <button class="tab-button active" data-tab="parallel-imaging">Parallel Imaging</button>
+                    <button class="tab-button" data-tab="cine">CINE</button>
+                    <button class="tab-button" data-tab="perfusion">Perfusion</button>
+                    <button class="tab-button" data-tab="lge">LGE</button>
+                    <button class="tab-button" data-tab="mapping">Mapping</button>
+                    <button class="tab-button" data-tab="flow">Flow</button>
+                </nav>
+
+                <!-- Parallel Imaging Tab -->
+                <div id="parallel-imaging" class="tab-content active">
+                    <div class="info-card">
+                        <h3 class="card-header">
+                            <span>🔬</span>
+                            Parallel Imaging Configuration
+                        </h3>
+                        <div class="card-content">
+                            Configure acceleration techniques to reduce scan time while maintaining image quality.
+                        </div>
+                    </div>
+
+                    <!-- Technique Selection -->
+                    <div class="control-group">
+                        <label class="control-label">Parallel Imaging Technique</label>
+                        <select id="pi-technique" class="select-field">
+                            <option value="sense">SENSE (Sensitivity Encoding)</option>
+                            <option value="grappa">GRAPPA (Autocalibrating Parallel Acquisition)</option>
+                            <option value="compressed-sensing">Compressed Sensing</option>
+                            <option value="sms">SMS (Simultaneous Multi-Slice)</option>
+                            <option value="hybrid">Hybrid (SENSE + CS)</option>
+                            <option value="quantum">Quantum Optimization (NVQLink)</option>
+                        </select>
+                        <span class="control-description">Choose the parallel imaging reconstruction method</span>
+                    </div>
+
+                    <!-- Acceleration Factor -->
+                    <div class="control-group">
+                        <label class="control-label">Acceleration Factor (R)</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="acceleration-factor" class="range-slider" min="1" max="6" step="0.5"
+                                value="2">
+                            <span class="range-value" id="acceleration-value">2.0x</span>
+                        </div>
+                        <span class="control-description">Higher values = faster scans, but increased noise and
+                            artifacts</span>
+                    </div>
+
+                    <!-- Coil Elements -->
+                    <div class="control-group">
+                        <label class="control-label">Coil Array Elements</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="coil-elements" class="range-slider" min="4" max="32" step="2"
+                                value="18">
+                            <span class="range-value" id="coil-value">18 channels</span>
+                        </div>
+                        <span class="control-description">More elements allow higher acceleration</span>
+                    </div>
+
+                    <!-- ACS Lines (for GRAPPA) -->
+                    <div class="control-group" id="acs-group">
+                        <label class="control-label">ACS Lines (Calibration)</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="acs-lines" class="range-slider" min="12" max="48" step="4"
+                                value="24">
+                            <span class="range-value" id="acs-value">24 lines</span>
+                        </div>
+                        <span class="control-description">Auto-calibrating signal lines for GRAPPA reconstruction</span>
+                    </div>
+
+                    <!-- Metrics Display -->
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <span class="metric-value" id="g-factor-display">1.08</span>
+                            <span class="metric-label">G-Factor</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value" id="snr-penalty-display">13%</span>
+                            <span class="metric-label">SNR Penalty</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value" id="scan-time-display">42s</span>
+                            <span class="metric-label">Scan Time</span>
+                        </div>
+                    </div>
+
+                    <!-- Visualization -->
+                    <div class="visualization-container">
+                        <canvas id="kspace-canvas" class="viz-canvas" width="800" height="400"></canvas>
+                    </div>
+                </div>
+
+                <!-- CINE Tab -->
+                <div id="cine" class="tab-content">
+                    <div class="info-card">
+                        <h3 class="card-header">
+                            <span>🎬</span>
+                            CINE Imaging Configuration
+                        </h3>
+                        <div class="card-content">
+                            Balanced SSFP sequences for dynamic cardiac imaging with high temporal resolution.
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Sequence Type</label>
+                        <select id="cine-type" class="select-field">
+                            <option value="bssfp">Balanced SSFP (TrueFISP)</option>
+                            <option value="gre">Gradient Echo CINE</option>
+                            <option value="realtime">Real-time CINE</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Temporal Resolution (ms)</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="temporal-res" class="range-slider" min="20" max="60" step="5"
+                                value="40">
+                            <span class="range-value" id="temporal-value">40 ms</span>
+                        </div>
+                        <span class="control-description">Lower values capture faster cardiac motion</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Cardiac Phases</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="cardiac-phases" class="range-slider" min="15" max="40" step="5"
+                                value="25">
+                            <span class="range-value" id="phases-value">25 phases</span>
+                        </div>
+                        <span class="control-description">Number of reconstructed cardiac phases</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Heart Rate (bpm)</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="heart-rate" class="range-slider" min="40" max="120" step="5"
+                                value="70">
+                            <span class="range-value" id="hr-value">70 bpm</span>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <span class="metric-value" id="rr-interval-display">857</span>
+                            <span class="metric-label">RR Interval (ms)</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value" id="temporal-phases-display">25</span>
+                            <span class="metric-label">Phases/Cycle</span>
+                        </div>
+                    </div>
+
+                    <div class="visualization-container">
+                        <canvas id="cine-canvas" class="viz-canvas" width="800" height="400"></canvas>
+                    </div>
+                </div>
+
+                <!-- Perfusion Tab -->
+                <div id="perfusion" class="tab-content">
+                    <div class="info-card">
+                        <h3 class="card-header">
+                            <span>💉</span>
+                            Myocardial Perfusion Configuration
+                        </h3>
+                        <div class="card-content">
+                            Dynamic contrast-enhanced imaging for first-pass perfusion analysis.
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Saturation Recovery Time (ms)</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="sr-time" class="range-slider" min="60" max="120" step="10"
+                                value="100">
+                            <span class="range-value" id="sr-value">100 ms</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Slices per Heartbeat</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="perfusion-slices" class="range-slider" min="3" max="8" step="1"
+                                value="4">
+                            <span class="range-value" id="perfusion-slices-value">4 slices</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Temporal Footprint (ms)</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="temporal-footprint" class="range-slider" min="120" max="200"
+                                step="10" value="150">
+                            <span class="range-value" id="footprint-value">150 ms</span>
+                        </div>
+                        <span class="control-description">Time to acquire all slices</span>
+                    </div>
+
+                    <div class="visualization-container">
+                        <canvas id="perfusion-canvas" class="viz-canvas" width="800" height="400"></canvas>
+                    </div>
+                </div>
+
+                <!-- LGE Tab -->
+                <div id="lge" class="tab-content">
+                    <div class="info-card">
+                        <h3 class="card-header">
+                            <span>⚡</span>
+                            Late Gadolinium Enhancement
+                        </h3>
+                        <div class="card-content">
+                            Inversion recovery imaging for myocardial scar/fibrosis detection.
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Inversion Time (TI) - ms</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="ti-value" class="range-slider" min="200" max="400" step="10"
+                                value="300">
+                            <span class="range-value" id="ti-display">300 ms</span>
+                        </div>
+                        <span class="control-description">TI for myocardial nulling (typically 250-350ms at 1.5T)</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Phase-Sensitive Reconstruction</label>
+                        <select id="lge-recon" class="select-field">
+                            <option value="magnitude">Magnitude Only</option>
+                            <option value="psir">Phase-Sensitive IR (PSIR)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Fat Saturation</label>
+                        <select id="fat-sat" class="select-field">
+                            <option value="none">None</option>
+                            <option value="spir">SPIR</option>
+                            <option value="dixon">Dixon</option>
+                        </select>
+                    </div>
+
+                    <div class="visualization-container">
+                        <canvas id="lge-canvas" class="viz-canvas" width="800" height="400"></canvas>
+                    </div>
+                </div>
+
+                <!-- Mapping Tab -->
+                <div id="mapping" class="tab-content">
+                    <div class="info-card">
+                        <h3 class="card-header">
+                            <span>🗺️</span>
+                            Parametric Mapping
+                        </h3>
+                        <div class="card-content">
+                            Quantitative T1, T2, and T2* mapping for tissue characterization.
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Mapping Type</label>
+                        <select id="mapping-type" class="select-field">
+                            <option value="t1-molli">T1 - MOLLI</option>
+                            <option value="t1-shmolli">T1 - ShMOLLI</option>
+                            <option value="t1-sapphire">T1 - SAPPHIRE</option>
+                            <option value="t2">T2 Mapping</option>
+                            <option value="t2star">T2* Mapping</option>
+                            <option value="ecv">ECV (Post-Contrast)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">MOLLI Scheme</label>
+                        <select id="molli-scheme" class="select-field">
+                            <option value="5-3-3">5(3)3 (Standard)</option>
+                            <option value="4-1-3-1-2">4(1)3(1)2 (ShMOLLI)</option>
+                            <option value="5-3">5(3) (Short)</option>
+                        </select>
+                        <span class="control-description">Number of images and recovery periods</span>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <span class="metric-value" id="map-precision-display">±12</span>
+                            <span class="metric-label">Precision (ms)</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value" id="map-time-display">17</span>
+                            <span class="metric-label">Acquisition (HB)</span>
+                        </div>
+                    </div>
+
+                    <div class="visualization-container">
+                        <canvas id="mapping-canvas" class="viz-canvas" width="800" height="400"></canvas>
+                    </div>
+                </div>
+
+                <!-- Flow Tab -->
+                <div id="flow" class="tab-content">
+                    <div class="info-card">
+                        <h3 class="card-header">
+                            <span>🌊</span>
+                            Phase Contrast Flow Imaging
+                        </h3>
+                        <div class="card-content">
+                            Velocity-encoded imaging for blood flow quantification.
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Flow Mode</label>
+                        <select id="flow-mode" class="select-field">
+                            <option value="2d">2D Phase Contrast</option>
+                            <option value="4d">4D Flow</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">VENC (cm/s)</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="venc" class="range-slider" min="50" max="300" step="10" value="150">
+                            <span class="range-value" id="venc-value">150 cm/s</span>
+                        </div>
+                        <span class="control-description">Velocity encoding sensitivity (aorta: 150-200, mitral:
+                            80-120)</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Velocity Encoding Direction</label>
+                        <select id="venc-direction" class="select-field">
+                            <option value="through-plane">Through-plane</option>
+                            <option value="3-directional">3-Directional (all axes)</option>
+                        </select>
+                    </div>
+
+                    <div class="visualization-container">
+                        <canvas id="flow-canvas" class="viz-canvas" width="800" height="400"></canvas>
+                    </div>
+                </div>
+
+                <!-- Export Controls -->
+                <div class="control-group mt-lg">
+                    <button class="btn btn-primary" id="export-pypulseq">
+                        <span>📦</span>
+                        Export PyPulseq
+                    </button>
+                    <button class="btn btn-primary" id="write-seq-file"
+                        style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <span>💾</span>
+                        Write .seq File
+                    </button>
+                    <button class="btn btn-secondary" id="export-vendor">
+                        <span>🏭</span>
+                        Export Vendor Format
+                    </button>
+                    <button class="btn btn-secondary" id="export-protocol">
+                        <span>📄</span>
+                        Generate Protocol Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- LLM Assistant Panel -->
+            <aside class="llm-panel">
+                <div class="llm-header">
+                    <h2 class="llm-title">🤖 AI Protocol Assistant</h2>
+                    <p class="llm-subtitle">Natural language protocol design & optimization</p>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message assistant">
+                        <div class="message-content">
+                            Hello! I'm your AI cardiac imaging assistant. I can help you:
+                            <br><br>
+                            • Generate protocols from clinical scenarios
+                            <br>
+                            • Optimize parameters for specific conditions
+                            <br>
+                            • Explain trade-offs and recommendations
+                            <br>
+                            • Suggest parallel imaging strategies
+                            <br><br>
+                            Try: <code>"Create a protocol for suspected myocarditis in a 45yo male"</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-wrapper">
+                    <textarea id="chat-input" class="chat-input" rows="2"
+                        placeholder="Ask me anything about cardiac protocols..."></textarea>
+                    <button class="send-button" id="send-message">➤</button>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="utils.js"></script>
+    <script src="physics.js"></script>
+    <script src="parallel-physics.js"></script>
+    <script src="cardiac-physics.js"></script>
+    <script src="parallel-imaging.js"></script>
+    <script src="cardiac-sequences.js"></script>
+    <script src="cardiac-gating.js"></script>
+    <script src="kspace-designer.js"></script>
+    <script src="visualizer.js"></script>
+    <script src="reconstruction-sim.js"></script>
+    <script src="protocol-reasoning.js"></script>
+    <script src="llm-engine.js"></script>
+    <script src="llm-interface.js"></script>
+    <script src="export.js"></script>
+    <script src="pypulseq-generator.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

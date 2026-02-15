@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum CF Pulse Visualization</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background: #f0f2f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1 { color: #333; }
+        #bloch-sphere, #pulse-shape { width: 100%; height: 500px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quantum CF Pulse Generator Results</h1>
+        <div class="card">
+            <h2>Pulse Shape (Control Fields)</h2>
+            <div id="pulse-shape"></div>
+        </div>
+        <div class="card">
+            <h2>Bloch Sphere Trajectory</h2>
+            <div id="bloch-sphere"></div>
+        </div>
+        <div class="card">
+            <h2>MRI Simulation (Off-Resonance Response)</h2>
+            <img src="mri_simulation.png" alt="MRI Simulation Plot" style="width: 100%; max-width: 800px;">
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

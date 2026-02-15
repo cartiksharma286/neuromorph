@@ -1,0 +1,45 @@
+Overview of the TBI (Traumatic Brain Injury) notebooks and models
+
+Dataset
+*******
+
+Download dataset from https://www.kaggle.com/jhoward/rsna-hemorrhage-jpg 
+You can also access it from the slack channel under 'Tools' section, titled 'RSNA hemorrhage JPEGs'.
+
+Images are of size 256x256 pixels
+
+
+Jupyter Notebooks
+*****************
+
+Train_CNNmodel - This notebooks contains algorithms to train a custom convolutional neural network (CNN) model.
+
+Train_PreTraineda - This notebook trains using pre-trained models such as VGG19, InceptionV3 and InceptionresnetV2. Images 
+		    resized to 224x224.
+
+Train_Pretrainedb - Same as Train_PreTraineda except Images were resized to 128x128.
+
+TrainModels_kfold - This notebook trains using the stratified k-fold technique using the InceptionV3 and InceptionresnetV2.
+
+EvaluateModels - This notebook evaluates the trained models (see Models folder). 
+
+
+Models
+******
+
+These are the models I trained. See above notebooks for more information on
+the models.
+
+
+CNN model  - custom CNN model. Training model took approx. an hour
+
+VGG19 model - Training model took approx. 3 hours
+
+InceptionresnetV2 models (4 models): Training took approx. between 1-4 hours 
+
+InceptionV3 models (4 models): Training took approx. between 40 minutes and 2 hours
+
+
+
+
+

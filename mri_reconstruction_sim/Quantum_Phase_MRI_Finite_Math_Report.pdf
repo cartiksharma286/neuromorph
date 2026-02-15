@@ -1,0 +1,6872 @@
+%PDF-1.3
+%‚„œ”
+2 0 obj
+<<
+/Length 8738
+>>
+stream
+BT
+/TT2 1 Tf
+11 0 0 11 90 664 Tm
+0 g
+/GS1 gs
+0 Tc
+0 Tw
+[(Quantum Phase MRI Simulation: Finite Mathematics & Cir)18(cuit Deri)10(v)10(ations)]TJ
+10 0 0 10 90 648.04 Tm
+[(Neur)18(oPulse Ph)15(ysics Engine v3.0)]TJ
+0 -1.2 TD
+(Date:)Tj
+/TT4 1 Tf
+2.582 0 TD
+(January 10, 2026)Tj
+/TT2 1 Tf
+-2.582 -1.2 TD
+(Classi)Tj
+/TT5 1 Tf
+2.5562 0 TD
+(ﬁ)Tj
+/TT2 1 Tf
+0.5562 0 TD
+(cation:)Tj
+/TT4 1 Tf
+3.1938 0 TD
+-0.0002 Tc
+0.0002 Tw
+[(Adv)24.8(anced Quantum MRI Physics)]TJ
+ET
+0 G
+1 J 1 j 0.4 w 10 M []0 d
+1 i 
+187.95 608.07 m
+387.99 608.07 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 584.08 Tm
+0 Tc
+0 Tw
+(Execut)Tj
+2.9438 0 TD
+-0.01 Tc
+(ive )Tj
+1.4517 0 TD
+0 Tc
+(Summary)Tj
+/TT4 1 Tf
+-4.3955 -1.596 TD
+0.1165 Tw
+(This report presents the complete )Tj
+/TT6 1 Tf
+14.1616 0 TD
+0 Tw
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+0.1164 Tw
+[(nite mathematical frame)25(w)10(ork for quantum phase-based MRI)]TJ
+-14.7178 -1.2 TD
+0.1068 Tw
+[(reconstruction, including discrete Bloch equation solutions, RF coil circuit topology deri)25(v)25(ations,)]TJ
+T*
+0.0014 Tw
+[(and Berry phase accumulation in topological pulse sequences.)-501.4(All deri)25(v)25(ations are presented in dis-)]TJ
+T*
+0 Tw
+(crete form suitable for numerical implementation.)Tj
+ET
+187.95 516.15 m
+387.99 516.15 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 492.16 Tm
+[(1. Discr)18(ete Bloch Equations f)25(or Quantum Phase Ev)10(olution)]TJ
+0 -2.4 TD
+[(1.1 Finite Differ)18(ence F)25(ormulation)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+[(The continuous Bloch equations are discretized using forw)10(ard Euler method with time step)]TJ
+/TT7 1 Tf
+36.6194 0 TD
+<0036>Tj
+/TT9 1 Tf
+0.6248 0 TD
+(t)Tj
+/TT4 1 Tf
+0.3458 0 TD
+(:)Tj
+/TT9 1 Tf
+-26.0723 -3.106 TD
+(M)Tj
+7 0 0 7 214.6591 425.34 Tm
+(n)Tj
+/TT10 1 Tf
+0.524 0 TD
+(+)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+-1.0991 -0.9286 TD
+(x)Tj
+/TT10 1 Tf
+10 0 0 10 228.9678 421.14 Tm
+(=)Tj
+/TT9 1 Tf
+0.8968 0 TD
+(M)Tj
+7 0 0 7 247.4182 425.34 Tm
+(n)Tj
+-0.0262 -0.9286 TD
+(x)Tj
+/TT10 1 Tf
+10 0 0 10 253.7851 421.14 Tm
+(+)Tj
+/TT7 1 Tf
+0.7688 0 TD
+<0036>Tj
+/TT9 1 Tf
+0.6248 0 TD
+(t)Tj
+/TT7 1 Tf
+0.3458 0.835 TD
+<0095>Tj
+-0.0002 -1 TD
+<00b3>Tj
+-0.0002 -1 TD
+<0096>Tj
+8.9 0 2.7732 8.9 274.5935 421.14 Tm
+<0061>Tj
+/TT4 1 Tf
+10 0 0 10 280.7726 421.14 Tm
+(\()Tj
+/TT9 1 Tf
+0.401 0 TD
+(M)Tj
+7 0 0 7 294.2647 425.34 Tm
+(n)Tj
+-0.0291 -0.9286 TD
+(y)Tj
+10 0 0 10 299.0117 421.14 Tm
+(B)Tj
+7 0 0 7 305.7541 419.14 Tm
+(z)Tj
+/TT7 1 Tf
+10 0 0 10 309.2652 421.14 Tm
+<003c>Tj
+/TT9 1 Tf
+0.6168 0 TD
+(M)Tj
+7 0 0 7 324.9156 425.34 Tm
+(n)Tj
+-0.0511 -0.9286 TD
+(z)Tj
+10 0 0 10 329.6647 421.14 Tm
+(B)Tj
+7 0 0 7 336.5611 419.14 Tm
+(y)Tj
+/TT4 1 Tf
+10 0 0 10 340.392 421.14 Tm
+(\))Tj
+/TT7 1 Tf
+0.333 0 TD
+<003c>Tj
+/TT9 1 Tf
+0.9068 0.7 TD
+(M)Tj
+7 0 0 7 362.2725 432.34 Tm
+(n)Tj
+-0.0261 -0.9286 TD
+(x)Tj
+10 0 0 10 354.2344 414.14 Tm
+(T)Tj
+/TT4 1 Tf
+7 0 0 7 360.2259 412.14 Tm
+(2)Tj
+ET
+352.11 423.75 m
+366.51 423.75 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 367.664 429.49 Tm
+<0097>Tj
+-0.0002 -1 TD
+<00b5>Tj
+-0.0002 -1 TD
+<0098>Tj
+/TT9 1 Tf
+-16.2567 -3.431 TD
+(M)Tj
+7 0 0 7 214.5751 379.38 Tm
+(n)Tj
+/TT10 1 Tf
+0.524 0 TD
+(+)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+-1.1021 -0.9286 TD
+(y)Tj
+/TT10 1 Tf
+10 0 0 10 228.8838 375.18 Tm
+(=)Tj
+/TT9 1 Tf
+0.8968 0 TD
+(M)Tj
+7 0 0 7 247.3342 379.38 Tm
+(n)Tj
+-0.0291 -0.9286 TD
+(y)Tj
+/TT10 1 Tf
+10 0 0 10 253.7011 375.18 Tm
+(+)Tj
+/TT7 1 Tf
+0.7688 0 TD
+<0036>Tj
+/TT9 1 Tf
+0.6248 0 TD
+(t)Tj
+/TT7 1 Tf
+0.3458 0.835 TD
+<0095>Tj
+-0.0002 -1 TD
+<00b3>Tj
+-0.0002 -1 TD
+<0096>Tj
+8.9 0 2.7732 8.9 274.5095 375.18 Tm
+<0061>Tj
+/TT4 1 Tf
+10 0 0 10 280.6886 375.18 Tm
+(\()Tj
+/TT9 1 Tf
+0.401 0 TD
+(M)Tj
+7 0 0 7 294.1808 379.38 Tm
+(n)Tj
+-0.0511 -0.9286 TD
+(z)Tj
+10 0 0 10 298.9299 375.18 Tm
+(B)Tj
+7 0 0 7 305.8473 373.18 Tm
+(x)Tj
+/TT7 1 Tf
+10 0 0 10 309.8252 375.18 Tm
+<003c>Tj
+/TT9 1 Tf
+0.6168 0 TD
+(M)Tj
+7 0 0 7 325.4756 379.38 Tm
+(n)Tj
+-0.0262 -0.9286 TD
+(x)Tj
+10 0 0 10 330.2225 375.18 Tm
+(B)Tj
+7 0 0 7 336.9649 373.18 Tm
+(z)Tj
+/TT4 1 Tf
+10 0 0 10 340.476 375.18 Tm
+(\))Tj
+/TT7 1 Tf
+0.333 0 TD
+<003c>Tj
+/TT9 1 Tf
+0.9068 0.7742 TD
+(M)Tj
+7 0 0 7 362.3565 387.1219 Tm
+(n)Tj
+-0.0291 -0.9286 TD
+(y)Tj
+10 0 0 10 354.3184 368.18 Tm
+(T)Tj
+/TT4 1 Tf
+7 0 0 7 360.3099 366.18 Tm
+(2)Tj
+ET
+352.23 377.79 m
+366.51 377.79 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 367.748 383.53 Tm
+<0097>Tj
+-0.0002 -1 TD
+<00b5>Tj
+-0.0002 -1 TD
+<0098>Tj
+/TT9 1 Tf
+-17.2354 -3.431 TD
+(M)Tj
+7 0 0 7 204.8721 333.42 Tm
+(n)Tj
+/TT10 1 Tf
+0.524 0 TD
+(+)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+-1.1241 -0.9286 TD
+(z)Tj
+/TT10 1 Tf
+10 0 0 10 219.183 329.22 Tm
+(=)Tj
+/TT9 1 Tf
+0.8968 0 TD
+(M)Tj
+7 0 0 7 237.6333 333.42 Tm
+(n)Tj
+-0.0511 -0.9286 TD
+(z)Tj
+/TT10 1 Tf
+10 0 0 10 244.0024 329.22 Tm
+(+)Tj
+/TT7 1 Tf
+0.7688 0 TD
+<0036>Tj
+/TT9 1 Tf
+0.6248 0 TD
+(t)Tj
+/TT7 1 Tf
+0.3458 0.835 TD
+<0095>Tj
+-0.0002 -1 TD
+<00b3>Tj
+-0.0002 -1 TD
+<0096>Tj
+8.9 0 2.7732 8.9 264.8109 329.22 Tm
+<0061>Tj
+/TT4 1 Tf
+10 0 0 10 270.99 329.22 Tm
+(\()Tj
+/TT9 1 Tf
+0.401 0 TD
+(M)Tj
+7 0 0 7 284.4821 333.42 Tm
+(n)Tj
+-0.0262 -0.9286 TD
+(x)Tj
+10 0 0 10 289.229 329.22 Tm
+(B)Tj
+7 0 0 7 296.1254 327.22 Tm
+(y)Tj
+/TT7 1 Tf
+10 0 0 10 299.9564 329.22 Tm
+<003c>Tj
+/TT9 1 Tf
+0.6168 0 TD
+(M)Tj
+7 0 0 7 315.6068 333.42 Tm
+(n)Tj
+-0.0291 -0.9286 TD
+(y)Tj
+10 0 0 10 320.3537 329.22 Tm
+(B)Tj
+7 0 0 7 327.2711 327.22 Tm
+(x)Tj
+/TT4 1 Tf
+10 0 0 10 331.249 329.22 Tm
+(\))Tj
+/TT7 1 Tf
+0.333 0 TD
+<003c>Tj
+/TT9 1 Tf
+0.9068 0.7 TD
+(M)Tj
+7 0 0 7 353.1295 340.42 Tm
+(n)Tj
+-0.0511 -0.9286 TD
+(z)Tj
+/TT7 1 Tf
+10 0 0 10 357.2986 336.22 Tm
+<003c>Tj
+/TT9 1 Tf
+0.6168 0 TD
+(M)Tj
+/TT4 1 Tf
+7 0 0 7 372.2269 334.22 Tm
+(0)Tj
+/TT9 1 Tf
+10 0 0 10 354.5569 322.22 Tm
+(T)Tj
+/TT4 1 Tf
+7 0 0 7 360.5485 320.22 Tm
+(1)Tj
+ET
+342.99 331.83 m
+376.23 331.83 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 377.451 337.57 Tm
+<0097>Tj
+-0.0002 -1 TD
+<00b5>Tj
+-0.0002 -1 TD
+<0098>Tj
+/TT4 1 Tf
+-26.7447 -1.921 TD
+0.0659 Tw
+(where: -)Tj
+/TT9 1 Tf
+3.7535 0 TD
+0 Tw
+(M)Tj
+7 0 0 7 157.0172 302.56 Tm
+(n)Tj
+/TT10 1 Tf
+10 0 0 10 163.9852 298.36 Tm
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+(\()Tj
+/TT9 1 Tf
+0.401 0 TD
+(M)Tj
+7 0 0 7 185.7656 302.56 Tm
+(n)Tj
+-0.0261 -0.9286 TD
+(x)Tj
+/TT4 1 Tf
+10 0 0 10 189.9326 298.36 Tm
+(,)Tj
+/TT9 1 Tf
+0.488 0 TD
+(M)Tj
+7 0 0 7 204.2946 302.56 Tm
+(n)Tj
+-0.0291 -0.9286 TD
+(y)Tj
+/TT4 1 Tf
+10 0 0 10 208.4615 298.36 Tm
+(,)Tj
+/TT9 1 Tf
+0.488 0 TD
+(M)Tj
+7 0 0 7 222.8236 302.56 Tm
+(n)Tj
+-0.0511 -0.9286 TD
+(z)Tj
+/TT4 1 Tf
+10 0 0 10 226.9928 298.36 Tm
+0.0659 Tw
+[(\))-315.9(i)0(s)-315.9(the magnetization v)15(ector at time step)]TJ
+/TT9 1 Tf
+17.0428 0 TD
+0 Tw
+(n)Tj
+/TT4 1 Tf
+0.84 0 TD
+(-)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 411.8911 298.36 Tm
+<0061>Tj
+/TT10 1 Tf
+10 0 0 10 420.8702 298.36 Tm
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+-0.08 Tw
+[(42. 58)-316(MHz/T)]TJ
+-33.9158 -1.2242 TD
+0.005 Tw
+(is the gyromagnetic ratio -)Tj
+/TT9 1 Tf
+10.8852 0 TD
+0 Tw
+(B)Tj
+/TT10 1 Tf
+0.9178 0 TD
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+(\()Tj
+/TT9 1 Tf
+0.391 0 TD
+(B)Tj
+7 0 0 7 227.1466 284.118 Tm
+(x)Tj
+/TT4 1 Tf
+10 0 0 10 231.1245 286.118 Tm
+(,)Tj
+/TT9 1 Tf
+0.478 0 TD
+(B)Tj
+7 0 0 7 242.8009 284.118 Tm
+(y)Tj
+/TT4 1 Tf
+10 0 0 10 246.6319 286.118 Tm
+(,)Tj
+/TT9 1 Tf
+0.478 0 TD
+(B)Tj
+7 0 0 7 258.1543 284.118 Tm
+(z)Tj
+/TT4 1 Tf
+10 0 0 10 261.6654 286.118 Tm
+0.005 Tw
+[(\))-255(i)0(s)-255(the magnetic )]TJ
+/TT6 1 Tf
+6.9067 0 TD
+0 Tw
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+0.005 Tw
+[(eld v)15(ector -)]TJ
+/TT9 1 Tf
+4.7942 0 TD
+0 Tw
+(T)Tj
+/TT4 1 Tf
+7 0 0 7 390.2278 284.118 Tm
+(1)Tj
+10 0 0 10 394.2278 286.118 Tm
+(,)Tj
+/TT9 1 Tf
+0.411 0 TD
+(T)Tj
+/TT4 1 Tf
+7 0 0 7 404.3294 284.118 Tm
+(2)Tj
+10 0 0 10 410.8794 286.118 Tm
+0.0049 Tw
+(are relaxation time)Tj
+-32.0879 -1.2 TD
+0 Tw
+(constants)Tj
+/TT2 1 Tf
+0 -2.4 TD
+(1.2 Stability Criterion)Tj
+/TT4 1 Tf
+0 -1.596 TD
+[(F)15(o)0(r)-250(numerical stability)65(,)-250(the time step must satisfy:)]TJ
+/TT7 1 Tf
+13.6933 -2.722 TD
+<0036>Tj
+/TT9 1 Tf
+0.6248 0 TD
+(t)Tj
+/TT4 1 Tf
+0.6258 0 TD
+(<)Tj
+5.6532 0.7 TD
+(2)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 248.6591 199.938 Tm
+<0061>Tj
+/TT9 1 Tf
+10 0 0 10 255.4182 199.938 Tm
+(B)Tj
+/TT4 1 Tf
+7 0 0 7 261.7966 197.938 Tm
+(max)Tj
+/TT10 1 Tf
+10 0 0 10 276.5483 199.938 Tm
+(+)Tj
+/TT4 1 Tf
+0.7688 0 TD
+-0.241 Tw
+(max\(1 /)Tj
+/TT9 1 Tf
+2.8325 0 TD
+0 Tw
+(T)Tj
+/TT4 1 Tf
+7 0 0 7 318.5533 197.938 Tm
+(1)Tj
+10 0 0 10 322.5534 199.938 Tm
+0.17 Tc
+[(,1)161(/)]TJ
+/TT9 1 Tf
+1.1978 0 TD
+0 Tc
+(T)Tj
+/TT4 1 Tf
+7 0 0 7 340.5232 197.938 Tm
+(2)Tj
+10 0 0 10 344.5232 199.938 Tm
+(\))Tj
+ET
+249.03 209.55 m
+347.91 209.55 l
+187.95 179.43 m
+387.99 179.43 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 155.408 Tm
+(2. Quantum Berry Phase Accumulation)Tj
+0 -2.4 TD
+[(2.1 Geometric Phase in P)10(arameter Space)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+0.1129 Tw
+(The Berry phase)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 161.551 115.448 Tm
+0 Tw
+<0061>Tj
+/TT9 1 Tf
+7 0 0 7 166.6061 113.448 Tm
+(B)Tj
+/TT4 1 Tf
+10 0 0 10 175.1999 115.448 Tm
+0.1129 Tw
+[(accumulated during adiabatic e)25(v)20(olution along a closed path)]TJ
+/TT9 1 Tf
+24.8339 0 TD
+0 Tw
+(C)Tj
+/TT4 1 Tf
+1.102 0 TD
+0.113 Tw
+(in parameter)Tj
+-34.4559 -1.2 TD
+0 Tw
+(space is:)Tj
+ET
+endstream
+endobj
+3 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/TT2 4 0 R
+/TT4 5 0 R
+/TT5 6 0 R
+/TT6 7 0 R
+/TT7 8 0 R
+/TT9 9 0 R
+/TT10 10 0 R
+>>
+/ExtGState <<
+/GS1 11 0 R
+>>
+>>
+endobj
+14 0 obj
+<<
+/Length 9608
+>>
+stream
+BT
+/TT4 1 Tf
+10 0 0 10 282.17 735 Tm
+0 g
+/GS1 gs
+0 Tc
+0 Tw
+(-2-)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 221.892 690 Tm
+<0061>Tj
+/TT9 1 Tf
+7 0 0 7 226.9471 688 Tm
+(B)Tj
+/TT4 1 Tf
+10 0 0 10 231.912 690 Tm
+(\()Tj
+/TT9 1 Tf
+0.317 0 TD
+(C)Tj
+/TT4 1 Tf
+0.739 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT9 1 Tf
+0.8298 0 TD
+(i)Tj
+7 0 0 7 259.9266 688 Tm
+(C)Tj
+/TT7 1 Tf
+10 0 0 10 265.5996 690 Tm
+<009d>Tj
+8.9 0 2.7732 8.9 267.9806 690 Tm
+<0073>Tj
+/TT9 1 Tf
+7 0 0 7 275.3283 688 Tm
+(n)Tj
+/TT4 1 Tf
+10 0 0 10 279.4963 690 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(R)Tj
+/TT4 1 Tf
+0.7222 0 TD
+(\)|)Tj
+/TT7 1 Tf
+0.5332 0 TD
+<00a2>Tj
+/TT2 1 Tf
+7 0 0 7 302.509 688 Tm
+(R)Tj
+/TT4 1 Tf
+10 0 0 10 308.0642 690 Tm
+(|)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 309.1562 690 Tm
+<0073>Tj
+/TT9 1 Tf
+7 0 0 7 316.5039 688 Tm
+(n)Tj
+/TT4 1 Tf
+10 0 0 10 320.6719 690 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(R)Tj
+/TT4 1 Tf
+0.7222 0 TD
+(\))Tj
+/TT7 1 Tf
+0.333 0 TD
+<009c0075>Tj
+/TT9 1 Tf
+0.6141 0 TD
+(d)Tj
+/TT2 1 Tf
+0.577 0 TD
+(R)Tj
+/TT4 1 Tf
+-23.6465 -2.196 TD
+[(F)15(o)0(r)-250(MRI applications with spatially v)25(arying gradients, this becomes:)]TJ
+/TT7 1 Tf
+8.9 0 2.7732 8.9 237.798 640.75 Tm
+<0061>Tj
+/TT9 1 Tf
+7 0 0 7 242.8531 638.75 Tm
+(B)Tj
+/TT4 1 Tf
+10 0 0 10 247.8179 640.75 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT7 1 Tf
+18 0 0 18 270.9409 636.069 Tm
+<0030>Tj
+/TT9 1 Tf
+7 0 0 7 277.0145 649.897 Tm
+(T)Tj
+/TT4 1 Tf
+-0.1888 -2.3006 TD
+(0)Tj
+/TT2 1 Tf
+10 0 0 10 283.9966 640.75 Tm
+(A)Tj
+/TT4 1 Tf
+0.7222 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(,)Tj
+/TT9 1 Tf
+0.433 0 TD
+(t)Tj
+/TT4 1 Tf
+0.3458 0 TD
+(\))Tj
+/TT7 1 Tf
+0.333 0 TD
+<0075>Tj
+/TT9 1 Tf
+0.575 0.7 TD
+(d)Tj
+/TT2 1 Tf
+0.577 0 TD
+(r)Tj
+/TT9 1 Tf
+-0.4897 -1.4 TD
+(dt)Tj
+ET
+0 G
+1 J 1 j 0.4 w 10 M []0 d
+1 i 
+315.51 643.35 m
+326.07 643.35 l
+S
+BT
+10 0 0 10 329.322 640.75 Tm
+(dt)Tj
+/TT4 1 Tf
+-21.9322 -2.559 TD
+(where)Tj
+/TT2 1 Tf
+2.6929 0 TD
+(A)Tj
+/TT4 1 Tf
+0.9722 0 TD
+-0.0001 Tc
+0.0001 Tw
+(is the Berry connection \(gauge potential\).)Tj
+/TT2 1 Tf
+-5.665 -2.4 TD
+0 Tc
+0 Tw
+[(2.2 Discr)18(ete Berry Phase Calculation)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+(In discrete form with)Tj
+/TT9 1 Tf
+8.7341 0 TD
+(N)Tj
+/TT4 1 Tf
+1.027 0 TD
+(time steps:)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 250.498 552.02 Tm
+<0061>Tj
+/TT9 1 Tf
+7 0 0 7 255.5531 550.02 Tm
+(B)Tj
+/TT7 1 Tf
+10 0 0 10 263.3179 552.02 Tm
+<0035>Tj
+15 0 0 15 271.6062 549.573 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 280.9732 557.008 Tm
+(N)Tj
+/TT7 1 Tf
+0.777 0 TD
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+-1.36 -1.1121 TD
+(n)Tj
+/TT10 1 Tf
+0.524 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(0)Tj
+/TT2 1 Tf
+10 0 0 10 295.9527 552.02 Tm
+(A)Tj
+/TT9 1 Tf
+7 0 0 7 303.4264 550.02 Tm
+(n)Tj
+/TT7 1 Tf
+10 0 0 10 307.5944 552.02 Tm
+<00750036>Tj
+/TT2 1 Tf
+0.8618 0 TD
+(r)Tj
+/TT9 1 Tf
+7 0 0 7 320.903 550.02 Tm
+(n)Tj
+/TT4 1 Tf
+10 0 0 10 110 530.06 Tm
+(where:)Tj
+/TT2 1 Tf
+12.7719 -2.606 TD
+(A)Tj
+/TT9 1 Tf
+7 0 0 7 245.1927 502 Tm
+(n)Tj
+/TT10 1 Tf
+10 0 0 10 252.1607 504 Tm
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+(Im)Tj
+/TT7 1 Tf
+1.1108 0.335 TD
+<0095>Tj
+-0.0002 -1 TD
+<0096>Tj
+0.3838 0.665 TD
+<009d>Tj
+8.9 0 2.7732 8.9 277.7741 504 Tm
+<0073>Tj
+/TT9 1 Tf
+7 0 0 7 285.1219 502 Tm
+(n)Tj
+/TT4 1 Tf
+10 0 0 10 289.2899 504 Tm
+(|)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 293.2818 511 Tm
+<0073>Tj
+/TT9 1 Tf
+7 0 0 7 300.6295 509 Tm
+(n)Tj
+/TT10 1 Tf
+0.524 0 TD
+(+)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT7 1 Tf
+10 0 0 10 312.1393 511 Tm
+<003c>Tj
+8.9 0 2.7732 8.9 316.7176 511 Tm
+<0073>Tj
+/TT9 1 Tf
+7 0 0 7 324.0653 509 Tm
+(n)Tj
+/TT7 1 Tf
+10 0 0 10 306.3513 497 Tm
+<0036>Tj
+/TT9 1 Tf
+0.6248 0 TD
+(t)Tj
+ET
+294.15 506.55 m
+328.23 506.55 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 331.152 504 Tm
+<009c>Tj
+0.3291 0.335 TD
+<0097>Tj
+-0.0002 -1 TD
+<0098>Tj
+/TT2 1 Tf
+-24.4441 -2.725 TD
+[(2.3 Berry Cur)10(v)10(atur)18(e)-250(and T)92(opological In)40(v)10(ariant)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+[(The Berry curv)25(ature tensor is:)]TJ
+/TT7 1 Tf
+15.5443 -2.196 TD
+<0031>Tj
+/TT9 1 Tf
+7 0 0 7 253.1306 430.18 Tm
+(ij)Tj
+/TT4 1 Tf
+10 0 0 10 257.8563 432.18 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(k)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT7 1 Tf
+0.8288 0 TD
+<002c>Tj
+/TT9 1 Tf
+7 0 0 7 286.3596 430.18 Tm
+(k)Tj
+4.9 0 0 4.9 289.7726 428.78 Tm
+(i)Tj
+10 0 0 10 293.17 432.18 Tm
+(A)Tj
+7 0 0 7 300.5264 430.18 Tm
+(j)Tj
+/TT7 1 Tf
+10 0 0 10 303.3072 432.18 Tm
+<003c002c>Tj
+/TT9 1 Tf
+7 0 0 7 313.9889 430.18 Tm
+(k)Tj
+4.9 0 0 4.9 318.2498 428.78 Tm
+(j)Tj
+10 0 0 10 321.7062 432.18 Tm
+(A)Tj
+7 0 0 7 327.8516 430.18 Tm
+(i)Tj
+/TT4 1 Tf
+10 0 0 10 110 409.306 Tm
+[(The Chern number \(topological in)40(v)25(ariant\) is:)]TJ
+/TT9 1 Tf
+13.0859 -2.722 TD
+(C)Tj
+/TT10 1 Tf
+1.019 0 TD
+(=)Tj
+/TT4 1 Tf
+1.2693 0.7 TD
+(1)Tj
+-0.3205 -1.4 TD
+(2)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 265.4572 375.086 Tm
+<002f>Tj
+ET
+260.55 384.63 m
+271.95 384.63 l
+S
+BT
+18 0 0 18 275.785 377.405 Tm
+<0030>Tj
+/TT9 1 Tf
+7 0 0 7 280.9417 375.129 Tm
+(BZ)Tj
+/TT7 1 Tf
+10 0 0 10 292.0106 382.086 Tm
+<0031>Tj
+/TT9 1 Tf
+7 0 0 7 300.2303 380.086 Tm
+(xy)Tj
+/TT4 1 Tf
+10 0 0 10 307.1681 382.086 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(k)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(\))Tj
+/TT9 1 Tf
+0.368 0 TD
+(d)Tj
+/TT4 1 Tf
+7 0 0 7 325.5098 386.286 Tm
+(2)Tj
+/TT9 1 Tf
+10 0 0 10 329.8698 382.086 Tm
+(k)Tj
+/TT4 1 Tf
+-21.987 -2.564 TD
+[(F)15(o)0(r)-250(discrete k-space sampling on an)]TJ
+/TT9 1 Tf
+14.7176 0 TD
+(N)Tj
+/TT10 1 Tf
+0.997 0 TD
+(◊)Tj
+/TT9 1 Tf
+0.8388 0 TD
+(N)Tj
+/TT4 1 Tf
+1.027 0 TD
+(grid:)Tj
+/TT9 1 Tf
+-7.353 -2.722 TD
+(C)Tj
+/TT7 1 Tf
+1.019 0 TD
+<0035>Tj
+/TT4 1 Tf
+1.2693 0.7 TD
+(1)Tj
+-0.3205 -1.4 TD
+(2)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 236.8722 322.226 Tm
+<002f>Tj
+ET
+231.99 331.83 m
+243.39 331.83 l
+S
+BT
+15 0 0 15 246.264 326.779 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 255.631 334.214 Tm
+(N)Tj
+-0.069 -1.1121 TD
+(i)Tj
+/TT10 1 Tf
+0.3138 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT7 1 Tf
+15 0 0 15 266.8865 326.779 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 276.2535 334.214 Tm
+(N)Tj
+0.104 -1.1121 TD
+(j)Tj
+/TT10 1 Tf
+0.3258 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT7 1 Tf
+10 0 0 10 288.804 329.226 Tm
+<0031>Tj
+/TT9 1 Tf
+7 0 0 7 297.0237 327.226 Tm
+(xy)Tj
+/TT4 1 Tf
+10 0 0 10 303.9616 329.226 Tm
+(\()Tj
+/TT9 1 Tf
+0.369 0 TD
+(k)Tj
+7 0 0 7 312.5271 327.226 Tm
+(i)Tj
+/TT4 1 Tf
+10 0 0 10 315.2239 329.226 Tm
+(,)Tj
+/TT9 1 Tf
+0.456 0 TD
+(k)Tj
+7 0 0 7 325.8704 327.226 Tm
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 328.6512 329.226 Tm
+(\))Tj
+/TT7 1 Tf
+0.333 0 TD
+<0036>Tj
+/TT9 1 Tf
+0.6478 0 TD
+(k)Tj
+7 0 0 7 343.867 327.226 Tm
+(x)Tj
+/TT7 1 Tf
+10 0 0 10 347.8449 329.226 Tm
+<0036>Tj
+/TT9 1 Tf
+0.6478 0 TD
+(k)Tj
+7 0 0 7 359.7095 327.226 Tm
+(y)Tj
+ET
+187.95 303.63 m
+387.99 303.63 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 279.586 Tm
+[(3. RF Coil Cir)18(cuit T)92(opology)]TJ
+0 -2.4 TD
+(3.1 Birdcage Coil Impedance Matrix)Tj
+/TT4 1 Tf
+0 -1.596 TD
+-0.015 Tc
+[(Fo)-15(r)-265(a)-15(n)]TJ
+/TT9 1 Tf
+2.888 0 TD
+0 Tc
+(N)Tj
+/TT4 1 Tf
+0.777 0 TD
+(-rung birdcage coil, the impedance matrix)Tj
+/TT2 1 Tf
+17.021 0 TD
+(Z)Tj
+/TT4 1 Tf
+0.917 0 TD
+(is:)Tj
+/TT9 1 Tf
+-11.5022 -5.3422 TD
+(Z)Tj
+7 0 0 7 197.0065 184.204 Tm
+(ij)Tj
+/TT10 1 Tf
+10 0 0 10 204.5322 186.204 Tm
+(=)Tj
+/TT7 1 Tf
+0.8288 2.835 TD
+<00a8>Tj
+0.0001 -1 TD
+<00ab>Tj
+0.0001 -1 TD
+<00ab>Tj
+0.0001 -1 TD
+<00a9>Tj
+0.0001 -1 TD
+<00ab>Tj
+0.0001 -1 TD
+<00ab>Tj
+0.0001 -1 TD
+<00aa>Tj
+/TT9 1 Tf
+0.7271 5.7852 TD
+(R)Tj
+/TT10 1 Tf
+0.8578 0 TD
+(+)Tj
+/TT9 1 Tf
+0.9428 0 TD
+(j)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 241.0153 212.406 Tm
+<0074>Tj
+/TT9 1 Tf
+10 0 0 10 248.961 212.406 Tm
+(L)Tj
+7 0 0 7 255.0155 210.406 Tm
+(leg)Tj
+/TT10 1 Tf
+10 0 0 10 266.4213 212.406 Tm
+(+)Tj
+/TT4 1 Tf
+2.2047 0.7 TD
+(1)Tj
+/TT9 1 Tf
+-1.1419 -1.4 TD
+(j)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 279.9579 205.406 Tm
+<0074>Tj
+/TT9 1 Tf
+10 0 0 10 287.1636 205.406 Tm
+(C)Tj
+7 0 0 7 294.2985 203.406 Tm
+(ring)Tj
+ET
+275.31 214.95 m
+306.63 214.95 l
+S
+BT
+/TT4 1 Tf
+10 0 0 10 233.822 193.2039 Tm
+(1)Tj
+/TT9 1 Tf
+-1.1419 -1.4 TD
+(j)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 225.3113 179.2039 Tm
+<0074>Tj
+/TT9 1 Tf
+10 0 0 10 232.517 179.2039 Tm
+(C)Tj
+7 0 0 7 239.6519 177.2039 Tm
+(ring)Tj
+ET
+220.71 188.79 m
+252.03 188.79 l
+S
+BT
+/TT4 1 Tf
+10 0 0 10 219.463 160.002 Tm
+(0)Tj
+/TT9 1 Tf
+9.8379 5.2404 TD
+(i)Tj
+/TT10 1 Tf
+0.5938 0 TD
+(=)Tj
+/TT9 1 Tf
+1.0028 0 TD
+(j)Tj
+/TT4 1 Tf
+-1.5982 -2.6202 TD
+(|)Tj
+/TT9 1 Tf
+0.2012 0 TD
+(i)Tj
+/TT7 1 Tf
+0.3138 0 TD
+<003c>Tj
+/TT9 1 Tf
+0.7228 0 TD
+(j)Tj
+/TT4 1 Tf
+0.3258 0 TD
+(|)Tj
+/TT10 1 Tf
+0.4802 0 TD
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+0.25 Tc
+[(1o)250(r)]TJ
+/TT9 1 Tf
+1.903 0 TD
+0 Tc
+(N)Tj
+/TT7 1 Tf
+0.777 0 TD
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+-6.102 -2.6202 TD
+(otherwise)Tj
+-20.7822 -2.4658 TD
+(The resonant frequencies are:)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 183.824 105.052 Tm
+<0074>Tj
+/TT9 1 Tf
+7 0 0 7 191.1857 103.052 Tm
+(m)Tj
+/TT10 1 Tf
+10 0 0 10 199.7649 105.052 Tm
+(=)Tj
+/TT4 1 Tf
+2.8126 0.7 TD
+(1)Tj
+/TT7 1 Tf
+13 0 0 13 209.2532 93.811 Tm
+<0033>Tj
+-0.0002 0 TD
+<007d>Tj
+/TT10 1 Tf
+-0.049 0 TD
+( )Tj
+/TT7 1 Tf
+0.252 0 TD
+<007d007d007d007d007d>Tj
+/TT9 1 Tf
+10 0 0 10 216.9679 96.893 Tm
+(L)Tj
+7 0 0 7 223.0225 94.893 Tm
+(leg)Tj
+10 0 0 10 232.0682 96.893 Tm
+(C)Tj
+7 0 0 7 239.2031 94.893 Tm
+(ring)Tj
+ET
+209.31 107.67 m
+251.55 107.67 l
+S
+BT
+/TT4 1 Tf
+10 0 0 10 254.434 105.052 Tm
+[(2)-170(sin)]TJ
+/TT7 1 Tf
+2.007 0.55 TD
+<00a3>Tj
+-0.0002 -1.213 TD
+<00a4>Tj
+/TT9 1 Tf
+0.5578 1.363 TD
+(m)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 287.5414 112.052 Tm
+<002f>Tj
+/TT9 1 Tf
+10 0 0 10 283.3259 98.052 Tm
+(N)Tj
+ET
+279.75 107.67 m
+294.03 107.67 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 295.234 110.552 Tm
+<00a5>Tj
+-0.0002 -1.213 TD
+<00a6>Tj
+7 0 0 7 299.2298 117.152 Tm
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+10 0 0 10 307.0716 105.052 Tm
+(,)Tj
+/TT9 1 Tf
+1.458 0 TD
+(m)Tj
+/TT10 1 Tf
+1.0342 0 TD
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+-0.08 Tw
+(1, 2,)Tj
+1.84 0.2155 TD
+0.17 Tc
+0 Tw
+(...)Tj
+1.26 -0.2155 TD
+0 Tc
+(,)Tj
+/TT9 1 Tf
+0.49 0 TD
+(N)Tj
+/TT4 1 Tf
+0.777 0 TD
+0.009 Tc
+(/2)Tj
+ET
+endstream
+endobj
+15 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/TT2 4 0 R
+/TT4 5 0 R
+/TT7 8 0 R
+/TT9 9 0 R
+/TT10 10 0 R
+>>
+/ExtGState <<
+/GS1 11 0 R
+>>
+>>
+endobj
+17 0 obj
+<<
+/Length 13872
+>>
+stream
+BT
+/TT4 1 Tf
+10 0 0 10 282.17 735 Tm
+0 g
+/GS1 gs
+0 Tc
+0 Tw
+(-3-)Tj
+/TT2 1 Tf
+-19.217 -4.5 TD
+(3.2 Mutual Inductance Calculation)Tj
+/TT4 1 Tf
+0 -1.596 TD
+[(F)15(o)0(r)-250(t)0(w)10(o)10( )-10(circular loops with radii)]TJ
+/TT9 1 Tf
+13.2277 0 TD
+(a)Tj
+/TT4 1 Tf
+7 0 0 7 227.5373 672.04 Tm
+(1)Tj
+10 0 0 10 231.5373 674.04 Tm
+(,)Tj
+/TT9 1 Tf
+0.453 0 TD
+(a)Tj
+/TT4 1 Tf
+7 0 0 7 241.3273 672.04 Tm
+(2)Tj
+10 0 0 10 247.8273 674.04 Tm
+(separated by distance)Tj
+/TT9 1 Tf
+8.8368 0 TD
+(d)Tj
+/TT4 1 Tf
+0.577 0 TD
+(:)Tj
+/TT9 1 Tf
+-12.7835 -3.106 TD
+(M)Tj
+/TT4 1 Tf
+7 0 0 7 222.8901 640.98 Tm
+(12)Tj
+/TT10 1 Tf
+10 0 0 10 233.1901 642.98 Tm
+(=)Tj
+8.9 0 2.7732 8.9 242.1584 642.98 Tm
+(µ)Tj
+/TT4 1 Tf
+7 0 0 7 247.9863 640.98 Tm
+(0)Tj
+/TT7 1 Tf
+10 0 0 10 251.9863 640.7529 Tm
+<0033>Tj
+-0.0002 0 TD
+<007d>Tj
+/TT10 1 Tf
+-0.049 0 TD
+( )Tj
+/TT7 1 Tf
+0.467 0 TD
+<007d007d007d>Tj
+/TT9 1 Tf
+0.164 0.2227 TD
+(a)Tj
+/TT4 1 Tf
+7 0 0 7 263.0646 640.98 Tm
+(1)Tj
+/TT9 1 Tf
+10 0 0 10 267.3946 642.98 Tm
+(a)Tj
+/TT4 1 Tf
+7 0 0 7 272.6546 640.98 Tm
+(2)Tj
+/TT7 1 Tf
+10 0 0 10 276.6546 651.33 Tm
+<0095>Tj
+-0.0002 -1 TD
+<00b3>Tj
+-0.0002 -1 TD
+<0096>Tj
+0.3838 1.715 TD
+<00a3>Tj
+-0.0002 -1.213 TD
+<00a4>Tj
+/TT4 1 Tf
+0.3998 0.663 TD
+(2)Tj
+/TT7 1 Tf
+0.5 0 TD
+<003c>Tj
+/TT9 1 Tf
+0.5848 0 TD
+(k)Tj
+/TT4 1 Tf
+7 0 0 7 300.4408 647.1799 Tm
+(2)Tj
+/TT7 1 Tf
+10 0 0 10 304.4408 648.48 Tm
+<00a5>Tj
+-0.0002 -1.213 TD
+<00a6>Tj
+/TT9 1 Tf
+0.4428 0.663 TD
+(K)Tj
+/TT4 1 Tf
+0.772 0 TD
+(\()Tj
+/TT9 1 Tf
+0.369 0 TD
+(k)Tj
+/TT4 1 Tf
+0.5108 0 TD
+(\))Tj
+/TT7 1 Tf
+0.333 0 TD
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(2)Tj
+/TT9 1 Tf
+0.551 0 TD
+(E)Tj
+/TT4 1 Tf
+0.6838 0 TD
+(\()Tj
+/TT9 1 Tf
+0.369 0 TD
+(k)Tj
+/TT4 1 Tf
+0.5108 0 TD
+(\))Tj
+/TT7 1 Tf
+0.333 0.835 TD
+<0097>Tj
+-0.0002 -1 TD
+<00b5>Tj
+-0.0002 -1 TD
+<0098>Tj
+/TT4 1 Tf
+-24.8676 -2.447 TD
+(where: -)Tj
+/TT9 1 Tf
+3.5897 0 TD
+(k)Tj
+/TT4 1 Tf
+7 0 0 7 151.0056 611.06 Tm
+(2)Tj
+/TT10 1 Tf
+10 0 0 10 157.8056 606.86 Tm
+(=)Tj
+/TT4 1 Tf
+2.7268 0.7 TD
+(4)Tj
+/TT9 1 Tf
+0.533 0 TD
+(a)Tj
+/TT4 1 Tf
+7 0 0 7 195.6639 611.86 Tm
+(1)Tj
+/TT9 1 Tf
+10 0 0 10 199.9939 613.86 Tm
+(a)Tj
+/TT4 1 Tf
+7 0 0 7 205.2539 611.86 Tm
+(2)Tj
+10 0 0 10 167.2939 599.86 Tm
+(\()Tj
+/TT9 1 Tf
+0.366 0 TD
+(a)Tj
+/TT4 1 Tf
+7 0 0 7 176.2139 597.86 Tm
+(1)Tj
+/TT10 1 Tf
+10 0 0 10 182.4139 599.86 Tm
+(+)Tj
+/TT9 1 Tf
+0.8018 0 TD
+(a)Tj
+/TT4 1 Tf
+7 0 0 7 195.6922 597.86 Tm
+(2)Tj
+10 0 0 10 199.6922 599.86 Tm
+(\))Tj
+7 0 0 7 203.0223 602.66 Tm
+(2)Tj
+/TT10 1 Tf
+10 0 0 10 209.2223 599.86 Tm
+(+)Tj
+/TT9 1 Tf
+0.8038 0 TD
+(d)Tj
+/TT4 1 Tf
+7 0 0 7 223.0306 602.66 Tm
+(2)Tj
+ET
+0 G
+1 J 1 j 0.4 w 10 M []0 d
+1 i 
+167.31 609.51 m
+227.07 609.51 l
+S
+BT
+10 0 0 10 230.74 606.86 Tm
+(-)Tj
+/TT9 1 Tf
+0.626 0 TD
+(K)Tj
+/TT4 1 Tf
+0.772 0 TD
+(\()Tj
+/TT9 1 Tf
+0.369 0 TD
+(k)Tj
+/TT4 1 Tf
+0.5108 0 TD
+(\),)Tj
+/TT9 1 Tf
+0.804 0 TD
+(E)Tj
+/TT4 1 Tf
+0.6838 0 TD
+(\()Tj
+/TT9 1 Tf
+0.369 0 TD
+(k)Tj
+/TT4 1 Tf
+0.5108 0 TD
+[(\))-250(are complete elliptic inte)15(grals)]TJ
+-16.7196 -2.146 TD
+(Discrete approximation using mesh elements:)Tj
+/TT9 1 Tf
+10.4679 -2.9637 TD
+(M)Tj
+7 0 0 7 223.4461 553.763 Tm
+(ij)Tj
+/TT7 1 Tf
+10 0 0 10 230.9717 555.763 Tm
+<0035>Tj
+15 0 0 15 239.26 553.316 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 248.6269 560.751 Tm
+(N)Tj
+/TT4 1 Tf
+4.9 0 0 4.9 253.5969 559.351 Tm
+(1)Tj
+/TT9 1 Tf
+7 0 0 7 249.0119 552.966 Tm
+(p)Tj
+/TT10 1 Tf
+0.519 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT7 1 Tf
+15 0 0 15 262.1867 553.316 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 271.5536 560.751 Tm
+(N)Tj
+/TT4 1 Tf
+4.9 0 0 4.9 276.5236 559.351 Tm
+(2)Tj
+/TT9 1 Tf
+7 0 0 7 271.2386 552.966 Tm
+(q)Tj
+/TT10 1 Tf
+0.533 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT10 1 Tf
+8.9 0 2.7732 8.9 286.8414 562.7629 Tm
+(µ)Tj
+/TT4 1 Tf
+7 0 0 7 292.6693 560.763 Tm
+(0)Tj
+10 0 0 10 285.7093 548.763 Tm
+(4)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 290.6293 548.763 Tm
+<002f>Tj
+ET
+285.75 558.39 m
+297.15 558.39 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 301.234 563.79 Tm
+(J)Tj
+/TT9 1 Tf
+7 0 0 7 307.109 568.825 Tm
+(p)Tj
+-0.124 -1.0876 TD
+(i)Tj
+/TT7 1 Tf
+10 0 0 10 311.2408 563.79 Tm
+<0075>Tj
+/TT2 1 Tf
+0.25 0 TD
+(J)Tj
+/TT9 1 Tf
+7 0 0 7 318.9158 568.853 Tm
+(q)Tj
+0.149 -1.0916 TD
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 303.6656 548.7629 Tm
+(|)Tj
+/TT2 1 Tf
+0.2002 0 TD
+(r)Tj
+/TT9 1 Tf
+7 0 0 7 310.9811 553.8259 Tm
+(pq)Tj
+-0.124 -1.0916 TD
+(ij)Tj
+/TT4 1 Tf
+10 0 0 10 318.7097 548.7629 Tm
+(|)Tj
+ET
+301.23 558.39 m
+323.19 558.39 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 326.048 555.763 Tm
+<0036>Tj
+/TT9 1 Tf
+0.7128 0 TD
+(A)Tj
+7 0 0 7 340.1896 553.763 Tm
+(p)Tj
+/TT7 1 Tf
+10 0 0 10 344.3226 555.763 Tm
+<0036>Tj
+/TT9 1 Tf
+0.7128 0 TD
+(A)Tj
+7 0 0 7 357.7641 553.763 Tm
+(q)Tj
+/TT2 1 Tf
+10 0 0 10 90 518.236 Tm
+(3.3 Quantum Surface Lattice Coupling)Tj
+/TT4 1 Tf
+0 -1.596 TD
+[(F)15(o)0(r)-250(a)-250(h)0(e)15(xagonal lattice of quantum coil elements, the coupling Hamiltonian is:)]TJ
+/TT9 1 Tf
+10.8112 -2.196 TD
+(H)Tj
+7 0 0 7 205.9037 478.316 Tm
+(coupling)Tj
+/TT10 1 Tf
+10 0 0 10 233.8542 480.316 Tm
+(=)Tj
+/TT7 1 Tf
+15 0 0 15 242.1425 477.869 Tm
+<0059>Tj
+7 0 0 7 251.0195 477.519 Tm
+<009d>Tj
+/TT9 1 Tf
+0.3301 0 TD
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(,)Tj
+/TT9 1 Tf
+0.424 0 TD
+(j)Tj
+/TT7 1 Tf
+0.3258 0 TD
+<009c>Tj
+/TT9 1 Tf
+10 0 0 10 265.8395 480.316 Tm
+(J)Tj
+7 0 0 7 270.715 478.316 Tm
+(ij)Tj
+/TT4 1 Tf
+10 0 0 10 275.4407 480.316 Tm
+(\()Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 278.4008 480.316 Tm
+<006d>Tj
+/TT10 1 Tf
+7 0 0 7 285.5177 484.516 Tm
+(+)Tj
+/TT9 1 Tf
+-0.1077 -0.9286 TD
+(i)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 289.4883 480.316 Tm
+<006d>Tj
+7 0 0 7 296.6053 484.516 Tm
+<003c>Tj
+/TT9 1 Tf
+0.0653 -0.9286 TD
+(j)Tj
+/TT10 1 Tf
+10 0 0 10 303.1459 480.316 Tm
+(+)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 310.4641 480.316 Tm
+<006d>Tj
+7 0 0 7 317.5811 484.516 Tm
+<003c>Tj
+/TT9 1 Tf
+-0.1077 -0.9286 TD
+(i)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 321.5517 480.316 Tm
+<006d>Tj
+/TT10 1 Tf
+7 0 0 7 328.6687 484.516 Tm
+(+)Tj
+/TT9 1 Tf
+0.0653 -0.9286 TD
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 333.0093 480.316 Tm
+(\))Tj
+/TT10 1 Tf
+0.553 0 TD
+(+)Tj
+/TT7 1 Tf
+15 0 0 15 346.2277 477.869 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 355.1116 477.519 Tm
+(i)Tj
+10 0 0 10 359.8184 480.316 Tm
+(h)Tj
+7 0 0 7 365.1054 478.316 Tm
+(i)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 367.4323 480.316 Tm
+<006d>Tj
+/TT9 1 Tf
+7 0 0 7 374.9132 484.516 Tm
+(z)Tj
+-0.1594 -0.9636 TD
+(i)Tj
+/TT4 1 Tf
+10 0 0 10 110 457.61 Tm
+(The )Tj
+/TT6 1 Tf
+1.8047 0 TD
+(ﬂ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(ux quantization condition:)Tj
+/TT7 1 Tf
+7.0121 -2.729 TD
+<005c>Tj
+/TT10 1 Tf
+1.0432 0 TD
+(=)Tj
+/TT9 1 Tf
+0.8648 0 TD
+(n)Tj
+/TT7 1 Tf
+0.524 0 TD
+<005c>Tj
+/TT4 1 Tf
+7 0 0 7 235.6809 428.32 Tm
+(0)Tj
+10 0 0 10 239.6809 430.32 Tm
+(,)Tj
+/TT7 1 Tf
+1.42 0 TD
+<005c>Tj
+/TT4 1 Tf
+7 0 0 7 261.5128 428.32 Tm
+(0)Tj
+/TT10 1 Tf
+10 0 0 10 268.3128 430.32 Tm
+(=)Tj
+/TT9 1 Tf
+1.1908 0.7 TD
+(h)Tj
+/TT4 1 Tf
+-0.242 -1.4 TD
+(2)Tj
+/TT9 1 Tf
+0.519 0 TD
+(e)Tj
+ET
+277.83 432.87 m
+287.55 432.87 l
+S
+BT
+/TT10 1 Tf
+10 0 0 10 291.609 430.32 Tm
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+-0.08 Tw
+(2. 067)Tj
+/TT10 1 Tf
+2.64 0 TD
+0 Tw
+(◊)Tj
+/TT4 1 Tf
+0.7688 0 TD
+(10)Tj
+/TT7 1 Tf
+7 0 0 7 343.9856 434.52 Tm
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(15)Tj
+10 0 0 10 357.8274 430.32 Tm
+(Wb)Tj
+ET
+187.95 404.79 m
+387.99 404.79 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 380.75 Tm
+[(4. K-Space T)74(rajectory and Reconstruction)]TJ
+0 -2.4 TD
+[(4.1 Discr)18(ete F)25(ourier T)74(ransf)25(orm)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+[(The k-space signal is related to the image by discrete F)15(ourier transform:)]TJ
+/TT9 1 Tf
+10.0689 -2.318 TD
+(S)Tj
+/TT4 1 Tf
+0.558 0 TD
+(\()Tj
+/TT9 1 Tf
+0.369 0 TD
+(k)Tj
+7 0 0 7 205.3665 315.61 Tm
+(x)Tj
+/TT4 1 Tf
+10 0 0 10 209.3445 317.61 Tm
+(,)Tj
+/TT9 1 Tf
+0.456 0 TD
+(k)Tj
+7 0 0 7 219.291 315.61 Tm
+(y)Tj
+/TT4 1 Tf
+10 0 0 10 223.1219 317.61 Tm
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT7 1 Tf
+15 0 0 15 237.5403 315.163 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 246.8932 322.598 Tm
+(M)Tj
+/TT7 1 Tf
+0.923 0 TD
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+-1.502 -1.1121 TD
+(m)Tj
+/TT10 1 Tf
+0.7542 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(0)Tj
+/TT7 1 Tf
+15 0 0 15 262.896 315.163 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 272.263 322.598 Tm
+(N)Tj
+/TT7 1 Tf
+0.777 0 TD
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+-1.36 -1.1121 TD
+(n)Tj
+/TT10 1 Tf
+0.524 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(0)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 287.9325 317.61 Tm
+<006c>Tj
+/TT4 1 Tf
+10 0 0 10 293.6371 317.61 Tm
+(\()Tj
+/TT9 1 Tf
+0.371 0 TD
+(m)Tj
+/TT4 1 Tf
+0.7542 0 TD
+(,)Tj
+/TT9 1 Tf
+0.456 0 TD
+(n)Tj
+/TT4 1 Tf
+0.524 0 TD
+(\))Tj
+/TT9 1 Tf
+0.352 0 TD
+(e)Tj
+/TT7 1 Tf
+7 0 0 7 322.8274 321.81 Tm
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(2)Tj
+/TT7 1 Tf
+6.23 0 1.9413 6.23 330.1132 321.81 Tm
+<002f>Tj
+/TT9 1 Tf
+7 0 0 7 334.6594 321.81 Tm
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(\()Tj
+/TT9 1 Tf
+0.369 0 TD
+(k)Tj
+4.9 0 0 4.9 343.2242 320.41 Tm
+(x)Tj
+7 0 0 7 346.2751 321.81 Tm
+(m)Tj
+/TT4 1 Tf
+0.7542 0 TD
+(/)Tj
+/TT9 1 Tf
+0.3458 0 TD
+(M)Tj
+/TT10 1 Tf
+0.923 0 TD
+(+)Tj
+/TT9 1 Tf
+0.5848 0 TD
+(k)Tj
+4.9 0 0 4.9 368.3008 320.41 Tm
+(y)Tj
+7 0 0 7 371.2347 321.81 Tm
+(n)Tj
+/TT4 1 Tf
+0.524 0 TD
+(/)Tj
+/TT9 1 Tf
+0.3478 0 TD
+(N)Tj
+/TT4 1 Tf
+0.777 0 TD
+(\))Tj
+10 0 0 10 110 295.65 Tm
+[(The in)40(v)15(erse transform for reconstruction:)]TJ
+/TT7 1 Tf
+8.9 0 2.7732 8.9 182.141 268.43 Tm
+<006c>Tj
+/TT4 1 Tf
+10 0 0 10 187.8456 268.43 Tm
+(\()Tj
+/TT9 1 Tf
+0.371 0 TD
+(m)Tj
+/TT4 1 Tf
+0.7542 0 TD
+(,)Tj
+/TT9 1 Tf
+0.456 0 TD
+(n)Tj
+/TT4 1 Tf
+0.524 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT4 1 Tf
+1.5378 0.7 TD
+(1)Tj
+/TT9 1 Tf
+-0.521 -1.4 TD
+(MN)Tj
+ET
+224.55 270.99 m
+241.35 270.99 l
+S
+BT
+/TT7 1 Tf
+15 0 0 15 244.201 265.983 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 253.554 273.418 Tm
+(M)Tj
+/TT7 1 Tf
+0.923 0 TD
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+-1.504 -1.1121 TD
+(k)Tj
+4.9 0 0 4.9 257.1137 264.2329 Tm
+(x)Tj
+/TT10 1 Tf
+7 0 0 7 259.8986 265.6329 Tm
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(0)Tj
+/TT7 1 Tf
+15 0 0 15 269.5534 265.9829 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 278.9203 273.4179 Tm
+(N)Tj
+/TT7 1 Tf
+0.777 0 TD
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+-1.36 -1.1121 TD
+(k)Tj
+4.9 0 0 4.9 282.452 264.2329 Tm
+(y)Tj
+/TT10 1 Tf
+7 0 0 7 285.1339 265.6329 Tm
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(0)Tj
+/TT9 1 Tf
+10 0 0 10 295.0056 268.4299 Tm
+(S)Tj
+/TT4 1 Tf
+0.558 0 TD
+(\()Tj
+/TT9 1 Tf
+0.369 0 TD
+(k)Tj
+7 0 0 7 309.6832 266.4299 Tm
+(x)Tj
+/TT4 1 Tf
+10 0 0 10 313.6611 268.4299 Tm
+(,)Tj
+/TT9 1 Tf
+0.456 0 TD
+(k)Tj
+7 0 0 7 323.6076 266.4299 Tm
+(y)Tj
+/TT4 1 Tf
+10 0 0 10 327.4385 268.4299 Tm
+(\))Tj
+/TT9 1 Tf
+0.352 0 TD
+(e)Tj
+/TT4 1 Tf
+7 0 0 7 335.5771 272.6299 Tm
+(2)Tj
+/TT7 1 Tf
+6.23 0 1.9413 6.23 339.0211 272.6299 Tm
+<002f>Tj
+/TT9 1 Tf
+7 0 0 7 343.5673 272.6299 Tm
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(\()Tj
+/TT9 1 Tf
+0.369 0 TD
+(k)Tj
+4.9 0 0 4.9 352.1321 271.2299 Tm
+(x)Tj
+7 0 0 7 355.183 272.6299 Tm
+(m)Tj
+/TT4 1 Tf
+0.7542 0 TD
+(/)Tj
+/TT9 1 Tf
+0.3458 0 TD
+(M)Tj
+/TT10 1 Tf
+0.923 0 TD
+(+)Tj
+/TT9 1 Tf
+0.5848 0 TD
+(k)Tj
+4.9 0 0 4.9 377.2087 271.2299 Tm
+(y)Tj
+7 0 0 7 380.1426 272.6299 Tm
+(n)Tj
+/TT4 1 Tf
+0.524 0 TD
+(/)Tj
+/TT9 1 Tf
+0.3478 0 TD
+(N)Tj
+/TT4 1 Tf
+0.777 0 TD
+(\))Tj
+/TT2 1 Tf
+10 0 0 10 90 234.78 Tm
+[(4.2 Non-Unif)25(orm FFT \(NUFFT\))]TJ
+/TT4 1 Tf
+0 -1.596 TD
+[(F)15(o)0(r)-250(non-Cartesian trajectories, the NUFFT approximation:)]TJ
+/TT9 1 Tf
+13.2989 -2.2392 TD
+(S)Tj
+/TT4 1 Tf
+0.558 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(k)Tj
+/TT9 1 Tf
+7 0 0 7 238.6786 194.4279 Tm
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 241.4594 196.4279 Tm
+(\))Tj
+/TT7 1 Tf
+0.613 0 TD
+<0035>Tj
+15 0 0 15 255.8778 193.9809 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 265.0207 193.631 Tm
+(m)Tj
+/TT7 1 Tf
+0.8342 0 TD
+<0044>Tj
+/TT9 1 Tf
+0.7029 0 TD
+(N)Tj
+/TT4 1 Tf
+0.777 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(k)Tj
+/TT9 1 Tf
+4.9 0 0 4.9 288.2962 192.231 Tm
+(j)Tj
+/TT4 1 Tf
+7 0 0 7 290.2426 193.631 Tm
+(\))Tj
+/TT9 1 Tf
+10 0 0 10 294.9736 196.4279 Tm
+(c)Tj
+7 0 0 7 299.9881 194.4279 Tm
+(m)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 306.4573 196.4279 Tm
+<006c>Tj
+/TT9 1 Tf
+7 0 0 7 312.4279 194.4279 Tm
+(m)Tj
+10 0 0 10 318.397 196.4279 Tm
+(e)Tj
+/TT7 1 Tf
+7 0 0 7 323.0155 200.6279 Tm
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(2)Tj
+/TT7 1 Tf
+6.23 0 1.9413 6.23 330.3013 200.6279 Tm
+<002f>Tj
+/TT9 1 Tf
+7 0 0 7 334.8475 200.6279 Tm
+(i)Tj
+/TT2 1 Tf
+0.3138 0 TD
+(k)Tj
+/TT9 1 Tf
+4.9 0 0 4.9 341.7904 199.228 Tm
+(j)Tj
+/TT7 1 Tf
+7 0 0 7 343.7368 200.6279 Tm
+<0075>Tj
+/TT2 1 Tf
+0.25 0 TD
+(r)Tj
+/TT9 1 Tf
+4.9 0 0 4.9 348.7797 199.228 Tm
+(m)Tj
+/TT4 1 Tf
+10 0 0 10 110 172.757 Tm
+(where)Tj
+/TT9 1 Tf
+2.7629 0 TD
+(N)Tj
+/TT4 1 Tf
+0.777 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(k)Tj
+/TT9 1 Tf
+7 0 0 7 155.5082 170.757 Tm
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 158.289 172.757 Tm
+[(\))-250(i)0(s)-250(the neighborhood of)]TJ
+/TT2 1 Tf
+9.8594 0 TD
+(k)Tj
+/TT9 1 Tf
+7 0 0 7 263.6623 170.757 Tm
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 268.9431 172.757 Tm
+(and)Tj
+/TT9 1 Tf
+1.7138 0 TD
+(c)Tj
+7 0 0 7 291.0961 170.757 Tm
+(m)Tj
+/TT4 1 Tf
+10 0 0 10 299.3753 172.757 Tm
+[(are Kaiser)20(-Bessel interpolation coef)]TJ
+/TT6 1 Tf
+14.31 0 TD
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(cients.)Tj
+/TT2 1 Tf
+-35.8037 -2.4 TD
+[(4.3 P)10(arallel Imaging with SENSE)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+-0.015 Tc
+[(Fo)-15(r)]TJ
+/TT9 1 Tf
+1.6942 0 TD
+0 Tc
+(N)Tj
+7 0 0 7 114.1815 130.797 Tm
+(c)Tj
+/TT4 1 Tf
+10 0 0 10 120.5054 132.797 Tm
+[(coils with sensiti)25(vity maps)]TJ
+/TT9 1 Tf
+10.8477 0 TD
+(C)Tj
+7 0 0 7 237.3001 130.797 Tm
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 240.0809 132.797 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\):)Tj
+/TT9 1 Tf
+-1.9538 -2.5267 TD
+(S)Tj
+7 0 0 7 234.959 105.53 Tm
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 237.7398 107.53 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(k)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT7 1 Tf
+18 0 0 18 261.9858 102.849 Tm
+<0030>Tj
+/TT9 1 Tf
+10 0 0 10 269.6624 107.53 Tm
+(C)Tj
+7 0 0 7 277.9804 105.53 Tm
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 280.7612 107.53 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 292.5498 107.53 Tm
+<006c>Tj
+/TT4 1 Tf
+10 0 0 10 298.2544 107.53 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT9 1 Tf
+0.352 0 TD
+(e)Tj
+/TT7 1 Tf
+7 0 0 7 314.1615 111.73 Tm
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(2)Tj
+/TT7 1 Tf
+6.23 0 1.9413 6.23 321.4473 111.73 Tm
+<002f>Tj
+/TT9 1 Tf
+7 0 0 7 325.9935 111.73 Tm
+(i)Tj
+/TT2 1 Tf
+0.3138 0 TD
+(k)Tj
+/TT7 1 Tf
+0.5562 0 TD
+<0075>Tj
+/TT2 1 Tf
+0.25 0 TD
+(r)Tj
+/TT9 1 Tf
+10 0 0 10 337.7903 107.53 Tm
+(d)Tj
+/TT2 1 Tf
+0.577 0 TD
+(r)Tj
+ET
+endstream
+endobj
+18 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/TT2 4 0 R
+/TT4 5 0 R
+/TT6 7 0 R
+/TT7 8 0 R
+/TT9 9 0 R
+/TT10 10 0 R
+>>
+/ExtGState <<
+/GS1 11 0 R
+>>
+>>
+endobj
+20 0 obj
+<<
+/Length 10447
+>>
+stream
+BT
+/TT4 1 Tf
+10 0 0 10 282.17 735 Tm
+0 g
+/GS1 gs
+0 Tc
+0 Tw
+(-4-)Tj
+-17.217 -4.5 TD
+[(The SENSE reconstruction solv)15(es:)]TJ
+/TT7 1 Tf
+8.9 0 2.7732 8.9 210.589 666.915 Tm
+<006c>Tj
+/TT10 1 Tf
+10 0 0 10 219.0936 666.915 Tm
+(=)Tj
+/TT9 1 Tf
+0.8288 0 TD
+[(ar)37(g)]TJ
+/TT4 1 Tf
+1.5222 0 TD
+(min)Tj
+/TT7 1 Tf
+6.23 0 1.9413 6.23 258.6431 664.915 Tm
+<006c>Tj
+15 0 0 15 264.8363 664.468 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 274.2032 671.969 Tm
+(N)Tj
+4.9 0 0 4.9 279.2712 670.569 Tm
+(c)Tj
+7 0 0 7 274.9301 664.183 Tm
+(j)Tj
+/TT10 1 Tf
+0.3258 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+10 0 0 10 287.1727 666.9149 Tm
+(FC)Tj
+7 0 0 7 301.599 664.9149 Tm
+(j)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 305.0698 666.9149 Tm
+<006c>Tj
+10 0 0 10 310.7744 666.9149 Tm
+<003c>Tj
+/TT9 1 Tf
+0.5818 0 TD
+(S)Tj
+7 0 0 7 323.2407 664.9149 Tm
+(j)Tj
+/TT4 1 Tf
+0.3973 0.8857 TD
+(2)Tj
+0 -0.9286 TD
+(2)Tj
+/TT10 1 Tf
+10 0 0 10 332.2215 666.9149 Tm
+(+)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 340.1998 666.9149 Tm
+<0068>Tj
+/TT9 1 Tf
+10 0 0 10 346.6243 666.9149 Tm
+(R)Tj
+/TT4 1 Tf
+0.6378 0 TD
+(\()Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 357.0228 666.9149 Tm
+<006c>Tj
+/TT4 1 Tf
+10 0 0 10 362.7274 666.9149 Tm
+(\))Tj
+-25.2727 -2.2641 TD
+(Discrete form:)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 200.585 613.982 Tm
+<006c>Tj
+/TT9 1 Tf
+7 0 0 7 206.5416 611.582 Tm
+(n)Tj
+/TT10 1 Tf
+10 0 0 10 213.5096 613.982 Tm
+(=)Tj
+/TT7 1 Tf
+0.8288 0.55 TD
+<00a3>Tj
+-0.0002 -1.213 TD
+<00a4>Tj
+15 0 0 15 225.7936 611.535 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 235.1606 619.036 Tm
+(N)Tj
+4.9 0 0 4.9 240.2285 617.636 Tm
+(c)Tj
+7 0 0 7 235.8874 611.25 Tm
+(j)Tj
+/TT10 1 Tf
+0.3258 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+10 0 0 10 247.55 613.982 Tm
+(C)Tj
+/TT4 1 Tf
+7 0 0 7 254.9399 618.182 Tm
+(*)Tj
+/TT9 1 Tf
+0.1326 -0.9286 TD
+(j)Tj
+10 0 0 10 258.7787 613.982 Tm
+(C)Tj
+7 0 0 7 267.0966 611.982 Tm
+(j)Tj
+/TT10 1 Tf
+10 0 0 10 272.0775 613.982 Tm
+(+)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 280.0558 613.982 Tm
+<0068>Tj
+/TT2 1 Tf
+10 0 0 10 285.8503 613.982 Tm
+(L)Tj
+/TT9 1 Tf
+7 0 0 7 292.4572 618.182 Tm
+(T)Tj
+/TT2 1 Tf
+10 0 0 10 297.7393 613.982 Tm
+(L)Tj
+/TT7 1 Tf
+0.667 0.55 TD
+<00a5>Tj
+-0.0002 -1.213 TD
+<00a6>Tj
+7 0 0 7 308.405 626.082 Tm
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT7 1 Tf
+15 0 0 15 317.9468 611.535 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 327.3138 619.036 Tm
+(N)Tj
+4.9 0 0 4.9 332.3817 617.636 Tm
+(c)Tj
+7 0 0 7 328.0406 611.25 Tm
+(j)Tj
+/TT10 1 Tf
+0.3258 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+10 0 0 10 339.7032 613.982 Tm
+(C)Tj
+/TT4 1 Tf
+7 0 0 7 347.0931 618.182 Tm
+(*)Tj
+/TT9 1 Tf
+0.1326 -0.9286 TD
+(j)Tj
+10 0 0 10 351.512 613.982 Tm
+(F)Tj
+/TT7 1 Tf
+7 0 0 7 358.4604 618.182 Tm
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+10 0 0 10 366.6321 613.982 Tm
+(S)Tj
+7 0 0 7 373.2802 611.982 Tm
+(j)Tj
+ET
+0 G
+1 J 1 j 0.4 w 10 M []0 d
+1 i 
+187.95 585.99 m
+387.99 585.99 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 561.962 Tm
+[(5. Quantum Lo)10(w)-250(Ener)10(gy Beam F)25(ocusing)]TJ
+0 -2.4 TD
+[(5.1 Ener)10(gy Distrib)20(ution Function)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+(The beam intensity pro)Tj
+/TT6 1 Tf
+9.2476 0 TD
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(le with quantum focusing:)Tj
+/TT9 1 Tf
+2.1073 -2.9392 TD
+(I)Tj
+/TT4 1 Tf
+0.434 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT9 1 Tf
+0.8868 0 TD
+(I)Tj
+/TT4 1 Tf
+7 0 0 7 239.9771 490.61 Tm
+(0)Tj
+/TT7 1 Tf
+10 0 0 10 243.9771 495.96 Tm
+<0095>Tj
+-0.0002 -1 TD
+<0096>Tj
+/TT4 1 Tf
+0.3838 0.665 TD
+(1)Tj
+/TT10 1 Tf
+0.72 0 TD
+(+)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 262.2011 492.61 Tm
+<0064>Tj
+/TT9 1 Tf
+10 0 0 10 268.8281 492.61 Tm
+(H)Tj
+/TT4 1 Tf
+0.8172 0 TD
+(\()Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 281.3098 492.61 Tm
+<0072>Tj
+/TT4 1 Tf
+10 0 0 10 287.5344 492.61 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\)\))Tj
+/TT7 1 Tf
+0.666 0.335 TD
+<0097>Tj
+-0.0002 -1 TD
+<0098>Tj
+/TT4 1 Tf
+0.5538 0.665 TD
+-0.015 Tc
+[(ex)-15(p)]TJ
+/TT7 1 Tf
+1.5988 0.55 TD
+0 Tc
+<00a3>Tj
+-0.0002 -1.213 TD
+<00a4>Tj
+0.3998 0.663 TD
+<003c>Tj
+/TT4 1 Tf
+0.8388 0.7 TD
+(|)Tj
+/TT2 1 Tf
+0.2002 0 TD
+(r)Tj
+/TT7 1 Tf
+0.4438 0 TD
+<003c>Tj
+/TT2 1 Tf
+0.5488 0 TD
+(r)Tj
+/TT4 1 Tf
+7 0 0 7 352.2386 497.61 Tm
+(0)Tj
+10 0 0 10 356.2386 499.61 Tm
+(|)Tj
+7 0 0 7 358.2406 503.81 Tm
+(2)Tj
+10 0 0 10 341.1806 485.61 Tm
+(2)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 345.8106 485.61 Tm
+<006d>Tj
+/TT4 1 Tf
+7 0 0 7 352.9276 488.41 Tm
+(2)Tj
+ET
+335.91 495.15 m
+362.31 495.15 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 363.47 498.11 Tm
+<00a5>Tj
+-0.0002 -1.213 TD
+<00a6>Tj
+/TT4 1 Tf
+-25.3468 -2.139 TD
+0.1058 Tw
+(where: -)Tj
+/TT9 1 Tf
+3.8233 0 TD
+0 Tw
+(H)Tj
+/TT4 1 Tf
+0.8172 0 TD
+(\()Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 160.7148 464.59 Tm
+<0072>Tj
+/TT4 1 Tf
+10 0 0 10 166.9394 464.59 Tm
+0.1058 Tw
+[(\))-355.8(i)0(s)-355.8(the entrop)10(y-based attention function -)]TJ
+/TT7 1 Tf
+8.9 0 2.7732 8.9 343.2332 464.59 Tm
+0 Tw
+<0072>Tj
+/TT4 1 Tf
+10 0 0 10 349.4578 464.59 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+0.1057 Tw
+[(\))-355.8(i)0(s)-355.8(the local image comple)15(xity)]TJ
+-26.7226 -1.2 TD
+0 Tw
+(measure)Tj
+/TT2 1 Tf
+0 -2.4 TD
+[(5.2 Entr)18(opy-Dri)10(v)10(e)0(n)-250(Denoising)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+[(The local entrop)10(y)-250(a)0(t)-250(position)]TJ
+/TT2 1 Tf
+11.7371 0 TD
+(r)Tj
+/TT4 1 Tf
+0.6938 0 TD
+[(in a windo)25(w)]TJ
+/TT9 1 Tf
+5.1478 0 TD
+(W)Tj
+/TT4 1 Tf
+0.956 0 TD
+(:)Tj
+/TT9 1 Tf
+-4.6482 -2.3019 TD
+(H)Tj
+/TT4 1 Tf
+0.8172 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT7 1 Tf
+0.8288 0 TD
+<003c>Tj
+15 0 0 15 266.4129 387.164 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 275.6958 394.599 Tm
+(L)Tj
+-0.0569 -1.1121 TD
+(i)Tj
+/TT10 1 Tf
+0.3138 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT9 1 Tf
+10 0 0 10 288.2865 389.611 Tm
+(p)Tj
+7 0 0 7 293.4835 387.611 Tm
+(i)Tj
+/TT4 1 Tf
+10 0 0 10 296.1803 389.611 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+[(\))-170(log)]TJ
+7 0 0 7 321.7573 387.081 Tm
+(2)Tj
+/TT9 1 Tf
+10 0 0 10 328.7073 389.611 Tm
+(p)Tj
+7 0 0 7 333.9043 387.611 Tm
+(i)Tj
+/TT4 1 Tf
+10 0 0 10 336.6011 389.611 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+-23.437 -2.196 TD
+(where)Tj
+/TT9 1 Tf
+2.8179 0 TD
+(p)Tj
+7 0 0 7 143.3757 365.651 Tm
+(i)Tj
+/TT4 1 Tf
+10 0 0 10 146.0725 367.651 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+[(\))-250(i)0(s)-250(the probability of intensity le)25(v)15(e)0(l)]TJ
+/TT9 1 Tf
+14.5416 0 TD
+(i)Tj
+/TT4 1 Tf
+0.5638 0 TD
+[(in windo)25(w)]TJ
+/TT9 1 Tf
+4.454 0 TD
+(W)Tj
+/TT4 1 Tf
+1.206 0 TD
+(centered at)Tj
+/TT2 1 Tf
+4.6079 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(.)Tj
+-30.2013 -1.596 TD
+(Discrete implementation:)Tj
+/TT9 1 Tf
+12.2411 -2.822 TD
+(H)Tj
+7 0 0 7 240.3147 321.471 Tm
+(n)Tj
+/TT10 1 Tf
+10 0 0 10 247.2827 323.471 Tm
+(=)Tj
+/TT7 1 Tf
+0.8288 0 TD
+<003c>Tj
+15 0 0 15 262.7592 321.024 Tm
+<0059>Tj
+/TT4 1 Tf
+7 0 0 7 271.6362 328.459 Tm
+(255)Tj
+/TT9 1 Tf
+0.001 -1.1121 TD
+(i)Tj
+/TT10 1 Tf
+0.3138 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(0)Tj
+/TT9 1 Tf
+10 0 0 10 287.5508 330.471 Tm
+(h)Tj
+7 0 0 7 293.0828 334.671 Tm
+(n)Tj
+-0.035 -0.9286 TD
+(i)Tj
+10 0 0 10 286.2326 316.471 Tm
+(N)Tj
+7 0 0 7 293.5706 314.471 Tm
+(w)Tj
+ET
+285.51 326.07 m
+298.95 326.07 l
+S
+BT
+/TT4 1 Tf
+10 0 0 10 301.865 323.471 Tm
+(log)Tj
+7 0 0 7 314.6433 320.941 Tm
+(2)Tj
+/TT7 1 Tf
+10 0 0 10 320.3433 328.971 Tm
+<00a3>Tj
+-0.0002 -1.213 TD
+<00a4>Tj
+/TT9 1 Tf
+0.7215 1.363 TD
+(h)Tj
+7 0 0 7 333.0881 334.671 Tm
+(n)Tj
+-0.035 -0.9286 TD
+(i)Tj
+10 0 0 10 326.2379 316.471 Tm
+(N)Tj
+7 0 0 7 333.5758 314.471 Tm
+(w)Tj
+ET
+325.59 326.07 m
+338.91 326.07 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 340.169 328.971 Tm
+<00a5>Tj
+-0.0002 -1.213 TD
+<00a6>Tj
+/TT4 1 Tf
+-23.0167 -2.139 TD
+(where)Tj
+/TT9 1 Tf
+2.7239 0 TD
+(h)Tj
+7 0 0 7 142.7707 299.651 Tm
+(n)Tj
+-0.035 -0.9286 TD
+(i)Tj
+/TT4 1 Tf
+10 0 0 10 149.4375 295.451 Tm
+(is the histogram count for intensity)Tj
+/TT9 1 Tf
+14.2212 0 TD
+(i)Tj
+/TT4 1 Tf
+0.5638 0 TD
+(in the)Tj
+/TT9 1 Tf
+2.5355 0 TD
+(n)Tj
+/TT4 1 Tf
+0.524 0 TD
+[(-th windo)25(w)65(.)]TJ
+ET
+187.95 279.51 m
+387.99 279.51 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 255.491 Tm
+(6. Signal-to-Noise Ratio Analysis)Tj
+0 -2.4 TD
+[(6.1 SNR f)25(or Sum-of-Squar)18(es Reconstruction)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+-0.015 Tc
+[(Fo)-15(r)]TJ
+/TT9 1 Tf
+1.6942 0 TD
+0 Tc
+(N)Tj
+7 0 0 7 114.1815 213.531 Tm
+(c)Tj
+/TT4 1 Tf
+10 0 0 10 120.5054 215.531 Tm
+(coils with uncorrelated noise:)Tj
+12.2727 -3.4375 TD
+(SNR)Tj
+/TT10 1 Tf
+2.2253 0 TD
+(=)Tj
+/TT7 1 Tf
+17 0 0 17 274.9734 185.802 Tm
+<0033>Tj
+-0.0002 0 TD
+<007d>Tj
+/TT10 1 Tf
+-0.049 0 TD
+( )Tj
+/TT7 1 Tf
+0.3292 0 TD
+<007d007d007d007d007d>Tj
+15 0 0 15 284.3035 187.002 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 293.6704 194.503 Tm
+(N)Tj
+4.9 0 0 4.9 298.7384 193.103 Tm
+(c)Tj
+7 0 0 7 294.3972 186.717 Tm
+(j)Tj
+/TT10 1 Tf
+0.3258 0 TD
+(=)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+10 0 0 10 306.2198 189.449 Tm
+(|)Tj
+/TT9 1 Tf
+0.1842 0 TD
+(C)Tj
+7 0 0 7 316.3797 187.449 Tm
+(j)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 319.8505 189.449 Tm
+<006c>Tj
+/TT4 1 Tf
+10 0 0 10 325.5551 189.449 Tm
+(|)Tj
+7 0 0 7 327.5571 192.249 Tm
+(2)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 288.5071 172.917 Tm
+<006d>Tj
+/TT9 1 Tf
+7 0 0 7 295.116 170.917 Tm
+(n)Tj
+/TT7 1 Tf
+12 0 0 12 299.284 170.872 Tm
+<0033>Tj
+-0.0002 0 TD
+<007d>Tj
+/TT10 1 Tf
+-0.049 0 TD
+( )Tj
+/TT7 1 Tf
+0.5294 0 TD
+<007d>Tj
+/TT9 1 Tf
+10 0 0 10 306.5699 172.917 Tm
+(N)Tj
+7 0 0 7 313.8099 170.917 Tm
+(c)Tj
+ET
+274.95 183.75 m
+331.59 183.75 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 143.916 Tm
+[(6.2 g-F)25(actor f)25(or P)10(arallel Imaging)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+[(The geometry f)10(actor quantifying SNR loss:)]TJ
+/TT9 1 Tf
+12.3992 -2.512 TD
+(g)Tj
+/TT4 1 Tf
+0.522 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT7 1 Tf
+14 0 0 14 241.3989 101.098 Tm
+<0033>Tj
+-0.0002 0 TD
+<007d>Tj
+/TT10 1 Tf
+-0.049 0 TD
+( )Tj
+/TT7 1 Tf
+0.1448 0 TD
+<007d007d007d007d007d007d007d007d007d007d007d007d007d007d007d007d>Tj
+/TT4 1 Tf
+10 0 0 10 249.0825 102.836 Tm
+([\()Tj
+/TT2 1 Tf
+0.666 0 TD
+(C)Tj
+/TT9 1 Tf
+7 0 0 7 263.3704 107.086 Tm
+(H)Tj
+/TT7 1 Tf
+10 0 0 10 269.5905 102.836 Tm
+<005e>Tj
+7 0 0 7 277.5398 105.636 Tm
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT2 1 Tf
+10 0 0 10 285.3816 102.836 Tm
+(C)Tj
+/TT4 1 Tf
+0.7222 0 TD
+(\))Tj
+/TT7 1 Tf
+7 0 0 7 295.9333 105.636 Tm
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+10 0 0 10 303.7751 102.836 Tm
+(])Tj
+/TT9 1 Tf
+7 0 0 7 307.1122 100.836 Tm
+(ii)Tj
+/TT7 1 Tf
+10 0 0 10 311.7538 102.836 Tm
+<0075>Tj
+/TT4 1 Tf
+0.25 0 TD
+([)Tj
+/TT2 1 Tf
+0.333 0 TD
+(C)Tj
+/TT9 1 Tf
+7 0 0 7 325.2116 107.086 Tm
+(H)Tj
+/TT7 1 Tf
+10 0 0 10 331.4318 102.836 Tm
+<005e>Tj
+7 0 0 7 339.381 105.636 Tm
+<003c>Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT2 1 Tf
+10 0 0 10 347.2228 102.836 Tm
+(C)Tj
+/TT4 1 Tf
+0.7222 0 TD
+(])Tj
+/TT9 1 Tf
+7 0 0 7 357.7815 100.836 Tm
+(ii)Tj
+ET
+endstream
+endobj
+21 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/TT2 4 0 R
+/TT4 5 0 R
+/TT6 7 0 R
+/TT7 8 0 R
+/TT9 9 0 R
+/TT10 10 0 R
+>>
+/ExtGState <<
+/GS1 11 0 R
+>>
+>>
+endobj
+23 0 obj
+<<
+/Length 7673
+>>
+stream
+BT
+/TT4 1 Tf
+10 0 0 10 282.17 735 Tm
+0 g
+/GS1 gs
+0 Tc
+0 Tw
+(-5-)Tj
+-17.217 -4.5 TD
+(where)Tj
+/TT7 1 Tf
+2.6929 0 TD
+<005e>Tj
+/TT4 1 Tf
+1.0449 0 TD
+[(is the noise co)15(v)25(ariance matrix.)]TJ
+-3.7378 -1.596 TD
+-0.015 Tc
+[(Fo)-15(r)]TJ
+/TT9 1 Tf
+1.6872 0 TD
+0 Tc
+(R)Tj
+/TT4 1 Tf
+0.6378 0 TD
+(-fold acceleration:)Tj
+11.7436 -2.7669 TD
+(SNR)Tj
+/TT9 1 Tf
+7 0 0 7 270.3701 644.371 Tm
+(acc)Tj
+/TT10 1 Tf
+10 0 0 10 283.601 646.371 Tm
+(=)Tj
+/TT4 1 Tf
+0.9488 0.7449 TD
+(SNR)Tj
+/TT9 1 Tf
+7 0 0 7 313.9214 651.8199 Tm
+(full)Tj
+10 0 0 10 299.9509 638.168 Tm
+(g)Tj
+/TT7 1 Tf
+0.522 -0.0167 TD
+<0033>Tj
+-0.0002 0 TD
+<007d>Tj
+/TT10 1 Tf
+-0.049 0 TD
+( )Tj
+/TT7 1 Tf
+0.25 0 TD
+<007d>Tj
+/TT9 1 Tf
+0.411 0.0167 TD
+(R)Tj
+ET
+0 G
+1 J 1 j 0.4 w 10 M []0 d
+1 i 
+293.07 648.99 m
+324.15 648.99 l
+187.95 617.67 m
+387.99 617.67 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 593.6479 Tm
+(7. Shimming Optimization)Tj
+0 -2.4 TD
+[(7.1 B1+ Homogeneity Objecti)10(v)10(e)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+(The shimming problem minimizes )Tj
+/TT6 1 Tf
+14.0537 0 TD
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(eld inhomogeneity:)Tj
+/TT2 1 Tf
+-1.2212 -2.2432 TD
+(w)Tj
+/TT9 1 Tf
+7 0 0 7 231.2697 529.256 Tm
+(opt)Tj
+/TT10 1 Tf
+10 0 0 10 243.9905 531.256 Tm
+(=)Tj
+/TT9 1 Tf
+0.8288 0 TD
+[(ar)37(g)]TJ
+/TT4 1 Tf
+1.5222 0 TD
+(min)Tj
+/TT2 1 Tf
+7 0 0 7 283.057 529.256 Tm
+(w)Tj
+/TT4 1 Tf
+10 0 0 10 290.3122 531.256 Tm
+(|)Tj
+/TT2 1 Tf
+0.2002 0 TD
+(Aw)Tj
+/TT4 1 Tf
+1.4443 0 TD
+(|)Tj
+/TT7 1 Tf
+0.2002 0 TD
+<003c>Tj
+/TT2 1 Tf
+0.5488 0 TD
+(T)Tj
+/TT4 1 Tf
+7 0 0 7 320.9177 535.496 Tm
+(2)Tj
+0 -0.9343 TD
+(2)Tj
+/TT10 1 Tf
+10 0 0 10 327.1176 531.256 Tm
+(+)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 335.0959 531.256 Tm
+<0068>Tj
+/TT2 1 Tf
+10 0 0 10 340.8905 531.256 Tm
+(w)Tj
+/TT4 1 Tf
+7 0 0 7 348.1122 535.456 Tm
+(2)Tj
+0 -0.9286 TD
+(2)Tj
+10 0 0 10 110 509.296 Tm
+0.0088 Tw
+(where: -)Tj
+/TT2 1 Tf
+3.5713 0 TD
+0 Tw
+(A)Tj
+/TT4 1 Tf
+0.981 0 TD
+0.0088 Tw
+(is the)Tj
+/TT9 1 Tf
+2.4763 0 TD
+0 Tw
+(N)Tj
+7 0 0 7 187.5884 507.296 Tm
+(voxel)Tj
+/TT10 1 Tf
+10 0 0 10 205.411 509.296 Tm
+(◊)Tj
+/TT9 1 Tf
+0.8388 0 TD
+(N)Tj
+7 0 0 7 221.0392 507.296 Tm
+(coil)Tj
+/TT4 1 Tf
+10 0 0 10 234.9808 509.296 Tm
+0.0088 Tw
+[(sensiti)25(vity matrix -)]TJ
+/TT2 1 Tf
+7.8061 0 TD
+0 Tw
+(T)Tj
+/TT4 1 Tf
+0.9259 0 TD
+0.0089 Tw
+[(is the tar)18(get )]TJ
+/TT6 1 Tf
+4.9237 0 TD
+0 Tw
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+0.0089 Tw
+(eld -)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 398.1144 509.296 Tm
+0 Tw
+<0068>Tj
+/TT4 1 Tf
+10 0 0 10 406.498 509.296 Tm
+0.0089 Tw
+[(is the re)15(gularization)]TJ
+-31.6498 -1.2 TD
+0 Tw
+(parameter)Tj
+/TT2 1 Tf
+0 -2.4 TD
+(7.2 Iterat)Tj
+3.9429 0 TD
+-0.01 Tc
+(ive )Tj
+1.4517 0 TD
+0 Tc
+(Solution)Tj
+/TT4 1 Tf
+-5.3946 -1.596 TD
+(Using gradient descent with step size)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 240.7342 457.336 Tm
+<005f>Tj
+/TT4 1 Tf
+10 0 0 10 247.8089 457.336 Tm
+(:)Tj
+/TT2 1 Tf
+-3.21 -2.606 TD
+(w)Tj
+/TT9 1 Tf
+7 0 0 7 223.1827 435.476 Tm
+(k)Tj
+/TT10 1 Tf
+0.5108 0 TD
+(+)Tj
+/TT4 1 Tf
+0.5488 0 TD
+(1)Tj
+/TT10 1 Tf
+10 0 0 10 237.4004 431.276 Tm
+(=)Tj
+/TT2 1 Tf
+0.8288 0 TD
+(w)Tj
+/TT9 1 Tf
+7 0 0 7 253.1624 435.476 Tm
+(k)Tj
+/TT7 1 Tf
+10 0 0 10 257.2383 431.276 Tm
+<003c>Tj
+8.9 0 2.7732 8.9 262.3866 431.276 Tm
+<005f>Tj
+10 0 0 10 269.4612 431.276 Tm
+<00a2>Tj
+/TT2 1 Tf
+7 0 0 7 276.5901 429.276 Tm
+(w)Tj
+/TT7 1 Tf
+10 0 0 10 282.1453 434.626 Tm
+<0095>Tj
+-0.0002 -1 TD
+<0096>Tj
+/TT4 1 Tf
+0.3838 0.665 TD
+(|)Tj
+/TT2 1 Tf
+0.2002 0 TD
+(Aw)Tj
+/TT9 1 Tf
+7 0 0 7 302.6784 435.476 Tm
+(k)Tj
+/TT4 1 Tf
+10 0 0 10 306.7543 431.276 Tm
+(|)Tj
+/TT7 1 Tf
+0.2002 0 TD
+<003c>Tj
+/TT2 1 Tf
+0.5488 0 TD
+(T)Tj
+/TT4 1 Tf
+7 0 0 7 320.9145 435.476 Tm
+(2)Tj
+0 -0.9286 TD
+(2)Tj
+/TT10 1 Tf
+10 0 0 10 327.1145 431.276 Tm
+(+)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 335.0928 431.276 Tm
+<0068>Tj
+/TT2 1 Tf
+10 0 0 10 340.8873 431.276 Tm
+(w)Tj
+/TT9 1 Tf
+7 0 0 7 348.361 435.476 Tm
+(k)Tj
+/TT4 1 Tf
+0.5823 0 TD
+(2)Tj
+0 -0.9286 TD
+(2)Tj
+/TT7 1 Tf
+10 0 0 10 356.437 434.626 Tm
+<0097>Tj
+-0.0002 -1 TD
+<0098>Tj
+/TT4 1 Tf
+-24.6435 -1.921 TD
+(Discrete gradient:)Tj
+/TT7 1 Tf
+10.6261 -2.822 TD
+<00a2>Tj
+/TT2 1 Tf
+7 0 0 7 223.3899 375.196 Tm
+(w)Tj
+/TT10 1 Tf
+10 0 0 10 231.7451 377.196 Tm
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+(2)Tj
+/TT2 1 Tf
+0.5 0 TD
+(A)Tj
+/TT9 1 Tf
+7 0 0 7 252.661 381.436 Tm
+(H)Tj
+/TT4 1 Tf
+10 0 0 10 258.8812 377.196 Tm
+(diag)Tj
+/TT7 1 Tf
+1.7217 0.55 TD
+<00a3>Tj
+-0.0002 -1.213 TD
+<00a4>Tj
+/TT4 1 Tf
+0.5198 1.363 TD
+(|)Tj
+/TT2 1 Tf
+0.2002 0 TD
+(Aw)Tj
+/TT4 1 Tf
+1.4443 0 TD
+(|)Tj
+/TT7 1 Tf
+0.2002 0 TD
+<003c>Tj
+/TT2 1 Tf
+0.5488 0 TD
+(T)Tj
+/TT4 1 Tf
+-1.785 -1.4 TD
+(|)Tj
+/TT2 1 Tf
+0.2002 0 TD
+(Aw)Tj
+/TT4 1 Tf
+1.4443 0 TD
+(|)Tj
+ET
+281.31 379.83 m
+311.91 379.83 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 313.1 382.696 Tm
+<00a5>Tj
+-0.0002 -1.213 TD
+<00a6>Tj
+/TT2 1 Tf
+0.3998 0.663 TD
+(Aw)Tj
+/TT10 1 Tf
+1.6643 0 TD
+(+)Tj
+/TT4 1 Tf
+0.7688 0 TD
+(2)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 346.7174 377.196 Tm
+<0068>Tj
+/TT2 1 Tf
+10 0 0 10 352.512 377.196 Tm
+(w)Tj
+ET
+187.95 349.23 m
+387.99 349.23 l
+S
+BT
+10 0 0 10 90 325.176 Tm
+(8. Numerical Implementation Details)Tj
+0 -2.4 TD
+(8.1 Grid Resolution)Tj
+/TT4 1 Tf
+0 -1.596 TD
+-0.015 Tc
+[(Fo)-15(r)-265(a)]TJ
+/TT6 1 Tf
+2.318 0 TD
+0 Tc
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+[(eld of vie)25(w)-250(\(FO)50(V\) of)]TJ
+/TT9 1 Tf
+8.731 0 TD
+(L)Tj
+/TT10 1 Tf
+0.8292 0 TD
+(◊)Tj
+/TT9 1 Tf
+0.8268 0 TD
+(L)Tj
+/TT4 1 Tf
+0.8592 0 TD
+(with)Tj
+/TT9 1 Tf
+2.0978 0 TD
+(N)Tj
+/TT10 1 Tf
+0.997 0 TD
+(◊)Tj
+/TT9 1 Tf
+0.8388 0 TD
+(N)Tj
+/TT4 1 Tf
+1.027 0 TD
+[(pix)15(els:)]TJ
+/TT7 1 Tf
+-2.1075 -2.699 TD
+<0036>Tj
+/TT9 1 Tf
+0.6888 0 TD
+(x)Tj
+/TT10 1 Tf
+0.7768 0 TD
+(=)Tj
+/TT7 1 Tf
+0.8288 0 TD
+<0036>Tj
+/TT9 1 Tf
+0.6858 0 TD
+(y)Tj
+/TT10 1 Tf
+0.7558 0 TD
+(=)Tj
+/TT9 1 Tf
+1.0968 0.7 TD
+(L)Tj
+-0.0779 -1.4 TD
+(N)Tj
+ET
+306.63 260.79 m
+315.03 260.79 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 256.591 221.356 Tm
+<0036>Tj
+/TT9 1 Tf
+0.6478 0 TD
+(k)Tj
+7 0 0 7 268.4766 219.356 Tm
+(x)Tj
+/TT10 1 Tf
+10 0 0 10 275.2546 221.356 Tm
+(=)Tj
+/TT7 1 Tf
+0.8288 0 TD
+<0036>Tj
+/TT9 1 Tf
+0.6478 0 TD
+(k)Tj
+7 0 0 7 295.4075 219.356 Tm
+(y)Tj
+/TT10 1 Tf
+10 0 0 10 302.0384 221.356 Tm
+(=)Tj
+/TT4 1 Tf
+1.0323 0.7 TD
+(1)Tj
+/TT9 1 Tf
+-0.0255 -1.4 TD
+(L)Tj
+ET
+311.55 223.95 m
+318.15 223.95 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 187.856 Tm
+[(8.2 Gradient Str)18(ength)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+[(The gradient required for k-space tra)20(v)15(ersal:)]TJ
+/TT9 1 Tf
+15.4303 -2.729 TD
+(G)Tj
+/TT10 1 Tf
+1.0522 0 TD
+(=)Tj
+/TT9 1 Tf
+1.2336 0.7 TD
+(k)Tj
+7 0 0 7 272.2954 149.606 Tm
+(max)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 263.8915 137.606 Tm
+<0061>Tj
+/TT9 1 Tf
+10 0 0 10 270.2006 137.606 Tm
+(t)Tj
+7 0 0 7 273.4439 135.606 Tm
+(read)Tj
+ET
+264.27 147.15 m
+287.31 147.15 l
+S
+BT
+/TT10 1 Tf
+10 0 0 10 291.318 144.606 Tm
+(=)Tj
+/TT9 1 Tf
+1.0188 0.7 TD
+(N)Tj
+/TT4 1 Tf
+0.777 0 TD
+0.009 Tc
+[(/\()9(2)]TJ
+/TT9 1 Tf
+1.1778 0 TD
+0 Tc
+(L)Tj
+/TT4 1 Tf
+0.6092 0 TD
+(\))Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 303.7182 137.606 Tm
+<0061>Tj
+/TT9 1 Tf
+10 0 0 10 310.0273 137.606 Tm
+(t)Tj
+7 0 0 7 313.2706 135.606 Tm
+(read)Tj
+ET
+300.75 147.15 m
+330.51 147.15 l
+S
+BT
+/TT4 1 Tf
+10 0 0 10 110 117.055 Tm
+-0.015 Tc
+[(Fo)-15(r)]TJ
+/TT9 1 Tf
+1.6942 0 TD
+0 Tc
+(N)Tj
+/TT10 1 Tf
+1.057 0 TD
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+(128,)Tj
+/TT9 1 Tf
+2.058 0 TD
+(L)Tj
+/TT10 1 Tf
+0.8892 0 TD
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+(25 cm,)Tj
+/TT9 1 Tf
+2.9847 0 TD
+(t)Tj
+7 0 0 7 216.6497 115.055 Tm
+(read)Tj
+/TT10 1 Tf
+10 0 0 10 233.3198 117.055 Tm
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+(10 ms:)Tj
+/TT9 1 Tf
+-2.8933 -2.734 TD
+(G)Tj
+/TT10 1 Tf
+1.0522 0 TD
+(=)Tj
+/TT4 1 Tf
+1.8723 0.7 TD
+-0.241 Tw
+(128 / \(2)Tj
+/TT10 1 Tf
+2.8488 0 TD
+0 Tw
+(◊)Tj
+/TT4 1 Tf
+0.7688 0 TD
+-0.08 Tw
+(0. 25\))Tj
+-4.5415 -1.4 TD
+(42. 58)Tj
+/TT10 1 Tf
+2.64 0 TD
+0 Tw
+(◊)Tj
+/TT4 1 Tf
+0.7688 0 TD
+(10)Tj
+7 0 0 7 276.77 85.515 Tm
+(6)Tj
+/TT10 1 Tf
+10 0 0 10 282.97 82.715 Tm
+(◊)Tj
+/TT4 1 Tf
+0.7688 0 TD
+-0.08 Tw
+(0. 01)Tj
+ET
+232.71 92.31 m
+309.87 92.31 l
+S
+BT
+/TT10 1 Tf
+10 0 0 10 313.865 89.715 Tm
+0 Tw
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+-0.08 Tw
+[(6. 0)-250(mT/m)]TJ
+ET
+endstream
+endobj
+24 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/TT2 4 0 R
+/TT4 5 0 R
+/TT6 7 0 R
+/TT7 8 0 R
+/TT9 9 0 R
+/TT10 10 0 R
+>>
+/ExtGState <<
+/GS1 11 0 R
+>>
+>>
+endobj
+26 0 obj
+<<
+/Length 5646
+>>
+stream
+BT
+/TT4 1 Tf
+10 0 0 10 282.17 735 Tm
+0 g
+/GS1 gs
+0 Tc
+0 Tw
+(-6-)Tj
+/TT2 1 Tf
+-19.217 -4.5 TD
+[(8.3 Sampling Theor)18(em)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+[(Nyquist criterion for artif)10(act-free reconstruction:)]TJ
+/TT7 1 Tf
+17.703 -2.722 TD
+<0036>Tj
+/TT9 1 Tf
+0.6478 0 TD
+(k)Tj
+/TT7 1 Tf
+0.7908 0 TD
+<0029>Tj
+/TT4 1 Tf
+1.5418 0.7 TD
+(1)Tj
+-0.593 -1.4 TD
+(2)Tj
+/TT7 1 Tf
+0.5 0 TD
+<0036>Tj
+/TT9 1 Tf
+0.6888 0 TD
+(x)Tj
+ET
+0 G
+1 J 1 j 0.4 w 10 M []0 d
+1 i 
+290.91 649.47 m
+307.71 649.47 l
+S
+BT
+10 0 0 10 266.766 610.22 Tm
+(k)Tj
+7 0 0 7 271.9005 608.22 Tm
+(max)Tj
+/TT7 1 Tf
+10 0 0 10 287.2336 610.22 Tm
+<002a>Tj
+/TT9 1 Tf
+1.1788 0.7 TD
+(N)Tj
+/TT4 1 Tf
+-0.23 -1.4 TD
+(2)Tj
+/TT9 1 Tf
+0.558 0 TD
+(L)Tj
+ET
+296.67 612.87 m
+308.43 612.87 l
+187.95 584.79 m
+387.99 584.79 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 560.76 Tm
+(9. Quantum Entanglement Contrast)Tj
+0 -2.4 TD
+[(9.1 Entangled State F)25(ormulation)]TJ
+/TT4 1 Tf
+0 -1.596 TD
+[(The tw)10(o-contrast entangled state:)]TJ
+11.789 -2.722 TD
+(|)Tj
+/TT7 1 Tf
+0.2002 0 TD
+<005e009c>Tj
+/TT10 1 Tf
+1.124 0 TD
+0.03 Tc
+( =)Tj
+/TT4 1 Tf
+1.5033 0.7 TD
+0 Tc
+(1)Tj
+/TT7 1 Tf
+-0.2745 -1.537 TD
+<0033>Tj
+-0.0002 0 TD
+<007d>Tj
+/TT4 1 Tf
+0.549 0.0052 TD
+(2)Tj
+ET
+233.43 496.23 m
+243.87 496.23 l
+S
+BT
+10 0 0 10 246.81 493.58 Tm
+(\(|)Tj
+/TT9 1 Tf
+0.5242 0 TD
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(1)Tj
+/TT7 1 Tf
+0.5 0 TD
+<009c0080>Tj
+/TT4 1 Tf
+1.0972 0 TD
+(|)Tj
+/TT9 1 Tf
+0.2272 0 TD
+(bright)Tj
+/TT7 1 Tf
+2.5128 0 TD
+<009c>Tj
+/TT10 1 Tf
+0.5491 0 TD
+(+)Tj
+/TT4 1 Tf
+0.7688 0 TD
+(|)Tj
+/TT9 1 Tf
+0.1912 0 TD
+(T)Tj
+/TT4 1 Tf
+0.6831 0 TD
+(2)Tj
+/TT7 1 Tf
+0.5 0 TD
+<009c0080>Tj
+/TT4 1 Tf
+1.0972 0 TD
+(|)Tj
+/TT9 1 Tf
+0.2352 0 TD
+(dark)Tj
+/TT7 1 Tf
+1.9 0 TD
+<009c>Tj
+/TT4 1 Tf
+0.3291 0 TD
+(\))Tj
+-25.4793 -2.721 TD
+(Measurement yields superposition:)Tj
+/TT9 1 Tf
+9.8144 -2.196 TD
+(M)Tj
+7 0 0 7 217.037 442.41 Tm
+(entangled)Tj
+/TT10 1 Tf
+10 0 0 10 248.4796 444.41 Tm
+(=)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 256.4279 444.41 Tm
+<005f>Tj
+/TT9 1 Tf
+10 0 0 10 264.1825 444.41 Tm
+(M)Tj
+7 0 0 7 272.8796 442.41 Tm
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(1)Tj
+/TT10 1 Tf
+10 0 0 10 283.8617 444.41 Tm
+(+)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 292.1199 444.41 Tm
+<0060>Tj
+/TT9 1 Tf
+10 0 0 10 299.0745 444.41 Tm
+(M)Tj
+7 0 0 7 307.7716 442.41 Tm
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(2)Tj
+/TT10 1 Tf
+10 0 0 10 318.7537 444.41 Tm
+(+)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 326.0219 444.41 Tm
+<0061>Tj
+/TT9 1 Tf
+10 0 0 10 332.881 444.41 Tm
+(M)Tj
+7 0 0 7 341.5781 442.41 Tm
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(1)Tj
+/TT9 1 Tf
+10 0 0 10 351.0402 444.41 Tm
+(M)Tj
+7 0 0 7 359.7372 442.41 Tm
+(T)Tj
+/TT4 1 Tf
+0.6831 0 TD
+(2)Tj
+10 0 0 10 110 422.45 Tm
+[(where )-250(denotes)-250(element-wise product \(quantum correlation term\).)]TJ
+/TT2 1 Tf
+-2 -2.4 TD
+[(9.2 Discr)18(ete Implementation)]TJ
+/TT9 1 Tf
+10.8134 -2.3087 TD
+(M)Tj
+7 0 0 7 207.3711 380.412 Tm
+(ij)Tj
+-0.0495 -1.1186 TD
+(entangled)Tj
+/TT10 1 Tf
+10 0 0 10 238.4672 375.363 Tm
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+-0.08 Tw
+(0. 5)Tj
+/TT9 1 Tf
+1.488 0 TD
+0 Tw
+(M)Tj
+7 0 0 7 270.8726 380.412 Tm
+(ij)Tj
+-0.0415 -1.1186 TD
+(base)Tj
+/TT10 1 Tf
+10 0 0 10 286.2393 375.363 Tm
+(+)Tj
+/TT4 1 Tf
+0.7688 0 TD
+-0.08 Tw
+(0. 25)Tj
+/TT9 1 Tf
+1.988 0 TD
+0 Tw
+(M)Tj
+7 0 0 7 323.0446 380.412 Tm
+(ij)Tj
+-0.0775 -1.1116 TD
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(1)Tj
+/TT10 1 Tf
+10 0 0 10 333.4844 375.363 Tm
+(+)Tj
+/TT4 1 Tf
+0.7688 0 TD
+-0.08 Tw
+(0. 25)Tj
+/TT9 1 Tf
+1.988 0 TD
+0 Tw
+(M)Tj
+7 0 0 7 370.2897 380.412 Tm
+(ij)Tj
+-0.0775 -1.1116 TD
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(2)Tj
+10 0 0 10 110 352.68 Tm
+(where:)Tj
+/TT9 1 Tf
+13.3781 -2.822 TD
+(M)Tj
+7 0 0 7 253.0181 329.509 Tm
+(ij)Tj
+-0.0775 -1.1116 TD
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(1)Tj
+/TT10 1 Tf
+10 0 0 10 264.0578 324.46 Tm
+(=)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 273.0361 324.46 Tm
+<006c>Tj
+/TT9 1 Tf
+7 0 0 7 278.7476 328.66 Tm
+(ij)Tj
+/TT7 1 Tf
+10 0 0 10 283.4733 329.96 Tm
+<00a3>Tj
+-0.0002 -1.213 TD
+<00a4>Tj
+/TT4 1 Tf
+0.3998 0.663 TD
+(1)Tj
+/TT7 1 Tf
+0.5 0 TD
+<003c>Tj
+/TT9 1 Tf
+0.5678 0 TD
+(e)Tj
+/TT7 1 Tf
+7 0 0 7 302.7658 328.66 Tm
+<003c>Tj
+/TT9 1 Tf
+0.5398 0 TD
+(TR)Tj
+/TT4 1 Tf
+1.194 0 TD
+(/)Tj
+/TT9 1 Tf
+0.2688 0 TD
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(1)Tj
+/TT9 1 Tf
+4.9 0 0 4.9 325.0714 331.25 Tm
+(ij)Tj
+/TT7 1 Tf
+10 0 0 10 328.8792 329.96 Tm
+<00a5>Tj
+-0.0002 -1.213 TD
+<00a6>Tj
+/TT9 1 Tf
+-7.6012 -2.8885 TD
+(M)Tj
+7 0 0 7 262.1021 293.994 Tm
+(ij)Tj
+-0.0775 -1.1116 TD
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(2)Tj
+/TT10 1 Tf
+10 0 0 10 273.1418 288.9449 Tm
+(=)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 282.1201 288.9449 Tm
+<006c>Tj
+/TT9 1 Tf
+7 0 0 7 287.8316 293.145 Tm
+(ij)Tj
+10 0 0 10 292.7473 288.9449 Tm
+(e)Tj
+/TT7 1 Tf
+7 0 0 7 297.3658 293.145 Tm
+<003c>Tj
+/TT9 1 Tf
+0.5398 0 TD
+(TE)Tj
+/TT4 1 Tf
+1.24 0 TD
+(/)Tj
+/TT9 1 Tf
+0.2688 0 TD
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(2)Tj
+/TT9 1 Tf
+4.9 0 0 4.9 319.9934 295.735 Tm
+(ij)Tj
+ET
+187.95 267.03 m
+387.99 267.03 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 242.985 Tm
+(10. Computational Complexity)Tj
+0 -2.4 TD
+(10.1 FFT Complexity)Tj
+/TT4 1 Tf
+0 -1.596 TD
+-0.015 Tc
+[(Fo)-15(r)]TJ
+/TT9 1 Tf
+1.6942 0 TD
+0 Tc
+(N)Tj
+/TT10 1 Tf
+0.997 0 TD
+(◊)Tj
+/TT9 1 Tf
+0.8388 0 TD
+(N)Tj
+/TT4 1 Tf
+1.027 0 TD
+(image:)Tj
+/TT9 1 Tf
+12.6745 -2.2392 TD
+(O)Tj
+/TT4 1 Tf
+0.7492 0 TD
+(\()Tj
+/TT9 1 Tf
+0.403 0 TD
+(N)Tj
+/TT4 1 Tf
+7 0 0 7 281.6067 184.833 Tm
+(2)Tj
+10 0 0 10 287.3067 180.633 Tm
+(log)Tj
+/TT9 1 Tf
+1.5178 0 TD
+(N)Tj
+/TT4 1 Tf
+0.777 0 TD
+(\))Tj
+/TT2 1 Tf
+-22.0255 -3 TD
+(10.2 SENSE Reconstruction)Tj
+/TT4 1 Tf
+0 -1.596 TD
+[(Matrix in)40(v)15(ersion for each pix)15(el:)]TJ
+/TT9 1 Tf
+17.8405 -2.2392 TD
+(O)Tj
+/TT4 1 Tf
+0.7492 0 TD
+(\()Tj
+/TT9 1 Tf
+0.403 0 TD
+(N)Tj
+/TT4 1 Tf
+7 0 0 7 287.6967 116.481 Tm
+(2)Tj
+/TT9 1 Tf
+10 0 0 10 292.3967 112.281 Tm
+(N)Tj
+/TT4 1 Tf
+7 0 0 7 300.1666 116.481 Tm
+(3)Tj
+/TT9 1 Tf
+-0.0757 -0.9286 TD
+(c)Tj
+/TT4 1 Tf
+10 0 0 10 304.1655 112.281 Tm
+(\))Tj
+ET
+endstream
+endobj
+27 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/TT2 4 0 R
+/TT4 5 0 R
+/TT7 8 0 R
+/TT9 9 0 R
+/TT10 10 0 R
+>>
+/ExtGState <<
+/GS1 11 0 R
+>>
+>>
+endobj
+29 0 obj
+<<
+/Length 9845
+>>
+stream
+BT
+/TT4 1 Tf
+10 0 0 10 282.17 735 Tm
+0 g
+/GS1 gs
+0 Tc
+0 Tw
+(-7-)Tj
+/TT2 1 Tf
+-19.217 -4.5 TD
+(10.3 Berry Phase Calculation)Tj
+/TT4 1 Tf
+0 -1.596 TD
+-0.015 Tc
+[(Fo)-15(r)]TJ
+/TT9 1 Tf
+1.6942 0 TD
+0 Tc
+(N)Tj
+7 0 0 7 114.1325 672.04 Tm
+(t)Tj
+/TT4 1 Tf
+10 0 0 10 119.5533 674.04 Tm
+(time steps and)Tj
+/TT9 1 Tf
+6.0412 0 TD
+(N)Tj
+7 0 0 7 187.9402 672.04 Tm
+(p)Tj
+/TT4 1 Tf
+10 0 0 10 194.5732 674.04 Tm
+(spatial points:)Tj
+/TT9 1 Tf
+7.4492 -2.196 TD
+(O)Tj
+/TT4 1 Tf
+0.7492 0 TD
+(\()Tj
+/TT9 1 Tf
+0.403 0 TD
+(N)Tj
+7 0 0 7 287.7777 650.08 Tm
+(t)Tj
+10 0 0 10 291.3985 652.08 Tm
+(N)Tj
+7 0 0 7 299.3734 650.08 Tm
+(p)Tj
+/TT4 1 Tf
+10 0 0 10 303.5064 652.08 Tm
+(\))Tj
+ET
+0 G
+1 J 1 j 0.4 w 10 M []0 d
+1 i 
+187.95 630.15 m
+387.99 630.15 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 606.12 Tm
+[(11. Adv)10(anced Artifact Remo)10(v)10(a)0(l)-250(Algorithms)]TJ
+0 -2.4 TD
+[(11.1 Speckle Reducing Anisotr)18(opic Diffusion \(SRAD\))]TJ
+/TT4 1 Tf
+0 -1.596 TD
+(The SRAD PDE for image)Tj
+/TT9 1 Tf
+11.0287 0 TD
+(I)Tj
+/TT4 1 Tf
+0.434 0 TD
+(\()Tj
+/TT9 1 Tf
+0.41 0 TD
+(x)Tj
+/TT4 1 Tf
+0.4968 0 TD
+(,)Tj
+/TT9 1 Tf
+0.494 0 TD
+(y)Tj
+/TT4 1 Tf
+0.4758 0 TD
+(;)Tj
+/TT9 1 Tf
+0.4608 0 TD
+(t)Tj
+/TT4 1 Tf
+0.3458 0 TD
+-0.24 Tw
+[(\))-250(i)0(s)-250(g)0(i)25(v)25( en)-250(by:)]TJ
+/TT7 1 Tf
+2.3299 -2.092 TD
+0 Tw
+<002c>Tj
+/TT9 1 Tf
+0.5521 0 TD
+(I)Tj
+/TT7 1 Tf
+-0.4855 -1.4 TD
+<002c>Tj
+/TT9 1 Tf
+0.5071 0 TD
+(t)Tj
+ET
+254.79 540.87 m
+264.63 540.87 l
+S
+BT
+/TT10 1 Tf
+10 0 0 10 268.62 538.24 Tm
+(=)Tj
+/TT7 1 Tf
+0.8288 0 TD
+<00a20075>Tj
+/TT4 1 Tf
+0.9629 0 TD
+([)Tj
+/TT9 1 Tf
+0.353 0 TD
+(c)Tj
+/TT4 1 Tf
+0.4748 0 TD
+(\()Tj
+/TT9 1 Tf
+0.358 0 TD
+(q)Tj
+/TT4 1 Tf
+0.533 0 TD
+(\))Tj
+/TT7 1 Tf
+0.333 0 TD
+<00a2>Tj
+/TT9 1 Tf
+0.7709 0 TD
+(I)Tj
+/TT4 1 Tf
+0.434 0 TD
+(])Tj
+-20.9105 -2.566 TD
+(where)Tj
+/TT9 1 Tf
+2.7129 0 TD
+(c)Tj
+/TT4 1 Tf
+0.4748 0 TD
+(\()Tj
+/TT9 1 Tf
+0.358 0 TD
+(q)Tj
+/TT4 1 Tf
+0.533 0 TD
+[(\))-250(i)0(s)-250(the dif)25(fusion coef)]TJ
+/TT6 1 Tf
+8.5032 0 TD
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(cient:)Tj
+/TT9 1 Tf
+-4.7246 -2.722 TD
+(c)Tj
+/TT4 1 Tf
+0.4748 0 TD
+(\()Tj
+/TT9 1 Tf
+0.358 0 TD
+(q)Tj
+/TT4 1 Tf
+0.533 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT4 1 Tf
+8.5713 0.7 TD
+(1)Tj
+-7.6225 -1.4132 TD
+(1)Tj
+/TT10 1 Tf
+0.72 0 TD
+(+)Tj
+/TT4 1 Tf
+0.7688 0 TD
+([)Tj
+/TT9 1 Tf
+0.358 0 TD
+(q)Tj
+/TT4 1 Tf
+7 0 0 7 247.2103 481.028 Tm
+(2)Tj
+10 0 0 10 251.2103 478.228 Tm
+(\()Tj
+/TT9 1 Tf
+0.41 0 TD
+(x)Tj
+/TT4 1 Tf
+0.4968 0 TD
+(,)Tj
+/TT9 1 Tf
+0.494 0 TD
+(y)Tj
+/TT4 1 Tf
+0.4758 0 TD
+(;)Tj
+/TT9 1 Tf
+0.4608 0 TD
+(t)Tj
+/TT4 1 Tf
+0.3458 0 TD
+(\))Tj
+/TT7 1 Tf
+0.333 0 TD
+<003c>Tj
+/TT9 1 Tf
+0.5738 0 TD
+(q)Tj
+/TT4 1 Tf
+7 0 0 7 292.4423 481.828 Tm
+(2)Tj
+0 -0.9046 TD
+(0)Tj
+10 0 0 10 296.4423 478.228 Tm
+(\()Tj
+/TT9 1 Tf
+0.346 0 TD
+(t)Tj
+/TT4 1 Tf
+0.3458 0 TD
+-0.241 Tw
+(\)] / \()Tj
+/TT9 1 Tf
+1.3199 0 TD
+0 Tw
+(q)Tj
+/TT4 1 Tf
+7 0 0 7 321.8892 481.828 Tm
+(2)Tj
+0 -0.9046 TD
+(0)Tj
+10 0 0 10 325.8892 478.228 Tm
+(\()Tj
+/TT9 1 Tf
+0.346 0 TD
+(t)Tj
+/TT4 1 Tf
+0.3458 0 TD
+(\)\(1)Tj
+/TT10 1 Tf
+1.386 0 TD
+(+)Tj
+/TT9 1 Tf
+0.7938 0 TD
+(q)Tj
+/TT4 1 Tf
+7 0 0 7 359.9361 481.828 Tm
+(2)Tj
+0 -0.9046 TD
+(0)Tj
+10 0 0 10 363.9361 478.228 Tm
+(\()Tj
+/TT9 1 Tf
+0.346 0 TD
+(t)Tj
+/TT4 1 Tf
+0.3458 0 TD
+(\)\)\))Tj
+ET
+223.47 487.95 m
+380.91 487.95 l
+S
+BT
+10 0 0 10 110 456.938 Tm
+[(Discrete approximation \(Lee Filter equi)25(v)25(alent\):)]TJ
+/TT9 1 Tf
+12.9963 -2.824 TD
+(I)Tj
+7 0 0 7 244.3101 426.698 Tm
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(,)Tj
+/TT9 1 Tf
+0.424 0 TD
+(j)Tj
+/TT10 1 Tf
+10 0 0 10 255.0557 428.698 Tm
+(=)Tj
+ET
+0.28 w 
+264.39 442.47 m
+267.87 442.47 l
+S
+BT
+/TT9 1 Tf
+10 0 0 10 263.928 428.698 Tm
+(I)Tj
+7 0 0 7 268.2751 426.698 Tm
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(,)Tj
+/TT9 1 Tf
+0.424 0 TD
+(j)Tj
+/TT10 1 Tf
+10 0 0 10 278.4207 428.698 Tm
+(+)Tj
+/TT9 1 Tf
+0.8048 0 TD
+(k)Tj
+7 0 0 7 291.3445 426.698 Tm
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(,)Tj
+/TT9 1 Tf
+0.424 0 TD
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 299.2901 428.698 Tm
+(\()Tj
+/TT9 1 Tf
+0.391 0 TD
+(I)Tj
+7 0 0 7 306.9673 426.698 Tm
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(,)Tj
+/TT9 1 Tf
+0.424 0 TD
+(j)Tj
+/TT7 1 Tf
+10 0 0 10 314.9129 428.698 Tm
+<003c>Tj
+ET
+321.39 442.47 m
+324.87 442.47 l
+S
+BT
+/TT9 1 Tf
+10 0 0 10 320.993 428.698 Tm
+(I)Tj
+7 0 0 7 325.3401 426.698 Tm
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(,)Tj
+/TT9 1 Tf
+0.424 0 TD
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 333.2857 428.698 Tm
+(\))Tj
+-22.3286 -2.2392 TD
+[(where the weighting f)10(actor)]TJ
+/TT9 1 Tf
+11.0216 0 TD
+(k)Tj
+7 0 0 7 225.0915 404.306 Tm
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(,)Tj
+/TT9 1 Tf
+0.424 0 TD
+(j)Tj
+/TT4 1 Tf
+10 0 0 10 235.5372 406.306 Tm
+[(depends on local v)25(ariance)]TJ
+/TT7 1 Tf
+8.9 0 2.7732 8.9 340.9816 406.306 Tm
+<006d>Tj
+/TT4 1 Tf
+7 0 0 7 348.0986 410.506 Tm
+(2)Tj
+10 0 0 10 352.0986 406.306 Tm
+(:)Tj
+/TT9 1 Tf
+-9.9816 -3.0141 TD
+(k)Tj
+7 0 0 7 257.1585 374.165 Tm
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(,)Tj
+/TT9 1 Tf
+0.424 0 TD
+(j)Tj
+/TT10 1 Tf
+10 0 0 10 267.9041 376.165 Tm
+(=)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 292.7894 383.914 Tm
+<006d>Tj
+/TT4 1 Tf
+7 0 0 7 299.9063 388.114 Tm
+(2)Tj
+/TT9 1 Tf
+-0.1076 -0.9286 TD
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(,)Tj
+/TT9 1 Tf
+0.424 0 TD
+(j)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 277.017 369.033 Tm
+<006d>Tj
+/TT4 1 Tf
+7 0 0 7 284.1339 372.633 Tm
+(2)Tj
+/TT9 1 Tf
+-0.1076 -0.8826 TD
+(i)Tj
+/TT4 1 Tf
+0.3138 0 TD
+(,)Tj
+/TT9 1 Tf
+0.424 0 TD
+(j)Tj
+/TT10 1 Tf
+10 0 0 10 293.5266 369.033 Tm
+(+)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 300.8449 369.033 Tm
+<006d>Tj
+/TT4 1 Tf
+7 0 0 7 307.9618 372.633 Tm
+(2)Tj
+/TT9 1 Tf
+-0.0726 -0.8826 TD
+(noise)Tj
+ET
+0.4 w 
+277.35 378.75 m
+322.83 378.75 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 338.506 Tm
+(11.2 Non-Local Means \(NLM\) Denoising)Tj
+/TT4 1 Tf
+0 -1.596 TD
+[(The discrete NLM equation for a pix)15(el)]TJ
+/TT9 1 Tf
+15.799 0 TD
+(p)Tj
+/TT4 1 Tf
+0.519 0 TD
+(:)Tj
+/TT9 1 Tf
+-3.7611 -2.722 TD
+(NL)Tj
+/TT4 1 Tf
+1.2761 0 TD
+(\()Tj
+/TT9 1 Tf
+0.391 0 TD
+(I)Tj
+/TT4 1 Tf
+0.434 0 TD
+(\)\()Tj
+/TT9 1 Tf
+0.791 0 TD
+(p)Tj
+/TT4 1 Tf
+0.519 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT4 1 Tf
+1.7098 0.7 TD
+(1)Tj
+/TT9 1 Tf
+-0.705 -1.4 TD
+(Z)Tj
+/TT4 1 Tf
+0.6562 0 TD
+(\()Tj
+/TT9 1 Tf
+0.458 0 TD
+(p)Tj
+/TT4 1 Tf
+0.519 0 TD
+(\))Tj
+ET
+265.35 297.87 m
+285.51 297.87 l
+S
+BT
+/TT7 1 Tf
+15 0 0 15 288.419 292.879 Tm
+<0059>Tj
+/TT9 1 Tf
+7 0 0 7 297.4709 292.529 Tm
+(q)Tj
+/TT7 1 Tf
+0.613 0 TD
+-0.08 Tc
+<00440031>Tj
+/TT9 1 Tf
+10 0 0 10 314.1086 295.326 Tm
+0 Tc
+(w)Tj
+/TT4 1 Tf
+0.698 0 TD
+(\()Tj
+/TT9 1 Tf
+0.458 0 TD
+(p)Tj
+/TT4 1 Tf
+0.519 0 TD
+(,)Tj
+/TT9 1 Tf
+0.445 0 TD
+(q)Tj
+/TT4 1 Tf
+0.533 0 TD
+(\))Tj
+/TT9 1 Tf
+0.391 0 TD
+(I)Tj
+/TT4 1 Tf
+0.434 0 TD
+(\()Tj
+/TT9 1 Tf
+0.358 0 TD
+(q)Tj
+/TT4 1 Tf
+0.533 0 TD
+(\))Tj
+-24.7799 -2.751 TD
+(The weights)Tj
+/TT9 1 Tf
+5.1995 0 TD
+(w)Tj
+/TT4 1 Tf
+0.698 0 TD
+(\()Tj
+/TT9 1 Tf
+0.458 0 TD
+(p)Tj
+/TT4 1 Tf
+0.519 0 TD
+(,)Tj
+/TT9 1 Tf
+0.445 0 TD
+(q)Tj
+/TT4 1 Tf
+0.533 0 TD
+[(\))-250(depend on patch similarity:)]TJ
+/TT9 1 Tf
+3.6495 -2.9392 TD
+(w)Tj
+/TT4 1 Tf
+0.698 0 TD
+(\()Tj
+/TT9 1 Tf
+0.458 0 TD
+(p)Tj
+/TT4 1 Tf
+0.519 0 TD
+(,)Tj
+/TT9 1 Tf
+0.445 0 TD
+(q)Tj
+/TT4 1 Tf
+0.533 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT4 1 Tf
+0.8288 0 TD
+-0.015 Tc
+[(ex)-15(p)]TJ
+/TT7 1 Tf
+1.5988 0.55 TD
+0 Tc
+<00a3>Tj
+-0.0002 -1.213 TD
+<00a4>Tj
+0.3998 0.663 TD
+<003c>Tj
+/TT9 1 Tf
+0.9088 0.7 TD
+(N)Tj
+/TT4 1 Tf
+0.777 0 TD
+(\()Tj
+/TT9 1 Tf
+0.458 0 TD
+(p)Tj
+/TT4 1 Tf
+0.519 0 TD
+(\))Tj
+/TT7 1 Tf
+0.333 0 TD
+<003c>Tj
+/TT9 1 Tf
+0.6188 0 TD
+(N)Tj
+/TT4 1 Tf
+0.777 0 TD
+(\()Tj
+/TT9 1 Tf
+0.358 0 TD
+(q)Tj
+/TT4 1 Tf
+0.533 0 TD
+(\))Tj
+7 0 0 7 342.1093 249.624 Tm
+(2)Tj
+0 -0.9286 TD
+(2)Tj
+/TT9 1 Tf
+10 0 0 10 315.7393 231.424 Tm
+(h)Tj
+/TT4 1 Tf
+7 0 0 7 321.0193 234.224 Tm
+(2)Tj
+ET
+294.39 240.99 m
+346.11 240.99 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 347.32 243.924 Tm
+<00a5>Tj
+-0.0002 -1.213 TD
+<00a6>Tj
+/TT4 1 Tf
+-23.7318 -2.139 TD
+(where)Tj
+/TT9 1 Tf
+2.7629 0 TD
+(N)Tj
+/TT4 1 Tf
+0.777 0 TD
+(\()Tj
+/TT9 1 Tf
+0.458 0 TD
+(p)Tj
+/TT4 1 Tf
+0.519 0 TD
+[(\))-250(i)0(s)-250(the local neighborhood patch and)]TJ
+/TT9 1 Tf
+15.1101 0 TD
+(h)Tj
+/TT4 1 Tf
+0.778 0 TD
+[(is the decay parameter)55(.)]TJ
+ET
+187.95 194.43 m
+387.99 194.43 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 170.444 Tm
+(12. Pulse Sequence - Coil Interaction Dynamics)Tj
+0 -2.4 TD
+(12.1 Coil-Speci)Tj
+/TT5 1 Tf
+6.3887 0 TD
+(ﬁ)Tj
+/TT2 1 Tf
+0.5562 0 TD
+(c B1 Field Generation)Tj
+/TT4 1 Tf
+-6.9448 -1.596 TD
+0.0685 Tw
+[(The transv)15(erse magnetic )]TJ
+/TT6 1 Tf
+10.2139 0 TD
+0 Tw
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(eld)Tj
+/TT9 1 Tf
+1.5982 0 TD
+(B)Tj
+/TT10 1 Tf
+7 0 0 7 220.0611 134.684 Tm
+(+)Tj
+/TT4 1 Tf
+-0.0002 -0.9286 TD
+(1)Tj
+10 0 0 10 224.4029 130.484 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+0.0684 Tw
+[(\))-318.5(generated by a coil with current density)]TJ
+/TT2 1 Tf
+17.2079 0 TD
+0 Tw
+(J)Tj
+/TT4 1 Tf
+0.5 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT7 1 Tf
+0.4438 0 TD
+<0076>Tj
+/TT4 1 Tf
+0.2471 0 TD
+0.0684 Tw
+[(\))-318.4(i)0(s)-318.4(g)0(o)15(v)15(erned by)]TJ
+-32.949 -1.2 TD
+0 Tw
+[(the Biot-Sa)20(v)25(art La)15(w:)]TJ
+/TT9 1 Tf
+13.2013 -2.781 TD
+(B)Tj
+/TT10 1 Tf
+7 0 0 7 228.3914 94.874 Tm
+(+)Tj
+/TT4 1 Tf
+-0.0002 -0.9286 TD
+(1)Tj
+10 0 0 10 232.7332 90.674 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+8.9 0 2.7732 8.9 257.2501 97.674 Tm
+(µ)Tj
+/TT4 1 Tf
+7 0 0 7 263.078 95.674 Tm
+(0)Tj
+10 0 0 10 256.118 83.674 Tm
+(4)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 261.0381 83.674 Tm
+<002f>Tj
+ET
+256.11 93.27 m
+267.51 93.27 l
+S
+BT
+18 0 0 18 271.372 85.993 Tm
+<0030>Tj
+/TT9 1 Tf
+7 0 0 7 275.9407 83.717 Tm
+(V)Tj
+/TT2 1 Tf
+10 0 0 10 284.5056 97.674 Tm
+(J)Tj
+/TT4 1 Tf
+0.5 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT7 1 Tf
+0.4438 0 TD
+<0076>Tj
+/TT4 1 Tf
+0.2471 0 TD
+(\))Tj
+/TT10 1 Tf
+0.553 0 TD
+(◊)Tj
+/TT4 1 Tf
+0.7688 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT7 1 Tf
+0.4438 0 TD
+<003c>Tj
+/TT2 1 Tf
+0.5488 0 TD
+(r)Tj
+/TT7 1 Tf
+0.4438 0 TD
+<0076>Tj
+/TT4 1 Tf
+0.2471 0 TD
+(\))Tj
+-3.507 -1.4 TD
+(|)Tj
+/TT2 1 Tf
+0.2002 0 TD
+(r)Tj
+/TT7 1 Tf
+0.4438 0 TD
+<003c>Tj
+/TT2 1 Tf
+0.5488 0 TD
+(r)Tj
+/TT7 1 Tf
+0.4438 0 TD
+<0076>Tj
+/TT4 1 Tf
+0.2471 0 TD
+(|)Tj
+7 0 0 7 318.8991 86.474 Tm
+(3)Tj
+ET
+284.55 93.27 m
+336.51 93.27 l
+S
+BT
+/TT9 1 Tf
+10 0 0 10 339.718 90.674 Tm
+(dV)Tj
+/TT7 1 Tf
+1.2378 0 TD
+<0076>Tj
+ET
+endstream
+endobj
+30 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/TT2 4 0 R
+/TT4 5 0 R
+/TT5 6 0 R
+/TT6 7 0 R
+/TT7 8 0 R
+/TT9 9 0 R
+/TT10 10 0 R
+>>
+/ExtGState <<
+/GS1 11 0 R
+>>
+>>
+endobj
+32 0 obj
+<<
+/Length 11608
+>>
+stream
+BT
+/TT4 1 Tf
+10 0 0 10 282.17 735 Tm
+0 g
+/GS1 gs
+0 Tc
+0 Tw
+(-8-)Tj
+-17.217 -4.5 TD
+-0.015 Tc
+[(Fo)-15(r)-265(a)]TJ
+/TT2 1 Tf
+2.318 0 TD
+0 Tc
+(Birdcage Coil)Tj
+/TT4 1 Tf
+6.1104 0 TD
+(\(Quadrature mode\), the idealized )Tj
+/TT6 1 Tf
+13.4658 0 TD
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(eld is homogeneous:)Tj
+/TT9 1 Tf
+-9.6399 -2.699 TD
+(B)Tj
+/TT10 1 Tf
+7 0 0 7 244.4824 667.21 Tm
+(+)Tj
+/TT4 1 Tf
+-0.0002 -0.9286 TD
+(1)Tj
+/TT10 1 Tf
+10 0 0 10 251.6242 663.01 Tm
+(=)Tj
+8.9 0 2.7732 8.9 261.7925 670.01 Tm
+(µ)Tj
+/TT4 1 Tf
+7 0 0 7 267.6204 668.01 Tm
+(0)Tj
+/TT9 1 Tf
+10 0 0 10 272.2004 670.01 Tm
+(IN)Tj
+/TT4 1 Tf
+-0.6535 -1.4 TD
+(2)Tj
+/TT9 1 Tf
+0.558 0 TD
+(D)Tj
+ET
+0 G
+1 J 1 j 0.4 w 10 M []0 d
+1 i 
+261.15 665.55 m
+283.35 665.55 l
+S
+BT
+10 0 0 10 286.977 663.01 Tm
+(x)Tj
+/TT10 1 Tf
+0.7168 0 TD
+(+)Tj
+/TT9 1 Tf
+0.7698 0 TD
+(i)Tj
+/TT10 1 Tf
+8.9 0 2.7732 8.9 308.5621 670.01 Tm
+(µ)Tj
+/TT4 1 Tf
+7 0 0 7 314.39 668.01 Tm
+(0)Tj
+/TT9 1 Tf
+10 0 0 10 318.97 670.01 Tm
+(IN)Tj
+/TT4 1 Tf
+-0.6535 -1.4 TD
+(2)Tj
+/TT9 1 Tf
+0.558 0 TD
+(D)Tj
+ET
+307.83 665.55 m
+330.03 665.55 l
+S
+BT
+10 0 0 10 333.717 663.01 Tm
+(y)Tj
+/TT4 1 Tf
+-22.3717 -2.546 TD
+-0.015 Tc
+[(Fo)-15(r)-265(a)]TJ
+/TT2 1 Tf
+2.318 0 TD
+0 Tc
+(Surface Loop Coil)Tj
+/TT4 1 Tf
+8.0278 0 TD
+(of radius)Tj
+/TT9 1 Tf
+3.8099 0 TD
+(a)Tj
+/TT4 1 Tf
+0.776 0 TD
+(at height)Tj
+/TT9 1 Tf
+3.7732 0 TD
+(z)Tj
+/TT4 1 Tf
+0.4302 0 TD
+(:)Tj
+/TT9 1 Tf
+-5.5438 -2.9392 TD
+(B)Tj
+7 0 0 7 252.6544 606.158 Tm
+(z)Tj
+/TT4 1 Tf
+10 0 0 10 256.1655 608.158 Tm
+(\()Tj
+/TT9 1 Tf
+0.385 0 TD
+(z)Tj
+/TT4 1 Tf
+0.4302 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+8.9 0 2.7732 8.9 293.5415 615.158 Tm
+(µ)Tj
+/TT4 1 Tf
+7 0 0 7 299.3695 613.158 Tm
+(0)Tj
+/TT9 1 Tf
+10 0 0 10 303.9495 615.158 Tm
+(Ia)Tj
+/TT4 1 Tf
+7 0 0 7 312.5396 619.358 Tm
+(2)Tj
+10 0 0 10 279.9336 601.158 Tm
+(2\()Tj
+/TT9 1 Tf
+0.866 0 TD
+(a)Tj
+/TT4 1 Tf
+7 0 0 7 293.8536 603.958 Tm
+(2)Tj
+/TT10 1 Tf
+10 0 0 10 300.0536 601.158 Tm
+(+)Tj
+/TT9 1 Tf
+0.8208 0 TD
+(z)Tj
+/TT4 1 Tf
+7 0 0 7 312.5635 603.958 Tm
+(2)Tj
+10 0 0 10 316.5635 601.158 Tm
+(\))Tj
+7 0 0 7 319.8936 603.958 Tm
+0.009 Tc
+(3/2)Tj
+ET
+279.99 610.71 m
+329.43 610.71 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 572.888 Tm
+0 Tc
+[(12.2 Pulse Sequence Excitation Pr)18(o)]TJ
+/TT5 1 Tf
+14.9532 0 TD
+(ﬁ)Tj
+/TT2 1 Tf
+0.5562 0 TD
+(les)Tj
+/TT4 1 Tf
+-15.5093 -1.596 TD
+0.0178 Tw
+(The local )Tj
+/TT6 1 Tf
+4.0336 0 TD
+0 Tw
+(ﬂ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+0.0178 Tw
+(ip angle)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 170.3476 556.928 Tm
+0 Tw
+<005f>Tj
+/TT4 1 Tf
+10 0 0 10 177.4222 556.928 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+0.0178 Tw
+[(\))-267.8(induced by a pulse sequence of duration)]TJ
+/TT7 1 Tf
+8.9 0 2.7732 8.9 354.9978 556.928 Tm
+0 Tw
+<006f>Tj
+/TT4 1 Tf
+10 0 0 10 363.2826 556.928 Tm
+0.0179 Tw
+[(depends on the coil‚s sensiti)25(v-)]TJ
+-27.3283 -1.2 TD
+0 Tw
+(ity pro)Tj
+/TT6 1 Tf
+2.6387 0 TD
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(le)Tj
+/TT9 1 Tf
+1.0047 0 TD
+(S)Tj
+/TT4 1 Tf
+0.558 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\):)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 208.732 519.206 Tm
+<005f>Tj
+/TT4 1 Tf
+10 0 0 10 215.8066 519.206 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 237.5735 519.206 Tm
+<0061>Tj
+18 0 0 18 246.3886 514.525 Tm
+<0030>Tj
+6.23 0 1.9413 6.23 252.2103 528.353 Tm
+<006f>Tj
+/TT4 1 Tf
+7 0 0 7 251.1371 512.249 Tm
+(0)Tj
+10 0 0 10 258.3351 519.206 Tm
+(|)Tj
+/TT9 1 Tf
+0.2582 0 TD
+(B)Tj
+/TT10 1 Tf
+7 0 0 7 267.2954 523.406 Tm
+(+)Tj
+/TT4 1 Tf
+-0.0002 -0.9286 TD
+(1)Tj
+10 0 0 10 271.6372 519.206 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(,)Tj
+/TT9 1 Tf
+0.433 0 TD
+(t)Tj
+/TT4 1 Tf
+0.3458 0 TD
+(\)|)Tj
+/TT9 1 Tf
+0.5682 0 TD
+(dt)Tj
+/TT7 1 Tf
+1.1258 0 TD
+<0035>Tj
+8.9 0 2.7732 8.9 312.0027 519.206 Tm
+0.2326 Tc
+<0061006f>Tj
+/TT4 1 Tf
+10 0 0 10 323.3386 519.206 Tm
+0 Tc
+(|)Tj
+/TT9 1 Tf
+0.2332 0 TD
+(S)Tj
+/TT4 1 Tf
+0.558 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\)|)Tj
+/TT9 1 Tf
+0.5072 0 TD
+(V)Tj
+7 0 0 7 351.5045 517.206 Tm
+(pulse)Tj
+/TT2 1 Tf
+10 0 0 10 110 493.691 Tm
+0.0251 Tw
+(12.2.1 Spin Echo \(SE\) in Surface Coils)Tj
+/TT4 1 Tf
+16.706 0 TD
+[(The refocusing \(180)-50(\))-275(pulse is highly sensiti)25(v)15(e)15( )-15(to)]TJ
+/TT9 1 Tf
+19.8202 0 TD
+0 Tw
+(B)Tj
+/TT10 1 Tf
+7 0 0 7 481.6406 497.891 Tm
+(+)Tj
+/TT4 1 Tf
+-0.0002 -0.9286 TD
+(1)Tj
+10 0 0 10 90 481.691 Tm
+[(inhomogeneity)65(.)-500(The ef)25(fecti)25(v)15(e)15( )-15(signal)]TJ
+/TT9 1 Tf
+14.8775 0 TD
+(M)Tj
+7 0 0 7 248.0736 479.691 Tm
+(xy)Tj
+/TT4 1 Tf
+10 0 0 10 257.5115 481.691 Tm
+(is:)Tj
+/TT9 1 Tf
+-3.1257 -2.2392 TD
+(M)Tj
+7 0 0 7 235.5531 457.299 Tm
+(xy)Tj
+/TT4 1 Tf
+10 0 0 10 242.4909 459.299 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT9 1 Tf
+0.8968 0 TD
+(M)Tj
+/TT4 1 Tf
+7 0 0 7 274.1179 457.299 Tm
+(0)Tj
+10 0 0 10 279.8179 459.299 Tm
+(sin)Tj
+7 0 0 7 291.4879 463.499 Tm
+(3)Tj
+10 0 0 10 295.4879 459.299 Tm
+(\()Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 298.4779 459.299 Tm
+<005f>Tj
+/TT4 1 Tf
+10 0 0 10 305.5526 459.299 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\)\))Tj
+/TT7 1 Tf
+0.666 0 TD
+<0075>Tj
+/TT9 1 Tf
+0.269 0 TD
+(e)Tj
+/TT7 1 Tf
+7 0 0 7 327.2898 463.499 Tm
+<003c>Tj
+/TT9 1 Tf
+0.5398 0 TD
+(TE)Tj
+/TT4 1 Tf
+1.24 0 TD
+(/)Tj
+/TT9 1 Tf
+0.2688 0 TD
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(2)Tj
+10 0 0 10 110 437.339 Tm
+[(This cubic dependence implies rapid signal drop-of)25(f)-250(a)15(w)10(a)0(y)-250(from the coil surf)10(ace.)]TJ
+/TT2 1 Tf
+0 -1.596 TD
+0.1049 Tw
+(12.2.2 Gradient Echo \(GRE\) Optimization)Tj
+/TT4 1 Tf
+18.8297 0 TD
+[(T)80(o)80( )-80(maximize SNR gi)25(v)15(e)0(n)-354.9(coil sensiti)25(vity)]TJ
+/TT9 1 Tf
+16.849 0 TD
+0 Tw
+(S)Tj
+/TT4 1 Tf
+0.558 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\),)Tj
+-39.0136 -1.2 TD
+(the local Ernst Angle is:)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 240.327 386.987 Tm
+<005f>Tj
+/TT9 1 Tf
+7 0 0 7 247.2886 384.987 Tm
+(E)Tj
+/TT4 1 Tf
+10 0 0 10 252.5755 386.987 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT9 1 Tf
+0.8288 0 TD
+[(ar)37(ccos)]TJ
+/TT4 1 Tf
+2.629 0 TD
+(\()Tj
+/TT9 1 Tf
+0.352 0 TD
+(e)Tj
+/TT7 1 Tf
+7 0 0 7 309.1911 391.187 Tm
+<003c>Tj
+/TT9 1 Tf
+0.5398 0 TD
+(TR)Tj
+/TT4 1 Tf
+1.194 0 TD
+(/)Tj
+/TT9 1 Tf
+0.2688 0 TD
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(1)Tj
+10 0 0 10 331.9918 386.987 Tm
+(\))Tj
+-22.1992 -2.196 TD
+(Since)Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 134.3768 365.027 Tm
+<005f>Tj
+/TT4 1 Tf
+10 0 0 10 143.9514 365.027 Tm
+(is )Tj
+/TT6 1 Tf
+0.917 0 TD
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+[(x)15(ed by the transmit coil, local signal strength v)25(aries as:)]TJ
+/TT9 1 Tf
+4.4189 -2.9392 TD
+(M)Tj
+7 0 0 7 211.6181 333.635 Tm
+(GRE)Tj
+/TT4 1 Tf
+10 0 0 10 226.236 335.635 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT9 1 Tf
+0.8968 0 TD
+(M)Tj
+/TT4 1 Tf
+7 0 0 7 257.863 333.635 Tm
+(0)Tj
+10 0 0 10 264.763 342.635 Tm
+(\(1)Tj
+/TT7 1 Tf
+0.833 0 TD
+<003c>Tj
+/TT9 1 Tf
+0.5678 0 TD
+(e)Tj
+/TT7 1 Tf
+7 0 0 7 283.3898 346.835 Tm
+<003c>Tj
+/TT9 1 Tf
+0.5398 0 TD
+(TR)Tj
+/TT4 1 Tf
+1.194 0 TD
+(/)Tj
+/TT9 1 Tf
+0.2688 0 TD
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(1)Tj
+10 0 0 10 306.1905 342.635 Tm
+[(\))-170(sin\()]TJ
+/TT7 1 Tf
+8.9 0 2.7732 8.9 325.8805 342.635 Tm
+<005f>Tj
+/TT4 1 Tf
+10 0 0 10 332.9552 342.635 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4439 0 TD
+(\)\))Tj
+-7.3472 -1.4 TD
+(1)Tj
+/TT7 1 Tf
+0.5 0 TD
+<003c>Tj
+/TT4 1 Tf
+0.7188 0 TD
+(cos\()Tj
+/TT7 1 Tf
+8.9 0 2.7732 8.9 295.7603 328.635 Tm
+<005f>Tj
+/TT4 1 Tf
+10 0 0 10 302.835 328.635 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\)\))Tj
+/TT9 1 Tf
+0.685 0 TD
+(e)Tj
+/TT7 1 Tf
+7 0 0 7 322.0722 331.435 Tm
+<003c>Tj
+/TT9 1 Tf
+0.5398 0 TD
+(TR)Tj
+/TT4 1 Tf
+1.194 0 TD
+(/)Tj
+/TT9 1 Tf
+0.2688 0 TD
+(T)Tj
+/TT4 1 Tf
+0.6832 0 TD
+(1)Tj
+ET
+264.75 338.19 m
+347.43 338.19 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 350.299 335.635 Tm
+<0075>Tj
+/TT9 1 Tf
+0.283 0 TD
+(S)Tj
+/TT4 1 Tf
+7 0 0 7 358.709 339.835 Tm
+(*)Tj
+10 0 0 10 362.709 335.635 Tm
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(r)Tj
+/TT4 1 Tf
+0.4438 0 TD
+(\))Tj
+/TT2 1 Tf
+-28.0478 -3.527 TD
+(12.3 Quantum Coil-Sequence Coupling)Tj
+/TT4 1 Tf
+0 -1.596 TD
+-0.015 Tc
+[(Fo)-15(r)]TJ
+/TT2 1 Tf
+1.8097 0 TD
+0 Tc
+0.1855 Tw
+(Quantum Berry Phase sequences)Tj
+/TT4 1 Tf
+14.6395 0 TD
+0.1854 Tw
+[(,)-435.4(the phase accumulation)]TJ
+/TT7 1 Tf
+10.8769 0 TD
+0 Tw
+<005c>Tj
+/TT9 1 Tf
+7 0 0 7 371.298 282.405 Tm
+(B)Tj
+/TT4 1 Tf
+10 0 0 10 380.6169 284.405 Tm
+0.1854 Tw
+(is topologically protected)Tj
+-29.0617 -1.2 TD
+-0.0001 Tc
+0.0001 Tw
+(against linear coil inhomogeneities \()Tj
+/TT7 1 Tf
+14.5463 0 TD
+0 Tc
+0 Tw
+<00a2>Tj
+/TT9 1 Tf
+0.7709 0 TD
+(B)Tj
+/TT4 1 Tf
+7 0 0 7 249.55 270.405 Tm
+(1)Tj
+10 0 0 10 253.55 272.405 Tm
+0.25 Tw
+[(\). The)-250(coupling )250(Hamiltonian)]TJ
+/TT9 1 Tf
+11.9442 0 TD
+0 Tw
+(H)Tj
+7 0 0 7 380.651 270.405 Tm
+(int)Tj
+/TT4 1 Tf
+10 0 0 10 391.5166 272.405 Tm
+(is:)Tj
+/TT9 1 Tf
+-15.3551 -2.196 TD
+(H)Tj
+7 0 0 7 245.6247 248.445 Tm
+(int)Tj
+/TT10 1 Tf
+10 0 0 10 256.7903 250.445 Tm
+(=)Tj
+/TT7 1 Tf
+0.8288 0 TD
+<003c>Tj
+8.9 0 2.7732 8.9 270.1469 250.445 Tm
+<0061>Tj
+/TT2 1 Tf
+10 0 0 10 276.326 250.445 Tm
+(S)Tj
+/TT7 1 Tf
+0.5562 0 TD
+<0075>Tj
+/TT4 1 Tf
+0.25 0 TD
+(\()Tj
+/TT2 1 Tf
+0.333 0 TD
+(B)Tj
+/TT4 1 Tf
+7 0 0 7 294.3875 248.445 Tm
+(0)Tj
+/TT10 1 Tf
+10 0 0 10 300.5875 250.445 Tm
+(+)Tj
+/TT2 1 Tf
+0.7688 0 TD
+(B)Tj
+/TT9 1 Tf
+7 0 0 7 315.3867 248.445 Tm
+(RF)Tj
+/TT4 1 Tf
+10 0 0 10 325.0264 250.445 Tm
+(\()Tj
+/TT9 1 Tf
+0.346 0 TD
+(t)Tj
+/TT4 1 Tf
+0.3458 0 TD
+(\)\))Tj
+-22.1945 -2.196 TD
+0.0213 Tw
+(The geometric phase acquired is proportional to the solid angle)Tj
+/TT7 1 Tf
+25.7052 0 TD
+0 Tw
+<0031>Tj
+/TT4 1 Tf
+1.0395 0 TD
+0.0214 Tw
+[(swept by the ef)25(fecti)25(v)15(e)15( )]TJ
+/TT6 1 Tf
+9.0724 0 TD
+0 Tw
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+(eld)Tj
+-38.3732 -1.2 TD
+[(v)15(ector)]TJ
+/TT2 1 Tf
+2.7335 0 TD
+(B)Tj
+/TT9 1 Tf
+7 0 0 7 124.1382 214.485 Tm
+(eff)Tj
+/TT4 1 Tf
+10 0 0 10 135.5068 216.4849 Tm
+(generated by the coil array:)Tj
+/TT7 1 Tf
+7.6856 -2.722 TD
+<005c>Tj
+/TT9 1 Tf
+7 0 0 7 220.4008 187.265 Tm
+(B)Tj
+/TT10 1 Tf
+10 0 0 10 228.1657 189.265 Tm
+(=)Tj
+/TT7 1 Tf
+0.8288 0 TD
+<003c>Tj
+/TT4 1 Tf
+0.8388 0.7 TD
+(1)Tj
+0 -1.4 TD
+(2)Tj
+ET
+244.83 191.91 m
+249.87 191.91 l
+S
+BT
+/TT7 1 Tf
+10 0 0 10 252.745 189.265 Tm
+<0031>Tj
+/TT4 1 Tf
+0.7681 0 TD
+(\()Tj
+/TT9 1 Tf
+0.317 0 TD
+(C)Tj
+/TT4 1 Tf
+0.739 0 TD
+(\))Tj
+/TT10 1 Tf
+0.613 0 TD
+(=)Tj
+/TT7 1 Tf
+0.8288 0 TD
+<003c>Tj
+/TT4 1 Tf
+0.8388 0.7 TD
+(1)Tj
+0 -1.4 TD
+(2)Tj
+ET
+293.79 191.91 m
+298.83 191.91 l
+S
+BT
+/TT7 1 Tf
+18 0 0 18 302.631 184.584 Tm
+<0030>Tj
+/TT9 1 Tf
+7 0 0 7 307.6127 182.308 Tm
+(S)Tj
+/TT7 1 Tf
+10 0 0 10 313.7187 189.265 Tm
+<00a2>Tj
+/TT10 1 Tf
+0.9329 0 TD
+(◊)Tj
+/TT2 1 Tf
+0.7688 0 TD
+(A)Tj
+/TT9 1 Tf
+7 0 0 7 338.0975 187.265 Tm
+(coil)Tj
+/TT7 1 Tf
+10 0 0 10 349.4511 189.265 Tm
+<0075>Tj
+/TT9 1 Tf
+0.285 0 TD
+(d)Tj
+/TT2 1 Tf
+0.577 0 TD
+(S)Tj
+/TT4 1 Tf
+-24.8071 -2.5543 TD
+-0.0001 Tc
+0.1163 Tw
+[(This implies that ìQuantumî sequences are rob)19.9(ust against the)]TJ
+/TT9 1 Tf
+25.9891 0 TD
+0 Tc
+0 Tw
+(B)Tj
+/TT4 1 Tf
+7 0 0 7 376.2691 161.722 Tm
+(1)Tj
+10 0 0 10 383.9311 163.722 Tm
+0.1162 Tw
+[(drop-of)25(f)-366.2(characteristic of)]TJ
+-29.3931 -1.2 TD
+0 Tw
+[(surf)10(ace coils, maintaining contrast )]TJ
+/TT6 1 Tf
+13.9578 0 TD
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+[(delity e)25(v)15(en)-250(at)-250(depth.)]TJ
+ET
+187.95 135.75 m
+387.99 135.75 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 90 111.762 Tm
+(Conclusion)Tj
+/TT4 1 Tf
+0 -1.596 TD
+0.0407 Tw
+[(This report pro)15(vides the complete )]TJ
+/TT6 1 Tf
+13.9346 0 TD
+0 Tw
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+0.0407 Tw
+[(nite mathematical frame)25(w)10(ork for quantum phase MRI simula-)]TJ
+-14.4907 -1.2 TD
+0.1728 Tw
+[(tion. )-250(It)-422.8(establishes the rigorous discrete formalism for: 1.)]TJ
+/TT2 1 Tf
+25.0224 0 TD
+0.1727 Tw
+(Bloch Dynamics)Tj
+/TT4 1 Tf
+7.0897 0 TD
+[(:)-422.7(Finite dif)25(ference)]TJ
+ET
+endstream
+endobj
+33 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/TT2 4 0 R
+/TT4 5 0 R
+/TT5 6 0 R
+/TT6 7 0 R
+/TT7 8 0 R
+/TT9 9 0 R
+/TT10 10 0 R
+>>
+/ExtGState <<
+/GS1 11 0 R
+>>
+>>
+endobj
+35 0 obj
+<<
+/Length 2974
+>>
+stream
+BT
+/TT4 1 Tf
+10 0 0 10 282.17 735 Tm
+0 g
+/GS1 gs
+0 Tc
+0 Tw
+(-9-)Tj
+-19.217 -4.5 TD
+0.0532 Tw
+[(time-domain e)25(v)20(olution of magnetization.)-553.2(2.)]TJ
+/TT2 1 Tf
+18.3558 0 TD
+[(T)92(opological Ph)15(ysics)]TJ
+/TT4 1 Tf
+8.3637 0 TD
+[(:)-303.2(Berry phase accumulation and)]TJ
+-26.7194 -1.2 TD
+0.001 Tw
+[(Chern number in)40(v)25(ariants. )-250(3.)]TJ
+/TT2 1 Tf
+11.8809 0 TD
+0 Tw
+[(Hard)15(war)18(e)-251(Modeling)]TJ
+/TT4 1 Tf
+8.6614 0 TD
+0.001 Tw
+[(:)-251(Discrete impedance matrices for Birdcage and)]TJ
+-20.5423 -1.2 TD
+0.2823 Tw
+[(Surf)10(ace coils.)-782.3(4.)]TJ
+/TT2 1 Tf
+8.0293 0 TD
+0 Tw
+(Reconstruction)Tj
+/TT4 1 Tf
+6.499 0 TD
+0.2824 Tw
+[(:)-532.3(SENSE parallel imaging and Quantum-Statistical artif)10(act)]TJ
+-14.5283 -1.2 TD
+0.2954 Tw
+[(remo)15(v)25(al. 5.)]TJ
+/TT2 1 Tf
+5.3272 0 TD
+0.0454 Tw
+(Pulse-Coil Interaction)Tj
+/TT4 1 Tf
+9.4609 0 TD
+0.0453 Tw
+[(:)-295.3(Coupled equations describing e)15(xcitation inhomogeneity and)]TJ
+-14.7881 -1.2 TD
+0 Tw
+(quantum protection.)Tj
+2 -1.596 TD
+0.1534 Tw
+(All equations are presented in forms directly implementable in the NeuroPulse simulation)Tj
+-2 -1.2 TD
+-0.0001 Tc
+0.0441 Tw
+[(engine \(Python/NumPy\), ensuring physically accurate modeling of quantum topological ef)24.9(fects in)]TJ
+T*
+0 Tc
+0 Tw
+(magnetic resonance imaging.)Tj
+ET
+0 G
+1 J 1 j 0.4 w 10 M []0 d
+1 i 
+187.95 586.11 m
+387.99 586.11 l
+S
+BT
+/TT2 1 Tf
+10 0 0 10 110 570.12 Tm
+[(Refer)18(ences:)]TJ
+/TT4 1 Tf
+5.4442 0 TD
+0.2156 Tw
+[(1. )-250(Berry)65(,)-465.6(M)0(.)-715.6(V)129(.)-715.6(\(1984\). )-250(ìQuantal)-465.6(Phase F)15(actors Accompan)15(ying Adiabatic)]TJ
+-7.4442 -1.2 TD
+0.0775 Tw
+[(Changesî 2.)-577.6(Pruessmann, K.)-577.6(P)111(.)111( )-361.1(et)-327.6(al. )-250.1(\(1999\). )-250.1(ìSENSE:)-327.6(Sensiti)25(vity Encoding for F)15(ast MRIî 3.)]TJ
+T*
+0.325 Tw
+[(Hayes, )250(C.)-575(E. et)-325(al. \(1985\). ì)80(An )250(Ef)]TJ
+/TT6 1 Tf
+14.9161 0 TD
+0 Tw
+(ﬁ)Tj
+/TT4 1 Tf
+0.5562 0 TD
+0.075 Tw
+[(cient, Highly Homogeneous Radiofrequenc)15(y)-325(Coilî 4.)-575(Sod-)]TJ
+-15.4722 -1.2 TD
+0.0961 Tw
+[(ickson, D.)-596.2(K. )-250.1(&)-346.2(Manning, W)92(.)-596.2(J.)-596.2(\(1997\). )-250(ìSimultaneous)-346.1(Acquisition of Spatial Harmonicsî 5.)]TJ
+T*
+0.104 Tw
+[(Perona, P)111(.)-604(&)-354(Malik, J.)-604.1(\(1990\). )-250.1(ìScale-space)-354.1(and edge detection using anisotropic dif)25(fusionî 6.)]TJ
+T*
+0.0753 Tw
+[(Buades, A.)-575.4(et al.)-575.4(\(2005\). )-250.1(ì)80(A)-325.3(non-local algorithm for image denoisingî 7.)-575.3(Hoult, D.)-575.3(I. )-250(\(2000\).)]TJ
+T*
+0 Tw
+[(ìThe Principle of Reciprocity in NMR Microscop)10(yî)]TJ
+/TT2 1 Tf
+2 -1.596 TD
+(Document ID:)Tj
+/TT4 1 Tf
+6.3325 0 TD
+(NP-QP-MRI-2026-001)Tj
+/TT2 1 Tf
+-8.3325 -1.2 TD
+(Classi)Tj
+/TT5 1 Tf
+2.5562 0 TD
+(ﬁ)Tj
+/TT2 1 Tf
+0.5562 0 TD
+(cation:)Tj
+/TT4 1 Tf
+3.1938 0 TD
+-0.0002 Tc
+0.0002 Tw
+[(Adv)24.8(anced Physics Research)]TJ
+/TT2 1 Tf
+-6.3062 -1.2 TD
+0 Tc
+0 Tw
+(Generated by:)Tj
+/TT4 1 Tf
+6.3877 0 TD
+-0.0002 Tc
+0.0002 Tw
+(NeuroPulse Physics Engine v3.0)Tj
+ET
+endstream
+endobj
+36 0 obj
+<<
+/ProcSet [/PDF /Text ]
+/Font <<
+/TT2 4 0 R
+/TT4 5 0 R
+/TT5 6 0 R
+/TT6 7 0 R
+>>
+/ExtGState <<
+/GS1 11 0 R
+>>
+>>
+endobj
+11 0 obj
+<<
+/Type /ExtGState
+/SA false
+/SM 0.02
+/OP false
+/op false
+/OPM 1
+/BG2 /Default
+/UCR2 /Default
+/HT /Default
+/TR2 /Default
+>>
+endobj
+37 0 obj
+<<
+/Type /FontDescriptor
+/Ascent 701
+/CapHeight 0
+/Descent -298
+/Flags 4
+/FontBBox [-167 -299 1094 827]
+/FontName /KKNCJH+Symbol
+/ItalicAngle 0
+/StemV 0
+/FontFile2 38 0 R
+>>
+endobj
+38 0 obj
+<<
+/Filter /FlateDecode
+/Length 25330
+/Length1 45812
+>>
+stream
+Hâ‰W}t’øovgvfwv≥r<™êp≠°Çä%•ÅS“8-árò›}õô˝`fñlhÖîH˘é†)¶4¢µ4µöRH)•ñ)4âƒi˘®ÄJ)≈4“˚fg7{<µ˛ô˜ŒÃÔ˝ÓΩÔÕΩ˜Ω7Û ‹Ç7'¯~‰Ó{Œ,,Z @nGÈ‹Ä°≈ÄÈÅ|o≈¡fﬁweq
+Ú} ‹ƒp»ækÎået8]¯Œ »GT>NîG[Óz};¿c€– µ 0◊%¥ ¨0∏#Bï–âùÎö övbˇq»Ì‹” ã—ÜG¢fjΩª¥
+˘[ éºGìÜI\U,ÈDΩ¶≈ÉJu˚"¿tÄ<UR	Ò®ÙéWè˙º(5ï7ì_™C ‚¶ò•3Ó€ÿZáˆéÑNóÚ¥¨FÒrBè'*Ã	P€ç˙ØÄ√YK÷Nn'∑G\ùFrÓÅ.ËS–≈
+»‹˜o-LÛD•n ∂;{¯˙kËã∞ë±4ˆÈíwˇÂÑ˚a¨‡&¡LhÜ9pû4¡Sdå"+P{?lÜ&h≈k<åÇπ–‡hÜn8;öÕÌ«aÉπfòehU7ÑK¢|=i7âk$°û[LûÉYêw8õ·
+|∂9¢ê/ps‡QÁR\<èΩ¸ƒ@&s”8N™É´ŒÒ0ïü;a4@‘qñõ„*ÇNíÑáS0∆sXnÏÇ√d;9Bﬁ&•‹!ÿK∫…ARÃ≥Êb$Õ¸v∏çõ∏§‡6òNGZ_å˙\∏˝gWcﬂœoƒ¯ßìÿklÄu(ﬂ ≈¸duéQËI>º%XÔD^á¨ö/ÅΩî¬a~‘£áè	s-›vG…«V5ﬂJØs Äw…asﬁ¡Õñ·X[¯∏#\T√UÆöﬂFN¬æÛ1Ä‘Û’\Ä§s2J˘U®π33q6ŒH.\·K·e2äÛ„‹ºòÕÕ+¸YNÊ¶
+!8œ_ ù‰n·KBÈ‰Å´Üf2Vx ∫Iæ∞ãL|Bü¿.˝^œ‚%Ä€o6	Éû∞
+«H‚$«ƒπ>w”I‡¯bjØAæ¢<b≤vE»å0ƒ≠o2E<a, ¶hak≈rx	¿¶c .%,=∏¯]µ∏L·ë h ÆAO?-ûŸå‡;…èÔÔ.Ë∑ŸHó‹g≤9ÄKﬂ˝'˜˜úL?êÕ	Ó¨±lù<‘ﬂs÷≤9qL.êJ˙{Nå°Ÿú¯ÊF<≠ÔÔ9¡èR&'û≥Ó≈u2ΩøÁ$}ítÎÛ}~˝Ïõé©Ù‰wóí˛F<µ~Ÿ>`Íôì&2„˙Kd˚ÊcqX'|2õú‹π∏èÒùÜo8¸‚˜ﬂ˘¯¿’ãk9[Æï}\pÁù^$S≠q?cí9k`©™bq3D√?∞qâç’6>n„Rh„2ó€∏¬∆ï6Æ≤qµçkl¨±Ò	◊⁄∏Œ∆'m| ∆Zd„zü∂±Œ∆€∏¡∆üÿXo„36n¥ÒYüsNIÍÒüä3Ü™≈ccû¢j,i“üI5:?©hõƒ∞ÆM5˚π®∆¬jL5+Ñ∞◊’ÿ/úA-x¡Rï(˛¡˝í«ﬂ0›|ë7Jàæ$)∫ØƒÕHc∫©—∞˘+ó’L&6ª≠ÜÆ‚ÒÒ◊i}(^€"ÑhπNÈV)°%Êç—$4à√ˇFFÖbR›ÚkõMj¶ö–*+≥ﬂØ∏Œ|T¥Ìû˙†*ZHá'íöFÕBH]†ÜËÔEå€Í˛≤A]†h4§(	#eiväT”TLàÒGèÂ÷™õ4µK∂H„^HSª}A§™RéﬁòI=∂á«ëëfÒAÃ÷<î¸I,µ[{=T•∫aÍäaÏÛU=®—åÔvß9∂E§—ÑYiP≥UVc'ÜÕbj„ì1ÑW|,Lî&ŸçöÌ>ùÜ5ö ˝∆f$ÿ< gL;(g{’EÒÒ4fr≥\§€ØÒJ¨\£Àu%§¢‡Ø^ùñ´ÜÂÑÆÜ˚Ç¯ÉkÕï≈_˜a4!UÙy√Ö%ÉÊõ.6@P—é∏Bq3™òë∑‹ZºúIiG3m%˙õd∑„˙ﬂ”©4∂Xée[/«›ñLúf⁄ñ''≥Ül·t∏¥¯B+ßß$+÷˘¥úçBâo{{É@˙é∑7§ÔJF2äc¶œ∞%Dcl3q∂ó–‘π^0ﬂÛpgÃ£f⁄˝æî¶>ËKÊy£4m˙9K¢jËBØ*`˛”eö∫»„ö‘Ë%∑çÂıá"[8E⁄ew¶e&Æd€4ıØl;`^ï-_≠ûf‚£>å¶:˚∞Ä˘oüÌ™m€uß©èo‡≥;Ìæm}Õ€À0öÎ}î≥«ı’Ùõ&Ûó6Ù≠ N[BÆ‹®ππ¶{:Å/ÛDD€ºe≤Ó¯2æå1ßu9ul¢:uî∑±Í˙¢ÿÊ©q7zj§v©E'5xj¯2˜ îu˘ÓÛ‘xj‰œ1ÒåîíZ<nó ó∏KÂR_Ê}Ìñ„hEÓA÷HÁ\Ç8S®ï¯"©ÅI§q¶ıºK.A*D‹]Æw:Á⁄Ï∏◊µÂü·ˇR=Á§Ûé+b◊»≤ €≈ﬂò”.5∞KãmB-Û√¡ÁŒN«-∂˘AjÉ{πw§ªKﬁë”.ó»%ﬁëÏÓâÙ≠åÀõ‰MæØyG≤åz"RˆÃéÔ:«1Ω\Îâ√{+>À™Ú&æ»pw±˙I}z◊Zá0»¡É√5»Å˛¸Ó;PV
+üΩ‰v¸aﬁ'$¯£TÿÀ»ßôóûuCÎ÷éÖmÉO-Ô÷s.˛.b…ÅÇõEÖ}≤ Ì∂èé™¨èãŒ∞÷á}åÔa∑€«N?bÓÈ}ä¸ı}#NØ.ëá^ﬁ3e—Â—Äñ¸ÈÇãÁ~4M:HŒ±˘π≠πù›˘;Ü5wû}ˆÚ°›ª/ÌësèÍÅSh0∏Í!éç9à›:¨·`y'8Ìq≤ÉôUF |∆·Æ-¥}$˛Ωˇ°æl`õ8œ8˛º∂/ÊüL »ŸπAÄÖ +Ì2rqú‡0Z2
+*Ì:ëÑO≠kõÅÜ†•‰54à$Ñ
+j eì:TF◊™*ùúè`@[Z	&¢…@W*–®C∑5∆ﬁsgõ§àêê–ﬁW˜·˜yÔy~ˇÁ˝∏ÛèÒŒúÓ†∑™3.…jäÒò¨R¥Ë•J•ªF,	z‹˘Â¢ãÏ^œ&˙	ˆ±L∂ıH·˜ø–}±‡2∑‡*˝„$π£u÷ë1ã¢{wkì•YØç7˙í4’`tÍaÓeX≠ ˘≠4ıR‡=©ÅDF∂k}∂`a¡!åTyøó’‰êπ»àÅÌ~éåø®QF £‚'¸:uî	´˘ù:#*ﬁPÓ…?NÆloÒ˚eæ“Ñtº—i0⁄5Ÿ`‰∫c«au+∞j?@J≈t∆∆ #=æy∏Ωı¯2G⁄ó€î/w¶°LvœÁ;≤	»XwUqªêQ≤∂ÂÆÀØ]ûBF>Úiı¡.U”FxÇ5ı°?.ì*v®ïÌØVÊèü;ã€≥‘P∞Qq!c÷ß’/N˙UG®€>È–ıml„á_î(TEd¨uPK(B»•‚EX£ŒËØÿÂ9s4ﬂS§t.ØõæF∞+;îmÚ,∫ÖzïƒdW∂*ÕÌcgí—!6Y◊ûk! £∏¢º∆“R®◊=£Éniœœ=∂9zØπ2¬gáπµ@›≤.‚”sö>ù=˛Õw ûúió.VƒÆŒŸîgw+ÖÄZ`Ô]Uª¢?Çcé¥jdføø_ éEt∆/≈œî≈ì\ﬁ.Uñv–‘F	˘6yÆùv"`◊À›[ÂÊ=»Ë¨Î–Àƒú“&+˝—r32:BNiÉˇêXÁRπØ&Ëoœó¸’PÀVÃ„AŒe5§i>}¨ÌRsπ£¬ÛËx´]Ë¨pUK»X¢‘{ñˆ´¢£FÆΩ6–~˝§
+P∞∑ºéƒíÛqöyéøÊ°3ıUñDÅÄ,€«é4ù›Ìkd'⁄‚è'>¥˚.»ÕndTíåæghS1wlzN¢∏Ÿ!·R
+5Äyˆ≈n≈Á/\Üår®•©2?ﬂ) #“az∆◊Àögz*&:?‡Ó†2Oaﬁ◊Æ·FJƒê1ÏÛ«ÛÆ5íDúπ®„óã'çdFFÏ`≈±Ÿ€ò·QÃ„o~Ê€™h‘»c_2è.—Í§A≥Cœ£l;Ö0è .B∆∏f6⁄˘Æ&}ÕH»8 ¿ìåÂdú`∑õºi∆∑®áEUÿ”õ¯Êz:èﬁ8TLb\Î˙ÜN«î÷£cL∞[5≤fΩË2jV{ûë«õ<-;ÄÎÛqAzÕTùt„…Mí†.,\ÿ:ÁDÊ€8UAYñüÔ$ˇ_GÚP„q‹{
+|‹’\%ØªÙ˘xp◊Û„7xÊUÏyºl…O}Ì‹9vkx †Ø\ﬂ•˚k/ÃOÕG}ŸõìJ˚ÖR ÒûÛß¶∂_í	¬≤£Ác“x%êK¿*uÛÒe}ÔAgú}>…ò:Î6º∏´øäGü^m©∆u=;V◊[óË5-∂¢mÀ—˛û]+NüÃ ˙:qÆ+÷UÒ¥Û·≥ga(Ú∑Œ¢„ó_w˝∫˜ ™⁄>‹{"≈a¿°&◊µ«_G‚”$êùS´œZÿ∆>ÿíõ\◊uâ†%—E!l¨k ÂhHÆΩ5byÁ^˜H±‹Mm˜Ú‡õÏ∆ÕÕÖ$wD}∑ì
+ÅräRj£CÉú°|€Å §Ú¶ß]8“EKXj#C¬Ë.s˚ëQÂ›d“‰twºππdaÙhT‘n0*rEíë2¬êÿ©oä4£≠H‚ña$„Ÿñ´ ˘#9bπî6ÑølH…“Oàÿ" Uß·„4π∂?	£2™ÉOß:‹6å·NhXõx—(€·™;@ªìB¿
+vÅ9aLÅáëœãØÏôÃÖ'a,Ügªf%¨Å º!ÿM–
+m∞ˆ¡ª>t√_‡úÖÛpÆ¿ø!N,ƒA y‰ád
+yÑxIôCÊìÚYI^"	ëWHŸIﬁ ˚»€‰ ˘3È"«»«‰4È%»%rï¸áj°6Í§9‘M«–ÈCT•Ât6ùGü¢?ßUt…=®œ—ïÙ†Ë˙*m£ø£o—˜h˝Ñû°_––>⁄OÃÃ2Ÿ˜ÿLfcŸD6ï±Ãœû`ÿRˆ<[ÕÍŸ+¨Öµ±7Ÿ;Ï˚êùdßYÑ]dWÿ ß\‰√πõO‡ì˘˛^∆ÂOÒ•¸9˛"ØÁ˘fæùÔ·˚¯ª¸O¸ ˇÄwN~ò„'¯'¸ÔÂ˛w~â_ÊQ˛O˛/>¿ØÛ∏âöÃ¶S&V'·âõJ∫ﬂwPg&íA,T¿ô;åò):ß"Pf-bTz„ÃPVj∆cÕ0éå‘˙£Vb•ôxo5A∑b´Ö√Xz/∂öàïËë2t_8÷fÏÉ˛à	ØB≤¶,˙U∑Co›V¶∑ﬂâ¬€ËG.TâIu:åa≈(6íÖxË
+çÿÇa∑§…òÕîAlƒ DT"Íπ√ÏâÿGW>‰@≈ÜŸE‘¢G—3a¯ßzÍ5Ïÿœ<X9∆‚X—f"‹l5£7j66˝L–Üœ¡4ÍÎ8Ÿx∫pY∑„ŸåmKÓ—q_ä7≈nºzπ$„ﬂË}/¬ÌªÌ+h©{≥-ÍB-ì;yn‰s[ÏˇNãs®°@F-Û:πT’"Ú˚§ÖÎ◊›hÒ—í%®®≈_äZÓçñ‹~òvkãê~Ÿﬂ\ÓRID“}—2\◊bø7xWZF˝o≥l©®a˝ú˙√4rkï)-)£¡…∫zæ€8ú÷“é_æ5Çƒ∆ËZ≤dø◊ó‘∂t0Õ¯„—“ûp^tÈ7=˛ZBÒG£§∫ÆÆƒÖògmøTkâÆ)*éèŒ˝*ëË€z≈≈	m¥‰0ÿ5#˝/Ûı€ƒu ¸˚ﬁªÿ\úsízgúÀR¥±Í£‘_BŸñ≠ ≠?&m’9AalÃ⁄çhäíKHúdrHR:…lêâ?∫µ[°l⁄⁄?∆968U”¡¶µb“TlEÇi ’l’ÕÌΩ≥B˘•mï∂g…≤œÔ~|¸ﬁ˜˚æOcÔÓ‹ZªAÜ’hû–ñ\}€~€≤}¸∆nÎ¨n}y«≥2Ê!√Ûÿ¿^îæ·¬ñEXnôX∞©¥˛(ä&ØiùÈ·Ï&õ^∫ÃãJ¨ ≠ñTQrHb\êÇ·zª_”,FûŸ 8oëtŸ∫óeı•áL≥öòn ‡‰“Û—£\L¿“∞KÑz|:l∂«ÜóI∏ê~˘òÖÜ•V?¥2À’â∂ÊöúÂÇ8·®ez˚¢≥›⁄e¬{∫5À‚ë:≈e[ZèE˝íﬁ‡qxú˝…8Á∑˘|†l¿ëÌ;ó,,≥(Ïø∞õ,^PTÄH-∫&xB÷Øf©d›m∑-›ôzj°7*Ãz’≤Tc≠ÀÊ¸™a»À,Cú1'¥˙tf9{Û¬íÂ“ı«z€¡ôÚ	V9%x%9ã¿,JÉ‚û“cSG‹–‡qï;!"ÈÙ*äœûí`Œ»Y–πDß≠1D6ÈÛB0˜N&Ì◊/Ó#g—Ö!jëO≈‘íÒn^»à"üûìd«1ü∑ÙÑ™Î˘F}≤¥»>Ê¯B≈|∂Ôÿ1}~∂Ê;;πänZá¯£mâ≠€fIö#KñŸJŸ—fo¨+=N-Ç°ƒ˜%ç⁄ãΩ60äµR¯züoLè9ø⁄].WÃπßªCY]ërÛsF¬∆,§ˆ‚·íÆWäœ›lLGbß˚NæuÏÊklZr‰‘¢~QÛIeÅ[2/“˝e»hÄáÕHˇT6gyv§s≥xæ*(—ùtmZÈrÙéJìŒ√PÈ‘b'W—od¥‘WµuªÊï¶m&ﬂ÷\.já,À£FK$ó€∞,ïóµΩZu¥◊m*´j+£=@-f4Ó°ñ⁄2f9≥+•)^Es/<◊?hYlÂÁ\ÓÙk£c£õ¥t$ò˛c‡¬≈w \Dm~ƒ,Ç•ÙLﬂô≥*'√àéŸ¶3ËLv•«P¬≤<a”6˙ÏÂAA<πt7—Sõu£Ç•/0´˙L~bGinôP®•uõ…Yñ—GM2Ô?"zô•L0‘mΩ≤m.•Å ¬I3æbçK4˛,´ufñ.PAV|4hÕ1õ'ÓR“ØNéMπuj	æ®d2ªâ´:—mYÃ¡£‚^Z€.ÍXeQƒëEê~∫.ô7XñßıêøŒŒÔª&/]D˝"µ√Ï!7z¸êq1Â-Ïd/#;<Ã"—qIZŸf©›?Ω∏˙µ[&µËÅÃz•˝JL"Cü‰”¬JŒ≤¬eµ‚akéÅN-b%/.g·„ÇÚ∆´;®%6Ò[ñ`ﬁb´ﬁØ
+0«MÛ“M´XÁ˚ÃÑ*É÷,&ÕÃpñ%ﬁEıy£¡øa’òeÄZ˙ÃAò•såÆ/≥√ÊK[ÈÃÚÕóßÈ£Ÿa»äóÀ¬‚g¯=˚ØgÇçK:.ÕöBuˆ†‰W¬VÏG„Ó~Ï<'˛¡ä}‘¬∑`¡ñ∑H‘í∂,¡ÈH]ıeTs»†nîZ˙∆Ø∆•FóëŒ∆•$?«å˝)…ﬂê¨
+ÆÏWW"»Y‘6B_?—A>KW…u˘qâû'€hÌ“_dYmÕBﬁ2†Ús°ÑK“u®‰g< j	Í-ß°?ZÁ#πúóbÑZˆ[9sä†¥œQãê≥î«%j©õr˙À∆<¡”€ON4USKèpÑ≈K;8B©q3`èÔaÒ¬~dr&È∞Ê2ÆI’“†>YF‘Ud‹¬‚•MÑÕ…K!^ÜDöìi∫gñ≥À,1¨Úë©ûz	¬êé&µΩ≠A°”KÛòÇPtßõ–µíZ∫§"ÜE≈Z+ÌYE®Ë1¡£u∞<∂ˆrπª„Â ±_¯÷Tå{¸œˇ˘çhlæ˙©où?w*Fsrh—1º◊Ktç•"∫t–°ˇB;¥gâ@K√”Îõ?:B◊ó∞∫"ömß@Ûò"ÉLoIûàâ˘<VÑy∫V&‹]+YNT-Bk˛ﬁvkÿÒ¯åH-©ÎÊc◊¡ò}ŒKÔÂ7öøòf<õœ6ˆö„ŸcY±1–Î≠œfˆ¨π®»jù¶hÊ/ç° H2VQ¸OﬁﬂháX,‚ûO˝ùÆïçt∂V"–ÿA_4ˆÌY.WèYµqK<ˆXh≥=—≠Ú›}Öı≈\êiì≥4â˘ıcﬁãR`ˇ»≤‡€^`ñ€{1,^V<,ˇ|ü¶ÉUÑ‰zu 2{Xûl·œwíı5Ö˛Ùëÿc›£Í∆÷èìÛ_P:u«	VÌSrãYNÄ≥≠õYƒ%≠«˛+Ká˙PÀ˝/u∑•ƒ§„eÍÚ=ªÍ8ƒµ)ÍQpé®ÇÆE¥ÂÓÆŒjˆ;-A˝^î“7Â-≈∏V¡“Ú–ªÊ[Ó¶‘0AÊ©•/K´Êˇwö=˜Æ{!ê ü≠ﬁm1Ù–BÓ£„◊*XÓ≥£ªª,Îd’≤É&,≥¸/€C˜ï˜nàV®‘ºÍ¯ˇ±¸áq|ﬁ"|ÇL√·¯4≠ÊÎ·Û–[ÈéÒIxönf:†ˆ¬–ÉÅó‡(úÄW‡4¸~g`.¿{>¸n¿"ZÅJë=äÍP=jB_F_Cª—˜– GG–	ÙKÙ[4ÉﬁBÔ¢KË*˙∫Ö	∂„RºØ≈
+n¿Õ¯¯	¸˛Ó¬ﬂ∆ﬂ≈ΩxO‡)<çé_«o‚~ˇ	ßU|/í"≤í¨""ë>ÅW˘,yå‘ì“B⁄…3§É<Gê%”‰yì¸é$…;‰]Ú>˘+˘Ä‹ YÆàsp.ÆÜ[Àm‰öπ/qOrAn˜}nàõ‰~Ã˝å˚gposÔ˝ãˆ™äÍ∫¬Áﬁwﬂ€∑?∏oRVÀÃæ]ë∂©lPà⁄Ç—‘Œ»+ôN&¢6≠Nç,∞—›¢Ä:J"#¨öV:”hgÍƒ§-†®——ôLkgÃ@Zc“éç;Q∆ü◊s/¢∆®sœû˜ˆ›üsæ{ÓÔ«>aˇbóŸMYïìd]û&œîã‰9rôºH^"◊»A9"ø!Ôí;Â∑Â˜‰cÚGrø¸©|Aæ()_ëá‰õ
+QdEQúJ≤í¢xØ2Iô¢LU≤ïßîô ”JëR¢ÃGydº¨‹ë@éø¡xà2UHòâÖÿ…8P	:&f∞PE®å%f#¸ã»TX∞çJ,ê@lh¡äœqƒä™ÄÁT8ˇ8‡j¡+÷Q1«Ü~lDë4dç6¥h·∂Ã¬ñä5y{ûcç+
+Ê®¬*oa#fj&åb€áÈ·˙œ=ÒﬁH¿£0ééöHùòáJT|´!«/˛qL‘…xπM≤ìl·‰}ÂD¡æ!Öã8hƒÜV®ïZI"Æ+†b<ïxúàâë0Œ
+ñ‡((xµ•60…¢L<Õºn
+V√h‚Îÿ‡«öq#‰êw‡~l=ñ‚ˇO.≤)Í—¬°oÕ≈Éo∑ë¶?n$⁄òsÈH\8[ƒ˚∆6f∏7n|O˘˜∫æ#!k©| "ûæ8íú∆Ωª%ÕYØ›Ø¡Ìõ‡h
+‘àì«ÒõÖ&ÃÍ#*@mí« πy‹ˆßÔ0R['^À¿È·ÔEçûpå#IÓYxq6T2Hûîìˇ√sH/<ˆÉΩµπ∆∫πÔÃqß|6‘◊eú≥√èk\à$Ã∏!~m˜5©Ó6Î|PT∞Ö©Õñ¯9…ÄÙmzÙ¶‚Q†‰÷Í5ó;ËHL<yyóomG$j,ï«§ß4+í“Ã¿ıyoM·¢y=¨4‰—¢æΩ`ºŸÈÙïµÑµÆ›~U !∑ëÿ48Æ´%uÌéûÑêÊiU“!k∏éﬁlB$«&,ÛóUeñ∆„Fi}Ëµ≈ûQ$ÂÅ¿‚ "ôz^ I¸Àµ¨(›÷Æˆ–æ‡.ÕÂRi®ƒ‚[[üñ·ÏçZííäµ≤Å ›ıàdÈº3:~ÒÉ™¥7wı˝ywq[öY◊TeJÛ·∂S∫âÏÙ§“}˘£Lñ∂.›¯LUÊÊ˜›}áØ\π⁄œäVe-0kAqñl]‡q5‰ˇW Ié=˚vÿ⁄µs{«¯YÉm™/ht√zK^K√˘∂`lÔ3ñ'>*‘ uø/ƒëlyΩh~U¥sΩo« uYÂ≠YïùÊâµaW÷öc˝˝µÜ·0¬ˆ€ÓT£˜òå∫úî’ÕÖÀ˜'•k∫Øê©>µhn†Ã≥‘-2ˆ-ç{: Æ∆˘˘á8íe…[JΩ'v⁄{!=¶x"ﬁÀAÚõÛÖ≥æñz_ƒ+ôly‚o!Õ´/q´|t¬ë‚=—ﬂ)æäÚŸ”5Å$£IUÊo√†ù«§Ñ@fa≈5ï—Yd{©˝DUñÀ•iÆb’nh´◊;“IyªÇ£S^q∞Ã<&…˙§-◊“¶KfÈªMüDºZı›‘[‚¨E$g…UÛjA¶	$·ëähg‰6áñØíÓ‰´}]M|ûL&–Ω´q˛-œ<€KÛŒTe$aUM◊3ÊfÅg…™ä=≠‡‡Hæû±jiZVÉäH~€;=Í’].P}•ÌZΩØŸ·4ÛÎ–ºf=§ü}1[√·ã£ù%>_˘—xLtµ¸…W6|?Ïj,Ö —XP„kß∂˙bu	ÆùÙ$]˜Öò©ﬂØÖB‡—Hƒ-F« ü'”ÜgÏ¯¬œOæ™Ç^]õ3ue 	ÄI7jﬂ3å‹cÎ^ËÍrá?À=ïü≥‚†±1ˇÏÚA®⁄?gF8≤2Û›‘Õ3O©À>‹±‚∏n⁄·Ó÷Í(ﬂ?pèµ‹R˘*VAø∞ÊË[n˚∂˜˚¯å‘mıjDïœXõ7/
+…ƒ^é$æ«6çÏN˜Ÿ˝\˘¶QÁ'.UkíÁS=C4‘Óm¬‚Ü„[…h˛™ å…3ípèUcûH¸‹iæÓõÀHÍKIÂá}êˇÓ∂ 5i”°sjÉgh;åmç©“eÔÜzTD‚è#a˙±n˛÷Ôá‰Aâ8√º“”u¡á™ˇÌ%‚FR˜∏êº$@"|Ra2™)êπ0YU èÖdVe,∆ÿˇ~Àë[ΩøÇW°":lFÜÉNÿÔ ø:'°O0¨O·¯
+nÔÕN‚"n2ëLF¶ïK∏qÕ%œí‰ß§äºHj»+d-©#Øë(2Ø≠d;i#ª»^Ú6˘#yóÙê£‰rÜ¸ïú#ˇ$ˇ&ó»W‰:1(PF-èAú‘ÖåŒCSÈd:Öf”ôÇ◊-†ï¥öÆ†´ÈZ⁄@√t#›J€êŸÌAn∑è†¢GËQzÜû•˝Ù§CEvó$•H>ÈI)[ Ã¨πY•T--GvV'E§&©9Zõì~/î∫§“idig•‰iÉ“UÈ:25`ŸöôŸòù9Y"KanÊeŸ$ˆ=6çe≤lñ√rŸèòü∞Ÿ(Û@∫áHèƒ•$ ¯}L»Ã»ùÇ¯bB%ºÈ+pó	Û≈≠ÀVè|√å≥HE;&T‚π¬0Û‚π*/ÁÃÜπ	CÜƒÎq{™‡ú∑q5·Ëâ˚Ê≤∞Õ[®ÂæóR—6ÔE6á,rXk3€∞_°ºüúg∆±õd¬:√¸œÇ<Gp,∏ãw∆˚œ≈ä5MˆAÙGÿ™`ºFX™|[ê«*T·åñèSÚ8ê%Q&ûºL¡ıkÂR»™å[ú∑Jo¢=æÒÂ=‹0Î ¸¸Ú,íˆµÂ∫®DE•‹À≠jb„Œß‹¡Ø≠zoíƒŸëˇ¬c€4z‘@Pﬁ—Ø˝ æ’1M◊Ñﬂ·7ˇ˘¨ÒÆ¥ËÊâÆ`œ¬økî'[Có.vÈN˝¯‰Pﬂ’¸2u”«ó.˝⁄¯¬¥Èe£AVÔ«ÜÈ ˚æS£≠◊≈R
+·hPúëÿNáúö¡∞Cáw∆4éèÏ£°ƒ≥:–Ø3]¯çï.OGb;„≠yÕ»î»OV§7ábE>O„Ÿœˇè¸Úé¢∫„¯ÔΩ∑ŸΩ‡ö€Ñ ÕxG8“D—.A$˝c≤¡»$k§˛Èø%†¥ñqÇ0R‡	ê£°∆j"”D4Ä#0ÿ?∂3t/Á0a&#⁄ëVGZav¨Fmßâ∑˝Ω›Kr	vj˝3«˜nˇæ?øﬂÔÛˆ∑˜›'ÁT™«C{⁄öˆ-Á¶⁄¯±Ù•8wtXh≥∑À÷V˚*#."ÕòZTü„rÈ¶€r´v‘vï‰›Wvè&Ó->^ıÕãN-ºŒ∞ñ◊Õ∏Ï∆≥ãÍn€ü[ªW*:oÜ6g·‰›]Ø~ø§™Êö°e<\∞÷ËÒïf˛ÀõßÅ©=œ7µ QÉ…7^õs†∞∏Øº,P∂˛ùLˇ´{Î/„ô9Ô.x¯Í#ã™∫Jäá–Óùw,<˘k„q®è<QrKD'ØÎÕY’QV}Hÿ˝ˆoõøÊõ»$Ar€˛{~ı∑g^Æ)9ÿUhE7◊Ó;™©∑¥¨ÔÀA¡–¬vÆVKÉ)—m3Y]SáÃM9⁄éªˆ÷Á)Sáíﬂ;ºˇŸEï]%’¬n®ìw$j˙_?Zﬂ≤°§˝»GáfL«x´ã"´À≠›-e´∂îçvC˚Ôﬂ[s ∑∫~_W¡“„õÎ
+˚⁄h{µH˜‰≠√úáCªÜ Ê⁄ë‚Ö≠z–|>Ãú‡é«æzWŒÆó{dËŒzÈÊÎ‹xá{‹x}µ5˝∆&ho´,i7OtB§hwUsAu(⁄y›ùèá≤s5OGª◊∂ﬂÛdÕ˛Ω’¯	r⁄≠ÌQ4ÿ˘◊7Œãx9–ù?Wí/jÏΩÓõRÈ»5√EÊ¶\ÛÓµ›4ûÒnªÍàâ¬6oΩ∑æ-∑ø4˜8≠ÿÓlÓﬂﬁaXx˝/Œ–ú{‡ıÉ«ﬂ~gÂ€•ßPéﬁîÄì≈]Ω7ﬂﬂ∞j˚ìÁfÌº~IkîñÉoû&÷7gO|ÿ¥
+»è"ﬂP˜LÈä≥ìwπÎõlô¬Ó<\ﬂiR®äO€QíW\ŸSËÂof*?J!aˆThR4{2Kå»¶=0öß&±S}5ëfUû”D3âq•td¶…[°Ì“¢óˆjÓ9e7=ﬂG
+ŒIöˇˆÑ]€≥ª"´Q¥©<‚cvGnñs2<a&—˙HŸTZu:vŒ˙Kü†xJ*Ú ÄZ™äa&ÃB55JQOï£ûö5p+,Ñ€QO˝ ñ¿R∏ñ√
+‘S¬Fÿ?ÖvËÑ_¿∞¡x5’1WQùÇ3&j™˜!a‰íM.GU5uUπï’\r© ÛI˘™´;»˜àEÓ&˜¢æZM÷ëç§ô¥êVÚ0*¨«»n“Cû&G»oPa˝û%±œ†''»…ü…k‰2@ﬁ"Ô
+•F3®üÊ“+Q_“´©AÁ–ØSìV“*z≠ß∑”Ô“%t)ΩèÆ¢ÎhòFh}î˛u÷”Ù˝ç“>zÇ˛âæF„tÄ˛ù˛É^`ÏR6µ÷Â,ÄjÎZ6’÷M¨Ü’±€ÿwXªó5≤ïljÆŸ:∂ïW3€ ZÿœP}u†˛ÍB÷Õv≥'ÿS¨á@-vò=ãı9rëíπC>ñí"(Òø=5Çœ=J®QÒäRwc$Ø&T!∆†Æ†ﬁ8oÏ»ôhuí{◊kë›ñWGE¬®BqsÁÛ¨g∏{Q%Ô(ÙRZãg…ÁıGªTÿ˛ÙJJh#ÙXózÂVÙ}∂‡F•Qèî4eö…Dªüèf∫æyU©ÓLT\"nö‚Üô Êûî≤.⁄ëï∆*C[¯‘dP¡ìIä$fîòÑæx˚—ÉÄ`–&ÚÿÅÀq˜&Ë»ÆÄ©ÓãhÀgÛä¯‚´™â3¸ﬂÒCµ¸%)A±Ò±Î∆ÚA÷™°T∏v¯ª‡$æ4,ja<ãCACœÖ|	Ô€˜Öb¡?≈ÿ«ÇA√'XHoCõˇø,¨ˇyˇ‰∆àPáXh™FÏã¶œì≈∆(6¯G≠Á_‘√N}†˛áb^|Àõå$¸Y«áß©c&æ ”XPè„Rê∑åg°~å…GÀ®í˛/Eµ €â©,56>⁄|*/±µâ#Ef•Î¯¬›Ω‚îÔJ›H^4r¨Ër˙óBF§±;ox,HgQÛæ‚‰ØQ8»n∑Èvì›HX"„CÃNyè⁄kÎôA-êÙG«Ô–%Ô&$Ö‚%Í$˝M…rT±8l;ßù¸ƒsB7@eQ‡ò1ÍﬁÄÅfYõË4˙5ÇE¨{ÖÊ±H#üb°ú¿≥af§˚"Ã@”Ö¶N9˝Î%S‚Ç‚∞¿+◊√RèÖ,!ãÊÉ0/HV∂©6~wâR∏¯°”	¶6:]≠F {∆bnk≤Ã¿Íg*5lK"<ﬂêt√¬_¨”ØŒÊúƒr^¥…6®£,Ù—gùxYuc¸kfûY¢”“¥Ä¶‡6œßÖ‹ã1zÇ´¨"Üb ã6L,\≤,´°∫I«"ıæ‡”q’gC»cÒœ≥í9∆‚<l
+íC∑As±œú›≤2_ë Jıi)Ô7õó 4∑∏,Ï,bœ,ï›“-#⁄*´Ÿú≥p‹±∏[Mgë?ëÖ‰˘Áw∏àcM^'¶øùñß‚i,∆Ë	YSül∆–-≤eV+ƒGöhjzŸ>€∞çäõêÖ6ëEÿúO∂êMπu‹c1˘¬{±Ëµt;aD≈†s⁄JTøJ83^	„ÚΩÇ≈b(ïaân©L%zî{,,Í—cT’¢(€Æè∞HË≥õ≤î”É·√Ω“9‘“∫aƒ7æ•ñ*CˆúV›6bAd¡T√M$ÎJ0WÿñÎy•È≤@ê8ìæfãÿy…:\Ö~£è7¯ ê3g´„OñüIbVfÚ<Æß±|@é,$˙{skmüÀb™Û≤ÿ4¬b¿°AÚº©s9X!å›ë«ı
+|ß∫,t∞î¸oR[∞X CLıXƒ ãX3gé∞à·ª7JpïÙ≈‹H±`Õkñ≈uÂù—ÁÚﬁ˜7…z„l›yKM.8ßU]]÷yÃD5‹á«*á¯Ö¯`jy≈˚C	‚ctirã”Á’∆~¶D∂Tµ4;‹Æõ*ÈòK∂ÍÉ†ï]ûô’RÒoÚÎ/6é£ ¯7ª€›u∫ˆÌ9¡ÃëKn„Ñ®HÃëí∏R™[ª!aD
+©Î$J@BÌ•/QŸsæ”˘ê‹Êƒ_WH‘ï}-HHº ˆz©ØïL⁄æYjŒîÚPe£
+r«ﬂÏÓ˝qÌ§mâyûÔvgg3˚}ﬂ|
+-Y>h6p;¥pùßR:]ô≠z]ãçAã?ìLã¨˘)Pºo;±=öAãGñQ® @Cãœ¢ÖY‘§[^Ö›ƒõ>¨˘∫ó‚V≠Ü≥tŒ¯ª<{¿B˚ﬁ’SÍÚ±/◊ﬁûK˝<âll8ª4º8qı‹ÃíŒÙåyUZX¯:æˇ≠π)n∂L≤¥‡nRzw∫AZ(¡ö5±Ægﬁº∆”v„Z¥¡'À&√ªs\JÆ7ö*ßJéÏQZ8N…Æñ≤⁄¯hïEQ”‹Ç“µ¯ì¢π‰6ôW›O∫x≥e¥`Á’’@œPJdvAèyüÄ≤û*Í“bˆÏZ∞ÈÉ°Eu∫∆}¥∞.¬åbùœg°ÖÆÃÊØkü?Oèe˜:ÜNÈòï]J®yåmÀ*”ôµ∆—¬ƒ–+∏+»©∑≈{mW>∫Î‚Cz&>Œ°√ê∏Æ≈≥ãV˙mãm¥0«‡[xöU<—%Ätúçß ¨4ôD\mªLs^4Á≈Mm^N)ió≤0û¥ih±'#¸-8ZL)⁄ƒeHßUsAh·Õ÷·∫•'L™¢¿=0ΩúüÜ≤q-¬ZûXáÉhq†$-û_´sœÇáMf:#ó¿ÔY¨≥#Î÷©É“¬ïGÙÏAöéÁ≠?ÊΩ»"◊∆)≠V\øÒOq´„».'—5ÑO57¯æêËÄYâ-UüµÆYn~ˆ∏x…ﬁ°ÖûÌGSû¥–,∏ÏQÆ”©≈ñ--.DDZxh1©·∫P”ÈÄ≈p.j˙ﬁ•	¬=L∆<ã®›uA”m8P†K]ã∏ú∞•Ö⁄FËZ–#Ï;±÷©ÖK	“dûll‘#ã‡40¬WŒ8µµ-\ô€Òz[Æ])ò≈Ñê™ùè-›l§yh·PÃ2[,†SùiõX_8EÄ§ñŸ£¥–ú .ªÖ∂≠€Ò∫hûå-x◊B™nÁ¸œ=ﬁZ¯8#«t+[_óQù6:6.«1¥à„•◊BÁjÙé¯2™Si°ÄGx◊B]¶ﬁ%Î‘∏¥∑[¯hë¸Åxò+éSWtr»V âñ¥ Â=!D0)dˆƒ_∏Ú:–ÿy˘é∏=GZ——–b/Z»∫”+
+ë‘∞`”#’˘Ò®\aâ„E+∂„Ö[…D;_XQ˝G0vö‚<≤ö,\2-6qX!Â8èP⁄ ∑f-9¢ÿÈêJòTÿbÅÎbTZ4iôÍ”€,fç?¥¢uQ°≈˚÷≈Ç¢À<¬¡à„Ö⁄‡*oÏcóeÏ‰[-"¨ÖTôñ§Æ‚,ËØãï_ÓA¶`⁄≈á¯YËYòúXuÓ´~Bã>”©Á±0^p`îMîQ}AiùªµaÀy8 ©æZHÙæ•yo÷:µGZ‰w∂HV¬ÿ9cW‹˙ª∑⁄ÛØãnº8tíjSHã~º∞’∫Oxc˛5Ã©_ƒh±%–¬ç,0{ZÖØ%ÃæÖ”èﬁÀáLÃ©8evdÒqZ¿¥†Øflaezâv)ZLñ`U÷ù“Ç’|^3,'[h“Ç®`FÎY®∆†≈+Su’ ñ$é„Õº4Ÿ,6£ÿ)sj*a⁄⁄f+wÂ…nô:ÊëfôŒÍ
+A/ò∫—Ñ•∆àªÜµ÷5Ã"c +¯™ÂÓÄAd≠%-v°Ö;È‰ë¬I´¥ñ«)sÓlaˇ±ˆk,®f
+◊∞TvNC_VÚ5±+H‹è†Ö…¸&üëQÓõZ§ÕB|å±=ãﬂ±7ú≥⁄I¥¯˙—4˚
+-ñ≠ôüÓUôw!ª¸X∂ë∑∞¨âj-GÕ-då'∫ıE·ÑıE0GA◊zµ÷|'∏Œü_º6Y∆ºå’≈n¥«˙Çáı≈≤ kã~}ë$SX∫„ÉYÏñ±≥[Xj”A÷˚uº¢#˙Ãï,©u|¸˙¢¨;Ò^Æ≈.ÛW·¢YXûôc-·X—ﬁÃœ¥—"qΩ~C¯Œ>Yíc'œ¥Ûo∞µ±iìÓËà7ÉÈ∆Ê—2ıgsÈssÛÂıπ®óõ¥ÄÊxΩ∫SKYwb≠6‹T…u¡ìü1~&˜XÍÉ§…óu'ÎŒa9õÄ⁄ìöÏ’·˝∫s,»À§*;$-íëEIZàñ¥X^˛i´Ö®0¢6ƒÕ@Õ@¿2œ2XAC9—ÿƒ ﬁI‘ZπÑPã7≈¶x9◊“åZk.QrÌÃ©∑–´‰äh·u˘∑j’Ñ±y÷§Gç∫·[%ºÈ◊6g`#â˝#'2ı ÓÕ⁄2kûìªè~éıEM‡ÎGöÉ6ÜõéÆÓNC⁄v«{.1∞¢≠@ÜÀçTœ¢ø—† /ì≈–bó˝/ÒwBúzﬂS[áè–‚˘ìÒ"˙@Io`pî˝ÍÒ#ı/¿J‰πÂÓ?d^⁄ŒwàO9p}øƒWæ¢˙=ÙŒÀKã!`â°Ö≤eh∏ë∏/;>ˆ-T˘ïõæìÖ{è∞›bá∂£E‹Ö!Çq'òÊMŒIÖàbzÀ–læ≈`Õ][¯‡≤Xò¸næO˙©¡æ>¢ñ“¯Wt∂|9ó·∞ΩEﬂ%§Öc„Vé@h¡’≠C⁄y ∂©A¸°o°'¯],‹OUªˇçˆıÅáÔuîn|¥Dä¥®n≥ÿqM}¯÷çq–Çßqria»ªﬂ)^`Ú1∫u˝Ó⁄xÔS˙^GÈ∆«∞¯∂ã˚i¸˛ªp‚£Ì¨Ñö¥X˘oZ¸Ô4'>⁄é◊∑ˇ?-∫Õv¢w§ˇwZ®˙ˆ·FÈ8úÜ35¯&úá' èÅckŸg‡Gx~øáº	o¡_‡:¸˛F&#¬»£dö|É\"ﬂ≈Ç¯ádô¸ä¸ñºB÷…;‰ñb(c ∏ÚiÂÑÚ%Â´ Â)‹ΩVïü(/(ˇ¢ΩZ†¢:Œ?è˚ Å›ÖEQΩÀ√ YÖjä∂e¡≈æV≥kƒ∫%Ò4=—"Òë•÷jyhSkå=`L7ûH◊¶≠èhÎ„®®UcL|&ç«⁄¯à«ä∑ˇ\5új<«tˇ˝ÁŒ¸ˇÃ˜Õ?sÔùˇÆßõÈv∫üû§ü”´¥Éqf`}Y"KaCXÀ\ÃÕ~∆Ê±Ö¨û≠fÎŸ&∂ùµ±èŸvï˝áµ≥ ˝§èÁâ¸Iû∆Gq¸9˛ü≈=¸uﬁÃ7Ò]¸ ? œÒ/¯U~[
+ózKödïûíFH„§bi™T!-í•ﬂIõ§•#“yÈ∫Ãe≥ú ß…Y≤Cû"ø(óÀã‰◊Âır´ºG>!ˇSæ ﬂTò°P~§‰*SîóîŸ \e±≤JyG˘@ŸÅiÌ^Â∞rD9©úU>W˛•\R:U¶™™Q5©}Uøí’AÍ`5CÕTG®π(Ö z¸∫-x:?ƒ?`UbÇ0ŒÃ$äˆ"*Q©h©ÄJÇ+ËEeó‡Æ*.ÑÙ"·`"F0ÅÅI$â@U¡ÄàF⁄Îë$J∑Ñ{G£Æ*è∆~FÅäÅ¶cÖÚGËÿXÍ!ÖD0a?√Jg˘0>¯G‘@edê9£ë,R◊~RÚ£‰•°˙<wX˜ºhåÑ~0r3⁄Õ<£ä"f=bS∑PΩ-|Ω©¬•pâ|ËGb0R°a∏‚∏FÖ˝CÑÄ.∆(°†wÔ #ÆZàB–ßàË”Íà@†N<«	‹‹ ±oo‚jâ∑C˙£ø‘¯∑A|bÆˆc°,^9◊	èÔˇv√}¡m˜a—ìmMgŸ‰n£?]∑/Û[YpTÂ›	“›˝Ô≤ÿ^µ›;≠≥¢t–JùÂ–∫µÎˆﬁU¥¢≤¨+ü<·ÅeO∑éoÏºπ™˛◊√∑Œ›⁄ÒıoœÏF≈‰<˙˜
+©\NÒÜûï•¿∏”Y ó¨≈#éKj85˜Y¬˝≠Ø∏¸Zö˚PRº{ﬂ‡øüœ_YÈÎ'«ófÖLœ.∞oIÆœ3ûXñ_]⁄Úso≥m XOLñ®≠f˛§heq≤iÁ	ûóóÏ˘eü&l∫È˜*.œ=eûZ=+ Qsƒ7,å>üÊ>vT∞lˇä\iU¸+ÀÆ€ﬁ™Y_hX>&ππ ≥£™ûÆµèÇô%oóÓmÕùy‚bŸ‚c—)Í∏ˆµ¯^%z»ï9ÉêŒîWÓöf\Ë®Jåﬂ∏y÷d®_⁄3◊ZZèJ+ô≤<ﬁΩ˜ΩÊÏç}Ê`~Õ<˜€;ÈüœçZW®6\LÆ˝A~u]UΩe'∆≤¨Â˘¬ÆıbinŸ;ìè´©Å∂:Urÿ‚Ûøﬂ≠“Çê_ΩxYÍ›Œﬁ¯>œÎÃ´Ù8".µ∂Ö§πOÔ±Dù{ÈoYêﬂêWíò}ùDö∑®πˆZs~ubï∑¶f≤4î‰¶ºﬂln—Y¢È®∏#_ñ{nü±Â≈XÅè˜å-N∞T%WZ™∏]NƒXæjXh4!ãæbıEç√≤å˚;kWÙmV∑n˝c†qu˚ÍÀß?ò˚óœ∂<¥ föV’&âk∏•jŸƒåÂ§ié± b¨Sy÷ïõïÙÈùo–å°CöæX{˜Ât{‹n◊˜≈Yq&˜WLøì©Õ¯øo|≥od¢jµ+„™+ƒªá‡æ‹yp Ã¡ÁD Eú—Ôd—ÃLq∑%%Nﬂ'Fè¶w7ˆd)∆ˇˆ+0Ê.3-Öª	ﬁ]ùq~Æ‹˚ò·?eû/Èá”;l»øº«» {ù§Ω¸·£ìËh¯E—ﬂE—qj<$·SkÖA0ﬂ«O¡0¯	d√H»Éqêè˘÷dxû«•r√PÜô◊lx^É*®Ö•ò{≠Ñ’4√†3∞∞¿a8Üyÿ8‡ﬂp⁄°É °‚¨∆3"öÙ%q$û$ëÚ}íNÜí·$ìÿI.K&êId2)"”H))#/ìŸ§Ç,¿¨≠ö,$µd…w ‰7di"´…ZÃ7ÊÇ";»^rê'üê”‰3Ã/ë´‰i'_SB%<Û¬©ôF”«0SL¶©4ù£ô‘NÛËxÃ]¥àN£”ÈLÃÀÈ|ÃkËR∫åÆ¢kÙ,rıQ?›Fwa.yò•—SÙ3zë^¶◊ËWÙmß∑h'0¬Êò°,ÛÃH≈˙∞~,ñ≈1ãgIÏq6ê=Å2à≤ûB∑Ö>T>EëÜ)ï$≤$ )Cãh1*1¶óÌ!,ÿïÎ„‰.a¢¶‡Y∑©ìGUå=x∞áå„UΩü@êÉ∏<ÿbw,˜
+bH¡QT∑<Tåå_`RåÑ
+\¶tâûŸ»∫Ú 7Ú≤Óöà=Ñãª¢QXà>™k¨¸ÈäX¡æ*ï∏¥
+|IWé“µJ≤^
+”ïs}O®$KbﬁbD)|å„Û+6Eñ∏8Ä≠ö—Gìr›>€ß∂€eIµˆhjFEÛÅ√^°˘áì«J.ü‘ﬂ«íTOJ8{?ÁŸTÎháSÛ%«ÑÕ)∂£q¢´¢Öf¥ÁÿS˝†XG˚Av8ﬂ#d©ÀO’~∞?∂_3lJ∫U´¶ÂÃ∞˚H16B¨hH±`-‘™çD™ë˘ŒóÊ’ºπnØ6Rõ>’ç”ØË(Ò∫ûƒ)NtŒ¿≤¿iÒŸ\±w™%.◊0ƒÈ%p∏é„u!BY°LG@ÄNÏf≠˘ÿ ásÇ”Á±«˙lvW¨≈¢Â¯∂9úæmˆXãÀÖΩ¬ÔÃØÛgƒÁÅsO¡ä°◊¿Îó◊€’J∞¯<^o¨„∂˝∞≠áÅ@OÉ-hÉé»ír¸ƒ„–]ûK¨0$X,8OóXd£X˚ú©≈ï*é©©≥	OçI∑[:>Q+ª2≈{~ª˘~(’k∑ò≈mÅO9n…-P)g@1∂ãPãπ&£ﬂâZK3◊é∫ı«¡z:Í®®®˘®ch¨A≠¿Ò√)Æl	ÃGÃ°»ı%;oíï∞F\Y:T∞w·›ˇ≤]}°éce<Ω˜∂3®¯0ÏÉ≤é√ √∏ií6Ω∑√í¥˘”¥MoNísí√"¶I”¥I˙Á∂Ω˝Éóa||GÖyí≈QÑqÑEÙAáüóAd¿eÆ_Ô‹Öe±ÎwrŒ˜ˇ˚NŒ	ΩìÃd;ªórÓ¡CÊ¡˛Ê.ÃÎÖ`7dæ∂«ùkÖ[Ls=œ?}ˇÇ˘œò"úïﬂ…ÅL!( fv©+ª†Os◊Ø<cÊ;Ï∆W1Û–s˙~ºC˛lÂœòÔÁüúøÃcÜ;x 1oÌê¬Ûœ!?gj0~¯Æ_πÙ	s;ˇ3äAGÈ`xüπ27Ûﬂaﬁ,º…(∞ˆÂ¬;Ã|˘(‡«˜ˆuf|‘ ∑¡∆µÉ"‰¸ßÃCX˚‚.Fxfˆ?fn¬Xúè∂è±˜ÔùˇÂ‡·˘+X/√¸˘≥ÛW‡á≤´QÓ?Ã=–˚ÉBÅôn>ºÒ}p¿<˘7¿ø[;Ïr±ã˚≥ ;è 7çvc»œYæ¡Ëók?ºÚ˜ˇ»µ°«ª|‰nÔ_c~wâww ~lË–pëfÑ ˆk˘«Á/A«%xÔ_‚÷WûÂﬁﬁë˚‰Öæ¶„Ëzj˝tÔWôÛªór`3˜_¿áPÎﬁWn‰†⁄tÊêüoBÓwΩsb9Àø8ß≈«Ωˇ∂ÃÊr«|Ó‚ør± /,¯b››è^ØÌ√‹Wò?2ﬁÓ‰∏º=˝øﬂﬁÖ⁄‹'ÁÁøˇ4Õ}JÓÎ;n:M_èﬂÓ”Ë{Ø={Õ˜•KÊK´{iﬂÓnÁÎÆì¨1‚Q@,1Så4:˜'»∂˘lúMäı∏∑zÂtËóWìÊv0l'zÉ*XSkE7:ãHÎó{Â©s}+ú*ñÌ÷bõ‡5QBœˆpÏ; 6!¡<b	kÈ´AE„·…¥y⁄=nx∆P:A¨°V:	nôÒ¬“÷¬c2¶m‚r|†(KLñí9F•p2?—∂≈ä•˙:`ÁÅ»ÇrQâ~T?DuyŸ⁄"ˆT‘∑‰5ÁbÓ4ì%¯´3r‘»‰ı,‚“ö«6◊Í†πËm;cI§:«ç“âÜ8Iv√ñGx‰™Îù*ø<5ı&—l.÷≠ ê]òú™HB|3ú%M1m«ÿuI>ÓÛÇKd„lÀq÷·‘u±§·ƒËÈ)¢ÕeCeò¡”LjX¶<íÛÜÅ„cüéF.E…Ùƒ◊B◊Up+Â÷k „”9Ø{é,ˆ⁄Gß¶¨—ﬁXGºß’L—`K‹¬®”≠ëñ4â’Õ;5©_Âé—X9rg”;S’◊b‘”$ìE:L∏nÿØWÉZ{´πrOô=£‚L2Àc◊ò&q6w0r¥ZMQ,ÇûÿüØ˚I§¬¢Uoòu=w}.Ê©
+uÂ8)–gñœ+¢œq'D(æVù“r‹∂˘5◊ìâ’V›KcöÈXr }Dá¢ØJd≤≤ƒµ‚zÌFΩr*ß©·)ãJê˙V*Sjè—Ãm-™éyèºÈ
+;UHB:∞Ç’’|-a¡∆8Œºç7ÈéÇ&WNèg˘DØá§∂d‚•â—§™≤	S°ñ*·∆∆LÙ⁄–#æ;ÔmªÇõ[≠A∑Õ‚: b–ôûbôN([<G‚LKû?#¶õ6	´∑¸Üô‘√…âº(ùme [ïlAP«r©k©ÎAF˙®Ø™úèç#WGUTëÊq;n˘‘[6GÕLj-B3·Ü—6ëW&À∂q|±ã•√/Ü)‚tVÃ„äítÌ{º°¯8ÙV©”—`)o:#∫«±8Ø„‚ *´L¿kôs=ÃÕºrk®t‘s%É`Ω	!éàZ≈\\rÂXwC”]≠^1ù¿ÿNZëèQ¿Máïjô,Q;‰ISäSÃ…HÌÚ–åñ„ƒ]{∑{Dµ±·j&kx¸¬ÎßA’hTXq£L"ÕP`ˇñ°ÊÌ0S0&U◊%Ç:’„öC¶™ÕíïπR$ÛH<*Ÿ2q‘~%•˙pµË∑îno<ÏX]é`O@˝QPFCBö÷ó°ñˆ#µ∆áÏtÉ’ÎÖ#_ìû?û./˚§&Ÿ…,+Æ-Ûõ±≠[ÊL]ªÅú∂˚∏+ıí.EzË.^é©";
+◊B$YXTà;˜ZÀK©‘¬Âé†ãcõG®u≠;gXÌó"’Õ¨Rﬁÿ–$õÛf•ﬁ§‘°e\ﬁ"=fá,í∆nπöÖŸ¥ó¶ínjáú¥jU„0°’$<oE›ê–i/Q±c©ï	€'.À©©”Qî¡ëﬂ¥Á˙f‘)ªt—í“j§)49;√SµivlU8ms™Å#à÷¿áŒ
+±∫DËMY"πËR˙ ´J¶lTbë*5ä≥µÔ¶Q4Ì◊ßà=∫Ê‰8±•2´
+£…LS≠‹+îX÷ç!Qhq∆MK}á
+î◊èÊáq‰π‘ã0nõâQíM∑£c©FA1^›πÛ¯´^}£_ÎÍﬂ˛tÁ˘˝>¸˚œèˆ˘€_YüwøpwÙœÔŒÇ˛«{ôGEqea¸VWU7M#t7´¢lÕ" Ç@É-A%ÍàöQAE1é€#J‘®AP„é¢„ù®®â¡8
+Æ*®ƒ%ÉJ‘AO‚Ç∆1.âf$Mn}0ôÁﬂ9ÈwÍW˜}oπÔ›˜^Uu—ê√^Ø¶-±Î{ypÁ‹[´$Î‡ﬂ6ñÌiHΩu4Ω_Oø%ÎﬂñœºúÈ“ÛÇ^(~Íw¢±˙—ÙÉ=l*b6ÿˇyu‚Ëπ37Ûºi†¶&9kÕòí¸“ëFÛŸUMSGe%è*üqj¸Æè3kÔ^øπ¿œ1˛õ€˙KáÁı(‹}ÈaXıÏ®Är«‚º•Oä´ÁnkÚn˙ÍàˆŸæ7fï>òÛh|§Ωœâü4.4«d@œ „˝.\Y&|nª7sÛôºÛ1+é6q…øæc ;œJ>,úÏ˚†›≤·˝RÓœ∫ÍzsHq„«∂Î.Ω0.gzπrigèÌÁŒgå©Y˜Äˆ˘úƒÆ!A?;‹ÏZwd”tÔ≈/W.Œy'ı‹Ãí9aµ˙¨§”#é≠ÈΩ<‰‰ÅCGWL»©ÛΩ_›Ú8ƒW∫˜bÜeıÉ⁄-Ûk2ﬁÍÁ^aŸû˜|°Íª¢ê®ò¢“áΩ˜Ø˘LÂ|£¸R⁄¿»≠›Bå8‰pˆv˜CÈıÕ®ô¶˛zÒΩ['’{R¬SÔòms;ñ]R7a∏1sc–¬¥G=ñÛ˚ËEŸO	≥Í√„41Â”œû<?vÎÌ'Î*ìSØ}ô1Zå∂ƒn+HÕ(ig_¥ı¬˛«n±œ~≥¯ÌE)∫≤É˘U˙π…Éä4K´¯o\∞PF¡Å¥¡BÖ`†dÍK
+§∂¸	‚\!È.’–VAâ≠ä#çz≠é≈RgÚ•v§oUú)‚w
+U:n®tîÛ[Gv¥èV—Ó:®UiC+i•P‹oä=Õ~Mq†ëØπ◊”†ﬂ)T&∏Áõ}p©`€Úè.°Yï'»d%Qê@ëá!
+*ÿH
+©¥ÇøÄM‡+ﬂ‡K¯¯#¯|>üÄ?Äè¡Fÿ >ƒ'Áÿ˜È˝ïdæ+9≈È{ÿw¡;`=xºﬁøøØÉ◊¿:_‡U
+xô>§ÏÌ2ô8w⁄E∂%∫ ª¶ïäÚ5ÏÛ`5xéŒ0øÑ}<ûOaÏ_¿ÆOÇ«¡
+x<ñÉetòÚ∏ ZrÕ5Ï_QD*•Cdœ%•‰Ç\ó¢É¸È.£Dd∆≥vı(úπüÊíò–Ã[mÔIôÔ√Y›áz{·°c-¶=ÏQÊª¢Ì°›4çsä¶‰Oª[{PJD¶“√Á‘èÌùhS~Ó@üüR7Ê'∞∑CﬂÔ[°∂ˆWH›ëS˙Së6£›&J`~Ãk"“?–z#ºmÄ˝∏^Ÿ«¥é∫2◊BYÆF´P˙wp%|Æ@iÔdëñ£Œ2îÊÉK±¶KPg1∏àˇÆ0õ‡±-Ñ≤ úﬂ∫wÊÛ¡aã4è#≠ÃgjÃ√∫Õ≈|Êp¸Æs…îÃ°J.…£\ˆ*£Dd*ŒÂ√ÀöR"2ïà(ärZïñÄ≥h&jÕj…¡œL‘öÂ}p:8≥ûö–rÆ≥˘aì»-≥[rh©("M¶,¨˛dîdÒ#GY˝,¨~∆6âﬁ%÷&aı'alä"R&⁄å«Åc¿—‡Hpòá—Púıa»≈8”`ßÇC¿/`28+5ˆ[‡@p ÿL˚Å}öoH{£ˇ7°Ù¬âÓ	ªò ∆c6›a«ÅoÄ±`ÿ¥pkë˜úbGÉë`vaM§0ÿ°`g0ÏD}ò¡∞É¿@∞#∞ôÔJ. ;‘∂ËKLπ3}x«ã‰›ãc$í'Í{@È ª=Ëû–≤⁄Åm·€µ\A–πïzééÿ£ÃwEs$#GSÊª‚—ÿZfƒiTlë€XA•≠Nó=î6†®mA-hj»ÃTÛ”U$º£Ô(AŒñ
+=œ>É’<Ó}_[¯*Ê´í/	B“¸eBvÚ£?∆ÕˇÛ◊Ay›áí8®jﬁéïÙ»mÀÅñx±îóäÃ’∞nC6/ö÷S«Â∂¨Î8i8‡v\◊Ø7Nﬁ\mπ§µ3Íxô‹ŸnOÌ=tº\ÿˆ Ó«ì<π/N:ﬁæﬁ\”áìé∑µâk˙ríyÎ˚±“ëìÃ'êÌPNƒG,åÌHNƒG“Ãv,Ü}¯∞Íh"?ñﬁe˚=~HMÂ§„á°Ú8€¬èFøh
+YØ‡óêéÁÆÃ˛8'‚óı	VNÛ´õö˘á¯åµÆï∆ €±I]„µ©Y%QhııÍ.§Ø≠Æ≠s4x¸ºﬁc%j ›õÓX◊jÏ_>ù¢$ÙëJ~íù∏[?&ﬁ∑´∂è6U+⁄⁄hdIÓÆ¥_®U˘§k#	ÇN“ ´â—Èü◊áá[åñ.ÈÏ£©∂>›’ñÓÁmˆdg¡,8KvMI‚˛_‚UïMƒΩ~KÖe◊
+Ñ¿˘B`¡k˛,Ò¶ˇ˙S∑˙ì*ç†ë(÷Fw±±ı·ˇÎÕ òCÿ]ã∑¶$’Ò_∫ã˚Ÿ[íıJ¡µo¨W0ø‹Ê;béÏƒ±§x7;5Ì0ÓuvPÔıv≤s–:xànæA˙⁄*éVï¡¬q´™m®“üj‘7,aÇè⁄Ÿ…%"< ÈÔ'0M>jìèø92*"‹Ë¨ßˇÿ.*ªâã“gÊß}–∆.>°„ÏS‡å‘-G¨?W.›uuM⁄˚™s/øö6˚’±úyπ°´&˛≥®¿‰ìb≠≥ZK¨Ω.ÓŸıraﬂõö$≥xö˜ÀÏ¯æ]£⁄ÜìKGuL®ßWΩNñl(: Ïe≥√Wßé˘‘∫æΩ>;.∏£w')¿Sß¢6vÊ(M¥ãc¥c'…SRIm=ıB@úæ6ùÁóﬁPe¥]-æxûı·œ´Íy¶ßOÈ++FX(UfÓ§Qw0˜Ëg'e“ÜHctg!@Øb˚!¬C‡2Géá∆«¶ƒ9V[™ä1*µOgãEéòê5uÑZÂ77=}Züﬁ]Tæ˛…o !˝áÍB5ÀKL¬∞%ΩzÜéú‡Ë¨j2x’•*J{/ÁW∂´5®©3üÔ;∑‹9'!	rÖ		ÅÄHtQ)f¨¢.÷Íh)•Y∑uT∫*.;´ÆÃ‡u◊n;éª£Nº—2Õ∏ÆNÌV±›≠”Ud∆1euÀ0´í√æÁD›?;…$Á‰|ìÛΩœÛºœ˚≈Òﬁcà∞"r>&ëê%¥ΩÁöR0âﬁ+*Íz[m6c¶y)öú-Ï¡èÙb≈t=tª\!“·—AÕ FG‡πpñ%ŸΩ÷d◊CQëÁ±âaNÊK†ÿÄ!±Ô…∞
+ƒj–kb∫¢‚4T<· Í∆†Ø¨Ãº*â¬
+_∂ˇ‡‚ÍH°ø¨‹⁄§%ë</«ﬂÀhÊîÁnãÔÿ:[¯AËâ¥|0∑‹[∞ÿXé¨Ë≠-øéW=@ØE.yu¨:;ˆv‹a ”àè-…tö…  &)ÖôrrfΩ’ôÌd¨&ßdì‘Å7/ë%6"·+/ã@≤"ãPêSdZ_î,–ÖAƒF8ŒJQ0ãv°O&X=5∞∫äı≈o9ˇ‰˙µ'}«‚∑|L’Íâ„Ë}T∂I⁄_ΩZËA-÷ÁøCXò¸˚Ög6°≠YU”ÓAÜo∆ëGˇõ»”.jxÚ¡‰w‘ ≥:º0dñ14E)Y‚OrÀO*iF.c)#<\	TF©nx( çà⁄Û£x±.ßPÉmÒ?œ∑§""0ı9c~vÅlı÷7≈KÈV±ø≠ƒW‘,¸vU!ß¬hôêíOf)K
+€•qv•4u9¯.ÕA*€¢òíLgÉ£DÉé›çç≈∏QÓI˘%	Ù¸≈¡Wz.÷ãB»çª˛œo÷Ωµç»VZ≤sÂõø≠û!‹m,€Ω~È°9ç(cjÈˆ5˜VU
+˜fÏ¸ÍP®∏©¢Êhip˘¥OïOY^:Á‘¢ÂS≈˝Áı%Ω\övÎB∫lL–-ƒaí°1"hñîQ,7ƒE•Üı≈@´˛⁄˘C˘5x3ﬁÖI»c;,µSçM»D2$¶’åñ63ït-”FÔ†O0Áä∞4ã±\LC"≤®ÿ.GvTp	O€Ø^¨¡Ao#yÚ≈`+í-Dá)vãÒ*$Kﬁ˘Ü‚§æôà˘¯o¬x—·›“˙b–Ùj"Y~»ƒ‹ê·ƒ’ç\õ§Çƒƒ®YTœ‰jÁÈπ±Lèó§˚ ˝!ÒﬂÙvp¯KÅO¡s>éˇwç<3R_ø%?{,û	˜Ñ≥®ñﬂtÔáÊüF7°0sCaÒ˛Z¿q=Óø6d…ÊU@wH∑_ˆ±Üßd4•ï#*@Ü”CQòçwÅÆ√c1ÿêÑl:M”åÑ;ogy≠ÃŒq<Àòx⁄§Âµ4¿«Mêe"ä¿∏e‰°;“#{¢›Çr∏4‰´O>@è„O‚•3d˘/.·uÒSîìºΩw_¸ÅE†™öÖ›%8åª|R™ôÿ›ÜΩ3‡P>¢;¥,’ëûí√kX‚à€Øi±÷´ÈÃS£#)ÛRpJﬁ~kzßπRV©™ejqXV-añ‡f◊™de÷[“	ß±iHM:°0gYRx¬‰M≤X->iIw;X?75 ∆Üπáë¿ÿWﬂh`d(R6
+&êæÛ ⁄Q2ë,ßâ&Ç4»åTpH—‚©ﬁ}Qé<∞"”	´\A;Ÿ~∂Ô¨n__?:‹QÀ+Ña$‹?∞),<.£≤‘m¡ÕTÒƒ}ı’˛æ´ZÌ’æ˛+IÉg5)£◊û&"UÿÌ∆’?Áíü¸ı_
+Âäô F‡¸úi§ ]mÕÕ∂:,˙Äñ.Ò{”Úò¶$©ñÍji∑Âà2	Ïjø”—ô·œ˜”Ùzç)&ÉÉIWL1Â{,
+SÖ2©Ùl¢PDÜC—açë°ë®h
+íLöo%h¢ÅQQª¸ˇ∞ëJG–Û"“¿0Í¡`t&b_!W≥rëd#q∞‚¡∫º°}ﬁ•=Ìø±Sù°Ä~¨«˜u‘âáÅÈNc–⁄›—Ö‚ÕU¥€MW5«;î˚ÆúªxÄ¢ÚÁÓ∫Ûé¸zsÈvì37\óﬂπy◊‹|äÍπpÓÍ^(|÷‰(uõ¸≤O.± Tîb2®	£¡í√ËHyØŒDˆ™\ßÏ¶VOò
+Àñ‰nÃmvØW2cÆö‡`£22©ôpI…§y)Åâô!·H
+	Z  ‡UDB§±R(x\¢Sä√FDEGÜΩø~ß£˚£≠mùËÕ:}ëÕQÁ±{Wh˙ÃzÁó?¸Rà#≈πÓ≥ŒjÙË÷˘~Û˝ >#‹®ÔôπhQAÆ·ùçÎ{vv ˝–Á»ÚÈß®0·S;Ö:∞æmêµóÖälfùá3f(ÂABMÍådo¿ÿ´ñõ{≥Ïß≠EK®u‘Z……=AÇ∂••∫ôTüÕ„(‚Ó∆†∆a®Q™px(6áBÙÂ0MêÌwJ•âgÿ◊–hxù
+ı|œi§$0ºD ’¨≠lﬁ‹ˆ.´û„2[mSÉV1c˙€ÀZﬁ˙Ï˚Î∏∂ßÛ‚¿É˜*èó‘\<ˆ˚kNÃÿ6k∫Ö•“—Ù·˛”7üÔ§˙Q>ösbwSè7ÔÍ˛À?≠úü®ï‡˜g €‘Ü≤’•	tÏ2FO2 Sˆ”ÆTn≠j≥äd2’VCò`fZXƒ[»|‹∑7Ÿ!"éﬁ±h¬ˆ;H tR}:c§I≥˙d¸∫,∏ÜˆL˚›4kÌ´öΩΩ[ª¬Aë™BOÆ˜y«Á‰yÛrZ¡ôóów¥«[¬èë13i…yûÅ>ÿ⁄W±zQMuı◊ío.Ú$<a˝,îa≤CÏóq
+^M}¬[RNßeê±Mrñÿ9=Î±À3¿ºÅ)Ë$zÛ·xŸhJ…À•~”P!qb:„åâ"xrME˝¸"«„œw#¥≤q√8π}ﬂVÿ∑gµ–/c¯h„ÇpÉY¶Â€∂úΩp˘Ã_~¸/€’Âu≈Ô„{Ï~¨Ï∑ÔÖuy-À≤Ú⁄]\VQ¬NLP|a-U4†»√«jõ‚XcE©b‚¥NL4∆±vbßc+2mGì6j∂Z1i’®„å∏≠qÜfPQwØΩ˜˚¿ƒ§¸ÀûsœÔûsÁ˜ã-Pµ˘0W≈†˜=)ú¶ì”“9ß∆jrfjÄs\zöÕ*Î«È HH‰ì=lÀîı“Õn¸¬U€ö-£R”É©ÃÒ‰´ó=qTl⁄†2eúÀœ-õ3≠"Ì$9}œIùø(xP√¸äÍ)PûP^RXπMë-≥kQA‹èÔl®zûäŸ‹x$÷◊:ªDÒ?≠d2&¯&H§Æ7/l”Ω•K´Ô¬Gµ-„Fù=I–Â’ïÙ(Ê' ìê¶âFfqÃLÌ{.≈	ïÄZ|—3xÔƒ˜˝nŸÙÎç÷Ñ7°Å‹Ì˚7π>#?«ø|ˆxîÙù¯” LcuÃxrár—óîã2©œL—e`mó1√ëÇªÏù∆wJ™ûZ≥Tê§í,n∆9—ßÙKÁ≥ø{¥Á>»‰Ïh%òç#cEõ*¬Ô=y`«æS˚vøikn"Wá˙»ò˚0 ıïÛÄÛÃeÊRÿ~ö˛rÏ*π{≠(>±ÈÜ∫7°11Ÿ—0õWtÏgOÜpıb˘`q∏–2Û≠…BÆ';]qb@ÛaÇÏÃ˝ ;}Ø‹R‡L1Â+˛Àì≠ÒZM^.◊îR@üZlÃq©8ø5†*MÉQŸˇÁ≥äBû¨ßŒ ™:+ˆ?Hò0izÔus˚*ûzÑYŒÖ]éx”¿µ)KkºÕøtñ¢òúzΩvZgı+õ4ÔÌ€Ω›≠Hò4qG3≥OÕ5ú fÚ7óÓá<∞2<'7ô-vAˆö≠,X«gx;≠«@æJú`p‚‰º,Îd˚¸¢ıG÷±7ZVÁ≠V9/◊ïëöd∑YÃíñ z+0åÀ ß√Ø≤i7„˘¬•3™Ø§Ûm£+bîK<ﬂ~tëXûæXÍ ÁıíÀCãJäC»è–KMuÊÑÚ€^¯Ÿ|ﬂ™È¡R‰«®fﬁÃã*Òﬁ¯‰˚Ìµ≥Ê[º)M[˝héåœÆ]Y6ÖìySv⁄À[◊~y^ÈÎôÀÎ∏}¿j√¡GA*xWÔ¯05K€i‘‰;.§\~ü±@Éåù7◊û‚“˘e{nÆÀ‚óäèÓAjX(ì»gŒæÈqîÆ»©tÙ&32Uòä«"#—‰2)Çﬂ•'zL-ò
+Òå}Ô◊˘˝e•ÉóÌM√7≠œƒâ~◊¨®_iÿp(Ùå?{pR˝Öªﬂß2·7©§‘˜ÙÃ»õT\Uï™1◊µn|5˝‹Û}Cœ5—>ó=ÈÁC¥œ~03ú%âÆ‹‰.◊8±%`&ÿpI^gA‡lI&ôÛeye_öìå2!tÜ"¸€É⁄p‡oôa©ÅA÷@4∂ÂFÊåT)„3ñ˙	~ÛÔ◊˛Òﬁ≤ÕôõÎ}˛ØÛØ≠¨^µ∞ﬁ»/x¨®^é[Czr„y–⁄∂u#ø∏AÙ!±Ûü?ﬂˇ˙Ù€¸¡†?ÔvY«˛ﬁ;∑∫‘›èÚ‡zÏ†úb	K¯⁄®N–ÉDµ¨⁄(e∞—hë”}˛Âæ¸rt®`Fôﬂ7Ω\}m∏Æ„;ié¥∞¨R7˛T'iN(ﬁ,Ë‰K…˝6zî‚ËDÏÍï
+º©^I˚âãüR2);MŒ6∂#∏˝ÇSsJh•™ﬁpà9‡cÄa"=)!«ÁgÆIsÍÒu.Sp÷“o∏ü¨ ’≤	¿EıÏúp~ÇVxÅF√!„≈LIìr—w5Û TI´8åÄäºÆ|B¥óO(¢Çµ;÷êIO@Ÿ3
+MRıﬁÕ˛ÙiaHmZ(jÈ¶ö%ãVQ’Í|¬ g≥2Üéı1ã6—* D=‰rÙBÔ<rzÁíÀ‰Jßya⁄R2¥”`ıí˙˙%5˝m?ziI}º˘m(Øé45E"d`OÎWıoº”º:Õ®ÅE_Ü94çÜŸ‰*Õ¯ì≥_˚ycuÕ`[€@MM]}uÕqsÛÍ5dË≠=d0i™òΩuÓÜ∆’ëµ?üÄvÒ#Äép"|‡a–»5¥+˝*l¥§”ïèvë?lÁG⁄F^G‘ÿR¥K™±‡!zƒ=h;Ò≥±‘q
+aúEÚ∂ì”[≈˚,v=w¡ÿπ4ˆ7"–H~Lcc—ß±Az0Ï%øáó;¯µm#5∂-;ó÷¸”siüâ5—–B√8ªÉîn_ëº¡¯0˝ZçuáMòÉÄá Êób∏Ñ&òUªeÚÕgÚ–N√éJxòTU¬h|ÿÕ—˜„+ﬂÕ≈sqÉh4\äYÆh‡ô\lZl=p%£ï»˘8ÊÊºú◊M˜∑ˇ…~'?ì˛&Äå∞à ˇn)*xÅU W†ÿ¯•SRO«ÿ[˜∫„|5,¿'=Êó)8w#‚˚ÅdÜMú0÷|çÔJòÎπ:∞Lb2®µ±q6… ⁄$h∞∏vB&ﬂøµÉúF:ºÓ…!Îcá„◊èÄ—ºs—ê‡VÛäÉzüø'A ‘É:Ó{y°®ÅÜ`°E¶’ìØ»‡é[dùÓ∆€ê|‰H¸FÏö”MkmZ+1‰øÜw%(–åı¬â5ı€µÜ4¨–†å‹!òÂé>˛tY˚i|¯Ë‰∆U@…9µè’…k}Õ=	ã}Ω¯Ωúê‚˜$≥RQ;"∑C˜˙:¯ıÒ·ÿ:Ò¬vºe≤ÄèÑ√;È‹jÅ+l‰$ëá1ÄèK+ÑÂ“7sO2M´8WÍ[äŒèﬁﬁvçyŒﬁ3¸»¡«†&™‹Áb¬°°ò@AÿaHLêD:ì^Áâ9A‚¿ DÀ‹r3ùÀÿTZÒË8±k†V7H'\DK
+Ω&…ˇ˘W€Œè<:∑Ì ®µˆ\C˛¯ˇt˝ﬂˇ<Ç<◊ˇ3¸ΩÃd|Î8ÿNÃΩlñvé¢@W13p S1#êÕ¬»˙œ¿‰˘Ã@ët†ä4ATøÅö∞™†“NTIT∏ÈÅ√dªjõ{¬nK#ùˆ øçG˘mô|¨fMc˝∂óËWS†ô¬¿≤úÅô)çRõ9Ï[ K€v6”Ôß9L°e£õ>P=∞˛a˙¬®É1™„…†óÅÂJG«?uP‹ú˝«,†ÍAÍÅ%Y.íz`h1ûÌ)ˇ~hÉ’a√$ |Çååwò|Ä∞	1Î!A74ÿF4|Ç,U,U¨¨MllI`∏ŸÖ†0å}˚0ú√)¬Ÿ¿πàÛ
+| Ç\ED√	\Î∏ŒpΩÇ@nn38å„Ó‚ﬁ¬}èáçxrxV@É7Ä1T¿ ”a8ÇR/80ÄS%/Bÿl@ñPñÅÖ("≈†e3S©#îÕ˜á≤YÄÏL(õ»nˆˆˆsˆÚ–ÆÃM œ¡ÕaB?g/mÜ`ÜJÜ\Ü$Ü|ÜÜ ÜT`¶(≤ä®#GÏÀ≥Äne ˜0@9ë˝«g†#Xà˘⁄.6∆Û€|e‰ +\x∂£D_Mÿˇ˜ﬂ™øsÄ≠§y‡–ÇÑ@Ä ìE
+endstream
+endobj
+39 0 obj
+<<
+/Type /FontDescriptor
+/Ascent 750
+/CapHeight 676
+/Descent -250
+/Flags 262178
+/FontBBox [-168 -218 1000 935]
+/FontName /Times-Bold
+/ItalicAngle 0
+/StemV 133
+/XHeight 461
+/StemH 139
+>>
+endobj
+40 0 obj
+<<
+/Type /FontDescriptor
+/Ascent 750
+/CapHeight 662
+/Descent -250
+/Flags 34
+/FontBBox [-168 -218 1000 898]
+/FontName /Times-Roman
+/ItalicAngle 0
+/StemV 84
+/XHeight 450
+/StemH 84
+>>
+endobj
+41 0 obj
+<<
+/Type /FontDescriptor
+/Ascent 750
+/CapHeight 676
+/Descent -250
+/Flags 262178
+/FontBBox [-168 -218 1000 935]
+/FontName /Times-Bold
+/ItalicAngle 0
+/StemV 133
+/XHeight 461
+/StemH 139
+>>
+endobj
+42 0 obj
+<<
+/Type /FontDescriptor
+/Ascent 750
+/CapHeight 662
+/Descent -250
+/Flags 34
+/FontBBox [-168 -218 1000 898]
+/FontName /Times-Roman
+/ItalicAngle 0
+/StemV 84
+/XHeight 450
+/StemH 84
+>>
+endobj
+43 0 obj
+<<
+/Type /FontDescriptor
+/Ascent 750
+/CapHeight 653
+/Descent -250
+/Flags 98
+/FontBBox [-169 -217 1010 883]
+/FontName /Times-Italic
+/ItalicAngle -15
+/StemV 76
+/XHeight 441
+/StemH 76
+>>
+endobj
+44 0 obj
+<<
+/Type /FontDescriptor
+/Ascent 701
+/CapHeight 0
+/Descent -298
+/Flags 32
+/FontBBox [-167 -299 1094 827]
+/FontName /KKNDKF+Symbol
+/ItalicAngle 0
+/StemV 0
+/FontFile2 45 0 R
+>>
+endobj
+45 0 obj
+<<
+/Filter /FlateDecode
+/Length 20459
+/Length1 40172
+>>
+stream
+Hâ‰W}t’øovgvfwvìRNÖ*$úcÎT0°¢PN‡ƒ‘É4NÀI9ÃÓæÕéÃÓ3≥dCèí®|F–à)D¥ñ¶VSJS§‘R Ö&ë±•¥|D@E
+B1≈@zﬂÏÏ&Ä«SÎüyÔÃ¸ÓÔæ˚ﬁ‹{ÁŒÃ  U<πa¯√è‹}œ…πEs »X‘ŒöZÿ8ê<ábäŒ	B¿™˛®+Õ±Ú(ãQ>¿ççÑÕ–¯Åwç¬≈Ú—~x$ü˝¡‚E»ß TÕèË±÷ªˆoxl?⁄CÖVY0Ú£2ÄïEl~î*·#õW44l¿˘£¢®êwrœÃC{∏5≥R+Ω•’»;\˘è&Mãx™®Ä„öñ)Â' —∑z¥!O«îî.îﬁ¬ıÍp<?F-Âù‰◊D¥ü Æç+1Z˙¿k!Ä’À—ﬁ•'L\,ﬁ’:≥◊™üœÔáÒ.ΩÌ/ËFBØ⁄=c(¿≥∑†˝Ì‡r◊ëÂ¿Éõ€Ã-∆K”H√=pz5tÁ√B2ÛÉ˛„”\Ø2L@π≥õo∏Çπ÷pañÊ^SÚØ„_¢ùÖ=p<	ã∏q0Z`ú!ÕY√»"Ω÷A3¥·1Ü¡Lhtµ@ÏÉMxîsªpFF¿@Æ&CZ5 «‚í®_IZ ¿ç„ö»h‡Êëa:‰¡mÓ∏ﬂáÆ¿À‹x‘ΩÄè	/·¨\b¢∏…'’√%˜hòƒó√fXçsù‚fxä†ì$!
+á·åÑ—\ñAê[[`ŸHêwI)∑∂ì.≤áÛ¨GxÄõ0í~#‹ÃÕ,1∏∆Å€ï/∆Ò<∏˝gGcﬂ≈Ø¡¯ßê≥8k¨Ç®_≈¸zdıÆaËIº%ÿÔ@^è¨Ü/ÅÌî¬>~:4†áè	3Ì±çÆfRÄRﬂFØ«ÍÔëA¬‚æçõ!<âk≠ÁÔÁpïPó∏~9
+À¯FÃG?“¿◊pAíŒ…d(Âó‡HÃÃƒrº#ypë/Ö◊…0.ÔÕ+Ÿ‹º¡ü‚dníÜ3¸Y“IÓæ!4ìN∏h!#Ö˚°ã[»! DÒ∫AÃ‡Çuœ{Ü‹âÅç√†ßC%,¡‚Iº	á1qÉÆé¡ßÎ(p|1vjêØ¨àZLÆ[QÜ¯j∞ÿ@B7ÁÇW¥à]±∞€qñ∂n,~>¢%<R&4ËÓ£Õw$õë @.æá¸[†œf#›ÚûœÊ§ñ^+ŒÑæûì)ª≥9¡'k$´ìá˙zN"Z6'^Ä	∏gêJ˙zNÃ¡Ÿú‡˛Áªkpã¥≤ØÁ?JôúH∏œ∫ÎdJ_œIz'È˝ﬁó˚¸Ê≤o:¶“W–UJ¶Ê6·ÆıõŒ”»Ï4	ê©W_%SŸ7õÀﬁ	‡ïŸΩ¿;ÉO.>«¯N√7~Ò{àÔ|¸`ıb-g€ï≤Oø¬˘«Ç…${›/ÿÄdˆÿ™´Öx¬
+”»è|¬¡Á;∏¿¡ü8¯§É\‰‡bó8∏‘¡e÷:¯îÉÀ\·‡”>„`ùÉœ:∏“¡Á¨wßÆrpµÉ>Ô‡_pE˜ƒ§ë¯ô8U7U-ÒíS„Iã˛\“®i“ŸIE[+F%d©â¯/D5Q„™U’(D¥Ñ°∆Èi…‡Àû∞™ƒèÓW<˛ñ÷+º©+a˙™§F¢2ò∞¢MiQ£Î◊[LÍÎº∂`®∏}¸Mz<ú®åØ¬¥¬†Ù∑íÆ%MÊçŸ,ò4ÑÀˇN∆≈¢ÜÌ◊1ñ‘,U◊™^ìŸÔW¬`>*⁄Füé>®äV#ëﬂ¡§¶QkìVÁ®a˙„∂ßøÓCPÁ(çáË}äék§ÏëÕ"’4b˛…gª5áMmëm≈∏Á“‘÷@©™T†7V“ào„q%=⁄">àŸöÖö?ã•é¥›WIUjòñ°òÊé@H5BÕ¯˛oö≥`[E”≠*ìZm≤«81lS;üå#º`a¢6…N‘⁄0hD£©ﬂ%alf2à‚n9c ÿ9c»ÿõäóßqkØóÂ"-ø≈+Ò
+ç˛U¨0î∞ääø˘Z°ö∂ÜŸ·Æ}Ølæ?Ä—ÑiL1fŸ¸m^0úYÔxÿ!E;‡	'¨òbEˇÓ’LÉW;òëïx¯í#'å¶Sj¨Xe´ó√ﬁKÍG¸Ÿˆ‰h÷êNáGKÃ•Ò
+zL≤caìèÀŸ(î∏˘Æø'§'¸=1 }O2ì1t3}íïç≥,˝T°©”=$hΩÔ‚ì1ãZi√zSö˙∞7Zg|å“¥ÈGrñƒ‘Ÿû°†ı/èMhÍè5©—Û^;€ÎèEVxã¥ﬁådÈ≥2M˝;+≠K≤Ì´=”“?È≈h™≥Zˇ	8Æ:∂óØ·4ıÈ5<hu•›w¨Ø¯{Fsµ◊`–Íˆ|+˝¶…º¡•UΩ;Ä€—êã◊é\ﬂ”3›¿ó˘¢"àÌ˛2Ÿ|_∆ò€>‹ 7t∑Å˙v÷=_€}µﬁ&_≠¥SjïGIçæZæÃ; uóﬂˆ’˙jÂﬂ!Ò§îíZ}^è óxKÂMR+_ÊÌ‚jEﬁˆJß=Ç8M®ì˘"©ëi§Bqö}<KçA*ÙEΩó='8ÌYÁ∫◊≥ıü·ˇ“}ß•3Æãb;◊ƒ≤ ;-∑)gß‘»!"∂uÃ_Ø[ûé[lœ©1º˝CΩóÂM9;Âπƒ?îù}—ﬁùqy≠º6Ä(À®/*5‚ÃÏ˙û”|óÎ|Q·÷ûé◊≤ªºñ/rΩóYøq<}ó€õ0»¡ç√»Å˛m¸ÓªPW
+_ºÂu|Ü2ˇ˛(çÔa‰sóÃœ œ¶°u[«ÓÒÌè-Ï2rŒ˝.bÀÅ¬ÎU„{;d∑[]’Y?…§è{Õ€∆Néè:Ó\ƒº„;˘;;Ó<Vº¥D|a€ƒ«/¥‰èû{8Ôì±h“ArÕŒkÀÎÏ*ÿ4§•Û‘ˆn›z~õúwpo7CÉÅ’qlÕÏ‘a/_;¡5`õ˚ø‘ólS◊«œ˝∞˝‚ºƒœé&eÕ≥ÛV¥¥À»ã„á—íQPi◊â$|j]€4-≈v0‘– íJ®ÅîMÍP]´j®tr>JÄmi%òà&]©@£›÷d{Á=€$EtÄÑTÌ^Ωﬂsﬂ9øˇπÔY˚0”ÀxÄrxW≠öf$R˜èŒòÈ†µ™3Ç.…jöÒÃR¨‰•j•ßN,πúÓ∆J—AvØg}˚ò¶?€v§¯˚ükæXhôS’æqí‹Ÿ6Î»òE±Ωªì•YøNÙ%Tù—ÆÖ9†ªóaµ‰∑Åêﬁ®ï* o¯YH$2≤]ÎÛc§rÿc˚Ω¨¶∆ÄÃEFlıqd¸yù¢3⁄ q·◊©≠B¯Huwiå4§x¬G$ﬂ8π∫£’ÁSî˘J3“Ò&ªŒh»:#◊„‡∞´SÅU˚ô R:æ†16EÜÈÒÕ#¨m«óŸ2f∏‹Æ|±3√’`∞∫>€ë∑H@FˇU≈È@F…‹^∞Œ]ø<?åå|‘”Í›j 0“™kˇqôTµC≠Óxµ⁄=~Ó,nÕU√°&≈Ååπü‘º8Èóù·Î§C◊G∂øøç~¡U¶@Hë±ﬁy@-£!óPåI`M£ØjóÎÃQ∑´D-˝\<·üæF∞*;îmÚ,zÑ’ƒ`U∂*-:cWä—&6õ◊ûk) £∏¢r`∆“r®◊3£ìnÈp€	ø€RÌûÈan.R∑¨ãz5∆¸ÊOfè„Ìä'gZ•ãUÒ´s6ZùJP!†Y˚V’Øà‚ò#≠Íáúº˜ˆKyÒ®∆¯Ö¯©≤xí√”≠ ≤Õ
+µIBFæMûÄ.+0èÎÂû≠rÀd¥˚;5∆
+1øºŸL\nDFõM»/oÙ˝ï{ÎBæ∑‰€®Ü[∑büq.´·@¿´çµUj©¥Uπo∂
+]UéZ	Àî◊“U¥’…ı◊˚¡ßΩÉTäˆV˙I<5ßÁ¯Í:”TeI¥ ≤uÏ(√Ÿ›ﬁˆAW^≤=ÒxÚ´˜Ç‹‚DF%≈Ëm¥á7ï“q«¶Á'K[l.•pcg_ÏQºæ‚e»(á[õ´›nªÄåHáÈ—_´hôÈ™öhb˛Ä;wÄ \≈ÖH^ªÜq8G∆à◊[ö(º÷Dí	Ê†∂_,û4äA]∞É«dOSñsƒ0èø˛©w´†z˚Sytàf;≠
+mZeÀπP8åyq2.¿5≥— w5kkFB∆… Aûbl¨¥!„´’‡…0æI],¶¬ûæ¬ƒ‡◊◊3y$˙°RÁ⁄X74vŸ¶¥cÄ›™ŒîÊ˚A∆ÄŸZ®ÁÒƒ&WÎ‡⁄|\êY35!;›xrì$®ã∂Õ9ëÛŒGUPñπ›AÚ˝u7«Ωß»À-5Ú:±[õèw=?~Ék^’û«+ñ¸‰–Wˆùc∑FÉ⁄ö¡ı]æø˛¬¸Ù|‘ñΩÒ1©|@(íË=jj€Ò%9p "€ p>v"çGπÃRß>_÷ˆ4∆ŸÁSåÒê›ø·≈Â»X˚e"ˆÙjS-ÆÎŸqü?Ÿ;zZ|E˚ñ£ΩªVú,=ôõ˚UÚ\wºª4‚i˚√ΩF◊¬pÙo]%«/øÊ¯UﬂïUı˝∏˜DK#ÄBM≠kóœOH@FvM≠=kb˚aKAj]˚ì!S0™1äBD_◊îÀ±ê{Îƒ ÆΩŒQb•%ñﬁÓÂ°7ŸçõõIÌà⁄n'Â§ÙFá9K˘¶HıMO;p
+dJ }`©è£π,@Fï˜∏êQ»8ê3›aËÊÊí5å—†¢∆XtÉQë´RådàÜ≈NSd-@í∑#Èœ∂÷ôUŒ…+•å!Úm`√JÆv2A‘©6Õ7ß…ı)ò¿£:Ùt∫s—m√ËÓÑ∆µYÅóå∂Æπ¥;)Ã`Öëò„q0&¡x˘<¯ û	è¡\x¿bxøkV¬¬ÀÜM–m–{aºÔA¸N¡Y8ó·
+¸ƒDl‰>RH~H¶êGàáTë9d>©#œêï‰% aÚ
+i%;…Îdyã$&›‰˘àú&}‰πDÆíˇPBM‘BÌ4ü:È˙ }à™¥íŒ¶ÛËSÙg¥Ü.πı9∫íæ@Ét›B_•ÌÙwÙM˙.Ì¶”3Ùs˙⁄OhíY˚ªè…l,õ»¶≤6É˘ÿl[ ûg´Y{Öµ≤vˆ{õb∞ìÏ4ã≤ãÏ
+‰îã|wÚ	|2ü¬Ã+¯£¸)æî?«_‰|#ﬂÃ∑Û=|áˇâ‰ÔÛNﬁ≈Ûc¸ˇòü‚}< ˇŒ/ÒÀ<∆ˇ…ˇ≈˘uû0PÉ—êe»¡j'<yS…¥‡˚·
+·Ã@≤àâ
+8s≥âë¢sj"e˙¡—b"z•7ŒEQÅ`•F<≤iñ~d•Ô–53Õ¡{≥~ö[M$ciΩÿj f¢E “|·X±˙#º
+©ö∂hWÕíçﬁLö¨LkøÖ∑—è\®ˇíj44õa≈(íãxh
+ıÿÇn7e»ò≈êE,ƒÃDT"jπ√ÏâÿGS>Ï@≈∫ŸE‘¢E—2°˚ßZÍ’Ìÿœ8T9∆‚X—f ‹h6¢7j4Ë6ÌL–Üœ¡4iÎ8	yx∫6pò∑„ŸàmKÓ—Òù#nä=xıpI	˙ø—Ôº∑Ô2ºØHﬂ-1jô‹≈¢üY‚ˇwZÏ√µE2jô◊≈•öVëGZ¯7~›ç◊0-πBëäZ|Â®•Òﬁh)Äi∑∂ôó˝ÕÂ.µêd4”g·0-#4-&yBw•eÙˇ6{¡íé—ŒÈê ∑Vô÷í6Íú¨ª˜€˝G"-¯Â†zê¯MKÆÏÛxSZ¢¬ˆ¡N–ø«x¨º7R[˙uo ≠°Ù√—íøª;y!ÓZ; ’õbkJJ˜|ôLˆG,ˇeæ˛cõ∏Ó Äﬂ{˚ÄãsNRÔûs˘Aä6VùcÇö·K!€≤§ı«§≠:'(åçÇYªMQr	âìL1£ìúÅô¯£Zªä¶≠˝cúcßZ:ÿ¥NLöä≠H0§zÇç†∫πΩw∂C(?™mï∂g…≤œw˜Ó„˜æﬂ˜})30uØ’…,8u´+¨±ww˛≠› Àj4éOËKææÌºkŸ9ykØuUØæÚƒ2≥≤Ê√ÿ¬^îπÂ¬ñEXiâÆ	ÿTZˇîƒR7¥ÓÃhnìÕ/]ÂE%>8è’J™(9$1!H¡p£›ØÈMáñ"œm\∞H∫lıeYD}˘!3¨&¶õ28≥¸|Ù(WQXvã–büOá≠ˆ¯Ë
+	R¬è"±p¡∞‘ÓávfπÌh≠À[.âQG=≥–ÓKVÕıjW	ÔÈ’,ãGÍõî=ÛKzì«·qF$c÷oÛ˘@ŸÑ#;w/[XaQÿa7Yº†:®ëZtMÑ¨_=ÃRÕN∑›µÙf©ÖvTúı™e©≈ZèÕ˘U√êWXF8c^h˜ÈÃr·ˆ•eÀïõãéç∂√3ïQ÷8%x-yã¿,Jì‚û“„S«›–‰qU:!"ÈÙ.äœûñ`ﬁ»[–l≤€÷"[Ù!IxgRˆõW?˜°≥‰“µ»gçRj…z∑.fEëáœ œI≤ç„òÖ/X˙Bµç|≥~¥ºƒ>Ê‰b’Bn‡‰I}~æÓ;Eª∏ÜnZG¯…Ì;fIôcÀñπjŸ—aon(?E-Ç°$§å˙À˝60JìıR‘FüoBèø∏:].WÃªß{CY[ïvÛÛF“∆,§˛Ú±≤ûWK/é‹nŒD‚ÁŒº}Úˆ˚ÎlZjÏ‘¢~QÛIgÅ;ã2/“˝e»hàá≠HˇT.oy~¨{´x±&(±›tmZÈrèKGùuÜ°“©≈.Æ°ˇﬁÿxπØf˚N-Ã+-;Læ£µR‘éXñ«?àïI.∑aY™Øj˚µ⁄Xø€T÷6’WFgÄZÃX¬C-ıÃr~OZSºäÊ^|apÿ≤ÿ*g]ÓÃÎ„„[¥L$ò˘C‡“Âw*\DÌ~Ã,Ç•ıÏ¿˘r*'√òéŸ¶3ËLıd&Q“≤<e”6˚ÏïAA<≥	t∑–S[w£¢e 0kL>∫´º∑Ejiﬂarñe<¬ëdãÃ˚èã^f©µO€®ÏòOk à∞M“åØX„K¸Ü+Íù«ò•TEêﬂb [sÃÊI∏îÃkG'¶‹:µ®d≥{â´6ŸkYÃ¡„‚Ë~Z€.ÈXeQƒë%ê~∫!ï7Yñgıêø¡Œ∏!ü™]DÉ"µ√‹7zÚàq9ïmÏb/c—]fëGË∏§,ãlç≥‘ú^Z˚˙ìZÙ@v£“y-Æëa@Úia%oY·äzÒò5«@ß±öó∑	AyÛµ]‘üé¯-K∞`±’Tò	ãì¶yÂ∂U¨ÛfRïAkSfv4«Ôí˙¢—‰ﬂ¥áéãjÃ2D-Ê0Ã—9F◊óπQÛÂÌÄtf˘Ê+”té—Ï0b≈ÀêeaÒÇG≥¸æÉÜ◊e„ÖéKD3Ç¶Põ;,˘ï∞˚±Ñ{;g≈ﬂ[±èÄZ¯6,ÿ
+âZ2ñ%8iæ±¬ÇÍéò4åSÀ¿‰µ‚∏‘È2“Ÿ∏îÊòq0-˘õR5¡’ÉÍjyã⁄¡CËÎßªËœË*π°0.±‚—ZªñXñdG´P∞©¸|(Èít™˘è≤èZÇ∫DÀiå5¯H>''§8°ñÉVN∆ú"(ùÛ‘"‰-ï	âZ™'¶ú˛ä	O‹Œ3—ñZjÈé≥xÈG(=iÏâ},^x¿èÅlCŒT23÷CÊ‚©V÷èVu∑±xÈ!Dsr—RåóëÊdöÓôÂ¬
+K´|d™ØQÇ0db©%m{PËˆ“<¶ €Ì&t≠§ñ©ãàaQ±÷J{N™˙Ã%Ah],è≠øZÈÓz•z‚ÁæuUìˇã~3_®}Ê[gœ∆iNé -:F˜{âÆ±TDwÇ!Ù_ËD√ˆh)cx˙}'∆Ë˙VWÖA≥ÌhSdêióÙÁÄ∏X»c%òßk%`¬ç—µíÂdA’"¥Êè„wFOŒà‘íæi^3ˆé€ÁΩ¥/øyÿ¸]¿4â¯BÆπﬂúÃùÃâÕÅ~o’d.∞ÁÃ•@UNÎ6@3Ÿ‰hUGRÒ™“Úﬁ‡‰f;ƒ„ﬂËB˙Ôt≠h§≥µÅ∆ñ˙¢±oœq˘zÃ≤®Õ€Ò'B[Ì…^ïÔ(Æ/Ê¢Lkòº•E,¨/Û^î˚áñÂﬂÒ≥‹›ãaä‚aÂÁá4¨"$¶—  ≥áe·…˛¬I≤æ™Æx>}$ˆXh≈∫±˝£«‰¬îIﬂsÅU˚î›añ”‡ÏËeqŸBÎ±ˇ “•~¨Â·∑∫ﬂRf“Ò2u˘ÅßÎ8ƒu(Í	pé©ÇÆE¥ïÓæì’Ï˜ZÇ˙É,(≠o)XJqØ¢•Ìc{-¥|ß‘0ÜAÊ©e À´Êˇwö=ˇÆ{!ê.\≠ﬁo1Ù–b˛£„˜*Z≤£ªø-d’≤îÇ&¨∞¸/€«Ó+‹≠P©x’Òˇc˘‚¯ÇE¯-òÜ√ciZÕ7¬Á°∂”„”,›ÃtAÏáó†Ü!/√	8Ø¬9¯%¸
+Œ√\Ç?¡{7∏Kh*G^Ù8j@ç®}}ÌEﬂCChGß—/–Ø—zΩãÆ†ÎËË&ÿéÀÒ:º+∏	∑‚/‡ß3¯∏˜„Q≈SxˇøÅﬂ¬I¸[¸Gú∆◊ÒMºDJ»j≤ÜàD˙^5‰≥‰	“HöHÈ$œë.Ú9D∆HåLì≥‰-Úí"Ôêw…{‰Ø‰}rã‰∏Œ¡π∏:n=∑ôkÂæƒ=Õπ‹˜πë—^5@Q]W¯‹˚Ó{{wY‹∑)´efﬂ.ãÇçäh[àT6(DÌ ¡h«Œ»+ôN&¢6≠Nç,∏—]Ü(†éí»®i•3çvZ'&mEç∆àŒdR;c“ìvlƒÿâ2˛ºû{Y5FÌò{ˆº∑Ô˛úÛ›s?÷»Zÿ^ˆG÷≈ﬁg±OÿøÿevSÂj¢j®S‘jÅ:[-Q™ã’*5§F’◊’]já˙ñ˙ÆzL˝PÌS?U/®’/’+Í†zS#ö™iöKK“í5ØÊ”&hì¥…⁄tÌ)mÜˆ¥V†iÛPû/+w$Pco0"ÅJ5Vb#28A«ƒ
+6™IU±ƒ
+£D|ï™`∂·ƒÒƒé‚9Üƒ°jás*ú¯µaN÷·òcG?v¢):≤F;Z¥Åù[ViãcM—^‰ƒ≈s∏¥*ZÿâïZ	£ÿˆaz¯Ä˛O¢7
+à(å°c§&PÊ°éo.
+¸Úü¿D]Lî€â«.—WAÏ;ëBQƒ∑åÉN`chÖ∆—8íÄÎ%P1ûZ,NÒƒ"§(gKp4º⁄R;XTY&üVQ7Ö8”lÎÿ«öy#‰Tw‡ql<ñ‚ˇOn;≤)Í’#·oÕ≈Éo∑ëß>n$˙®sÈH‹8[‰˚∆46¶{6nxOπ˜∫æ#!k) "ü˛í¨˙<£´)’]ØﬂØ¡Ìõ‡H
+T…ì«±õÖ.Õ√ Ä7®£ê‹º«Ü”w©ÆëØ•‡Úä˜¬˙<o§] IÍ^pqî3Höêï˚√s˝H/ºéÉ=’ŸÊ⁄9oœˆ$6ÿ€iûs¿è´˚›à$¬Ñ!qmë˜5;©Ï≤bPx ‘ƒx£-vN2 Ωõ^£°p(πµjıÂ6:oNŒÂ[€	oO1È.Œå&72pﬁSïˇ<Ühn7+{ı:ëë7÷Ír˘Kö"zÁÓ∂ óH»m$é~éº®¶’Ÿ÷Ω†#≠J<©°7…±qK%≈±∏QZ~uëwIi0∏(àH&üóH˛z-≥énÎwkx_hóÓvs.≤˘◊‘¶¶Ç{ÎlââÖzI˘Ó⁄<D≤‰æimø¯AEÍ;zˇ≤ª∞%’jË\õ‘x∏Âî·¬¡B";5±x_.≈(ì%ÕK6>Së±˘=OÔ·+WÆˆ±ÇïôÛΩ¸Öz»O\•õÁ{›ıyπˇïHí⁄ü˝;◊πs{€ÿô-„*/Ët√z[N”∫Û-°ˆΩœÿû¯0_/5˛∞@≤ÂµÇyuÎ˝;V¨Õ,mŒ,Ô∞éØé∏3WÎÎ´6MßqÙ€wßò=7¿b÷d%ØjÃ_∂?1M7¸˘å˚y¡ú`âwâÈ_<hÓ1õÍ˜¥ï8›ıÛr	$Kì∂˚NÏtÙ@ZªÊç˙.á»oŒÁœr˙õj˝—@{—D€Î>c±áã—âD˜î’˝NÛóïŒö™K$È\õ∑ÄVì"˘e◊8£≥–˛bÎâäL∑[◊›Ö‹aÍÈ+É◊€“Hi´Ü£SZv∞¨"&…˙ƒ-◊Rß*Viª-üD}zÂ√“S‰ÙÆA$^W—8Æ˚Ù”%íH‰HY]GÙ6ßûÀIW“’ﬁŒ1O&Ë⁄Uø?˜ééwÆ˝≈πg*¶K$Œ”åÙ9ô‡F≤≤lO38í/áf,/NÕ\«…o{¶÷˘∑∏ø∏µMØı7:]V1cù∫œjÑç≥/Ñ`k$ÚAa]Gëﬂ_z4ÉB È ÜÔG!ù% :ÈbÌTW^¨,¬µìñh˛0≥ÙÙpº:âz‰Ë¯ÇAÛd –åY˘…W8ï’YìW$ü òp£˙]”Ã>∂ˆ˘ŒNO‰≥ÏSπYÀösœ.Ää˝≥ßE¢+2ﬁIŸ<„_˙¡éÂ«ÀOó^C≈˛Å{¨£ˇ´ò◊Éqaı—7=émÔ%Ùä;†õ˙™Uà¢\ÃXª/'Ú…¯Å$∂«6ÔN˜ŸB≈¶Q nn»5)Ú©ë.Í˜6a1√±≠d$eFÂôâ∏«Úˆ<o4vÓ4H_˜MíÂI$µ≈èÜ§|Ë√1 ~w[ö∏ÈPø5eùwp;ånç©‹ÌËÇZ8"	ƒê0„Xóx˜CÚ†D\ë†>ÂÈö–C’ˇˆq!©y\H^‚!æ)0’$»ÑlòÅ¨*à«B2´xaÏ?áe»≠^Ü_¡+∞¢lFÜ’∞ﬁF~uNBØdXü¬‹$*ﬁõ]ƒM<d<ôàL+õq„öCû%Û…OIyÅTëó…RC^%u»º∂íÌ§ÖÏ"{…[‰O‰“Méí˜…Ú9G˛I˛M.ëØ»ubR†å⁄É∏®ùó¶–âtùNgH^7üñ”J∫úÆ¢kË:°ÈV⁄ÇÃnrª}Ù ˝3=Bè“3Ù,Ì£Ë T(≤ªD%YÒ+O*”ï…ÃJëõï+ï 2dg5JTiPë£µ(Ì ÔïÉJßrB9ç,Ì¨“è<m@π™\G¶å![≥2;s0K`…Ã√|l<õ¿æ«¶∞6ùe±lˆ#`yl \PÓa #q)Ö2qü≤+r'Ñ øòTo˙‹%D¡|y´«2º’#ﬂ∞‚,‚h«Ç @~#Wb^"óãr¡Ã`àõ0dH¢û∞«%ºM®ÿ0ü@O¬«øP•m—ÇKLT¯~\ä£m—älY‰êH÷f!ˆ!øRE?œåa#v≈ÇuÜ¯üyé‰XpÔåı_H÷¥(ÿŸi_™ÜÒf©ÍmA´QM0Z1"å3‰q†*≤L>EôÜÎ◊2¬•êUô∑oUﬁ@{b„Ày∏-`Ê7îƒÂY&˝kÀYâ JŸóõyB˝Œß<°Ø≠zoR‰Ÿë˚¬c€2r‘ÙCH⁄—Ø„ æ˘®Üñk“oøÙõ˚ìÃ±Ó‘∫Õ„›°Ó◊1(O6á/]Ï“ïÚÒ…¡ﬁ´ˇ¯e ¶è/]˙µ˘Öe”KÊ:Xm ¶Å Ï˚N?Zk»ˇ§"u!yFÍ`?}≤™Ü¡ﬁŸÆ|d'lòŸÜ~]i“o{Ò≤4$∂”ﬁú€àLâ¸è¸Úé¢∫„¯ÔΩ∑ŸΩ‡ mBêçfº#ÈE—Æ$˝#Ÿ``í5	PˇÙﬂPZÀ8A©é»—P#Üö¿¥‡(ˆèÌ›À9LòfD;⁄ÍHÀ`ájƒvzëx€ﬂ€Ω$ó`ßVÌtﬂª˝˚ﬁÔ˝~øœ€∑˜›ªóá[*õûòöÿÚ˚iwÌõ^°Ì!Ë7"hb"ÿ∑åõjW‡áj–óÊ‹÷f°œô∏]µ¶ WXpi÷ò–¬∫\óK'›íWπΩ¶£$ˇ˛pT¯=íºØ¯X‘5-<1öa-´ù|’≠oŒ◊.8êW≥W
+ü7CsÇ⁄=o|∑§≤˙Ü˛•<Z∏∆ËÚïf¡ÈeM¡‘OòZêø¨¡∏[oÃ=XT‹S630Û·w≥˝oÏ≠ªägÁjº≥—Î/¨Ï()ÓGøìuﬁ6ˇµ_O@]Ù…íy¡„Ìº∂;we€Ã™C¬Ô7›Ùﬂú@6	íÓ˝≈_üyµ∫‰Ÿé"+∂±fˇMù◊|Ó·û\Õº~Á*≈±4€2˘±U’·`$dn»’∂ﬂΩ∑.óèü–üzˆ‚sû_X—QR%¸Ü⁄y[≤∫∑Ô‰ë∫Êu%€ŒÄ|§Ú$Ã∑*]π#Øf∑î£⁄R˙x`oı¡º™∫˝ÖKém¨-Íi•€™ƒrO›>¿y$¥´ aû->X‘¢Õ#Ã	nﬂÒÂªswΩ⁄%CÁÿWnõÊÊ;–ÂÊÎ´©Ó56¿∂÷äímÊÒvàÜwW6VÖ¢°ù”Óz"îìw®i˙Ωq€Ω˚™Ï≠¬OêÎ–oMó¢¡÷Ë?øv^‰ÀÅÓ¸©ízYcøø|E¥-œåÑÕyÊ=k:i‘?%Ú›r›aÖm˛√ﬁ¸6ﬂÒ åc¥|´≥±wkõa˝Ó‰üù˛ó<˚‡…gèΩÛÓäwJO†ùùÑ◊ä;∫o{†~Â÷}go⁄yÛ‚ñ.(-ﬂ,MÃoÓûƒÄiíDæ•ˆô“Âoç€ÂŒo™>d
+ø≥p~'J°J>q{I~q8∫ß»[øŸÈµ¯Q
+	WAÖ&Ö°…ìY¬"áv¡–:5âùÓ´âeVÈ	1M4ì8WJG∑ –/ø≤ßHsÔ»iøôÎ}∞‡ò§Q±ÒoO¯µ=øÀ«6à6#Ωé¯∞ﬂ¡õeúåI¥>6s≠<?k}ÑßOP<%ï˘@-U≈0nB55JQOï°ûö’p;Ãá;PO}√∏ñ¡r‘S¡zÿ?Üm–?É'a?Ç√j™£Æ¢:g‡m‘TÔC¬»$á\ç™j"Í™0πï’r)'sH5˘™´;…wàEÓ!˜°æZE÷íı§â4ìÚ(*¨d7È"Oì√‰W®∞~Kéê¯gPèë„‰‰O‰Mröú#»{B©—,ÍßyÙZ‘WEÙzj–ÈÙ´‘§¥íŒ£uÙ˙m∫ò.°˜”ït-ç–(m•è”ü£Œzö¶ø°1⁄Cè”?“7iÇû££ßóXªíçC≠u5†⁄∫ëÕ@µ5õU≥Z∂Ä}ã’≥˚X[¡V¢Êzà≠eÎPy5±Õ¨ô˝’WÍØT`ùl7{í=≈∫ÿA‘bœ±Á±æ@.SRÉw»«RRE ˛∑g°FπG	5*^QÍnåd·’®ä¬uıÏ<€¡3—&Í˜Æ◊"ª-YÆéäÑQÖ‚ÊéÁyœr˜¢JﬁQË•åœìœÎè~©˝Èïî–F±.å ≠˚l¡çJC)1 4õâv/?ÕvcÛ™2X›ë<®∏Dﬁ4ÕWÇ{L⁄ªhG2TÆ}·SìEO&)íQb∆‚Ì≥DÇA´X«\çª∑Aá@N9Lp_Dõ>õWƒÁØXUMú·ˇ&à™Â/H	äç_7îı±ï†¬Ìà√ﬂ'˘ÖaQ#Y
+íx.‰+xgÑ(ÿæœ˛)lõabü`!iºYl¸ˇ≤∞˛k˛…ù°G±–TçÿiçˇKÎì†ÿ‡Ú^pY;˝Å˙oäy˘-o0íÙè˝88<C3Òô¡Çz,óÇºy$ıc>TÜîÙ(™9ˆ`N3”∂â°ÊÈ|â≠ç∂Iò	îÆ#w˜äS∂+}#uôÂp—ÂÃ/Ö¨,»`·wN{,»dQ≥æ‰¨V8»n∑Iv£›@X≤`˝#ÃNGè⁄kÛô>-êÚ««Ô–≈Ô%%Ö%Ê§¸ç©2TÒ¨Û;ßíÎù$¸»B7@bQËò1ﬁjÄóÅfi´Ë4Ù5ÇEÃ{πÊ±» üf°ú9ág0¿HÁeò3‡Å∆KçÌrÊ◊K∂ƒD≥¿Î7√èÖ,!ã¶A}0+HV¥™6~wâR¥ËëSI¶Ù58-F:z∆"nk≤Ã¿Íe*5lK"º¿êt√¬_º›ØNÂúƒq^∂…6®C,Ù°gùxY
+s¸Kv+ûÑ-—iIFB„qõÂ”BÓ≈0=¡ÇFTVG1ÄEFó,.YñU_’®è`ë~_IhFı©ÚX¸„-…fq6IΩ°€†πÿßLm^Q†H#áz¥tÙåÜÕKeHXs]ˆXbO)ï›“-#÷"´9ú≥H‹π®SÕdQ0öÖ‰≈Áw∏»cu~;.#!:-ÀH(ƒ3X”≤∆ŸåcXd”M-êl¢È·¡g˚l√6 g#m4ãà9ál"Újπ«b‹•ãó±Ë∂t;iƒÑ—‹È≠%™_%úØÑs˘ön¡bî ∞X∑T¶=∆=ñäÜzÏ(Uµ 6¡ÇÎÉ,í˙‘∆± ©æ»s›“Y‘“∫a$÷_PKï˛ªNãnÒ ≤`™·.$ÎZ0ó€ñyÖÈ≤@ê8íæzã¯y…:
+\Ö^£á◊˘ ê
+0g≥„OïùI·™ÃÊ˘\œ`·#¯ÄYÃMˆ6tÁ’ÿ>ó≈Ád±aê≈9á…ã¶ŒÂ`πpvg>7‘kùÍ≤–¡R
+æNm¡bÆq’cá±ƒö2eêEﬂΩ1rgI_ƒç4÷¥zi\QW‹ªt6ˇ}£¨7L’ùj*p…9U§ÍÍ“ˆ£&≤ê®·><V$.%˙“”+ﬁòJ£+S#Xú:Ø6Ù2%∫©“®°9ëf–pﬁTÈ_‰◊_lG ov∑ªÎtÌ€sÇìknÛá®HåII\)’≠”ÇdDûPH]'Qj/º`Deœ˘NóCr∏B¢y@Ùµ !ÒÇÿÎ•πV2i˚f©}∏`P Cïç*»E7|ﬂÓûÔ\;iõ BbºÁª›ŸŸﬂÃ~ﬂ7ﬂ•–±¡≤Ö°ë⁄‘g–¬£Ú¡pA∫±ÖÔ-xµ â⁄——•†gq}–‚œ,ﬂf+·8h¡∑Ω‘ÇÃ£≈„À(\`†≈Á—¬.d!ñØ¬vLÔ7B3óNΩé≥t⁄˙;ù=`a|ˇ q}˘–WÍÔÃçˇ<ãblxbq¯‚‰ï”3ã¶0Ûˆ≤p!L|ˇ€vK›j€8d≤ê~í<ÜªΩå@Z¥‚LÆö˘∑Æ	!åÌ∏]Ÿ≤-ÓóíåéW«+ıHûWqó*∆û—%ëX‰U›KZœ‚Oö·≥;rd^˜?Ì„Õñ—Bú—ØFfûsFŸ-|
+™ÊxŸ$ãŸS+h!¶˜∆K”u¢Ösf4Á°à-Lm∂∏x’¯‚~hbßgôúè9ãΩà±mY¶pV$Zÿx~	w˝ézø„ÇÁ”£˚>>d`„„‹T&©Fj1{—…Ω„à®Éˆ|OÛa	OÙ ù{∆´¢2ïE\m€l{^µÊ’-c^E^%ÎV&`O÷Â±≈éº
++2∂XêhqT3æ§.@.ßáòbã`∂73cs”R%Ä¬T≠;hëQŒÚ‰*ÏEã›≤xq•!≥MòÈéúáp›bUò\uéÔ%ü,òókyA∞˙dPãBßt©Êáª¨™€]èb8M¢o©ê~Ù• ”ªñZ<°?Ô\s¸‚Ïaı≤ªE◊â¶<≤0,$ıHÎ¬ˆjC©Ö„í≈ŸƒÇëEÄSÆ=wéXó·úaÓ\ú§¯`8LÔ≠ûÎ¿Ó_ÏYt¡w‡àKz-†g¡àÔ§rÿ‰Z,fXKAt˝z#±àNÄ`ÚÚIØærS°ÖOπØwi]òZ….g®n1µx
+Lªôì±Ö«1Àl∞–ÄÕõ¬X√˙¬+dç,Pèdaxµmn-\◊t”u—:ñZ»ûÖ˘›Ü[øTGEh‚å2ùâ∆*EuﬁÏ∫∏«–"çú_ã-º+…;RTÁd°A¿dœB_Êì¡yÁ¯≤7[Ñhë˝°zÑ	ó=ØÒûÍ*‰†V)®6Y∞íˆêôQ*öRî=Ò©Ω4Å"Ω#˛∫ÖGJu¥ÿâTwe•≤lfb°{?•uáë4^¥Sã8^¯µBƒå3•Àz¯8∆N∆«•L,Çñà◊ÖÑ|[LÓ◊X5Õ#ú7¡Ø;ãﬁŸ$vÜ»Bã≥Å,p]åíEãWπ9Ω…bÊ¢ıáv≤.*∂¯¿∫X–L #¨4^ËM©ÀÊ#‚≈Nπ—/≤¡YØÚ
+Y‡ä`ﬁ¬Ó˛∫∏¸ÀhÅ¡l˜—‘bü\`Î∂dNCÜz8±E	ô<D/$.&˜íER_pﬁê~}ÿÒKrj®≈§ ÅŸ∑‡ºÃ:«wêEqkãl-éù3nÕoºwª3ˇÜÍ≈ã}«!πqÙ!≤Ë«WoÑL6w_«ú˙eå;P-¸ƒ≥ßS:Úz∆Ó[x˝xº≤œ∆úäSÊ&üT—†úD˛™l•Œƒ¬∫E¿í]äáS∏Ju'Yàz(Îñ„ÂRÉ,8Éf¥u›¥òUÆ_u&*3œf^ûjï[IÏ§ú:û±d}e≠]∏ÙL/è=Áë›vïœöSQ/Ñ~ΩãÕk≠kòE∆Ä*¯%?…#“ãQ≠E€–¬üÚÚHÈòSY)‚îyw∑pˇXˇ5Tx3ák9∫8m†EHΩ&é%≤¿˝Zÿ"l…≤Hj–6–"górbå]∑¯ùx”;eCãØÃâØÚr’ô˘ÈN]g'ñüúh,kíZÀ¬QKáEyÎÈ^}Q:	q}Õq0çıZkæ›ê/^º6U≈ºä’≈v¥«˙B∆ı≈≤X@5¯ÄEøæ»≤£X∫„ÉüXlßÿYI-ΩÂ°Öh´]&^QÜsÊ“?ı…>~„"’ùx/ﬂ‰kpŒL,ú º ±ñúdoÊ;hëπ—∏©¬ gü-“ÿŸsù‚õbel⁄Êá_88Ãﬂde~}Ì`ïá≥Ö‹KÖπ˘ÍÍ\RÉ”f-†5¡z›I¡íÍN¨ı‚Üõ*Z=s˝s÷œhè•?Ãjê-I™;e\w”l.ËÄ,Í’ì˝∫s,–e§*ˆëE6±®êÖjì≈Eüu⁄ÿÅ#zS›äÙ<D"ˇºE¡
+ö**®ÊÒn¶ﬁ.dî^æ•÷‘+Ö∂a’€sôrTË`Nøç¯ª∫ .©6^W|ªæî±÷NŸ¸†’∞ÇCWôlÖıµYƒHf◊»ë|#*ƒ{≥eM&¥˚Ë◊‡X_‘æ~¨5h·b∏Èö˙ˆt†„vmpÁ2˚•:‰%m§÷-˙˚JtmcãmÓ˚≤"ﬂç-p:tXo¯û2ÿÿ$|åñŒ≈ã‰gKx€É#ık¶è‘ø +ëñ{ˇ∞¡{[ﬂ!=Â¿ﬁ¸í\¯äõ[Ù∞~^ë,Ü\ÄE≈⁄Ü°·F‚Å,‹Ùÿ∑–È+?w7ˇ>-`≥≈mKã¥KE{ºBdGò7•d5¶ πCsÂWÄM4˜lÒÉS∞∞ÂΩ,¬êı-∆˚˙òXJ„_’›Â\^¬Êñ|ó!œ≈≠ÉÿBÍá6¥ı >j”£ÙCﬂ¬Ã»{XddòZÍ˝7:ÿ◊áZÏøﬂQ˙È—›ùXhd±¥…bÀ5ı—[/∆Aû≈E(…¬¢ªﬂ-^`Ú±zı¸ÓŸ‰˙ß‹˝é“OèbÒl“‰Éw·•G◊ª[dq˘øiÒø”ºÙËzAﬂ"¸ˇ¥Ë5◊Kﬁ ˘Ô¥–1Ù=Ç•√pN¬◊‡õpûÜ"é9¨eüÉ√/‡%¯¸öºÅW¯clò}ÇÂô`O∞iˆvû}‚±eˆ+ˆ[ˆ*[eÔ≤€ö•çi{¥œjG¥—^-PQWxÊŒ¸ÿ]X≈–y$K£XM—∂,∏¡◊ä`vMÇX¢$û¶çâØ•÷jyh[cå=`<›x"]õ∂>¢≠è£¢Vç1Òô4kÉè	nÔ¸,j9’xéÈ˜ŒŒ‹{Á~sg˛˘ÁŒ»7¸oØµ∞ﬁÇç∞v¬A8ü√5Ë`úX_ñ»RÿPñ…∆1s≥ü∞˘l1´ckŸF∂ÖÌd≠Ïcvâ]cˇfÌ,¿CøÍ√„y"ößÒë|<ÅøƒgsÉ7Ò-|?ƒèÛ¸~çﬂë¬•ﬁí&Y•g§ë“x©Hö&ïKK§È-iãÙ°tL∫(›êπlñ‰49Sv»SÂóÂ2yâ¸ÜºQnë˜…ß‰»ó‰[
+S"î îe™Úä2Gôß,U÷(Ô*(ª0≠›ØUé)ßïÛ Á ?ï+Jß TU5™&µØ™·/Y§V”’u§öÉT@‰@èß[ÇßÛ#<xÅU©âÑ—pf¶Q–ã™T—R	2U(^VPã, .¬UUH∏ ⁄ãÜ51ÄëF“dï–£zc=íFÈRÉê°u5Í¨Úh¥3
+Ø®û¬t_°‘Ä¯∫o,uç 	%Ë¡Ñv&√JG˘(>¸°0ÄåÓÉ0àdë:˜ìbô".ÑÍ„ÿa›„Ç	ıƒ»Õ(7Ûå*äöıàM›Hz[ËzÉôÑK·4Ò§ç¡Há·å„ë(¥Dtí0F		u∏
+¯q÷Bîä:EX†N?®#ÅZ±è$$p'pìàu˚Œñ¯:y¸œÉ˙›†¢Vüò£˝ﬂP¿É≈kZI¬ìø≈@Á∂†Ë…∂¶£lq∑¬è7»¯FÏUqoÄp®˚B—ˇäÌu€˝√:/JTË(G6¨ﬂp`û¬Uµƒ∫jÈÈS≤‚Ÿñ	ù∑÷‘˝jƒˆy€;"æ˛ÌπΩÑÅúGøØ–äïÛ7ı¨,Öåœ∂1•lŸ¢xƒq	Ü3Û˛û)‘A]y€¢4˜ë§x˜Å¡ªò∑∫úŸ8%æ$3dFVæ}[r]ÆÒ‘äº™íÊüzõl£	Øàıƒd⁄ÿ˙g‰MéVñ&õvüŒssì=øËS≠íI/}˙ùÚ∂ygÃ”™fgí®9‚ÎG_Lsü8.P∂MxM.'iïõ¸´KoÿﬁÆﬁX`X96π)?o´£≤÷€GìY≈ÔîÏo…ìqÍrÈ“—)Í¯ˆC5¯]õp5zË’πÉŒî[Êön\Ï®LåﬂºuˆR∑p—s◊õ[éI+û∫2ﬁΩˇΩ¶¨ÕyÓp^ı|˜;ª·OFo(PÎ/'◊|/Ø™∂≤Œ≤cY—¸bAä?«zπ$ßÙ›…â'’‘IÅ@k≠*9lÒπÅﬂÌU!?‰ó/ﬂFî⁄%w≤6øœs;s+<éà+-≠!iÓ≥E,Q^˘k&…´œ-NÃ∫A#Ã€‘˙{ç9Ø*±“[]ΩQÍãsRﬁo27Î(—0:ÓÿóeÅ¿æ;ÁlŸ√0C‡„}„ ^(ï…ñJnó1ñØÍMà¢œX]a√L„¡ŒöU}õ‘Ì€ˇhX€æ∂Ìl√Û˛|Ë˘ˆ√GíY¶55I«‚n´\1)}%múk¨¥kUûyıV<ª˚MH6¥Òãım∏.g€„Êrªæ.ñ»Ús	∏.8c˙õ6„ˇ~Ò5ÃæmÑ'SUÛ®]WmhÇÎrw„bÓ·(‚ú˛&ãfFäª5)q∆—ìz4›‹ÿ•;Øí±˜Pòi9πó‡›C—Á„uÂ˛mÜøî˘æ§ÔœË∞ë«~Ú£ÏµíˆÍáè¢{√E/¸EìXá°∆ì$‹µV2à∆ÔÒ3d8˘…"£H.OÚ0ﬂöBû'/‚Tπ…K§3Ø9‰u≤àTí≤sØ’d-yõ4ëﬂìÃ¿vëΩ‰9JN`vé\$ó»ø»“N:(° Œj<#¢i_G„iM°ﬂ•CË0:ÇfP;Õ°„ËD:ôN°Öt:-°•ÙU:áñ”ÖòµU—≈¥Ü.˚®û˛öÆ¢çt-]èy‡&Í√\èt›O”ìÙzñ~Üy·zçﬁ§ÌÙk† ·ôfàÜ'0SLÜT√!Ïê0gtA!Lá0s«2XÄ˘c5,á∞÷ÈY‰&Åv¿Ã%è¬q¯Œ¿gp⁄‡:|7°nC'esÃPéyf$ãb}X?À‚òÖ≈≥$ˆ$»ûB¨gÜ–-ÅG ß aòÇQI"K%¢≈@bL/%ËA,hÉÃı~r1QS∞è¨ÀT¿‰Q˜*z	¥ê±ø™€	r–/∂ÿ]…˝ƒÉ>§`/–%è„C„>#·ó)]§g6≤Œ<àç∏¨ª&b·"¬Æh¢˜ÍÍ+ˇuE¨†≠
+óÇR·_“ô#uÕí¨◊ÉƒtÊ\_êdIÙ¬B¨è(Öéq‹øR `Sdâãÿ™}êî„ˆŸ&:µΩ.K™µGS3*öè8|·Âö?p8y¨‰ÚI˝},IıÒ§ÑÛRûOµéq85?U≤ÌA∑ŸEvNrbU¥PåÚl{™ü(÷1~";úÔQ∫‹ÂßÅ*?±?±?3lj!™U´¶eœ¥˚h6B¨(H±`-‘™çB®QyŒóÊ’º9nØ6Jõ1Õç”ˇQQÏu=çCú‰úâeæ”‚≥πbÔVã]Æ·Ëßó√u?^z(z(’=†ÉN4
+≥é—|lÄ√9—ÈÛÿc}6ª+÷b—≤};Nﬂ{¨≈ÂB´ª#≈ˇ3cÇcé¿1áß`≈–ÂÁ¿Î#.Ø∑´ï`ÒyºﬁX/∆l˚…éJz
+lAÅüËYR∂üz∫ ì`âÇKÇ«Èìlsüç#µ∏R≈—#5v6‚©1˘Ns«'jEW¶xﬂ≥ó$%zÌ6≥¯Õ‰SN∑ÂfR!ßì"l"q7ôÇz'r§Æ„+6yÚÉı!»O!Á#ß#Á!èÖt≤π˚NÒœñëË3_0b}…Níˇ∞]=!ncg\û±ù–Ca-€4Ñ“≈K≤Â¬"Ÿ˙cŸñGO“{“c)ï%À≤%˘œÿˇ°√≤Ñz=î¶•ÑR “C){HóûJimXË“C(•Á%ÙR]B•0˝<ôÖe©·ÁÔÈΩÔˇ˜=ΩßüÂ~ ¸|O+ÃˆÊ‡{ß!ìÌÌ^…π˘GÃ√√Ãª0ØÇ›ê˘∆w°Ô0Ã˝-^|˙˛Û∑ÚœòúïˇÿÀÅL1("f~•+ª§Os7Ø=c{Ï«◊1Ûk–s˙~≤G·¸ Œôû\º,`ÜÀ?eÑ¸'Ã[{û0•¬s»«Øò:åﬂæõ◊n}¬‹-º≈ÃÅb–QŒ/ øcnÄÃÌ¬˜ò7ão2
+¨}µ¯s _>
+¯Ò˝Cù9 5¿]∞q#_ÇúˇÇyk_ﬁ«œÃ·ßÃmKÄs‡—Ô3ˆ·˝ãøÊ]ºÇı
+ÃøQ8øx~(˚Â˛√‹Ω?,ô‡6‡c¿{ﬂGy&ˇ‰ﬂ ˇÓÏ±œ≈>Ó/Ï<Ü‹4˜ÿè!?ÁÖ&£_≠˝>»?(˛3◊ÅzúÏÛU|òª{xÉ˘˝ﬁ€¯5∞°C?¿EöˆÄÿo>ºx	:ÓÅ/p¿˚‡
+wˆ∏ˆ,˜ˆ·ã‹o!/Ù5ΩGü—¸K®ı”Éo]g.ﬁΩíõπˇ>ÜZ˜˜∏v+' ’.°3Ñ¸|røÔù[Ày·≈≈c8->ΩÏ˝/†∏c∂W;ÊKóˇ’Àxa¡Î˛~ÙzÌÊæ∆¸âÅˆ'«’ÌÈˇ˝.’Ê>„∏∏¯√ÁiÓsrﬂ‹s˚≥Y˙z\¸nîÜ@ﬂÌŸkæØ\1_Y=Hvo∑ÿÙúdÉâèbâ¡Ñb§—Ö?E∂ÕgìlZjƒµ∏›Ø§#ø≤û∂v√Q'—õT¡öZ*∫—]F⁄†“ØÃ¨òX·L±l∑€oàz∂ácﬂQv	ëÊKX„X_´rèNg≠≥ﬁI”3F“)bç∞“iËp´åV∂ûê	Ìó„EYa≤íÃ	*á”≈©∞mV,76ªDîãb8LÙ„∆j»´»÷ñ±ß¢Å%o8sgô,∏(¡GX›öë£F&Øgó÷=∂µQá≠e◊ùH“0’9nú¶H4ƒi“¥õ∂<∆cWıêÿË÷¯’ô©∑àÜÁ±aUGÏ“‰TEj‚õ·<iâ±h;∆–nHÚ…Ä\"'`;Xé≥éfÆã%'FotDœm≠ö¢(√ûeR”2Â±‹\4ü¯¸h<÷p9Jfßæ∫ÆÇ€)∑ŸPü-x›sd±ﬂ9>3eçˆ':‚=≠nä[Êñû@ù^ù¥•i¨nóÿ©KÉwÇ& ±;ü%ÿô©æ£˛Ñ&ôº,—Q¬ı¬Ód≥÷;;Õï˚¬ÿÏUgöYª¡4â≥ÖÉë£’˚hÜí`Ù≈¡b3H‚ ñÌF”‹™õÖÎs1OU®+«IÅ>∑|^}é;%B)µ⁄åV‚éÕo∏æåH¨∂^”L«íS :}U"”µ%n◊Î4’39MOYVÉ‘∑RôR{ÇÊn{Ys‰ÿ„ËdÏÕ÷ÿ©AÍ–ÅU¨Æ	6∆qÊmΩio¥∏Jz‚8€»'z#$ıM /MåUïmò
+ıT	∑6ﬁb¢◊GÈÚΩEóÔÿU‹⁄π∏d{7PÉŒÙÀtJŸ∫‡9g≤XÚ¸91›¥EXΩÌ7Õ§NOÂÕPÈÓ™3ﬁ™fKÇ∫ñK]K›32@UÂ|lª:™°™¥à;q€ßﬁ™5neR{ö	7ävâº6Y∂É„£à]Æ~9
+H	ßÛ∞j&(òTçê§ﬂ„≈«°ü∞JÉéá+y€]q–;â≈EóÜQE]b^ÀúÎanÓU⁄´@•„æ+ÎÕHqD‘Ê‚≤+«∫öÓzÌäÈ∆n⁄é|åﬁh9¨Tœd©Ñ:!OZRúbNFjèáf¥'ÓŸÛ∏”'™ïàMW3Y√„óﬁ jF≥ ä[eiÜ˚∑5ÔÑôÇ1©π.‘ô◊2S-hñ¨¬ï#YXD‚qÂdƒVà£j()7FÎÂ†≠Ù˙ìQ◊rËj{ÍèÇ
+∫¨“¥±
+µt©u>dg[¨÷Y/˚ö4Ù¸…lÂêx•ÿßu…ÓJfEqmôﬂiàm›2ÁÍ∆‰¥3¿=©üÙ(“CápÒjBŸQ∏6‚ …¬≤J‹Ö◊ñX^J•6Æt]úÿ<B}®k√¡8√Í†È®afµêÚ∆ñ&ÅﬂZ¥™çæ •≠‡ È1;bë4q+µ,Ãf˝4ïtS8‰§5´∫úÑ	≠%ô‡ykÍÜÑŒ˙âäK≠NŸqYNMùÆ¢è˝ñΩ–∑„n˘ƒ•À^êî◊cM°…ëÿù©-≥k+® i€3’A¥Ü∂8r÷à•–%Bóh 
+…%ó –YM2e£CàT©Súmtx7ç£Ÿ†·8%Ï—'«â-UXUOwhhöjcËFÿX£ƒ2∞nåàBKsnV8T†º~º8ä#œ•^Ñq«Lå≤l∫]u[Hh0JÒ˙ﬁΩø˛’G?˛ÕwÆˇ˝œ˜û?¯—Û·øˇÚ¯ÏóiXT◊«ﬂ3˜Œ∆ Ã∞çÇ¢ ààÏ†AQAk]0ö*E‹#“®•b‘A¢ÜÄ[U‹‚Çö∏§UàD\hîHF¢©·âªqAåK‘6d¶Ô˝3èi¥œC?¥˘‘{Ê˛ÓˇºgΩÔŸÓ¸˘–˛ÜD˚Öo‹Zíæa¯ûëá:¸ê±,–~–˘AØÆñ-#äø-h,€ﬂêxµb\\?ﬂ˜÷'À˜éM=?’≠ﬂY£(|Ë{º±Êﬁúíæ∫ û~≥¶ˇ§EoDZ«xèÿ2L[ü∂vrQ^È∆ß»ÍçUM≥'¶≈O,ü˚iÍüí<OÂﬂ¨ø≤ƒ7*<ıÀk∆sïá≤˚Ï;w7§ÊÌn~ÂŒÖôsK÷,⁄—‰’Ù◊√˙Gñ\û_z'Î^jÑÉ˜Òï4ÊNÈí’iÇ_ø£«‚Œ^X&>≤˚xÍ÷SôgzÆ¨hÈñWøk÷¥GEÔÃÙπ„æll\¬Ì˘_ôØå,l‹l∑Ó\≈Ÿ)Êî´œÌÌªÛÙô§…µÎoÎgı≈/∞Àﬂ]K∂ö/ﬁ2«+ÁŸ™ú”Oœ+:æ §Œò6‰‰¯#k,<Q|∞buIÏÇã>∑∫7ﬁÙëo=ùµÊN›∂ãkß∆æÁQµ3ÛÒR’•=Å›zÓ)Ω; Á’⁄›*◊ÀÂÁFãÿﬁ#¯˚Éé’◊˙w›:xò6CÛyŒ≠´'4˚¬oDﬁ€—˙Hz—≈ﬂçï√ÁmÍ≤t‘ΩæÀ«¯nxZˆ$vS˙RcHˇﬁ⁄ûÂs™O«§løˆ`]eˇ¯ƒØ?Kö$uèäﬁ±"1©®aJ«‘=€œ~røuÙ“Í/síﬂmH0îï‰Uó,åæGõ[≈„DiÖ#ÈD•0Q<¢(Úß6¸	‚P)úË&’“vO˝mgö¯Bä¶ Ú!w2⁄,Æ˛3U
+T*Zº"{:@´iW›≈fiE´h%PÔÁz˚ã#Mx°y#ˇôÖ Ñæ9î
+ªÊt±VU¶PìÖ$!ÉwC*híB≤ÇG∞	¸¸¯|
+>øÉè¿á‡;>ÿﬁ¿ª¯‰º}õn—Î§ÊßS¥DﬂBﬂoÄ◊¡k‡U
+x	¸¨ø/Çø/ÄÁÈj«≠ùßé˚∂/XÀt∫÷F≈Ú9Ù∞<MßòüAWÉß¿ì‡ßË˚_†´¿‡1∞<VÄá¡r∞å—0ÓWYsÃZÀÌ+âJÈ 9pJ)π!ñ…)©Ñ?›’Hëò1l+¡G}1Ö1?°E$≈Zy™m„9©ÊÁX∂@æè—B˙ZH˚πE5?€~⁄GSlJLiiü≠%Eb*5|Dq¨˜¢Ãp7∏u~H=ò@ÔÑ}ZﬂKÅ≠æÍÉòRübëh+ m°XÊfâﬁGÈMhm#ÙpΩ2èiΩ¬Ãáe-∏5¨FÍ¡Uhs%RWLñh9Ú,Cjòã1}yr¿w˘Ô
+”˙˜m),K¿≈∂π≥ò¶-Q6{Zyül‰»∆∏-¬˚d±ˇÍ9%)YtîS2i!∑™FäƒT<ºê{4€îâ©xD±(´U)˘p>ÕCÆ˘Õ1¥3πÊ¬Ú8Ã¿[œém^◊ÈºŸÙÁíÈÕ1îT,Õ§4å˛L§§Òñ£å~F?}õAoR'∂Õ¿Ëœ@ﬂãDSQ&úN'Å¿Ò‡8p,8ÜFc≠èAl4˙9
+:	&Äø„¡©·–ØÅ√¿°‡´‡0hΩÃ=Ä˙ÀØ∞¢˚A˜c¡ºMËﬁ`/0Ï	ˆ £∏¥ƒsN—›¡0CŸ&Qt0Ç]i 3 ∫Ëv&?nCÕO%Êá⁄	⁄Ù!GfGÚ`zÛåó»ˆÏ#â⁄#ø',Ì†€Ç±ÕÛ¿lÉ∂[#ót]m4≤w\»ƒ-™˘©ÿú…âΩ©Êß“¢ì-Õ	´Q—ó±ÄJYG¨.XZÅˆ†¥ı†‘R$S√ª´D8£gI†
+kKÖö˙üƒoüƒ÷LÆ}%ﬂ€¯.‰˚(ﬂZb»‚e"=‡πËóiÊøyµSé[bW;U√”Ò(;}(‚G€±£e,ÂPQ≥Cµl◊ëŒd‡A”∑7p∫€¥Ïp{Œk∆—”öÉñ'WNq'w'ìÎ∂‘÷”¿√’éµ'yr=Ì©=◊”ÅÉÅßØÁÙÊ`‡i›ës˙pPÛ‘˜eKgj^8˛¨É9/±÷àód$ÎhlÜy±h:oKo≤˛=oRD≥9x3T∂≥mº5¯†)`{%B~wÂÌèq >¨è≥Â$›dÂ˛I±‰À)Íùò§ÊΩL°S´d
+Æ©Ø	%c]M]Mà≥…À‰ÎeÚJë©)]Úh∫a…◊:<{8K„OÛh"Ÿ^:…u˚∆8€ÂÍ(O£ ïÖÅóÖ÷†W€Î£ö¢B)∏)öü!¬À’À‘—‰Èe
+WÕ´-”s-”ƒö\ïÆ%Yl…[}KfŸAUàæµçi•…ì)Oï´ìI-t∆∫Ëö0Ó`SCΩRa$ÇÏ–4X*QnaŒÕŒU˙ñoâóÁHÎŸ´#cÇ(T„.kı$£Ω¥ÀÿŒú¶]ﬂ9"»;‘∑É∑ª…≈—]ßqt—t’QWﬂ–c]UC]C]ï…)Í˘/äõ¨∫ˆ8∫™!Ãdér2GÖ∑0ßHS∏I›zâpO·Í¢ÈË›…œA(‘∏∫85"#∫EF®8´àèú±±¢SÁÄ¿ !&&NI¡õﬂùaVeuˆ◊iã®ïìƒ ã0¸ò4ñˇó∂’9;ÕZ∞ø®dÔ‘Tgø,À±vùÉ˙q™>XÿGã'Õ„0ù⁄Kœ§›<A1mzùV-©ÈÌ4≤Ω¡NßQÀ*“IBØµgÁUÖôïwa°ºÇY/¥z·ß›ÖîülŸ$&'[6[ﬁOØ“áI›bã&ãI…eàºˇM⁄bHk!‹l9œˇáó5ØöÊ}ŒÖW+·Œ∑ÜZº§ü§›Kâ-óˇü\-ÊËı◊%Û«Ò^Æc…º/pŸb∫Ä]_b÷k÷K÷o¨÷õ∫§ó+}·“Q ÛS¶ëMÀ¨[Ÿ¥Üïª22≤û-Ó|4kü/±6≠|ƒ≥iôı?ï	e≥ŸÕﬁﬁ~.ﬁn⁄¡ïπI˘9∏9¿vã70´π I7†ÁÇÅÌÊ\Ü$`uëlW¶€∞•@V"∞eå[92`_û v_ )‘§q 6üÿ_p| 1ÇÂÅ∏ı·¥Ùx~õØåÇ`Öœv4ÄË´	˚ˇ˛[ıw«∂y‡–Ç∆@Ä  .’
+endstream
+endobj
+4 0 obj
+<<
+/Type /Font
+/Subtype /TrueType
+/FirstChar 32
+/LastChar 122
+/Widths [250 0 0 0 0 0 833 0 333 333 0 570 0 333 250 0 
+500 500 500 500 500 500 500 500 500 500 333 0 0 0 0 0 
+0 722 667 722 722 667 611 778 778 389 500 778 667 944 722 778 
+611 778 722 556 667 722 0 0 0 0 667 0 0 0 0 0 
+0 500 556 444 556 444 333 500 556 278 333 556 278 833 556 500 
+556 556 444 389 333 556 500 722 500 500 444 ]
+/Encoding /WinAnsiEncoding
+/BaseFont /Times-Bold
+/FontDescriptor 39 0 R
+>>
+endobj
+5 0 obj
+<<
+/Type /Font
+/Subtype /TrueType
+/FirstChar 32
+/LastChar 226
+/Widths [250 0 0 0 0 0 778 0 333 333 500 0 250 333 250 278 
+500 500 500 500 500 500 500 500 500 500 278 278 564 0 0 0 
+0 722 667 667 722 611 556 0 722 333 389 722 611 889 722 722 
+556 722 667 556 611 722 722 944 0 0 0 333 0 333 0 0 
+0 444 500 444 500 444 333 500 500 278 278 500 278 778 500 500 
+500 500 333 389 278 500 500 722 500 500 444 0 200 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 444 444 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 444 ]
+/Encoding /WinAnsiEncoding
+/BaseFont /Times-Roman
+/FontDescriptor 40 0 R
+>>
+endobj
+6 0 obj
+<<
+/Type /Font
+/Subtype /TrueType
+/FirstChar 222
+/LastChar 222
+/Widths [556 ]
+/Encoding /MacRomanEncoding
+/BaseFont /Times-Bold
+/FontDescriptor 41 0 R
+>>
+endobj
+7 0 obj
+<<
+/Type /Font
+/Subtype /TrueType
+/FirstChar 222
+/LastChar 223
+/Widths [556 556 ]
+/Encoding /MacRomanEncoding
+/BaseFont /Times-Roman
+/FontDescriptor 42 0 R
+>>
+endobj
+8 0 obj
+<<
+/Type /Font
+/Subtype /Type0
+/BaseFont /KKNCJH+Symbol
+/Encoding /Identity-H
+/DescendantFonts [ 46 0 R ]
+/ToUnicode 47 0 R
+>>
+endobj
+46 0 obj
+<<
+/Type /Font
+/Subtype /CIDFontType2
+/BaseFont /KKNCJH+Symbol
+/FontDescriptor 37 0 R
+/CIDSystemInfo<<
+/Registry (Adobe)
+/Ordering (Identity)
+/Supplement 0
+>>
+/DW 1000
+/W [
+41 42 548
+44 [494]
+47 [548 273 768 ]
+51 [548]
+53 [548 611 ]
+60 [548]
+68 [712]
+89 [591]
+92 [763]
+94 [794 630 548 411 ]
+100 [603]
+104 [548]
+108 [548 603 ]
+111 [438]
+114 [548 686 ]
+116 [686 250 247 ]
+125 [500]
+128 [768]
+149 152 383
+156 157 329
+162 [712 383 ]
+164 166 383
+168 171 494
+179 [383]
+181 [383]
+]
+>>
+endobj
+9 0 obj
+<<
+/Type /Font
+/Subtype /TrueType
+/FirstChar 65
+/LastChar 122
+/Widths [611 611 667 722 611 611 722 722 333 444 667 556 833 667 722 0 
+0 611 500 556 0 611 833 0 0 556 0 0 0 0 0 0 
+500 500 444 500 444 278 500 500 278 278 444 278 722 500 500 500 
+500 389 389 278 500 444 667 444 444 389 ]
+/Encoding /WinAnsiEncoding
+/BaseFont /Times-Italic
+/FontDescriptor 43 0 R
+>>
+endobj
+10 0 obj
+<<
+/Type /Font
+/Subtype /TrueType
+/FirstChar 32
+/LastChar 215
+/Widths [250 0 0 0 0 0 0 0 0 0 0 549 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 549 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 576 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 549 ]
+/Encoding /WinAnsiEncoding
+/BaseFont /KKNDKF+Symbol
+/FontDescriptor 44 0 R
+>>
+endobj
+47 0 obj
+<<
+/Filter /FlateDecode
+/Length 427
+>>
+stream
+HâTìÀn€0E˜˙
+.[t!>Ùâ^§b∑{ä¢\5%–Ú¬r.·†À8úﬁ·Â0Ô/7o,˜ã9⁄çM≥ΩΩ.7o,ÏyvLH6ŒfKD_s—+ÀCÒÒ~›ÏÂ‡¶ÖÌvY˛Ç◊ÕﬂŸ∑”©˛¡ø≥¸ó≠ü›9¨Ú˜ü∞rº≠Î?{±ncúuÌîÂ˝õ^Íãe9~-ûÓ´eíX$Ìe¥◊UÎµ;[∂„\∂]¸ éY7˛œTÅ≤a2µœb∫	ÈRrŸM±XıúHqä…gêà$dRO†í®h@ˆLôPP(
+ƒêYR≥ÍIÅu•!≥*àûkPBgÍzAÿ≥J'*àjÙŸó Íì+tV«∫}ÛäXÉ≥∑–kKƒ^A—.Ö¢‘Ä–YKgW.µ#ôZ¬	(h‘ÈÙÇ˙æË§_ÜT∑•Ã†.?›Ú„Œ1_3"5uP¡õíú‚ïÄµ0≥ñ¥X√˝>ıJÓs=@L$1lá.>à«õõ˜aæÈ’–«˘ùù}<¨uY„®∆_ˆ)¿ Æ√Â0
+endstream
+endobj
+1 0 obj
+<<
+/Type /Page
+/Parent 12 0 R
+/Resources 3 0 R
+/Contents 2 0 R
+>>
+endobj
+13 0 obj
+<<
+/Type /Page
+/Parent 12 0 R
+/Resources 15 0 R
+/Contents 14 0 R
+>>
+endobj
+16 0 obj
+<<
+/Type /Page
+/Parent 12 0 R
+/Resources 18 0 R
+/Contents 17 0 R
+>>
+endobj
+19 0 obj
+<<
+/Type /Page
+/Parent 12 0 R
+/Resources 21 0 R
+/Contents 20 0 R
+>>
+endobj
+22 0 obj
+<<
+/Type /Page
+/Parent 12 0 R
+/Resources 24 0 R
+/Contents 23 0 R
+>>
+endobj
+25 0 obj
+<<
+/Type /Page
+/Parent 12 0 R
+/Resources 27 0 R
+/Contents 26 0 R
+>>
+endobj
+28 0 obj
+<<
+/Type /Page
+/Parent 12 0 R
+/Resources 30 0 R
+/Contents 29 0 R
+>>
+endobj
+31 0 obj
+<<
+/Type /Page
+/Parent 12 0 R
+/Resources 33 0 R
+/Contents 32 0 R
+>>
+endobj
+34 0 obj
+<<
+/Type /Page
+/Parent 12 0 R
+/Resources 36 0 R
+/Contents 35 0 R
+>>
+endobj
+48 0 obj
+<<
+/S /D
+>>
+endobj
+49 0 obj
+<<
+/Nums [0 48 0 R ]
+>>
+endobj
+12 0 obj
+<<
+/Type /Pages
+/Kids [1 0 R 13 0 R 16 0 R 19 0 R 22 0 R 25 0 R 28 0 R 31 0 R 34 0 R]
+/Count 9
+/MediaBox [0 0 612 792]
+>>
+endobj
+50 0 obj
+<<
+/CreationDate (D:20260119093118-05'00')
+/ModDate (D:20260119093118-05'00')
+/Producer (Apple pstopdf)
+>>
+endobj
+51 0 obj
+<<
+/Type /Catalog
+/Pages 12 0 R
+/PageLabels 49 0 R
+>>
+endobj
+xref
+0 52
+0000000000 65535 f 
+0000133380 00000 n 
+0000000016 00000 n 
+0000008806 00000 n 
+0000129767 00000 n 
+0000130249 00000 n 
+0000130967 00000 n 
+0000131136 00000 n 
+0000131310 00000 n 
+0000131946 00000 n 
+0000132324 00000 n 
+0000082278 00000 n 
+0000134201 00000 n 
+0000133461 00000 n 
+0000008970 00000 n 
+0000018631 00000 n 
+0000133545 00000 n 
+0000018774 00000 n 
+0000032700 00000 n 
+0000133629 00000 n 
+0000032854 00000 n 
+0000043355 00000 n 
+0000133713 00000 n 
+0000043509 00000 n 
+0000051235 00000 n 
+0000133797 00000 n 
+0000051389 00000 n 
+0000057088 00000 n 
+0000133881 00000 n 
+0000057231 00000 n 
+0000067129 00000 n 
+0000133965 00000 n 
+0000067294 00000 n 
+0000078956 00000 n 
+0000134049 00000 n 
+0000079121 00000 n 
+0000082148 00000 n 
+0000082419 00000 n 
+0000082609 00000 n 
+0000108029 00000 n 
+0000108231 00000 n 
+0000108428 00000 n 
+0000108630 00000 n 
+0000108827 00000 n 
+0000109027 00000 n 
+0000109218 00000 n 
+0000131452 00000 n 
+0000132880 00000 n 
+0000134133 00000 n 
+0000134161 00000 n 
+0000134339 00000 n 
+0000134462 00000 n 
+trailer
+<<
+/Size 52
+/Root 51 0 R
+/Info 50 0 R
+/ID [<1bdcc9056599d8c8257ed7cf3bf0141c><1bdcc9056599d8c8257ed7cf3bf0141c>]
+>>
+startxref
+134532
+%%EOF

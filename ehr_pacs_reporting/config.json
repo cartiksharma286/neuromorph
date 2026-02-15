@@ -1,0 +1,46 @@
+{
+  "platform": {
+    "name": "EMR Platform with Gemini 3.0",
+    "version": "1.0.0",
+    "description": "AI-enhanced Electronic Medical Records platform with Neuromorph PACS Integration"
+  },
+  "gemini": {
+    "enabled": true,
+    "model": "gemini-3.0-pro",
+    "context_window": 1000000,
+    "multimodal": true
+  },
+  "neuromorph_pacs": {
+    "enabled": true,
+    "gateway_url": "https://neuromorph.ai/gateway",
+    "simulation_mode": true
+  },
+  "templates": {
+    "default_specialty": "radiology",
+    "enable_ai_suggestions": true,
+    "auto_validate": true,
+    "standard_terminology": [
+      "RadLex",
+      "SNOMED CT"
+    ]
+  },
+  "export": {
+    "formats": [
+      "json",
+      "pdf",
+      "dicom_sr",
+      "hl7_fhir"
+    ],
+    "default_format": "pdf"
+  },
+  "ui": {
+    "theme": "dark",
+    "enable_animations": true,
+    "dashboard_refresh_interval": 5000
+  },
+  "security": {
+    "hipaa_compliant": true,
+    "encryption_enabled": true,
+    "audit_logging": true
+  }
+}

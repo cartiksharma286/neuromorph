@@ -1,0 +1,5 @@
+numpy
+scipy
+flask
+pypulseq
+plotly

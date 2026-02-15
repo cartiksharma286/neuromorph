@@ -1,0 +1,9 @@
+Starting MEG Processing App on http://localhost:5001
+ * Serving Flask app 'meg_app'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5001
+Press CTRL+C to quit
+127.0.0.1 - - [22/Dec/2025 18:19:08] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Dec/2025 18:19:08] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [22/Dec/2025 18:19:13] "GET /run_simulation HTTP/1.1" 200 -

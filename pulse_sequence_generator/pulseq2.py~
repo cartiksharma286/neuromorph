@@ -1,0 +1,351 @@
+from math import pi
+
+import numpy as np
+import random
+
+from pypulseq.calc_duration import calc_duration
+from pypulseq.make_adc import make_adc
+from pypulseq.make_delay import make_delay
+from pypulseq.make_sinc_pulse import make_sinc_pulse
+from pypulseq.make_trapezoid import make_trapezoid
+from pypulseq.opts import Opts
+from pypulseq.Sequence.sequence import Sequence
+n_avg = 1  # Number of averages
+n_slices = 30  # Number of slices
+n_x = 128
+n_y = 128
+fov = 220e-3  # mm
+slice_thickness = 5e-3  # s
+slice_gap = 15e-3  # s
+rf_flip = 90  # degrees
+rf_offset = 0
+print('User inputs setup')
+
+system = Opts(
+    max_grad=32,
+    grad_unit='mT/m',
+    max_slew=130,
+    slew_unit='T/m/s',
+    grad_raster_time=10e-6,
+    rf_ringdown_time=10e-6,
+    rf_dead_time=100e-6,
+)
+seq = Sequence(system)
+
+for i in range(30):
+    te1 = 0.1
+    te2 = 0.01
+    teList = []
+    
+    te = random.uniform(te1, te2)
+    teList.append(te)
+    
+# s
+for n in range(30):
+    te = teList[n]
+    tr = 3  # s
+    tau = te / 2  # s
+    readout_time = 6.4e-3
+    pre_time = 8e-3  # s
+
+    flip90 = round(rf_flip * pi / 180, 3)
+    flip180 = 180 * pi / 180
+    rf90, gz90, _ = make_sinc_pulse(
+        flip_angle=flip90,
+        system=system,
+        duration=4e-3,
+        slice_thickness=slice_thickness,
+        apodization=0.5,
+        time_bw_product=4,
+        return_gz=True,
+        delay=system.rf_dead_time,
+        use='excitation',
+    )
+    rf180, gz180, _ = make_sinc_pulse(
+        flip_angle=flip180,
+        system=system,
+        duration=2.5e-3,
+        slice_thickness=slice_thickness,
+        apodization=0.5,
+        time_bw_product=4,
+        phase_offset=90 * pi / 180,
+        return_gz=True,
+        delay=system.rf_dead_time,
+        use='refocusing',
+    )
+
+    delta_k = 1 / fov
+    k_width = n_x * delta_k
+    gx = make_trapezoid(channel='x', system=system, flat_area=k_width, flat_time=readout_time)
+    adc = make_adc(num_samples=n_x, duration=gx.flat_time, delay=gx.rise_time, system=system)
+    
+    phase_areas = (np.arange(n_y) - (n_y / 2)) * delta_k
+    gz_reph = make_trapezoid(channel='z', system=system, area=-gz90.area / 2, duration=2.5e-3)
+    gx_pre = make_trapezoid(channel='x', system=system, flat_area=k_width / 2, flat_time=readout_time / 2)
+    gy_pre = make_trapezoid(channel='y', system=system, area=phase_areas[-1], duration=2e-3)
+    
+    gz_spoil = make_trapezoid(channel='z', system=system, area=gz90.area * 4, duration=pre_time * 4)
+
+    delay1 = tau - calc_duration(rf90) / 2 - calc_duration(gx_pre)
+    delay1 -= calc_duration(gz_spoil) - calc_duration(rf180) / 2
+    delay1 = make_delay(abs(delay1))
+    delay2 = tau - calc_duration(rf180) / 2 - calc_duration(gz_spoil)
+    delay2 -= calc_duration(gx) / 2
+    delay2 = make_delay(abs(delay2))
+    delay_tr = tr - calc_duration(rf90) / 2 - calc_duration(gx) / 2 - te
+    delay_tr -= calc_duration(gy_pre)
+    delay_tr = make_delay(abs(delay_tr))
+    print(f'delay_1: {delay1.delay * 1000} ms')
+    print(f'delay_2: {delay1.delay * 1000} ms')
+    print(f'delay_tr: {delay_tr.delay} s')
+    
+    # Prepare RF offsets. This is required for multi-slice acquisition
+    delta_z = n_slices * slice_gap
+    z = np.linspace((-delta_z / 2), (delta_z / 2), n_slices) + rf_offset
+    
+    for _k in range(n_avg):  # Averages
+        for j in range(n_slices):  # Slices
+            # Apply RF offsets
+            freq_offset = gz90.amplitude * z[j]
+            rf90.freq_offset = freq_offset
+            
+            freq_offset = gz180.amplitude * z[j]
+            rf180.freq_offset = freq_offset
+            
+            for i in range(n_y):  # Phase encodes
+                seq.add_block(rf90, gz90)
+                gy_pre = make_trapezoid(channel='y', system=system, area=phase_areas[-i - 1], duration=2e-3)
+                seq.add_block(gx_pre, gy_pre, gz_reph)
+                seq.add_block(delay1)
+                seq.add_block(gz_spoil)
+                seq.add_block(rf180, gz180)
+                seq.add_block(gz_spoil)
+                seq.add_block(delay2)
+                seq.add_block(gx, adc)
+                gy_pre = make_trapezoid(channel='y', system=system, area=-phase_areas[-j - 1], duration=2e-3)
+                seq.add_block(gy_pre, gz_spoil)
+                seq.add_block(delay_tr)
+                
+                
+                
+#                seq.plot(time_range=(0, 0.1))
+                #seq.write('t2_se.seq')
+                filename = "te_se_"+str(te)+".seq"
+                seq.write(filename)  # Save to disk
+                #from google.colab import files
+                #files.download('t2_se_pypulseq_colab.seq')  # Download locally
+
+    import tensorflow as tf
+
+    from tensorflow.keras import datasets, layers, models
+    import matplotlib.pyplot as plt
+    #(train_imges), (test_images) = 
+
+    def read_pulse_sequence(file_path):
+
+        try:
+           seq = Sequence()
+           seq.read(file_path)
+           return seq
+        except Exception as e:
+            print(f"Error reading sequence file: {e}")
+            return None
+
+    import os
+
+    def list_files_with_extension(directory_path, extension):
+        found_files = []
+        if os.path.isdir(directory_path):
+            for filename in os.listdir(directory_path):
+                if filename.endswith(extension) and os.path.isfile(os.path.join(directory_path, filename)):
+                    found_files.append(os.path.join(directory_path, filename))
+            return found_files
+
+# Example usage:
+    directory = "/Users/cartik_sharma/Downloads/pulse_sequences/"  # Replace with your directory path
+    extension = ".seq"
+    txt_files = list_files_with_extension(directory, extension)
+    seqList = []
+    
+# Example usage:
+    for i in range(len(txt_files)):
+        file_path = txt_files[i]  # Replace with your .seq file path
+        sequence = read_pulse_sequence(file_path)
+#        print(sequence)
+        seqList.append(sequence)
+
+#        MacBook-Air:pulse_sequences cartik_sharma$ emacs qucnn.py
+
+
+#Fil e Edit Options Buffers Tools Python Help                                     
+    import json
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from IPython.display import clear_output
+    from qiskit import QuantumCircuit
+    from qiskit.circuit import ParameterVector
+    from qiskit.circuit.library import ZFeatureMap
+    from qiskit.quantum_info import SparsePauliOp
+    from qiskit.primitives import StatevectorEstimator as Estimator
+    from qiskit_machine_learning.optimizers import COBYLA
+    from qiskit_machine_learning.utils import algorithm_globals
+    from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
+    from qiskit_machine_learning.neural_networks import EstimatorQNN
+    from sklearn.model_selection import train_test_split
+
+    
+    algorithm_globals.random_seed = 12345
+    estimator = Estimator()
+
+    train_images = seqList[0:8]
+    test_images = seqList[9:10]
+
+    
+    
+    def conv_circuit(params):
+        target = QuantumCircuit(2)
+        target.rz(-np.pi / 2, 1)
+        target.cx(1, 0)
+        target.rz(params[0], 0)
+        target.ry(params[1], 1)
+        target.cx(0, 1)
+        target.ry(params[2], 1)
+        target.cx(1, 0)
+        target.rz(np.pi / 2, 0)
+        return target
+
+    params = ParameterVector("θ", length=3)
+    circuit = conv_circuit(params)
+    circuit.draw("mpl", style="clifford")
+
+    def conv_layer(num_qubits, param_prefix):
+        qc = QuantumCircuit(num_qubits, name="Convolutional Layer")
+        qubits = list(range(num_qubits))
+        param_index = 0
+        params = ParameterVector(param_prefix, length=num_qubits * 3)
+        for q1, q2 in zip(qubits[0::2], qubits[1::2]):
+            qc = qc.compose(conv_circuit(params[param_index : (param_index + 3)]), \
+                            [q1, q2])
+            qc.barrier()
+            param_index += 3
+            for q1, q2 in zip(qubits[1::2], qubits[2::2] + [0]):
+                qc = qc.compose(conv_circuit(params[param_index : (param_index + 3)]), \
+                                [q1, q2])
+                qc.barrier()
+                param_index += 3
+                
+        qc_inst = qc.to_instruction()
+
+        qc = QuantumCircuit(num_qubits)
+        qc.append(qc_inst, qubits)
+        return qc
+
+
+    circuit = conv_layer(4, "θ")
+    circuit.decompose().draw("mpl", style="clifford")
+
+
+    def pool_circuit(params):
+        target = QuantumCircuit(2)
+        target.rz(-np.pi / 2, 1)
+        target.cx(1, 0)
+        target.rz(params[0], 0)
+        target.ry(params[1], 1)
+        target.cx(0, 1)
+        target.ry(params[2], 1)
+
+        return target
+
+    params = ParameterVector("θ", length=3)
+    circuit = pool_circuit(params)
+    circuit.draw("mpl", style="clifford")
+
+    def pool_layer(sources, sinks, param_prefix):
+        num_qubits = len(sources) + len(sinks)
+        qc = QuantumCircuit(num_qubits, name="Pooling Layer")
+        param_index = 0
+        params = ParameterVector(param_prefix, length=num_qubits // 2 * 3)
+        for source, sink in zip(sources, sinks):
+            qc = qc.compose(pool_circuit(params[param_index : (param_index + 3)]), \
+                            [source, sink])
+            qc.barrier()
+            param_index += 3
+
+        qc_inst = qc.to_instruction()
+
+        qc = QuantumCircuit(num_qubits)
+        qc.append(qc_inst, range(num_qubits))
+        return qc
+
+    feature_map  = ZFeatureMap(8)
+    ansatz = quantumCircuit(9, name='Ansatz')
+
+    ansatz.compose(conv_layer(8, "c1"), list(range(8)), inplace=True)
+
+    # First Pooling Layer                                                           
+    ansatz.compose(pool_layer([0, 1, 2, 3], [4, 5, 6, 7], "p1"), list(range(8)), inplace=True)
+    
+    # Second Convolutional Layer                                                    
+    ansatz.compose(conv_layer(4, "c2"), list(range(4, 8)), inplace=True)
+    
+    # Second Pooling Layer                                                          
+    ansatz.compose(pool_layer([0, 1], [2, 3], "p2"), list(range(4, 8)), inplace=True)
+    
+    # Third Convolutional Layer                                                     
+    ansatz.compose(conv_layer(2, "c3"), list(range(6, 8)), inplace=True)
+    
+    # Third Pooling Layer                                                           
+    ansatz.compose(pool_layer([0], [1], "p3"), list(range(6, 8)), inplace=True)
+    
+    
+    # Combining the feature map and ansatz                                          
+    circuit = QuantumCircuit(8)
+    circuit.compose(feature_map, range(8), inplace=True)
+    circuit.compose(ansatz, range(8), inplace=True)
+    
+    observable = SparsePauliOp.from_list([("Z" + "I" * 7, 1)])
+    
+    # we decompose the circuit for the QNN to avoid additional data copying         
+    qnn = EstimatorQNN(
+        circuit=circuit.decompose(),
+        observables=observable,
+        input_params=feature_map.parameters,
+        weight_params=ansatz.parameters,
+        estimator=estimator,
+    )
+    
+    circuit.draw("mpl", style="clifford")
+    
+    def callback_graph(weights, obj_func_eval):
+        clear_output(wait=True)
+        objective_func_vals.append(obj_func_eval)
+        plt.title("Objective function value against iteration")
+        plt.xlabel("Iteration")
+        plt.ylabel("Objective function value")
+        plt.plot(range(len(objective_func_vals)), objective_func_vals)
+        plt.show()
+        
+        
+        initial_point = seqList[0]
+        
+        classifier = NeuralNetworkClassifier(
+            qnn,
+            optimizer=COBYLA(maxiter=200),  # Set max iterations here                   
+            callback=callback_graph,
+            initial_point=initial_point,
+            
+        )
+        x = np.asarray(train_images)
+        y = np.asarray(test_images)
+        
+        objective_func_vals = []
+        plt.rcParams["figure.figsize"] = (12, 6)
+        classifier.fit(x, y)
+        
+       # score classifier                                                              
+
+#       print(f"Accuracy from the train data : {np.round(100 * classifier.score(x, y),2)}%")
+       
+       
+        y_predict = classifier.predict(test_images)
+    

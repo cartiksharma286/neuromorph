@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroPulse: MRI Reconstruction Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #020617;
+            --bg-secondary: #0f172a;
+            --accent: #38bdf8;
+            --accent-hover: #7dd3fc;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass: rgba(30, 41, 59, 0.7);
+            --border: rgba(56, 189, 248, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #1e293b, #020617);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            padding: 0.75rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+        }
+
+        aside {
+            width: 280px;
+            background: var(--bg-secondary);
+            padding: 1.25rem;
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .control-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 0.6rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--accent);
+            color: #020617;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+        }
+
+        main {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Fluid Grid Dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .output-box {
+            background: var(--glass);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .output-box:hover {
+            border-color: var(--accent);
+        }
+
+        .output-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            align-self: flex-start;
+        }
+
+        .img-window {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #020617;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .img-window img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            background: var(--bg-secondary);
+            padding: 0.25rem;
+            border-radius: 10px;
+            width: fit-content;
+        }
+
+        .tab-trigger {
+            padding: 0.5rem 1.25rem;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab-trigger.active {
+            background: #1e293b;
+            color: var(--accent);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .view-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .view-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .metrics-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .metric-mini {
+            background: var(--glass);
+            padding: 0.75rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .metric-mini-val {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .metric-mini-label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(56, 189, 248, 0.1);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+            z-index: 1000;
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+</style>
+</head>
+
+<body>
+    <header>
+        <h1>NeuroPulse Recon Lab</h1>
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">
+            Gemini Physics Engine v3.0
+        </div>
+    </header>
+
+    <div class="container">
+        <aside>
+            <div class="control-group">
+                <label>Sequence Protocol</label>
+                <select id="sequence">
+                    <option value="SE">Spin Echo (SE)</option>
+                    <option value="GRE">Gradient Echo (GRE)</option>
+                    <option value="InversionRecovery">Inversion Recovery</option>
+                    <option value="FLAIR">FLAIR</option>
+                    <option value="SSFP">TrueFISP / bSSFP</option>
+                    <option value="QuantumNVQLink">Quantum NVQLink</option>
+                    <option value="Gemini3.0">Gemini 3.0 (Context-Aware)</option>
+                    <option value="GenerativeTrueFISP">Generative TrueFISP (AI)</option>
+                    <option value="QuantumBerryPhase">Quantum Berry Phase (Topological)</option>
+                    <option value="QuantumLowEnergyBeam">Quantum Low Energy Beam (Entangled)</option>
+                    <option value="AdaptiveSE">📊 Adaptive Spin Echo (Statistical)</option>
+                    <option value="AdaptiveGRE">📊 Adaptive GRE (Ernst Angle)</option>
+                    <option value="AdaptiveFLAIR">📊 Adaptive FLAIR (TI Optimized)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>RF Coil Topology</label>
+                <select id="coils">
+                    <option value="standard">Birdcage (Uniform)</option>
+                    <option value="custom_phased_array">8-ch Array</option>
+                    <option value="gemini_optimized_3t">Gemini 32-ch AI</option>
+                    <option value="n25_array">N25 Dense Array</option>
+                    <option value="quantum_surface_lattice">Quantum Lattice</option>
+                    <option value="quantum_vascular">⚛️ Quantum Vascular (Optimal SNR)</option>
+                    <option value="head_coil_50_turn">🧠 50-Turn Head Coil (Ultra-High Res)</option>
+                    <option value="quantum_vascular_head_50">🔬 Quantum + 50-Turn (Ultimate)</option>
+                    <option value="geodesic_chassis">Geodesic Chassis</option>
+                    <option value="cardiothoracic_array">Cardiothoracic</option>
+                    <option value="knee_vascular_array">Knee Vascular Array</option>
+                </select>
+                <div style="margin-top:0.6rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
+                    <input type="checkbox" id="shimming" style="width: auto;">
+                    <span>Waitable B1+ Shimming</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Volume Orientation</label>
+                <select id="slice_orientation" onchange="debouncedRun()">
+                    <option value="axial">Axial</option>
+                    <option value="coronal">Coronal</option>
+                    <option value="sagittal">Sagittal</option>
+                </select>
+                <input type="range" id="slice_pos" min="0" max="1" step="0.05" value="0.5" oninput="debouncedRun()"
+                    style="margin-top: 0.5rem;">
+            </div>
+
+            <div class="control-group">
+                <label>Execution Method</label>
+                <select id="recon_method">
+                    <option value="SoS">Standard Recon</option>
+                    <option value="Variational">TV Variational</option>
+                    <option value="DeepLearning">Generative AI Recon</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Scan Parameters</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+                    <input type="number" id="tr" value="2000" placeholder="TR">
+                    <input type="number" id="te" value="100" placeholder="TE">
+                </div>
+                <div id="ti-group" style="display:none; margin-top:0.5rem;">
+                    <label>Inversion Time (TI)</label>
+                    <input type="number" id="ti" value="500">
+                </div>
+                <div id="fa-group" style="display:none; margin-top:0.5rem;">
+                    <label>Flip Angle</label>
+                    <input type="number" id="flip_angle" value="30">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Image Noise</label>
+                <input type="range" id="noise" min="0" max="0.2" step="0.01" value="0.02">
+            </div>
+
+            <button onclick="runSimulation()">Initiate System</button>
+            <button onclick="renderCortical()" style="margin-top: 0.5rem; background: #f472b6;">Cortical Pulse</button>
+            <button onclick="downloadReport()"
+                style="margin-top: 0.5rem; background: transparent; border: 1px solid var(--accent); color: var(--accent);">PDF
+                Report</button>
+
+            <div class="loader" id="loader"></div>
+        </aside>
+
+        <main>
+            <div class="nav-tabs">
+                <button class="tab-trigger active" onclick="switchView('dashboard', this)">Dashboard</button>
+                <button class="tab-trigger" onclick="switchView('rf_design', this)">Gemini Design</button>
+                <button class="tab-trigger" onclick="switchView('study', this)">Signal AI</button>
+                <button class="tab-trigger" onclick="switchView('cortical', this)">Cortical View</button>
+            </div>
+
+            <!-- View: Dashboard (Grid Layout) -->
+            <div id="view-dashboard" class="view-content active">
+                <div class="dashboard-grid">
+                    <div class="output-box">
+                        <div class="output-title">Reconstructed Image (Fluid)</div>
+                        <div class="img-window"><img id="img-recon" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Acquired k-Space</div>
+                        <div class="img-window"><img id="img-kspace" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Ground Truth Anatomy</div>
+                        <div class="img-window"><img id="img-phantom" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">RF Coil Circuit Topology</div>
+                        <div class="img-window"><img id="img-circuit" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Center Line Signal Profile</div>
+                        <div class="img-window"><img id="img-profile" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Ideal k-Space (Ref)</div>
+                        <div class="img-window"><img id="img-kspace_gt" src=""></div>
+                    </div>
+                </div>
+
+                <div class="metrics-bar">
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="snrVal">--</div>
+                        <div class="metric-mini-label">SNR</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="contrastVal">--</div>
+                        <div class="metric-mini-label">Contrast</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="sharpnessVal">--</div>
+                        <div class="metric-mini-label">Sharpness</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="entropyVal">--</div>
+                        <div class="metric-mini-label">Entropy</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: RF Design -->
+            <div id="view-rf_design" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>Gemini AI Coil Architect</h3>
+                    <div style="display:flex; gap:1rem; width:100%; margin: 1rem 0;">
+                        <input type="text" id="rf_prompt" placeholder="Define coil requirements..." style="flex:1;">
+                        <button onclick="generateRFDesign()" style="width: auto;">Synthesize</button>
+                    </div>
+                    <div id="rf_result" style="display:none; width:100%;">
+                        <div class="img-window" style="aspect-ratio: 16/9; height: 300px;"><img id="img-rf_gen" src="">
+                        </div>
+                        <pre id="rf_specs"
+                            style="background:#020617; padding:1rem; border-radius:8px; margin-top:1rem; font-size:0.8rem; overflow:auto;"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Study/AI -->
+            <div id="view-study" class="view-content">
+                <div class="output-box" style="width: 100%; align-items: flex-start;">
+                    <h3>Signal Interaction Analysis</h3>
+                    <div id="study_content"
+                        style="font-family:'Courier New', monospace; line-height:1.6; color: var(--text-secondary);">
+                        Awaiting system initialization...
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Cortical -->
+            <div id="view-cortical" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>3D Cortical Mesh Projection</h3>
+                    <div class="img-window" style="aspect-ratio: 1/1; height: 400px;"><img id="img-cortical" src="">
+                    </div>
+                    <div id="cortical-metadata" style="margin-top:1rem; font-size:0.8rem; color:var(--accent);"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    </main>
+    </div>
+
+    <script>
+        // Toggle Fields and Set Presets
+        document.getElementById('sequence').addEventListener('change', function () {
+            const seq = this.value;
+            const tiGroup = document.getElementById('ti-group');
+            const faGroup = document.getElementById('fa-group');
+
+            // Default visibility
+            tiGroup.style.display = 'none';
+            faGroup.style.display = 'none';
+
+            if (seq === 'InversionRecovery') {
+                tiGroup.style.display = 'block';
+                // STIR-like preset
+                document.getElementById('tr').value = 4000;
+                document.getElementById('te').value = 30;
+                document.getElementById('ti').value = 150;
+
+            } else if (seq === 'FLAIR') {
+                tiGroup.style.display = 'block';
+                // FLAIR preset (Nulls CSF)
+                document.getElementById('tr').value = 9000;
+                document.getElementById('te').value = 140;
+                document.getElementById('ti').value = 2500;
+
+            } else if (seq === 'GRE') {
+                faGroup.style.display = 'block';
+                // T1-weighted GRE
+                document.getElementById('tr').value = 150;
+                document.getElementById('te').value = 5;
+                document.getElementById('flip_angle').value = 70;
+
+            } else if (seq === 'SSFP') {
+                faGroup.style.display = 'block';
+                // TrueFISP like
+                document.getElementById('tr').value = 5;
+                document.getElementById('te').value = 2.5;
+                document.getElementById('flip_angle').value = 60;
+
+            } else if (seq === 'SE') {
+                // T2-weighted SE default
+                document.getElementById('tr').value = 4000;
+                document.getElementById('te').value = 100;
+            }
+        });
+
+        function switchView(viewId, trigger) {
+            // Update Triggers
+            document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
+            trigger.classList.add('active');
+
+            // Update Views
+            document.querySelectorAll('.view-content').forEach(v => {
+                v.classList.remove('active');
+            });
+            const target = document.getElementById('view-' + viewId);
+            target.classList.add('active');
+        }
+
+        async function generateRFDesign() {
+            const prompt = document.getElementById('rf_prompt').value;
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+            try {
+                const res = await fetch('/api/design_rf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('rf_result').style.display = 'block';
+                    document.getElementById('img-rf_gen').src = 'data:image/png;base64,' + data.result.schematic;
+                    document.getElementById('rf_specs').textContent = JSON.stringify(data.result.specs, null, 2);
+                }
+            } catch (e) { alert("Synthesize Failed"); }
+            loader.style.display = 'none';
+        }
+
+        let debounceTimer;
+        function debouncedRun() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => { runSimulation(); }, 300);
+        }
+
+        async function runSimulation() {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+
+            const payload = {
+                sequence: document.getElementById('sequence').value,
+                coils: document.getElementById('coils').value,
+                tr: document.getElementById('tr').value,
+                te: document.getElementById('te').value,
+                ti: document.getElementById('ti').value,
+                flip_angle: document.getElementById('flip_angle').value,
+                resolution: 128,
+                noise: document.getElementById('noise').value,
+                recon_method: document.getElementById('recon_method').value,
+                shimming: document.getElementById('shimming').checked,
+                slice_orientation: document.getElementById('slice_orientation').value,
+                slice_pos: document.getElementById('slice_pos').value
+            };
+
+            try {
+                const res = await fetch('/api/simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    const update = (id, b) => {
+                        const img = document.getElementById('img-' + id);
+                        if (img) img.src = 'data:image/png;base64,' + b;
+                    };
+
+                    const plots = data.plots;
+                    update('recon', plots.recon);
+                    update('kspace', plots.kspace);
+                    update('phantom', plots.phantom);
+                    update('circuit', plots.circuit);
+                    update('profile', plots.profile);
+                    update('kspace_gt', plots.kspace_gt);
+
+                    if (data.signal_study) {
+                        const s = data.signal_study;
+                        document.getElementById('study_content').innerHTML = `
+                            <div style="color:var(--accent); font-weight:700;">${s.title}</div>
+                            <div style="margin: 0.5rem 0;">${s.physics_model}</div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; font-size:0.75rem;">
+                                ${Object.entries(s.metrics).map(([k, v]) => `<div>${k}: ${v}</div>`).join('')}
+                            </div>
+                        `;
+                    }
+
+                    document.getElementById('snrVal').textContent = (data.metrics.snr_estimate || 0).toFixed(2);
+                    document.getElementById('contrastVal').textContent = data.metrics.contrast.toFixed(3);
+                    document.getElementById('sharpnessVal').textContent = data.metrics.sharpness.toFixed(1);
+                    document.getElementById('entropyVal').textContent = (data.metrics.entropy || 0).toFixed(3);
+                }
+            } catch (err) { alert('Core Link Fault'); }
+            loader.style.display = 'none';
+        }
+
+        function downloadReport() {
+            window.location.href = '/api/report';
+        }
+
+        async function renderCortical() {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+            try {
+                const res = await fetch('/api/render_cortical', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('img-cortical').src = 'data:image/png;base64,' + data.plot;
+                    document.getElementById('cortical-metadata').textContent = data.metadata.geometry;
+                    switchView('cortical', document.querySelector('.tab-trigger[onclick*="cortical"]'));
+                }
+            } catch (e) { alert("Cortical Fault"); }
+            loader.style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>

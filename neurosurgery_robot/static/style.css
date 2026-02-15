@@ -1,0 +1,323 @@
+:root {
+    --bg-color: #0f1115;
+    --panel-bg: rgba(30, 34, 45, 0.6);
+    --panel-border: rgba(255, 255, 255, 0.1);
+    --primary: #3b82f6;
+    --accent: #8b5cf6;
+    --text-main: #e2e8f0;
+    --text-dim: #94a3b8;
+    --danger: #ef4444;
+    --success: #10b981;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    background-color: var(--bg-color);
+    height: 100vh;
+    overflow: hidden;
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
+}
+
+/* Ensure controls are clickable */
+.sidebar-controls {
+    position: relative;
+    z-index: 10;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    gap: 20px;
+}
+
+/* Glassmorphism Panel */
+.glass-panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+}
+
+h1 {
+    font-weight: 300;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.highlight {
+    font-weight: 600;
+    color: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.status-bar {
+    display: flex;
+    gap: 30px;
+}
+
+.status-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.value {
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+}
+
+.indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #333;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.indicator.active {
+    background-color: var(--danger);
+    box-shadow: 0 0 10px var(--danger);
+}
+
+/* Main Layout */
+main {
+    display: flex;
+    flex: 1;
+    gap: 20px;
+    overflow: hidden;
+}
+
+.viewport-3d {
+    flex: 2;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.viewport-3d h2 {
+    margin-top: 0;
+    font-size: 1rem;
+    color: var(--text-dim);
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+}
+
+#canvas-3d {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.overlay-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border: none;
+    padding: 12px 24px;
+    color: white;
+    font-weight: 600;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateX(-50%) scale(1.05);
+    /* fix transform conflict */
+    transform: scale(1.05);
+}
+
+.btn-primary:active {
+    background: var(--danger);
+}
+
+.instruction {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.thermal-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.heatmap-container {
+    position: relative;
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+#thermal-canvas {
+    width: 256px;
+    height: 256px;
+    background: #000;
+    border-radius: 4px;
+    image-rendering: pixelated;
+}
+
+.metrics {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+}
+
+.metric {
+    text-align: center;
+}
+
+.m-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+.m-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.m-value.success {
+    color: var(--success);
+}
+
+.logs-view {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#log-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+}
+
+.sidebar-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.sidebar-controls .btn-primary {
+    width: 100%;
+    text-align: center;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+    font-size: 1rem;
+}
+
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: flex;
+    /* Flex because charts often need container structure */
+    flex-direction: column;
+    width: 100%;
+}
+
+.cryo-view .heatmap-container {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+
+.gradient-bar {
+    width: 256px;
+    height: 12px;
+    margin-top: 8px;
+    border-radius: 4px;
+    /* Medical Turbo Gradient */
+    background: linear-gradient(to right,
+            #30123b 0%,
+            #4683f0 20%,
+            #1ad3d3 40%,
+            #6cf772 60%,
+            #feba2c 80%,
+            #f63712 90%,
+            #ffffff 100%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}

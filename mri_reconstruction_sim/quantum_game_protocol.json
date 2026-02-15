@@ -1,0 +1,57 @@
+{
+  "sequences": [
+    {
+      "name": "T1-SE",
+      "type": "anatomical",
+      "contrast": "T1",
+      "TR": 600,
+      "TE": 15,
+      "scan_time": 3,
+      "diagnostic_value": 0.8,
+      "TR_optimized": 627.7952101759822,
+      "TE_optimized": 15.0,
+      "flip_angle": 31.259718305347747,
+      "shapley_value": 1.202928571428571
+    },
+    {
+      "name": "T2-FSE",
+      "type": "anatomical",
+      "contrast": "T2",
+      "TR": 4000,
+      "TE": 100,
+      "scan_time": 5,
+      "diagnostic_value": 1.0,
+      "TR_optimized": 4061.6760273973055,
+      "TE_optimized": 100.0,
+      "flip_angle": 33.95825335393864,
+      "shapley_value": 1.361745238095238
+    },
+    {
+      "name": "PC-Flow",
+      "type": "vascular",
+      "contrast": "Velocity",
+      "TR": 40,
+      "TE": 8,
+      "scan_time": 5,
+      "diagnostic_value": 1.1,
+      "TR_optimized": 36.00003579356581,
+      "TE_optimized": 7.600069534490312,
+      "flip_angle": 25.238661967824846,
+      "shapley_value": 1.426478571428571
+    },
+    {
+      "name": "TOF-MRA",
+      "type": "vascular",
+      "contrast": "Flow",
+      "TR": 25,
+      "TE": 3.5,
+      "scan_time": 6,
+      "diagnostic_value": 1.2,
+      "TR_optimized": 22.500046958670964,
+      "TE_optimized": 3.325142102732303,
+      "flip_angle": 25.23871442917987,
+      "shapley_value": 1.5123452380952374
+    }
+  ],
+  "nash_equilibrium": [
+    

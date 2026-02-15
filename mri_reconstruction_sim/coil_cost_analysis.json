@@ -1,0 +1,199 @@
+{
+  "16_element_knee_coil": {
+    "total_cost": 52000,
+    "components": {
+      "RF_elements": {
+        "description": "16\u00d7 Copper loop elements (8cm \u00d7 8cm)",
+        "unit_cost": 450,
+        "quantity": 16,
+        "total": 7200,
+        "supplier": "Custom fabrication"
+      },
+      "capacitors": {
+        "tuning_caps": {
+          "description": "Variable tuning capacitors (10-30 pF)",
+          "unit_cost": 85,
+          "quantity": 16,
+          "total": 1360
+        },
+        "matching_caps": {
+          "description": "Matching capacitors (15-25 pF)",
+          "unit_cost": 75,
+          "quantity": 16,
+          "total": 1200
+        },
+        "decoupling_caps": {
+          "description": "Overlap decoupling (8-15 pF)",
+          "unit_cost": 65,
+          "quantity": 16,
+          "total": 1040
+        },
+        "bypass_caps": {
+          "description": "DC bypass capacitors (100nF, 10\u00b5F)",
+          "unit_cost": 5,
+          "quantity": 64,
+          "total": 320
+        },
+        "subtotal": 3920
+      },
+      "preamplifiers": {
+        "description": "Low-noise preamplifiers (NF<0.5dB, Gain 26dB)",
+        "unit_cost": 480,
+        "quantity": 16,
+        "total": 7680,
+        "model": "Custom LNA design"
+      },
+      "cable_assemblies": {
+        "coax_cables": {
+          "description": "Low-loss coaxial cables (RG-316)",
+          "unit_cost": 45,
+          "quantity": 16,
+          "total": 720
+        },
+        "connectors": {
+          "description": "SMA/BNC connectors",
+          "unit_cost": 15,
+          "quantity": 48,
+          "total": 720
+        },
+        "subtotal": 1440
+      },
+      "housing_mechanics": {
+        "former": {
+          "description": "Cylindrical coil former (acrylic, r=12cm)",
+          "cost": 1200
+        },
+        "patient_interface": {
+          "description": "Padding, straps, positioning aids",
+          "cost": 800
+        },
+        "shielding": {
+          "description": "RF shielding enclosure",
+          "cost": 1500
+        },
+        "mounting": {
+          "description": "Table mounting hardware",
+          "cost": 500
+        },
+        "subtotal": 4000
+      },
+      "power_distribution": {
+        "regulators": {
+          "description": "Voltage regulators (5V, 3.3V, 1.8V)",
+          "cost": 450
+        },
+        "distribution_board": {
+          "description": "Custom PCB for power distribution",
+          "cost": 650
+        },
+        "filtering": {
+          "description": "EMI filters, ferrite beads",
+          "cost": 300
+        },
+        "subtotal": 1400
+      },
+      "interface_electronics": {
+        "transmit_receive_switch": {
+          "description": "T/R switches with PIN diodes",
+          "unit_cost": 180,
+          "quantity": 16,
+          "total": 2880
+        },
+        "baluns": {
+          "description": "Balanced-unbalanced transformers",
+          "unit_cost": 95,
+          "quantity": 16,
+          "total": 1520
+        },
+        "subtotal": 4400
+      },
+      "testing_calibration": {
+        "network_analyzer_time": {
+          "description": "VNA testing (40 hours @ $150/hr)",
+          "cost": 6000
+        },
+        "bench_testing": {
+          "description": "Workbench testing and optimization",
+          "cost": 2000
+        },
+        "phantom_testing": {
+          "description": "Phantom measurements and validation",
+          "cost": 1500
+        },
+        "safety_testing": {
+          "description": "SAR and safety compliance",
+          "cost": 1500
+        },
+        "subtotal": 11000
+      },
+      "labor_assembly": {
+        "engineering_design": {
+          "description": "RF engineering (80 hours @ $125/hr)",
+          "cost": 10000
+        },
+        "assembly": {
+          "description": "Skilled technician assembly (60 hours @ $85/hr)",
+          "cost": 5100
+        },
+        "tuning_matching": {
+          "description": "Element tuning and matching (40 hours @ $100/hr)",
+          "cost": 4000
+        },
+        "documentation": {
+          "description": "Technical documentation and manuals",
+          "cost": 1500
+        },
+        "subtotal": 20600
+      },
+      "quality_assurance": {
+        "description": "QA testing, certification, documentation",
+        "cost": 3000
+      },
+      "contingency": {
+        "description": "10% contingency for rework/issues",
+        "cost": 4760
+      }
+    },
+    "manufacturing_breakdown": {
+      "materials": 25960,
+      "labor": 20600,
+      "testing": 11000,
+      "qa_contingency": 7760
+    },
+    "profit_margin": {
+      "cost_basis": 52000,
+      "markup_percentage": 35,
+      "selling_price": 70200
+    }
+  },
+  "operational_costs_annual": {
+    "maintenance_contract": {
+      "percentage_of_purchase": 10,
+      "annual_cost": 5200
+    },
+    "calibration": {
+      "frequency": "Quarterly",
+      "cost_per_calibration": 1250,
+      "annual_cost": 5000
+    },
+    "component_replacement": {
+      "capacitors": 500,
+      "cables_connectors": 400,
+      "preamp_repairs": 800,
+      "misc": 300,
+      "annual_total": 2000
+    },
+    "total_annual_operational": 12200
+  },
+  "roi_analysis": {
+    "revenue_per_exam": 450,
+    "exams_per_day": 20,
+    "working_days_per_year": 250,
+    "time_savings_percentage": 40,
+    "additional_exams_per_day": 3,
+    "additional_annual_revenue": 337500,
+    "payback_period_months": 4.6,
+    "five_year_revenue": 1687500,
+    "five_year_net": 1626500
+  }
+}

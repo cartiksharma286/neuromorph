@@ -1,0 +1,26 @@
+============================================================
+DBS-PTSD Treatment System Backend Server
+============================================================
+
+Starting server on http://localhost:5001
+
+Available endpoints:
+  Circuit Generation: /api/circuit/*
+  AI Engine: /api/ai/*
+  Neural Model: /api/neural/*
+  Safety Validation: /api/safety/*
+
+[!] FOR RESEARCH AND EDUCATIONAL USE ONLY
+============================================================
+
+Open http://localhost:5001 in your browser
+ * Serving Flask app 'server'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://192.168.2.10:5002
+Press CTRL+C to quit
+ * Restarting with stat
+/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

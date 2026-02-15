@@ -1,0 +1,257 @@
+[
+    {
+        "strain": 0.0,
+        "stress": 0.0,
+        "region": "elastic"
+    },
+    {
+        "strain": 0.003,
+        "stress": 330.0,
+        "region": "elastic"
+    },
+    {
+        "strain": 0.006,
+        "stress": 660.0,
+        "region": "elastic"
+    },
+    {
+        "strain": 0.009,
+        "stress": 895.8113883008419,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.012,
+        "stress": 911.6227766016838,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.015,
+        "stress": 921.8330013267038,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.018,
+        "stress": 930.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.021,
+        "stress": 937.0087712549569,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.024,
+        "stress": 943.2455532033675,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.027,
+        "stress": 948.9202437604511,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.03,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.033,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.036,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.039,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.042,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.045,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.048,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.051000000000000004,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.054,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.056999999999999995,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.06,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.063,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.066,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.069,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.072,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.075,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.078,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.081,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.084,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.087,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.09,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.093,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.096,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.099,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.10200000000000001,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.105,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.108,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.111,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.11399999999999999,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.11699999999999999,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.12,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.12299999999999998,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.126,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.129,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.132,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.135,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.138,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.141,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.144,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.147,
+        "stress": 950.0,
+        "region": "plastic"
+    },
+    {
+        "strain": 0.15,
+        "stress": 950.0,
+        "region": "plastic"
+    }
+]

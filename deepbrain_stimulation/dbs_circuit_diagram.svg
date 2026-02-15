@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <style>
+      .component { fill: #2a2a2a; stroke: #00d4ff; stroke-width: 2; }
+      .wire { stroke: #00ff88; stroke-width: 2; fill: none; }
+      .text { fill: #ffffff; font-family: Arial, sans-serif; font-size: 14px; }
+      .label { fill: #00d4ff; font-family: Arial, sans-serif; font-size: 12px; }
+      .title { fill: #00d4ff; font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; }
+    </style>
+  </defs>
+  
+  <rect width="1200" height="800" fill="#0a0a0a"/>
+  <text x="600" y="40" class="title" text-anchor="middle">DBS Circuit Schematic</text>
+
+  <!-- Electrode Array -->
+  <g id="electrode-array">
+    <rect x="100" y="100" width="150" height="200" class="component" rx="10"/>
+    <text x="175" y="130" class="text" text-anchor="middle">Electrode Array</text>
+    <text x="175" y="150" class="label" text-anchor="middle">4-Contact Lead</text>
+    <circle cx="175" cy="180" r="8" fill="#00ff88"/>
+    <circle cx="175" cy="210" r="8" fill="#00ff88"/>
+    <circle cx="175" cy="240" r="8" fill="#00ff88"/>
+    <circle cx="175" cy="270" r="8" fill="#00ff88"/>
+  </g>
+  
+  <!-- Pulse Generator -->
+  <g id="pulse-generator">
+    <rect x="350" y="100" width="200" height="200" class="component" rx="10"/>
+    <text x="450" y="130" class="text" text-anchor="middle">Pulse Generator</text>
+    <text x="450" y="155" class="label" text-anchor="middle">16-bit DAC</text>
+    <text x="450" y="175" class="label" text-anchor="middle">Howland Current Pump</text>
+    <text x="450" y="195" class="label" text-anchor="middle">H-Bridge</text>
+    <rect x="380" y="210" width="140" height="60" fill="#1a1a1a" stroke="#00d4ff" stroke-width="1"/>
+    <text x="450" y="245" class="label" text-anchor="middle">0-25.5 mA</text>
+  </g>
+  
+  <!-- Power Management -->
+  <g id="power-management">
+    <rect x="650" y="100" width="180" height="200" class="component" rx="10"/>
+    <text x="740" y="130" class="text" text-anchor="middle">Power System</text>
+    <text x="740" y="155" class="label" text-anchor="middle">Li-ion Battery</text>
+    <text x="740" y="175" class="label" text-anchor="middle">150 mAh</text>
+    <text x="740" y="200" class="label" text-anchor="middle">Wireless Charging</text>
+    <circle cx="740" cy="240" r="30" fill="none" stroke="#00ff88" stroke-width="3"/>
+    <text x="740" y="248" class="label" text-anchor="middle">⚡</text>
+  </g>
+  
+  <!-- Safety System -->
+  <g id="safety-system">
+    <rect x="900" y="100" width="200" height="200" class="component" rx="10"/>
+    <text x="1000" y="130" class="text" text-anchor="middle">Safety System</text>
+    <text x="1000" y="155" class="label" text-anchor="middle">Current Monitor</text>
+    <text x="1000" y="175" class="label" text-anchor="middle">Impedance Check</text>
+    <text x="1000" y="195" class="label" text-anchor="middle">Temperature Sensor</text>
+    <text x="1000" y="215" class="label" text-anchor="middle">Emergency Shutoff</text>
+    <rect x="930" y="230" width="140" height="50" fill="#ff3333" fill-opacity="0.3" stroke="#ff3333" stroke-width="2"/>
+    <text x="1000" y="260" class="text" text-anchor="middle">PROTECTION</text>
+  </g>
+  
+  <!-- Signal Processing -->
+  <g id="signal-processing">
+    <rect x="350" y="400" width="200" height="200" class="component" rx="10"/>
+    <text x="450" y="430" class="text" text-anchor="middle">Signal Processing</text>
+    <text x="450" y="455" class="label" text-anchor="middle">LFP Recording</text>
+    <text x="450" y="475" class="label" text-anchor="middle">24-bit ADC</text>
+    <text x="450" y="495" class="label" text-anchor="middle">Artifact Rejection</text>
+    <text x="450" y="515" class="label" text-anchor="middle">Closed-Loop Control</text>
+    <text x="450" y="540" class="label" text-anchor="middle">BLE 5.0</text>
+  </g>
+  
+  <!-- Microcontroller -->
+  <g id="microcontroller">
+    <rect x="650" y="400" width="180" height="200" class="component" rx="10"/>
+    <text x="740" y="430" class="text" text-anchor="middle">Microcontroller</text>
+    <text x="740" y="455" class="label" text-anchor="middle">ARM Cortex-M4</text>
+    <text x="740" y="480" class="label" text-anchor="middle">Parameter Control</text>
+    <text x="740" y="500" class="label" text-anchor="middle">Safety Monitoring</text>
+    <text x="740" y="520" class="label" text-anchor="middle">Wireless Comm</text>
+  </g>
+  
+  <!-- Wiring -->
+  <g id="wiring">
+    <path d="M 250 200 L 350 200" class="wire"/>
+    <path d="M 550 200 L 650 200" class="wire"/>
+    <path d="M 830 200 L 900 200" class="wire"/>
+    <path d="M 450 300 L 450 400" class="wire"/>
+    <path d="M 550 500 L 650 500" class="wire"/>
+    <path d="M 740 400 L 740 300" class="wire"/>
+    <path d="M 1000 300 L 1000 350 L 740 350" class="wire"/>
+  </g>
+  
+  <!-- Annotations -->
+  <text x="100" y="650" class="label">⚠ Medical Device - Research/Educational Use Only</text>
+  <text x="100" y="670" class="label">Compliant with IEC 60601-1, ISO 14708-3</text>
+  <text x="100" y="690" class="label">Charge Density: &lt;30 µC/cm² (Shannon limit)</text>
+
+</svg>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum CFD Turbine Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Quantum <span class="highlight">CFD</span> Turbine</h1>
+            <p class="subtitle">Hyper-Fluid Aerodynamic Simulation Engine</p>
+        </header>
+
+        <main>
+            <section class="controls glass-panel">
+                <h2>Configuration</h2>
+                <form id="simForm">
+                    <div class="form-group">
+                        <label for="naca">NACA Profile</label>
+                        <input type="text" id="naca" value="0012" placeholder="e.g. 0012">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aoa">Angle of Attack (deg)</label>
+                        <input type="number" id="aoa" value="10.0" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reynolds">Reynolds Number</label>
+                        <input type="number" id="reynolds" value="1000" step="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="grid">Grid Resolution</label>
+                        <select id="grid">
+                            <option value="32" selected>32x32x32 (Fast)</option>
+                            <option value="48">48x48x48 (Balanced)</option>
+                            <option value="64">64x64x64 (High Res)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="steps">Time Steps</label>
+                        <input type="number" id="steps" value="10" step="10">
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="switch">
+                            <input type="checkbox" id="forcing">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="label-text">Quantum Forcing</span>
+                    </div>
+
+                    <button type="submit" id="simBtn" class="glow-button">
+                        <span class="btn-text">Initialize Simulation</span>
+                        <div class="loader" id="btnLoader"></div>
+                    </button>
+                </form>
+            </section>
+
+            <section class="results glass-panel">
+                <h2>Simulation Status</h2>
+
+                <div id="statusBox" class="status-box">
+                    <span class="status-indicator" id="statusDot"></span>
+                    <span id="statusText">Ready for input</span>
+                </div>
+
+                <div class="vis-container">
+                    <div class="vis-item">
+                        <h3>Flow Visualization</h3>
+                        <div class="image-wrapper" id="flowContainer">
+                            <div class="placeholder">waiting for simulation...</div>
+                        </div>
+                    </div>
+                    <div class="vis-item">
+                        <h3>Aerodynamic Forces</h3>
+                        <div class="image-wrapper" id="forcesContainer">
+                            <div class="placeholder">waiting for simulation...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

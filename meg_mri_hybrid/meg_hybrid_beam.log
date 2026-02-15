@@ -1,0 +1,22 @@
+Starting MEG Processing App on http://localhost:5003
+ * Serving Flask app 'meg_app'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5003
+Press CTRL+C to quit
+127.0.0.1 - - [22/Dec/2025 19:03:13] "GET / HTTP/1.1" 200 -
+Scanner initialized with 192 SQUID sensors.
+Data simulated.
+Computing Lead Field for 1000 grid points...
+Running Beamformer...
+Interactive visualization saved to 'meg_simulation_interactive.html'
+Simulation complete. Result saved to 'meg_simulation_result.png'
+Scanner initialized with 192 SQUID sensors.
+Data simulated.
+Computing Lead Field for 1000 grid points...
+Running Beamformer...
+Computing Continuable Geodesics between sources...
+Generating Grayscale MRI Slices with Beamformer Overlay...
+Generated 'meg_mri_slices.png'
+Interactive visualization saved to 'meg_simulation_interactive.html'
+127.0.0.1 - - [22/Dec/2025 19:03:41] "GET /run_beamformer HTTP/1.1" 200 -

@@ -1,0 +1,115 @@
+# Neuroimaging Quantum ML Configuration
+
+# Quantum Computing Settings
+quantum:
+  n_qubits: 6  # Number of qubits for VQC
+  n_layers: 3  # Number of variational layers
+  optimizer: cobyla  # Quantum optimizer: cobyla, adam, lbfgs
+  max_iterations: 100  # VQE iterations
+  use_gpu: true  # Use GPU acceleration via CUDA-Q
+
+# NVQLink Configuration
+nvqlink:
+  latency_target_ms: 0.5  # Target GPU-QPU latency
+  bandwidth_gbps: 400  # NVQLink bandwidth
+  update_rate_hz: 200  # Feedback update rate
+
+# Quantum Proprioceptive Feedback
+proprioception:
+  n_qubits_sensing: 6  # Number of qubits for motion sensing
+  sensitivity_enhancement: 10000  # Quantum advantage factor
+  correction_threshold_mm: 0.5  # Motion threshold for correction
+  reacquisition_threshold_mm: 1.5  # Threshold for slice reacquisition
+
+# Adaptive Learning Settings
+adaptive_learning:
+  algorithm: PPO  # Reinforcement learning algorithm
+  learning_rate: 0.0003
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99  # Discount factor
+  gae_lambda: 0.95  # GAE parameter
+  max_episode_steps: 50
+
+# MRI System Specifications
+mri_system:
+  field_strength: 3.0  # Tesla
+  max_gradient: 40  # mT/m
+  max_slew_rate: 170  # T/m/s
+  rf_dead_time_us: 100
+  rf_ringdown_time_us: 20
+  adc_dead_time_us: 10
+  grad_raster_time_us: 10
+  rf_raster_time_us: 1
+
+# Default Sequence Parameters
+default_sequences:
+  GRE:
+    TE: 10.0  # ms
+    TR: 500.0  # ms
+    FA: 30.0  # degrees
+    slice_thickness: 3.0  # mm
+    fov: 256.0  # mm
+    matrix_size: 256
+  
+  SE:
+    TE: 80.0  # ms
+    TR: 2000.0  # ms
+    slice_thickness: 3.0  # mm
+    fov: 256.0  # mm
+    matrix_size: 256
+  
+  EPI:
+    TE: 30.0  # ms
+    TR: 2000.0  # ms
+    FA: 90.0  # degrees
+    slice_thickness: 3.0  # mm
+    fov: 192.0  # mm
+    matrix_size: 64
+  
+  fMRI:
+    TE: 30.0  # ms (optimal for BOLD at 3T)
+    TR: 2000.0  # ms
+    FA: 90.0  # degrees
+    slice_thickness: 3.0  # mm
+    fov: 192.0  # mm
+    matrix_size: 64
+    n_slices: 30
+    n_dynamics: 100
+    slice_gap: 0.3  # mm
+
+# Parameter Optimization Ranges
+parameter_ranges:
+  TE: [5.0, 100.0]  # ms
+  TR: [100.0, 5000.0]  # ms
+  FA: [10.0, 90.0]  # degrees
+  slice_thickness: [1.0, 10.0]  # mm
+  fov: [128.0, 512.0]  # mm
+  matrix_size: [64, 512]
+
+# Optimization Targets
+optimization_targets:
+  maximize:
+    - SNR
+    - CNR
+    - BOLD_sensitivity
+  minimize:
+    - scan_time
+    - SAR  # Specific Absorption Rate
+    - motion_artifacts
+
+# Visualization Settings
+visualization:
+  save_plots: true
+  plot_format: png
+  dpi: 300
+  show_interactive: false
+  save_animations: true
+
+# Export Settings
+export:
+  pypulseq_enabled: true
+  export_format: [seq, json, yaml]
+  include_visualizations: true
+  generate_reports: true

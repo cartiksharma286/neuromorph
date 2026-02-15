@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Parametric Prime Stent Designer</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #0a0a1a;
+            color: #e0e0ff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(30, 30, 50, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 100, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #00f2ff;
+            text-align: center;
+            font-weight: 300;
+        }
+
+        h3 {
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+        }
+
+        label {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #00f2ff, #bc13fe);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+        }
+
+        .result-box {
+            display: none;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            color: #00f2ff;
+            font-family: monospace;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        img {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        .rec-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rec-item {
+            padding: 8px;
+            border-bottom: 1px solid #333;
+            font-size: 0.9em;
+        }
+
+        .rec-item::before {
+            content: "➤ ";
+            color: #bc13fe;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Parametric Prime <span style="color:#bc13fe">Stent Designer</span></h1>
+
+    <div class="container">
+        <!-- Controls -->
+        <div class="glass">
+            <h3>Design Parameters</h3>
+            <label>Diameter (mm)</label>
+            <input type="number" id="diam" value="3.0" step="0.1">
+
+            <label>Length (mm)</label>
+            <input type="number" id="len" value="20.0" step="1.0">
+
+            <label>Strut Thickness (mm)</label>
+            <input type="number" id="thick" value="0.09" step="0.01">
+
+            <br><br>
+            <button onclick="generateDesign()">Initialize Optimization Engine</button>
+            <div id="status" style="margin-top:10px; color:#aaa; font-style:italic;"></div>
+        </div>
+
+        <!-- Results -->
+        <div class="glass result-box" id="results">
+            <h3>Hemo-Optimization Analysis</h3>
+
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="reynolds">-</div>
+                    <div class="stat-label">Reynolds Number</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="prime">-</div>
+                    <div class="stat-label">Target Parametric Prime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="congruence">-</div>
+                    <div class="stat-label">Statistical Congruence</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="crowns">-</div>
+                    <div class="stat-label">Optimal Crowns (N)</div>
+                </div>
+            </div>
+
+            <h3>Unrolled Pattern Visualization</h3>
+            <img id="visImage" src="" alt="Stent Pattern">
+
+            <h3>Recommendations</h3>
+            <ul class="rec-list" id="recList"></ul>
+
+            <h3>Design Hints</h3>
+            <ul class="rec-list" id="hintList"></ul>
+        </div>
+    </div>
+
+    <script>
+        async function generateDesign() {
+            const btn = document.querySelector('button');
+            const status = document.getElementById('status');
+
+            btn.disabled = true;
+            status.textContent = "Solving Continued Fractions for Prime Optimization...";
+
+            const config = {
+                diameter: parseFloat(document.getElementById('diam').value),
+                length: parseFloat(document.getElementById('len').value),
+                thickness: parseFloat(document.getElementById('thick').value)
+            };
+
+            try {
+                const res = await fetch('/design', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                const data = await res.json();
+
+                // Update UI
+                document.getElementById('reynolds').textContent = data.parameters.reynolds.toFixed(2);
+                document.getElementById('prime').textContent = data.parameters.target_prime;
+                document.getElementById('congruence').textContent = (data.parameters.congruence * 100).toFixed(2) + "%";
+                document.getElementById('crowns').textContent = data.parameters.crowns;
+
+                document.getElementById('visImage').src = data.files.image + "?t=" + Date.now();
+
+                const recList = document.getElementById('recList');
+                recList.innerHTML = "";
+                data.report.recommendations.forEach(r => {
+                    const li = document.createElement('li');
+                    li.className = 'rec-item';
+                    li.textContent = r;
+                    recList.appendChild(li);
+                });
+
+                const hintList = document.getElementById('hintList');
+                hintList.innerHTML = "";
+                data.report.design_hints.forEach(h => {
+                    const li = document.createElement('li');
+                    li.className = 'rec-item';
+                    li.textContent = h;
+                    hintList.appendChild(li);
+                });
+
+                document.getElementById('results').style.display = "block";
+                status.textContent = "Optimization Complete.";
+
+            } catch (e) {
+                status.textContent = "Error: " + e.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

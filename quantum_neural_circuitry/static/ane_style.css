@@ -1,0 +1,73 @@
+/* HPC ANE Stats Bar */
+.ane-stats-bar {
+    background: linear-gradient(90deg, rgba(5,5,16,0.9) 0%, rgba(20,20,35,0.95) 100%);
+    border-bottom: 1px solid var(--primary-dim);
+    padding: 10px 30px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    z-index: 9;
+}
+
+.ane-metric {
+    display: flex;
+    flex-direction: column;
+    padding-right: 20px;
+    border-right: 1px solid var(--border);
+}
+
+.ane-label {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ane-value {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    color: var(--success); /* Green for High Performance */
+    text-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
+}
+
+.ane-status {
+    font-family: var(--font-heading);
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 0.9rem;
+    animation: pulse-text 2s infinite;
+}
+
+@keyframes pulse-text {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; text-shadow: 0 0 10px var(--accent); }
+    100% { opacity: 0.7; }
+}
+
+.ane-viz {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ane-core-grid {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 2px;
+    width: 200px;
+    height: 30px;
+}
+
+.core-cell {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 1px;
+    transition: background 0.1s;
+}
+
+.core-cell.active {
+    background: var(--success);
+    box-shadow: 0 0 2px var(--success);
+}

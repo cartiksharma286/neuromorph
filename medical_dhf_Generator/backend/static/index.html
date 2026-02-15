@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReguDoc - Medical Device Compliance</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <aside class="sidebar glass-panel">
+            <div style="padding: 1rem;">
+                <h3>ReguDoc AI</h3>
+            </div>
+            <nav>
+                <div class="nav-item" onclick="navigate('dashboard')">Dashboard</div>
+                <div class="nav-item" onclick="navigate('risk-analysis')">Risk Analysis (ISO 14971)</div>
+                <div class="nav-item" onclick="navigate('standards')">IEC 13485 Standards</div>
+                <div class="nav-item" onclick="navigate('documents')">Documentation & QMS</div>
+                <div class="nav-item" onclick="navigate('mr-opt')">MR Pulse Seq Opt</div>
+                <div class="nav-item" onclick="navigate('stents')">Coronary Stents</div>
+            </nav>
+        </aside>
+
+        <main class="content-area glass-panel" id="main-content">
+            <!-- Content Injected via JS -->
+            <h1 class="header-title">Welcome to ReguDoc</h1>
+            <p>Loading...</p>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

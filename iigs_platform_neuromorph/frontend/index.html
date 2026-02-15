@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuromorph IGS & Implant Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="glass-panel header">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <h1>NEUROMORPH <span class="highlight">IGS</span></h1>
+            </div>
+            <div class="status-bar">
+                <span class="status-item"><span class="dot active"></span>System Online</span>
+                <span class="status-item" id="connection-status">Connected to NVQLink</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Left Panel: Patient & Design -->
+            <aside class="left-panel glass-panel">
+                <h2>Patient Data</h2>
+                <div class="data-group" id="patient-info">
+                    <div class="data-row">
+                        <label>ID</label>
+                        <span class="value" id="p-id">--</span>
+                    </div>
+                    <div class="data-row">
+                        <label>Bone Density</label>
+                        <span class="value" id="p-density">--</span>
+                    </div>
+                    <div class="data-row">
+                        <label>Gap Size</label>
+                        <span class="value" id="p-gap">--</span>
+                    </div>
+                </div>
+
+                <h2>Implant Design</h2>
+                <div class="data-group" id="design-info">
+                    <div class="data-row">
+                        <label>Type</label>
+                        <span class="value" id="d-type">--</span>
+                    </div>
+                    <div class="data-row">
+                        <label>Material Density</label>
+                        <span class="value" id="d-density">--</span>
+                    </div>
+                    <div class="data-row">
+                        <label>Confidence</label>
+                        <span class="value highlight-text" id="d-conf">--</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <button id="load-session-btn" class="btn primary">Load Latest Session</button>
+                    <!-- <button id="gen-new-btn" class="btn secondary">Generate New</button> -->
+                </div>
+            </aside>
+
+            <!-- Center: 3D Visualization -->
+            <section class="viewport-container" id="canvas-container">
+                <div class="viewport-overlay">
+                    <div class="overlay-top">
+                        <h3>Real-time Navigation</h3>
+                        <div class="coords">
+                            X: <span id="nav-x">0.00</span> 
+                            Y: <span id="nav-y">0.00</span> 
+                            Z: <span id="nav-z">0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Analysis -->
+            <aside class="right-panel glass-panel">
+                <h2>FEA Analysis</h2>
+                
+                <div class="card">
+                    <h3>Implant</h3>
+                    <div class="metric-big" id="fea-imp-sf">--</div>
+                    <div class="metric-label">Safety Factor</div>
+                    <div class="metric-detail">Max Stress: <span id="fea-imp-stress">--</span> MPa</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="fea-imp-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Abutment</h3>
+                    <div class="metric-big" id="fea-abu-sf">--</div>
+                    <div class="metric-label">Safety Factor</div>
+                    <div class="metric-detail">Max Stress: <span id="fea-abu-stress">--</span> MPa</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="fea-abu-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <h2>IGS Status</h2>
+                <div class="data-group">
+                    <div class="data-row">
+                        <label>Registration</label>
+                        <span class="value status-good" id="igs-status">Active</span>
+                    </div>
+                    <div class="data-row">
+                        <label>FRE Error</label>
+                        <span class="value" id="igs-fre">-- mm</span>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
