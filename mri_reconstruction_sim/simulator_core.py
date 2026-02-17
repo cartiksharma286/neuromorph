@@ -2354,11 +2354,10 @@ class MRIReconstructionSimulator:
                 
             elif method == 'DeepLearning':
                 # Simulated DL
-                combined, _ = self.reconstruct_image(kspace_data, method='SoS')
-                combined = self.deep_learning_reconstruct(combined) # Logic is separated now? Wait, loops...
-                # Actually deep_learning_reconstruct called from app takes kspace.
-                # Here we just treat it as SoS + Post-Process
+                # Pass kspace_data as expected by the method
+                combined = self.deep_learning_reconstruct(kspace_data)
                 
+
             elif method == 'QuantumThermometry':
                 # Reconstruct base anatomy (SoS)
                 stack = np.array(coil_images)
