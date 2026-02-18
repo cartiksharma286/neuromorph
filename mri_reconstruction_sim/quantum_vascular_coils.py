@@ -591,6 +591,69 @@ class OptimizedVascularTradeoffCoil(QuantumVascularCoil):
         
         return self.tradeoff_alpha * snr_profile + (1 - self.tradeoff_alpha) * res_profile
 
+
+# ============================================================================
+# COIL 27: Neurovascular Coil (Statistical Adaptive Prism)
+# ============================================================================
+class NeurovascularCoil(QuantumVascularCoil):
+    """
+    Neurovascular Coil with Statistical Adaptive Prisms.
+    
+    Uses prism-shaped sensitivity profiles to target specific vascular territories.
+    Sensitivity S(r) ~ Prism(r) * P(vasc|r)
+    """
+    
+    def __init__(self):
+        super().__init__("Neurovascular Coil (Adaptive Prism)", num_elements=32)
+        
+    def prism_sensitivity(self, x, y, z, center_x, center_y):
+        """
+        Generates a prism-like sensitivity profile.
+        Models the 'congruent' flow of signal in 3D.
+        """
+        # Prism base dist
+        dx = np.abs(x - center_x)
+        dy = np.abs(y - center_y)
+        
+        # Triangular falloff (Prism shape)
+        # S = max(0, 1 - |x|/w) * max(0, 1 - |y|/h)
+        width = 20
+        height = 20
+        
+        sx = np.maximum(0, 1 - dx/width)
+        sy = np.maximum(0, 1 - dy/height)
+        
+        return sx * sy
+
+
+# ============================================================================
+# COIL 28: Cardiovascular Coil (Optimal Conformal Geometry)
+# ============================================================================
+class CardiovascularCoil(QuantumVascularCoil):
+    """
+    Cardiovascular Coil with Optimal Conformal Geometry.
+    
+    Matches coil elements to the conformal mapping of the heart surface.
+    Uses Schwarz-Christoffel mapping principles for element layout.
+    """
+    
+    def __init__(self):
+        super().__init__("Cardiovascular Coil (Conformal)", num_elements=24)
+        
+    def conformal_mapping_sensitivity(self, z_complex):
+        """
+        Calculates sensitivity in the conformal plane w = f(z).
+        """
+        # Simple conformal map w = z^2 (for cardiac apex)
+        w = z_complex**2
+        
+        # Sensitivity is proportional to |f'(z)| (preservation of angles)
+        # |dw/dz| = |2z|
+        metric_factor = np.abs(2 * z_complex)
+        
+        # Invert for coil sensitivity (higher density -> higher sensitivity)
+        return metric_factor / (np.abs(w) + 1.0)
+
 # ============================================================================
 # Coil Registry
 # ============================================================================
@@ -621,6 +684,8 @@ QUANTUM_VASCULAR_COIL_LIBRARY = {
     24: DawsonIntegralVascularPlasmaCoil,
     25: VoigtProfileVascularSpectroscopyCoil,
     26: OptimizedVascularTradeoffCoil,
+    27: NeurovascularCoil,
+    28: CardiovascularCoil,
 }
 
 

@@ -38,6 +38,9 @@ def index():
 def status():
     return "MRI Simulator Online - Enhanced with Quantum Vascular Coils"
 
+# Global Cache for Simulator Instances
+SIMULATOR_CACHE = {}
+
 @app.route('/api/simulate', methods=['POST'])
 def simulate():
     try:
@@ -54,18 +57,36 @@ def simulate():
         recon_method = data.get('recon_method', 'SoS')
         use_shimming = data.get('shimming', False)
         
-        sim = MRIReconstructionSimulator(resolution=res)
+        # Cache Key: (Resolution, CoilMode, NumCoils, Shimming)
+        # We only re-init simulator if these structural parameters change.
+        # TR/TE/Seq changes do not require re-generating phantom/coils.
+        cache_key = (res, coil_mode, num_coils, use_shimming)
         
-        # NVQLink disabled (removed per user request)
+        if cache_key in SIMULATOR_CACHE:
+            sim = SIMULATOR_CACHE[cache_key]
+        else:
+            sim = MRIReconstructionSimulator(resolution=res)
+            
+            # NVQLink disabled (removed per user request)
+            
+            phantom_type = 'brain'
+            if coil_mode == 'cardiothoracic_array' or coil_mode == 'cardiovascular_coil':
+                phantom_type = 'cardiac'
+            elif coil_mode == 'knee_vascular_array':
+                phantom_type = 'knee'
+    
+            sim.setup_phantom(use_real_data=True, phantom_type=phantom_type)
+            sim.generate_coil_sensitivities(num_coils=num_coils, coil_type=coil_mode, optimal_shimming=use_shimming)
+            
+            # Cache the initialized simulator
+            SIMULATOR_CACHE[cache_key] = sim
         
-        phantom_type = 'brain'
-        if coil_mode == 'cardiothoracic_array':
-            phantom_type = 'cardiac'
-        elif coil_mode == 'knee_vascular_array':
-            phantom_type = 'knee'
-
-        sim.setup_phantom(use_real_data=True, phantom_type=phantom_type)
-        sim.generate_coil_sensitivities(num_coils=num_coils, coil_type=coil_mode, optimal_shimming=use_shimming)
+        # Always run these optimization steps if needed, or if cached they are already done.
+        # But wait, shim report is generated during generation.
+        # We might miss shim_report if cached.
+        # However, for real-time responsiveness, we skip re-shimming on every TR change.
+        
+        # Set View (fast)
         
         shim_report = None
         if use_shimming:

@@ -1,0 +1,44 @@
+2026-02-15 17:01:54,293 - aqt.main - INFO - installer 4610254336 aqtinstall(aqt) v3.3.0 on Python 3.9.6 [CPython Clang 14.0.0 (clang-1400.0.29.202)]
+2026-02-15 17:01:54,295 - aqt.helper - DEBUG - helper 4610254336 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_653/Updates.xml.sha256
+2026-02-15 17:01:57,239 - aqt.helper - DEBUG - helper 4598965760 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qtbase-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z.sha256
+2026-02-15 17:01:57,240 - aqt.helper - DEBUG - helper 4728620544 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qtdeclarative-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z.sha256
+2026-02-15 17:01:57,253 - aqt.helper - DEBUG - helper 4695868928 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qtsvg-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z.sha256
+2026-02-15 17:01:57,254 - aqt.helper - DEBUG - helper 4548630016 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qttools-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z.sha256
+2026-02-15 17:01:57,827 - aqt.helper - INFO - helper 4598965760 Downloading qtbase...
+2026-02-15 17:01:57,829 - aqt.helper - INFO - helper 4728620544 Downloading qtdeclarative...
+2026-02-15 17:01:57,828 - aqt.installer - DEBUG - installer 4598965760 Download URL: https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qtbase-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z
+2026-02-15 17:01:57,829 - aqt.installer - DEBUG - installer 4728620544 Download URL: https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qtdeclarative-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z
+2026-02-15 17:01:57,846 - aqt.helper - INFO - helper 4695868928 Downloading qtsvg...
+2026-02-15 17:01:57,846 - aqt.installer - DEBUG - installer 4695868928 Download URL: https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qtsvg-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z
+2026-02-15 17:01:57,891 - aqt.helper - INFO - helper 4548630016 Downloading qttools...
+2026-02-15 17:01:57,892 - aqt.installer - DEBUG - installer 4548630016 Download URL: https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qttools-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z
+2026-02-15 17:01:58,436 - aqt.helper - DEBUG - helper 4728620544 Asked to redirect(302) to: https://qt.mirror.constant.com/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qtdeclarative-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z
+2026-02-15 17:01:58,436 - aqt.helper - INFO - helper 4728620544 Redirected: qt.mirror.constant.com
+2026-02-15 17:01:58,444 - aqt.helper - DEBUG - helper 4598965760 Asked to redirect(302) to: https://qt.mirror.constant.com/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qtbase-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z
+2026-02-15 17:01:58,444 - aqt.helper - INFO - helper 4598965760 Redirected: qt.mirror.constant.com
+2026-02-15 17:01:58,471 - aqt.helper - DEBUG - helper 4695868928 Asked to redirect(302) to: https://qt.mirror.constant.com/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qtsvg-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z
+2026-02-15 17:01:58,471 - aqt.helper - INFO - helper 4695868928 Redirected: qt.mirror.constant.com
+2026-02-15 17:01:58,499 - aqt.helper - DEBUG - helper 4548630016 Asked to redirect(302) to: https://qt.mirror.constant.com/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qttools-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z
+2026-02-15 17:01:58,500 - aqt.helper - INFO - helper 4548630016 Redirected: qt.mirror.constant.com
+2026-02-15 17:02:00,487 - aqt.installer - INFO - installer 4695868928 Finished installation of qtsvg-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z in 3.24176062
+2026-02-15 17:02:00,524 - aqt.helper - DEBUG - helper 4695868928 Attempt to download checksum at https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qttranslations-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z.sha256
+2026-02-15 17:02:01,214 - aqt.helper - INFO - helper 4695868928 Downloading qttranslations...
+2026-02-15 17:02:01,215 - aqt.installer - DEBUG - installer 4695868928 Download URL: https://download.qt.io/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qttranslations-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z
+2026-02-15 17:02:01,831 - aqt.helper - DEBUG - helper 4695868928 Asked to redirect(302) to: https://qt.mirror.constant.com/online/qtsdkrepository/mac_x64/desktop/qt6_653/qt.qt6.653.clang_64/6.5.3-0-202309260341qttranslations-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z
+2026-02-15 17:02:01,831 - aqt.helper - INFO - helper 4695868928 Redirected: qt.mirror.constant.com
+2026-02-15 17:02:02,987 - aqt.installer - INFO - installer 4695868928 Finished installation of qttranslations-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z in 2.47101331
+2026-02-15 17:02:11,476 - aqt.installer - INFO - installer 4598965760 Finished installation of qtbase-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z in 14.24320788
+2026-02-15 17:02:12,971 - aqt.installer - INFO - installer 4548630016 Finished installation of qttools-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z in 15.72505999
+2026-02-15 17:02:18,650 - aqt.installer - INFO - installer 4728620544 Finished installation of qtdeclarative-MacOS-MacOS_12-Clang-MacOS-MacOS_12-X86_64-ARM64.7z in 21.41256665
+2026-02-15 17:02:21,221 - aqt.updater - INFO - updater 4610254336 Patching /Users/cartiksharma/Qt/6.5.3/macos/bin/qmake
+2026-02-15 17:02:21,237 - aqt.updater - INFO - updater 4610254336 Patching /Users/cartiksharma/Qt/6.5.3/macos/lib/libQt6FbSupport.prl
+2026-02-15 17:02:21,239 - aqt.updater - INFO - updater 4610254336 Patching /Users/cartiksharma/Qt/6.5.3/macos/lib/libQt6QmlDebug.prl
+2026-02-15 17:02:21,243 - aqt.updater - INFO - updater 4610254336 Patching /Users/cartiksharma/Qt/6.5.3/macos/lib/libQt6QmlTypeRegistrar.prl
+2026-02-15 17:02:21,246 - aqt.updater - INFO - updater 4610254336 Patching /Users/cartiksharma/Qt/6.5.3/macos/lib/libQt6QuickTestUtils.prl
+2026-02-15 17:02:21,247 - aqt.updater - INFO - updater 4610254336 Patching /Users/cartiksharma/Qt/6.5.3/macos/lib/libQt6ExampleIcons.prl
+2026-02-15 17:02:21,249 - aqt.updater - INFO - updater 4610254336 Patching /Users/cartiksharma/Qt/6.5.3/macos/lib/libQt6QuickControlsTestUtils.prl
+2026-02-15 17:02:21,250 - aqt.updater - INFO - updater 4610254336 Patching /Users/cartiksharma/Qt/6.5.3/macos/lib/libQt6DeviceDiscoverySupport.prl
+2026-02-15 17:02:21,253 - aqt.updater - INFO - updater 4610254336 Patching /Users/cartiksharma/Qt/6.5.3/macos/lib/libQt6QmlDom.prl
+2026-02-15 17:02:21,254 - aqt.updater - INFO - updater 4610254336 Patching /Users/cartiksharma/Qt/6.5.3/macos/lib/libQt6PacketProtocol.prl
+2026-02-15 17:02:21,256 - aqt.main - INFO - installer 4610254336 Finished installation
+2026-02-15 17:02:21,256 - aqt.main - INFO - installer 4610254336 Time elapsed: 26.96362301 second

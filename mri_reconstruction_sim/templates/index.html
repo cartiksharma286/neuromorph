@@ -305,6 +305,7 @@
                     <option value="QuantumPhotonCount">✨ Quantum Photon Counting (Zero Noise)</option>
                     <option value="GenerativeThermometry">🌡️ Generative MR Thermometry (LLM)</option>
                     <option value="QuantumSurfaceIntegral">∫ Quantum Surface Integral (Topological)</option>
+                    <option value="stroke_imaging_elliptic">🧠 Stroke Imaging (Elliptic Modular)</option>
                 </select>
             </div>
 
@@ -324,6 +325,8 @@
                     <option value="cardiothoracic_array">Cardiothoracic</option>
                     <option value="knee_vascular_array">Knee Vascular Array</option>
                     <option value="rec_engine_coil">🤖 Rec. Engine Neurovascular Coil</option>
+                    <option value="neurovascular_coil">🧠 Neurovascular Coil (Adaptive Prism)</option>
+                    <option value="cardiovascular_coil">❤️ Cardiovascular Coil (Conformal)</option>
                 </select>
                 <div style="margin-top:0.6rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
                     <input type="checkbox" id="shimming" style="width: auto;">
@@ -394,6 +397,8 @@
             <button class="tab-trigger" onclick="switchView('study', this)">Signal AI</button>
             <button class="tab-trigger" onclick="switchView('spectroscopy', this)">Q-Spectroscopy</button>
             <button class="tab-trigger" onclick="switchView('cortical', this)">Cortical View</button>
+            <button class="tab-trigger" onclick="switchView('neurovascular', this)">Neurovascular</button>
+            <button class="tab-trigger" onclick="switchView('cardiovascular', this)">Cardiovascular</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -515,6 +520,32 @@
                             <div style="position: absolute; bottom: 5px; left: 50%; font-size: 10px;">Cho (3.2)</div>
                             <div style="position: absolute; bottom: 5px; left: 60%; font-size: 10px;">Cre (3.0)</div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Neurovascular -->
+            <div id="view-neurovascular" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>Neurovascular Prism Analysis</h3>
+                    <p style="color:var(--text-secondary); font-size:0.9rem;">
+                        Statistical Adaptive Prism sensitivity mapping.
+                    </p>
+                    <div class="img-window" style="aspect-ratio: 16/9; height: 400px;">
+                        <img id="img-neuro-prism" src="" style="width:100%; height:100%; object-fit:contain;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Cardiovascular -->
+            <div id="view-cardiovascular" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>Conformal Cardiac Geometry</h3>
+                    <p style="color:var(--text-secondary); font-size:0.9rem;">
+                        Schwarz-Christoffel mapping of coil elements to cardiac contours.
+                    </p>
+                    <div class="img-window" style="aspect-ratio: 16/9; height: 400px;">
+                        <img id="img-cardio-conformal" src="" style="width:100%; height:100%; object-fit:contain;">
                     </div>
                 </div>
             </div>
@@ -647,6 +678,14 @@
                     update('spectroscopy-map', plots.recon);
                     update('spectroscopy-naa', plots.recon); // CSS filters transform this
                     update('spectroscopy-anat', plots.phantom);
+
+                    // New: Neurovascular & Cardiovascular Heatmaps
+                    if (plots.neuro_prism) {
+                        update('neuro-prism', plots.neuro_prism);
+                    }
+                    if (plots.cardio_conformal) {
+                        update('cardio-conformal', plots.cardio_conformal);
+                    }
 
                     if (data.auxiliary_maps) {
                         if (data.auxiliary_maps.thermometry) {

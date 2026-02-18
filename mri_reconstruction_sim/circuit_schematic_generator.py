@@ -228,6 +228,20 @@ class CircuitSchematicGenerator:
              'quantum_lattice': self.generate_quantum_lattice_schematic()
          }
 
+    def generate_base64(self, schematic_type="Standard MRI"):
+        """Generates a base64 string for the requested schematic type."""
+        try:
+            if schematic_type == "Quantum Vascular":
+                return self.generate_quantum_lattice_schematic()
+            elif schematic_type == "Ultra-High Field":
+                return self.generate_surface_array_schematic() # Use array for high field
+            else:
+                return self.generate_birdcage_schematic() # Default
+        except Exception as e:
+            print(f"Error generating schematic: {e}")
+            # Return empty 1x1 pixel
+            return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+
 if __name__ == "__main__":
     gen = CircuitSchematicGenerator()
     schematics = gen.generate_all()

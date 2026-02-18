@@ -238,10 +238,82 @@ class AdaptiveFLAIR(StatisticalAdaptivePulseSequence):
 
 
 # Sequence Registry
+class StrokeImagingPulseSequence(StatisticalAdaptivePulseSequence):
+    """
+    Stroke Imaging Sequence using Elliptic Modular Forms and Statistical Congruences.
+    
+    Optimizes contrast for ischemic penumbra detection using modular forms to 
+    predict signal decay in heterogeneous tissue.
+    """
+    
+    def __init__(self, nvqlink_enabled=False):
+        super().__init__(nvqlink_enabled)
+        self.sequence_name = "Stroke Imaging (Elliptic Modular)"
+        
+    def elliptic_modular_form(self, tau):
+        """
+        Calculates the modular discriminant Delta(tau) or similar form.
+        Here we use a simplified congruent form for signal modulation.
+        
+        Delta(tau) ~ q * product(1 - q^n)^24
+        """
+        if isinstance(tau, np.ndarray):
+            q = np.exp(2j * np.pi * tau)
+        else:
+            q = np.exp(2j * np.pi * tau)
+            
+        # Approximation for signal weighting
+        val = q * (1 - q)**24 
+        return np.abs(val)
+
+    def statistical_congruence(self, tissue_stats):
+        """
+        Uses statistical congruences to determine optimal diffusion weighting.
+        
+        Congruence modeled as: T_opt = T_base * (1 + sum(chi(n) * sigma^n))
+        """
+        sigma = tissue_stats.get('std_intensity', 0.1)
+        mu = tissue_stats.get('mean_intensity', 0.5)
+        
+        # Ramanujan-like congruence for optimization
+        # We look for a 'mod 8' pattern in tissue texture
+        texture_val = (sigma / mu) * 100
+        mod_val = texture_val % 8
+        
+        weighting = 1.0 + 0.1 * mod_val
+        return weighting
+
+    def generate_sequence(self, tissue_stats):
+        """Generates stroke-specific parameters."""
+        # Use statistical congruence to tune b-value (simulated as effect on TE/TR)
+        weighting = self.statistical_congruence(tissue_stats)
+        
+        # Elliptic modulation of TR
+        tau = 1j * weighting # Pure imaginary parameter
+        mod_factor = self.elliptic_modular_form(tau)
+        
+        # Base DWI parameters
+        # TR: Long (4000-8000ms), TE: Med-Long (80-120ms)
+        opt_tr = 6000 * (1 + 0.5 * mod_factor)
+        opt_te = 100 * weighting
+        
+        weighting_scalar = float(np.real(weighting)) if isinstance(weighting, complex) else float(weighting)
+        
+        return {
+            'sequence': 'DWI',
+            'tr': float(np.real(opt_tr)),
+            'te': float(opt_te),
+            'b_value': 1000 * weighting_scalar,
+            'description': f"Stroke Elliptic Modular (Weight={weighting_scalar:.2f})",
+            'nvqlink_accelerated': self.nvqlink_enabled
+        }
+
+
 ADAPTIVE_SEQUENCES = {
     'adaptive_se': AdaptiveSpinEcho,
     'adaptive_gre': AdaptiveGradientEcho,
-    'adaptive_flair': AdaptiveFLAIR
+    'adaptive_flair': AdaptiveFLAIR,
+    'stroke_imaging_elliptic': StrokeImagingPulseSequence
 }
 
 

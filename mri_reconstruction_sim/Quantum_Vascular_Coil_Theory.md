@@ -65,11 +65,9 @@ Model the vascular network as a graph $G = (V, E)$ with vertices $V$ (nodes) and
 
 **Graph Laplacian Matrix:**
 
-$$L_{ij} = \begin{cases}
-d_i & i = j \\
--1 & (i,j) \in E \\
-0 & \text{otherwise}
-\end{cases}$$
+$$L_{ij} = d_i \delta_{ij} - A_{ij}$$
+
+where $A_{ij}$ is the adjacency matrix ($1$ if connected, $0$ otherwise).$$
 
 where $d_i$ is the degree of node $i$.
 
@@ -144,7 +142,7 @@ $$S_n = \Delta t \sum_{i,j,k} \left[\frac{\epsilon_0}{2}|\mathbf{E}^n_{i,j,k}|^2
 
 The dominant contribution comes from the classical path $\phi_{cl}$ satisfying:
 
-$$\frac{\delta S}{\delta \phi}\bigg|_{\phi_{cl}} = 0$$
+$$\frac{\delta S}{\delta \phi}|_{\phi_{cl}} = 0$$
 
 Leading to:
 
@@ -508,12 +506,7 @@ where $|0\rangle, |1\rangle$ represent different field configurations.
 
 ### 15.2 Density Matrix
 
-$$\rho_{AB} = |\Psi\rangle\langle\Psi| = \frac{1}{2}\begin{pmatrix}
-0 & 0 & 0 & 0 \\
-0 & 1 & 1 & 0 \\
-0 & 1 & 1 & 0 \\
-0 & 0 & 0 & 0
-\end{pmatrix}$$
+$$\rho_{AB} = |\Psi\rangle\langle\Psi| = \frac{1}{2}( |01\rangle\langle 01| + |01\rangle\langle 10| + |10\rangle\langle 01| + |10\rangle\langle 10| )$$
 
 ### 15.3 Entanglement Entropy
 

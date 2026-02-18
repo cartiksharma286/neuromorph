@@ -30,10 +30,46 @@ sys.path.append(os.getcwd())
 from quantum_vascular_coils import QUANTUM_VASCULAR_COIL_LIBRARY, QuantumVascularCoil
 from statistical_adaptive_pulse import ADAPTIVE_SEQUENCES
 
+def render_math_to_image(math_tex):
+    """Renders LaTeX equation to a PNG image file."""
+    try:
+        # Clean string
+        math_tex = math_tex.replace('<br/>', '').strip()
+        if not math_tex:
+            return None
+            
+        # Setup plot
+        fig = plt.figure(figsize=(8, 1.5)) # Wide enough
+        # Use mathtext
+        # Add $ delimiters for matplotlib if not present (handled by caller usually, but let's be safe)
+        if not math_tex.strip().startswith('$'):
+             render_str = f"${math_tex}$"
+        else:
+             render_str = math_tex
+             
+        fig.text(0.5, 0.5, render_str, fontsize=16, ha='center', va='center')
+        plt.axis('off')
+        
+        # Save to temp
+        if not os.path.exists('temp_eqs'):
+            os.makedirs('temp_eqs')
+            
+        # Hash filename
+        import hashlib
+        fname = hashlib.md5(math_tex.encode()).hexdigest() + ".png"
+        path = os.path.join('temp_eqs', fname)
+        
+        plt.savefig(path, format='png', bbox_inches='tight', dpi=300)
+        plt.close()
+        return path
+    except Exception as e:
+        print(f"Eq render error: {e}")
+        return None
+
 def parse_markdown_to_flowables(md_content, styles):
     """
     Parses Markdown content into ReportLab flowables.
-    Handles headers, paragraphs, and standard LaTeX-style math blocks ($$...$$).
+    Handles headers, paragraphs, and renders LaTeX math blocks ($$...$$) as images.
     """
     story = []
     lines = md_content.split('\n')
@@ -43,10 +79,8 @@ def parse_markdown_to_flowables(md_content, styles):
     h2 = styles['Heading2']
     h3 = styles['Heading3']
     body = styles['BodyText']
-    code = styles['MathCode']
     
     current_block = []
-    in_code_block = False
     in_math_block = False
     
     for line in lines:
@@ -60,20 +94,39 @@ def parse_markdown_to_flowables(md_content, styles):
         elif line.startswith('### '):
             story.append(Paragraph(line[4:], h3))
         
+        # Math Blocks
         elif line.startswith('$$') and line.endswith('$$'):
+            # Single line math block
             math_content = line[2:-2].strip()
-            story.append(Paragraph(escape(math_content), styles['Equation']))
+            img_path = render_math_to_image(math_content)
+            if img_path:
+                img = Image(img_path)
+                # Scale
+                img.drawHeight = img.drawHeight * (4.5*inch / img.drawWidth) # limit width
+                img.drawWidth = 4.5*inch
+                story.append(img)
+            else:
+                story.append(Paragraph(escape(math_content), styles['Equation']))
+                
         elif line.startswith('$$'):
             in_math_block = True
             current_block = [line[2:]]
         elif line.endswith('$$') and in_math_block:
             in_math_block = False
             current_block.append(line[:-2])
-            # Join with <br/> for Paragraph to handle line breaks while allowing centering
-            # FIRST escape the lines, THEN join with <br/>
-            escaped_block = [escape(l) for l in current_block]
-            full_math = '<br/>'.join(escaped_block)
-            story.append(Paragraph(full_math, styles['Equation']))
+            full_math = ' '.join(current_block) # Join logic
+            
+            img_path = render_math_to_image(full_math)
+            if img_path:
+                img = Image(img_path)
+                # Scale to fit page width roughly
+                if img.drawWidth > 6*inch:
+                     ratio = 6*inch / img.drawWidth
+                     img.drawWidth = 6*inch
+                     img.drawHeight = img.drawHeight * ratio
+                story.append(img)
+            else:
+                story.append(Paragraph(escape(full_math), styles['Equation']))
             current_block = []
         elif in_math_block:
             current_block.append(line)
@@ -81,38 +134,19 @@ def parse_markdown_to_flowables(md_content, styles):
         # Lists (Bullet)
         elif line.startswith('- ') or line.startswith('* '):
             bullet_text = line[2:]
-            # Process inline formatting in list item
             bullet_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', bullet_text)
-            bullet_text = re.sub(r'\*(.*?)\*', r'<i>\1</i>', bullet_text)
             bullet_text = re.sub(r'`(.*?)`', r'<font name="Courier">\1</font>', bullet_text)
-            # Highlight inline math
-            bullet_text = re.sub(r'\$(.*?)\$', r'<font color="#2e86c1">\1</font>', bullet_text)
             story.append(Paragraph(bullet_text, body, bulletText='•'))
             
-        # Lists (Numbered) -- Simple detection of "1. "
-        elif re.match(r'^\d+\.\s', line):
-            # Extract number and text
-            match = re.match(r'^(\d+\.)\s(.*)', line)
-            if match:
-                num_marker = match.group(1)
-                item_text = match.group(2)
-                item_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', item_text)
-                item_text = re.sub(r'\*(.*?)\*', r'<i>\1</i>', item_text)
-                item_text = re.sub(r'`(.*?)`', r'<font name="Courier">\1</font>', item_text)
-                item_text = re.sub(r'\$(.*?)\$', r'<font color="#2e86c1">\1</font>', item_text)
-                story.append(Paragraph(item_text, body, bulletText=num_marker))
-            
-        # Standard Text / Empty Lines
+        # Standard Text
         elif line == '':
             story.append(Spacer(1, 0.1*inch))
-        elif line.startswith('---'):
-            story.append(PageBreak())
         else:
-            # Inline formatting for standard paragraphs
+            # Inline formatting
             formatted_line = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', line)
-            formatted_line = re.sub(r'\*(.*?)\*', r'<i>\1</i>', formatted_line)
             formatted_line = re.sub(r'`(.*?)`', r'<font name="Courier">\1</font>', formatted_line)
-            formatted_line = re.sub(r'\$(.*?)\$', r'<font color="#2e86c1">\1</font>', formatted_line)
+            # Inline math (simple fallback)
+            formatted_line = re.sub(r'\$(.*?)\$', r'<font color="#2e86c1"><i>\1</i></font>', formatted_line)
             story.append(Paragraph(formatted_line, body))
             
     return story
@@ -234,26 +268,23 @@ def generate_report():
         
     story.append(PageBreak())
     
-    # Part 3: Pulse Sequences
+    # Part 3: Pulse Sequences (Detailed Math)
     story.append(Paragraph("Part III: Pulse Sequence Math", styles['Heading1']))
     
-    for seq_id, seq_class in ADAPTIVE_SEQUENCES.items():
-        seq = seq_class()
-        story.append(Paragraph(f"Sequence: {seq.sequence_name}", styles['Heading2']))
-        
-        story.append(Paragraph("Description & Math:", styles['Heading3']))
-        math_text = extract_math_from_docstring(seq_class.__doc__)
-        story.append(Paragraph(escape(math_text).replace('\n', '<br/>'), styles['Equation']))
-        
-        # Methods
-        methods = inspect.getmembers(seq_class, predicate=inspect.isfunction)
-        for name, func in methods:
-             if name in ['generate_sequence', 'adapt_parameters']:
-                 story.append(Paragraph(f"Algorithm: {name}", styles['Heading4']))
-                 if func.__doc__:
-                    story.append(Preformatted(func.__doc__.strip(), styles['Code']))
-                 
-        story.append(Spacer(1, 0.2*inch))
+    math_md_path = "pulse_sequence_math.md"
+    if os.path.exists(math_md_path):
+        with open(math_md_path, 'r') as f:
+            math_content = f.read()
+            story.extend(parse_markdown_to_flowables(math_content, styles))
+    else:
+        # Fallback to docstrings if markdown missing
+        story.append(Paragraph("Detailed math file not found. Using summaries.", styles['Normal']))
+        for seq_id, seq_class in ADAPTIVE_SEQUENCES.items():
+            seq = seq_class()
+            story.append(Paragraph(f"Sequence: {seq.sequence_name}", styles['Heading2']))
+            math_text = extract_math_from_docstring(seq_class.__doc__)
+            story.append(Paragraph(escape(math_text).replace('\n', '<br/>'), styles['Equation']))
+            story.append(Spacer(1, 0.2*inch))
 
     doc.build(story)
     print(f"Report generated: {output_filename}")

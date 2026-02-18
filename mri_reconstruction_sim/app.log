@@ -1,0 +1,16 @@
+================================================================================
+MRI RECONSTRUCTION SIMULATOR - ENHANCED
+================================================================================
+Features:
+  ✓ Quantum Vascular Coils (25 designs)
+  ✓ 50-Turn Head Coil (3.2x SNR, 300μm resolution)
+  ✓ Statistical Adaptive Pulse Sequences
+  ✓ Ultra-High Resolution Neurovasculature
+================================================================================
+Server running on http://0.0.0.0:5002
+External Access: http://192.168.2.14:5002
+================================================================================
+ * Serving Flask app 'app_enhanced'
+ * Debug mode: on
+Address already in use
+Port 5002 is in use by another program. Either identify and stop that program, or start the server with a different port.
