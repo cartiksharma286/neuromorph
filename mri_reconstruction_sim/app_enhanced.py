@@ -3,6 +3,7 @@ from simulator_core import MRIReconstructionSimulator
 from statistical_adaptive_pulse import create_adaptive_sequence, ADAPTIVE_SEQUENCES
 from quantum_vascular_coils import get_coil_summary, QUANTUM_VASCULAR_COIL_LIBRARY
 from circuit_schematic_generator import CircuitSchematicGenerator
+from neuro_pulse_ca import generate_all_canadian_sequences, create_canadian_sequence, CANADIAN_NEURO_SEQUENCES
 import os
 import generate_pdf
 import generate_report_images
@@ -237,6 +238,49 @@ def generate_adaptive_sequence():
             'tissue_stats': tissue_stats,
             'adaptation_history': adaptive_seq.adaptation_history
         })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/neuro_pulse_ca/generate', methods=['POST'])
+def generate_neuro_pulse_ca():
+    """
+    Generates all 5 Canadian neuroimaging pulse sequences with
+    statistical distribution plots and Bayesian inference results.
+
+    Optional POST body:
+      { "sequence_key": "canadian_mprage" }  — single sequence
+      or omit for all 5.
+    """
+    try:
+        data = request.json or {}
+        specific_key = data.get('sequence_key', None)
+
+        if specific_key and specific_key in CANADIAN_NEURO_SEQUENCES:
+            rng = np.random.default_rng(7)
+            mock_kspace = rng.standard_normal((128, 128)) + 1j * rng.standard_normal((128, 128))
+            seq = create_canadian_sequence(specific_key)
+            tissue_stats = seq.estimate_tissue_statistics(mock_kspace)
+            seq_params = seq.generate_sequence(tissue_stats)
+            dist_info = seq.compute_distribution_stats()
+            return jsonify(sanitize_for_json({
+                'success': True,
+                'sequences': [{
+                    'key': specific_key,
+                    'params': seq_params,
+                    'tissue_stats': {k: v for k, v in tissue_stats.items()
+                                     if not isinstance(v, dict)},
+                    'distribution_plot': dist_info['plot'],
+                    'distribution_name': dist_info['distribution'],
+                    'distribution_stats': dist_info['stats'],
+                    'institution': dist_info['institution'],
+                }],
+                'count': 1
+            }))
+        else:
+            result = generate_all_canadian_sequences()
+            return jsonify(sanitize_for_json({'success': True, **result}))
     except Exception as e:
         import traceback
         traceback.print_exc()

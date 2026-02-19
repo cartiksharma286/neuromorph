@@ -306,6 +306,12 @@
                     <option value="GenerativeThermometry">🌡️ Generative MR Thermometry (LLM)</option>
                     <option value="QuantumSurfaceIntegral">∫ Quantum Surface Integral (Topological)</option>
                     <option value="stroke_imaging_elliptic">🧠 Stroke Imaging (Elliptic Modular)</option>
+                    <option disabled style="color:#334155;">── Canadian Neuroimaging ──</option>
+                    <option value="CanadianMPRAGE">🍁 Canadian MPRAGE (MNI T1w)</option>
+                    <option value="CanadianASL">🍁 Canadian ASL (CBF Statistical)</option>
+                    <option value="CanadianDTI">🍁 Canadian DTI (Wishart Tensor)</option>
+                    <option value="CanadianFMRI_BOLD">🍁 Canadian fMRI BOLD (GLM-HRF)</option>
+                    <option value="CanadianQSM">🍁 Canadian QSM (TRIUMF Iron)</option>
                 </select>
             </div>
 
@@ -399,6 +405,8 @@
             <button class="tab-trigger" onclick="switchView('cortical', this)">Cortical View</button>
             <button class="tab-trigger" onclick="switchView('neurovascular', this)">Neurovascular</button>
             <button class="tab-trigger" onclick="switchView('cardiovascular', this)">Cardiovascular</button>
+            <button class="tab-trigger" id="tab-neuroseq"
+                onclick="switchView('neuroseq', this); generateNeuroPulseCA();">🍁 NeuroSeq CA</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -546,6 +554,34 @@
                     </p>
                     <div class="img-window" style="aspect-ratio: 16/9; height: 400px;">
                         <img id="img-cardio-conformal" src="" style="width:100%; height:100%; object-fit:contain;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: NeuroSeq CA — Canadian Neuroimaging Pulse Sequences -->
+            <div id="view-neuroseq" class="view-content">
+                <div class="output-box" style="width:100%; align-items:flex-start;">
+                    <h3 style="margin:0 0 0.25rem;">🍁 Canadian Neuroimaging Pulse Sequences</h3>
+                    <p style="color:var(--text-secondary); font-size:0.85rem; margin:0 0 0.5rem;">
+                        Statistical physics protocols from <strong style="color:var(--accent);">MNI · UBC · Ottawa Brain
+                            &amp; Mind · Perimeter ISP · TRIUMF</strong>.
+                        Full Bayesian posterior distributions (Gamma, GMM, Wishart, Beta, Cauchy) with tissue
+                        inferencing.
+                    </p>
+                    <button id="btn-neuroseq-gen" onclick="generateNeuroPulseCA(true)"
+                        style="width:auto; padding:0.5rem 1.5rem; margin-bottom:1.25rem; background:linear-gradient(135deg,#38bdf8,#818cf8);">
+                        ↻ Re-Generate Sequences
+                    </button>
+
+                    <!-- Status line -->
+                    <div id="neuroseq-status"
+                        style="font-size:0.8rem; color:#94a3b8; margin-bottom:1rem; min-height:1.2em;">
+                        Click the tab or button above to generate sequences...
+                    </div>
+
+                    <!-- Cards container (rendered by JS) -->
+                    <div id="neuroseq-cards"
+                        style="display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:1.25rem; width:100%;">
                     </div>
                 </div>
             </div>
@@ -733,6 +769,109 @@
                     switchView('cortical', document.querySelector('.tab-trigger[onclick*="cortical"]'));
                 }
             } catch (e) { alert("Cortical Fault"); }
+            loader.style.display = 'none';
+        }
+
+        // ── Canadian Neuroimaging Pulse Sequences ─────────────────────────────
+        let neuroseqLoaded = false;
+
+        async function generateNeuroPulseCA(force = false) {
+            if (neuroseqLoaded && !force) return; // Avoid re-fetching when tab is simply re-activated
+            const statusEl = document.getElementById('neuroseq-status');
+            const cardsEl = document.getElementById('neuroseq-cards');
+            const loader = document.getElementById('loader');
+
+            loader.style.display = 'block';
+            statusEl.textContent = '⏳ Computing Bayesian posteriors & distribution plots…';
+            cardsEl.innerHTML = '';
+
+            try {
+                const res = await fetch('/api/neuro_pulse_ca/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    statusEl.textContent = '❌ Error: ' + data.error;
+                    loader.style.display = 'none';
+                    return;
+                }
+
+                statusEl.textContent = `✅ ${data.count} sequences generated  ·  Institutions: MNI · UBC · Ottawa · Perimeter ISP · TRIUMF`;
+                neuroseqLoaded = true;
+
+                const DIST_BADGE_COLOUR = {
+                    'Gamma': '#f59e0b',
+                    'Normal (GMM)': '#38bdf8',
+                    'Wishart (tensor) + Normal (FA/MD marginals)': '#22d3ee',
+                    'Beta (BOLD Δ%) + double-gamma HRF': '#818cf8',
+                    'Cauchy (heavy-tailed, robust dipole inversion)': '#f472b6',
+                };
+
+                data.sequences.forEach(seq => {
+                    const p = seq.params;
+                    const distColour = DIST_BADGE_COLOUR[seq.distribution_name] || '#94a3b8';
+
+                    // Build a concise parameter table
+                    const paramKeys = ['tr', 'te', 'ti', 'flip_angle', 'b_values', 'num_echoes',
+                        'label_duration_ms', 'post_label_delay_ms', 'num_directions',
+                        'echo_spacing_ms', 'field_strength_T'];
+                    const paramRows = paramKeys
+                        .filter(k => p[k] !== undefined && p[k] !== null)
+                        .map(k => {
+                            const val = Array.isArray(p[k]) ? p[k].join(', ') : p[k];
+                            return `<tr>
+                                <td style="color:#94a3b8;padding:2px 8px 2px 0;font-size:0.72rem;white-space:nowrap;">${k.toUpperCase().replace(/_/g, ' ')}</td>
+                                <td style="color:var(--accent);font-weight:600;font-size:0.72rem;">${val}</td>
+                            </tr>`;
+                        }).join('');
+
+                    const card = document.createElement('div');
+                    card.className = 'output-box';
+                    card.style.cssText = 'align-items:flex-start; cursor:default;';
+                    card.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;flex-wrap:wrap;">
+                            <span style="font-size:0.85rem;font-weight:700;color:var(--accent);">${p.name}</span>
+                            <span style="font-size:0.65rem;padding:2px 8px;border-radius:20px;background:${distColour}22;color:${distColour};border:1px solid ${distColour}55;">
+                                ${seq.distribution_name.split('+')[0].trim()}
+                            </span>
+                        </div>
+                        <div style="font-size:0.7rem;color:#64748b;margin-bottom:0.6rem;">🏛 ${p.institution}</div>
+
+                        <!-- Scan Parameters -->
+                        <table style="border-collapse:collapse;margin-bottom:0.75rem;">${paramRows}</table>
+
+                        <!-- Description -->
+                        <div style="font-size:0.73rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;border-left:2px solid ${distColour};padding-left:0.6rem;">
+                            ${p.description}
+                        </div>
+
+                        <!-- Statistical model badge -->
+                        <div style="font-size:0.68rem;color:${distColour};background:${distColour}11;border:1px solid ${distColour}33;border-radius:6px;padding:4px 8px;margin-bottom:0.75rem;">
+                            📊 <strong>Stat. Model:</strong> ${p.statistical_model}
+                        </div>
+
+                        <!-- Canadian context -->
+                        <div style="font-size:0.68rem;color:#94a3b8;margin-bottom:0.85rem;">
+                            🍁 ${p.canadian_context}
+                        </div>
+
+                        <!-- Distribution Plot -->
+                        <div style="font-size:0.7rem;font-weight:600;color:var(--text-secondary);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:.05em;">
+                            Posterior Distribution Plot
+                        </div>
+                        <img src="data:image/png;base64,${seq.distribution_plot}"
+                             style="width:100%;border-radius:8px;border:1px solid #1e293b;"
+                             alt="${p.name} distribution plot">
+                    `;
+                    cardsEl.appendChild(card);
+                });
+
+            } catch (err) {
+                statusEl.textContent = '❌ Network error: ' + err.message;
+            }
             loader.style.display = 'none';
         }
     </script>
