@@ -17,6 +17,7 @@ from skimage.transform import resize
 import scipy.special
 from llm_modules import StatisticalClassifier
 from circuit_schematic_generator import CircuitSchematicGenerator
+from sklearn.cluster import KMeans
 
 GLOBAL_VOLUME_CACHE = {}
 
@@ -2539,51 +2540,65 @@ class MRIReconstructionSimulator:
 
     def _remove_white_pixel_artifacts(self, image):
         """
-        Aggressively removes bright noise artifacts (white blobs) using
-        Gemini 3.0 Statistical Reasoning and Median Filtering.
+        Removes bright noise artifacts (white blobs) using unsupervised learning (K-Means Clustering).
+        Segments the image into clusters and identifies anomalous high-intensity small regions.
         """
         try:
-            # 1. Statistical Outlier Detection (Z-Score)
-            mean_val = np.mean(image)
-            std_val = np.std(image)
-            # Threshold for "blob" is typically > 3-4 sigma above mean in a noisy image
-            # In MRI, valid signals can be high, so we need local context.
+            # 1. Prepare data for clustering
+            # We cluster based on intensity. Reshape to (N_pixels, 1)
+            H, W = image.shape
+            pixels = image.flatten().reshape(-1, 1)
             
-            # 2. Median Filter (Salt-and-Pepper noise removal)
-            # Removes single-pixel or small 2x2 blobs effectively
-            clean_image = scipy.ndimage.median_filter(image, size=3)
+            # 2. Apply K-Means
+            # Clusters: 0: Background/Air, 1: Tissue, 2: Bright Artifacts
+            # We use 3 clusters to catch the extreme outliers.
+            kmeans = KMeans(n_clusters=3, n_init=10, random_state=42)
+            labels = kmeans.fit_predict(pixels)
+            centers = kmeans.cluster_centers_.flatten()
             
-            # 3. Recover Edges (Guided Filter Concept)
-            # We want to keep structure but lose the high-freq spikes
-            # If the difference between original and median is huge, it was a spike.
-            diff = np.abs(image - clean_image)
-            mask_spike = diff > (0.5 * std_val) # Tuning sensitivity
+            # Identify the cluster with the highest intensity
+            brightest_cluster_idx = np.argmax(centers)
             
-            # Restore original where it wasn't a spike
-            final_image = np.where(mask_spike, clean_image, image)
+            # Create a mask for the brightest cluster
+            mask_bright = (labels.reshape(H, W) == brightest_cluster_idx)
             
-            # 4. Explicit Blob Suppression (for larger blobs)
-            # Find remaining high-intensity regions that are small
-            threshold_blob = mean_val + 2.5 * std_val
-            mask_high = final_image > threshold_blob
-            labeled, num_features = scipy.ndimage.label(mask_high)
+            # 3. Connectivity Analysis (Unsupervised reasoning)
+            # Valid high-intensity signals (like neurovasculature) are connected and large.
+            # Artifacts (white blobs) are typically isolated and small.
+            labeled, num_features = scipy.ndimage.label(mask_bright)
             
-            # Remove small features (<= 4 pixels)
-            for i in range(1, num_features+1):
-                component_mask = (labeled == i)
-                if np.sum(component_mask) <= 5: # Small blob
-                    # Replace with local neighborhood median/mean
-                    # Dilate to get neighborhood
-                    dilated = scipy.ndimage.binary_dilation(component_mask)
-                    # Exclude the blob itself
-                    neighborhood = final_image[dilated & ~component_mask]
-                    if len(neighborhood) > 0:
-                         final_image[component_mask] = np.mean(neighborhood)
+            cleaned_image = image.copy()
+            
+            # Largest component is likely valid signal (e.g., Circle of Willis or bright tissue)
+            if num_features > 0:
+                sizes = np.bincount(labeled.ravel())
+                sizes[0] = 0 # Ignore background
+                largest_comp_size = np.max(sizes)
+                
+                # Threshold for a "blob": much smaller than the largest anatomical feature
+                # and small in absolute terms (e.g., < 0.1% of image pixels)
+                blob_threshold = max(20, int(0.001 * H * W))
+                
+                for i in range(1, num_features + 1):
+                    # If it's a small isolated bright feature, it's a blob
+                    if sizes[i] < blob_threshold:
+                        component_mask = (labeled == i)
+                        # Replace with local median to maintain texture consistency
+                        dilated = scipy.ndimage.binary_dilation(component_mask, iterations=2)
+                        bg_pixels = image[dilated & ~component_mask]
+                        if len(bg_pixels) > 0:
+                            cleaned_image[component_mask] = np.median(bg_pixels)
+                        else:
+                            cleaned_image[component_mask] = np.median(image)
+            
+            # 4. Secondary Pass: Median Filter for salt-and-pepper noise
+            final_image = scipy.ndimage.median_filter(cleaned_image, size=3)
             
             return final_image
 
         except Exception as e:
-            print(f"Artifact Removal Failed: {e}. Using Fallback.")
+            print(f"Unsupervised Artifact Removal Failed: {e}. Using Fallback.")
+            # Fallback to standard robust statistics
             return scipy.ndimage.median_filter(image, size=3)
 
     def _adaptive_windowing(self, image):

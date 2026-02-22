@@ -539,46 +539,42 @@ class Gemini3SignalEnhancer:
         hist, bins = np.histogram(flat_img, range=(0, p50), bins=50)
         bg_mode = bins[np.argmax(hist)]
         
-        # 2. Gemini Reasoning Mask Generation
-        # Context: "White blobs in air are anomalies defined by high contrast but low connectivity."
+        # 2. Unsupervised Clustering Mask Generation (K-Means)
+        # Context: "White blobs are anomalous high-intensity clusters with low connectivity."
+        H, W = image.shape
+        pixels = image.flatten().reshape(-1, 1)
         
-        # A. Semantic Background Segmentation (Pure Statistics)
-        # Threshold: Background Mode + 3 * Estimate Noise Sigma (based on IQR)
-        noise_sigma_est = iqr / 1.349  # Robust sigma estimate
-        air_threshold = bg_mode + 3.0 * noise_sigma_est
+        # Cluster into: 0: Background, 1: Tissue, 2: Bright Artifacts/Vessels
+        kmeans = KMeans(n_clusters=3, n_init=10, random_state=42)
+        labels = kmeans.fit_predict(pixels)
+        centers = kmeans.cluster_centers_.flatten()
         
-        # Initial Air Mask
-        # Vectorized operation - extremely fast
-        mean_val = np.mean(image)
-        mask_air = image < air_threshold
+        brightest_idx = np.argmax(centers)
+        mask_bright = (labels.reshape(H, W) == brightest_idx)
         
-        # B. Blob Identification (The "Reasoning" Step)
-        # Blobs are Bright ( > air_threshold) but isolated from the main tissue body.
+        # B. Connectivity Analysis (Unsupervised reasoning)
         from scipy.ndimage import label, labeled_comprehension, binary_opening
         
-        # Rough tissue/blob map
-        potential_objects = image > air_threshold
+        # Morphological Cleanup
+        clean_bright = binary_opening(mask_bright, structure=np.ones((2,2)))
+        labeled_array, num_features = label(clean_bright)
         
-        # Morphological Cleanup (Fast GPU-friendly operations)
-        # open to remove small salt noise
-        clean_objects = binary_opening(potential_objects, structure=np.ones((2,2)))
-        
-        # Connected Components Analysis (CCA) to identify main tissue vs loose blobs
-        labeled_array, num_features = label(clean_objects)
-        
-        if num_features > 1:
-            # "Reasoning": The largest connected component is the Anatomy.
-            # Everything else is likely a blob/artifact.
+        if num_features > 0:
             sizes = labeled_comprehension(
                 image, labeled_array, np.arange(1, num_features+1), len, float, 0
             )
             
-            largest_label = np.argmax(sizes) + 1 # 1-based indexing
+            # Identify "Large" bright features (Anatomy/Vessels) vs "Small" (Blobs)
+            largest_size = np.max(sizes)
+            blob_ratio_threshold = 0.05 # Anything < 5% of largest bright feature is a blob candidate
             
-            # Create the "Anatomy Mask"
-            mask_anatomy = (labeled_array == largest_label)
+            # Mask for valid anatomy (large bright features)
+            mask_anatomy = np.zeros_like(mask_bright)
+            for i in range(1, num_features + 1):
+                if sizes[i-1] >= blob_ratio_threshold * largest_size or sizes[i-1] > 100:
+                    mask_anatomy |= (labeled_array == i)
         else:
-            mask_anatomy = clean_objects
+            mask_anatomy = clean_bright
             
         # 3. Signal Reconstruction
         # We perform a "Gemini Fusion":

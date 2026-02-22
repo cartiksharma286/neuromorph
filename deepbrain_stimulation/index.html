@@ -78,6 +78,10 @@
                 <span class="tab-icon">❄️</span>
                 Seasonal Affective Disorder
             </button>
+            <button class="nav-tab" data-module="tbi">
+                <span class="tab-icon">🔴</span>
+                TBI Repair (Hate Crime)
+            </button>
         </nav>
 
         <!-- Main Content Area -->
@@ -923,6 +927,237 @@
             </main>
         </div>
 
+        <!-- ======================== TBI Repair (Hate Crime) Module ======================== -->
+        <div class="module" id="tbiModule">
+            <div class="module-header">
+                <h2>🔴 TBI Neural Repair — Hate Crime Survivors</h2>
+                <p>DBS-mediated repair of traumatic brain injury in hate crime victims: CM-Pf Thalamus, DLPFC, Fornix,
+                    ACC, Amygdala &amp; Raphe targets</p>
+            </div>
+
+            <!-- Configuration + Live Results -->
+            <div class="grid-2">
+                <!-- Configuration Panel -->
+                <div class="card">
+                    <h3>⚙️ Patient &amp; DBS Configuration</h3>
+
+                    <div class="control-group">
+                        <label>Injury Type</label>
+                        <select id="tbiInjuryType"
+                            style="width:100%;padding:8px;background:#333;color:white;border:1px solid #555;">
+                            <option value="blunt" selected>Blunt Force Trauma</option>
+                            <option value="blast">Blast / Explosive</option>
+                            <option value="penetrating">Penetrating TBI</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>TBI Severity</label>
+                        <select id="tbiSeverity"
+                            style="width:100%;padding:8px;background:#333;color:white;border:1px solid #555;">
+                            <option value="mild">Mild (Concussion)</option>
+                            <option value="moderate" selected>Moderate (DAI)</option>
+                            <option value="severe">Severe (Diffuse Axonal Injury)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>DBS Target Region</label>
+                        <select id="tbiTarget"
+                            style="width:100%;padding:8px;background:#333;color:white;border:1px solid #555;">
+                            <option value="thalamus" selected>CM-Pf Thalamus (Arousal Recovery)</option>
+                            <option value="dlPFC">DLPFC (Executive Function)</option>
+                            <option value="fornix">Fornix (Memory Circuits)</option>
+                            <option value="acc">ACC (Pain &amp; Affect)</option>
+                            <option value="amygdala">Amygdala (Trauma Extinction)</option>
+                            <option value="rn_raphe">Raphe Nuclei (Serotonin)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Frequency (Hz)</label>
+                        <input type="number" id="tbiFrequency" value="130" min="20" max="200">
+                    </div>
+                    <div class="control-group">
+                        <label>Amplitude (mA)</label>
+                        <input type="number" id="tbiAmplitude" value="3.0" step="0.1" min="0.5" max="6.0">
+                    </div>
+                    <div class="control-group">
+                        <label>Pulse Width (μs)</label>
+                        <input type="number" id="tbiPulseWidth" value="90" min="30" max="200">
+                    </div>
+                    <div class="control-group">
+                        <label>Treatment Duration (weeks)</label>
+                        <input type="number" id="tbiWeeks" value="12" min="2" max="52">
+                    </div>
+
+                    <div style="display:flex;gap:10px;margin-top:15px;flex-wrap:wrap;">
+                        <button class="btn-primary" id="tbiSimulateBtn" style="flex:1;">▶ Run DBS Session</button>
+                        <button class="btn-secondary" id="tbiOptimizeBtn" style="flex:1;">⚡ Optimize Params</button>
+                    </div>
+                </div>
+
+                <!-- Live Results -->
+                <div class="card">
+                    <h3>📊 Simulation Results</h3>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                        <div
+                            style="background:rgba(255,255,255,0.04);border-radius:10px;padding:14px;text-align:center;">
+                            <div style="font-size:0.8em;color:#888;margin-bottom:4px;">TBI Recovery Index</div>
+                            <div id="tbiTRI" style="font-size:2.2em;font-weight:700;font-family:monospace;color:#888;">
+                                --</div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.04);border-radius:10px;padding:14px;text-align:center;">
+                            <div style="font-size:0.8em;color:#888;margin-bottom:4px;">GOSE Score</div>
+                            <div id="tbiGOSE" style="font-size:1.1em;font-weight:600;font-family:monospace;color:#888;">
+                                --</div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px;text-align:center;">
+                            <div style="font-size:0.8em;color:#888;">ICP Proxy</div>
+                            <div id="tbiICP" style="font-size:1.2em;color:#ff9f0a;font-weight:600;">--</div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.04);border-radius:10px;padding:10px;text-align:center;">
+                            <div style="font-size:0.8em;color:#888;">GCS Score</div>
+                            <div id="tbiGCS" style="font-size:1.2em;color:#0a84ff;font-weight:600;">--</div>
+                        </div>
+                    </div>
+
+                    <div style="font-size:0.8em;color:#888;margin-bottom:6px;">Stim Effect: <span id="tbiStimEffect"
+                            style="color:#00d4ff;">--</span></div>
+
+                    <h4 style="margin-bottom:8px;font-size:0.9em;color:#aaa;">Regional Neural Activity</h4>
+                    <div id="tbiActivityBars"></div>
+                </div>
+            </div>
+
+            <!-- Biomarkers -->
+            <div class="card" style="margin-top:16px;">
+                <h3>🩺 Biomarker Panel</h3>
+                <div id="tbioBiomarkersGrid"
+                    style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px;">
+                </div>
+            </div>
+
+            <!-- Recovery Prediction -->
+            <div class="card" style="margin-top:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h3>📈 Recovery Trajectory Prediction</h3>
+                    <button class="btn-primary" id="tbiPredictBtn" style="font-size:0.85em;">Predict Recovery</button>
+                </div>
+                <canvas id="tbiRecoveryCanvas" width="900" height="280"
+                    style="width:100%;margin-top:12px;border:1px solid #333;border-radius:8px;"></canvas>
+
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:0.8em;color:#888;">Initial TRI</div>
+                        <div id="tbiPredInitTRI" style="font-size:1.3em;font-family:monospace;color:#fff;">--</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:0.8em;color:#888;">Final TRI</div>
+                        <div id="tbiPredFinalTRI" style="font-size:1.3em;font-family:monospace;">--</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:0.8em;color:#888;">Response Rate</div>
+                        <div id="tbiPredResp" style="font-size:1.3em;font-family:monospace;color:#0a84ff;">--</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:0.8em;color:#888;">Final GOSE</div>
+                        <div id="tbiPredFinalGOSE" style="font-size:1em;font-family:monospace;">--</div>
+                    </div>
+                </div>
+                <div id="tbiResponderBadge" style="text-align:center;margin-top:10px;font-size:1.1em;font-weight:700;">
+                </div>
+            </div>
+
+            <!-- Optimizer Results -->
+            <div class="card" style="margin-top:16px;display:none;" id="tbiOptResults">
+                <h3>⚡ Parameter Optimization Results</h3>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0;">
+                    <div style="text-align:center;">
+                        <div style="font-size:0.8em;color:#888;">Optimal Freq</div>
+                        <div id="tbiOptFreq" style="font-size:1.3em;color:#0a84ff;font-weight:600;">--</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:0.8em;color:#888;">Optimal Amp</div>
+                        <div id="tbiOptAmp" style="font-size:1.3em;color:#32d74b;font-weight:600;">--</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:0.8em;color:#888;">Pulse Width</div>
+                        <div id="tbiOptPW" style="font-size:1.3em;color:#ff9f0a;font-weight:600;">--</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:0.8em;color:#888;">Best TRI</div>
+                        <div id="tbiOptBestTRI" style="font-size:1.3em;font-weight:700;font-family:monospace;">--</div>
+                    </div>
+                </div>
+                <h4 style="font-size:0.9em;color:#aaa;margin-bottom:6px;">Top 5 Parameter Combinations</h4>
+                <div id="tbiOptTopResults" style="font-family:monospace;"></div>
+            </div>
+
+            <!-- Clinical Trial -->
+            <div class="card" style="margin-top:16px;">
+                <h3>🏥 Population-Level Clinical Trial</h3>
+                <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
+                    <div class="control-group" style="margin-bottom:0;flex:1;min-width:120px;">
+                        <label>Sample Size (N)</label>
+                        <input type="number" id="tbiTrialN" value="30" min="10" max="200">
+                    </div>
+                    <button class="btn-primary" id="tbiTrialBtn" style="white-space:nowrap;">📊 Run Trial</button>
+                </div>
+
+                <div id="tbiTrialResults" style="display:none;margin-top:16px;">
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;">
+                        <div
+                            style="background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:0.8em;color:#888;">Pre-DBS TRI</div>
+                            <div id="tbiTrialPreTRI" style="font-size:1.4em;font-family:monospace;color:#ff453a;">--
+                            </div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:0.8em;color:#888;">Post-DBS TRI</div>
+                            <div id="tbiTrialPostTRI" style="font-size:1.4em;font-family:monospace;">--</div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:0.8em;color:#888;">Responder Rate</div>
+                            <div id="tbiTrialResponderRate"
+                                style="font-size:1.4em;font-family:monospace;color:#34c759;">--</div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:0.8em;color:#888;">p-value</div>
+                            <div id="tbiTrialPValue" style="font-size:1.2em;font-family:monospace;">--</div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:0.8em;color:#888;">Pre GOSE</div>
+                            <div id="tbiTrialPreGOSE" style="font-size:1.2em;font-family:monospace;color:#ff9f0a;">--
+                            </div>
+                        </div>
+                        <div
+                            style="background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;text-align:center;">
+                            <div style="font-size:0.8em;color:#888;">Post GOSE</div>
+                            <div id="tbiTrialPostGOSE" style="font-size:1.2em;font-family:monospace;color:#34c759;">--
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tbiTrialSig" style="text-align:center;font-weight:700;font-size:1.1em;margin-bottom:12px;">
+                    </div>
+                    <canvas id="tbiTrialCanvas" width="900" height="220"
+                        style="width:100%;border:1px solid #333;border-radius:8px;"></canvas>
+                </div>
+            </div>
+
+            <p style="text-align:center;color:#555;margin-top:20px;font-size:0.8em;">⚠ RESEARCH &amp; EDUCATIONAL USE
+                ONLY — Not for clinical application</p>
+        </div>
+        <!-- END TBI Module -->
+
         <!-- Chart.js for visualizations -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -944,6 +1179,7 @@
 
         <!-- Main Application Controller (must be last) -->
         <script src="sad_dashboard.js"></script>
+        <script src="hate_crime_tbi_dashboard.js"></script>
         <script src="app.js"></script>
 </body>
 

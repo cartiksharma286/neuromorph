@@ -721,17 +721,25 @@ def get_asd_plot_data():
 
 
 from sad_neural_model import SADNeuralModel
+from hate_crime_tbi_neural_model import HateCrimeTBINeuralModel
 
 # ... (imports continue) ...
 
-# Lazy-load global
+# Lazy-load globals
 _sad_model = None
+_tbi_model = None
 
 def get_sad_model():
     global _sad_model
     if _sad_model is None:
         _sad_model = SADNeuralModel()
     return _sad_model
+
+def get_tbi_model(severity='moderate', injury_type='blunt'):
+    global _tbi_model
+    if _tbi_model is None:
+        _tbi_model = HateCrimeTBINeuralModel(severity=severity, injury_type=injury_type)
+    return _tbi_model
 
 
 # ==================== SAD Model Endpoints ====================
@@ -745,13 +753,138 @@ def treat_sad():
         freq = float(data.get('frequency', 135.0))
         amp = float(data.get('amplitude', 2.5))
         duration = float(data.get('duration', 1.0))
-        
+
         result = get_sad_model().simulate_treatment_session(target, freq, amp, duration)
-        
+
         return jsonify({
             'success': True,
             'result': result
         })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ==================== Hate Crime TBI Model Endpoints ====================
+
+@app.route('/api/tbi/state', methods=['GET'])
+def get_tbi_state():
+    """Export current TBI model state"""
+    try:
+        return jsonify({'success': True, 'state': get_tbi_model().export_state()})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/tbi/simulate', methods=['POST'])
+def simulate_tbi_dbs():
+    """Run a single DBS repair session on TBI model"""
+    try:
+        global _tbi_model
+        data = request.json
+        severity = data.get('severity', 'moderate')
+        injury_type = data.get('injury_type', 'blunt')
+
+        # Re-initialize if profile changed
+        if _tbi_model is None or _tbi_model.severity != severity or _tbi_model.injury_type != injury_type:
+            _tbi_model = HateCrimeTBINeuralModel(severity=severity, injury_type=injury_type)
+
+        target = data.get('target_region', 'thalamus')
+        freq   = float(data.get('frequency_hz', 130.0))
+        amp    = float(data.get('amplitude_ma', 3.0))
+        pw     = float(data.get('pulse_width_us', 90.0))
+        dur    = float(data.get('duration_s', 1.0))
+
+        def _run():
+            return _tbi_model.simulate_repair_session(target, freq, amp, pw, dur)
+
+        result = executor.submit(_run).result()
+        return jsonify({'success': True, 'result': result})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/tbi/predict', methods=['POST'])
+def predict_tbi_recovery():
+    """Predict week-by-week TRI/GOSE recovery trajectory"""
+    try:
+        global _tbi_model
+        data = request.json
+        severity    = data.get('severity', 'moderate')
+        injury_type = data.get('injury_type', 'blunt')
+
+        if _tbi_model is None or _tbi_model.severity != severity or _tbi_model.injury_type != injury_type:
+            _tbi_model = HateCrimeTBINeuralModel(severity=severity, injury_type=injury_type)
+
+        target  = data.get('target_region', 'thalamus')
+        freq    = float(data.get('frequency_hz', 130.0))
+        amp     = float(data.get('amplitude_ma', 3.0))
+        pw      = float(data.get('pulse_width_us', 90.0))
+        weeks   = int(data.get('treatment_weeks', 12))
+
+        def _run():
+            return _tbi_model.predict_recovery(target, freq, amp, pw, weeks)
+
+        result = executor.submit(_run).result()
+        return jsonify({'success': True, 'prediction': result})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/tbi/trial', methods=['POST'])
+def run_tbi_trial():
+    """Monte Carlo population-level TBI clinical trial"""
+    try:
+        data = request.json
+        n          = int(data.get('n_subjects', 30))
+        target     = data.get('target_region', 'thalamus')
+        freq       = float(data.get('frequency_hz', 130.0))
+        amp        = float(data.get('amplitude_ma', 3.0))
+        weeks      = int(data.get('treatment_weeks', 8))
+
+        # Run in executor (scipy stats inside)
+        tmp_model = HateCrimeTBINeuralModel()
+
+        def _run():
+            return tmp_model.run_trial(n, target, freq, amp, weeks)
+
+        result = executor.submit(_run).result()
+        return jsonify({'success': True, 'trial': result})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/tbi/optimize', methods=['POST'])
+def optimize_tbi_params():
+    """Grid-search optimal DBS parameters for TBI model"""
+    try:
+        global _tbi_model
+        data = request.json
+        severity    = data.get('severity', 'moderate')
+        injury_type = data.get('injury_type', 'blunt')
+
+        if _tbi_model is None or _tbi_model.severity != severity or _tbi_model.injury_type != injury_type:
+            _tbi_model = HateCrimeTBINeuralModel(severity=severity, injury_type=injury_type)
+
+        target = data.get('target_region', 'thalamus')
+
+        def _run():
+            return _tbi_model.optimize_parameters(target)
+
+        result = executor.submit(_run).result()
+        return jsonify({'success': True, 'optimization': result})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/tbi/biomarkers', methods=['GET'])
+def get_tbi_biomarkers():
+    """Return TBI biomarker panel"""
+    try:
+        return jsonify({'success': True, 'biomarkers': get_tbi_model().get_biomarkers()})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

@@ -50,7 +50,7 @@ Regions with high $C$ receive a statistically derived SNR boost ($q_{factor} \to
 To ensure clinical reliability, the scanner implements a **Global Signal Fallback** mechanism. 
 - **Safety Net:** The `acquire_signal` and `reconstruct_image` pipelines are wrapped in a global exception handler.
 - **Fail-Safe:** If a specific quantum calculation (e.g., singular matrix in game theory) fails, the system instantaneously reverts to a robust Spin Echo (SE) acquisition.
-- **Result:** This eliminates "Core Link Faults" (system crashes), ensuring that a diagnostic image is *always* produced.
+- **Result:** This ensures a robust diagnostic image is always produced.
 
 ## 4. Conclusion
 

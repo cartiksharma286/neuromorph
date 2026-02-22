@@ -286,7 +286,6 @@
                     <option value="InversionRecovery">Inversion Recovery</option>
                     <option value="FLAIR">FLAIR</option>
                     <option value="SSFP">TrueFISP / bSSFP</option>
-                    <option value="QuantumNVQLink">Quantum NVQLink</option>
                     <option value="Gemini3.0">Gemini 3.0 (Context-Aware)</option>
                     <option value="GenerativeTrueFISP">Generative TrueFISP (AI)</option>
                     <option value="QuantumBerryPhase">Quantum Berry Phase (Topological)</option>
@@ -749,7 +748,7 @@
                     document.getElementById('entropyVal').textContent = (data.metrics.entropy || 0).toFixed(3);
                     document.getElementById('noiseStdVal').textContent = (data.metrics.background_noise_std || 0).toExponential(2);
                 }
-            } catch (err) { alert('Core Link Fault'); }
+            } catch (err) { console.error('Simulate Error:', err); }
             loader.style.display = 'none';
         }
 
