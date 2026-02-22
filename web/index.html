@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIBC Dividend Portfolio Optimizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="cibc-logo">CIBC</div>
+                <div class="app-title">Dividend Portfolio Optimizer</div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Portfolio Value</div>
+                    <div class="stat-value" id="headerPortfolioValue">$0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Annual Income</div>
+                    <div class="stat-value" id="headerAnnualIncome">$0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Yield</div>
+                    <div class="stat-value" id="headerYield">0%</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Portfolio Metrics -->
+        <section class="fade-in" style="margin-bottom: 2rem;">
+            <div class="section-header">
+                <h2 class="section-title">Portfolio Overview</h2>
+            </div>
+            <div class="grid-4">
+                <div class="metric-card">
+                    <div class="metric-label">Expected Return</div>
+                    <div class="metric-value" id="metricReturn">--</div>
+                    <div class="metric-change positive" id="metricReturnChange">
+                        <span>▲</span> vs benchmark
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Dividend Yield</div>
+                    <div class="metric-value" id="metricYield">--</div>
+                    <div class="metric-change" id="metricYieldChange">
+                        Portfolio average
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Sharpe Ratio</div>
+                    <div class="metric-value" id="metricSharpe">--</div>
+                    <div class="metric-change" id="metricSharpeChange">
+                        Risk-adjusted return
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Volatility</div>
+                    <div class="metric-value" id="metricVolatility">--</div>
+                    <div class="metric-change" id="metricVolatilityChange">
+                        Annual std dev
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Flash Gemini Projections -->
+        <section class="glass-card fade-in" style="margin-bottom: 2rem;">
+            <div class="section-header">
+                <h2 class="section-title">⚡ Flash Gemini Projections</h2>
+            </div>
+            <div class="grid-2">
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="flashGeminiChart"></canvas>
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 1rem;">Optimal Trading Spreads</h3>
+                    <table class="data-table" id="spreadsTable">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Type</th>
+                                <th>Bid</th>
+                                <th>Ask</th>
+                                <th>Spread (bps)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="spreadsBody">
+                            <tr>
+                                <td colspan="5" style="text-align:center;">Loading spreads...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 1rem; text-align: right;">
+                        <button class="btn btn-primary" id="executeTradeBtn">Execute Orders (IBKR)</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Optimization Controls & Results -->
+        <div class="grid-2" style="margin-bottom: 2rem;">
+            <!-- Optimization Controls -->
+            <div class="glass-card fade-in">
+                <div class="section-header">
+                    <h2 class="section-title">Optimize Portfolio</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Portfolio Value</label>
+                    <input type="number" class="form-input" id="portfolioValue" value="100000" step="1000">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Risk Tolerance</label>
+                    <select class="form-select" id="riskTolerance">
+                        <option value="conservative">Conservative</option>
+                        <option value="moderate" selected>Moderate</option>
+                        <option value="aggressive">Aggressive</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Target Dividend Yield (%)</label>
+                    <input type="number" class="form-input" id="targetYield" value="5.0" step="0.1" min="0" max="15">
+                </div>
+
+                <button class="btn btn-primary" id="optimizeBtn" style="width: 100%;">
+                    <span>🚀</span> Optimize with Quantum AI
+                </button>
+
+                <div id="optimizationProgress" style="display: none; margin-top: 1rem;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        <div class="quantum-metric">
+                            <span class="quantum-metric-label">Qubits</span>
+                            <span class="quantum-metric-value" id="quantumQubits">--</span>
+                        </div>
+                        <div class="quantum-metric">
+                            <span class="quantum-metric-label">Iterations</span>
+                            <span class="quantum-metric-value" id="quantumIterations">--</span>
+                        </div>
+                        <div class="quantum-metric">
+                            <span class="quantum-metric-label">Final Energy</span>
+                            <span class="quantum-metric-value" id="quantumEnergy">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Advisor -->
+                <div class="glass-card fade-in">
+                    <div class="section-header">
+                        <h2 class="section-title">🤖 AI Advisor</h2>
+                        <button class="btn btn-secondary" id="generateCodeBtn"
+                            style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                            <i class="fas fa-code"></i> Generate Code
+                        </button>
+                    </div>
+
+                    <div class="ai-chat" id="aiChat">
+                        <div class="chat-message ai">
+                            <strong>AI Advisor:</strong> Welcome to CIBC Dividend Portfolio Optimizer! I can help you
+                            with
+                            dividend stock selection, risk analysis, tax optimization, and portfolio recommendations.
+                            What
+                            would you like to know?
+                        </div>
+                    </div>
+
+                    <div class="chat-input-group">
+                        <input type="text" class="form-input" id="aiQuestion"
+                            placeholder="Ask about dividend investing...">
+                        <button class="btn btn-primary" id="askAiBtn">Ask</button>
+                    </div>
+
+                    <!-- Code Generation Modal -->
+                    <div id="codeModal" class="modal"
+                        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+                        <div class="modal-content"
+                            style="background: var(--bg-secondary); margin: 10% auto; padding: 2rem; width: 80%; max-width: 800px; border-radius: 1rem; border: 1px solid var(--glass-border);">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="color: var(--text-primary);">Generated Python Code</h3>
+                                <button class="btn btn-secondary"
+                                    onclick="document.getElementById('codeModal').style.display='none'">Close</button>
+                            </div>
+                            <pre id="generatedCode"
+                                style="background: #1a1a1a; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; color: #a5b3ce; font-family: monospace; margin-bottom: 1rem;"></pre>
+                            <div style="text-align: right;">
+                                <button class="btn btn-primary"
+                                    onclick="navigator.clipboard.writeText(document.getElementById('generatedCode').textContent)">Copy
+                                    to Clipboard</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="aiRecommendations" style="margin-top: 1rem; display: none;">
+                        <h3 style="margin-bottom: 0.5rem;">💡 Recommendations</h3>
+                        <div id="recommendationsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid-2" style="margin-bottom: 2rem;">
+                <!-- Allocation Chart -->
+                <div class="glass-card fade-in">
+                    <div class="section-header">
+                        <h2 class="section-title">Portfolio Allocation</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="allocationChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Sector Allocation -->
+                <div class="glass-card fade-in">
+                    <div class="section-header">
+                        <h2 class="section-title">Sector Breakdown</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sectorChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Holdings Table -->
+            <div class="glass-card fade-in" style="margin-bottom: 2rem;">
+                <div class="section-header">
+                    <h2 class="section-title">Portfolio Holdings</h2>
+                    <button class="btn btn-secondary" id="exportBtn">📥 Export</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="holdingsTable">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Name</th>
+                                <th>Sector</th>
+                                <th>Weight</th>
+                                <th>Value</th>
+                                <th>Shares</th>
+                                <th>Price</th>
+                                <th>Yield</th>
+                                <th>Annual Dividend</th>
+                            </tr>
+                        </thead>
+                        <tbody id="holdingsBody">
+                            <tr>
+                                <td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    Run optimization to see portfolio holdings
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Dividend Calendar & Income Forecast -->
+            <div class="grid-2" style="margin-bottom: 2rem;">
+                <!-- Dividend Calendar -->
+                <div class="glass-card fade-in">
+                    <div class="section-header">
+                        <h2 class="section-title">📅 Dividend Calendar</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="dividendCalendarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Income Forecast -->
+                <div class="glass-card fade-in">
+                    <div class="section-header">
+                        <h2 class="section-title">📈 Income Forecast</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="incomeForecastChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Efficient Frontier -->
+            <div class="glass-card fade-in" style="margin-bottom: 2rem;">
+                <div class="section-header">
+                    <h2 class="section-title">Efficient Frontier</h2>
+                    <button class="btn btn-secondary" id="generateFrontierBtn">Generate</button>
+                </div>
+                <div class="chart-container" style="height: 400px;">
+                    <canvas id="efficientFrontierChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Risk Metrics -->
+            <div class="glass-card fade-in">
+                <div class="section-header">
+                    <h2 class="section-title">Risk Analysis</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="metric-card">
+                        <div class="metric-label">Value at Risk (95%)</div>
+                        <div class="metric-value" id="metricVaR">--</div>
+                        <div class="metric-change">1-day VaR</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">CVaR (95%)</div>
+                        <div class="metric-value" id="metricCVaR">--</div>
+                        <div class="metric-change">Expected shortfall</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Sortino Ratio</div>
+                        <div class="metric-value" id="metricSortino">--</div>
+                        <div class="metric-change">Downside risk-adjusted</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4-Signal Analysis -->
+            <div class="glass-card fade-in" style="margin-top: 2rem;">
+                <div class="section-header">
+                    <h2 class="section-title">🛡️ Strategic 4-Signal Framework</h2>
+                </div>
+                <!-- Stock Selector -->
+                <div style="margin-bottom: 1rem;">
+                    <select id="signalStockSelect" class="form-select" style="max-width: 300px;">
+                        <option value="">Select a stock to analyze...</option>
+                    </select>
+                </div>
+
+                <div id="frameworkVerdict" class="glass-card fade-in"
+                    style="display:none; margin-bottom: 1rem; border-left: 4px solid var(--accent); background: rgba(139, 92, 246, 0.05);">
+                    <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem;">
+                        <div style="font-size: 1.5rem;">🎯</div>
+                        <div>
+                            <div class="metric-label" style="margin: 0;">Strategic Framework Verdict</div>
+                            <div id="verdictText"
+                                style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary);">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="signalsContainer" class="grid-4" style="display:none;">
+                    <!-- Yield Safety -->
+                    <div class="metric-card" id="signalYield">
+                        <div class="metric-label">Yield Safety</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">--</div>
+                        <div class="metric-change"
+                            style="font-size: 0.8rem; height: 3.2rem; overflow: hidden; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
+                        </div>
+                        <div class="progress-bar" style="height: 6px; margin-top: 8px;">
+                            <div class="progress-fill" style="width: 0%; background: var(--success);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Growth Trajectory -->
+                    <div class="metric-card" id="signalGrowth">
+                        <div class="metric-label">Growth Trajectory</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">--</div>
+                        <div class="metric-change"
+                            style="font-size: 0.8rem; height: 3.2rem; overflow: hidden; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
+                        </div>
+                        <div class="progress-bar" style="height: 6px; margin-top: 8px;">
+                            <div class="progress-fill" style="width: 0%; background: var(--info);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Fundamental Health -->
+                    <div class="metric-card" id="signalHealth">
+                        <div class="metric-label">Fundamental Health</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">--</div>
+                        <div class="metric-change"
+                            style="font-size: 0.8rem; height: 3.2rem; overflow: hidden; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
+                        </div>
+                        <div class="progress-bar" style="height: 6px; margin-top: 8px;">
+                            <div class="progress-fill" style="width: 0%; background: var(--warning);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Momentum -->
+                    <div class="metric-card" id="signalMomentum">
+                        <div class="metric-label">Momentum Score</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">--</div>
+                        <div class="metric-change"
+                            style="font-size: 0.8rem; height: 3.2rem; overflow: hidden; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
+                        </div>
+                        <div class="progress-bar" style="height: 6px; margin-top: 8px;">
+                            <div class="progress-fill" style="width: 0%; background: var(--danger);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trade Execution Modal -->
+        <div id="tradeModalOverlay" class="modal-overlay">
+            <div class="modal-content" style="text-align: center;">
+                <h2 style="margin-bottom: 1rem; color: var(--text-primary);">Executing Trades via IBKR</h2>
+                <div id="tradeProcessingContent">
+                    <div class="spinner" style="margin: 2rem auto;"></div>
+                    <p style="color: var(--text-secondary);">Connecting to API and routing orders...</p>
+                </div>
+                <div id="tradeSuccessContent" style="display: none;">
+                    <div style="font-size: 4rem; color: var(--accent-green); margin-bottom: 1rem;">&#10003;</div>
+                    <h3 style="margin-bottom: 0.5rem;">Orders Successfully Placed</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">The portfolio has been rebalanced
+                        according to the Flash Gemini algorithm.</p>
+                    <button class="btn btn-secondary"
+                        onclick="document.getElementById('tradeModalOverlay').classList.remove('active')">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification Container -->
+        <div id="toastContainer"
+            style="position: fixed; bottom: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px;">
+        </div>
+
+        <script src="app.js"></script>
+        <script src="quantum_viz.js"></script>
+</body>
+
+</html>

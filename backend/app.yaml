@@ -1,0 +1,14 @@
+runtime: python39
+entrypoint: gunicorn -b :$PORT server:app
+
+env_variables:
+  FLASK_ENV: production
+  QISKIT_BACKEND: "aer_simulator"
+  IBKR_HOST: "10.0.0.5" # Internal IP of IB Gateway in VPC
+  
+handlers:
+- url: /static
+  static_dir: web
+  
+- url: /.*
+  script: auto
