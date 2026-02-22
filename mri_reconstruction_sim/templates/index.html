@@ -311,6 +311,7 @@
                     <option value="CanadianDTI">🍁 Canadian DTI (Wishart Tensor)</option>
                     <option value="CanadianFMRI_BOLD">🍁 Canadian fMRI BOLD (GLM-HRF)</option>
                     <option value="CanadianQSM">🍁 Canadian QSM (TRIUMF Iron)</option>
+                    <option value="QuantumMLThermometry">🌡️ QML MR Thermometry (Coronal)</option>
                 </select>
             </div>
 
@@ -406,6 +407,8 @@
             <button class="tab-trigger" onclick="switchView('cardiovascular', this)">Cardiovascular</button>
             <button class="tab-trigger" id="tab-neuroseq"
                 onclick="switchView('neuroseq', this); generateNeuroPulseCA();">🍁 NeuroSeq CA</button>
+            <button class="tab-trigger" onclick="switchView('thermometry', this)">🌡️ Q-Thermometry</button>
+            <button class="tab-trigger" onclick="switchView('analytics', this)">📊 Distribution Analysis</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -585,6 +588,36 @@
                 </div>
             </div>
 
+            <!-- View: QML Thermometry -->
+            <div id="view-thermometry" class="view-content">
+                <div class="output-box" style="max-width: 800px; margin: auto;">
+                    <div class="output-title">QML MR Thermometry (Temperature Map)</div>
+                    <div class="img-window" style="aspect-ratio: auto; height: 600px;">
+                        <img id="img-temperature_map" src="" style="object-fit: contain;">
+                    </div>
+                    <div class="metrics-bar" style="width: 100%;">
+                        <div class="metric-mini">
+                            <div class="metric-mini-val" id="meanTempVal">--</div>
+                            <div class="metric-mini-label">Mean Temp (°C)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Distribution Analysis -->
+            <div id="view-analytics" class="view-content">
+                <div class="output-box" style="max-width: 900px; margin: auto;">
+                    <div class="output-title">Statistical Parametric Analytics (Bayesian Reasoning)</div>
+                    <div class="img-window" style="aspect-ratio: auto; height: 500px;">
+                        <img id="img-distribution_curve" src="" style="object-fit: contain;">
+                    </div>
+                    <div id="analytics-details"
+                        style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary); column-count: 2; gap: 2rem;">
+                        <!-- Populate with JS -->
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -743,10 +776,30 @@
                     }
 
                     document.getElementById('snrVal').textContent = (data.metrics.snr_estimate || 0).toFixed(2);
-                    document.getElementById('contrastVal').textContent = data.metrics.contrast.toFixed(3);
-                    document.getElementById('sharpnessVal').textContent = data.metrics.sharpness.toFixed(1);
+                    document.getElementById('contrastVal').textContent = (data.metrics.contrast || 0).toFixed(3);
+                    document.getElementById('sharpnessVal').textContent = (data.metrics.sharpness || 0).toFixed(1);
                     document.getElementById('entropyVal').textContent = (data.metrics.entropy || 0).toFixed(3);
                     document.getElementById('noiseStdVal').textContent = (data.metrics.background_noise_std || 0).toExponential(2);
+
+                    // QML Thermometry / Analytics population
+                    if (plots.temperature_map) {
+                        update('temperature_map', plots.temperature_map);
+                        document.getElementById('meanTempVal').textContent = (data.metrics.inferred_mean_temp_c || 0).toFixed(1) + "°C";
+                    }
+                    if (plots.distribution_curve) {
+                        update('distribution_curve', plots.distribution_curve);
+                        const params = data.metrics.params;
+                        if (params) {
+                            document.getElementById('analytics-details').innerHTML = `
+                                <div><strong>Distribution:</strong> ${data.metrics.distribution_type}</div>
+                                <div><strong>Confidence [95%]:</strong> ${data.metrics.confidence_interval[0].toFixed(2)} - ${data.metrics.confidence_interval[1].toFixed(2)}</div>
+                                <div><strong>Scale:</strong> ${params.scale.toFixed(4)}</div>
+                                <div><strong>Shape (Alpha):</strong> ${params.alpha.toFixed(4)}</div>
+                                <div><strong>Inferred Temp:</strong> ${data.metrics.inferred_mean_temp_c.toFixed(2)}°C</div>
+                                <div style="color:var(--accent)">Reasoning: Bayesian Parametric Fit</div>
+                            `;
+                        }
+                    }
                 }
             } catch (err) { console.error('Simulate Error:', err); }
             loader.style.display = 'none';

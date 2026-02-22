@@ -119,6 +119,16 @@ def simulate():
         metrics['nvqlink_enabled'] = sim.nvqlink_enabled
         
         plots = sim.generate_plots(kspace, recon_img, M_ref)
+        
+        # QML Thermometry Reasoning (Plots added to dict after global generation)
+        if seq_type == 'QuantumMLThermometry':
+            from statistical_adaptive_pulse import QMLThermometrySequence
+            qml_reasoner = QMLThermometrySequence(nvqlink_enabled=sim.nvqlink_enabled)
+            distribution_stats = qml_reasoner.reason_about_distributions(recon_img)
+            metrics.update(distribution_stats)
+            plots['temperature_map'] = sim.generate_temperature_map_plot(recon_img, distribution_stats['inferred_mean_temp_c'])
+            plots['distribution_curve'] = sim.generate_distribution_curve_plot(recon_img, distribution_stats)
+
         signal_study = sim.generate_signal_study(seq_type)
         
         # Images are returned directly as base64 strings in the JSON response

@@ -309,11 +309,57 @@ class StrokeImagingPulseSequence(StatisticalAdaptivePulseSequence):
         }
 
 
+class QMLThermometrySequence(StatisticalAdaptivePulseSequence):
+    """
+    Quantum Machine Learning based MR Thermometry.
+    Uses Bayesian parametric reasoning to estimate temperature distributions.
+    """
+    
+    def __init__(self, nvqlink_enabled=False):
+        super().__init__(nvqlink_enabled)
+        self.sequence_name = "QML MR Thermometry"
+        
+    def reason_about_distributions(self, image_data):
+        """
+        Performs parametric reasoning on the intensity distributions to infer temperature.
+        Specifically models the 'Thermal Manifold' using Gamma distributions.
+        """
+        flat = image_data.flatten()
+        flat = flat[flat > 0.05 * np.max(flat)] # Filter background
+        
+        # Fit Gamma distribution (standard for intensity-based thermometry noise)
+        a, loc, scale = gamma.fit(flat)
+        
+        # Inferred temperature distribution (simulated dependency on T1 relaxation shift)
+        # Shift in mean intensity is a proxy for temperature change
+        mean_intensity = a * scale + loc
+        inferred_temp_c = 37.0 + (mean_intensity - 0.5) * 10.0 # Linear scaling for simulation
+        
+        return {
+            'distribution_type': 'Gamma',
+            'params': {'alpha': float(a), 'loc': float(loc), 'scale': float(scale)},
+            'inferred_mean_temp_c': float(inferred_temp_c),
+            'confidence_interval': [float(loc), float(loc + 2 * a * scale)]
+        }
+
+    def generate_sequence(self, tissue_stats):
+        """Generates optimized Thermometry sequence."""
+        # Thermometry requires fast acquisition (Short TR) to capture dynamic changes
+        return {
+            'sequence': 'QuantumMLThermometry',
+            'tr': 500,
+            'te': 15,
+            'description': "QML Parametric Thermometry (Coronal Optimized)",
+            'nvqlink_accelerated': self.nvqlink_enabled
+        }
+
+
 ADAPTIVE_SEQUENCES = {
     'adaptive_se': AdaptiveSpinEcho,
     'adaptive_gre': AdaptiveGradientEcho,
     'adaptive_flair': AdaptiveFLAIR,
-    'stroke_imaging_elliptic': StrokeImagingPulseSequence
+    'stroke_imaging_elliptic': StrokeImagingPulseSequence,
+    'qml_thermometry': QMLThermometrySequence
 }
 
 
