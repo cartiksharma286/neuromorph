@@ -1,221 +1,275 @@
-# CIBC Optimal Dividend Portfolio with Generative AI
+# RF Coil Designer with Generative AI
 
-A comprehensive capital markets portfolio management system that leverages **quantum computing** and **generative AI** to optimize dividend-focused portfolios for Canadian investors.
+A comprehensive Python package for designing RF coils using generative AI algorithms, parametric modeling, and optimization techniques.
 
-## 🚀 Features
+## Features
 
-### Quantum-Enhanced Optimization
-- **VQE (Variational Quantum Eigensolver)** for portfolio optimization
-- Quantum circuit design for dividend yield maximization
-- Risk-adjusted return optimization with quantum annealing
-- Real-time quantum metrics visualization
+### 🧬 Generative Design
+- **Evolutionary Algorithms**: Genetic algorithm-based coil optimization
+- **Parametric Generation**: Create designs from physical constraints
+- **Multi-objective Optimization**: Balance frequency, Q-factor, size
 
-### Generative AI Advisor
-- Natural language portfolio analysis and recommendations
-- Intelligent rebalancing suggestions
-- Risk assessment and commentary generation
-- Interactive Q&A for dividend investing strategies
+### 🔧 Coil Types Supported
+- **Solenoid Coils**: Air-core cylindrical coils
+- **Planar Spiral Coils**: PCB-compatible flat spirals
+- **Helmholtz Pairs**: Dual-coil configurations
 
-### Comprehensive Dividend Analytics
-- **Canadian dividend tax credit calculations** (eligible vs non-eligible)
-- Dividend growth rate analysis (3-year, 5-year, 10-year CAGR)
-- Payout ratio sustainability scoring
-- Dividend aristocrat/achiever identification
-- Ex-dividend date tracking and calendar generation
-- 10-year income forecasting
+### 📊 Analysis & Calculation
+- Inductance calculation (Wheeler's formula)
+- Resonant frequency determination
+- Quality factor (Q) estimation
+- Skin effect compensation
+- Impedance matching
 
-### Advanced Portfolio Analytics
-- Risk metrics: Sharpe ratio, Sortino ratio, VaR, CVaR
-- Efficient frontier generation
-- Performance attribution (sector, security)
-- Tax efficiency scoring for Canadian investors
-- Correlation matrix analysis
+### 🎨 Visualization
+- 2D cross-sectional views
+- 3D helix rendering
+- Circuit schematics with component values
+- Comparison plots
 
-### Premium CIBC-Branded Interface
-- Dark theme with glassmorphism effects
-- Real-time interactive charts (Chart.js)
-- Responsive design
-- Dividend calendar visualization
-- Income projection charts
+## Quick Start
 
-## 📊 Canadian Dividend Stock Universe
+### Installation
 
-The system includes **24 TSX blue-chip dividend stocks** across 5 sectors:
-
-- **Financials**: RY, TD, BNS, BMO, CM, MFC, SLF
-- **Utilities**: FTS, EMA, AQN, CU
-- **Energy**: ENB, TRP, CNQ, SU
-- **Telecom**: BCE, T, RCI.B
-- **REITs**: REI.UN, CAR.UN, HR.UN
-
-## 🛠️ Installation
-
-### Prerequisites
-- Python 3.9+
-- CUDA-Q (for quantum optimization)
-- Modern web browser
-
-### Setup
-
-1. **Install Python dependencies:**
-```powershell
-cd C:\Users\User\.gemini\antigravity\scratch\cibc-dividend-portfolio
+```bash
 pip install -r requirements.txt
 ```
 
-2. **Start the backend server:**
-```powershell
-cd backend
-python server.py
+### Basic Usage
+
+```python
+from coil_designer import RFCoilDesigner, CoilParameters
+
+# Create designer
+designer = RFCoilDesigner()
+
+# Define coil
+params = CoilParameters(
+    coil_type='solenoid',
+    wire_diameter=1.0,  # mm
+    turns=15,
+    diameter=30,  # mm
+    length=40  # mm
+)
+
+# Calculate properties
+L = designer.calculate_inductance(params)
+f_res = designer.calculate_resonant_frequency(L, capacitance=100e-12)
+Q = designer.calculate_quality_factor(params, f_res)
+
+print(f"Inductance: {L*1e6:.2f} µH")
+print(f"Resonant Frequency: {f_res/1e6:.2f} MHz")
+print(f"Quality Factor: {Q:.1f}")
 ```
 
-Server will start on `http://localhost:5000`
+### Generative Design for Target Frequency
 
-3. **Open the web interface:**
-```powershell
-cd ..\web
-start index.html
-```
+```python
+# Design coil for specific frequency (e.g., 13.56 MHz ISM band)
+target_freq = 13.56e6
 
-Or navigate to `C:\Users\User\.gemini\antigravity\scratch\cibc-dividend-portfolio\web\index.html` in your browser.
-
-## 📖 Usage Guide
-
-### 1. Portfolio Optimization
-
-1. Set your **Portfolio Value** (default: $100,000)
-2. Choose **Risk Tolerance**: Conservative, Moderate, or Aggressive
-3. Set **Target Dividend Yield** (e.g., 5.0%)
-4. Click **"Optimize with Quantum AI"**
-
-The quantum optimizer will:
-- Find optimal asset allocation
-- Maximize dividend yield while managing risk
-- Apply sector diversification constraints
-- Display quantum circuit metrics
-
-### 2. AI Advisor
-
-Ask questions like:
-- "What are the best dividend stocks for income?"
-- "How can I reduce portfolio risk?"
-- "What's the tax impact of my dividends?"
-- "Should I rebalance my portfolio?"
-
-The AI will provide personalized recommendations based on your portfolio.
-
-### 3. Dividend Calendar
-
-View upcoming dividend payments by month, helping you plan cash flow.
-
-### 4. Income Forecast
-
-See projected dividend income growth over 10 years based on historical dividend growth rates.
-
-### 5. Efficient Frontier
-
-Click **"Generate"** to visualize the risk-return tradeoff across different portfolio allocations.
-
-## 🔧 API Endpoints
-
-### Portfolio Optimization
-```
-POST /api/optimize
-Body: {
-  "portfolio_value": 100000,
-  "risk_tolerance": "moderate",
-  "target_dividend_yield": 5.0
+constraints = {
+    'max_diameter': 50,
+    'capacitance': 150e-12
 }
+
+optimized = designer.design_for_frequency(
+    target_freq,
+    coil_type='solenoid',
+    constraints=constraints
+)
 ```
 
-### AI Analysis
-```
-POST /api/ai/analyze
-Body: {
-  "portfolio_data": {...},
-  "market_conditions": {...},
-  "user_profile": {...}
-}
-```
+### Evolutionary Optimization
 
-### Dividend Calendar
-```
-POST /api/dividend/calendar
-Body: {
-  "holdings": [...],
-  "months_ahead": 12
-}
+```python
+from coil_designer import GenerativeCoilDesigner
+
+gen_designer = GenerativeCoilDesigner(designer)
+
+# Evolve optimal design
+evolved = gen_designer.evolve_design(
+    target_freq=27.12e6,
+    population_size=50,
+    generations=20,
+    constraints=constraints
+)
 ```
 
-### Income Forecast
+### Visualization
+
+```python
+from coil_visualizer import CoilVisualizer
+
+visualizer = CoilVisualizer(designer)
+
+# 3D geometry
+visualizer.plot_coil_geometry(params, save_path='coil_3d.png')
+
+# Circuit schematic
+visualizer.generate_schematic(params, capacitance=100e-12, 
+                             save_path='schematic.png')
 ```
-POST /api/dividend/forecast
-Body: {
-  "portfolio_value": 100000,
-  "weights": [...],
-  "years": 10
-}
+
+## Running the Demo
+
+```bash
+cd C:\Users\User\.gemini\antigravity\scratch\rf_coil_designer
+python demo.py
 ```
 
-## 🎨 CIBC Branding Guidelines
+The demo includes:
+1. **Parametric Design**: Manual coil specification and analysis
+2. **Target Frequency Design**: Optimize for 13.56 MHz ISM band
+3. **Evolutionary Design**: GA-based optimization for 27.12 MHz
+4. **Planar Spiral**: PCB coil design
+5. **Coil Comparison**: Side-by-side comparison of different types
 
-The interface uses official CIBC brand colors:
-- **Primary Red**: #ED1C24
-- **Dark Red**: #C41E3A
-- **Light Red**: #FF4D4D
+## Theory
 
-Typography: **Inter** font family
+### Inductance Calculation
 
-## 🧪 Testing
+**Solenoid (Wheeler's Formula):**
+```
+L (µH) = N² × r² / (9r + 10l)
+```
+where N = turns, r = radius (mm), l = length (mm)
 
-Run portfolio optimization with different risk profiles to verify:
-- Conservative → stable dividend payers (Utilities, Financials)
-- Moderate → balanced allocation
-- Aggressive → higher growth stocks (Energy, REITs)
+**Planar Spiral:**
+```
+L = μ₀N²d_avg² / (8d_avg + 11(d_outer - d_inner))
+```
 
-## 📊 Key Metrics Explained
+### Resonant Frequency
+```
+f = 1 / (2π√(LC))
+```
 
-### Sharpe Ratio
-Risk-adjusted return metric. Higher is better (>1.0 is excellent).
+### Quality Factor
+```
+Q = ωL / R = 2πfL / R
+```
+where R accounts for DC resistance and skin effect.
 
-### Sortino Ratio
-Similar to Sharpe but focuses on downside risk only.
+## API Reference
 
-### VaR (Value at Risk)
-Maximum expected loss at 95% confidence level.
+### `RFCoilDesigner`
 
-### CVaR (Conditional VaR)
-Expected loss beyond the VaR threshold.
+Main class for coil design and analysis.
 
-### Dividend Sustainability Score
-Composite score (0-100) based on:
-- Payout ratio
-- Dividend growth history
-- Free cash flow coverage
+**Methods:**
+- `calculate_inductance(params)` - Calculate coil inductance
+- `calculate_resonant_frequency(L, C)` - Find resonant frequency
+- `calculate_quality_factor(params, freq)` - Estimate Q factor
+- `design_for_frequency(target_freq, ...)` - Optimize for target frequency
 
-## 🇨🇦 Canadian Tax Considerations
+### `GenerativeCoilDesigner`
 
-The system accounts for:
-- **Eligible dividend tax credit** (38% gross-up, ~15% federal credit)
-- **Effective tax rate** (~30% vs 50% on interest)
-- **Tax efficiency scoring** for non-registered accounts
+Generative AI-based design system.
 
-## 🚀 Future Enhancements
+**Methods:**
+- `evolve_design(target_freq, ...)` - Evolutionary optimization
+- `generate_design_variations(params, n)` - Create design variants
+- `evaluate_fitness(params, target)` - Score design quality
 
-- Real-time market data integration
-- Multi-currency support
-- ESG scoring integration
-- Mobile app version
-- Portfolio backtesting
+### `CoilVisualizer`
 
-## 📝 License
+Visualization and schematic generation.
 
-For demonstration purposes only. Not financial advice.
+**Methods:**
+- `plot_2d_solenoid(params)` - 2D side view
+- `plot_2d_planar_spiral(params)` - 2D top view
+- `plot_3d_solenoid(params)` - 3D helix
+- `generate_schematic(params, ...)` - Circuit schematic
+- `plot_coil_geometry(params)` - Complete visualization
 
-## 🤝 Support
+### `CoilParameters`
 
-For questions or issues, contact CIBC Capital Markets.
+Dataclass for coil specifications.
+
+**Fields:**
+- `coil_type`: 'solenoid', 'planar_spiral', or 'helmholtz'
+- `wire_diameter`: Wire diameter in mm
+- `turns`: Number of turns
+- `diameter`: Outer diameter in mm
+- `length`: Length (solenoid) or spacing (planar)
+- `substrate_thickness`: PCB thickness (optional)
+
+## Applications
+
+- **RF Communications**: Antenna tuning circuits
+- **NFC/RFID**: Reader coils (13.56 MHz)
+- **Wireless Power**: Inductive charging coils
+- **Medical Imaging**: MRI RF coils
+- **Plasma Generators**: Induction heating
+- **Scientific Instruments**: NMR probes
+- **Amateur Radio**: Impedance matching networks
+
+## Common ISM Bands
+
+Pre-optimized designs available for:
+- 6.78 MHz (Industrial)
+- 13.56 MHz (NFC, RFID)
+- 27.12 MHz (Industrial)
+- 40.68 MHz (Medical)
+
+## Optimization Algorithms
+
+### Differential Evolution
+- Global optimization for continuous parameters
+- Used in `design_for_frequency()`
+- Fast convergence (typically < 100 iterations)
+
+### Genetic Algorithm
+- Population-based evolutionary search
+- Used in `evolve_design()`
+- Good for multi-objective optimization
+- Crossover + mutation + selection
+
+## Performance
+
+Typical optimization times (on modern CPU):
+- Differential Evolution: 1-3 seconds
+- Genetic Algorithm (50 pop, 20 gen): 3-5 seconds
+- Single inductance calculation: < 1 ms
+
+## Design Guidelines
+
+### Solenoid Coils
+- Length/Diameter ratio: 1-3 for optimal Q
+- Wire spacing: 1-2× wire diameter
+- Typical Q: 50-200 at HF/VHF
+
+### Planar Spirals
+- Track spacing: ≥ track width
+- Inner diameter: ≥ 30% outer diameter
+- Typical Q: 20-80 (lower than solenoid)
+
+### Quality Factor Optimization
+- Use larger wire diameter
+- Minimize length (fewer turns at larger diameter)
+- Use Litz wire for high frequency
+
+## Future Enhancements
+
+- [ ] Multi-layer coil support
+- [ ] Mutual inductance calculations
+- [ ] Transformer design
+- [ ] CAD file export (DXF, STEP)
+- [ ] FEA integration
+- [ ] Temperature coefficient analysis
+- [ ] Cost optimization
+
+## References
+
+1. Wheeler, H. A. (1928). "Simple Inductance Formulas for Radio Coils"
+2. Terman, F. E. (1943). "Radio Engineers' Handbook"
+3. Grover, F. W. (2009). "Inductance Calculations"
+
+## License
+
+MIT License - Free for educational and commercial use
 
 ---
 
-**Built with ❤️ using Quantum Computing & Generative AI**
+**Developed with Generative AI for RF Engineering Applications**

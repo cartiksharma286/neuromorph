@@ -1,7 +1,5 @@
-flask
-flask-cors
 numpy
 scipy
-cudaq
-pandas
-scikit-learn
+flask
+pypulseq
+plotly
