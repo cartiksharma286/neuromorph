@@ -409,6 +409,7 @@
                 onclick="switchView('neuroseq', this); generateNeuroPulseCA();">🍁 NeuroSeq CA</button>
             <button class="tab-trigger" onclick="switchView('thermometry', this)">🌡️ Q-Thermometry</button>
             <button class="tab-trigger" onclick="switchView('analytics', this)">📊 Distribution Analysis</button>
+            <button class="tab-trigger" onclick="switchView('snr', this)">📈 SNR Analytics</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -618,6 +619,30 @@
                 </div>
             </div>
 
+            <!-- View: SNR Analytics -->
+            <div id="view-snr" class="view-content">
+                <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="output-box">
+                        <div class="output-title">Spatial SNR Distribution Map</div>
+                        <div class="img-window" style="aspect-ratio: auto; height: 500px;">
+                            <img id="img-snr_map" src="" style="object-fit: contain;">
+                        </div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">SNR Histogram (Signal Thresholded)</div>
+                        <div class="img-window" style="aspect-ratio: auto; height: 500px;">
+                            <img id="img-snr_hist" src="" style="object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+                <div class="output-box" style="margin-top: 1.5rem; width: 100%;">
+                    <div class="output-title">Quantum SNR Insights</div>
+                    <div id="snr-insights" style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                        Awaiting data for characterization...
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -799,6 +824,20 @@
                                 <div style="color:var(--accent)">Reasoning: Bayesian Parametric Fit</div>
                             `;
                         }
+                    }
+
+                    // SNR Analytics population
+                    if (plots.snr_map) {
+                        update('snr_map', plots.snr_map);
+                    }
+                    if (plots.snr_hist) {
+                        update('snr_hist', plots.snr_hist);
+                        const snr = data.metrics.snr_estimate || 0;
+                        let insight = `Base SNR Estimate: <strong>${snr.toFixed(2)}</strong>. `;
+                        if (snr > 50) insight += "High fidelity signal detected with robust clinical utility.";
+                        else if (snr > 15) insight += "Moderate SNR. Suitable for standard anatomical imaging.";
+                        else insight += "Low SNR detected. Optimization of RF Gain or Quantum Denoising recommended.";
+                        document.getElementById('snr-insights').innerHTML = insight;
                     }
                 }
             } catch (err) { console.error('Simulate Error:', err); }

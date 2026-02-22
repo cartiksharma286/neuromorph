@@ -2849,12 +2849,17 @@ class MRIReconstructionSimulator:
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plots['kspace_gt'] = fig_to_b64(fig5, tight=False)
 
-        # 6. Spectroscopy (if available)
+        # 6. Spatial SNR Map
+        snr_map_fig, snr_hist_fig = self.generate_snr_plots(reconstructed_img)
+        plots['snr_map'] = fig_to_b64(snr_map_fig)
+        plots['snr_hist'] = fig_to_b64(snr_hist_fig)
+        
+        # 7. Spectroscopy (if available)
         if self.spectroscopy_data is not None:
              spectro_img = self._plot_to_base64_spectroscopy(self.spectroscopy_data)
              plots['spectroscopy'] = spectro_img
             
-        # 7. Neurovascular Prism (if active)
+        # 8. Neurovascular Prism (if active)
         # We visualize the sensitivity map of the first coil channel as a proxy
         if hasattr(self, 'active_quantum_coil') and getattr(self.active_quantum_coil, 'name', '') and 'Neurovascular' in getattr(self.active_quantum_coil, 'name', ''):
              # Visualize the prism structure
@@ -2898,6 +2903,50 @@ class MRIReconstructionSimulator:
              plots['circuit'] = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
 
         return plots
+
+
+    def generate_snr_plots(self, reconstructed_img):
+        """Generates Spatial SNR Map and SNR Histogram."""
+        plt.style.use('dark_background')
+        
+        # Calculate background noise std (consistent with compute_metrics)
+        mag_img = np.abs(reconstructed_img)
+        max_val = np.max(mag_img) if np.max(mag_img) > 1e-9 else 1.0
+        norm_img = mag_img / max_val
+        background_mask = norm_img <= 0.1
+        background_std = np.std(mag_img[background_mask]) if np.any(background_mask) else 1e-9
+        if background_std < 1e-9: background_std = 1e-9
+        
+        # Spatial SNR Map: SNR(x,y) = Signal(x,y) / sigma_noise
+        snr_map = mag_img / background_std
+        
+        # SNR Map Plot
+        fig_map, ax_map = plt.subplots(figsize=(6, 6))
+        fig_map.patch.set_facecolor('#0f172a')
+        im = ax_map.imshow(snr_map, cmap='magma', origin='lower', aspect='equal')
+        ax_map.axis('off')
+        ax_map.set_title("Spatial SNR Characterization Map", color='white', pad=10)
+        cbar = plt.colorbar(im, ax=ax_map, fraction=0.046, pad=0.04)
+        cbar.ax.tick_params(colors='white')
+        cbar.set_label('Local SNR (Unitless)', color='white')
+        plt.subplots_adjust(left=0, right=1, top=0.9, bottom=0)
+        
+        # SNR Histogram Plot
+        fig_hist, ax_hist = plt.subplots(figsize=(6, 6))
+        fig_hist.patch.set_facecolor('#0f172a')
+        # Only take signal region for histogram to be meaningful
+        signal_snr = snr_map[norm_img > 0.1].flatten()
+        if len(signal_snr) > 0:
+            ax_hist.hist(signal_snr, bins=50, color='#38bdf8', alpha=0.7, edgecolor='white', linewidth=0.5)
+        ax_hist.set_title("SNR Distribution (In-Tissue)", color='white')
+        ax_hist.set_xlabel("Local SNR", color='white')
+        ax_hist.set_ylabel("Pixel Count", color='white')
+        ax_hist.grid(True, alpha=0.2)
+        ax_hist.tick_params(colors='white')
+        for spine in ax_hist.spines.values():
+            spine.set_edgecolor('white')
+            
+        return fig_map, fig_hist
 
     def generate_temperature_map_plot(self, recon_img, mean_temp):
         """Generates a colorized temperature map based on intensity variations."""
