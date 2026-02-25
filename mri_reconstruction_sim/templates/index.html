@@ -312,6 +312,7 @@
                     <option value="CanadianFMRI_BOLD">🍁 Canadian fMRI BOLD (GLM-HRF)</option>
                     <option value="CanadianQSM">🍁 Canadian QSM (TRIUMF Iron)</option>
                     <option value="QuantumMLThermometry">🌡️ QML MR Thermometry (Coronal)</option>
+                    <option value="QuantumGeometry">⚛️ Quantum Geometry (Continued Fraction)</option>
                 </select>
             </div>
 
@@ -333,6 +334,7 @@
                     <option value="rec_engine_coil">🤖 Rec. Engine Neurovascular Coil</option>
                     <option value="neurovascular_coil">🧠 Neurovascular Coil (Adaptive Prism)</option>
                     <option value="cardiovascular_coil">❤️ Cardiovascular Coil (Conformal)</option>
+                    <option value="conformal_neurovascular_array">🌀 Conformal Neurovascular (SC Map)</option>
                 </select>
                 <div style="margin-top:0.6rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
                     <input type="checkbox" id="shimming" style="width: auto;">
@@ -409,6 +411,7 @@
                 onclick="switchView('neuroseq', this); generateNeuroPulseCA();">🍁 NeuroSeq CA</button>
             <button class="tab-trigger" onclick="switchView('thermometry', this)">🌡️ Q-Thermometry</button>
             <button class="tab-trigger" onclick="switchView('analytics', this)">📊 Distribution Analysis</button>
+            <button class="tab-trigger" onclick="switchView('quantum-geometry', this)">🌀 Quantum Geometry</button>
             <button class="tab-trigger" onclick="switchView('snr', this)">📈 SNR Analytics</button>
 
             <!-- View: Dashboard (Grid Layout) -->
@@ -643,6 +646,51 @@
                 </div>
             </div>
 
+            <!-- View: Quantum Geometry Analytics -->
+            <div id="view-quantum-geometry" class="view-content">
+                <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 1.5rem;">
+                    <div class="output-box">
+                        <div class="output-title">Manifold Reconstructed Image</div>
+                        <div class="img-window">
+                            <img id="img-quantum-recon" src="" style="object-fit: contain;">
+                        </div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Manifold k-Space Project</div>
+                        <div class="img-window">
+                            <img id="img-quantum-kspace" src=""
+                                style="object-fit: contain; filter: invert(1) hue-rotate(180deg);">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="output-box" style="max-width: 900px; margin: auto;">
+                    <div class="output-title">Quantum Geometry Manifold Analytics</div>
+                    <div class="img-window" style="aspect-ratio: auto; height: 500px;">
+                        <img id="img-quantum-manifold" src=""
+                            style="object-fit: contain; filter: hue-rotate(180deg) brightness(1.2) contrast(1.1);">
+                    </div>
+                    <div class="metrics-bar" style="width: 100%;">
+                        <div class="metric-mini">
+                            <div class="metric-mini-val" id="metricNormVal">--</div>
+                            <div class="metric-mini-label">Metric Tensor Norm</div>
+                        </div>
+                        <div class="metric-mini">
+                            <div class="metric-mini-val" id="curvatureMax">--</div>
+                            <div class="metric-mini-label">Peak Curvature</div>
+                        </div>
+                        <div class="metric-mini">
+                            <div class="metric-mini-val" id="cfDepthVal">--</div>
+                            <div class="metric-mini-label">CF Logic Depth</div>
+                        </div>
+                    </div>
+                    <div id="quantum-insights"
+                        style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 1rem;">
+                        Waiting for manifold projection...
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -838,6 +886,20 @@
                         else if (snr > 15) insight += "Moderate SNR. Suitable for standard anatomical imaging.";
                         else insight += "Low SNR detected. Optimization of RF Gain or Quantum Denoising recommended.";
                         document.getElementById('snr-insights').innerHTML = insight;
+                    }
+
+                    // Quantum Geometry population
+                    if (data.metrics.manifold_status === 'Statistical Continuable') {
+                        update('quantum-manifold', plots.quantum_manifold);
+                        update('quantum-recon', plots.recon);
+                        update('quantum-kspace', plots.kspace);
+                        document.getElementById('metricNormVal').textContent = (data.metrics.metric_tensor_norm || 0).toFixed(4);
+                        document.getElementById('curvatureMax').textContent = (data.metrics.max_curvature || 0).toFixed(6);
+                        document.getElementById('cfDepthVal').textContent = data.metrics.cf_depth || 0;
+                        document.getElementById('quantum-insights').innerHTML = `
+                            <strong>Manifold State:</strong> Continuable Quantum Geometry.<br>
+                            <strong>Insight:</strong> Continued fraction expansion at depth ${data.metrics.cf_depth} optimized TR for minimal aliasing and topological noise suppression.
+                        `;
                     }
                 }
             } catch (err) { console.error('Simulate Error:', err); }

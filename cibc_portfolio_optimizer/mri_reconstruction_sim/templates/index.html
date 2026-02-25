@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroPulse: MRI Reconstruction Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #020617;
+            --bg-secondary: #0f172a;
+            --accent: #38bdf8;
+            --accent-hover: #7dd3fc;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass: rgba(30, 41, 59, 0.7);
+            --border: rgba(56, 189, 248, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #1e293b, #020617);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            padding: 0.75rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+        }
+
+        aside {
+            width: 280px;
+            background: var(--bg-secondary);
+            padding: 1.25rem;
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .control-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 0.6rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--accent);
+            color: #020617;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+        }
+
+        main {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Fluid Grid Dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .output-box {
+            background: var(--glass);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .output-box:hover {
+            border-color: var(--accent);
+        }
+
+        .output-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            align-self: flex-start;
+        }
+
+        .img-window {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #020617;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .img-window img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            background: var(--bg-secondary);
+            padding: 0.25rem;
+            border-radius: 10px;
+            width: fit-content;
+        }
+
+        .tab-trigger {
+            padding: 0.5rem 1.25rem;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab-trigger.active {
+            background: #1e293b;
+            color: var(--accent);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .view-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .view-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .metrics-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .metric-mini {
+            background: var(--glass);
+            padding: 0.75rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .metric-mini-val {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .metric-mini-label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(56, 189, 248, 0.1);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+            z-index: 1000;
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+</style>
+</head>
+
+<body>
+    <header>
+        <h1>NeuroPulse Recon Lab</h1>
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">
+            Gemini Physics Engine v3.0
+        </div>
+    </header>
+
+    <div class="container">
+        <aside>
+            <div class="control-group">
+                <label>Sequence Protocol</label>
+                <select id="sequence">
+                    <option value="SE">Spin Echo (SE)</option>
+                    <option value="GRE">Gradient Echo (GRE)</option>
+                    <option value="InversionRecovery">Inversion Recovery</option>
+                    <option value="FLAIR">FLAIR</option>
+                    <option value="SSFP">TrueFISP / bSSFP</option>
+                    <option value="Gemini3.0">Gemini 3.0 (Context-Aware)</option>
+                    <option value="GenerativeTrueFISP">Generative TrueFISP (AI)</option>
+                    <option value="QuantumBerryPhase">Quantum Berry Phase (Topological)</option>
+                    <option value="QuantumLowEnergyBeam">Quantum Low Energy Beam (Entangled)</option>
+                    <option value="AdaptiveSE">📊 Adaptive Spin Echo (Statistical)</option>
+                    <option value="AdaptiveGRE">📊 Adaptive GRE (Ernst Angle)</option>
+                    <option value="AdaptiveFLAIR">📊 Adaptive FLAIR (TI Optimized)</option>
+                    <option value="ZTE">Zero Echo Time (ZTE) - Bone</option>
+                    <option value="UTE">Ultra Short TE (UTE) - Connective</option>
+                    <option value="SWI">Susceptibility Weighted (SWI) - Venous</option>
+                    <option value="DWI">Diffusion Weighted (DWI) - Stroke</option>
+                    <option value="QuantumGenerativeRecon">⚛️ Quantum Generative Recon (QML)</option>
+                    <option value="StatisticalBayesianInference">📈 Statistical Bayesian Inference</option>
+                    <option value="QuantumRBMSpectroscopy">🧬 Quantum RBM Spectroscopy (Q-CSI)</option>
+                    <option value="GeodesicCoilAdiabaticPulse">📐 Geodesic Coil Adiabatic Pulse</option>
+                    <option value="QuantumPhotonCount">✨ Quantum Photon Counting (Zero Noise)</option>
+                    <option value="GenerativeThermometry">🌡️ Generative MR Thermometry (LLM)</option>
+                    <option value="QuantumSurfaceIntegral">∫ Quantum Surface Integral (Topological)</option>
+                    <option value="stroke_imaging_elliptic">🧠 Stroke Imaging (Elliptic Modular)</option>
+                    <option disabled style="color:#334155;">── Canadian Neuroimaging ──</option>
+                    <option value="CanadianMPRAGE">🍁 Canadian MPRAGE (MNI T1w)</option>
+                    <option value="CanadianASL">🍁 Canadian ASL (CBF Statistical)</option>
+                    <option value="CanadianDTI">🍁 Canadian DTI (Wishart Tensor)</option>
+                    <option value="CanadianFMRI_BOLD">🍁 Canadian fMRI BOLD (GLM-HRF)</option>
+                    <option value="CanadianQSM">🍁 Canadian QSM (TRIUMF Iron)</option>
+                    <option value="QuantumMLThermometry">🌡️ QML MR Thermometry (Coronal)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>RF Coil Topology</label>
+                <select id="coils">
+                    <option value="standard">Birdcage (Uniform)</option>
+                    <option value="custom_phased_array">8-ch Array</option>
+                    <option value="gemini_optimized_3t">Gemini 32-ch AI</option>
+                    <option value="n25_array">N25 Dense Array</option>
+                    <option value="quantum_surface_lattice">Quantum Lattice</option>
+                    <option value="quantum_vascular">⚛️ Quantum Vascular (Optimal SNR)</option>
+                    <option value="optimized_vascular_tradeoff">⚖️ Optimized Vascular Tradeoff</option>
+                    <option value="head_coil_50_turn">🧠 50-Turn Head Coil (Ultra-High Res)</option>
+                    <option value="quantum_vascular_head_50">🔬 Quantum + 50-Turn (Ultimate)</option>
+                    <option value="geodesic_chassis">Geodesic Chassis</option>
+                    <option value="cardiothoracic_array">Cardiothoracic</option>
+                    <option value="knee_vascular_array">Knee Vascular Array</option>
+                    <option value="rec_engine_coil">🤖 Rec. Engine Neurovascular Coil</option>
+                    <option value="neurovascular_coil">🧠 Neurovascular Coil (Adaptive Prism)</option>
+                    <option value="cardiovascular_coil">❤️ Cardiovascular Coil (Conformal)</option>
+                </select>
+                <div style="margin-top:0.6rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
+                    <input type="checkbox" id="shimming" style="width: auto;">
+                    <span>Waitable B1+ Shimming</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Volume Orientation</label>
+                <select id="slice_orientation" onchange="debouncedRun()">
+                    <option value="axial">Axial</option>
+                    <option value="coronal">Coronal</option>
+                    <option value="sagittal">Sagittal</option>
+                </select>
+                <input type="range" id="slice_pos" min="0" max="1" step="0.05" value="0.5" oninput="debouncedRun()"
+                    style="margin-top: 0.5rem;">
+            </div>
+
+            <div class="control-group">
+                <label>Execution Method</label>
+                <select id="recon_method">
+                    <option value="SoS">Standard Recon</option>
+                    <option value="StatLLM">🤖 Statistical LLM Optimization</option>
+                    <option value="QuantumML">⚛️ Quantum ML (NVIDIA GPU Cloud)</option>
+                    <option value="Geodesic">🌐 Geodesic Diffeomorphic Mapping</option>
+                    <option value="Pareto">📊 Pareto Frontier (Magnetism/GW)</option>
+                    <option value="Multimodal">🔬 Multimodal Reasoning</option>
+                    <option value="QuantumThermometry">🌡️ Quantum Surface Thermometry</option>
+                    <option value="QuantumGameTheory">🎮 Non-Cooperative Game Theory</option>
+                    <option value="Unified">🚀 Unified (All Methods)</option>
+                    <option value="Variational">TV Variational</option>
+                    <option value="DeepLearning">Generative AI Recon</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Scan Parameters</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+                    <input type="number" id="tr" value="2000" placeholder="TR">
+                    <input type="number" id="te" value="100" placeholder="TE">
+                </div>
+                <div id="ti-group" style="display:none; margin-top:0.5rem;">
+                    <label>Inversion Time (TI)</label>
+                    <input type="number" id="ti" value="500">
+                </div>
+                <div id="fa-group" style="display:none; margin-top:0.5rem;">
+                    <label>Flip Angle</label>
+                    <input type="number" id="flip_angle" value="30">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Image Noise</label>
+                <input type="range" id="noise" min="0" max="0.2" step="0.01" value="0">
+            </div>
+
+            <button onclick="runSimulation()">Initiate System</button>
+            <button onclick="renderCortical()" style="margin-top: 0.5rem; background: #f472b6;">Cortical Pulse</button>
+            <button onclick="downloadReport()"
+                style="margin-top: 0.5rem; background: transparent; border: 1px solid var(--accent); color: var(--accent);">PDF
+                Report</button>
+
+            <div class="loader" id="loader"></div>
+        </aside>
+
+        <main>
+            <button class="tab-trigger active" onclick="switchView('dashboard', this)">Dashboard</button>
+            <button class="tab-trigger" onclick="switchView('study', this)">Signal AI</button>
+            <button class="tab-trigger" onclick="switchView('spectroscopy', this)">Q-Spectroscopy</button>
+            <button class="tab-trigger" onclick="switchView('cortical', this)">Cortical View</button>
+            <button class="tab-trigger" onclick="switchView('neurovascular', this)">Neurovascular</button>
+            <button class="tab-trigger" onclick="switchView('cardiovascular', this)">Cardiovascular</button>
+            <button class="tab-trigger" id="tab-neuroseq"
+                onclick="switchView('neuroseq', this); generateNeuroPulseCA();">🍁 NeuroSeq CA</button>
+            <button class="tab-trigger" onclick="switchView('thermometry', this)">🌡️ Q-Thermometry</button>
+            <button class="tab-trigger" onclick="switchView('analytics', this)">📊 Distribution Analysis</button>
+            <button class="tab-trigger" onclick="switchView('snr', this)">📈 SNR Analytics</button>
+
+            <!-- View: Dashboard (Grid Layout) -->
+            <div id="view-dashboard" class="view-content active">
+                <div class="dashboard-grid">
+                    <div class="output-box">
+                        <div class="output-title">Reconstructed Image (Fluid)</div>
+                        <div class="img-window"><img id="img-recon" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Acquired k-Space</div>
+                        <div class="img-window"><img id="img-kspace" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Ground Truth Anatomy</div>
+                        <div class="img-window"><img id="img-phantom" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">RF Coil Circuit Topology</div>
+                        <div class="img-window"><img id="img-circuit" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Center Line Signal Profile</div>
+                        <div class="img-window"><img id="img-profile" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Ideal k-Space (Ref)</div>
+                        <div class="img-window"><img id="img-kspace_gt" src=""></div>
+                    </div>
+                </div>
+
+                <div class="metrics-bar">
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="snrVal">--</div>
+                        <div class="metric-mini-label">SNR</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="contrastVal">--</div>
+                        <div class="metric-mini-label">Contrast</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="sharpnessVal">--</div>
+                        <div class="metric-mini-label">Sharpness</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="entropyVal">--</div>
+                        <div class="metric-mini-label">Entropy</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="noiseStdVal">--</div>
+                        <div class="metric-mini-label">Noise Floor (σ)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Study/AI -->
+            <div id="view-study" class="view-content">
+                <div class="output-box" style="width: 100%; align-items: flex-start;">
+                    <h3>Signal Interaction Analysis</h3>
+                    <div id="study_content"
+                        style="font-family:'Courier New', monospace; line-height:1.6; color: var(--text-secondary);">
+                        Awaiting system initialization...
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Cortical -->
+            <div id="view-cortical" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>3D Cortical Mesh Projection</h3>
+                    <div class="img-window" style="aspect-ratio: 1/1; height: 400px;"><img id="img-cortical" src="">
+                    </div>
+                    <div id="cortical-metadata" style="margin-top:1rem; font-size:0.8rem; color:var(--accent);"></div>
+                </div>
+            </div>
+
+
+            <!-- View: Q-Spectroscopy -->
+            <div id="view-spectroscopy" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>Quantum RBM Spectral Analysis</h3>
+                    <p style="color:var(--text-secondary); font-size:0.9rem;">
+                        Multi-channel visualization of metabolic priors (NAA/Cho/Cre) vs. Anatomy.
+                    </p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div class="output-box">
+                            <div class="output-title">Composite Metabolites</div>
+                            <div class="img-window"><img id="img-spectroscopy-map" src=""
+                                    style="width:100%; height:100%; object-fit:contain;"></div>
+                        </div>
+                        <div class="output-box">
+                            <div class="output-title">NAA Distribution (Neuronal)</div>
+                            <div class="img-window">
+                                <img id="img-spectroscopy-naa" src=""
+                                    style="width:100%; height:100%; object-fit:contain; filter: sepia(1) hue-rotate(-50deg) saturate(2);">
+                            </div>
+                        </div>
+                        <div class="output-box">
+                            <div class="output-title">Anatomical Reference</div>
+                            <div class="img-window"><img id="img-spectroscopy-anat" src=""
+                                    style="width:100%; height:100%; object-fit:contain; filter: grayscale(1);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Spectral Graph below -->
+                    <div class="output-box" style="margin-top: 1rem;">
+                        <div class="output-title">Voxel Spectral Profile (128, 128)</div>
+                        <div
+                            style="width:100%; height:150px; background: #0f172a; display:flex; align-items:center; justify-content:center; color: #38bdf8; position: relative;">
+                            <div
+                                style="width: 90%; height: 2px; background: #334155; position: absolute; bottom: 20px;">
+                            </div>
+                            <div style="width: 6px; height: 60px; background: #ef4444; position: absolute; bottom: 20px; left: 30%;"
+                                title="NAA"></div>
+                            <div style="width: 6px; height: 35px; background: #22c55e; position: absolute; bottom: 20px; left: 50%;"
+                                title="Cho"></div>
+                            <div style="width: 6px; height: 45px; background: #3b82f6; position: absolute; bottom: 20px; left: 60%;"
+                                title="Cre"></div>
+                            <div style="position: absolute; bottom: 5px; left: 30%; font-size: 10px;">NAA (2.0)</div>
+                            <div style="position: absolute; bottom: 5px; left: 50%; font-size: 10px;">Cho (3.2)</div>
+                            <div style="position: absolute; bottom: 5px; left: 60%; font-size: 10px;">Cre (3.0)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Neurovascular -->
+            <div id="view-neurovascular" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>Neurovascular Prism Analysis</h3>
+                    <p style="color:var(--text-secondary); font-size:0.9rem;">
+                        Statistical Adaptive Prism sensitivity mapping.
+                    </p>
+                    <div class="img-window" style="aspect-ratio: 16/9; height: 400px;">
+                        <img id="img-neuro-prism" src="" style="width:100%; height:100%; object-fit:contain;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Cardiovascular -->
+            <div id="view-cardiovascular" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>Conformal Cardiac Geometry</h3>
+                    <p style="color:var(--text-secondary); font-size:0.9rem;">
+                        Schwarz-Christoffel mapping of coil elements to cardiac contours.
+                    </p>
+                    <div class="img-window" style="aspect-ratio: 16/9; height: 400px;">
+                        <img id="img-cardio-conformal" src="" style="width:100%; height:100%; object-fit:contain;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: NeuroSeq CA — Canadian Neuroimaging Pulse Sequences -->
+            <div id="view-neuroseq" class="view-content">
+                <div class="output-box" style="width:100%; align-items:flex-start;">
+                    <h3 style="margin:0 0 0.25rem;">🍁 Canadian Neuroimaging Pulse Sequences</h3>
+                    <p style="color:var(--text-secondary); font-size:0.85rem; margin:0 0 0.5rem;">
+                        Statistical physics protocols from <strong style="color:var(--accent);">MNI · UBC · Ottawa Brain
+                            &amp; Mind · Perimeter ISP · TRIUMF</strong>.
+                        Full Bayesian posterior distributions (Gamma, GMM, Wishart, Beta, Cauchy) with tissue
+                        inferencing.
+                    </p>
+                    <button id="btn-neuroseq-gen" onclick="generateNeuroPulseCA(true)"
+                        style="width:auto; padding:0.5rem 1.5rem; margin-bottom:1.25rem; background:linear-gradient(135deg,#38bdf8,#818cf8);">
+                        ↻ Re-Generate Sequences
+                    </button>
+
+                    <!-- Status line -->
+                    <div id="neuroseq-status"
+                        style="font-size:0.8rem; color:#94a3b8; margin-bottom:1rem; min-height:1.2em;">
+                        Click the tab or button above to generate sequences...
+                    </div>
+
+                    <!-- Cards container (rendered by JS) -->
+                    <div id="neuroseq-cards"
+                        style="display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:1.25rem; width:100%;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: QML Thermometry -->
+            <div id="view-thermometry" class="view-content">
+                <div class="output-box" style="max-width: 800px; margin: auto;">
+                    <div class="output-title">QML MR Thermometry (Temperature Map)</div>
+                    <div class="img-window" style="aspect-ratio: auto; height: 600px;">
+                        <img id="img-temperature_map" src="" style="object-fit: contain;">
+                    </div>
+                    <div class="metrics-bar" style="width: 100%;">
+                        <div class="metric-mini">
+                            <div class="metric-mini-val" id="meanTempVal">--</div>
+                            <div class="metric-mini-label">Mean Temp (°C)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Distribution Analysis -->
+            <div id="view-analytics" class="view-content">
+                <div class="output-box" style="max-width: 900px; margin: auto;">
+                    <div class="output-title">Statistical Parametric Analytics (Bayesian Reasoning)</div>
+                    <div class="img-window" style="aspect-ratio: auto; height: 500px;">
+                        <img id="img-distribution_curve" src="" style="object-fit: contain;">
+                    </div>
+                    <div id="analytics-details"
+                        style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary); column-count: 2; gap: 2rem;">
+                        <!-- Populate with JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: SNR Analytics -->
+            <div id="view-snr" class="view-content">
+                <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="output-box">
+                        <div class="output-title">Spatial SNR Distribution Map</div>
+                        <div class="img-window" style="aspect-ratio: auto; height: 500px;">
+                            <img id="img-snr_map" src="" style="object-fit: contain;">
+                        </div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">SNR Histogram (Signal Thresholded)</div>
+                        <div class="img-window" style="aspect-ratio: auto; height: 500px;">
+                            <img id="img-snr_hist" src="" style="object-fit: contain;">
+                        </div>
+                    </div>
+                </div>
+                <div class="output-box" style="margin-top: 1.5rem; width: 100%;">
+                    <div class="output-title">Quantum SNR Insights</div>
+                    <div id="snr-insights" style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                        Awaiting data for characterization...
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Toggle Fields and Set Presets
+        document.getElementById('sequence').addEventListener('change', function () {
+            const seq = this.value;
+            const tiGroup = document.getElementById('ti-group');
+            const faGroup = document.getElementById('fa-group');
+
+            // Default visibility
+            tiGroup.style.display = 'none';
+            faGroup.style.display = 'none';
+
+            if (seq === 'InversionRecovery') {
+                tiGroup.style.display = 'block';
+                // STIR-like preset
+                document.getElementById('tr').value = 4000;
+                document.getElementById('te').value = 30;
+                document.getElementById('ti').value = 150;
+
+            } else if (seq === 'FLAIR') {
+                tiGroup.style.display = 'block';
+                // FLAIR preset (Nulls CSF)
+                document.getElementById('tr').value = 9000;
+                document.getElementById('te').value = 140;
+                document.getElementById('ti').value = 2500;
+
+            } else if (seq === 'GRE') {
+                faGroup.style.display = 'block';
+                // T1-weighted GRE
+                document.getElementById('tr').value = 150;
+                document.getElementById('te').value = 5;
+                document.getElementById('flip_angle').value = 70;
+
+            } else if (seq === 'SSFP') {
+                faGroup.style.display = 'block';
+                // TrueFISP like
+                document.getElementById('tr').value = 5;
+                document.getElementById('te').value = 2.5;
+                document.getElementById('flip_angle').value = 60;
+
+            } else if (seq === 'SE') {
+                // T2-weighted SE default
+                document.getElementById('tr').value = 4000;
+                document.getElementById('te').value = 100;
+            }
+        });
+
+        function switchView(viewId, trigger) {
+            // Update Triggers
+            document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
+            trigger.classList.add('active');
+
+            // Update Views
+            document.querySelectorAll('.view-content').forEach(v => {
+                v.classList.remove('active');
+            });
+            const target = document.getElementById('view-' + viewId);
+            target.classList.add('active');
+        }
+
+        async function generateRFDesign() {
+            // Feature removed
+        }
+
+        let debounceTimer;
+        function debouncedRun() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => { runSimulation(); }, 300);
+        }
+
+        async function runSimulation() {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+
+            const payload = {
+                sequence: document.getElementById('sequence').value,
+                coils: document.getElementById('coils').value,
+                tr: document.getElementById('tr').value,
+                te: document.getElementById('te').value,
+                ti: document.getElementById('ti').value,
+                flip_angle: document.getElementById('flip_angle').value,
+                resolution: 128,
+                noise: document.getElementById('noise').value,
+                recon_method: document.getElementById('recon_method').value,
+                shimming: document.getElementById('shimming').checked,
+                slice_orientation: document.getElementById('slice_orientation').value,
+                slice_pos: document.getElementById('slice_pos').value
+            };
+
+            try {
+                const res = await fetch('/api/simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    const update = (id, b) => {
+                        const img = document.getElementById('img-' + id);
+                        if (img) {
+                            if (b && b.length > 100) { // Basic length check for valid base64
+                                img.src = 'data:image/png;base64,' + b;
+                                img.onerror = function () {
+                                    this.src = 'https://placehold.co/400x400/0f172a/white?text=Image+Load+Error';
+                                    console.error('Failed to load image: ' + id);
+                                };
+                            } else {
+                                console.warn('Image data missing or too short for ' + id);
+                                img.src = 'https://placehold.co/400x400/0f172a/white?text=No+Data';
+                            }
+                        } else {
+                            console.warn('Image element not found: img-' + id);
+                        }
+                    };
+
+                    const plots = data.plots;
+                    update('recon', plots.recon);
+                    update('kspace', plots.kspace);
+                    update('phantom', plots.phantom);
+                    update('circuit', plots.circuit);
+                    update('profile', plots.profile);
+                    update('kspace_gt', plots.kspace_gt);
+                    update('spectroscopy-map', plots.recon);
+                    update('spectroscopy-naa', plots.recon); // CSS filters transform this
+                    update('spectroscopy-anat', plots.phantom);
+
+                    // New: Neurovascular & Cardiovascular Heatmaps
+                    if (plots.neuro_prism) {
+                        update('neuro-prism', plots.neuro_prism);
+                    }
+                    if (plots.cardio_conformal) {
+                        update('cardio-conformal', plots.cardio_conformal);
+                    }
+
+                    if (data.auxiliary_maps) {
+                        if (data.auxiliary_maps.thermometry) {
+                            document.getElementById('img-thermometry').src = data.auxiliary_maps.thermometry;
+                        }
+                        if (data.auxiliary_maps.gametheory) {
+                            document.getElementById('img-gametheory').src = data.auxiliary_maps.gametheory;
+                        }
+                    }
+
+                    if (data.signal_study) {
+                        const s = data.signal_study;
+                        document.getElementById('study_content').innerHTML = `
+                            <div style="color:var(--accent); font-weight:700;">${s.title}</div>
+                            <div style="margin: 0.5rem 0;">${s.physics_model}</div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; font-size:0.75rem;">
+                                ${Object.entries(s.metrics).map(([k, v]) => `<div>${k}: ${v}</div>`).join('')}
+                            </div>
+                        `;
+                    }
+
+                    document.getElementById('snrVal').textContent = (data.metrics.snr_estimate || 0).toFixed(2);
+                    document.getElementById('contrastVal').textContent = (data.metrics.contrast || 0).toFixed(3);
+                    document.getElementById('sharpnessVal').textContent = (data.metrics.sharpness || 0).toFixed(1);
+                    document.getElementById('entropyVal').textContent = (data.metrics.entropy || 0).toFixed(3);
+                    document.getElementById('noiseStdVal').textContent = (data.metrics.background_noise_std || 0).toExponential(2);
+
+                    // QML Thermometry / Analytics population
+                    if (plots.temperature_map) {
+                        update('temperature_map', plots.temperature_map);
+                        document.getElementById('meanTempVal').textContent = (data.metrics.inferred_mean_temp_c || 0).toFixed(1) + "°C";
+                    }
+                    if (plots.distribution_curve) {
+                        update('distribution_curve', plots.distribution_curve);
+                        const params = data.metrics.params;
+                        if (params) {
+                            document.getElementById('analytics-details').innerHTML = `
+                                <div><strong>Distribution:</strong> ${data.metrics.distribution_type}</div>
+                                <div><strong>Confidence [95%]:</strong> ${data.metrics.confidence_interval[0].toFixed(2)} - ${data.metrics.confidence_interval[1].toFixed(2)}</div>
+                                <div><strong>Scale:</strong> ${params.scale.toFixed(4)}</div>
+                                <div><strong>Shape (Alpha):</strong> ${params.alpha.toFixed(4)}</div>
+                                <div><strong>Inferred Temp:</strong> ${data.metrics.inferred_mean_temp_c.toFixed(2)}°C</div>
+                                <div style="color:var(--accent)">Reasoning: Bayesian Parametric Fit</div>
+                            `;
+                        }
+                    }
+
+                    // SNR Analytics population
+                    if (plots.snr_map) {
+                        update('snr_map', plots.snr_map);
+                    }
+                    if (plots.snr_hist) {
+                        update('snr_hist', plots.snr_hist);
+                        const snr = data.metrics.snr_estimate || 0;
+                        let insight = `Base SNR Estimate: <strong>${snr.toFixed(2)}</strong>. `;
+                        if (snr > 50) insight += "High fidelity signal detected with robust clinical utility.";
+                        else if (snr > 15) insight += "Moderate SNR. Suitable for standard anatomical imaging.";
+                        else insight += "Low SNR detected. Optimization of RF Gain or Quantum Denoising recommended.";
+                        document.getElementById('snr-insights').innerHTML = insight;
+                    }
+                }
+            } catch (err) { console.error('Simulate Error:', err); }
+            loader.style.display = 'none';
+        }
+
+        function downloadReport() {
+            window.location.href = '/api/report';
+        }
+
+        async function renderCortical() {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+            try {
+                const res = await fetch('/api/render_cortical', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('img-cortical').src = 'data:image/png;base64,' + data.plot;
+                    document.getElementById('cortical-metadata').textContent = data.metadata.geometry;
+                    switchView('cortical', document.querySelector('.tab-trigger[onclick*="cortical"]'));
+                }
+            } catch (e) { alert("Cortical Fault"); }
+            loader.style.display = 'none';
+        }
+
+        // ── Canadian Neuroimaging Pulse Sequences ─────────────────────────────
+        let neuroseqLoaded = false;
+
+        async function generateNeuroPulseCA(force = false) {
+            if (neuroseqLoaded && !force) return; // Avoid re-fetching when tab is simply re-activated
+            const statusEl = document.getElementById('neuroseq-status');
+            const cardsEl = document.getElementById('neuroseq-cards');
+            const loader = document.getElementById('loader');
+
+            loader.style.display = 'block';
+            statusEl.textContent = '⏳ Computing Bayesian posteriors & distribution plots…';
+            cardsEl.innerHTML = '';
+
+            try {
+                const res = await fetch('/api/neuro_pulse_ca/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    statusEl.textContent = '❌ Error: ' + data.error;
+                    loader.style.display = 'none';
+                    return;
+                }
+
+                statusEl.textContent = `✅ ${data.count} sequences generated  ·  Institutions: MNI · UBC · Ottawa · Perimeter ISP · TRIUMF`;
+                neuroseqLoaded = true;
+
+                const DIST_BADGE_COLOUR = {
+                    'Gamma': '#f59e0b',
+                    'Normal (GMM)': '#38bdf8',
+                    'Wishart (tensor) + Normal (FA/MD marginals)': '#22d3ee',
+                    'Beta (BOLD Δ%) + double-gamma HRF': '#818cf8',
+                    'Cauchy (heavy-tailed, robust dipole inversion)': '#f472b6',
+                };
+
+                data.sequences.forEach(seq => {
+                    const p = seq.params;
+                    const distColour = DIST_BADGE_COLOUR[seq.distribution_name] || '#94a3b8';
+
+                    // Build a concise parameter table
+                    const paramKeys = ['tr', 'te', 'ti', 'flip_angle', 'b_values', 'num_echoes',
+                        'label_duration_ms', 'post_label_delay_ms', 'num_directions',
+                        'echo_spacing_ms', 'field_strength_T'];
+                    const paramRows = paramKeys
+                        .filter(k => p[k] !== undefined && p[k] !== null)
+                        .map(k => {
+                            const val = Array.isArray(p[k]) ? p[k].join(', ') : p[k];
+                            return `<tr>
+                                <td style="color:#94a3b8;padding:2px 8px 2px 0;font-size:0.72rem;white-space:nowrap;">${k.toUpperCase().replace(/_/g, ' ')}</td>
+                                <td style="color:var(--accent);font-weight:600;font-size:0.72rem;">${val}</td>
+                            </tr>`;
+                        }).join('');
+
+                    const card = document.createElement('div');
+                    card.className = 'output-box';
+                    card.style.cssText = 'align-items:flex-start; cursor:default;';
+                    card.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;flex-wrap:wrap;">
+                            <span style="font-size:0.85rem;font-weight:700;color:var(--accent);">${p.name}</span>
+                            <span style="font-size:0.65rem;padding:2px 8px;border-radius:20px;background:${distColour}22;color:${distColour};border:1px solid ${distColour}55;">
+                                ${seq.distribution_name.split('+')[0].trim()}
+                            </span>
+                        </div>
+                        <div style="font-size:0.7rem;color:#64748b;margin-bottom:0.6rem;">🏛 ${p.institution}</div>
+
+                        <!-- Scan Parameters -->
+                        <table style="border-collapse:collapse;margin-bottom:0.75rem;">${paramRows}</table>
+
+                        <!-- Description -->
+                        <div style="font-size:0.73rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;border-left:2px solid ${distColour};padding-left:0.6rem;">
+                            ${p.description}
+                        </div>
+
+                        <!-- Statistical model badge -->
+                        <div style="font-size:0.68rem;color:${distColour};background:${distColour}11;border:1px solid ${distColour}33;border-radius:6px;padding:4px 8px;margin-bottom:0.75rem;">
+                            📊 <strong>Stat. Model:</strong> ${p.statistical_model}
+                        </div>
+
+                        <!-- Canadian context -->
+                        <div style="font-size:0.68rem;color:#94a3b8;margin-bottom:0.85rem;">
+                            🍁 ${p.canadian_context}
+                        </div>
+
+                        <!-- Distribution Plot -->
+                        <div style="font-size:0.7rem;font-weight:600;color:var(--text-secondary);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:.05em;">
+                            Posterior Distribution Plot
+                        </div>
+                        <img src="data:image/png;base64,${seq.distribution_plot}"
+                             style="width:100%;border-radius:8px;border:1px solid #1e293b;"
+                             alt="${p.name} distribution plot">
+                    `;
+                    cardsEl.appendChild(card);
+                });
+
+            } catch (err) {
+                statusEl.textContent = '❌ Network error: ' + err.message;
+            }
+            loader.style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>

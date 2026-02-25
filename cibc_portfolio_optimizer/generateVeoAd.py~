@@ -1,0 +1,33 @@
+import time
+from google import genai
+from google.genai import types
+
+import os
+
+api_key = os.environ.get("GEMINI_API_KEY")
+if api_key is None:
+    print("API key not found in environment variables.")
+else:
+    # Use the API key
+    pass
+    
+client = genai.Client()
+
+prompt = """ Generate an contextual Ad for Quantum MR company QMorphix, leaders in RF Coils"""
+
+operation = client.models.generate_videos(
+    model="veo-3.0-generate-preview",
+    prompt=prompt,
+)
+
+# Poll the operation status until the video is ready.
+while not operation.done:
+    print("Waiting for video generation to complete...")
+    time.sleep(10)
+    operation = client.operations.get(operation)
+
+# Download the generated video.
+generated_video = operation.response.generated_videos[0]
+client.files.download(file=generated_video.video)
+generated_video.video.save("dialogue_example.mp4")
+print("Generated video saved to dialogue_example.mp4")

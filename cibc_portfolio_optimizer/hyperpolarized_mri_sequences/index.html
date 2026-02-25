@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperpolarized Pulse Sequence Generator | Sunnybrook Research Institute</title>
+    <meta name="description"
+        content="Professional pulse sequence design tool for hyperpolarized MRI imaging - VFA, Spiral, EPI, Dynamic, and Metabolic sequences">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <h1>Hyperpolarized Pulse Sequence Generator</h1>
+                    <p class="subtitle">Sunnybrook Research Institute</p>
+                </div>
+                <div class="header-controls">
+                    <button id="export-btn" class="btn-primary">
+                        <span class="icon">📥</span> Export Sequence
+                    </button>
+                    <button id="theme-toggle" class="btn-icon" title="Toggle Theme">🌓</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <nav class="sequence-nav">
+                    <h3>Sequence Types</h3>
+                    <ul class="nav-list">
+                        <li>
+                            <button class="nav-item active" data-sequence="vfa">
+                                <span class="icon">📊</span>
+                                <div>
+                                    <div class="nav-title">Variable Flip Angle</div>
+                                    <div class="nav-desc">VFA optimization</div>
+                                </div>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-sequence="spiral">
+                                <span class="icon">🌀</span>
+                                <div>
+                                    <div class="nav-title">Spiral</div>
+                                    <div class="nav-desc">Archimedean trajectories</div>
+                                </div>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-sequence="epi">
+                                <span class="icon">⚡</span>
+                                <div>
+                                    <div class="nav-title">EPI</div>
+                                    <div class="nav-desc">Echo planar imaging</div>
+                                </div>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-sequence="dynamic">
+                                <span class="icon">🎬</span>
+                                <div>
+                                    <div class="nav-title">Dynamic</div>
+                                    <div class="nav-desc">Time-resolved imaging</div>
+                                </div>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-sequence="metabolic">
+                                <span class="icon">🧬</span>
+                                <div>
+                                    <div class="nav-title">Metabolic</div>
+                                    <div class="nav-desc">Spectral-spatial</div>
+                                </div>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <h3 class="nuclei-header">Nuclei Configuration</h3>
+                    <div class="nuclei-selector">
+                        <select id="nuclei-select" class="custom-select">
+                            <option value="c13-pyruvate">¹³C - Pyruvate</option>
+                            <option value="c13-lactate">¹³C - Lactate</option>
+                            <option value="c13-bicarbonate">¹³C - Bicarbonate</option>
+                            <option value="c13-alanine">¹³C - Alanine</option>
+                            <option value="xe129-gas">¹²⁹Xe - Gas Phase</option>
+                            <option value="xe129-dissolved">¹²⁹Xe - Dissolved</option>
+                            <option value="he3">³He</option>
+                            <option value="custom">Custom...</option>
+                        </select>
+                    </div>
+
+                    <div id="nuclei-info" class="nuclei-info">
+                        <div class="info-row">
+                            <span>γ/2π:</span>
+                            <span id="gamma-value">10.7084 MHz/T</span>
+                        </div>
+                        <div class="info-row">
+                            <span>T1:</span>
+                            <span id="t1-value">43 s</span>
+                        </div>
+                        <div class="info-row">
+                            <span>T2:</span>
+                            <span id="t2-value">1.0 s</span>
+                        </div>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- Main Panel -->
+            <main class="main-panel">
+                <!-- VFA Panel -->
+                <section id="panel-vfa" class="sequence-panel active">
+                    <div class="panel-header">
+                        <h2>Variable Flip Angle Sequence</h2>
+                        <p>Optimize flip angles for hyperpolarized signal evolution</p>
+                    </div>
+
+                    <div class="panel-grid">
+                        <!-- Parameters -->
+                        <div class="card">
+                            <h3>Sequence Parameters</h3>
+                            <div class="param-group">
+                                <label for="vfa-num-frames">Number of Frames:</label>
+                                <input type="number" id="vfa-num-frames" value="20" min="1" max="100">
+                            </div>
+                            <div class="param-group">
+                                <label for="vfa-tr">TR (ms):</label>
+                                <input type="number" id="vfa-tr" value="100" min="10" max="5000" step="10">
+                            </div>
+                            <div class="param-group">
+                                <label for="vfa-t1">T1 (s):</label>
+                                <input type="number" id="vfa-t1" value="43" min="1" max="100" step="0.1">
+                            </div>
+                            <div class="param-group">
+                                <label for="vfa-strategy">Strategy:</label>
+                                <select id="vfa-strategy" class="custom-select">
+                                    <option value="constant-signal">Constant Signal (CSA)</option>
+                                    <option value="max-snr">Maximum SNR</option>
+                                    <option value="custom">Custom Schedule</option>
+                                </select>
+                            </div>
+                            <button id="calculate-vfa" class="btn-primary full-width">Calculate VFA</button>
+                        </div>
+
+                        <!-- Flip Angle Schedule -->
+                        <div class="card">
+                            <h3>Flip Angle Schedule</h3>
+                            <canvas id="vfa-chart" width="400" height="300"></canvas>
+                        </div>
+
+                        <!-- Signal Evolution -->
+                        <div class="card">
+                            <h3>Signal Evolution</h3>
+                            <canvas id="signal-chart" width="400" height="300"></canvas>
+                        </div>
+
+                        <!-- Results Table -->
+                        <div class="card">
+                            <h3>VFA Schedule</h3>
+                            <div id="vfa-table" class="table-container">
+                                <div class="table-placeholder">Click "Calculate VFA" to generate schedule</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Spiral Panel -->
+                <section id="panel-spiral" class="sequence-panel">
+                    <div class="panel-header">
+                        <h2>Spiral Trajectory Design</h2>
+                        <p>Archimedean spiral for fast hyperpolarized imaging</p>
+                    </div>
+
+                    <div class="panel-grid">
+                        <div class="card">
+                            <h3>Trajectory Parameters</h3>
+                            <div class="param-group">
+                                <label for="spiral-fov">FOV (cm):</label>
+                                <input type="number" id="spiral-fov" value="24" min="10" max="50" step="1">
+                            </div>
+                            <div class="param-group">
+                                <label for="spiral-resolution">Resolution (mm):</label>
+                                <input type="number" id="spiral-resolution" value="3" min="1" max="10" step="0.5">
+                            </div>
+                            <div class="param-group">
+                                <label for="spiral-interleaves">Interleaves:</label>
+                                <input type="number" id="spiral-interleaves" value="8" min="1" max="64">
+                            </div>
+                            <div class="param-group">
+                                <label for="spiral-max-grad">Max Gradient (mT/m):</label>
+                                <input type="number" id="spiral-max-grad" value="40" min="10" max="80" step="5">
+                            </div>
+                            <div class="param-group">
+                                <label for="spiral-max-slew">Max Slew (T/m/s):</label>
+                                <input type="number" id="spiral-max-slew" value="150" min="50" max="200" step="10">
+                            </div>
+                            <div class="param-group">
+                                <label for="spiral-type">Trajectory Type:</label>
+                                <select id="spiral-type" class="custom-select">
+                                    <option value="uniform">Uniform Density</option>
+                                    <option value="variable">Variable Density</option>
+                                </select>
+                            </div>
+                            <button id="calculate-spiral" class="btn-primary full-width">Design Spiral</button>
+                        </div>
+
+                        <div class="card">
+                            <h3>k-Space Trajectory</h3>
+                            <canvas id="kspace-canvas" width="400" height="400"></canvas>
+                        </div>
+
+                        <div class="card">
+                            <h3>Gradient Waveforms</h3>
+                            <canvas id="gradient-canvas" width="400" height="300"></canvas>
+                        </div>
+
+                        <div class="card">
+                            <h3>Sequence Metrics</h3>
+                            <div id="spiral-metrics" class="metrics-display">
+                                <div class="metric-item">
+                                    <span class="metric-label">Readout Duration:</span>
+                                    <span class="metric-value" id="spiral-duration">--</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Total Scan Time:</span>
+                                    <span class="metric-value" id="spiral-scan-time">--</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Nyquist k-space:</span>
+                                    <span class="metric-value" id="spiral-kmax">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- EPI Panel -->
+                <section id="panel-epi" class="sequence-panel">
+                    <div class="panel-header">
+                        <h2>Echo Planar Imaging (EPI)</h2>
+                        <p>Fast single-shot or multi-shot EPI for hyperpolarized imaging</p>
+                    </div>
+
+                    <div class="panel-grid">
+                        <div class="card">
+                            <h3>EPI Parameters</h3>
+                            <div class="param-group">
+                                <label for="epi-matrix">Matrix Size:</label>
+                                <input type="number" id="epi-matrix" value="64" min="16" max="256" step="16">
+                            </div>
+                            <div class="param-group">
+                                <label for="epi-fov">FOV (cm):</label>
+                                <input type="number" id="epi-fov" value="24" min="10" max="50" step="1">
+                            </div>
+                            <div class="param-group">
+                                <label for="epi-shots">Number of Shots:</label>
+                                <input type="number" id="epi-shots" value="1" min="1" max="16">
+                            </div>
+                            <div class="param-group">
+                                <label for="epi-partial-fourier">Partial Fourier:</label>
+                                <select id="epi-partial-fourier" class="custom-select">
+                                    <option value="1.0">Off</option>
+                                    <option value="0.75">6/8</option>
+                                    <option value="0.625">5/8</option>
+                                </select>
+                            </div>
+                            <div class="param-group">
+                                <label for="epi-trajectory">Trajectory:</label>
+                                <select id="epi-trajectory" class="custom-select">
+                                    <option value="blipped">Blipped</option>
+                                    <option value="flyback">Flyback</option>
+                                </select>
+                            </div>
+                            <button id="calculate-epi" class="btn-primary full-width">Design EPI</button>
+                        </div>
+
+                        <div class="card">
+                            <h3>k-Space Coverage</h3>
+                            <canvas id="epi-kspace-canvas" width="400" height="400"></canvas>
+                        </div>
+
+                        <div class="card">
+                            <h3>Timing Diagram</h3>
+                            <canvas id="epi-timing-canvas" width="400" height="300"></canvas>
+                        </div>
+
+                        <div class="card">
+                            <h3>EPI Metrics</h3>
+                            <div id="epi-metrics" class="metrics-display">
+                                <div class="metric-item">
+                                    <span class="metric-label">Echo Spacing:</span>
+                                    <span class="metric-value" id="epi-echo-spacing">--</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Effective TE:</span>
+                                    <span class="metric-value" id="epi-te">--</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Acquisition Time:</span>
+                                    <span class="metric-value" id="epi-acq-time">--</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Bandwidth/Pixel:</span>
+                                    <span class="metric-value" id="epi-bandwidth">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Dynamic Panel -->
+                <section id="panel-dynamic" class="sequence-panel">
+                    <div class="panel-header">
+                        <h2>Dynamic Time-Resolved Imaging</h2>
+                        <p>Temporal imaging of hyperpolarized contrast agent kinetics</p>
+                    </div>
+
+                    <div class="panel-grid">
+                        <div class="card">
+                            <h3>Dynamic Parameters</h3>
+                            <div class="param-group">
+                                <label for="dynamic-frames">Number of Frames:</label>
+                                <input type="number" id="dynamic-frames" value="30" min="5" max="100">
+                            </div>
+                            <div class="param-group">
+                                <label for="dynamic-temporal-res">Temporal Resolution (s):</label>
+                                <input type="number" id="dynamic-temporal-res" value="2" min="0.5" max="10" step="0.5">
+                            </div>
+                            <div class="param-group">
+                                <label for="dynamic-readout">Readout Type:</label>
+                                <select id="dynamic-readout" class="custom-select">
+                                    <option value="spiral">Spiral</option>
+                                    <option value="epi">EPI</option>
+                                    <option value="radial">Radial (Golden Angle)</option>
+                                    <option value="cartesian">Cartesian</option>
+                                </select>
+                            </div>
+                            <div class="param-group">
+                                <label for="dynamic-vfa">VFA Integration:</label>
+                                <input type="checkbox" id="dynamic-vfa" checked>
+                                <span>Use optimized flip angles</span>
+                            </div>
+                            <button id="calculate-dynamic" class="btn-primary full-width">Design Dynamic
+                                Sequence</button>
+                        </div>
+
+                        <div class="card">
+                            <h3>Temporal Sampling</h3>
+                            <canvas id="dynamic-sampling-canvas" width="400" height="300"></canvas>
+                        </div>
+
+                        <div class="card">
+                            <h3>Signal Evolution Prediction</h3>
+                            <canvas id="dynamic-signal-canvas" width="400" height="300"></canvas>
+                        </div>
+
+                        <div class="card">
+                            <h3>Kinetic Model</h3>
+                            <div class="param-group">
+                                <label for="kinetic-model">Model:</label>
+                                <select id="kinetic-model" class="custom-select">
+                                    <option value="two-site">Two-Site Exchange</option>
+                                    <option value="three-site">Three-Site Exchange</option>
+                                    <option value="perfusion">Perfusion Model</option>
+                                </select>
+                            </div>
+                            <div id="kinetic-params" class="metrics-display">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Metabolic Panel -->
+                <section id="panel-metabolic" class="sequence-panel">
+                    <div class="panel-header">
+                        <h2>Metabolic Imaging</h2>
+                        <p>Spectral-spatial excitation for multi-metabolite imaging</p>
+                    </div>
+
+                    <div class="panel-grid">
+                        <div class="card">
+                            <h3>Spectral-Spatial Parameters</h3>
+                            <div class="param-group">
+                                <label for="metabolic-metabolites">Target Metabolites:</label>
+                                <div class="checkbox-group">
+                                    <label><input type="checkbox" value="pyruvate" checked> Pyruvate</label>
+                                    <label><input type="checkbox" value="lactate" checked> Lactate</label>
+                                    <label><input type="checkbox" value="bicarbonate"> Bicarbonate</label>
+                                    <label><input type="checkbox" value="alanine"> Alanine</label>
+                                </div>
+                            </div>
+                            <div class="param-group">
+                                <label for="metabolic-b0">B0 Field (T):</label>
+                                <input type="number" id="metabolic-b0" value="3.0" min="1.5" max="11.7" step="0.1">
+                            </div>
+                            <div class="param-group">
+                                <label for="metabolic-slice-thickness">Slice Thickness (mm):</label>
+                                <input type="number" id="metabolic-slice-thickness" value="10" min="5" max="30"
+                                    step="1">
+                            </div>
+                            <div class="param-group">
+                                <label for="metabolic-pulse-type">Pulse Design:</label>
+                                <select id="metabolic-pulse-type" class="custom-select">
+                                    <option value="spectral-spatial">Spectral-Spatial (2D)</option>
+                                    <option value="multiband">Multiband Excitation</option>
+                                    <option value="flyback-epsi">Flyback EPSI</option>
+                                </select>
+                            </div>
+                            <button id="calculate-metabolic" class="btn-primary full-width">Design Pulse</button>
+                        </div>
+
+                        <div class="card">
+                            <h3>Spectral Profile</h3>
+                            <canvas id="spectral-profile-canvas" width="400" height="300"></canvas>
+                        </div>
+
+                        <div class="card">
+                            <h3>Spatial Profile</h3>
+                            <canvas id="spatial-profile-canvas" width="400" height="300"></canvas>
+                        </div>
+
+                        <div class="card">
+                            <h3>RF Pulse Waveform</h3>
+                            <canvas id="rf-waveform-canvas" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Export Modal -->
+        <div id="export-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Export Sequence</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="export-options">
+                        <h3>Export Format</h3>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="export-format" value="pypulseq" checked>
+                                <span>PyPulseq (.py)</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="export-format" value="seq-file">
+                                <span>Pulseq Sequence (.seq)</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="export-format" value="json">
+                                <span>JSON Definition</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="export-format" value="siemens">
+                                <span>Siemens IDEA Parameters</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="export-format" value="ge">
+                                <span>GE EPIC Parameters</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="export-format" value="philips">
+                                <span>Philips Parameters</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="export-preview">
+                        <h3>Preview</h3>
+                        <pre id="export-preview-content" class="code-preview">Select export format...</pre>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="copy-export" class="btn-secondary">Copy to Clipboard</button>
+                    <button id="download-export" class="btn-primary">Download File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="nuclei-database.js"></script>
+    <script src="vfa-calculator.js"></script>
+    <script src="spiral-designer.js"></script>
+    <script src="epi-configurator.js"></script>
+    <script src="dynamic-sequence.js"></script>
+    <script src="metabolic-imaging.js"></script>
+    <script src="sequence-visualizer.js"></script>
+    <script src="kspace-visualizer.js"></script>
+    <script src="signal-calculator.js"></script>
+    <script src="pypulseq-exporter.js"></script>
+    <script src="vendor-exporter.js"></script>
+    <script src="json-format.js"></script>
+    <script src="examples.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,73 @@
+
+/* Plate Analysis Heatmap */
+.plate-results-container h4 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.plate-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 4px;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.plate-well {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.plate-well:hover {
+    transform: scale(1.2);
+    z-index: 2;
+    border-color: white;
+}
+
+.plate-well::after {
+    content: attr(data-id) '\A' attr(data-value);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    white-space: pre;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+    width: max-content;
+}
+
+.plate-well:hover::after {
+    opacity: 1;
+}
+
+.plate-legend {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+.plate-legend span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.gradient-bar {
+    flex: 1;
+    height: 8px;
+    background: linear-gradient(90deg, #0a0e27, #f5576c);
+    border-radius: 4px;
+}

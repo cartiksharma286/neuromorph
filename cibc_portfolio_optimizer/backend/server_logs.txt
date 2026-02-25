@@ -1,0 +1,23 @@
+Warning: CUDA-Q not available. Using classical simulator.
+Warning: Qiskit components not found. Ensure qiskit and qiskit-aer are installed.
+IBKR: Running in SIMULATION mode (ibapi not installed or TWS offline)
+============================================================
+CIBC Dividend Portfolio Optimization System
+Quantum-Enhanced Portfolio Management
+============================================================
+
+Loaded 33 dividend stocks
+Quantum optimizer initialized with 33 qubits
+
+Server starting on http://localhost:5001
+============================================================
+ * Serving Flask app 'server'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.2.14:5001
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 360-426-087

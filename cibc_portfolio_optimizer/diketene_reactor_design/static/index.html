@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Diketene Reactor Prime Designer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #121212;
+            color: #eee;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background: rgba(30, 30, 40, 0.8);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: #ff0055;
+            text-align: center;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            border-bottom: 1px solid #ff0055;
+            padding-bottom: 10px;
+            color: #ff99aa;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 6px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 25px;
+            background: #ff0055;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #ff3377;
+            transform: scale(1.02);
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .metric-card {
+            background: #2a2a35;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ff0055;
+        }
+
+        .metric-val {
+            font-size: 1.4em;
+            color: #fff;
+            font-family: monospace;
+        }
+
+        .metric-label {
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        #visImage {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #444;
+            margin-top: 20px;
+        }
+
+        .stat-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #333;
+            color: #00ffaa;
+            border-radius: 4px;
+            font-size: 0.75em;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>DIKETENE REACTOR <span style="color:#fff">PRIME DESIGNER</span></h1>
+
+    <div class="container">
+        <!-- Input Panel -->
+        <div class="panel">
+            <h2>Start Parameterization</h2>
+            <label>Reactor Volume (Liters)</label>
+            <input type="number" id="vol" value="7500">
+
+            <label>Design Pressure (Bar)</label>
+            <input type="number" id="press" value="4.5">
+
+            <label>Reaction Temperature (°C)</label>
+            <input type="number" id="temp" value="130">
+
+            <button onclick="generate()">Initialize Statistical Congruence</button>
+            <div id="status" style="margin-top:15px; color:#888;"></div>
+        </div>
+
+        <!-- Output Panel -->
+        <div class="panel" id="results" style="display:none;">
+            <h2>Geometric Manifold Analysis</h2>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-val" id="diam">-</div>
+                    <div class="metric-label">Diameter (m)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="height">-</div>
+                    <div class="metric-label">Tan-Tan Height (m)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="thick">-</div>
+                    <div class="metric-label">Wall Thickness (mm)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="turns">-</div>
+                    <div class="metric-label">Optimized Coil Turns (N) <span class="stat-badge">PRIME</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="pitch">-</div>
+                    <div class="metric-label">Coil Pitch (m)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="score">-</div>
+                    <div class="metric-label">Golden Ratio Congruence</div>
+                </div>
+            </div>
+
+            <h2>3D Vessel Rendering</h2>
+            <img id="visImage" src="">
+
+            <div style="margin-top:30px; border-top:1px solid #444; padding-top:20px;">
+                <h2>Quantum Finite Element Analysis (Q-FEA)</h2>
+                <button onclick="runFEA()" style="background:linear-gradient(90deg, #9933ff, #00ccff);">Run Quantum
+                    Matrix Partitioning</button>
+                <div id="feaStatus" style="margin-top:10px; color:#aaa;"></div>
+
+                <div id="feaResults" style="display:none; margin-top:20px;">
+                    <div class="metric-grid">
+                        <div class="metric-card">
+                            <div class="metric-val" id="nodes">-</div>
+                            <div class="metric-label">Grid Nodes</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-val" id="partitions">-</div>
+                            <div class="metric-label">Quantum Partitions</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:20px;">Matrix Partitioning (Qubit Mapping)</h3>
+                    <img id="partitionImage" style="width:100%; border:1px solid #555;">
+
+                    <h3 style="margin-top:20px;">Field Solution (Thermal/Stress)</h3>
+                    <img id="solutionImage" style="width:100%; border:1px solid #555;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentGeometry = null;
+
+        async function generate() {
+            const btn = document.querySelector('button');
+            const status = document.getElementById('status');
+
+            btn.disabled = true;
+            status.textContent = "Computing Torispherical Geometries...";
+
+            const payload = {
+                volume: parseFloat(document.getElementById('vol').value),
+                pressure: parseFloat(document.getElementById('press').value),
+                temp: parseFloat(document.getElementById('temp').value)
+            };
+
+            try {
+                const res = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                // Store geometry for FEA
+                currentGeometry = data.specs.geometry;
+
+                // Update UI
+                const geo = data.specs.geometry;
+                const opt = data.specs.jacket_optimization;
+
+                document.getElementById('diam').textContent = geo.diameter.toFixed(3);
+                document.getElementById('height').textContent = geo.tan_tan_height.toFixed(3);
+                document.getElementById('thick').textContent = geo.wall_thickness_mm.toFixed(2);
+
+                document.getElementById('turns').textContent = opt.num_turns;
+                document.getElementById('pitch').textContent = opt.coil_pitch.toFixed(4);
+                document.getElementById('score').textContent = opt.congruence_score.toFixed(2) + "%";
+
+                document.getElementById('visImage').src = data.image_url + "?t=" + Date.now();
+                document.getElementById('results').style.display = 'block';
+
+                status.textContent = "Design Complete.";
+
+            } catch (e) {
+                status.textContent = "Error: " + e.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function runFEA() {
+            if (!currentGeometry) {
+                alert("Please generate a design first!");
+                return;
+            }
+
+            const btn = document.querySelectorAll('button')[1]; // Select the second button (FEA button)
+            const status = document.getElementById('feaStatus');
+            btn.disabled = true;
+            status.textContent = "Solving Quantum Matrix Partitioning...";
+
+            const payload = {
+                diameter: currentGeometry.diameter,
+                height: currentGeometry.tan_tan_height,
+                grid_resolution: 60,
+                partitions: 6
+            };
+
+            try {
+                const res = await fetch('/analyze_fea', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                document.getElementById('nodes').textContent = data.nodes;
+                document.getElementById('partitions').textContent = data.partitions;
+
+                document.getElementById('partitionImage').src = data.partition_plot + "?t=" + Date.now();
+                document.getElementById('solutionImage').src = data.solution_plot + "?t=" + Date.now();
+
+                document.getElementById('feaResults').style.display = 'block';
+                status.textContent = "Analysis Complete.";
+
+            } catch (e) {
+                status.textContent = "Error: " + e.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

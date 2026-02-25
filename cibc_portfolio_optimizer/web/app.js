@@ -2,12 +2,20 @@
  * CIBC Dividend Portfolio Optimizer - Main Application
  */
 
-const API_BASE = 'http://localhost:5001/api';
+const API_BASE = '/api';
 
 // State
 let currentPortfolio = null;
 let allStocks = [];
 let charts = {};
+let debounceTimer = null;
+
+function debounceOptimize() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        optimizePortfolio();
+    }, 800);
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -35,6 +43,11 @@ async function initializeApp() {
 function setupEventListeners() {
     // Optimization
     document.getElementById('optimizeBtn').addEventListener('click', optimizePortfolio);
+
+    // Real-time optimization
+    document.getElementById('portfolioValue').addEventListener('input', debounceOptimize);
+    document.getElementById('riskTolerance').addEventListener('change', debounceOptimize);
+    document.getElementById('targetYield').addEventListener('input', debounceOptimize);
 
     // AI Advisor
     document.getElementById('askAiBtn').addEventListener('click', askAI);
@@ -116,9 +129,14 @@ async function executeTrade() {
         return;
     }
 
-    const btn = document.getElementById('executeTradeBtn');
-    btn.disabled = true;
-    btn.textContent = "Executing...";
+    const modal = document.getElementById('tradeModalOverlay');
+    const processContent = document.getElementById('tradeProcessingContent');
+    const successContent = document.getElementById('tradeSuccessContent');
+
+    // Show modal and processing state
+    modal.classList.add('active');
+    processContent.style.display = 'block';
+    successContent.style.display = 'none';
 
     try {
         const response = await fetch(`${API_BASE}/trade/execute`, {
@@ -128,14 +146,18 @@ async function executeTrade() {
         });
 
         const result = await response.json();
-        const count = result.orders ? result.orders.length : 0;
-        showNotification(`Executed ${count} orders via IBKR`, 'success');
+
+        // Simulate a slight delay for dramatic effect
+        setTimeout(() => {
+            processContent.style.display = 'none';
+            successContent.style.display = 'block';
+            const count = result.orders ? result.orders.length : 0;
+            showNotification(`Executed ${count} orders via IBKR`, 'success');
+        }, 1500);
 
     } catch (e) {
+        modal.classList.remove('active');
         showNotification("Trade execution failed: " + e, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = "Execute Orders (IBKR)";
     }
 }
 
@@ -297,13 +319,20 @@ function displayOptimizationResults(data) {
 }
 
 function displayQuantumMetrics(metrics) {
-    const container = document.getElementById('quantumMetrics');
-    container.style.display = 'block';
+    const container = document.getElementById('optimizationProgress');
+    if (container) container.style.display = 'block';
 
-    document.getElementById('quantumDepth').textContent = metrics.circuit_depth || '--';
-    document.getElementById('quantumQubits').textContent = metrics.num_qubits || '--';
-    document.getElementById('quantumIterations').textContent = metrics.convergence_iterations || '--';
-    document.getElementById('quantumEnergy').textContent = (metrics.final_energy || 0).toFixed(4);
+    const depthEl = document.getElementById('quantumDepth');
+    if (depthEl) depthEl.textContent = metrics.circuit_depth || '--';
+
+    const qubitsEl = document.getElementById('quantumQubits');
+    if (qubitsEl) qubitsEl.textContent = metrics.num_qubits || '--';
+
+    const iterEl = document.getElementById('quantumIterations');
+    if (iterEl) iterEl.textContent = metrics.convergence_iterations || '--';
+
+    const energyEl = document.getElementById('quantumEnergy');
+    if (energyEl) energyEl.textContent = (metrics.final_energy || 0).toFixed(4);
 }
 
 function updateHoldingsTable(holdings) {
@@ -764,9 +793,28 @@ function addChatMessage(message, sender) {
     const chat = document.getElementById('aiChat');
     const div = document.createElement('div');
     div.className = `chat-message ${sender}`;
-    div.innerHTML = `<strong>${sender === 'user' ? 'You' : 'AI Advisor'}:</strong> ${message}`;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
+
+    if (sender === 'ai') {
+        div.innerHTML = `<strong>AI Advisor:</strong> <span class="typing"></span>`;
+        chat.appendChild(div);
+
+        // Typing effect
+        const span = div.querySelector('.typing');
+        let i = 0;
+        const typeWriter = setInterval(() => {
+            if (i < message.length) {
+                span.innerHTML += message.charAt(i);
+                i++;
+                chat.scrollTop = chat.scrollHeight;
+            } else {
+                clearInterval(typeWriter);
+            }
+        }, 20); // Speed of typing
+    } else {
+        div.innerHTML = `<strong>You:</strong> ${message}`;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+    }
 }
 
 function exportPortfolio() {
@@ -829,9 +877,11 @@ function generateColors(count) {
 async function updateSignalAnalysis() {
     const symbol = document.getElementById('signalStockSelect').value;
     const container = document.getElementById('signalsContainer');
+    const verdictContainer = document.getElementById('frameworkVerdict');
 
     if (!symbol) {
         container.style.display = 'none';
+        verdictContainer.style.display = 'none';
         return;
     }
 
@@ -840,7 +890,12 @@ async function updateSignalAnalysis() {
         const data = await response.json();
         const signals = data.analysis.signals;
 
-        container.style.display = 'grid'; // grid-4 class handles layout
+        // Display containers
+        container.style.display = 'grid';
+        verdictContainer.style.display = 'block';
+
+        // Update Verdict
+        document.getElementById('verdictText').textContent = signals['Verdict'] || '--';
 
         // 1. Yield Safety
         updateSignalCard('signalYield', signals['Yield Safety']);
@@ -856,6 +911,7 @@ async function updateSignalAnalysis() {
 
     } catch (e) {
         console.error("Error fetching signals:", e);
+        showNotification("Failed to fetch strategic analysis", "error");
     }
 }
 
@@ -865,27 +921,84 @@ function updateSignalCard(id, signalData) {
     const changeEl = card.querySelector('.metric-change');
     const fillEl = card.querySelector('.progress-fill');
 
+    if (!card || !signalData) return;
+
     valueEl.textContent = signalData.status;
 
-    // Format metrics
-    const metrics = Object.entries(signalData.metrics)
-        .map(([k, v]) => `${k}: ${v}`)
-        .join(' | ');
-    changeEl.textContent = metrics;
+    // Format metrics with line breaks or spans for better UI
+    const metricsHtml = Object.entries(signalData.metrics)
+        .map(([k, v]) => `<div><span style="opacity: 0.7;">${k}:</span> <strong>${v}</strong></div>`)
+        .join('');
+    changeEl.innerHTML = metricsHtml;
 
     fillEl.style.width = `${signalData.score}%`;
 
-    // Color coding based on score
-    if (signalData.score > 70) fillEl.style.backgroundColor = 'var(--success)';
-    else if (signalData.score < 40) fillEl.style.backgroundColor = 'var(--danger)';
-    else fillEl.style.backgroundColor = 'var(--warning)';
+    // Dynamic color based on score
+    if (signalData.score >= 80) fillEl.style.backgroundColor = '#10B981'; // Success
+    else if (signalData.score >= 50) fillEl.style.backgroundColor = '#F59E0B'; // Warning
+    else fillEl.style.backgroundColor = '#EF4444'; // Danger
 }
 
 function showNotification(message, type = 'info') {
-    // Simple console notification for now
-    console.log(`[${type.toUpperCase()}] ${message}`);
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
 
-    // Could implement toast notifications here
+    const toast = document.createElement('div');
+    const colors = {
+        'success': 'var(--accent-green)',
+        'error': 'var(--cibc-red)',
+        'warning': 'var(--accent-yellow)',
+        'info': 'var(--accent-blue)'
+    };
+
+    toast.style.cssText = `
+        background: var(--bg-surface);
+        border-left: 4px solid ${colors[type] || colors.info};
+        color: var(--text-primary);
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        max-width: 350px;
+        z-index: 3000;
+        border-top: 1px solid var(--glass-border);
+        border-right: 1px solid var(--glass-border);
+        border-bottom: 1px solid var(--glass-border);
+    `;
+
+    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : type === 'warning' ? '⚠' : 'ℹ';
+
+    toast.innerHTML = `
+        <span style="color: ${colors[type] || colors.info}; font-weight: bold; font-size: 1.2rem;">${icon}</span>
+        <span style="font-size: 0.9rem;">${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Add animation styles dynamically if not present
+    if (!document.getElementById('toastStyles')) {
+        const style = document.createElement('style');
+        style.id = 'toastStyles';
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
 }
 
 async function generateCode() {

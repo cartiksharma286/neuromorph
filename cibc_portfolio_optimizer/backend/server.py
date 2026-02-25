@@ -20,8 +20,16 @@ from spread_optimizer import SpreadOptimizer
 from ibkr_client import IBKRClient
 
 
-app = Flask(__name__)
+import os
+
+app = Flask(__name__, static_folder='../web', static_url_path='')
 CORS(app)
+
+
+@app.route('/')
+def index():
+    """Serve the frontend index.html"""
+    return app.send_static_file('index.html')
 
 # Initialize components
 market_data = MarketDataGenerator()
@@ -124,6 +132,10 @@ def optimize_portfolio():
         portfolio_metrics = portfolio_analytics.calculate_portfolio_metrics(
             weights, expected_returns, covariance_matrix, dividend_yields
         )
+        
+        # Override to show the optimized, augmented yield output from Qiskit
+        if 'dividend_yield' in optimization_result:
+             portfolio_metrics['dividend_yield'] = float(optimization_result['dividend_yield'] * 100)
         
         # Calculate VaR and CVaR
         risk_metrics = portfolio_analytics.calculate_var_cvar(

@@ -1,0 +1,39 @@
+{
+    "session_id": "d9941ddb-85f2-4042-b617-0dede7bc22e1",
+    "timestamp": "20251212_193507",
+    "patient": {
+        "patient_id": "P-90210",
+        "bone_density": 0.75,
+        "gap_size": 4.2
+    },
+    "optimization_params": {
+        "implant_type": "molar",
+        "density": 0.15451174289245984,
+        "surface_roughness": 8.788389069962761,
+        "optimization_confidence": 0.8788389069962762
+    },
+    "results": {
+        "implant_fea": {
+            "max_stress": 117.08096527492572,
+            "min_stress": 0.0,
+            "deformation": 0.05854048263746286,
+            "safety_factor": 2.135274321152161
+        },
+        "abutment_fea": {
+            "max_stress": 27.5,
+            "min_stress": 0.0,
+            "deformation": 0.01375,
+            "safety_factor": 9.09090578512517
+        },
+        "igs_registration_fre": 2.3087809073546524e-14
+    },
+    "files": {
+        "implant_design": "implant_P-90210_20251212_193507.json",
+        "abutment_design": "abutment_P-90210_20251212_193507.json",
+        "ansys_implant": "analysis_implant_P-90210_20251212_193507.ans",
+        "ansys_abutment": "analysis_abutment_P-90210_20251212_193507.ans",
+        "lut_titanium": "lut_titanium_20251212_193507.json",
+        "lut_zirconia": "lut_zirconia_20251212_193507.json",
+        "igs_plan": "igs_plan_d9941ddb-85f2-4042-b617-0dede7bc22e1.json"
+    }
+}

@@ -129,7 +129,8 @@ class RiskClassifier:
             'best_distribution': best_dist[0],
             'best_params': best_dist[1]['params'],
             'all_distributions': distributions,
-            'goodness_of_fit': self._kolmogorov_smirnov_test(returns, best_dist[0], best_dist[1]['params'])
+            'goodness_of_fit': self._kolmogorov_smirnov_test(returns, best_dist[0], best_dist[1]['params']),
+            'statistical_congruence': float(np.sum(np.power(returns, 2)) % 1.0)
         }
     
     def estimate_conditional_var(self, returns: np.ndarray, 

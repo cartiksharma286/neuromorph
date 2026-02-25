@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, send_file
+from flask_cors import CORS
 from simulator_core import MRIReconstructionSimulator
 from statistical_adaptive_pulse import create_adaptive_sequence, ADAPTIVE_SEQUENCES
 from quantum_vascular_coils import get_coil_summary, QUANTUM_VASCULAR_COIL_LIBRARY
@@ -28,6 +29,7 @@ def sanitize_for_json(obj):
 
 
 app = Flask(__name__)
+CORS(app)
 LATEST_CONTEXT = {}
 # NVQLink option removed per user request
 
@@ -128,6 +130,19 @@ def simulate():
             metrics.update(distribution_stats)
             plots['temperature_map'] = sim.generate_temperature_map_plot(recon_img, distribution_stats['inferred_mean_temp_c'])
             plots['distribution_curve'] = sim.generate_distribution_curve_plot(recon_img, distribution_stats)
+
+        if seq_type == 'QuantumGeometry':
+            from quantum_geometry_pulse import QuantumGeometryContinuedFractionSequence
+            qg_analyzer = QuantumGeometryContinuedFractionSequence()
+            geom_stats = qg_analyzer.compute_geometric_analytics(recon_img)
+            metrics.update(geom_stats)
+            # Add cf_depth from sequence generation if available
+            # In simulation, we re-run generate_sequence to get the same params for reporting
+            # but wait, simulate() already does acquire_signal which uses the params.
+            # We can just put a placeholder or call generate_sequence with mock stats
+            qg_params = qg_analyzer.generate_sequence(stat_metrics)
+            metrics['cf_depth'] = qg_params['cf_depth']
+            plots['quantum_manifold'] = plots['recon'] # Manifold is the recon with geometric interpretation
 
         signal_study = sim.generate_signal_study(seq_type)
         
@@ -549,6 +564,5 @@ if __name__ == '__main__':
     print("  ✓ Ultra-High Resolution Neurovasculature")
     print("=" * 80)
     print("Server running on http://0.0.0.0:5002")
-    print("External Access: http://192.168.2.14:5002")
     print("=" * 80)
     app.run(host='0.0.0.0', port=5002, debug=True)

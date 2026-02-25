@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5002/api';
+const API_URL = 'http://localhost:5005/api';
 
 // Format Currency
 const formatUSD = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });

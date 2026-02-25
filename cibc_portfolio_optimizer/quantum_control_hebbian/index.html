@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBS-PTSD Treatment System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Warning Banner -->
+    <div class="warning-banner">
+        <div class="warning-content">
+            <span class="warning-icon">⚠</span>
+            <span>RESEARCH & EDUCATIONAL USE ONLY - Not for clinical application</span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">
+                    <span class="title-icon">🧠</span>
+                    Deep Brain Stimulation for PTSD Treatment
+                </h1>
+                <p class="subtitle">AI-Powered Circuit Design & Parameter Optimization</p>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Initializing...</span>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-module="circuit">
+                <span class="tab-icon">⚡</span>
+                Circuit Designer
+            </button>
+            <button class="nav-tab" data-module="brain">
+                <span class="tab-icon">🧠</span>
+                3D Brain Model
+            </button>
+            <button class="nav-tab" data-module="waveform">
+                <span class="tab-icon">📊</span>
+                Waveform Generator
+            </button>
+            <button class="nav-tab" data-module="ai">
+                <span class="tab-icon">🤖</span>
+                AI Optimizer
+            </button>
+            <button class="nav-tab" data-module="clinical">
+                <span class="tab-icon">📈</span>
+                Clinical Dashboard
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Circuit Designer Module -->
+            <div class="module active" id="circuitModule">
+                <div class="module-header">
+                    <h2>DBS Circuit Schematic Designer</h2>
+                    <p>Professional-grade circuit schematics for deep brain stimulation devices</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Circuit Components</h3>
+                        <div class="component-list">
+                            <button class="component-btn" data-component="electrode-array">
+                                <span class="component-icon">🔌</span>
+                                <div>
+                                    <div class="component-name">Electrode Array</div>
+                                    <div class="component-desc">Multi-contact lead system</div>
+                                </div>
+                            </button>
+                            <button class="component-btn" data-component="pulse-generator">
+                                <span class="component-icon">⚡</span>
+                                <div>
+                                    <div class="component-name">Pulse Generator</div>
+                                    <div class="component-desc">Programmable current source</div>
+                                </div>
+                            </button>
+                            <button class="component-btn" data-component="power-management">
+                                <span class="component-icon">🔋</span>
+                                <div>
+                                    <div class="component-name">Power Management</div>
+                                    <div class="component-desc">Battery & wireless charging</div>
+                                </div>
+                            </button>
+                            <button class="component-btn" data-component="safety-system">
+                                <span class="component-icon">🛡️</span>
+                                <div>
+                                    <div class="component-name">Safety System</div>
+                                    <div class="component-desc">Monitoring & protection</div>
+                                </div>
+                            </button>
+                            <button class="component-btn" data-component="signal-processing">
+                                <span class="component-icon">📡</span>
+                                <div>
+                                    <div class="component-name">Signal Processing</div>
+                                    <div class="component-desc">LFP recording & feedback</div>
+                                </div>
+                            </button>
+                            <button class="component-btn" data-component="complete">
+                                <span class="component-icon">🔧</span>
+                                <div>
+                                    <div class="component-name">Complete System</div>
+                                    <div class="component-desc">Full device schematic</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Circuit Schematic</h3>
+                        <div id="circuitDisplay" class="circuit-display">
+                            <div class="empty-state">
+                                <span class="empty-icon">⚡</span>
+                                <p>Select a component to view schematic</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>SVG Circuit Diagram</h3>
+                    <div id="svgDisplay" class="svg-display"></div>
+                </div>
+            </div>
+
+            <!-- 3D Brain Model Module -->
+            <div class="module" id="brainModule">
+                <div class="module-header">
+                    <h2>3D Brain Visualization</h2>
+                    <p>Interactive brain model with target regions for DBS</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Target Regions</h3>
+                        <div class="region-list" id="regionList"></div>
+                    </div>
+
+                    <div class="card full-height">
+                        <h3>3D Brain Model</h3>
+                        <div id="brainCanvas" class="brain-canvas"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waveform Generator Module -->
+            <div class="module" id="waveformModule">
+                <div class="module-header">
+                    <h2>Stimulation Waveform Generator</h2>
+                    <p>Design and optimize DBS stimulation parameters</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Parameters</h3>
+                        <div class="parameter-controls" id="parameterControls"></div>
+                        
+                        <div class="safety-status" id="safetyStatus"></div>
+                        
+                        <button class="btn-primary" id="simulateBtn">
+                            <span>▶</span> Simulate Stimulation
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Waveform Preview</h3>
+                        <canvas id="waveformCanvas" class="waveform-canvas"></canvas>
+                        
+                        <h3 style="margin-top: 2rem;">Safety Metrics</h3>
+                        <div id="safetyMetrics" class="metrics-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Optimizer Module -->
+            <div class="module" id="aiModule">
+                <div class="module-header">
+                    <h2>AI-Driven Parameter Optimization</h2>
+                    <p>Generative AI models for optimal stimulation protocols</p>
+                </div>
+
+                <div class="grid-3">
+                    <div class="card">
+                        <h3>VAE Generator</h3>
+                        <p class="card-desc">Variational Autoencoder for pattern learning</p>
+                        <button class="btn-secondary" id="trainVAEBtn">Train VAE</button>
+                        <button class="btn-primary" id="generateVAEBtn">Generate Parameters</button>
+                        <div id="vaeResults" class="results-container"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>GAN Optimizer</h3>
+                        <p class="card-desc">Generative Adversarial Network for waveform optimization</p>
+                        <button class="btn-secondary" id="trainGANBtn">Train GAN</button>
+                        <button class="btn-primary" id="generateGANBtn">Generate Parameters</button>
+                        <div id="ganResults" class="results-container"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>RL Agent</h3>
+                        <p class="card-desc">Reinforcement Learning for adaptive control</p>
+                        <button class="btn-primary" id="optimizeRLBtn">Optimize with RL</button>
+                        <div id="rlResults" class="results-container"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Training Progress</h3>
+                    <canvas id="trainingCanvas" class="training-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Clinical Dashboard Module -->
+            <div class="module" id="clinicalModule">
+                <div class="module-header">
+                    <h2>Clinical Monitoring Dashboard</h2>
+                    <p>PTSD symptom tracking and treatment efficacy</p>
+                </div>
+
+                <div class="grid-4">
+                    <div class="metric-card">
+                        <div class="metric-label">Hyperarousal</div>
+                        <div class="metric-value" id="metricHyperarousal">--</div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" id="barHyperarousal"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Re-experiencing</div>
+                        <div class="metric-value" id="metricReexperiencing">--</div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" id="barReexperiencing"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Avoidance</div>
+                        <div class="metric-value" id="metricAvoidance">--</div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" id="barAvoidance"></div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Negative Cognition</div>
+                        <div class="metric-value" id="metricNegativeCognition">--</div>
+                        <div class="metric-bar">
+                            <div class="metric-fill" id="barNegativeCognition"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Treatment Prediction</h3>
+                        <div class="prediction-controls">
+                            <label>Treatment Duration (weeks)</label>
+                            <input type="number" id="treatmentWeeks" value="12" min="1" max="52">
+                            <button class="btn-primary" id="predictBtn">Predict Response</button>
+                        </div>
+                        <canvas id="predictionCanvas" class="prediction-canvas"></canvas>
+                    </div>
+
+                    <div class="card">
+                        <h3>Biomarkers</h3>
+                        <div id="biomarkers" class="biomarkers-grid"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Neural Activity</h3>
+                    <canvas id="neuralCanvas" class="neural-canvas"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="app.js"></script>
+    <script src="circuit_designer.js"></script>
+    <script src="brain_visualizer.js"></script>
+    <script src="waveform_generator.js"></script>
+    <script src="ai_optimizer.js"></script>
+    <script src="clinical_dashboard.js"></script>
+</body>
+</html>

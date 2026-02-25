@@ -13,6 +13,7 @@ from scipy.stats import norm, gamma
 from scipy.optimize import minimize
 
 
+
 class StatisticalAdaptivePulseSequence:
     """Base class for adaptive pulse sequences with statistical learning."""
     
@@ -359,12 +360,16 @@ ADAPTIVE_SEQUENCES = {
     'adaptive_gre': AdaptiveGradientEcho,
     'adaptive_flair': AdaptiveFLAIR,
     'stroke_imaging_elliptic': StrokeImagingPulseSequence,
-    'qml_thermometry': QMLThermometrySequence
+    'qml_thermometry': QMLThermometrySequence,
 }
 
 
 def create_adaptive_sequence(sequence_type, nvqlink_enabled=False):
     """Factory function to create adaptive sequences."""
+    if sequence_type == 'quantum_geometry':
+        from quantum_geometry_pulse import QuantumGeometryContinuedFractionSequence
+        return QuantumGeometryContinuedFractionSequence(nvqlink_enabled)
+        
     if sequence_type in ADAPTIVE_SEQUENCES:
         return ADAPTIVE_SEQUENCES[sequence_type](nvqlink_enabled)
     else:

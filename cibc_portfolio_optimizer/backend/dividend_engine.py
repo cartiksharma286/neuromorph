@@ -377,7 +377,7 @@ class DividendEngine:
 
     def evaluate_4_signals(self, stock_data: Dict) -> Dict:
         """
-        Evaluate stock based on 4 key signals: 
+        Evaluate stock based on 4 key signals with robust logic: 
         1. Yield Safety
         2. Growth Trajectory
         3. Fundamental Health
@@ -385,69 +385,109 @@ class DividendEngine:
         """
         signals = {}
         
-        # 1. Yield Safety
+        # 1. Yield Safety (Payout, FCF, Debt)
         payout = self.calculate_payout_ratio(stock_data.get('annual_dividend', 0), stock_data.get('eps', 1))
         fcf_cov = stock_data.get('fcf_coverage', 1.5)
+        debt_eq = stock_data.get('debt_to_equity', 1.0)
         
         safety_score = 0
         if payout < 60: safety_score += 40
         elif payout < 80: safety_score += 20
-        if fcf_cov > 1.2: safety_score += 40
+        if fcf_cov > 1.5: safety_score += 40
         elif fcf_cov > 1.0: safety_score += 20
-        if stock_data.get('debt_to_equity', 1.0) < 1.0: safety_score += 20
+        if debt_eq < 0.8: safety_score += 20
+        elif debt_eq < 1.5: safety_score += 10
         
         signals['Yield Safety'] = {
-            'score': min(safety_score, 100),
-            'status': 'Safe' if safety_score > 70 else 'Risk' if safety_score < 40 else 'Neutral',
-            'metrics': {'Payout Ratio': f"{payout:.1f}%", 'FCF Coverage': f"{fcf_cov:.1f}x"}
+            'score': float(min(safety_score, 100)),
+            'status': 'Pristine' if safety_score >= 85 else 'Reliable' if safety_score >= 60 else 'At Risk',
+            'metrics': {
+                'Payout Ratio': f"{payout:.1f}%", 
+                'FCF Coverage': f"{fcf_cov:.2f}x",
+                'Debt/Equity': f"{debt_eq:.2f}"
+            }
         }
 
-        # 2. Growth Trajectory
+        # 2. Growth Trajectory (CAGR, Streak)
         growth_3yr = self.calculate_dividend_growth_rate(stock_data.get('dividend_history', []), 3)
         growth_5yr = self.calculate_dividend_growth_rate(stock_data.get('dividend_history', []), 5)
+        streak = stock_data.get('consecutive_increases', 0)
         
         growth_score = 0
-        if growth_3yr > 5: growth_score += 50
-        elif growth_3yr > 2: growth_score += 25
-        if growth_5yr > 5: growth_score += 50
-        elif growth_5yr > 2: growth_score += 25
+        if growth_5yr > 8: growth_score += 40
+        elif growth_5yr > 4: growth_score += 20
+        if growth_3yr > growth_5yr: growth_score += 20 # Accelerating
+        if streak >= 10: growth_score += 40
+        elif streak >= 5: growth_score += 20
         
         signals['Growth Trajectory'] = {
-            'score': min(growth_score, 100),
-            'status': 'High Growth' if growth_score > 70 else 'Low Growth' if growth_score < 40 else 'Steady',
-            'metrics': {'3yr CAGR': f"{growth_3yr:.1f}%", '5yr CAGR': f"{growth_5yr:.1f}%"}
+            'score': float(min(growth_score, 100)),
+            'status': 'Aggressive' if growth_score >= 80 else 'Steady' if growth_score >= 50 else 'Stagnant',
+            'metrics': {
+                '5yr CAGR': f"{growth_5yr:.1f}%", 
+                '3yr CAGR': f"{growth_3yr:.1f}%",
+                'Streak': f"{streak} yrs"
+            }
         }
 
-        # 3. Fundamental Health
-        pe_ratio = stock_data.get('pe_ratio', 15.0)
-        profit_margin = stock_data.get('profit_margin', 0.1)
+        # 3. Fundamental Health (ROE, Margin, Valuation)
+        roe = stock_data.get('roe', 12.0)
+        margin = stock_data.get('profit_margin', 0.1)
+        pe = stock_data.get('pe_ratio', 15.0)
         
         fund_score = 0
-        if 5 < pe_ratio < 20: fund_score += 50 # Valuation check
-        elif pe_ratio < 25: fund_score += 25
-        if profit_margin > 0.15: fund_score += 50
-        elif profit_margin > 0.05: fund_score += 25
+        if roe > 15: fund_score += 35
+        elif roe > 10: fund_score += 20
+        if margin > 0.15: fund_score += 35
+        elif margin > 0.08: fund_score += 20
+        if 8 < pe < 18: fund_score += 30 # Value sweet spot
+        elif pe < 25: fund_score += 15
         
         signals['Fundamental Health'] = {
-            'score': min(fund_score, 100),
-            'status': 'Strong' if fund_score > 70 else 'Weak' if fund_score < 40 else 'Stable',
-            'metrics': {'P/E Ratio': f"{pe_ratio:.1f}", 'Net Margin': f"{profit_margin*100:.1f}%"}
+            'score': float(min(fund_score, 100)),
+            'status': 'Robust' if fund_score >= 80 else 'Healthy' if fund_score >= 50 else 'Stressed',
+            'metrics': {
+                'ROE': f"{roe:.1f}%", 
+                'Net Margin': f"{margin*100:.1f}%",
+                'P/E Ratio': f"{pe:.1f}"
+            }
         }
 
-        # 4. Momentum/Sentiment (Simulated if real data missing)
-        # Using simple moving average proxy or simulated sentiment
-        price = stock_data.get('price', 50)
-        ma_200 = stock_data.get('ma_200', price * 0.95) # Default to slightly bullish
-        rsi = stock_data.get('rsi', 55) # Neutral RSI
+        # 4. Momentum (Price vs MA, RSI)
+        price = stock_data.get('price', 50.0)
+        ma_200 = stock_data.get('ma_200', price * 0.95)
+        rsi = stock_data.get('rsi', 55)
         
         mom_score = 0
-        if price > ma_200: mom_score += 50
-        if 40 < rsi < 70: mom_score += 50 # Not overbought/oversold
+        if price > ma_200: mom_score += 40
+        if price > (ma_200 * 1.1): mom_score += 10 # Strong uptrend
+        if 40 < rsi < 65: mom_score += 50 # Healthy trend
+        elif 30 < rsi < 70: mom_score += 25
         
         signals['Momentum'] = {
-            'score': min(mom_score, 100),
-            'status': 'Bullish' if mom_score > 70 else 'Bearish' if mom_score < 40 else 'Neutral',
-            'metrics': {'vs 200MA': f"{((price/ma_200)-1)*100:.1f}%", 'RSI': f"{rsi:.0f}"}
+            'score': float(min(mom_score, 100)),
+            'status': 'Bullish' if mom_score >= 75 else 'Neutral' if mom_score >= 40 else 'Bearish',
+            'metrics': {
+                'vs 200MA': f"{((price/ma_200)-1)*100:+.1f}%", 
+                'RSI': f"{rsi}",
+                'Price': f"${price:.2f}"
+            }
         }
         
+        signals['Verdict'] = self._generate_signaled_verdict(signals)
         return signals
+
+    def _generate_signaled_verdict(self, signals: Dict) -> str:
+        """Generate a strategic verdict based on 4 signals"""
+        avg_score = np.mean([s['score'] for k, s in signals.items() if k != 'Verdict'])
+        
+        if avg_score >= 80:
+            return "Strategic Buy - High conviction across all quadrants."
+        elif avg_score >= 60:
+            if signals['Yield Safety']['score'] < 50:
+                return "Caution - Solid growth but yield sustainability is questionable."
+            return "Stable Accumulate - Good balance of safety and growth."
+        elif avg_score >= 40:
+            return "Watchlist - Underperforming on key strategic metrics."
+        else:
+            return "Avoid - Failed multiple framework criteria."

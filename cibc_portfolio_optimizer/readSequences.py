@@ -1,0 +1,42 @@
+import tensorflow as tf
+from tensorflow.keras import datasets, layers, models
+import matplotlib.pyplot as plt
+from pypulseq.Sequence.sequence import Sequence
+  #(train_imges), (test_images) =                                             
+
+def read_pulse_sequence(file_path):
+
+    try:
+        seq = Sequence()
+        with open(file_path,"rb") as f:
+            content = f.read()
+#        seq.read(file_path)
+            return content
+    except Exception as e:
+        print(f"Error reading sequence file: {e}")
+        return None
+    
+import os
+    
+def list_files_with_extension(directory_path, extension):
+    found_files = []
+    if os.path.isdir(directory_path):
+        for filename in os.listdir(directory_path):
+            if filename.endswith(extension) and os.path.isfile(os.path.join\
+(directory_path, filename)):
+                found_files.append(os.path.join(directory_path, filename))
+            return found_files
+
+# Example usage:                                                                
+directory = "/Users/cartik_sharma/Downloads/pulse_sequences/"  # Replace wi\
+#th your directory path                                                          
+extension = ".seq"
+txt_files = list_files_with_extension(directory, extension)
+seqList = []
+
+# Example usage:                                                                
+for i in range(len(txt_files)):
+    file_path = txt_files[i]  # Replace with your .seq file path            
+    sequence = read_pulse_sequence(file_path)
+    print(sequence)
+    seqList.append(sequence)

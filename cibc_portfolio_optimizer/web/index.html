@@ -338,12 +338,26 @@
                     </select>
                 </div>
 
+                <div id="frameworkVerdict" class="glass-card fade-in"
+                    style="display:none; margin-bottom: 1rem; border-left: 4px solid var(--accent); background: rgba(139, 92, 246, 0.05);">
+                    <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem;">
+                        <div style="font-size: 1.5rem;">🎯</div>
+                        <div>
+                            <div class="metric-label" style="margin: 0;">Strategic Framework Verdict</div>
+                            <div id="verdictText"
+                                style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary);">--</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="signalsContainer" class="grid-4" style="display:none;">
                     <!-- Yield Safety -->
                     <div class="metric-card" id="signalYield">
                         <div class="metric-label">Yield Safety</div>
                         <div class="metric-value" style="font-size: 1.2rem;">--</div>
-                        <div class="metric-change" style="font-size: 0.8rem;"></div>
+                        <div class="metric-change"
+                            style="font-size: 0.8rem; height: 3.2rem; overflow: hidden; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
+                        </div>
                         <div class="progress-bar" style="height: 6px; margin-top: 8px;">
                             <div class="progress-fill" style="width: 0%; background: var(--success);"></div>
                         </div>
@@ -353,7 +367,9 @@
                     <div class="metric-card" id="signalGrowth">
                         <div class="metric-label">Growth Trajectory</div>
                         <div class="metric-value" style="font-size: 1.2rem;">--</div>
-                        <div class="metric-change" style="font-size: 0.8rem;"></div>
+                        <div class="metric-change"
+                            style="font-size: 0.8rem; height: 3.2rem; overflow: hidden; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
+                        </div>
                         <div class="progress-bar" style="height: 6px; margin-top: 8px;">
                             <div class="progress-fill" style="width: 0%; background: var(--info);"></div>
                         </div>
@@ -363,7 +379,9 @@
                     <div class="metric-card" id="signalHealth">
                         <div class="metric-label">Fundamental Health</div>
                         <div class="metric-value" style="font-size: 1.2rem;">--</div>
-                        <div class="metric-change" style="font-size: 0.8rem;"></div>
+                        <div class="metric-change"
+                            style="font-size: 0.8rem; height: 3.2rem; overflow: hidden; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
+                        </div>
                         <div class="progress-bar" style="height: 6px; margin-top: 8px;">
                             <div class="progress-fill" style="width: 0%; background: var(--warning);"></div>
                         </div>
@@ -373,13 +391,39 @@
                     <div class="metric-card" id="signalMomentum">
                         <div class="metric-label">Momentum Score</div>
                         <div class="metric-value" style="font-size: 1.2rem;">--</div>
-                        <div class="metric-change" style="font-size: 0.8rem;"></div>
+                        <div class="metric-change"
+                            style="font-size: 0.8rem; height: 3.2rem; overflow: hidden; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
+                        </div>
                         <div class="progress-bar" style="height: 6px; margin-top: 8px;">
                             <div class="progress-fill" style="width: 0%; background: var(--danger);"></div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Trade Execution Modal -->
+        <div id="tradeModalOverlay" class="modal-overlay">
+            <div class="modal-content" style="text-align: center;">
+                <h2 style="margin-bottom: 1rem; color: var(--text-primary);">Executing Trades via IBKR</h2>
+                <div id="tradeProcessingContent">
+                    <div class="spinner" style="margin: 2rem auto;"></div>
+                    <p style="color: var(--text-secondary);">Connecting to API and routing orders...</p>
+                </div>
+                <div id="tradeSuccessContent" style="display: none;">
+                    <div style="font-size: 4rem; color: var(--accent-green); margin-bottom: 1rem;">&#10003;</div>
+                    <h3 style="margin-bottom: 0.5rem;">Orders Successfully Placed</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">The portfolio has been rebalanced
+                        according to the Flash Gemini algorithm.</p>
+                    <button class="btn btn-secondary"
+                        onclick="document.getElementById('tradeModalOverlay').classList.remove('active')">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification Container -->
+        <div id="toastContainer"
+            style="position: fixed; bottom: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px;">
         </div>
 
         <script src="app.js"></script>

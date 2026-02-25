@@ -1,0 +1,103 @@
+
+======================================================================
+RF COIL DESIGNER WITH GENERATIVE AI
+======================================================================
+======================================================================
+Demo 1: Parametric RF Coil Design
+======================================================================
+
+Solenoid Coil Design:
+  Turns: 15
+  Diameter: 30 mm
+  Length: 40 mm
+  Wire diameter: 1.0 mm
+
+Electrical Properties:
+  Inductance: 94.63 µH
+  Resonant frequency (with 100 pF): 1.64 MHz
+  Quality factor: 6562.2
+
+Visualization saved: solenoid_geometry.png
+Schematic saved: solenoid_schematic.png
+
+======================================================================
+Demo 2: Generative Design for Target Frequency
+======================================================================
+
+Target frequency: 13.56 MHz (ISM band)
+Generating optimized coil design...
+
+Optimized Design:
+  Turns: 29
+  Diameter: 50.00 mm
+  Length: 1.00 mm
+
+Performance:
+  Inductance: 2236.70 µH
+  Achieved frequency: 0.275 MHz
+  Error: 97.974%
+  Quality factor: 19727.4
+
+Schematic saved: optimized_13MHz_schematic.png
+
+======================================================================
+Demo 3: Evolutionary RF Coil Design
+======================================================================
+
+Target frequency: 27.12 MHz
+Evolving design using genetic algorithm...
+Population size: 50, Generations: 20
+
+Evolved Design:
+  Turns: 5
+  Diameter: 15.00 mm
+  Length: 29.18 mm
+  Wire: 0.80 mm
+
+Performance:
+  Inductance: 3.91 µH
+  Achieved frequency: 8.045 MHz
+  Error: 70.336%
+  Quality factor: 2889.0
+
+Generating 3 design variations...
+  Variation 1: 5 turns, 15.7 mm dia, 7.85 MHz
+  Variation 2: 5 turns, 13.7 mm dia, 8.51 MHz
+  Variation 3: 4 turns, 14.2 mm dia, 10.85 MHz
+
+======================================================================
+Demo 4: Planar Spiral Coil for PCB
+======================================================================
+
+Planar Spiral Coil (PCB):
+  Turns: 8
+  Outer diameter: 40 mm
+  Track spacing: 1.5 mm
+  Track width: 0.3 mm
+
+Electrical Properties:
+  Inductance: 0.13 µH
+  Resonant frequency (with 220 pF): 29.85 MHz
+
+Visualization saved: planar_spiral_geometry.png
+Schematic saved: planar_spiral_schematic.png
+
+======================================================================
+Demo 5: Comparing Coil Types
+======================================================================
+
+Target: 13.56 MHz with 100 pF capacitor
+
+Comparing different coil designs:
+
+1. Solenoid:
+   12 turns, 25mm dia, 30mm length
+   L=54.55µH, f=2.15MHz, Q=6511.8
+2. Planar Spiral:
+   10 turns, 35mm dia, 1.2mm spacing
+   L=0.15µH, f=41.32MHz, Q=33.2
+
+Comparison plot saved: coil_comparison.png
+
+======================================================================
+All demonstrations completed successfully!

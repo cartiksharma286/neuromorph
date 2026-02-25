@@ -655,6 +655,41 @@ class CardiovascularCoil(QuantumVascularCoil):
         return metric_factor / (np.abs(w) + 1.0)
 
 # ============================================================================
+# COIL 29: Conformal Neurovascular Coil (Schwarz-Christoffel)
+# ============================================================================
+class ConformalNeurovascularCoil(QuantumVascularCoil):
+    """
+    Conformal Neurovascular Coil using Schwarz-Christoffel mapping.
+    
+    This coil topology is mapped from a canonical half-plane to the 
+    complex polygon representing the cerebral vasculature.
+    """
+    
+    def __init__(self):
+        super().__init__("Conformal Neurovascular Coil", num_elements=36)
+        
+    def schwarz_christoffel_sensitivity(self, x, y, center_x, center_y, sim_res):
+        """
+        Computes sensitivity based on the derivative of a SC map.
+        f'(z) = A * Π (z - x_i)^(α_i - 1)
+        """
+        z = (x - center_x) + 1j * (y - center_y)
+        # Normalize z
+        z = z / (sim_res / 2)
+        
+        # Simulated vertices of the 'Vascular Polygon'
+        vertices = [0.5, -0.5, 0.5j, -0.5j]
+        alphas = [0.5, 0.5, 0.5, 0.5] # Exterior angles
+        
+        derivative = 1.0
+        for v, a in zip(vertices, alphas):
+            derivative *= (z - v)**(a - 1)
+            
+        sensitivity = np.abs(derivative)
+        # Limit peak sensitivity for stability
+        return np.clip(sensitivity, 0.1, 2.0)
+
+# ============================================================================
 # Coil Registry
 # ============================================================================
 QUANTUM_VASCULAR_COIL_LIBRARY = {
@@ -686,6 +721,7 @@ QUANTUM_VASCULAR_COIL_LIBRARY = {
     26: OptimizedVascularTradeoffCoil,
     27: NeurovascularCoil,
     28: CardiovascularCoil,
+    29: ConformalNeurovascularCoil,
 }
 
 

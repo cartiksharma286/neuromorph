@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<installer-gui-script minSpecVersion="2">
+    <title>mas</title>
+    <options customize="never" require-scripts="false" hostArchitectures="x86_64"/>
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="13"/>
+        </allowed-os-versions>
+    </volume-check>
+    <choices-outline>
+        <line choice="mas"/>
+    </choices-outline>
+    <choice id="mas" title="mas" visible="false">
+        <pkg-ref id="mas">mas.pkg</pkg-ref>
+    </choice>
+    <pkg-ref id="mas" packageIdentifier="io.github.mas-cli.mas" version="5.1.0" installKBytes="3752" updateKBytes="0">
+        <bundle-version/>
+    </pkg-ref>
+    <pkg-ref id="mas">#mas.pkg</pkg-ref>
+</installer-gui-script>

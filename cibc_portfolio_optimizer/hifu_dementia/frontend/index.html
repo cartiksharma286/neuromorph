@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVIDIA Quantum | HIFU Dementia Treatment System</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Using Google Fonts for premium typography -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="glass-panel">
+            <div class="logo-section">
+                <div class="nvidia-logo"></div>
+                <h1>HIFU <span class="highlight">QUANTUM</span> DEMENTIA SYSTEM</h1>
+            </div>
+            <div class="status-badge" id="system-status">SYSTEM IDLE</div>
+        </header>
+
+        <main>
+            <!-- Left Column: Controls & Quantum Optimization -->
+            <div class="column left-col">
+                <section class="glass-panel control-panel">
+                    <h2>Treatment Controls</h2>
+                    <div class="control-group">
+                        <label>Target Region</label>
+                        <select id="target-region">
+                            <option value="hippocampus">Hippocampus</option>
+                            <option value="entorhinal">Entorhinal Cortex</option>
+                            <option value="parietal">Parietal Lobe</option>
+                        </select>
+                    </div>
+                    <div class="button-group">
+                        <button id="btn-start" class="btn-primary">Initialize Treatment</button>
+                        <button id="btn-stop" class="btn-danger" disabled>Emergency Stop</button>
+                    </div>
+                </section>
+
+                <section class="glass-panel stats-panel">
+                    <h2>Quantum Optimizer (QML)</h2>
+                    <div class="metric-row">
+                        <div class="metric">
+                            <span class="label">Cost minimization</span>
+                            <span class="value" id="val-cost">--</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">Fidelity</span>
+                            <span class="value" id="val-fidelity">--</span>
+                        </div>
+                    </div>
+                    <div class="chart-container" id="cost-chart-container">
+                        <!-- Custom Canvas Chart -->
+                        <canvas id="costChart" width="300" height="150"></canvas>
+                    </div>
+                </section>
+
+                <section class="glass-panel risk-panel">
+                    <h2>Statistical Risk (VaR 95%)</h2>
+                    <div class="risk-meter">
+                        <div class="risk-bar" id="risk-bar"></div>
+                    </div>
+                    <p class="risk-value" id="val-risk">-- °C</p>
+                </section>
+            </div>
+
+            <!-- Center Column: 3D Visualization -->
+            <div class="column center-col">
+                <section class="glass-panel viz-panel">
+                    <h2>Cortical Geodesic Targeting</h2>
+                    <div class="canvas-wrapper">
+                        <canvas id="brainCanvas" width="600" height="500"></canvas>
+                    </div>
+                    <div class="overlay-info">
+                        <p>Geodesic Optimization: <span id="geo-status">Calculating...</span></p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Biological Feedback -->
+            <div class="column right-col">
+                <section class="glass-panel bio-panel">
+                    <h2>BBB Permeation Status</h2>
+                    <div class="circular-progress" id="perm-progress">
+                        <div class="inner-circle">
+                            <span id="val-perm">0%</span>
+                        </div>
+                    </div>
+                    <p class="subtext">Target: 80% Permeability</p>
+                </section>
+
+                <section class="glass-panel params-panel">
+                    <h2>Optimal Parameters</h2>
+                    <div class="param-item">
+                        <label>Frequency</label>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="bar-freq" style="width: 0%"></div>
+                        </div>
+                        <span id="txt-freq">0 MHz</span>
+                    </div>
+                    <div class="param-item">
+                        <label>Intensity</label>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="bar-int" style="width: 0%"></div>
+                        </div>
+                        <span id="txt-int">0 W/cm²</span>
+                    </div>
+                    <div class="param-item">
+                        <label>Duration</label>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="bar-dur" style="width: 0%"></div>
+                        </div>
+                        <span id="txt-dur">0 ms</span>
+                    </div>
+                </section>
+
+                <section class="glass-panel logs-panel">
+                    <h2>System Logs</h2>
+                    <ul id="log-list">
+                        <li>System initialized.</li>
+                    </ul>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>

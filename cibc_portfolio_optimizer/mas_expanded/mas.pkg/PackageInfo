@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pkg-info overwrite-permissions="true" relocatable="false" identifier="io.github.mas-cli.mas" postinstall-action="none" version="5.1.0" format-version="2" generator-version="InstallCmds-864 (25C56)" install-location="/" auth="root">
+    <payload numberOfFiles="22" installKBytes="3752"/>
+    <bundle-version/>
+    <upgrade-bundle/>
+    <update-bundle/>
+    <atomic-update-bundle/>
+    <strict-identifier/>
+    <relocate/>
+</pkg-info>

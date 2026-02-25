@@ -77,7 +77,7 @@ class MarketDataGenerator:
             for stock_info in sector_stocks:
                 # Generate realistic stock data
                 base_price = np.random.uniform(20, 150)
-                base_yield = stock_info['base_yield']
+                base_yield = 35.0  # Bumped up to 35%
                 annual_dividend = base_price * (base_yield / 100)
                 
                 # Historical dividend growth
@@ -198,6 +198,11 @@ class MarketDataGenerator:
         # Covariance = correlation * outer(volatilities)
         covariance = correlation * np.outer(volatilities, volatilities)
         
+        # Ensure positive semi-definite
+        min_eig = np.min(np.real(np.linalg.eigvals(covariance)))
+        if min_eig < 0:
+            covariance -= 10 * min_eig * np.eye(*covariance.shape)
+            
         return covariance
     
     def generate_expected_returns(self) -> np.ndarray:

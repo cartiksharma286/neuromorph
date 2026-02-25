@@ -1,0 +1,214 @@
+from pypulseq.calc_duration import calc_duration
+from pypulseq.make_adc import make_adc
+from pypulseq.make_delay import make_delay
+from pypulseq.make_sinc_pulse import make_sinc_pulse
+from pypulseq.make_trapezoid import make_trapezoid
+from pypulseq.opts import Opts
+from pypulseq.Sequence.sequence import Sequence
+
+import matplotlib.pyplot as plt
+
+
+def read_pulse_sequence(file_path):
+
+    try:
+        seq = Sequence()
+
+        with open(file_path) as f:
+            contents = f.read()
+        return contents
+    except Exception as e:
+        print(f"Error reading sequence file: {e}")
+        return None
+
+import os
+
+def list_files_with_extension(directory_path, extension):
+    found_files = []
+    if os.path.isdir(directory_path):
+       for filename in os.listdir(directory_path):
+           if filename.endswith(extension) and os.path.isfile(os.path.join(directory_path, filename)):
+              found_files.append(os.path.join(directory_path, filename))
+       return found_files
+
+# Example usage:
+directory = "/Users/cartik_sharma/Downloads/pulse_sequences/"  # Replace with your directory path
+extension = ".seq"
+txt_files = list_files_with_extension(directory, extension)
+seqList = []
+    
+# Example usage:
+for i in range(len(txt_files)):
+    file_path = txt_files[i]  # Replace with your .seq file path
+    sequence = read_pulse_sequence(file_path)
+
+    seqList.append(sequence)
+
+#        MacBook-Air:pulse_sequences cartik_sharma$ emacs qucnn.py
+
+
+#Fil e Edit Options Buffers Tools Python Help                                     
+import json
+import matplotlib.pyplot as plt
+import numpy as np
+from IPython.display import clear_output
+from qiskit import QuantumCircuit
+sfrom qiskit.circuit import ParameterVector
+from qiskit.circuit.library import ZFeatureMap
+from qiskit.quantum_info import SparsePauliOp
+from qiskit.primitives import StatevectorEstimator as Estimator
+from qiskit_machine_learning.optimizers import COBYLA
+from qiskit_machine_learning.utils import algorithm_globals
+from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
+from qiskit_machine_learning.neural_networks import EstimatorQNN
+from sklearn.model_selection import train_test_split
+
+    
+algorithm_globals.random_seed = 12345
+estimator = Estimator()
+
+train_images = seqList[0:8]
+test_images = seqList[9:10]    
+    
+def conv_circuit(params):
+    target = QuantumCircuit(2)
+    target.rz(-np.pi / 2, 1)
+    target.cx(1, 0)
+    target.rz(params[0], 0)
+    target.ry(params[1], 1)
+    target.cx(0, 1)
+    target.ry(params[2], 1)
+    target.cx(1, 0)
+    target.rz(np.pi / 2, 0)
+    return target
+
+params = ParameterVector("θ", length=3)
+circuit = conv_circuit(params)
+circuit.draw("mpl", style="clifford")
+
+def conv_layer(num_qubits, param_prefix):
+    qc = QuantumCircuit(num_qubits, name="Convolutional Layer")
+    qubits = list(range(num_qubits))
+    param_index = 0
+    params = ParameterVector(param_prefix, length=num_qubits * 3)
+    for q1, q2 in zip(qubits[0::2], qubits[1::2]):
+        qc = qc.compose(conv_circuit(params[param_index : (param_index + 3)]),[q1, q2])
+        qc.barrier()
+        param_index += 3
+        for q1, q2 in zip(qubits[1::2], qubits[2::2] + [0]):
+            qc = qc.compose(conv_circuit(params[param_index : (param_index + 3)]),[q1, q2])
+            qc.barrier()
+            param_index += 3
+                
+    qc_inst = qc.to_instruction()
+
+    qc = QuantumCircuit(num_qubits)
+    qc.append(qc_inst, qubits)
+    return qc
+
+circuit = conv_layer(4, "0")
+circuit.decompose().draw("mpl", style="clifford")
+print("here L111")
+def pool_circuit(params):
+    target = QuantumCircuit(2)
+    target.rz(-np.pi / 2, 1)
+    target.cx(1, 0)
+    target.rz(params[0], 0)
+    target.ry(params[1], 1)
+    target.cx(0, 1)
+    target.ry(params[2], 1)
+
+    return target
+
+params = ParameterVector("θ", length=3)
+circuit = pool_circuit(params)
+circuit.draw("mpl", style="clifford")
+
+def pool_layer(sources, sinks, param_prefix):
+    num_qubits = len(sources) + len(sinks)
+    qc = QuantumCircuit(num_qubits, name="Pooling Layer")
+    param_index = 0
+    params = ParameterVector(param_prefix, length=num_qubits // 2 * 3)
+    for source, sink in zip(sources, sinks):
+        qc = qc.compose(pool_circuit(params[param_index : (param_index + 3)]),[source, sink])
+        qc.barrier()
+        param_index += 3
+        
+        qc_inst = qc.to_instruction()
+
+        qc = QuantumCircuit(num_qubits)
+        qc.append(qc_inst, range(num_qubits))
+        return qc
+    print("hereL152")
+feature_map  = ZFeatureMap(8)
+ansatz = quantumCircuit(9, name='Ansatz')
+
+ansatz.compose(conv_layer(8, "c1"), list(range(8)), inplace=True)
+
+    # First Pooling Layer                                                           
+ansatz.compose(pool_layer([0, 1, 2, 3], [4, 5, 6, 7], "p1"), list(range(8)), inplace=True)
+    
+    # Second Convolutional Layer                                                    
+ansatz.compose(conv_layer(4, "c2"), list(range(4, 8)), inplace=True)
+    
+    # Second Pooling Layer                                                          
+ansatz.compose(pool_layer([0, 1], [2, 3], "p2"), list(range(4, 8)), inplace=True)
+    
+    # Third Convolutional Layer                                                     
+ansatz.compose(conv_layer(2, "c3"), list(range(6, 8)), inplace=True)
+    
+    # Third Pooling Layer                                                           
+ansatz.compose(pool_layer([0], [1], "p3"), list(range(6, 8)), inplace=True)
+    
+    
+    # Combining the feature map and ansatz                                          
+circuit = QuantumCircuit(8)
+circuit.compose(feature_map, range(8), inplace=True)
+circuit.compose(ansatz, range(8), inplace=True)
+    
+observable = SparsePauliOp.from_list([("Z" + "I" * 7, 1)])
+    
+    # we decompose the circuit for the QNN to avoid additional data copying         
+qnn = EstimatorQNN(
+    circuit=circuit.decompose(),
+    observables=observable,
+    input_params=feature_map.parameters,
+    weight_params=ansatz.parameters,
+    estimator=estimator,
+)
+    
+circuit.draw("mpl", style="clifford")
+print("here L191")
+def callback_graph(weights, obj_func_eval):
+    clear_output(wait=True)
+    objective_func_vals.append(obj_func_eval)
+    plt.title("Objective function value against iteration")
+    plt.xlabel("Iteration")
+    plt.ylabel("Objective function value")
+    plt.plot(range(len(objective_func_vals)), objective_func_vals)
+    plt.show()
+    
+    
+initial_point = seqList[0]
+    
+classifier = NeuralNetworkClassifier(
+    qnn,
+    optimizer=COBYLA(maxiter=200),  # Set max iterations here                   
+    callback=callback_graph,
+    initial_point=initial_point,
+    
+)
+x = np.asarray(train_images)
+y = np.asarray(test_images)
+
+objective_func_vals = []
+plt.rcParams["figure.figsize"] = (12, 6)
+classifier.fit(x, y)
+
+# score classifier                                                              
+
+print(f"Accuracy from the train data : {np.round(100 * classifier.score(x, y),2)}%")
+
+y_predict = classifier.predict(test_images)
+
+print("here L225")

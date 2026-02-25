@@ -1,0 +1,37 @@
+{
+    "session_id": "6ac2d427-b46c-429a-be6a-a1051d118e4b",
+    "timestamp": "20251212_192816",
+    "patient": {
+        "patient_id": "P-90210",
+        "bone_density": 0.75,
+        "gap_size": 4.2
+    },
+    "optimization_params": {
+        "implant_type": "molar",
+        "density": 0.15451174289245984,
+        "surface_roughness": 8.788389069962761,
+        "optimization_confidence": 0.8788389069962762
+    },
+    "results": {
+        "implant_fea": {
+            "max_stress": 107.47035661404797,
+            "min_stress": 0.0,
+            "deformation": 0.053735178307023984,
+            "safety_factor": 2.3262226404959643
+        },
+        "abutment_fea": {
+            "max_stress": 27.5,
+            "min_stress": 0.0,
+            "deformation": 0.01375,
+            "safety_factor": 9.09090578512517
+        },
+        "igs_registration_fre": 2.3087809073546524e-14
+    },
+    "files": {
+        "implant_design": "implant_P-90210_20251212_192816.json",
+        "abutment_design": "abutment_P-90210_20251212_192816.json",
+        "ansys_implant": "analysis_implant_P-90210_20251212_192816.ans",
+        "ansys_abutment": "analysis_abutment_P-90210_20251212_192816.ans",
+        "igs_plan": "igs_plan_6ac2d427-b46c-429a-be6a-a1051d118e4b.json"
+    }
+}

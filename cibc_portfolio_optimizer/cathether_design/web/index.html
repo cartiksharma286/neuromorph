@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Catheter & Stent Designer</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="glass-header">
+            <div class="logo-section">
+                <div class="logo-icon">⚛️</div>
+                <div class="logo-text">
+                    <h1>NVQLink Designer</h1>
+                    <span class="subtitle">Quantum-Optimized Medical Devices</span>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button class="btn btn-secondary" id="load-btn">📂 Load</button>
+                <button class="btn btn-secondary" id="save-btn">💾 Save</button>
+                <button class="btn btn-primary" id="export-btn">📦 Export STL</button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <div class="container">
+            <!-- Mode Switcher -->
+            <div class="mode-switcher" style="margin-bottom: 1rem; display: flex; gap: 1rem;">
+                <button class="btn btn-primary active" id="mode-catheter">Catheter Designer</button>
+                <button class="btn btn-secondary" id="mode-stent">Coronary Stent</button>
+            </div>
+
+            <div class="workspace">
+                <!-- Left Panel: Input Parameters -->
+                <div class="left-panel">
+                    <!-- Catheter Inputs (Default) -->
+                    <div id="catheter-controls">
+                        <!-- Patient Constraints -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2><span class="icon">🏥</span> Patient Constraints</h2>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="vessel-diameter">Vessel Diameter (mm)</label>
+                                <input type="number" id="vessel-diameter" class="input-field" value="5.5" min="2"
+                                    max="10" step="0.1">
+                            </div>
+
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <label>Vessel Curvature (1/mm)</label>
+                                    <span class="slider-value" id="curvature-value">0.15</span>
+                                </div>
+                                <input type="range" id="vessel-curvature" class="slider" min="0" max="0.5" step="0.01"
+                                    value="0.15">
+                            </div>
+
+                            <div class="input-group">
+                                <label for="bifurcation-angle">Bifurcation Angle (°)</label>
+                                <input type="number" id="bifurcation-angle" class="input-field" value="45" min="0"
+                                    max="90" step="1">
+                            </div>
+
+                            <div class="input-group">
+                                <label for="required-length">Required Length (mm)</label>
+                                <input type="number" id="required-length" class="input-field" value="1000" min="500"
+                                    max="2000" step="10">
+                            </div>
+
+                            <div class="input-group">
+                                <label for="flow-rate">Target Flow Rate (ml/min)</label>
+                                <input type="number" id="flow-rate" class="input-field" value="8.0" min="1" max="20"
+                                    step="0.1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stent Inputs (Hidden by default) -->
+                    <div id="stent-controls" style="display: none;">
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2><span class="icon">🧬</span> Stent Parameters</h2>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Material</label>
+                                <select id="stent-material" class="input-field">
+                                    <option value="cocr">Cobalt Chromium (CoCr)</option>
+                                    <option value="nitinol">Nitinol (NiTi)</option>
+                                    <option value="ss316l">Stainless Steel 316L</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Cell Topology</label>
+                                <select id="stent-topology" class="input-field">
+                                    <option value="diamond">Diamond Cell</option>
+                                    <option value="hexagonal">Hexagonal</option>
+                                    <option value="hybrid">Hybrid Open/Closed</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Stent Length (mm)</label>
+                                <input type="number" id="stent-length" class="input-field" value="18.0" step="1.0">
+                            </div>
+
+                            <div class="input-group">
+                                <label>Diameter (mm)</label>
+                                <input type="number" id="stent-diameter" class="input-field" value="3.0" step="0.1">
+                            </div>
+
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <label>Strut Thickness (µm)</label>
+                                    <span class="slider-value" id="thickness-value">80</span>
+                                </div>
+                                <input type="range" id="strut-thickness" class="slider" min="50" max="150" step="5"
+                                    value="80">
+                            </div>
+
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <label>Crowns per Ring</label>
+                                    <span class="slider-value" id="crowns-value">6</span>
+                                </div>
+                                <input type="range" id="crowns-count" class="slider" min="4" max="12" step="1"
+                                    value="6">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Optimization Settings -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2><span class="icon">⚛️</span> Quantum Settings</h2>
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <label>Qubits</label>
+                                <span class="slider-value" id="qubits-value">8</span>
+                            </div>
+                            <input type="range" id="qubits" class="slider" min="4" max="12" step="1" value="8">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <label>Circuit Layers</label>
+                                <span class="slider-value" id="layers-value">3</span>
+                            </div>
+                            <input type="range" id="layers" class="slider" min="1" max="5" step="1" value="3">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <label>Max Iterations</label>
+                                <span class="slider-value" id="iterations-value">100</span>
+                            </div>
+                            <input type="range" id="iterations" class="slider" min="20" max="200" step="10" value="100">
+                        </div>
+
+                        <button class="btn btn-primary" id="optimize-btn" style="width: 100%; margin-top: 1rem;">
+                            <span>▶️ Start Optimization</span>
+                        </button>
+
+                        <button class="btn btn-secondary" id="run-lbm-btn"
+                            style="width: 100%; margin-top: 0.5rem; display: none;">
+                            <span>🌊 Run LBM Simulation</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Center Panel: 3D Viewer -->
+                <div class="center-panel">
+                    <div class="glass-card" style="height: 100%;">
+                        <div class="card-header">
+                            <h2><span class="icon">🎯</span> 3D Preview</h2>
+                            <div class="status-badge" id="status-badge">
+                                <span class="status-indicator"></span>
+                                <span id="status-text">Ready</span>
+                            </div>
+                        </div>
+
+                        <div id="viewer-container">
+                            <!-- Three.js canvas will be inserted here -->
+                            <div class="viewer-controls">
+                                <button class="control-btn" id="reset-view" data-tooltip="Reset View">
+                                    🎯
+                                </button>
+                                <button class="control-btn" id="wireframe-toggle" data-tooltip="Toggle Wireframe">
+                                    🔲
+                                </button>
+                                <button class="control-btn" id="rotate-toggle" data-tooltip="Auto Rotate">
+                                    🔄
+                                </button>
+                                <button class="control-btn" id="xray-toggle" data-tooltip="X-Ray View">
+                                    👁️
+                                </button>
+                                <button class="control-btn" id="flow-toggle" data-tooltip="Toggle Flow Viz"
+                                    style="display: none;">
+                                    🌊
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Analysis -->
+                <div class="right-panel">
+                    <!-- Quantum Circuit Viz -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2><span class="icon">🔄</span> Quantum Circuit</h2>
+                        </div>
+                        <div class="circuit-container">
+                            <canvas id="circuit-canvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Optimization Progress -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2><span class="icon">📈</span> Convergence</h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="convergence-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Performance Metrics -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2><span class="icon">📊</span> Performance</h2>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <span class="metric-label">Pressure Drop</span>
+                                <span class="metric-value" id="pressure-drop">--</span>
+                                <span class="metric-unit">Pa</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Reynolds No.</span>
+                                <span class="metric-value" id="reynolds">--</span>
+                                <span class="metric-unit">Re</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Flexibility</span>
+                                <span class="metric-value" id="flexibility">--</span>
+                                <span class="metric-unit">Index</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Avg Velocity</span>
+                                <span class="metric-value" id="velocity">--</span>
+                                <span class="metric-unit">cm/s</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Output Parameters -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2><span class="icon">📐</span> Optimized Design</h2>
+                        </div>
+                        <div class="output-grid">
+                            <div class="output-item">
+                                <label>Outer Diameter</label>
+                                <input type="text" id="output-od" readonly value="--">
+                            </div>
+                            <div class="output-item">
+                                <label>Inner Diameter</label>
+                                <input type="text" id="output-id" readonly value="--">
+                            </div>
+                            <div class="output-item">
+                                <label>Wall Thickness</label>
+                                <input type="text" id="output-wall" readonly value="--">
+                            </div>
+                            <div class="output-item">
+                                <label>Tip Angle</label>
+                                <input type="text" id="output-tip" readonly value="--">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="quantum_viz.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
