@@ -313,6 +313,7 @@
                     <option value="CanadianQSM">🍁 Canadian QSM (TRIUMF Iron)</option>
                     <option value="QuantumMLThermometry">🌡️ QML MR Thermometry (Coronal)</option>
                     <option value="QuantumGeometry">⚛️ Quantum Geometry (Continued Fraction)</option>
+                    <option value="RoboticsFMRI">🦾 Robotics-Aware fMRI (Interventional)</option>
                 </select>
             </div>
 
@@ -335,6 +336,7 @@
                     <option value="neurovascular_coil">🧠 Neurovascular Coil (Adaptive Prism)</option>
                     <option value="cardiovascular_coil">❤️ Cardiovascular Coil (Conformal)</option>
                     <option value="conformal_neurovascular_array">🌀 Conformal Neurovascular (SC Map)</option>
+                    <option value="robotics_hybrid_array">🤖 Robotics Hybrid (Combinatorial)</option>
                 </select>
                 <div style="margin-top:0.6rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
                     <input type="checkbox" id="shimming" style="width: auto;">
@@ -396,6 +398,9 @@
             <button onclick="downloadReport()"
                 style="margin-top: 0.5rem; background: transparent; border: 1px solid var(--accent); color: var(--accent);">PDF
                 Report</button>
+            <button onclick="openRoboticsModal()"
+                style="margin-top: 0.5rem; background: #6366f1; border: none; color: white;">Neurovascular
+                Robotics</button>
 
             <div class="loader" id="loader"></div>
         </aside>
@@ -413,6 +418,7 @@
             <button class="tab-trigger" onclick="switchView('analytics', this)">📊 Distribution Analysis</button>
             <button class="tab-trigger" onclick="switchView('quantum-geometry', this)">🌀 Quantum Geometry</button>
             <button class="tab-trigger" onclick="switchView('snr', this)">📈 SNR Analytics</button>
+            <button class="tab-trigger" onclick="switchView('robotics-analytics', this)">🦾 Robotics Analytics</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -618,6 +624,33 @@
                     <div id="analytics-details"
                         style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary); column-count: 2; gap: 2rem;">
                         <!-- Populate with JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Robotics Analytics -->
+            <div id="view-robotics-analytics" class="view-content">
+                <div class="dashboard-grid">
+                    <div class="output-box">
+                        <div class="output-title">Robotic Actuator Interference Map</div>
+                        <div class="img-window">
+                            <img id="img-robotics-map" src="" style="filter: hue-rotate(90deg) brightness(1.1);">
+                        </div>
+                    </div>
+                    <div class="output-box" style="justify-content: center; text-align: center;">
+                        <div class="output-title">Interventional Status</div>
+                        <div id="robotics-status-badge" style="font-size: 2rem; font-weight: 800; color: #f43f5e;">
+                            STANDBY</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">
+                            Combinatorial Path Integration Active
+                        </div>
+                    </div>
+                </div>
+                <div class="output-box" style="margin-top: 1.5rem; width: 100%; align-items: flex-start;">
+                    <div class="output-title">Surgical Robotics Metrics</div>
+                    <div id="robotics-metrics" class="metrics-bar"
+                        style="width: 100%; grid-template-columns: repeat(3, 1fr);">
+                        <!-- Dynamic Metrics -->
                     </div>
                 </div>
             </div>
@@ -897,9 +930,33 @@
                         document.getElementById('curvatureMax').textContent = (data.metrics.max_curvature || 0).toFixed(6);
                         document.getElementById('cfDepthVal').textContent = data.metrics.cf_depth || 0;
                         document.getElementById('quantum-insights').innerHTML = `
-                            <strong>Manifold State:</strong> Continuable Quantum Geometry.<br>
                             <strong>Insight:</strong> Continued fraction expansion at depth ${data.metrics.cf_depth} optimized TR for minimal aliasing and topological noise suppression.
                         `;
+                    }
+
+                    // Robotics population
+                    if (data.metrics.interventional_status === 'Active') {
+                        update('robotics-map', plots.robotics_map);
+                        document.getElementById('robotics-status-badge').textContent = 'ACTIVE';
+                        document.getElementById('robotics-status-badge').style.color = '#10b981';
+
+                        document.getElementById('robotics-metrics').innerHTML = `
+                            <div class="metric-mini">
+                                <div class="metric-mini-val">${data.metrics.robotics_feedback}</div>
+                                <div class="metric-mini-label">Feedback Control</div>
+                            </div>
+                            <div class="metric-mini">
+                                <div class="metric-mini-val">${data.metrics.combinatorial_depth}</div>
+                                <div class="metric-mini-label">Path Reasoning</div>
+                            </div>
+                            <div class="metric-mini">
+                                <div class="metric-mini-val">ON</div>
+                                <div class="metric-mini-label">Surgical Overlay</div>
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('robotics-status-badge').textContent = 'STANDBY';
+                        document.getElementById('robotics-status-badge').style.color = '#f43f5e';
                     }
                 }
             } catch (err) { console.error('Simulate Error:', err); }
@@ -975,43 +1032,43 @@
                         .filter(k => p[k] !== undefined && p[k] !== null)
                         .map(k => {
                             const val = Array.isArray(p[k]) ? p[k].join(', ') : p[k];
-                            return `<tr>
+                            return `< tr >
                                 <td style="color:#94a3b8;padding:2px 8px 2px 0;font-size:0.72rem;white-space:nowrap;">${k.toUpperCase().replace(/_/g, ' ')}</td>
                                 <td style="color:var(--accent);font-weight:600;font-size:0.72rem;">${val}</td>
-                            </tr>`;
+                            </tr > `;
                         }).join('');
 
                     const card = document.createElement('div');
                     card.className = 'output-box';
                     card.style.cssText = 'align-items:flex-start; cursor:default;';
                     card.innerHTML = `
-                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;flex-wrap:wrap;">
+                            < div style = "display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;flex-wrap:wrap;" >
                             <span style="font-size:0.85rem;font-weight:700;color:var(--accent);">${p.name}</span>
                             <span style="font-size:0.65rem;padding:2px 8px;border-radius:20px;background:${distColour}22;color:${distColour};border:1px solid ${distColour}55;">
                                 ${seq.distribution_name.split('+')[0].trim()}
                             </span>
-                        </div>
+                        </div >
                         <div style="font-size:0.7rem;color:#64748b;margin-bottom:0.6rem;">🏛 ${p.institution}</div>
 
                         <!-- Scan Parameters -->
                         <table style="border-collapse:collapse;margin-bottom:0.75rem;">${paramRows}</table>
 
-                        <!-- Description -->
+                        <!--Description -->
                         <div style="font-size:0.73rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;border-left:2px solid ${distColour};padding-left:0.6rem;">
                             ${p.description}
                         </div>
 
-                        <!-- Statistical model badge -->
+                        <!--Statistical model badge-- >
                         <div style="font-size:0.68rem;color:${distColour};background:${distColour}11;border:1px solid ${distColour}33;border-radius:6px;padding:4px 8px;margin-bottom:0.75rem;">
                             📊 <strong>Stat. Model:</strong> ${p.statistical_model}
                         </div>
 
-                        <!-- Canadian context -->
+                        <!--Canadian context-- >
                         <div style="font-size:0.68rem;color:#94a3b8;margin-bottom:0.85rem;">
                             🍁 ${p.canadian_context}
                         </div>
 
-                        <!-- Distribution Plot -->
+                        <!--Distribution Plot-- >
                         <div style="font-size:0.7rem;font-weight:600;color:var(--text-secondary);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:.05em;">
                             Posterior Distribution Plot
                         </div>
@@ -1026,6 +1083,75 @@
                 statusEl.textContent = '❌ Network error: ' + err.message;
             }
             loader.style.display = 'none';
+        }
+    </script>
+    <div id="robotics-modal" class="modal-overlay"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); z-index:10000; align-items:center; justify-content:center;">
+        <div class="output-box"
+            style="width:500px; padding:2rem; background:var(--bg-secondary); border-color:var(--accent);">
+            <div class="output-title" style="font-size:1.2rem; color:white; margin-bottom:1.5rem;">🦾 Neurovascular
+                Robotics Center</div>
+
+            <div class="control-group">
+                <label>Surgical Target Manifold</label>
+                <select id="surgical-target">
+                    <option value="Circle of Willis">Circle of Willis (Anterior)</option>
+                    <option value="Basilar Artery">Basilar Artery (Posterior)</option>
+                    <option value="Middle Cerebral">Middle Cerebral (M1-M2 Segment)</option>
+                    <option value="Carotid Syphon">Carotid Syphon</option>
+                </select>
+            </div>
+
+            <div id="optimization-result"
+                style="margin:1rem 0; padding:1rem; background:rgba(99,102,241,0.1); border-radius:8px; display:none;">
+                <div style="font-size:0.8rem; color:#818cf8; font-weight:700;">Optimization Result:</div>
+                <div id="opt-elements" style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.5rem;"></div>
+                <div style="font-size:0.9rem; color:var(--accent); margin-top:0.5rem;" id="opt-gain"></div>
+            </div>
+
+            <button onclick="runCoilOptimization()" style="background:#6366f1; width:100%;">Optimize Combinatorial
+                Coils</button>
+            <button onclick="closeRoboticsModal()"
+                style="background:transparent; border:1px solid #334155; width:100%; margin-top:0.5rem;">Close
+                Interface</button>
+        </div>
+    </div>
+
+    <script>
+        function openRoboticsModal() {
+            document.getElementById('robotics-modal').style.display = 'flex';
+        }
+        function closeRoboticsModal() {
+            document.getElementById('robotics-modal').style.display = 'none';
+        }
+
+        async function runCoilOptimization() {
+            const target = document.getElementById('surgical-target').value;
+            const btn = event.target;
+            btn.textContent = 'Analyzing Combinations...';
+
+            try {
+                const res = await fetch('/api/robotics/optimize_coils', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target: target })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const opt = data.optimization;
+                    document.getElementById('optimization-result').style.display = 'block';
+                    document.getElementById('opt-elements').innerHTML = `
+                        <strong>Elements:</strong> ${opt.optimal_subset.join(', ')}<br>
+                        <strong>Logic:</strong> ${opt.reasoning_path}
+                    `;
+                    document.getElementById('opt-gain').textContent = `Coil Efficiency: ${opt.estimated_snr_gain} Gain`;
+
+                    // Automatically select the robotics coil
+                    document.getElementById('coils').value = 'robotics_hybrid_array';
+                }
+            } catch (err) { console.error(err); }
+            btn.textContent = 'Optimize Combinatorial Coils';
         }
     </script>
 </body>

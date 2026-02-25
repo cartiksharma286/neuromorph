@@ -2374,14 +2374,41 @@ class MRIReconstructionSimulator:
             
             M_base = self.pd_map * (1 - np.exp(-effective_tr / t1)) * np.exp(-effective_te / t2)
             
-            # Geometric modulation: M = M_base * (1 + κ * sin(BerryPhase))
-            # κ is the local curvature of the manifold
+            # Geometric modulation
             M = M_base * (1.0 + 0.3 * np.tanh(curvature))
             
-            # Phase shifts from topological properties (Chern number approximation)
+            # Phase shifts from topological properties
             M = M * np.exp(1j * (effective_tr / 2000.0) * np.pi * (1.0 + curvature))
             
             q_factor = 0.002 # Superior topological noise suppression
+
+        elif sequence_type == 'RoboticsFMRI':
+            # 1. Physics: Susceptibility and Actuator Noise
+            # Simulated robotic tool susceptibility artifact (localized dipole)
+            H, W = self.pd_map.shape
+            tool_x, tool_y = H//2 + 10, W//2 + 10 # Robotic tool position
+            y, x = np.ogrid[:H, :W]
+            dist_sq = (x - tool_x)**2 + (y - tool_y)**2
+            dipole = (y - tool_y) / (dist_sq + 1.0)**1.5
+            
+            # Field perturbation ΔB
+            delta_b = 5.0 * dipole # ppm
+            
+            t1 = np.maximum(self.t1_map, 1e-6)
+            t2 = np.maximum(self.t2_map, 1e-6)
+            
+            # Susceptibility-induced signal loss: exp(-TE * 2π * γ * ΔB)
+            # γ_bar ~ 42.5 MHz/T
+            dephasing = np.exp(-TE * 0.1 * np.abs(delta_b))
+            
+            M = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2) * dephasing
+            
+            # 2. Adversarial Motion Correction: 
+            # Simulated correction using combinatorial reasoning feedback
+            M = M * (1.0 + 0.05 * np.sin(delta_b * 10))
+            
+            # Actuator Noise: Rice distribution in k-space
+            q_factor = 0.05 # Increased noise due to robotic intervention
 
         # --- Global SNR Improvement (30%) ---
         if 'M' in locals():

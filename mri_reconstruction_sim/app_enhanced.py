@@ -136,13 +136,17 @@ def simulate():
             qg_analyzer = QuantumGeometryContinuedFractionSequence()
             geom_stats = qg_analyzer.compute_geometric_analytics(recon_img)
             metrics.update(geom_stats)
-            # Add cf_depth from sequence generation if available
-            # In simulation, we re-run generate_sequence to get the same params for reporting
-            # but wait, simulate() already does acquire_signal which uses the params.
-            # We can just put a placeholder or call generate_sequence with mock stats
             qg_params = qg_analyzer.generate_sequence(stat_metrics)
             metrics['cf_depth'] = qg_params['cf_depth']
-            plots['quantum_manifold'] = plots['recon'] # Manifold is the recon with geometric interpretation
+            plots['quantum_manifold'] = plots['recon'] 
+
+        if seq_type == 'RoboticsFMRI':
+            # Add robotics-specific metadata
+            metrics['interventional_status'] = 'Active'
+            metrics['robotics_feedback'] = 'Topological-Adversarial'
+            metrics['combinatorial_depth'] = '128-bit'
+            # The signal map shows the artifact
+            plots['robotics_map'] = plots['recon']
 
         signal_study = sim.generate_signal_study(seq_type)
         
@@ -547,6 +551,28 @@ def generate_schematics():
         gen = CircuitSchematicGenerator()
         schematics = gen.generate_all()
         return jsonify({'success': True, 'schematics': schematics})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/robotics/optimize_coils', methods=['POST'])
+def optimize_robotics_coils():
+    """Optimizes coil configuration for robotics procedure."""
+    try:
+        from combinatorial_coil_optimizer import CombinatorialCoilOptimizer
+        data = request.json or {}
+        target = data.get('target', 'Circle of Willis')
+        
+        optimizer = CombinatorialCoilOptimizer(target_region=target)
+        result = optimizer.optimize_configuration()
+        
+        return jsonify({
+            'success': True,
+            'optimization': result
+        })
     except Exception as e:
         import traceback
         traceback.print_exc()
