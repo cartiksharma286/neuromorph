@@ -109,7 +109,12 @@ def simulate():
             recon_img = sim.deep_learning_reconstruct(kspace)
             coil_imgs = []
         else:
-            recon_img, coil_imgs = sim.reconstruct_image(kspace, method=recon_method)
+            recon_img, coil_imgs = sim.reconstruct_image(
+                kspace, 
+                method=recon_method,
+                noise_filter=data.get('noise_filter', 'None'),
+                morphological_cleanup=data.get('morphological_cleanup', False)
+            )
         
         metrics = sim.compute_metrics(recon_img, M_ref)
         stat_metrics = sim.classifier.analyze_image(recon_img)

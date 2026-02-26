@@ -373,6 +373,20 @@
             </div>
 
             <div class="control-group">
+                <label>Artifact & Noise Suppression</label>
+                <select id="noise_filter" onchange="debouncedRun()">
+                    <option value="None">Suppression: Off</option>
+                    <option value="Low">Filter: Low (Median)</option>
+                    <option value="Medium">Filter: Medium (Hybrid)</option>
+                    <option value="High">Filter: High (Recursive)</option>
+                </select>
+                <div style="margin-top:0.6rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
+                    <input type="checkbox" id="morphological_cleanup" style="width: auto;" onchange="debouncedRun()">
+                    <span>Morphological Blob Removal</span>
+                </div>
+            </div>
+
+            <div class="control-group">
                 <label>Scan Parameters</label>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
                     <input type="number" id="tr" value="2000" placeholder="TR">
@@ -812,7 +826,9 @@
                 recon_method: document.getElementById('recon_method').value,
                 shimming: document.getElementById('shimming').checked,
                 slice_orientation: document.getElementById('slice_orientation').value,
-                slice_pos: document.getElementById('slice_pos').value
+                slice_pos: document.getElementById('slice_pos').value,
+                noise_filter: document.getElementById('noise_filter').value,
+                morphological_cleanup: document.getElementById('morphological_cleanup').checked
             };
 
             try {

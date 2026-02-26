@@ -30,6 +30,8 @@ def render_equation(eq_text, filename, dpi=300):
         clean_eq = clean_eq[2:-2]
     
     # Matplotlib needs $ for math mode
+    # Replace \pmod which is unsupported in Matplotlib mathtext
+    clean_eq = clean_eq.replace(r'\pmod', r'\text{ mod }')
     tex = f"${clean_eq}$"
     
     try:
@@ -41,7 +43,7 @@ def render_equation(eq_text, filename, dpi=300):
         plt.close(fig)
         return True
     except Exception as e:
-        print(f"Failed to render equation: {Clean_eq}. Error: {e}")
+        print(f"Failed to render equation: {clean_eq}. Error: {e}")
         plt.close(fig)
         return False
 
@@ -99,20 +101,47 @@ def parse_markdown(md_content, story, styles):
             img_filename = f"eq_{img_counter}.png"
             if render_equation(eq_tex, img_filename):
                 # Add Image
-                img = Image(img_filename)
-                # Scale if too wide?
-                img_width = img.drawWidth
-                max_width = 6*inch
-                if img_width > max_width:
-                    ratio = max_width / img_width
-                    img.drawHeight *= ratio
+                try:
+                    img = Image(img_filename)
+                    # Scale if too wide?
+                    max_width = 4*inch
+                    ratio = max_width / img.drawWidth
                     img.drawWidth = max_width
-                
-                story.append(img)
-                img_counter += 1
+                    img.drawHeight *= ratio
+                    story.append(img)
+                    img_counter += 1
+                except:
+                    story.append(Paragraph(f"[Equation Render Error]", caption_style))
             else:
                 story.append(Paragraph(f"[Equation Error: {line}]", caption_style))
                 
+        elif line.startswith('![') and '](' in line:
+            flush_buffer()
+            # Image Reference: ![caption](file:///path/to/image.png)
+            match = re.match(r'!\[(.*?)\]\((.*?)\)', line)
+            if match:
+                caption, img_path = match.groups()
+                # Remove file:// prefix if present
+                if img_path.startswith('file://'):
+                    img_path = img_path.replace('file://', '')
+                
+                if os.path.exists(img_path):
+                    try:
+                        img = Image(img_path)
+                        max_width = 5.5*inch
+                        if img.drawWidth > max_width:
+                            ratio = max_width / img.drawWidth
+                            img.drawWidth = max_width
+                            img.drawHeight *= ratio
+                        story.append(img)
+                        if caption:
+                            story.append(Paragraph(caption, caption_style))
+                        story.append(Spacer(1, 0.1*inch))
+                    except Exception as e:
+                        story.append(Paragraph(f"[Image Error: {e}]", caption_style))
+                else:
+                    story.append(Paragraph(f"[Image Not Found: {img_path}]", caption_style))
+
         elif line.startswith('- ') or line.startswith('* '):
             flush_buffer()
             item_text = line[2:]
