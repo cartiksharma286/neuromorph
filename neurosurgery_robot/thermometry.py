@@ -109,6 +109,10 @@ class MRIThermometry:
         # Performance metrics
         self.computation_time_ms = 0.0
         
+        # Laser state for visuals
+        self.laser_active = False
+        self.laser_pos = (0, 0)
+        
     def _initialize_tissue_map(self):
         """Initialize heterogeneous tissue map"""
         tissue = np.zeros((self.height, self.width), dtype=np.int32)
@@ -139,6 +143,10 @@ class MRIThermometry:
             enabled: Whether laser is active
             pattern: Optional 2D quantum-generated heat pattern
         """
+        # Track laser state for visuals
+        self.laser_active = enabled
+        self.laser_pos = (x, y)
+        
         if not enabled or power <= 0:
             return
         
@@ -147,10 +155,15 @@ class MRIThermometry:
             # Use quantum-generated pattern (already normalized 0-1)
             source = power * pattern
         else:
-            # Gaussian beam profile
+            # Enhanced Gaussian beam profile with high-intensity core
             xx, yy = np.meshgrid(np.arange(self.width), np.arange(self.height))
-            sigma = 2.5  # Beam width
-            source = power * np.exp(-((xx - x)**2 + (yy - y)**2) / (2 * sigma**2))
+            sigma = 2.0  # Slightly narrower beam for precision
+            sigma_core = 0.8 # Ultra-hot core
+            
+            # Core + Fringe model
+            fringe = 0.7 * np.exp(-((xx - x)**2 + (yy - y)**2) / (2 * sigma**2))
+            core = 0.3 * np.exp(-((xx - x)**2 + (yy - y)**2) / (2 * sigma_core**2))
+            source = power * (fringe + core)
         
         # Tissue-dependent absorption
         absorption_factor = np.ones_like(source)
@@ -191,13 +204,14 @@ class MRIThermometry:
         
         # Track history
         self.time_step_count += 1
-        if self.time_step_count % 5 == 0:
+        # Increased frequency for smoother profile (every 2 steps instead of 5)
+        if self.time_step_count % 2 == 0:
             self.max_temp_history.append(float(np.max(self.temperature_map)))
             self.avg_temp_history.append(float(np.mean(self.temperature_map)))
             self.damage_history.append(float(np.max(self.damage_map)))
             
-            # Keep history bounded
-            if len(self.max_temp_history) > 200:
+            # Keep history bounded (increased buffer for higher frequency)
+            if len(self.max_temp_history) > 500:
                 self.max_temp_history.pop(0)
                 self.avg_temp_history.pop(0)
                 self.damage_history.pop(0)
@@ -250,10 +264,19 @@ class MRIThermometry:
         # Handle boundary conditions (Neumann: zero flux)
         # Set boundary coefficients to maintain stability
         
-        # Create sparse matrix
-        diagonals = [main_diag, off_diag, off_diag, off_diag_w, off_diag_w]
-        offsets = [0, -1, 1, -self.width, self.width]
-        A = diags(diagonals, offsets, shape=(n, n), format='csr')
+        # Create sparse matrix with correct boundary handling
+        A = diags(
+            [main_diag, off_diag, off_diag, off_diag_w, off_diag_w],
+            [0, -1, 1, -self.width, self.width],
+            shape=(n, n), format='csr'
+        )
+        
+        # Ensure no cross-boundary wrap-around for horizontal connections
+        # (Connections across width boundaries should be zero)
+        for i in range(1, self.height):
+            idx = i * self.width
+            A[idx, idx-1] = 0
+            A[idx-1, idx] = 0
         
         # Right-hand side: current temperature + source terms
         # Perfusion term

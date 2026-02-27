@@ -9,14 +9,17 @@ import math
 import cmath
 import random
 import os
+import time
+import threading
 from ane_simulation import ane_processor
 from prime_math_core import PrimeVortexField
-from generative_quantum_core import GenerativeQuantumOptimizer
 from combinatorial_manifold_neurogenesis import (
-    PTSDDementiaRepairModel, 
+    PTSDDementiaRepairModel,
     CombinatorialManifold,
     FiniteMathCongruenceSystem
 )
+from game_theory_core import GameTheoryOptimizer, CombinatorialGameOptimizer
+from generative_quantum_core import GenerativeQuantumOptimizer, UncertaintyPrincipleManifest
 
 
 app = FastAPI()
@@ -132,6 +135,8 @@ class DementiaState(BaseModel):
     plasticity_index: float
     synaptic_density: float
     memory_coherence: float
+    nim_game_stability: float
+    uncertainty_bound_compliance: float
     recommended_exercise: str
 
 class TreatmentInput(BaseModel):
@@ -144,8 +149,13 @@ class DementiaTreatmentModel(QuantumCircuitModel):
         super().__init__(num_qubits)
         self.prime_field = PrimeVortexField(num_qubits)
         self.gen_ai = GenerativeQuantumOptimizer(num_qubits, self.prime_field)
+        self.cgt_opt = CombinatorialGameOptimizer(num_qubits)
+        self.uncertainty_man = UncertaintyPrincipleManifest(num_qubits)
         self.plasticity = 0.5 # Ability to form new connections
         self.degradation_rate = 0.01 # Natural decay over time
+        self._status_lock = threading.Lock()
+        self._cached_status = None
+        self._last_status_update = 0
         
         # Simulate initial dementia state (reduced connectivity)
         edges = list(self.topology.edges())
@@ -311,6 +321,37 @@ class DementiaTreatmentModel(QuantumCircuitModel):
             log.append(f" Optimized {count} synaptic weights via Reverse Diffusion.")
             log.append(f" Variational Free Energy minimized: {initial_F:.2f} -> {final_F:.2f}")
 
+        elif treatment_type == 'combinatorial_game':
+            # CGT: Nim-sum stabilization and Surreal mapping
+            log.append("Executing Combinatorial Game Optimization (Nim-Theory)")
+            
+            # Find P-Position (Stabilized informatics)
+            p_weights = self.cgt_opt.find_p_position_weights(self.topology, self.qubits, self.entanglements)
+            
+            # Apply with intensity
+            for k in p_weights:
+                current = self.entanglements.get(k, 0)
+                self.entanglements[k] = current + (p_weights[k] - current) * intensity
+                
+            stability = self.cgt_opt.calculate_game_stability(self.topology, self.entanglements, self.qubits)
+            log.append(f" Network moved towards P-Position. Nim-Stability: {stability:.4f}")
+            log.append(" Synaptic weights quantized to Surreal dyadic rationals.")
+
+        elif treatment_type == 'uncertainty_manifest':
+            # Uncertainty Principle: Heisenberg Regularization
+            log.append("Manifesting Uncertainty Principle Regularization (Heisenberg Bound)")
+            
+            # Apply regularization to prevent over-certainty (rigidity)
+            reg_weights = self.uncertainty_man.apply_uncertainty_regularization(self.entanglements, self.qubits)
+            self.entanglements.update(reg_weights)
+            
+            # Global uncertainty check
+            violations = self.uncertainty_man.calculate_heisenberg_violation(self.qubits)
+            total_v = sum(violations)
+            log.append(f" Heisenberg Regularization applied. Residual Bound Violation: {total_v:.4f}")
+            log.append(" Injected quantum noise to preserve neuroplasticity substrate.")
+
+
 
 
         elif treatment_type == 'cognitive_enhancement':
@@ -398,35 +439,47 @@ class DementiaTreatmentModel(QuantumCircuitModel):
             "ramanujan_congruence_ratio": congruence_ratio,
             "plasticity_index": self.plasticity,
             "synaptic_density": len(self.entanglements) / (self.num_qubits * 4),
-            "global_coherence": np.mean([q.excitation_prob for q in self.qubits])
+            "global_coherence": np.mean([q.excitation_prob for q in self.qubits]),
+            "uncertainty_bound_compliance": 1.0 - sum(self.uncertainty_man.calculate_heisenberg_violation(self.qubits)) / self.num_qubits,
+            "nim_game_stability": self.cgt_opt.calculate_game_stability(self.topology, self.entanglements, self.qubits)
         }
 
-    def analyze_status(self) -> DementiaState:
-        # Metrics
-        num_edges = len(self.entanglements)
-        max_edges = self.num_qubits * 4 # Approximation based on Watts-Strogatz k=4
-        density = num_edges / max_edges if max_edges > 0 else 0
-        
-        avg_strength = np.mean(list(self.entanglements.values())) if self.entanglements else 0
-        
-        # Stage estimation
-        if density < 0.3:
-            stage = "Late Stage / Severe"
-            rec = "Sensory Integration (Palliative)"
-        elif density < 0.6:
-            stage = "Moderate Decline"
-            rec = "Memory Tags & Cues (Maintenance)"
-        else:
-            stage = "Early Stage / At Risk"
-            rec = "Neuroplasticity Training (Prevention)"
+    def analyze_status(self, force_refresh=False) -> DementiaState:
+        with self._status_lock:
+            now = time.time()
+            # Cache for 1 second unless forced
+            if not force_refresh and self._cached_status and (now - self._last_status_update < 1.0):
+                return self._cached_status
+
+            # Metrics
+            num_edges = len(self.entanglements)
+            max_edges = self.num_qubits * 4 # Approximation based on Watts-Strogatz k=4
+            density = num_edges / max_edges if max_edges > 0 else 0
             
-        return DementiaState(
-            stage=stage,
-            plasticity_index=self.plasticity,
-            synaptic_density=density,
-            memory_coherence=avg_strength,
-            recommended_exercise=rec
-        )
+            avg_strength = np.mean(list(self.entanglements.values())) if self.entanglements else 0
+            
+            # Stage estimation
+            if density < 0.3:
+                stage = "Late Stage / Severe"
+                rec = "Sensory Integration (Palliative)"
+            elif density < 0.6:
+                stage = "Moderate Decline"
+                rec = "Memory Tags & Cues (Maintenance)"
+            else:
+                stage = "Early Stage / At Risk"
+                rec = "Neuroplasticity Training (Prevention)"
+                
+            self._cached_status = DementiaState(
+                stage=stage,
+                plasticity_index=self.plasticity,
+                synaptic_density=density,
+                memory_coherence=avg_strength,
+                nim_game_stability=self.cgt_opt.calculate_game_stability(self.topology, self.entanglements, self.qubits),
+                uncertainty_bound_compliance=1.0 - sum(self.uncertainty_man.calculate_heisenberg_violation(self.qubits)) / self.num_qubits,
+                recommended_exercise=rec
+            )
+            self._last_status_update = now
+            return self._cached_status
 
 class EthicalOversight:
     """
@@ -609,15 +662,31 @@ import time
 
 # --- ANE Background Thread ---
 def run_ane_simulation_loop():
-    """
-    Runs the ANE simulation in a separate thread.
-    This ensures 'processor optimization' by not blocking the main server loop
-    and allows for smooth, continuous physics updates.
-    """
-    print("[SYSTEM] Starting Apple Neural Engine (ANE) Background Thread...")
+    """ Runs the ANE simulation in a separate thread, linked to quantum coherence. """
+    print("[SYSTEM] Starting Apple Neural Engine (ANE) Background Thread (Coherence Linked)...")
     while True:
-        ane_processor.update()
-        time.sleep(0.05) # 50ms tick rate (20Hz)
+        try:
+            # Observational Interop: ANE power scales with network coherence
+            # We access the global dementia_brain status.
+            # Use cached status to avoid heavy re-computation on every 50ms tick.
+            status = dementia_brain.analyze_status()
+            coherence = status.memory_coherence
+            
+            # Update ANE processor with derived metrics
+            # High Performance: Scaling ANE capabilities based on neural health
+            ane_processor.total_tops = 128 + (coherence * 672) # Up to 800 TOPS
+            ane_processor.bandwidth = 100 + (coherence * 300)   # Up to 400 GB/s
+            
+            # Thermal efficiency increases with lower frustration (higher stability)
+            stability = status.nim_game_stability
+            ane_processor.efficiency = min(100, 50 + stability * 50)
+            
+            # Physics update
+            ane_processor.update()
+        except Exception as e:
+            # print(f"[ANE DEBUG] {e}") # Suppress for production
+            pass
+        time.sleep(0.05) # 50ms tick rate
 
 @app.on_event("startup")
 def startup_event():
@@ -643,6 +712,13 @@ def run_ane_benchmark(req: BenchmarkRequest):
     floppy = req.complexity_tflops * 1e12
     ane_processor.submit_job(req.model_name, floppy)
     return {"status": "Job Submitted", "job": req.model_name}
+
+@app.get("/api/quantum/uncertainty_stats")
+def get_uncertainty_stats():
+    """Returns the phase-space density manifest."""
+    density = dementia_brain.uncertainty_man.get_phase_space_density(dementia_brain.qubits)
+    return {"phase_space_density": density}
+
 
 # Serve static files for frontend
 # Static files mount moved to end of file to avoid masking API routes
@@ -807,6 +883,18 @@ def get_manifold_statistics(pathology_type: str):
         return stats
     else:
         raise HTTPException(status_code=400, detail="Invalid pathology type")
+
+@app.get("/api/manifold/current_stats/{pathology_type}")
+def get_current_manifold_stats(pathology_type: str):
+    """Get current topology metrics without requiring a repair cycle."""
+    global manifold_dementia, manifold_ptsd
+    
+    model = manifold_dementia if pathology_type == 'dementia' else manifold_ptsd
+    
+    if model is None:
+        raise HTTPException(status_code=404, detail=f"{pathology_type} manifold not initialized")
+        
+    return model.analyze_topology()
 
 @app.get("/api/manifold/comparison")
 def get_manifold_comparison():

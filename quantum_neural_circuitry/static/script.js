@@ -103,6 +103,13 @@ function updateDementiaUI(data) {
     document.getElementById('val-plasticity').innerText = data.plasticity_index.toFixed(2);
     document.getElementById('val-density').innerText = data.synaptic_density.toFixed(2);
     document.getElementById('val-mem-coherence').innerText = data.memory_coherence.toFixed(2);
+
+    const nimEl = document.getElementById('val-nim-stability');
+    if (nimEl && data.nim_game_stability !== undefined) nimEl.innerText = data.nim_game_stability.toFixed(4);
+
+    const hEl = document.getElementById('val-heisenberg-compliance');
+    if (hEl && data.uncertainty_bound_compliance !== undefined) hEl.innerText = data.uncertainty_bound_compliance.toFixed(4);
+
     document.getElementById('ai-recommendation').innerText = data.recommended_exercise;
 
     // Update main header state if needed
@@ -619,6 +626,40 @@ async function pollANEStats() {
 // Start ANE Polling (High Frequency for Real-time feel)
 setInterval(pollANEStats, 500);
 
+// --- Uncertainty Manifest Logic ---
+async function pollUncertaintyStats() {
+    try {
+        const res = await fetch('/api/quantum/uncertainty_stats');
+        const data = await res.json();
+        updateUncertaintyGrid(data.phase_space_density);
+    } catch (e) {
+        // Suppress errors for background polling
+    }
+}
+
+function updateUncertaintyGrid(density) {
+    const grid = document.getElementById('uncertainty-grid');
+    if (!grid) return;
+
+    // Clear and build grid (10x10)
+    grid.innerHTML = '';
+
+    density.forEach((row, y) => {
+        row.forEach((val, x) => {
+            const cell = document.createElement('div');
+            cell.style.width = '100%';
+            cell.style.height = '100%';
+            // Intensity based on count
+            const alpha = Math.min(1, val / 5);
+            cell.style.backgroundColor = alpha > 0 ? `rgba(188, 19, 254, ${0.1 + alpha * 0.9})` : 'rgba(255,255,255,0.05)';
+            if (alpha > 0.5) cell.style.boxShadow = `0 0 5px rgba(188, 19, 254, ${alpha})`;
+            grid.appendChild(cell);
+        });
+    });
+}
+
+setInterval(pollUncertaintyStats, 1000);
+
 // --- Tab Switching ---
 const tabs = document.querySelectorAll('.tab');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -635,6 +676,27 @@ tabs.forEach(tab => {
         document.getElementById(`${targetTab}-tab`).classList.add('active');
     });
 });
+
+// --- Manifold Statistics Polling ---
+async function pollManifoldStats() {
+    const tab = document.getElementById('quantum-stat-tab');
+    if (!tab || !tab.classList.contains('active')) return;
+
+    try {
+        const types = ['dementia', 'ptsd'];
+        for (const type of types) {
+            const res = await fetch(`/api/manifold/current_stats/${type}`);
+            if (res.ok) {
+                const data = await res.json();
+                updateManifoldUI(type, data);
+            }
+        }
+    } catch (e) {
+        // Suppress background errors
+    }
+}
+
+setInterval(pollManifoldStats, 2000);
 
 // --- Combinatorial Manifold Functions ---
 
@@ -785,15 +847,61 @@ function updateManifoldUI(pathologyType, topology) {
     document.getElementById(`${prefix}-beta1`).innerText = topology.betti_numbers.beta_1;
     document.getElementById(`${prefix}-beta2`).innerText = topology.betti_numbers.beta_2;
 
-    // Update basic stats
-    document.getElementById(`${prefix}-nodes`).innerText = topology.num_nodes;
-    document.getElementById(`${prefix}-edges`).innerText = topology.num_edges;
-    document.getElementById(`${prefix}-pathological`).innerText =
-        topology.pathological_regions.nodes.length;
+    // Update Telemetry
+    const nodeEl = document.getElementById(`${prefix}-nodes`);
+    const edgeEl = document.getElementById(`${prefix}-edges`);
+    const pathEl = document.getElementById(`${prefix}-pathological`);
+    if (nodeEl) nodeEl.innerText = topology.num_nodes;
+    if (edgeEl) edgeEl.innerText = topology.num_edges;
+    if (pathEl) pathEl.innerText = topology.pathological_regions.nodes.length;
+
+    // Update health badge
+    const badge = document.getElementById(`${prefix}-health-badge`);
+    if (badge) {
+        const pathologicalCount = topology.pathological_regions.nodes.length;
+        if (pathologicalCount === 0) {
+            badge.innerText = 'Stable';
+            badge.style.background = 'rgba(0, 255, 136, 0.2)';
+            badge.style.color = '#00ff88';
+            badge.style.borderColor = '#00ff88';
+        } else if (pathologicalCount < 5) {
+            badge.innerText = 'Repairing';
+            badge.style.background = 'rgba(255, 187, 0, 0.2)';
+            badge.style.color = '#ffbb00';
+            badge.style.borderColor = '#ffbb00';
+        } else {
+            badge.innerText = 'Unstable';
+            badge.style.background = 'rgba(255, 68, 68, 0.2)';
+            badge.style.color = '#ff4444';
+            badge.style.borderColor = '#ff4444';
+        }
+    }
+
+    if (topology.geometry) {
+        const curvEl = document.getElementById(`${prefix}-curvature`);
+        const specEl = document.getElementById(`${prefix}-spectral`);
+        if (curvEl) curvEl.innerText = (pathologyType === 'ptsd' ? topology.geometry.curvature_variance : topology.geometry.curvature_homogeneity).toFixed(4);
+        if (specEl) specEl.innerText = topology.geometry.spectral_gap.toFixed(4);
+    }
 
     if (topology.nash_stability_index !== undefined) {
         const el = document.getElementById(`${prefix}-nash`);
         if (el) el.innerText = topology.nash_stability_index.toFixed(4);
+    }
+
+    if (topology.nim_game_stability !== undefined) {
+        const el = document.getElementById(`${prefix}-nim-stability`);
+        if (!el) {
+            // Hot-patching: If the element doesn't exist in HTML yet, we could add it or just ignore
+            // For now, let's assume it was added or we should add a stat row dynamically if needed
+        } else {
+            el.innerText = topology.nim_game_stability.toFixed(4);
+        }
+    }
+
+    if (topology.uncertainty_bound_compliance !== undefined) {
+        const el = document.getElementById(`${prefix}-uncertainty-compliance`);
+        if (el) el.innerText = topology.uncertainty_bound_compliance.toFixed(4);
     }
 }
 
@@ -801,23 +909,22 @@ function updateManifoldRepairUI(pathologyType, stats) {
     const prefix = pathologyType;
 
     // Update repair statistics
-    document.getElementById(`${prefix}-added`).innerText = stats.total_neurons_added;
-    document.getElementById(`${prefix}-cycles`).innerText = stats.repair_cycles;
-    document.getElementById(`${prefix}-reduction`).innerText =
-        `${stats.pathology_reduction_percent.toFixed(1)}%`;
+    const addEl = document.getElementById(`${prefix}-added`);
+    const cycleEl = document.getElementById(`${prefix}-cycles`);
+    const redEl = document.getElementById(`${prefix}-reduction`);
+
+    if (addEl) addEl.innerText = stats.total_neurons_added;
+    if (cycleEl) cycleEl.innerText = stats.repair_cycles;
+    if (redEl) redEl.innerText = `${stats.pathology_reduction_percent.toFixed(1)}%`;
 
     // Update final topology
     if (stats.final_topology) {
         updateManifoldUI(pathologyType, stats.final_topology);
     }
 
-    // Update Post Treatment Parameters
     if (stats.post_treatment_parameters) {
         const params = stats.post_treatment_parameters;
-        document.getElementById(`${prefix}-advanced-metrics`).style.display = 'block';
-        document.getElementById(`${prefix}-curvature`).innerText = params.curvature_homogeneity.toFixed(4);
-        document.getElementById(`${prefix}-spectral`).innerText = params.spectral_gap.toFixed(4);
-        document.getElementById(`${prefix}-prime-res`).innerText = params.prime_resonance_index.toFixed(4);
+        // The new UI handles these via updateManifoldUI having topology.geometry
     }
 }
 

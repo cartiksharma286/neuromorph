@@ -56,6 +56,7 @@
                     <div class="tabs">
                         <button class="tab-btn active" data-tab="tab-thermo">Visual RF</button>
                         <button class="tab-btn" data-tab="tab-cryo">N2 Cryo</button>
+                        <button class="tab-btn" data-tab="tab-robotics">Surgical Robotics</button>
                     </div>
 
                     <!-- Thermal Tab -->
@@ -112,6 +113,52 @@
                         <div class="sidebar-controls">
                             <button id="btn-enable-cryo" class="btn-primary"
                                 style="background: linear-gradient(135deg, #3b82f6, #93c5fd);">ACTIVATE CRYO</button>
+                        </div>
+                    </div>
+
+                    <!-- Robotics Tab -->
+                    <div id="tab-robotics" class="tab-content robotics-view">
+                        <h2 style="color: #a78bfa;">6DOF Kinematics & Quantum Metrics</h2>
+
+                        <div class="robotics-grid">
+                            <div class="telemetry-box">
+                                <h3>End Effector Position</h3>
+                                <div class="pos-row">
+                                    <span class="p-axis">X</span><span class="p-val" id="pos-x">0.000</span>
+                                </div>
+                                <div class="pos-row">
+                                    <span class="p-axis">Y</span><span class="p-val" id="pos-y">0.000</span>
+                                </div>
+                                <div class="pos-row">
+                                    <span class="p-axis">Z</span><span class="p-val" id="pos-z">0.000</span>
+                                </div>
+                            </div>
+
+                            <div class="telemetry-box">
+                                <h3>Joint Angles (Rad)</h3>
+                                <div class="joint-list" id="joint-angles">
+                                    <div>J1: <span id="j1-val">0.00</span></div>
+                                    <div>J2: <span id="j2-val">0.00</span></div>
+                                    <div>J3: <span id="j3-val">0.00</span></div>
+                                    <div>J4: <span id="j4-val">0.00</span></div>
+                                    <div>J5: <span id="j5-val">0.00</span></div>
+                                    <div>J6: <span id="j6-val">0.00</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quantum-metrics-box" style="margin-top: 20px;">
+                            <h3>Quantum Interop Status</h3>
+                            <div class="metrics">
+                                <div class="metric">
+                                    <span class="m-label">Coherence</span>
+                                    <span class="m-value" id="q-coherence" style="color: #a78bfa;">0.00</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="m-label">Fidelity</span>
+                                    <span class="m-value" id="q-fidelity" style="color: #a78bfa;">0.00</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

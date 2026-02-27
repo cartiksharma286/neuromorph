@@ -115,8 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
             robotViz.updateJoints(data.joints);
 
             // Update Thermometry
-            // Pass both maps and anatomy
-            const maxVal = thermalViz.update(data.temperature_map, data.damage_map, data.mr_anatomy);
+            // Pass maps, anatomy, laser state and position
+            const isLaserFiring = data.laser_enabled !== undefined ? data.laser_enabled : laserActive;
+            const laserPos = data.laser_pos || null;
+            const maxVal = thermalViz.update(data.temperature_map, data.damage_map, data.mr_anatomy, isLaserFiring, laserPos);
 
             if (data.temp_history) {
                 const genAiProfile = (data.gen_ai && data.gen_ai.generated_profile) ? data.gen_ai.generated_profile : [];
@@ -135,6 +137,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.nvqlink.active) {
                     elLinkStatus.style.color = 'var(--success)';
                 }
+            }
+
+            // Update Robotics Tab Telemetry
+            if (data.position) {
+                document.getElementById('pos-x').textContent = data.position[0].toFixed(3);
+                document.getElementById('pos-y').textContent = data.position[1].toFixed(3);
+                document.getElementById('pos-z').textContent = data.position[2].toFixed(3);
+            }
+            if (data.joints) {
+                data.joints.forEach((val, i) => {
+                    const el = document.getElementById(`j${i + 1}-val`);
+                    if (el) el.textContent = val.toFixed(2);
+                });
+            }
+            if (data.quantum && data.quantum.metrics) {
+                document.getElementById('q-coherence').textContent = (data.quantum.metrics.coherence || 0).toFixed(3);
+                document.getElementById('q-fidelity').textContent = (data.quantum.metrics.qml_fidelity || 0).toFixed(3);
             }
 
             // Max Val Display depends on mode
@@ -162,117 +181,127 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Laser Visual
-            robotViz.setLaser(laserActive);
+            const finalLaserState = data.laser_enabled !== undefined ? data.laser_enabled : laserActive;
+            robotViz.setLaser(finalLaserState);
+
+            // Sync indicator
+            if (finalLaserState) {
+                elLaserInd.classList.add('active');
+            } else {
+                elLaserInd.classList.remove('active');
+            }
+            elLaserInd.classList.remove('active');
+        }
 
         } catch (e) {
-            console.error("Telemetry failed", e);
-        }
-    }, 100); // 10Hz UI update
-
-    const btnLaser = document.getElementById('btn-enable-laser');
-    const btnSim = document.getElementById('btn-start-sim');
-
-    // Controls
-    if (btnSim) {
-        btnSim.addEventListener('click', () => {
-            // Start visual simulation path
-            robotViz.startSimulation();
-            // In a real app, we would tell backend to move the robot along path
-            // For this demo, we can just animate the target coordinates
-            simulatePath();
-        });
+        console.error("Telemetry failed", e);
     }
+}, 100); // 10Hz UI update
 
-    async function simulatePath() {
-        // Simple loop to move target along a curve
-        const steps = 100;
-        for (let i = 0; i <= steps; i++) {
-            const t = i / steps;
-            // Parametric curve similar to vessel
-            // -0.3 -> 0.3 X
-            // 0.4 -> 0.55 Y (Height)
-            // 0.5 -> 0.5 Z
-            const x = -0.3 + (0.6 * t);
-            const z = 0.5 + (0.2 * Math.sin(t * Math.PI)); // Arc
+const btnLaser = document.getElementById('btn-enable-laser');
+const btnSim = document.getElementById('btn-start-sim');
 
-            // Send control
-            await sendControl(x, z, i > 80, false); // Fire laser at end
+// Controls
+if (btnSim) {
+    btnSim.addEventListener('click', () => {
+        // Start visual simulation path
+        robotViz.startSimulation();
+        // In a real app, we would tell backend to move the robot along path
+        // For this demo, we can just animate the target coordinates
+        simulatePath();
+    });
+}
 
-            // Wait
-            await new Promise(r => setTimeout(r, 50));
-        }
+async function simulatePath() {
+    // Simple loop to move target along a curve
+    const steps = 100;
+    for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        // Parametric curve similar to vessel
+        // -0.3 -> 0.3 X
+        // 0.4 -> 0.55 Y (Height)
+        // 0.5 -> 0.5 Z
+        const x = -0.3 + (0.6 * t);
+        const z = 0.5 + (0.2 * Math.sin(t * Math.PI)); // Arc
+
+        // Send control
+        await sendControl(x, z, i > 80, false); // Fire laser at end
+
+        // Wait
+        await new Promise(r => setTimeout(r, 50));
     }
+}
 
-    if (btnLaser) {
-        btnLaser.addEventListener('mousedown', () => {
-            laserActive = true;
-            elLaserInd.classList.add('active');
-            sendControl(targetX, targetZ, true, false);
-            log("Laser ACTIVATE request sent");
-        });
-
-        btnLaser.addEventListener('mouseup', () => {
-            laserActive = false;
-            elLaserInd.classList.remove('active');
-            sendControl(targetX, targetZ, false, false);
-            log("Laser DEACTIVATE request sent");
-        });
-    }
-
-    const btnCryo = document.getElementById('btn-enable-cryo');
-    if (btnCryo) {
-        btnCryo.addEventListener('click', () => {
-            cryoActive = !cryoActive;
-
-            if (cryoActive) {
-                btnCryo.textContent = "DEACTIVATE CRYO";
-                btnCryo.style.background = "linear-gradient(135deg, #ef4444, #f87171)"; // Red/Warning
-                btnCryo.classList.add('active');
-                log("Cryo System ACTIVATED");
-            } else {
-                btnCryo.textContent = "ACTIVATE CRYO";
-                btnCryo.style.background = "linear-gradient(135deg, #3b82f6, #93c5fd)"; // Blue
-                btnCryo.classList.remove('active');
-                log("Cryo System DEACTIVATED");
-            }
-
-            sendControl(targetX, targetZ, false, cryoActive);
-        });
-    }
-
-    // Send coordinates on mouse move over 3D canvas (simplified)
-    const container = document.getElementById('canvas-3d');
-    container.addEventListener('mousemove', (e) => {
-        const rect = container.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const y = (e.clientY - rect.top) / rect.height;
-
-        // Map 2D mouse to robot workspace (roughly)
-        // Robot workspace: X [-0.5, 0.5], Z [0.0, 1.0]
-
-        targetX = (x - 0.5) * 1.5; // Scale
-        targetZ = (1.0 - y) * 1.0;
-
-        // Throttle this in real app, but for local demo ok
-        // We only send coords, not laser state change here
-        sendControl(targetX, targetZ, laserActive, cryoActive);
+if (btnLaser) {
+    btnLaser.addEventListener('mousedown', () => {
+        laserActive = true;
+        elLaserInd.classList.add('active');
+        sendControl(targetX, targetZ, true, false);
+        log("Laser ACTIVATE request sent");
     });
 
-    async function sendControl(x, z, laser, cryo) {
-        await fetch('/api/control', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                target: { x: x, y: 0, z: z },
-                laser: laser,
-                cryo: cryo
-            })
-        });
-    }
+    btnLaser.addEventListener('mouseup', () => {
+        laserActive = false;
+        elLaserInd.classList.remove('active');
+        sendControl(targetX, targetZ, false, false);
+        log("Laser DEACTIVATE request sent");
+    });
+}
 
-    function log(msg) {
-        const li = document.createElement('li');
-        li.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-        listLogs.prepend(li);
-    }
+const btnCryo = document.getElementById('btn-enable-cryo');
+if (btnCryo) {
+    btnCryo.addEventListener('click', () => {
+        cryoActive = !cryoActive;
+
+        if (cryoActive) {
+            btnCryo.textContent = "DEACTIVATE CRYO";
+            btnCryo.style.background = "linear-gradient(135deg, #ef4444, #f87171)"; // Red/Warning
+            btnCryo.classList.add('active');
+            log("Cryo System ACTIVATED");
+        } else {
+            btnCryo.textContent = "ACTIVATE CRYO";
+            btnCryo.style.background = "linear-gradient(135deg, #3b82f6, #93c5fd)"; // Blue
+            btnCryo.classList.remove('active');
+            log("Cryo System DEACTIVATED");
+        }
+
+        sendControl(targetX, targetZ, false, cryoActive);
+    });
+}
+
+// Send coordinates on mouse move over 3D canvas (simplified)
+const container = document.getElementById('canvas-3d');
+container.addEventListener('mousemove', (e) => {
+    const rect = container.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+
+    // Map 2D mouse to robot workspace (roughly)
+    // Robot workspace: X [-0.5, 0.5], Z [0.0, 1.0]
+
+    targetX = (x - 0.5) * 1.5; // Scale
+    targetZ = (1.0 - y) * 1.0;
+
+    // Throttle this in real app, but for local demo ok
+    // We only send coords, not laser state change here
+    sendControl(targetX, targetZ, laserActive, cryoActive);
+});
+
+async function sendControl(x, z, laser, cryo) {
+    await fetch('/api/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            target: { x: x, y: 0, z: z },
+            laser: laser,
+            cryo: cryo
+        })
+    });
+}
+
+function log(msg) {
+    const li = document.createElement('li');
+    li.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    listLogs.prepend(li);
+}
 });

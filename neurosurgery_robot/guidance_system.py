@@ -116,19 +116,15 @@ class AutomatedGuidanceSystem:
         dz = current_robot_pos[2] - rz
         dist = np.sqrt(dx*dx + dz*dz)
         
-        # Threshold: 1 pixel size approx 0.015
-        if dist < 0.02:
-            # We are at target. Hold for a moment?
-            # For this loop, we just move to next. The update loop speed determines dwell time.
-            # Ablation happens every step.
+        # Threshold: Increased precision (0.005 instead of 0.02)
+        if dist < 0.005:
+            # We are at target.
             self.current_idx += 1
-            return (rx, rz), True # Laser ON
+            return (rx, rz), True # Laser ON at target
         else:
-            # Move towards target
-            return (rx, rz), False # Laser OFF while moving? Or ON? 
-            # Usually OFF to preserve healthy tissue while traversing.
-            # But if next target is neighbor, maybe ON?
-            # Let's say OFF if dist > 0.02 (moving to start), ON if close.
-            # Actually, standard is to track path.
-            return (rx, rz), False
+            # Move towards target. 
+            # If we are close (dwell zone), keep laser ON for continuous ablation if next target is very close.
+            if dist < 0.015:
+                return (rx, rz), True
+            return (rx, rz), False # Laser OFF for long traverses
 

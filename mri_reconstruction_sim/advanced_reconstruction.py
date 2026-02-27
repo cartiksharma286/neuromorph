@@ -14,6 +14,9 @@ Date: January 12, 2026
 """
 
 import numpy as np
+from scipy.ndimage import gaussian_filter
+from scipy.optimize import differential_evolution
+from sklearn.cluster import KMeans
 from scipy.optimize import minimize, differential_evolution
 from scipy.ndimage import gaussian_filter
 import warnings
@@ -419,16 +422,73 @@ class QuantumNoiseSuppressor:
         
     def suppress_noise(self, image):
         """
-        Applies multi-stage noise suppression.
-        1. Spectral gating (FFT thresholding)
-        2. Gradient-based anisotropic diffusion
+        Applies multi-stage noise suppression and artifact removal using Quantum ML logic.
+        1. Dual-Attention Anomaly Detection (Black and White artifacts)
+        2. Spectral gating (FFT thresholding)
+        3. Gradient-based anisotropic diffusion (Edge-preserving smoothing)
         """
-        # 1. Spectral Gating (removes high-freq noise artifacts)
-        f_transform = np.fft.fft2(image)
+        # --- 1. Dual-Attention Anomaly Detection ---
+        # Detect isolated black blobs (thrombus/susceptibility artifacts) and white blobs
+        
+        # Calculate local statistics
+        from scipy.ndimage import uniform_filter, label, labeled_comprehension, binary_dilation
+        local_mean = uniform_filter(image, size=5)
+        
+        # Compute difference from local mean
+        diff = image - local_mean
+        
+        # Thresholds defined dynamically based on image dynamic range
+        range_val = np.max(image) - np.min(image)
+        if range_val < 1e-9:
+            range_val = 1.0 # Prevent div zero
+            
+        bright_threshold = 0.2 * range_val
+        dark_threshold = -0.2 * range_val
+        
+        # Only detect dark anomalies within the actual image signal (ignore zero background)
+        foreground_mask = image > (0.05 * np.max(image))
+        
+        mask_bright = diff > bright_threshold
+        mask_dark = (diff < dark_threshold) & foreground_mask
+        
+        cleaned_image = image.copy()
+        
+        # Function to process anomalies (filter by size to protect anatomy)
+        def clean_anomalies(anomaly_mask, is_dark):
+            labeled, num_features = label(anomaly_mask)
+            if num_features > 0:
+                sizes = labeled_comprehension(image, labeled, np.arange(1, num_features+1), len, float, 0)
+                largest_comp_size = np.max(sizes) if len(sizes) > 0 else 0
+                
+                # Dynamic threshold: blobs are anomalous, anatomy is large
+                # For black blobs (thrombus artifacts), they are typically small and extremely isolated
+                blob_threshold = max(20, int(0.02 * largest_comp_size))
+                
+                for i in range(1, num_features + 1):
+                    # Only remove if it's small enough to be an artifact, not anatomy
+                    if sizes[i-1] < blob_threshold or sizes[i-1] < 50:
+                        component_mask = (labeled == i)
+                        # Replace with local background
+                        # Replace with local background
+                        dilated = binary_dilation(component_mask, iterations=3)
+                        # Ensure background pixels are not part of ANY anomaly mask and are not pure zeros
+                        valid_bg_mask = dilated & ~component_mask & ~(mask_bright | mask_dark) & (image > 0)
+                        bg_pixels = image[valid_bg_mask]
+                        if len(bg_pixels) > 0:
+                            cleaned_image[component_mask] = np.mean(bg_pixels)
+                        else:
+                            # Fallback if surrounded by anomalies or edges
+                            cleaned_image[component_mask] = np.median(image[image > 0])
+        
+        clean_anomalies(mask_bright, is_dark=False) # White Blobs
+        clean_anomalies(mask_dark, is_dark=True)    # Black Blobs
+        
+        # --- 2. Spectral Gating (removes high-freq noise artifacts) ---
+        f_transform = np.fft.fft2(cleaned_image)
         f_shift = np.fft.fftshift(f_transform)
         
         # Create flexible mask based on signal energy
-        rows, cols = image.shape
+        rows, cols = cleaned_image.shape
         crow, ccol = rows//2, cols//2
         mask = np.zeros((rows, cols), np.uint8)
         r = int(min(rows, cols) * 0.45) # Keep 90% of center frequencies
@@ -443,11 +503,11 @@ class QuantumNoiseSuppressor:
         img_back = np.fft.ifft2(img_back)
         img_clean = np.abs(img_back)
         
-        # 2. Anisotropic Diffusion Simulation (Edge-preserving smoothing)
+        # --- 3. Anisotropic Diffusion Simulation (Edge-preserving smoothing) ---
         # Using Gaussian filter as approximation for NLM
         img_smooth = gaussian_filter(img_clean, sigma=0.8)
         
-        # Edge sharpening to recover details lost in smoothing
+        # Edge sharpening to recover details lost in smoothing, increasing grayscale resolution
         alpha = 1.5
         img_sharp = img_clean + alpha * (img_clean - img_smooth)
         
@@ -771,6 +831,17 @@ class SupervisedArtifactPredictor:
         
         # Refine mask: High probability -> Artifact
         artifact_mask = blob_attention > 0.6
+        
+        # 4. Contextual Size Feature (Supervised Post-processing)
+        # Suppress artifact prediction for large coherent structures
+        from scipy.ndimage import label, labeled_comprehension
+        labeled_mask, num_features = label(artifact_mask)
+        if num_features > 0:
+            sizes = labeled_comprehension(artifact_mask, labeled_mask, np.arange(1, num_features+1), len, float, 0)
+            for i in range(1, num_features + 1):
+                # If component is larger than typical blob size, it's likely anatomy
+                if sizes[i-1] > 50: 
+                    artifact_mask[labeled_mask == i] = False
         
         return artifact_mask
 

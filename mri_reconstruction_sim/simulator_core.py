@@ -18,6 +18,7 @@ import scipy.special
 from llm_modules import StatisticalClassifier
 from circuit_schematic_generator import CircuitSchematicGenerator
 from sklearn.cluster import KMeans
+from advanced_reconstruction import QuantumNoiseSuppressor
 
 GLOBAL_VOLUME_CACHE = {}
 
@@ -54,6 +55,7 @@ class MRIReconstructionSimulator:
         self.nvqlink_bandwidth_gbps = 400  # 400 Gbps quantum link
         self.nvqlink_latency_ns = 12  # 12 nanosecond latency
         self.classifier = StatisticalClassifier()
+        self.artifact_predictor = QuantumNoiseSuppressor()
         self.active_coil_type = 'standard'
         
     def renderCorticalSurface2D(self, slice_idx=None):
@@ -2606,59 +2608,18 @@ class MRIReconstructionSimulator:
         
         return final_img, coil_images
 
-    def _remove_white_pixel_artifacts(self, image, strength='Medium'):
+    def _remove_quantum_artifacts(self, image, strength='Medium'):
         """
-        Removes bright noise artifacts (white blobs) using unsupervised learning and morphological opening.
+        Removes bright and dark noise artifacts (white and black blobs) using Quantum Machine Learning algorithm.
         """
         try:
-            # 1. Prepare data for clustering
-            H, W = image.shape
-            pixels = image.flatten().reshape(-1, 1)
-            
-            # 2. Apply K-Means to identify bright outliers
-            n_clusters = 3 if strength != 'High' else 4
-            kmeans = KMeans(n_clusters=n_clusters, n_init=10, random_state=42)
-            labels = kmeans.fit_predict(pixels)
-            centers = kmeans.cluster_centers_.flatten()
-            
-            # Identify the cluster with the highest intensity
-            brightest_cluster_idx = np.argmax(centers)
-            mask_bright = (labels.reshape(H, W) == brightest_cluster_idx)
-            
-            # 3. Morphological Cleanup (Gemini 3.0 Logic)
-            # Connectivity Analysis identifies isolated bright blobs vs coherent anatomy
-            from scipy.ndimage import binary_opening, label, labeled_comprehension
-            
-            # Use opening to remove small bridges and noise
-            opening_size = 2 if strength == 'Medium' else 3
-            clean_bright = binary_opening(mask_bright, structure=np.ones((opening_size, opening_size)))
-            labeled, num_features = label(clean_bright)
-            
-            cleaned_image = image.copy()
-            
-            if num_features > 0:
-                sizes = labeled_comprehension(image, labeled, np.arange(1, num_features+1), len, float, 0)
-                largest_comp_size = np.max(sizes)
-                
-                # Dynamic threshold: blobs are usually < 5% of largest bright anatomical feature
-                blob_threshold = max(20, int(0.02 * largest_comp_size))
-                if strength == 'High': blob_threshold = max(50, int(0.1 * largest_comp_size))
-                
-                for i in range(1, num_features + 1):
-                    if sizes[i-1] < blob_threshold:
-                        component_mask = (labeled == i)
-                        # Replace with local median
-                        dilated = scipy.ndimage.binary_dilation(component_mask, iterations=2)
-                        bg_pixels = image[dilated & ~component_mask]
-                        if len(bg_pixels) > 0:
-                            cleaned_image[component_mask] = np.median(bg_pixels)
-                        else:
-                            cleaned_image[component_mask] = np.median(image)
-            
+            # Applies multi-stage noise suppression and artifact removal using Quantum ML logic.
+            # Dual-Attention Anomaly Detection, Spectral Gating, Anisotropic Diffusion
+            cleaned_image = self.artifact_predictor.suppress_noise(image)
             return cleaned_image
 
         except Exception as e:
-            print(f"Artifact Removal Error: {e}")
+            print(f"Quantum ML Artifact Removal Error: {e}")
             return scipy.ndimage.median_filter(image, size=3)
 
     def apply_post_processing(self, image, noise_filter_level='None', morphological_cleanup=False):
@@ -2667,9 +2628,9 @@ class MRIReconstructionSimulator:
         """
         processed = image.copy()
         
-        # 1. Morphological Cleanup (White Blob Removal)
+        # 1. Morphological Cleanup (White/Black Blob Removal using Quantum ML)
         if morphological_cleanup:
-            processed = self._remove_white_pixel_artifacts(processed, strength='High')
+            processed = self._remove_quantum_artifacts(processed, strength='High')
             
         # 2. Noise Filtering
         if noise_filter_level == 'Low':

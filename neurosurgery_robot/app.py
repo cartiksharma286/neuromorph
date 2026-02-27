@@ -207,7 +207,10 @@ def get_telemetry():
         'thermometry': {
             'high_performance': True,
             'metrics': thermo_perf
-        }
+        },
+        'laser_enabled': laser_enabled,
+        'cryo_enabled': cryo_enabled,
+        'laser_pos': {'x': thermo.laser_pos[0], 'y': thermo.laser_pos[1]} if hasattr(thermo, 'laser_pos') else None
     })
 
 @app.route('/api/control', methods=['POST'])

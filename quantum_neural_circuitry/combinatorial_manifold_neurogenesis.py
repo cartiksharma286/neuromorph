@@ -28,6 +28,7 @@ Theory:
 
 import numpy as np
 import networkx as nx
+import time
 import math
 from scipy.special import comb, ellipk, ellipe
 import matplotlib
@@ -38,7 +39,7 @@ from collections import defaultdict
 import itertools
 import matplotlib.pyplot as plt
 import os
-from game_theory_core import GameTheoryOptimizer
+from game_theory_core import GameTheoryOptimizer, CombinatorialGameOptimizer
 
 class QubitAdapter:
     """Adapts manifold node states to Qubit-like interface for Game Theory."""
@@ -46,6 +47,7 @@ class QubitAdapter:
         # Map integer state to phase [0, 2pi]
         self.phase = (state_val % 360) * (math.pi / 180.0)
         self.amplitude = 1.0 # simplified
+        self.excitation_prob = (math.sin(self.phase / 2)) ** 2 if hasattr(math, 'sin') else 0.5
 
 class FiniteMathCongruenceSystem:
     """
@@ -408,6 +410,10 @@ class PTSDDementiaRepairModel:
         self.pathology_type = pathology_type
         self.manifold = CombinatorialManifold(num_neurons)
         
+        # Caching for high-performance polling
+        self._cached_analysis = None
+        self._last_analysis_time = 0
+        
         # Build initial network
         self.manifold.add_edge_by_compatibility(threshold=0.5)
         self.manifold.build_higher_simplices(max_dim=3)
@@ -420,6 +426,7 @@ class PTSDDementiaRepairModel:
         
         # Initialize Game Theory Optimizer
         self.gt_optimizer = GameTheoryOptimizer(num_neurons)
+        self.cgt_optimizer = CombinatorialGameOptimizer(num_neurons)
 
         # Store initial pathological state for accurate comparison
         initial_analysis = self.analyze_topology()
@@ -459,10 +466,59 @@ class PTSDDementiaRepairModel:
                         weight=1.5  # Abnormally strong
                     )
     
-    def analyze_topology(self):
+    def calculate_geometric_metrics(self):
         """
-        Comprehensive topological analysis.
+        Derive geometric invariants from the neural manifold.
+        1. Riemannian Curvature Proxy (Edge-based Ricci curvature)
+        2. Spectral Gap (Fiedler value)
         """
+        graph = self.manifold.graph
+        if graph.number_of_nodes() < 2:
+            return {
+                'curvature_homogeneity': 1.0,
+                'curvature_variance': 0.0,
+                'spectral_gap': 0.0
+            }
+            
+        # 1. Ricci Curvature Proxy (Simplified Ollivier-Ricci)
+        # We estimate local curvature by comparing node degree to neighborhood density
+        curvatures = []
+        for node in graph.nodes():
+            degree = graph.degree(node)
+            if degree > 1:
+                # Local clustering coefficient is a proxy for curvature
+                # High clustering ~ Positive curvature
+                # Low clustering ~ Negative curvature
+                c = nx.clustering(graph, node)
+                curvatures.append(c)
+            else:
+                curvatures.append(0.0)
+                
+        curvature_homogeneity = 1.0 - np.std(curvatures) if curvatures else 1.0
+        curvature_variance = np.var(curvatures) if curvatures else 0.0
+        
+        # 2. Spectral Gap (Algebraic Connectivity)
+        try:
+            # The second smallest eigenvalue of the Laplacian
+            spectral_gap = nx.algebraic_connectivity(graph)
+        except:
+            spectral_gap = 0.0
+            
+        return {
+            'curvature_homogeneity': float(curvature_homogeneity),
+            'curvature_variance': float(curvature_variance),
+            'spectral_gap': float(spectral_gap)
+        }
+
+    def analyze_topology(self, force_refresh=False):
+        """
+        Comprehensive topological and geometric analysis.
+        Uses caching for high-performance frontend polling.
+        """
+        now = time.time()
+        if not force_refresh and self._cached_analysis and (now - self._last_analysis_time < 2.0):
+            return self._cached_analysis
+
         betti = self.manifold.compute_betti_numbers()
         pathology = self.manifold.identify_pathological_regions()
         
@@ -475,15 +531,33 @@ class PTSDDementiaRepairModel:
         weights = nx.get_edge_attributes(self.manifold.graph, 'weight')
         nash_stability = self.gt_optimizer.calculate_nash_stability_index(self.manifold.graph, weights, qubits)
         
-        return {
+        # Calculate Uncertainty Compliance
+        uncertainty_man = UncertaintyPrincipleManifest(self.manifold.num_nodes)
+        uncertainty_v = uncertainty_man.calculate_heisenberg_violation(qubits)
+        uncertainty_compliance = 1.0 - (sum(uncertainty_v) / len(qubits)) if qubits else 1.0
+        
+        # Calculate Nim Stability
+        nim_stability = self.cgt_optimizer.calculate_game_stability(self.manifold.graph, weights, qubits)
+        
+        # 3. Geometric Metrics
+        geometry = self.calculate_geometric_metrics()
+
+        result = {
             'betti_numbers': betti,
             'pathological_regions': pathology,
             'avg_clustering': avg_clustering,
             'avg_path_length': avg_path_length,
             'num_nodes': self.manifold.graph.number_of_nodes(),
             'num_edges': self.manifold.graph.number_of_edges(),
-            'nash_stability_index': nash_stability
+            'nash_stability_index': nash_stability,
+            'nim_game_stability': nim_stability,
+            'uncertainty_bound_compliance': uncertainty_compliance,
+            'geometry': geometry
         }
+        
+        self._cached_analysis = result
+        self._last_analysis_time = now
+        return result
     
     def apply_repair_cycle(self, num_cycles=5):
         """
@@ -516,8 +590,13 @@ class PTSDDementiaRepairModel:
                     self.manifold.graph, qubits, current_weights
                 )
                 
+                # 2. CGT Stabilization (Nim-Theory stabilization)
+                cgt_weights = self.cgt_optimizer.find_p_position_weights(
+                    self.manifold.graph, qubits, optimized_weights
+                )
+                
                 # Apply optimized weights to graph
-                nx.set_edge_attributes(self.manifold.graph, optimized_weights, 'weight')
+                nx.set_edge_attributes(self.manifold.graph, cgt_weights, 'weight')
                 
                 # Record metrics
                 post_analysis = self.analyze_topology()
@@ -627,7 +706,9 @@ class PTSDDementiaRepairModel:
                 'prime_resonance_index': prime_resonance_index,
                 'curvature_variance': curvature_variance,
                 'nash_stability_index': final_nash,
-                'initial_nash_stability': self.initial_nash
+                'initial_nash_stability': self.initial_nash,
+                'nim_game_stability': final_topology['nim_game_stability'],
+                'uncertainty_bound_compliance': final_topology['uncertainty_bound_compliance']
             }
         }
 

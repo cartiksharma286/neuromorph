@@ -29,28 +29,36 @@ class ThermalViz {
         this.canvas.addEventListener('mouseleave', () => {
             if (this.onHover) this.onHover(null);
         });
+
+        // Animation state
+        this.frame = 0;
     }
 
     generateTempColormap() {
-        // High-Precision Gradient Generator
+        // High-Vibrancy "Turbo" inspired LUT for Grayscale MRI backgrounds
         const steps = 1000;
         const lut = new Uint8ClampedArray(steps * 4);
 
-        // Control Points: Temp -> [R, G, B, A]
-        // Alpha bumped for better visibility
+        // Professional Surgical Color Palette
+        // 37-38: Transparent
+        // 38-42: Violets/Blues (Near Target)
+        // 42-50: Aquas/Greens (Coagulation range)
+        // 50-65: Yellows/Oranges (Ablation start)
+        // 65-80: Deep Reds (High intensity)
+        // 80-100: White-Hot Core
         const stops = [
             { t: 37.0, c: [0, 0, 0, 0] },
-            { t: 37.5, c: [48, 18, 59, 80] },    // 37.5: Dark Violet (More visible)
-            { t: 40.0, c: [70, 131, 240, 120] }, // 40.0: Blue
-            { t: 43.0, c: [26, 211, 211, 160] }, // 43.0: Cyan
-            { t: 46.0, c: [108, 247, 114, 190] },// 46.0: Green
-            { t: 52.0, c: [254, 186, 44, 210] }, // 52.0: Orange
-            { t: 60.0, c: [246, 55, 18, 230] },  // 60.0: Red
-            { t: 80.0, c: [98, 6, 6, 245] },     // 80.0: Dark Red
-            { t: 100.0, c: [255, 255, 255, 255] }// 100.0: White
+            { t: 38.0, c: [60, 0, 150, 40] },
+            { t: 40.0, c: [0, 80, 255, 100] },
+            { t: 43.0, c: [0, 255, 200, 140] },
+            { t: 48.0, c: [0, 255, 0, 180] },
+            { t: 55.0, c: [255, 255, 0, 210] },
+            { t: 65.0, c: [255, 120, 0, 230] },
+            { t: 80.0, c: [255, 0, 0, 250] },
+            { t: 95.0, c: [255, 255, 255, 255] },
+            { t: 100.0, c: [255, 255, 255, 255] }
         ];
 
-        // Helper to find range
         const getRange = (temp) => {
             for (let i = 0; i < stops.length - 1; i++) {
                 if (temp >= stops[i].t && temp < stops[i + 1].t) {
@@ -61,60 +69,36 @@ class ThermalViz {
         };
 
         for (let i = 0; i < steps; i++) {
-            // Map step 0..999 to 37.0..100.0
             const temp = 37.0 + (i / steps) * 63.0;
-
-            // Fixed clamping to 100.0
-            if (temp >= 100.0) {
-                const c = stops[stops.length - 1].c;
-                lut[i * 4] = c[0]; lut[i * 4 + 1] = c[1]; lut[i * 4 + 2] = c[2]; lut[i * 4 + 3] = c[3];
-                continue;
-            }
-
             const [s1, s2] = getRange(temp);
-
-            // Interpolate
             const ratio = (temp - s1.t) / (s2.t - s1.t);
-            const r = Math.floor(s1.c[0] + (s2.c[0] - s1.c[0]) * ratio);
-            const g = Math.floor(s1.c[1] + (s2.c[1] - s1.c[1]) * ratio);
-            const b = Math.floor(s1.c[2] + (s2.c[2] - s1.c[2]) * ratio);
-            const a = Math.floor(s1.c[3] + (s2.c[3] - s1.c[3]) * ratio);
-
-            lut[i * 4] = r;
-            lut[i * 4 + 1] = g;
-            lut[i * 4 + 2] = b;
-            lut[i * 4 + 3] = a;
+            lut[i * 4] = s1.c[0] + (s2.c[0] - s1.c[0]) * ratio;
+            lut[i * 4 + 1] = s1.c[1] + (s2.c[1] - s1.c[1]) * ratio;
+            lut[i * 4 + 2] = s1.c[2] + (s2.c[2] - s1.c[2]) * ratio;
+            lut[i * 4 + 3] = s1.c[3] + (s2.c[3] - s1.c[3]) * ratio;
         }
 
         return lut;
     }
 
     generateDamageColormap() {
+        // High-Contrast Necrosis Map
         const steps = 256;
         const lut = new Uint8ClampedArray(steps * 4);
         for (let i = 0; i < steps; i++) {
-            let val = i; // 0..255
-            let r = 0, g = 0, b = 0, a = 0;
-
-            if (val < 1) {
-                a = 0;
+            const t = i / 240.0;
+            if (i < 1) {
+                lut[i * 4 + 3] = 0;
+            } else if (i >= 240) {
+                // Dead tissue: Black with high alpha
+                lut[i * 4] = 0; lut[i * 4 + 1] = 0; lut[i * 4 + 2] = 0; lut[i * 4 + 3] = 230;
             } else {
-                // Gradient: Orange (Damage) -> Dark Red -> Black (Necrosis)
-                const t = val / 240.0; // Normalized 0..1 for critical range
-                const tClamped = Math.min(1.0, t);
-
-                // Orange: 255, 165, 0
-                // Black: 0, 0, 0
-
-                r = Math.floor(255 * (1 - tClamped));
-                g = Math.floor(165 * (1 - tClamped));
-                b = 0;
-                a = 120 + Math.floor(135 * tClamped); // 120 -> 255 opacity
+                // Healing/Damage gradient: Orange/Magenta
+                lut[i * 4] = 255;
+                lut[i * 4 + 1] = 100 * (1 - t);
+                lut[i * 4 + 2] = 255 * (t);
+                lut[i * 4 + 3] = 100 + 100 * t;
             }
-            lut[i * 4] = r;
-            lut[i * 4 + 1] = g;
-            lut[i * 4 + 2] = b;
-            lut[i * 4 + 3] = a;
         }
         return lut;
     }
@@ -167,25 +151,25 @@ class ThermalViz {
     getColor(temp) { return this.getTempColorUnsafe(temp); }
     getDamageColor(val) { return this.getDamageColorUnsafe(val); }
 
-    update(tempData, damageData, anatomyData) {
+    update(tempData, damageData, anatomyData, laserActive = false, laserPos = null) {
         if (!tempData) return;
+        this.frame++;
 
         let activeData = (this.mode === 'DAMAGE' && damageData) ? damageData : tempData;
         this.lastData = activeData;
 
-        // 1. Draw Background
+        // 1. Draw Background (MRI Image)
         if (this.bgLoaded) {
             this.ctx.drawImage(this.bgImage, 0, 0, this.width, this.height);
         } else {
-            this.ctx.fillStyle = '#111';
+            this.ctx.fillStyle = '#0a0a0a';
             this.ctx.fillRect(0, 0, this.width, this.height);
         }
 
-        // 2. Prepare Overlay
+        // 2. Prepare Thermal Overlay
         const pixels = this.imageData.data;
         let p = 0;
         let maxVal = 0;
-
         let hasHeat = false;
 
         for (let y = 0; y < 64; y++) {
@@ -193,37 +177,66 @@ class ThermalViz {
                 const val = activeData[y][x];
                 if (val > maxVal) maxVal = val;
 
-                // Color Logic
-                let r = 0, g = 0, b = 0, a = 0;
-
-                // 1. Heatmap / Damage Map
                 if (this.mode === 'DAMAGE') {
                     if (val >= 1.0) hasHeat = true;
-                    const i = Math.min(255, Math.max(0, Math.floor(val))) * 4;
-                    r = this.damageLUT[i]; g = this.damageLUT[i + 1]; b = this.damageLUT[i + 2]; a = this.damageLUT[i + 3];
+                    const i = Math.min(255, Math.floor(val)) * 4;
+                    pixels[p++] = this.damageLUT[i];
+                    pixels[p++] = this.damageLUT[i + 1];
+                    pixels[p++] = this.damageLUT[i + 2];
+                    pixels[p++] = this.damageLUT[i + 3];
                 } else {
-                    if (val >= 37.05) hasHeat = true;
+                    if (val >= 37.1) hasHeat = true;
                     let idx = Math.floor((val - 37.0) / 63.0 * 1000);
-                    if (idx < 0) idx = 0;
-                    if (idx >= 1000) idx = 999;
+                    idx = Math.max(0, Math.min(999, idx));
                     const i = idx * 4;
-                    r = this.tempLUT[i]; g = this.tempLUT[i + 1]; b = this.tempLUT[i + 2]; a = this.tempLUT[i + 3];
+                    pixels[p++] = this.tempLUT[i];
+                    pixels[p++] = this.tempLUT[i + 1];
+                    pixels[p++] = this.tempLUT[i + 2];
+                    pixels[p++] = this.tempLUT[i + 3];
                 }
-
-                pixels[p++] = r;
-                pixels[p++] = g;
-                pixels[p++] = b;
-                pixels[p++] = a;
             }
         }
 
-        // 3. Draw Overlay if necessary
+        // 3. Draw Overlay with Smoothing
         if (hasHeat) {
             this.bufferCtx.putImageData(this.imageData, 0, 0);
             this.ctx.save();
-            this.ctx.globalAlpha = 0.85;
-            this.ctx.imageSmoothingEnabled = false;
+            this.ctx.imageSmoothingEnabled = true;
+            this.ctx.globalAlpha = laserActive ? 0.9 : 0.75;
             this.ctx.drawImage(this.bufferCanvas, 0, 0, this.width, this.height);
+            this.ctx.restore();
+        }
+
+        // 4. Enhanced Laser Visuals
+        if (laserActive && laserPos) {
+            // Map grid pos to canvas pos
+            const lx = (laserPos.x / 64.0) * this.width;
+            const ly = (laserPos.y / 64.0) * this.height;
+
+            // Pulsing effect frequency
+            const pulse = 1.0 + 0.15 * Math.sin(this.frame * 0.4);
+
+            // Thermal Core Glow
+            this.ctx.save();
+            this.ctx.beginPath();
+            const grad = this.ctx.createRadialGradient(lx, ly, 2, lx, ly, 18 * pulse);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1.0)'); // White hot center
+            grad.addColorStop(0.2, 'rgba(255, 255, 0, 0.9)'); // Yellow core
+            grad.addColorStop(0.5, 'rgba(255, 100, 0, 0.6)'); // Orange glow
+            grad.addColorStop(1.0, 'rgba(255, 0, 0, 0.0)');   // Fade
+
+            this.ctx.fillStyle = grad;
+            this.ctx.arc(lx, ly, 18 * pulse, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Precision Crosshair
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            this.ctx.setLineDash([2, 4]);
+            this.ctx.lineWidth = 1;
+            this.ctx.beginPath();
+            this.ctx.moveTo(lx - 25, ly); this.ctx.lineTo(lx + 25, ly);
+            this.ctx.moveTo(lx, ly - 25); this.ctx.lineTo(lx, ly + 25);
+            this.ctx.stroke();
             this.ctx.restore();
         }
 

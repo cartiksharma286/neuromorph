@@ -319,5 +319,66 @@ main {
             #feba2c 80%,
             #f63712 90%,
             #ffffff 100%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+
+.robotics-view h2 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+.robotics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.telemetry-box {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.telemetry-box h3 {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.pos-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-family: 'Courier New', monospace;
+}
+
+.p-axis {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.joint-list {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.joint-list div {
+    display: flex;
+    justify-content: space-between;
+}
+
+.quantum-metrics-box {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1));
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.quantum-metrics-box h3 {
+    font-size: 0.8rem;
+    color: #a78bfa;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }

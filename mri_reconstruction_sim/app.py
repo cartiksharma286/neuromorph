@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, send_file
 from simulator_core import MRIReconstructionSimulator
-from llm_modules import GeminiRFDesigner, LLMPulseDesigner
+from llm_modules import StatisticalClassifier
 from statistical_adaptive_pulse import create_adaptive_sequence, ADAPTIVE_SEQUENCES
 from quantum_vascular_coils import get_coil_summary, QUANTUM_VASCULAR_COIL_LIBRARY
 import os
@@ -149,15 +149,8 @@ def simulate():
 
 @app.route('/api/design_rf', methods=['POST'])
 def design_rf():
-    try:
-        data = request.json or {}
-        prompt = data.get('prompt', '')
-        field = data.get('field', '3T')
-        designer = GeminiRFDesigner()
-        result = designer.generate_design(prompt, field)
-        return jsonify({"success": True, "result": result})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+    # Legacy GeminiRFDesigner removed.
+    return jsonify({"success": False, "error": "RF Designer module is currently disabled for maintenance."}), 501
 
 @app.route('/api/render_cortical', methods=['POST'])
 def render_cortical():

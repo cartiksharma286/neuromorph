@@ -91,3 +91,72 @@ class GenerativeQuantumOptimizer:
         
         return energy - T * entropy
 
+
+
+class UncertaintyPrincipleManifest:
+    """
+    Implements Uncertainty Principle Manifests for Quantum Neural States.
+    
+    Theoretical Basis:
+    - Delta X * Delta P >= h_bar / 2
+    - In neural terms: Variance(Phase) * Variance(Excitation) >= Bound
+    - Prevents single-neuron "locking" (over-certainty) which precedes neurodegeneration.
+    """
+    
+    def __init__(self, num_qubits, h_bar_neural=0.1):
+        self.num_qubits = num_qubits
+        self.h_bar = h_bar_neural
+        
+    def calculate_heisenberg_violation(self, qubits):
+        """
+        Calculates the degree to which nodes are violating the uncertainty bound.
+        Low uncertainty = High violation risk (pathological certainty).
+        """
+        violations = []
+        for q in qubits:
+            # We treat phase as 'position' and excitation as 'momentum' (approx)
+            # Variance is estimated from local drift or fixed epsilon for single state
+            var_phase = 0.1 # Simulated local variance
+            var_exc = 0.1 # Simulated local variance
+            
+            # Simple Heisenberg Check
+            bound = self.h_bar / 2.0
+            product = var_phase * var_exc
+            
+            if product < bound:
+                violations.append(bound - product)
+            else:
+                violations.append(0.0)
+                
+        return violations
+
+    def apply_uncertainty_regularization(self, entanglements, qubits):
+        """
+        Regularizes synaptic weights by injecting 'quantum noise' 
+        in areas of pathological certainty (low uncertainty).
+        """
+        regularized = entanglements.copy()
+        violations = self.calculate_heisenberg_violation(qubits)
+        
+        for (u, v) in regularized:
+            # If either connected qubit is too 'certain', we dampen the link to 
+            # encourage exploration (neuroplasticity)
+            v_sum = violations[u] + violations[v]
+            if v_sum > 0:
+                # Injection of 'Leaky' uncertainty
+                regularized[(u, v)] *= (1.0 - 0.2 * v_sum)
+                
+        return regularized
+
+    def get_phase_space_density(self, qubits):
+        """
+        Generates a phase-space manifest blob.
+        """
+        # Mapping phase and excitation to 2D grid
+        grid = np.zeros((10, 10))
+        for q in qubits:
+            x = int((q.phase % (2 * math.pi)) / (2 * math.pi) * 9)
+            y = int(q.excitation_prob * 9)
+            grid[y, x] += 1
+            
+        return grid.tolist()

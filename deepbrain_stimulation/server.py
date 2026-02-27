@@ -1194,7 +1194,7 @@ if __name__ == '__main__':
     print("="*60)
     print("DBS-PTSD Treatment System Backend Server")
     print("="*60)
-    print("\nStarting server on http://localhost:5002")
+    print("\nStarting server on http://localhost:5070")
     print("\nAvailable endpoints:")
     print("  Circuit Generation: /api/circuit/*")
     print("  AI Engine: /api/ai/*")
@@ -1202,7 +1202,7 @@ if __name__ == '__main__':
     print("  Safety Validation: /api/safety/*")
     print("\n[!] FOR RESEARCH AND EDUCATIONAL USE ONLY")
     print("="*60)
-    print("\nOpen http://localhost:5002 in your browser")
+    print("\nOpen http://localhost:5070 in your browser")
     
     # Run with threading enabled and debug off for performance
-    app.run(debug=False, host='0.0.0.0', port=5002, threaded=True)
+    app.run(debug=False, host='0.0.0.0', port=5070, threaded=True)

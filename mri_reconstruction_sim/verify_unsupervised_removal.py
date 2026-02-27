@@ -31,7 +31,7 @@ def test_unsupervised_blob_removal():
     print(f"Original Anatomy Mean: {np.mean(image[mask_anatomy]):.4f}")
     
     # 3. Apply Unsupervised Removal
-    cleaned = sim._remove_white_pixel_artifacts(image)
+    cleaned = sim._remove_quantum_artifacts(image)
     
     # 4. Verify
     blob_after = np.max(cleaned[20:23, 20:23])
