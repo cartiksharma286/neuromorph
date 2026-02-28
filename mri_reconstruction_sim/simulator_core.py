@@ -18,7 +18,7 @@ import scipy.special
 from llm_modules import StatisticalClassifier
 from circuit_schematic_generator import CircuitSchematicGenerator
 from sklearn.cluster import KMeans
-from advanced_reconstruction import QuantumNoiseSuppressor
+from advanced_reconstruction import Gemini3SignalEnhancer
 
 GLOBAL_VOLUME_CACHE = {}
 
@@ -55,7 +55,7 @@ class MRIReconstructionSimulator:
         self.nvqlink_bandwidth_gbps = 400  # 400 Gbps quantum link
         self.nvqlink_latency_ns = 12  # 12 nanosecond latency
         self.classifier = StatisticalClassifier()
-        self.artifact_predictor = QuantumNoiseSuppressor()
+        self.artifact_predictor = Gemini3SignalEnhancer()
         self.active_coil_type = 'standard'
         
     def renderCorticalSurface2D(self, slice_idx=None):
@@ -2615,7 +2615,7 @@ class MRIReconstructionSimulator:
         try:
             # Applies multi-stage noise suppression and artifact removal using Quantum ML logic.
             # Dual-Attention Anomaly Detection, Spectral Gating, Anisotropic Diffusion
-            cleaned_image = self.artifact_predictor.suppress_noise(image)
+            cleaned_image = self.artifact_predictor.enhance_signal(image)
             return cleaned_image
 
         except Exception as e:

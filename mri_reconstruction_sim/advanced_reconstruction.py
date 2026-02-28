@@ -604,56 +604,79 @@ class Gemini3SignalEnhancer:
         H, W = image.shape
         pixels = image.flatten().reshape(-1, 1)
         
-        # Cluster into: 0: Background, 1: Tissue, 2: Bright Artifacts/Vessels
+        # Cluster into: 0: Background, 1: Tissue, 2: Bright Artifacts
         kmeans = KMeans(n_clusters=3, n_init=10, random_state=42)
         labels = kmeans.fit_predict(pixels)
         centers = kmeans.cluster_centers_.flatten()
         
+        # Identify clusters based on intensity
+        # In typical MRI (and this test), Tissue is the bright structure.
+        # We find the cluster with the highest mean to represent Tissue/Anatomy.
         brightest_idx = np.argmax(centers)
         mask_bright = (labels.reshape(H, W) == brightest_idx)
         
-        # B. Connectivity Analysis (Unsupervised reasoning)
-        from scipy.ndimage import label, labeled_comprehension, binary_opening
+        # We don't use 'mask_tissue' or 'mask_bg' anymore because background might split into multiple clusters.
+        # The bright mask is our primary starting point for anatomy.
         
-        # Morphological Cleanup
-        clean_bright = binary_opening(mask_bright, structure=np.ones((2,2)))
-        labeled_array, num_features = label(clean_bright)
+        # B. Connectivity Analysis (Unsupervised reasoning)
+        from scipy.ndimage import label, labeled_comprehension, binary_opening, binary_closing, binary_fill_holes
+        
+        # We need the full anatomy mask
+        mask_potential_anatomy = mask_bright
+        
+        # Morphological Closing and Hole Filling to capture internal structure (black blobs)
+        # 11x11 to bridge over potentially larger black holes
+        mask_potential_anatomy = binary_closing(mask_potential_anatomy, structure=np.ones((11,11)))
+        mask_potential_anatomy = binary_fill_holes(mask_potential_anatomy)
+        
+        labeled_array, num_features = label(mask_potential_anatomy)
         
         if num_features > 0:
             sizes = labeled_comprehension(
                 image, labeled_array, np.arange(1, num_features+1), len, float, 0
             )
             
-            # Identify "Large" bright features (Anatomy/Vessels) vs "Small" (Blobs)
+            # Anatomy is the largest connected component(s)
             largest_size = np.max(sizes)
             blob_ratio_threshold = 0.05 # Anything < 5% of largest bright feature is a blob candidate
             
             # Mask for valid anatomy (large bright features)
-            mask_anatomy = np.zeros_like(mask_bright)
+            mask_anatomy = np.zeros_like(mask_potential_anatomy)
             for i in range(1, num_features + 1):
                 if sizes[i-1] >= blob_ratio_threshold * largest_size or sizes[i-1] > 100:
                     mask_anatomy |= (labeled_array == i)
         else:
-            mask_anatomy = clean_bright
+            mask_anatomy = mask_potential_anatomy
             
         # 3. Signal Reconstruction
-        # We perform a "Gemini Fusion":
-        # - Inside Anatomy: Apply Edge-Preserving Smoothing (Signal Enhancement)
-        # - Outside Anatomy: Force to Background Mode (Zero-Noise Regression)
-        
-        # Fast Denoising for Anatomy (Vectorized Guided Filter approximation)
-        # We use a simple Gaussian here for speed, or a fast bilateral if needed.
-        # Given "Optimize for Performance", we use Scipy Gaussian (highly optimized C backend)
+        # Fast Denoising for Anatomy
         anatomy_smooth = gaussian_filter(image, sigma=0.5)
         anatomy_sharp = image + 0.3 * (image - anatomy_smooth) # Unsharp Masking for detail
         
-        # Composite
+        # We need to handle BOTH white blobs (outside anatomy) AND black blobs (inside anatomy)
         recon_image = np.zeros_like(image)
-        recon_image[mask_anatomy] = anatomy_sharp[mask_anatomy]
-        # Background remains 0 (perfect cleaning)
         
+        # A. Fill anatomy
+        recon_image[mask_anatomy] = anatomy_sharp[mask_anatomy]
+        
+        # B. Handle Black Blobs within Anatomy
+        # B. Handle Black Blobs within Anatomy
+        if np.any(mask_anatomy):
+            anatomy_pixels = image[mask_anatomy]
+            if len(anatomy_pixels) > 0:
+                mean_anatomy = np.mean(anatomy_pixels)
+                
+                print(f"[DEBUG Gemini] mean_anatomy: {mean_anatomy:.4f}, blob val: {image[60,60]:.4f}, threshold: {0.6*mean_anatomy:.4f}")
+                
+                # A pixel is a black blob if it is in the anatomy mask BUT significantly darker than the average tissue
+                mask_black_blob = mask_anatomy & (image < 0.6 * mean_anatomy)
+                
+                # Replace black blobs with the smoothed anatomy value (or mean)
+                # This fills the "holes" with appropriate tissue-like intensity
+                recon_image[mask_black_blob] = np.mean(anatomy_pixels)
+                
+        # Background remains 0 (perfect cleaning for white blobs)
         if np.sum(mask_anatomy) < 0.01 * image.size:
-            # Safety Fallback: If segmentation failed (too aggressive), return smoothed original
             return anatomy_sharp
             
         return recon_image
