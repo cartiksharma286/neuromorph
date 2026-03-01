@@ -411,111 +411,6 @@ class ParetoFrontierOptimization:
         return b1_field
 
 
-class QuantumNoiseSuppressor:
-    """
-    Quantum-inspired noise suppression using wavelet thresholds and
-    non-local means filtering to remove reconstruction artifacts.
-    """
-    
-    def __init__(self):
-        self.strength = 0.15
-        
-    def suppress_noise(self, image):
-        """
-        Applies multi-stage noise suppression and artifact removal using Quantum ML logic.
-        1. Dual-Attention Anomaly Detection (Black and White artifacts)
-        2. Spectral gating (FFT thresholding)
-        3. Gradient-based anisotropic diffusion (Edge-preserving smoothing)
-        """
-        # --- 1. Dual-Attention Anomaly Detection ---
-        # Detect isolated black blobs (thrombus/susceptibility artifacts) and white blobs
-        
-        # Calculate local statistics
-        from scipy.ndimage import uniform_filter, label, labeled_comprehension, binary_dilation
-        local_mean = uniform_filter(image, size=5)
-        
-        # Compute difference from local mean
-        diff = image - local_mean
-        
-        # Thresholds defined dynamically based on image dynamic range
-        range_val = np.max(image) - np.min(image)
-        if range_val < 1e-9:
-            range_val = 1.0 # Prevent div zero
-            
-        bright_threshold = 0.2 * range_val
-        dark_threshold = -0.2 * range_val
-        
-        # Only detect dark anomalies within the actual image signal (ignore zero background)
-        foreground_mask = image > (0.05 * np.max(image))
-        
-        mask_bright = diff > bright_threshold
-        mask_dark = (diff < dark_threshold) & foreground_mask
-        
-        cleaned_image = image.copy()
-        
-        # Function to process anomalies (filter by size to protect anatomy)
-        def clean_anomalies(anomaly_mask, is_dark):
-            labeled, num_features = label(anomaly_mask)
-            if num_features > 0:
-                sizes = labeled_comprehension(image, labeled, np.arange(1, num_features+1), len, float, 0)
-                largest_comp_size = np.max(sizes) if len(sizes) > 0 else 0
-                
-                # Dynamic threshold: blobs are anomalous, anatomy is large
-                # For black blobs (thrombus artifacts), they are typically small and extremely isolated
-                blob_threshold = max(20, int(0.02 * largest_comp_size))
-                
-                for i in range(1, num_features + 1):
-                    # Only remove if it's small enough to be an artifact, not anatomy
-                    if sizes[i-1] < blob_threshold or sizes[i-1] < 50:
-                        component_mask = (labeled == i)
-                        # Replace with local background
-                        # Replace with local background
-                        dilated = binary_dilation(component_mask, iterations=3)
-                        # Ensure background pixels are not part of ANY anomaly mask and are not pure zeros
-                        valid_bg_mask = dilated & ~component_mask & ~(mask_bright | mask_dark) & (image > 0)
-                        bg_pixels = image[valid_bg_mask]
-                        if len(bg_pixels) > 0:
-                            cleaned_image[component_mask] = np.mean(bg_pixels)
-                        else:
-                            # Fallback if surrounded by anomalies or edges
-                            cleaned_image[component_mask] = np.median(image[image > 0])
-        
-        clean_anomalies(mask_bright, is_dark=False) # White Blobs
-        clean_anomalies(mask_dark, is_dark=True)    # Black Blobs
-        
-        # --- 2. Spectral Gating (removes high-freq noise artifacts) ---
-        f_transform = np.fft.fft2(cleaned_image)
-        f_shift = np.fft.fftshift(f_transform)
-        
-        # Create flexible mask based on signal energy
-        rows, cols = cleaned_image.shape
-        crow, ccol = rows//2, cols//2
-        mask = np.zeros((rows, cols), np.uint8)
-        r = int(min(rows, cols) * 0.45) # Keep 90% of center frequencies
-        y, x = np.ogrid[:rows, :cols]
-        mask_area = (x - ccol)**2 + (y - crow)**2 <= r**2
-        mask[mask_area] = 1
-        
-        # Soft thresholding for outer frequencies
-        f_shift_filtered = f_shift * mask + f_shift * (1-mask) * 0.1
-        
-        img_back = np.fft.ifftshift(f_shift_filtered)
-        img_back = np.fft.ifft2(img_back)
-        img_clean = np.abs(img_back)
-        
-        # --- 3. Anisotropic Diffusion Simulation (Edge-preserving smoothing) ---
-        # Using Gaussian filter as approximation for NLM
-        img_smooth = gaussian_filter(img_clean, sigma=0.8)
-        
-        # Edge sharpening to recover details lost in smoothing, increasing grayscale resolution
-        alpha = 1.5
-        img_sharp = img_clean + alpha * (img_clean - img_smooth)
-        
-        # Clip to valid range
-        img_final = np.clip(img_sharp, 0, np.max(image))
-        
-        return img_final
-
 class AdvancedReconstructionEngine:
     """
     Unified reconstruction engine combining all advanced methods.
@@ -527,7 +422,6 @@ class AdvancedReconstructionEngine:
         self.quantum_ml = QuantumMLReconstruction()
         self.geodesic = GeodesicDiffeomorphicMapping()
         self.pareto = ParetoFrontierOptimization()
-        self.denoiser = QuantumNoiseSuppressor()
         
     def reconstruct(self, kspace_data, method='unified', **kwargs):
         """
@@ -559,127 +453,7 @@ class AdvancedReconstructionEngine:
             # 4. Pareto (skipped for speed in unified unless explicitly requested)
         else:
             recon = np.abs(np.fft.ifft2(kspace_data))
-            
-        # Apply Quantum Artifact Removal (Always active for Advanced Methods)
-        recon_clean = self.denoiser.suppress_noise(recon)
-        
-        return recon_clean
-
-
-class Gemini3SignalEnhancer:
-    """
-    Gemini 3.0-Powered Signal Reconstruction Engine.
-    Uses purely statistical reasoning and context-aware filtering to remove
-    artifacts (white blobs) while preserving anatomical fidelity.
-    
-    Optimized for Google Cloud TPU/GPU acceleration via vectorized NumPy operations.
-    """
-    def __init__(self):
-        self.model_version = "Gemini 3.0 Ultra (Simulated)"
-        self.context_window = "Infinite (Statistical Global Priors)"
-        
-    def enhance_signal(self, image):
-        """
-        Performs high-speed statistical signal enhancement.
-        1. Global Histogram Analysis (Statistical Prior)
-        2. Gemini Reasoning Mask (Context-Aware Segmentation)
-        3. High-Performance Reconstruction (Vectorized Filtering)
-        """
-        # 1. Statistical Prior Extraction (Fast Global Analysis)
-        # Flatten image for rigorous statistical profiling
-        flat_img = image.flatten()
-        
-        # Robust Statistics (ignoures outliers/blobs for baseline)
-        p50 = np.median(flat_img)
-        p95 = np.percentile(flat_img, 95)
-        iqr = np.subtract(*np.percentile(flat_img, [75, 25]))
-        
-        # "Reasoning": Describe the noise distribution
-        # Background is usually the mode of the lower quartile
-        hist, bins = np.histogram(flat_img, range=(0, p50), bins=50)
-        bg_mode = bins[np.argmax(hist)]
-        
-        # 2. Unsupervised Clustering Mask Generation (K-Means)
-        # Context: "White blobs are anomalous high-intensity clusters with low connectivity."
-        H, W = image.shape
-        pixels = image.flatten().reshape(-1, 1)
-        
-        # Cluster into: 0: Background, 1: Tissue, 2: Bright Artifacts
-        kmeans = KMeans(n_clusters=3, n_init=10, random_state=42)
-        labels = kmeans.fit_predict(pixels)
-        centers = kmeans.cluster_centers_.flatten()
-        
-        # Identify clusters based on intensity
-        # In typical MRI (and this test), Tissue is the bright structure.
-        # We find the cluster with the highest mean to represent Tissue/Anatomy.
-        brightest_idx = np.argmax(centers)
-        mask_bright = (labels.reshape(H, W) == brightest_idx)
-        
-        # We don't use 'mask_tissue' or 'mask_bg' anymore because background might split into multiple clusters.
-        # The bright mask is our primary starting point for anatomy.
-        
-        # B. Connectivity Analysis (Unsupervised reasoning)
-        from scipy.ndimage import label, labeled_comprehension, binary_opening, binary_closing, binary_fill_holes
-        
-        # We need the full anatomy mask
-        mask_potential_anatomy = mask_bright
-        
-        # Morphological Closing and Hole Filling to capture internal structure (black blobs)
-        # 11x11 to bridge over potentially larger black holes
-        mask_potential_anatomy = binary_closing(mask_potential_anatomy, structure=np.ones((11,11)))
-        mask_potential_anatomy = binary_fill_holes(mask_potential_anatomy)
-        
-        labeled_array, num_features = label(mask_potential_anatomy)
-        
-        if num_features > 0:
-            sizes = labeled_comprehension(
-                image, labeled_array, np.arange(1, num_features+1), len, float, 0
-            )
-            
-            # Anatomy is the largest connected component(s)
-            largest_size = np.max(sizes)
-            blob_ratio_threshold = 0.05 # Anything < 5% of largest bright feature is a blob candidate
-            
-            # Mask for valid anatomy (large bright features)
-            mask_anatomy = np.zeros_like(mask_potential_anatomy)
-            for i in range(1, num_features + 1):
-                if sizes[i-1] >= blob_ratio_threshold * largest_size or sizes[i-1] > 100:
-                    mask_anatomy |= (labeled_array == i)
-        else:
-            mask_anatomy = mask_potential_anatomy
-            
-        # 3. Signal Reconstruction
-        # Fast Denoising for Anatomy
-        anatomy_smooth = gaussian_filter(image, sigma=0.5)
-        anatomy_sharp = image + 0.3 * (image - anatomy_smooth) # Unsharp Masking for detail
-        
-        # We need to handle BOTH white blobs (outside anatomy) AND black blobs (inside anatomy)
-        recon_image = np.zeros_like(image)
-        
-        # A. Fill anatomy
-        recon_image[mask_anatomy] = anatomy_sharp[mask_anatomy]
-        
-        # B. Handle Black Blobs within Anatomy
-        # B. Handle Black Blobs within Anatomy
-        if np.any(mask_anatomy):
-            anatomy_pixels = image[mask_anatomy]
-            if len(anatomy_pixels) > 0:
-                mean_anatomy = np.mean(anatomy_pixels)
-                
-                print(f"[DEBUG Gemini] mean_anatomy: {mean_anatomy:.4f}, blob val: {image[60,60]:.4f}, threshold: {0.6*mean_anatomy:.4f}")
-                
-                # A pixel is a black blob if it is in the anatomy mask BUT significantly darker than the average tissue
-                mask_black_blob = mask_anatomy & (image < 0.6 * mean_anatomy)
-                
-                # Replace black blobs with the smoothed anatomy value (or mean)
-                # This fills the "holes" with appropriate tissue-like intensity
-                recon_image[mask_black_blob] = np.mean(anatomy_pixels)
-                
-        # Background remains 0 (perfect cleaning for white blobs)
-        if np.sum(mask_anatomy) < 0.01 * image.size:
-            return anatomy_sharp
-            
-        return recon_image
+        return recon
 
 
 class QuantumManifoldSignalBooster:
@@ -897,7 +671,7 @@ class SupervisedArtifactPredictor:
         return cleaned
 
 # Export main class
-__all__ = ['AdvancedReconstructionEngine', 'Gemini3SignalEnhancer', 'QuantumManifoldSignalBooster', 'SupervisedArtifactPredictor', 'GPTSignalEnhancer']
+__all__ = ['AdvancedReconstructionEngine', 'QuantumManifoldSignalBooster', 'SupervisedArtifactPredictor', 'GPTSignalEnhancer']
 
 
 

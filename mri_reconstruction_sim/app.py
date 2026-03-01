@@ -41,7 +41,7 @@ def simulate():
         flip_angle = float(data.get('flip_angle', 30))
         coil_mode = data.get('coils', 'standard')
         num_coils = int(data.get('num_coils', 8))
-        noise = float(data.get('noise_level', 0.0)) # Allow noise from UI
+        noise = float(data.get('noise', 0.0)) # Allow noise from UI
         recon_method = data.get('recon_method', 'SoS')
         use_shimming = data.get('shimming', False)
         

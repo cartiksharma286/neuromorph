@@ -18,7 +18,7 @@ import scipy.special
 from llm_modules import StatisticalClassifier
 from circuit_schematic_generator import CircuitSchematicGenerator
 from sklearn.cluster import KMeans
-from advanced_reconstruction import Gemini3SignalEnhancer
+
 
 GLOBAL_VOLUME_CACHE = {}
 
@@ -55,7 +55,7 @@ class MRIReconstructionSimulator:
         self.nvqlink_bandwidth_gbps = 400  # 400 Gbps quantum link
         self.nvqlink_latency_ns = 12  # 12 nanosecond latency
         self.classifier = StatisticalClassifier()
-        self.artifact_predictor = Gemini3SignalEnhancer()
+
         self.active_coil_type = 'standard'
         
     def renderCorticalSurface2D(self, slice_idx=None):
@@ -2545,7 +2545,7 @@ class MRIReconstructionSimulator:
         self.coils = new_coils
         return True
 
-    def reconstruct_image(self, kspace_data, method='SoS', noise_filter='None', morphological_cleanup=False):
+    def reconstruct_image(self, kspace_data, method='SoS'):
         """
         Reconstructs image from k-space data.
         HPC Optimization: Parallel FFTs.
@@ -2599,52 +2599,11 @@ class MRIReconstructionSimulator:
             stack = np.array(coil_images)
             combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
 
-        # 3. Apply Advanced Post-Processing (Artifact Removal & Filtering)
-        cleaned = self.apply_post_processing(combined, noise_filter_level=noise_filter, morphological_cleanup=morphological_cleanup)
-        
-        # 4. Adaptive Windowing & Cache
-        final_img = self._adaptive_windowing(cleaned)
+        # 3. Adaptive Windowing & Cache
+        final_img = self._adaptive_windowing(combined)
         self.latest_reconstructed_image = final_img
         
         return final_img, coil_images
-
-    def _remove_quantum_artifacts(self, image, strength='Medium'):
-        """
-        Removes bright and dark noise artifacts (white and black blobs) using Quantum Machine Learning algorithm.
-        """
-        try:
-            # Applies multi-stage noise suppression and artifact removal using Quantum ML logic.
-            # Dual-Attention Anomaly Detection, Spectral Gating, Anisotropic Diffusion
-            cleaned_image = self.artifact_predictor.enhance_signal(image)
-            return cleaned_image
-
-        except Exception as e:
-            print(f"Quantum ML Artifact Removal Error: {e}")
-            return scipy.ndimage.median_filter(image, size=3)
-
-    def apply_post_processing(self, image, noise_filter_level='None', morphological_cleanup=False):
-        """
-        Applies requested noise filters and morphological processing.
-        """
-        processed = image.copy()
-        
-        # 1. Morphological Cleanup (White/Black Blob Removal using Quantum ML)
-        if morphological_cleanup:
-            processed = self._remove_quantum_artifacts(processed, strength='High')
-            
-        # 2. Noise Filtering
-        if noise_filter_level == 'Low':
-            processed = scipy.ndimage.median_filter(processed, size=3)
-        elif noise_filter_level == 'Medium':
-            processed = scipy.ndimage.median_filter(processed, size=3)
-            processed = scipy.ndimage.gaussian_filter(processed, sigma=0.5)
-        elif noise_filter_level == 'High':
-            processed = scipy.ndimage.median_filter(processed, size=3)
-            processed = scipy.ndimage.gaussian_filter(processed, sigma=1.0)
-            # Edge-preserving sharpening
-            processed = processed + 0.3 * (image - processed)
-            
-        return np.clip(processed, 0, np.max(image) if np.max(image) > 0 else 1.0)
 
     def _adaptive_windowing(self, image):
         """
@@ -2674,10 +2633,7 @@ class MRIReconstructionSimulator:
         # 4. Gamma Correction (Adaptive)
         # Check brightness
         mean_val = np.mean(img_norm)
-        if mean_val < 0.3:
-            # Too dark, boost shadows
-            img_norm = img_norm ** 0.7
-        elif mean_val > 0.7:
+        if mean_val > 0.7:
             # Too bright
             img_norm = img_norm ** 1.3
             
