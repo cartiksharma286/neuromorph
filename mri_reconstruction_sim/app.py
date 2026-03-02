@@ -10,13 +10,6 @@ import numpy as np
 
 app = Flask(__name__)
 LATEST_CONTEXT = {}
-NVQLINK_STATUS = {
-    'enabled': False,
-    'bandwidth_gbps': 400,
-    'latency_ns': 12,
-    'quantum_state': 'Entangled',
-    'uptime_hours': 0
-}
 
 @app.route('/')
 def index():
@@ -202,8 +195,6 @@ def get_report():
         st = c['seq_type']
         if st == 'Gemini3.0':
             seq_math = r"$$ \mathcal{J}(\mathbf{m}) =  -\sum p_i \ln(p_i) + \lambda \int |\nabla \mathbf{m}|^2 d\Omega $$"
-        elif st == 'QuantumNVQLink':
-            seq_math = r"$$ M_{eff}(v) = M_0 \sin(\alpha) \frac{1-e^{-TR/T1}}{1-\cos(\alpha)e^{-TR/T1}} + \beta v \delta t $$"
         elif st == 'QuantumBerryPhase':
             seq_math = r"$$ S \propto M_0 e^{-TE/T2^*} e^{i(\Phi_{dyn} + \Phi_B)} $$"
         elif st == 'QuantumLowEnergyBeam':
@@ -267,6 +258,71 @@ $$ Z_{ij} = \sum \\frac{\mu_0}{4\pi} \\frac{\mathbf{J}_i \cdot \mathbf{J}_j}{|\m
     except Exception as e:
         import traceback
         traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/neuro_pulse_ca/generate', methods=['POST'])
+def generate_neuro_pulse_ca():
+    try:
+        from neuro_pulse_ca import generate_all_canadian_sequences
+        result = generate_all_canadian_sequences()
+        result['success'] = True
+        return jsonify(result)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/thermometry_stream', methods=['GET'])
+def thermometry_stream():
+    try:
+        # Simulate real-time Thermal Data
+        import numpy as np
+        import time
+        from flask import request
+
+        # Get base parameters from simulator if it exists
+        base_temp = 37.0
+        if GLOBAL_SIM is not None:
+            metrics = getattr(GLOBAL_SIM.classifier, 'latest_stats', {})
+            base_temp = metrics.get('inferred_mean_temp_c', 37.0)
+
+        # Simulation noise & drift
+        drift = np.sin(time.time() / 5.0) * 1.5
+        mean_temp = base_temp + drift
+
+        # Create a 64x64 grid simulating a thermal focus point (e.g. from laser ablation or RF heating)
+        y, x = np.ogrid[:64, :64]
+        
+        # Move the thermal hot spot smoothly based on time
+        cx = 32 + np.cos(time.time() / 2.0) * 8
+        cy = 32 + np.sin(time.time() / 2.0) * 8
+
+        # Gaussian heat distribution
+        dist_sq = (x - cx)**2 + (y - cy)**2
+        
+        # Max temp at center rises as sequence runs
+        active = request.args.get('active', 'true') == 'true'
+        peak_temp = mean_temp + (25.0 if active else 2.0) + np.random.normal(0, 0.5)
+
+        # Base temperature plus gaussian hot spot
+        temp_grid = np.full((64, 64), 37.0) # Start with body temp
+        # Enhance grid with a background gradient or base image
+        temp_grid += (np.random.rand(64,64) * 0.5 - 0.25) # Small noise
+        
+        # Add the hotspot
+        temp_grid += (peak_temp - 37.0) * np.exp(-dist_sq / 30.0)
+
+        # Calculate a theoretical target
+        target_temp = 43.0 if not active else 55.0
+
+        return jsonify({
+            "success": True,
+            "actual_temp": float(mean_temp + (peak_temp - mean_temp) * 0.1), # Spatial Average
+            "max_temp": float(np.max(temp_grid)),
+            "target_temp": target_temp,
+            "grid": temp_grid.tolist()
+        })
+    except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':

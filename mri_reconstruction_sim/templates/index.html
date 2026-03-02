@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeuroPulse: MRI Reconstruction Simulator</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-primary: #020617;
@@ -600,15 +601,43 @@
 
             <!-- View: QML Thermometry -->
             <div id="view-thermometry" class="view-content">
-                <div class="output-box" style="max-width: 800px; margin: auto;">
-                    <div class="output-title">QML MR Thermometry (Temperature Map)</div>
-                    <div class="img-window" style="aspect-ratio: auto; height: 600px;">
-                        <img id="img-temperature_map" src="" style="object-fit: contain;">
+                <div class="output-box" style="width: 100%; max-width: 1000px; margin: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+                        <h3 style="margin:0;">QML MR Thermometry (Real-Time)</h3>
+                        <button id="btn-thermometry-stream" onclick="toggleThermometryStream()" style="background: #f43f5e; color: white; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                            ● Start Real-Time Feed
+                        </button>
                     </div>
-                    <div class="metrics-bar" style="width: 100%;">
-                        <div class="metric-mini">
-                            <div class="metric-mini-val" id="meanTempVal">--</div>
-                            <div class="metric-mini-label">Mean Temp (°C)</div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; align-items: start;">
+                        <!-- Left: Spatial Temperature Map (Canvas) -->
+                        <div class="output-submodule">
+                            <div class="output-title">High-Resolution Spatial Thermal Map</div>
+                            <div class="img-window" style="aspect-ratio: auto; height: 350px; background: #000; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                <canvas id="thermalMapCanvas" width="400" height="400" style="max-width: 100%; max-height: 100%; object-fit: contain;"></canvas>
+                                <!-- Interactive Hover Box -->
+                                <div id="thermal-hover" style="position: absolute; display: none; background: rgba(0,0,0,0.8); border: 1px solid #f43f5e; color: #fff; padding: 4px 8px; border-radius: 4px; pointer-events: none; font-size: 0.8rem; z-index: 10;">
+                                    37.0 °C
+                                </div>
+                            </div>
+                            <div class="metrics-bar" style="width: 100%; margin-top: 0.5rem;">
+                                <div class="metric-mini" style="flex: 1; text-align: center;">
+                                    <div class="metric-mini-val" id="meanTempVal" style="font-size: 1.5rem; color: #f43f5e; font-variant-numeric: tabular-nums;">--</div>
+                                    <div class="metric-mini-label">Spatially Averaged Temp</div>
+                                </div>
+                                <div class="metric-mini" style="flex: 1; text-align: center;">
+                                    <div class="metric-mini-val" id="maxTempVal" style="font-size: 1.5rem; color: #ef4444; font-variant-numeric: tabular-nums;">--</div>
+                                    <div class="metric-mini-label">Peak Voxel Temp</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Real-Time Temporal Profile -->
+                        <div class="output-submodule">
+                            <div class="output-title">Temporal Temperature Tracking</div>
+                            <div style="width: 100%; height: 350px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; position: relative;">
+                                <canvas id="temperatureProfileChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -891,6 +920,11 @@
                     if (plots.temperature_map) {
                         update('temperature_map', plots.temperature_map);
                         document.getElementById('meanTempVal').textContent = (data.metrics.inferred_mean_temp_c || 0).toFixed(1) + "°C";
+                        
+                        // Push to Real-Time Chart if it exists
+                        if (window.updateThermometryChart) {
+                            window.updateThermometryChart(data.metrics.inferred_mean_temp_c || 0);
+                        }
                     }
                     if (plots.distribution_curve) {
                         update('distribution_curve', plots.distribution_curve);
@@ -1032,22 +1066,22 @@
                         .filter(k => p[k] !== undefined && p[k] !== null)
                         .map(k => {
                             const val = Array.isArray(p[k]) ? p[k].join(', ') : p[k];
-                            return `< tr >
+                            return `<tr>
                                 <td style="color:#94a3b8;padding:2px 8px 2px 0;font-size:0.72rem;white-space:nowrap;">${k.toUpperCase().replace(/_/g, ' ')}</td>
                                 <td style="color:var(--accent);font-weight:600;font-size:0.72rem;">${val}</td>
-                            </tr > `;
+                            </tr>`;
                         }).join('');
 
                     const card = document.createElement('div');
                     card.className = 'output-box';
                     card.style.cssText = 'align-items:flex-start; cursor:default;';
                     card.innerHTML = `
-                            < div style = "display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;flex-wrap:wrap;" >
+                            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;flex-wrap:wrap;">
                             <span style="font-size:0.85rem;font-weight:700;color:var(--accent);">${p.name}</span>
                             <span style="font-size:0.65rem;padding:2px 8px;border-radius:20px;background:${distColour}22;color:${distColour};border:1px solid ${distColour}55;">
                                 ${seq.distribution_name.split('+')[0].trim()}
                             </span>
-                        </div >
+                        </div>
                         <div style="font-size:0.7rem;color:#64748b;margin-bottom:0.6rem;">🏛 ${p.institution}</div>
 
                         <!-- Scan Parameters -->
@@ -1153,6 +1187,275 @@
             } catch (err) { console.error(err); }
             btn.textContent = 'Optimize Combinatorial Coils';
         }
+    </script>
+    <script>
+        // ── ThermalViz implementation for Q-Thermometry ──
+        class ThermalViz {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                if (!this.canvas) return;
+                this.ctx = this.canvas.getContext('2d');
+                this.width = this.canvas.width;
+                this.height = this.canvas.height;
+                this.onHover = null;
+                this.lastData = null;
+
+                // Offscreen buffer for 64x64 grids
+                this.bufferCanvas = document.createElement('canvas');
+                this.bufferCanvas.width = 64;
+                this.bufferCanvas.height = 64;
+                this.bufferCtx = this.bufferCanvas.getContext('2d');
+                this.imageData = this.bufferCtx.createImageData(64, 64);
+                
+                // Surgical Turbo-inspired LUT
+                this.tempLUT = this.generateTempColormap();
+
+                // Interactions
+                this.hoverEl = document.getElementById('thermal-hover');
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseleave', () => {
+                    if (this.hoverEl) this.hoverEl.style.display = 'none';
+                });
+            }
+
+            generateTempColormap() {
+                const steps = 1000;
+                const lut = new Uint8ClampedArray(steps * 4);
+                // 37-100 C range
+                const stops = [
+                    { t: 37.0, c: [0, 0, 0, 0] },
+                    { t: 38.0, c: [60, 0, 150, 40] },
+                    { t: 40.0, c: [0, 80, 255, 120] },
+                    { t: 43.0, c: [0, 255, 200, 160] },
+                    { t: 48.0, c: [0, 255, 0, 200] },
+                    { t: 55.0, c: [255, 255, 0, 230] },
+                    { t: 65.0, c: [255, 120, 0, 255] },
+                    { t: 80.0, c: [255, 0, 0, 255] },
+                    { t: 95.0, c: [255, 255, 255, 255] },
+                    { t: 100.0, c: [255, 255, 255, 255] }
+                ];
+                const getRange = (temp) => {
+                    for (let i = 0; i < stops.length - 1; i++) {
+                        if (temp >= stops[i].t && temp < stops[i + 1].t) {
+                            return [stops[i], stops[i + 1]];
+                        }
+                    }
+                    return [stops[stops.length - 2], stops[stops.length - 1]];
+                };
+                for (let i = 0; i < steps; i++) {
+                    const temp = 37.0 + (i / steps) * 63.0;
+                    const [s1, s2] = getRange(temp);
+                    const ratio = (temp - s1.t) / (s2.t - s1.t);
+                    lut[i * 4] = s1.c[0] + (s2.c[0] - s1.c[0]) * ratio;
+                    lut[i * 4 + 1] = s1.c[1] + (s2.c[1] - s1.c[1]) * ratio;
+                    lut[i * 4 + 2] = s1.c[2] + (s2.c[2] - s1.c[2]) * ratio;
+                    lut[i * 4 + 3] = s1.c[3] + (s2.c[3] - s1.c[3]) * ratio;
+                }
+                return lut;
+            }
+
+            handleMouseMove(e) {
+                if (!this.lastData || !this.hoverEl) return;
+                const rect = this.canvas.getBoundingClientRect();
+                const scaleX = this.canvas.width / rect.width;
+                const scaleY = this.canvas.height / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+                
+                const gridW = this.lastData[0].length;
+                const gridH = this.lastData.length;
+                
+                const gx = Math.floor((x / this.width) * gridW);
+                const gy = Math.floor((y / this.height) * gridH);
+
+                if (gx >= 0 && gx < gridW && gy >= 0 && gy < gridH) {
+                    const temp = this.lastData[gy][gx];
+                    this.hoverEl.style.display = 'block';
+                    this.hoverEl.style.left = (e.clientX - rect.left + 15) + 'px';
+                    this.hoverEl.style.top = (e.clientY - rect.top - 15) + 'px';
+                    this.hoverEl.textContent = temp.toFixed(1) + ' °C';
+                }
+            }
+
+            update(gridData) {
+                if (!gridData || !gridData.length) return;
+                this.lastData = gridData;
+                
+                const h = gridData.length;
+                const w = gridData[0].length;
+                
+                if (this.bufferCanvas.width !== w || this.bufferCanvas.height !== h) {
+                    this.bufferCanvas.width = w;
+                    this.bufferCanvas.height = h;
+                    this.imageData = this.bufferCtx.createImageData(w, h);
+                }
+                
+                const pixels = this.imageData.data;
+                let p = 0;
+                
+                // Clear main context background
+                this.ctx.fillStyle = '#111';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const val = gridData[y][x];
+                        let idx = Math.floor((val - 37.0) / 63.0 * 1000);
+                        idx = Math.max(0, Math.min(999, idx));
+                        const i = idx * 4;
+                        pixels[p++] = this.tempLUT[i];
+                        pixels[p++] = this.tempLUT[i + 1];
+                        pixels[p++] = this.tempLUT[i + 2];
+                        pixels[p++] = 255; // Force opacity to display directly
+                    }
+                }
+
+                this.bufferCtx.putImageData(this.imageData, 0, 0);
+                this.ctx.save();
+                this.ctx.imageSmoothingEnabled = true; // Smooth upscaling
+                this.ctx.drawImage(this.bufferCanvas, 0, 0, this.width, this.height);
+                this.ctx.restore();
+            }
+        }
+
+        // QML Thermometry Real-Time Stream Logic
+        let thermometryChart = null;
+        let isThermometryStreaming = false;
+        let thermometryInterval = null;
+        let thermalCanvasViz = null;
+        
+        // Circular buffer histories
+        const MAX_HISTORY = 40;
+        let timeHistory = Array(MAX_HISTORY).fill('');
+        let actualTempHistory = Array(MAX_HISTORY).fill(null);
+        let targetTempHistory = Array(MAX_HISTORY).fill(null);
+
+        function initThermometryChart() {
+            const ctx = document.getElementById('temperatureProfileChart').getContext('2d');
+            thermometryChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [...timeHistory],
+                    datasets: [
+                        {
+                            label: 'Actual Temp (°C)',
+                            data: [...actualTempHistory],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Target Temp (°C)',
+                            data: [...targetTempHistory],
+                            borderColor: '#06b6d4',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false, // Snappy real-time updates
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'rgba(255,255,255,0.5)', maxTicksLimit: 10 }
+                        },
+                        y: {
+                            display: true,
+                            min: 35,
+                            max: 65,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'rgba(255,255,255,0.8)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: true, labels: { color: '#cbd5e1' } }
+                    }
+                }
+            });
+            
+            thermalCanvasViz = new ThermalViz('thermalMapCanvas');
+        }
+
+        async function fetchThermometryUpdate() {
+            try {
+                // Determine 'active' status based on if QML sequence is selected
+                const isActive = document.getElementById('sequence').value === 'QuantumMLThermometry';
+                const res = await fetch(`/api/thermometry_stream?active=${isActive}`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    const now = new Date();
+                    const timeStr = String(now.getMinutes()).padStart(2, '0') + ':' + 
+                                    String(now.getSeconds()).padStart(2, '0') + '.' + 
+                                    String(Math.floor(now.getMilliseconds()/100));
+                    
+                    // Update Text Values
+                    document.getElementById('meanTempVal').textContent = data.actual_temp.toFixed(1) + " °C";
+                    document.getElementById('maxTempVal').textContent = data.max_temp.toFixed(1) + " °C";
+                    
+                    // Canvas Grid Update
+                    if (thermalCanvasViz) {
+                        thermalCanvasViz.update(data.grid);
+                    }
+                    
+                    // Arrays rolling window
+                    timeHistory.push(timeStr);
+                    actualTempHistory.push(data.actual_temp);
+                    targetTempHistory.push(data.target_temp);
+                    
+                    if (timeHistory.length > MAX_HISTORY) {
+                        timeHistory.shift();
+                        actualTempHistory.shift();
+                        targetTempHistory.shift();
+                    }
+                    
+                    // Chart update
+                    if (thermometryChart) {
+                        thermometryChart.data.labels = [...timeHistory];
+                        thermometryChart.data.datasets[0].data = [...actualTempHistory];
+                        thermometryChart.data.datasets[1].data = [...targetTempHistory];
+                        thermometryChart.update('none');
+                    }
+                }
+            } catch (err) {
+                console.error("Thermometry feed error", err);
+            }
+        }
+
+        function toggleThermometryStream() {
+            const btn = document.getElementById('btn-thermometry-stream');
+            isThermometryStreaming = !isThermometryStreaming;
+
+            if (isThermometryStreaming) {
+                btn.textContent = '⏹ Stop Real-Time Feed';
+                btn.style.background = '#64748b';
+                
+                // Initialize modules if not already
+                if (!thermometryChart) initThermometryChart();
+
+                // 250ms high frequency poll for smooth Canvas visualization
+                thermometryInterval = setInterval(fetchThermometryUpdate, 250);
+            } else {
+                btn.textContent = '● Start Real-Time Feed';
+                btn.style.background = '#f43f5e';
+                clearInterval(thermometryInterval);
+            }
+        }
+        
+        // Ensure ThermalViz is ready
+        document.addEventListener("DOMContentLoaded", () => {
+            // Lazy-init when started to save resources
+        });
     </script>
 </body>
 

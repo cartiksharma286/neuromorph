@@ -1650,14 +1650,21 @@ class MRIReconstructionSimulator:
         Simulates Pulse Sequence acquisition.
         Returns k-space data per coil.
         """
+        # Cache active sequence for plotting
+        self.latest_sequence_type = sequence_type
+        
         # Quantum Noise Reduction Factor
         q_factor = 1.0
-        
+
+        # Safe versions of T1/T2 maps — always available to all sequence branches
+        T1_safe = np.maximum(self.t1_map, 1e-6)
+        T2_safe = np.maximum(self.t2_map, 1e-6)
+
         if sequence_type == 'SE':
-            t1 = np.maximum(self.t1_map, 1e-6)
-            t2 = np.maximum(self.t2_map, 1e-6)
+            t1 = T1_safe
+            t2 = T2_safe
             M = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
-            
+
         elif sequence_type == 'GRE':
             t1 = np.maximum(self.t1_map, 1e-6)
             t2 = np.maximum(self.t2_map, 1e-6)
@@ -1812,7 +1819,7 @@ class MRIReconstructionSimulator:
             # Quantum Entangled sequence: Uses entangled photons/spins to reduce noise floor
             # Mathematically equivalent to higher SNR or lower noise_level
             # Also assumes ideal contrast
-            M = self.pd_map * (1 - np.exp(-TR / self.t1_map)) * np.exp(-TE / self.t2_map) # T1/T2 Entanglement
+            M = self.pd_map * (1 - np.exp(-TR / T1_safe)) * np.exp(-TE / T2_safe)  # T1/T2 Entanglement
             # Grayscale Optimization
             if np.max(M) > 0:
                 M = M / np.max(M)
@@ -1898,7 +1905,7 @@ class MRIReconstructionSimulator:
                 # Best response dynamics:
                 # Align with field (B0 + neighbors) vs Thermal agitation
                 # Utility U = alpha * (alignment) - beta * (entropy cost)
-                utility = 0.8 * neighbor_avg - 0.2 * (1/self.t1_map)
+                utility = 0.8 * neighbor_avg - 0.2 * (1/T1_safe)
                 
                 # Update strategy (sigmoid activation)
                 spin_state = 1 / (1 + np.exp(-utility * 10))
@@ -1910,7 +1917,7 @@ class MRIReconstructionSimulator:
             # Simulating "Game Theoretic Angiography"
             
             # Structural Base (T1-weighted for anatomy)
-            struct = self.pd_map * (1 - np.exp(-TR / self.t1_map))
+            struct = self.pd_map * (1 - np.exp(-TR / T1_safe))
             
             # Vascular overlay (Nash Equilibrium often converges on high energy/flow states)
             M = 0.4 * struct + 0.6 * (self.pd_map * spin_state)
@@ -2039,7 +2046,7 @@ class MRIReconstructionSimulator:
             
             # Simulate low SNR environment (high initial noise)
             # But the "Quantum Receiver" recovers it using statistical prior
-            M_base = self.pd_map * (1 - np.exp(-TR/self.t1_map))
+            M_base = self.pd_map * (1 - np.exp(-TR/T1_safe))
             
             # Apply AI "Beam" sharpening (Focusing the energy)
             focused = scipy.ndimage.gaussian_filter(M_base, sigma=0.3)
@@ -2059,48 +2066,32 @@ class MRIReconstructionSimulator:
             q_factor = 0.002 # Extremely low noise floor due to quantum reconstruction
             
         elif sequence_type == 'QuantumNVQLink':
-            # NVQLink Neurovasculature MRA (Time-Of-Flight + Quantum Denoising)
-            # Physics: Background Suppression (Short TR, High Flip) + Flow Enhancement
-            
-            # 1. MRA Contrast (Static Tissue Separation)
-            # Static tissue is saturated (low signal due to short TR)
-            # Inflowing blood is fully magnetized (High signal)
-            
-            # Detect simulated vessels (High T1/PD regions in our phantom)
-            # We assume "Blood" signature: T1 > 1400, PD > 0.8
+            # Time-of-Flight (ToF) MRA — Clean physics-based neurovascular contrast
+            # Background is suppressed via short TR saturation; inflowing blood appears bright.
+            # Vessels identified by T1 > 1400 ms and PD > 0.8 (blood-like signature).
             mask_vessel = (self.t1_map > 1400) & (self.pd_map > 0.8)
-            
-            # Background suppression factor
-            # Signal ~ (1-exp(-TR/T1)) * sin(alpha) / (1 - cos(alpha)exp(-TR/T1))
-            # With Short TR (e.g. 30ms), tissue (T1~900) is suppressed.
-            
-            tr_mra = 40 # ms
-            fa_mra = np.radians(60) # High flip angle
-            
-            E1 = np.exp(-tr_mra / self.t1_map)
-            # Steady state signal for static tissue
-            S_static = self.pd_map * (1 - E1) * np.sin(fa_mra) / (1 - np.cos(fa_mra) * E1)
-            
-            # Flow Related Enhancement (FRE)
-            # Vessels appear with FULL M0 (Fresh slice)
-            S_flow = self.pd_map * np.sin(fa_mra) 
-            
-            # Composite Image
-            M = S_static
-            M[mask_vessel] = S_flow[mask_vessel] * 1.8 # Enhanced boost for "Evident" vessels
-            
-            # 2. NVQLink Quantum Denoising
-            # Apply AI-based edge preservation for vessels and background suppression
+
+            tr_tof = 40   # ms — short TR saturates static tissue
+            fa_tof = np.radians(60)  # high flip angle for flow enhancement
+
+            E1 = np.exp(-tr_tof / np.maximum(self.t1_map, 1e-6))
+            denom_tof = np.maximum(1 - np.cos(fa_tof) * E1, 1e-9)
+            S_static = self.pd_map * (1 - E1) * np.sin(fa_tof) / denom_tof
+            S_flow   = self.pd_map * np.sin(fa_tof)  # unsaturated inflow
+
+            M = S_static.copy()
+            M[mask_vessel] = S_flow[mask_vessel] * 1.8
+
+            # Edge-enhance vessels via gradient magnitude (physics-based sharpening)
             grads = np.gradient(M)
-            vessel_edges = np.sqrt(grads[0]**2 + grads[1]**2)
-            M = M + 0.4 * vessel_edges # Sharpen vessels
-            
-            # Grayscale Optimization: Suppress background noise
-            # Push low values to zero (blacker blacks)
-            threshold = np.percentile(M, 40)
-            M[M < threshold] *= 0.1
-            
-            q_factor = 0.005 # Ultra clean
+            vessel_edges = np.sqrt(grads[0] ** 2 + grads[1] ** 2)
+            M = M + 0.4 * vessel_edges
+
+            # Suppress background below 40th percentile cleanly (no noise injection)
+            thr = np.percentile(M, 40)
+            M = np.where(M < thr, M * 0.05, M)
+
+            q_factor = 0.0  # Butterworth + attention denoiser handles all residual noise
             
         elif sequence_type == 'Gemini3.0':
             # Gemini 3.0: Context-Aware Pulse Sequence
@@ -2456,7 +2447,7 @@ class MRIReconstructionSimulator:
             
             # Quantum Noise Reduction
             if sequence_type in [
-                'QuantumNVQLink', 'QuantumBerryPhase', 'QuantumLowEnergyBeam', 
+                'QuantumBerryPhase', 'QuantumLowEnergyBeam',
                 'QuantumGenerativeRecon', 'QuantumRBMSpectroscopy', 'QuantumPhotonCount',
                 'QuantumThermometry', 'QuantumGameTheory', 'QuantumSurfaceIntegral',
                 'QuantumStatisticalCongruence'
@@ -2548,30 +2539,26 @@ class MRIReconstructionSimulator:
     def reconstruct_image(self, kspace_data, method='SoS'):
         """
         Reconstructs image from k-space data.
-        HPC Optimization: Parallel FFTs.
+        HPC Optimization: Vectorized NumPy FFTs (replaces thread pool overhead).
         """
         if not kspace_data:
             # Return zeros if no data
             return np.zeros(self.dims), []
 
-        # 1. Parallel IFFT per coil
-        def _process_coil_kspace(k_data):
-            return np.fft.ifft2(np.fft.ifftshift(k_data))
-
-        from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor() as executor:
-            coil_images = list(executor.map(_process_coil_kspace, kspace_data))
+        # 1. Vectorized IFFT for all coils simultaneously
+        k_stack = np.array(kspace_data)
+        # Shift and IFFT along the spatial dimensions (last two axes)
+        stack = np.fft.ifft2(np.fft.ifftshift(k_stack, axes=(-2, -1)), axes=(-2, -1))
+        coil_images = list(stack)  # Retain list format for return compatibility
             
         # 2. Combine
         try:
             if method == 'SoS' or method == 'standard':
-                # Root Sum of Squares - Optimized
-                stack = np.array(coil_images)
+                # Root Sum of Squares
                 combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
                 
             elif method == 'Variational':
                 # Variational Theory Denoising
-                stack = np.array(coil_images)
                 combined_raw = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
                 combined = self.classifier.variational_denoise(combined_raw, lambda_tv=0.05)
                 
@@ -2579,9 +2566,8 @@ class MRIReconstructionSimulator:
                 # Simulated DL
                 combined = self.deep_learning_reconstruct(kspace_data)
                 
-            elif method == 'QuantumThermometry' or method == 'QuantumSurfaceIntegral' or method == 'QuantumGameTheory':
+            elif method in ['QuantumThermometry', 'QuantumSurfaceIntegral', 'QuantumGameTheory']:
                 # These methods use SoS then overlay some physics data
-                stack = np.array(coil_images)
                 combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
                 
                 # Apply overlays (abbreviated for brevity, logic remains same)
@@ -2591,12 +2577,10 @@ class MRIReconstructionSimulator:
                      combined = combined * (1.0 + 0.5 * T_norm)
                 # ... other methods follow same logic
             else:
-                stack = np.array(coil_images)
                 combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
 
         except Exception as e:
             print(f"RECONSTRUCTION FAULT: {e}")
-            stack = np.array(coil_images)
             combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
 
         # 3. Adaptive Windowing & Cache
@@ -2604,40 +2588,61 @@ class MRIReconstructionSimulator:
         self.latest_reconstructed_image = final_img
         
         return final_img, coil_images
-
     def _adaptive_windowing(self, image):
         """
-        Applies Adaptive Contrast Windowing (Auto-Window/Level).
-        Simulates 'Reasoning' about optimal display parameters.
+        Applies Histogram-Based Denoising and Adaptive Contrast Windowing.
+
+        Steps
+        -----
+        1.  Compute Otsu's threshold to partition the image histogram into 
+            background (noise) and foreground (neurovascular signal).
+        2.  Calculate the mean noise floor from the background partition.
+        3.  Subtract the noise floor from the entire image to eliminate white speckle.
+        4.  Clip negatives to zero (only keep the true foreground signal).
+        5.  Robust percentile stretch to [0, 1].
+        6.  Adaptive gamma correction for brightness balance.
         """
-        # 1. Robust Range Scaling (exclude outliers)
-        p2, p98 = np.percentile(image, (2, 99))
-        
-        # 2. Clip
-        img_clipped = np.clip(image, p2, p98)
-        
-        # 3. Stretch to 0-1
-        range_val = p98 - p2
-        if range_val < 1e-9:
-            # Fallback for sparse high-intensity images (where p99 is still 0 or low)
-            # Use absolute min/max to ensure normalization
-            min_val = np.min(image)
-            max_val = np.max(image)
-            if (max_val - min_val) > 1e-9:
-                img_norm = (image - min_val) / (max_val - min_val)
-            else:
-                return image # Truly uniform
-        else:
-            img_norm = (img_clipped - p2) / range_val
-        
-        # 4. Gamma Correction (Adaptive)
-        # Check brightness
-        mean_val = np.mean(img_norm)
-        if mean_val > 0.7:
-            # Too bright
-            img_norm = img_norm ** 1.3
+        import skimage.filters
+        img = np.abs(image)  # always work with magnitude
+
+        # 1 — Histogram Partitioning (Otsu's Method)
+        try:
+            # Find threshold that minimizes intra-class variance in the histogram
+            otsu_thresh = skimage.filters.threshold_otsu(img)
             
+            # 2 — Calculate exact noise floor from the background histogram bin
+            background_pixels = img[img < otsu_thresh]
+            if background_pixels.size > 0:
+                noise_floor = np.mean(background_pixels) + 0.5 * np.std(background_pixels)
+            else:
+                noise_floor = 0.0
+        except Exception:
+            # Fallback if image is completely uniform
+            noise_floor = np.percentile(img, 10)
+
+        # 3 — Background subtraction: keep only the foreground signal
+        foreground = img - noise_floor
+        foreground = np.clip(foreground, 0, None)   # remove negative halos
+
+        # 4 — Robust range scaling (2nd → 99th percentile, excludes outlier speckles)
+        p2, p99 = np.percentile(foreground, (2, 99))
+        range_val = p99 - p2
+        if range_val < 1e-9:
+            # Fallback: absolute min/max for flat/uniform images
+            mn, mx = foreground.min(), foreground.max()
+            if mx - mn > 1e-9:
+                img_norm = (foreground - mn) / (mx - mn)
+            else:
+                return foreground   # truly uniform — return as-is
+        else:
+            img_norm = np.clip((foreground - p2) / range_val, 0.0, 1.0)
+
+        # 5 — Adaptive gamma: darken if image is overexposed
+        if np.mean(img_norm) > 0.7:
+            img_norm = img_norm ** 1.3
+
         return img_norm
+
 
     def compute_metrics(self, reconstructed, reference_M):
         """Calculates Contrast, SNR, and normalized Error."""
@@ -2843,17 +2848,19 @@ class MRIReconstructionSimulator:
              plots['spectroscopy'] = spectro_img
             
         # 8. Neurovascular Prism (if active)
-        # We visualize the sensitivity map of the first coil channel as a proxy
-        if hasattr(self, 'active_quantum_coil') and getattr(self.active_quantum_coil, 'name', '') and 'Neurovascular' in getattr(self.active_quantum_coil, 'name', ''):
-             # Visualize the prism structure
-             # Use the sum of all coil sensitivities to show coverage
-             if len(self.coils) > 0:
+        # 8. Neurovascular Prism & Cardiovascular Conformal tabs
+        # By default, populate these tabs with the Reconstructed Image to fix missing image bugs.
+        plots['neuro_prism'] = plots['recon']
+        plots['cardio_conformal'] = plots['recon']
+        
+        # If specific topologies are active, replace with their actual sensitivity map overlay
+        if hasattr(self, 'active_quantum_coil') and getattr(self, 'active_quantum_coil', None) is not None:
+             coil_name = getattr(self.active_quantum_coil, 'name', '')
+             if 'Neurovascular' in coil_name and len(self.coils) > 0:
                  sens_map = np.sum(np.abs(self.coils), axis=0)
                  plots['neuro_prism'] = self._plot_to_base64_heatmap(sens_map, "Adaptive Prism Sensitivity")
                  
-        # 8. Cardiovascular Conformal (if active)
-        if hasattr(self, 'active_quantum_coil') and getattr(self.active_quantum_coil, 'name', '') and 'Cardiovascular' in getattr(self.active_quantum_coil, 'name', ''):
-             if len(self.coils) > 0:
+             if 'Cardiovascular' in coil_name and len(self.coils) > 0:
                  sens_map = np.sum(np.abs(self.coils), axis=0)
                  plots['cardio_conformal'] = self._plot_to_base64_heatmap(sens_map, "Conformal Geometry Map", cmap='magma')
 
@@ -2884,6 +2891,22 @@ class MRIReconstructionSimulator:
              print(f"Schematic error: {e}")
              # Fallback
              plots['circuit'] = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+
+        # 9. QML Thermometry & Statistical Distribution Curves
+        # Look at the active sequence type from the class state to conditionally build these tabs
+        seq_str = str(getattr(self, 'latest_sequence_type', ''))
+        if 'Thermometry' in seq_str or 'Statistical' in seq_str or getattr(self, 'thermal_mode_active', False):
+            # Extract metrics from classifier or fallback to default
+            metrics = getattr(self.classifier, 'latest_stats', {"inferred_mean_temp_c": 37.0})
+            temp = metrics.get('inferred_mean_temp_c', 37.0)
+            plots['temperature_map'] = self.generate_temperature_map_plot(reconstructed_img, temp)
+             
+            # Attempt distribution mapping if params exist
+            if 'params' in metrics:
+                try:
+                    plots['distribution_curve'] = self.generate_distribution_curve_plot(reconstructed_img, metrics)
+                except Exception as e:
+                    print(f"Distribution plot failed: {e}")
 
         return plots
 
