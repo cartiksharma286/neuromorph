@@ -2536,7 +2536,7 @@ class MRIReconstructionSimulator:
         self.coils = new_coils
         return True
 
-    def reconstruct_image(self, kspace_data, method='SoS'):
+    def reconstruct_image(self, kspace_data, method='SoS', noise_filter='None', morphological_cleanup=False):
         """
         Reconstructs image from k-space data.
         HPC Optimization: Vectorized NumPy FFTs (replaces thread pool overhead).
@@ -2585,6 +2585,24 @@ class MRIReconstructionSimulator:
 
         # 3. Adaptive Windowing & Cache
         final_img = self._adaptive_windowing(combined)
+        
+        # 4. Apply extra filtering if requested
+        if noise_filter == 'Gaussian':
+            import scipy.ndimage
+            final_img = scipy.ndimage.gaussian_filter(final_img, sigma=1.0)
+        elif noise_filter == 'Median':
+            import scipy.ndimage
+            final_img = scipy.ndimage.median_filter(final_img, size=3)
+            
+        if morphological_cleanup:
+            import skimage.morphology
+            # Example cleanup: remove small white specks
+            # Convert to binary mask for cleanup
+            mask = final_img > np.percentile(final_img, 95)
+            cleaned_mask = skimage.morphology.remove_small_objects(mask, min_size=5)
+            # Re-apply mask to suppress small specks
+            final_img = np.where(~mask | cleaned_mask, final_img, 0)
+
         self.latest_reconstructed_image = final_img
         
         return final_img, coil_images
@@ -2779,7 +2797,7 @@ class MRIReconstructionSimulator:
         if np.max(disp_img) - np.min(disp_img) > 1e-9:
              disp_img = (disp_img - np.min(disp_img)) / (np.max(disp_img) - np.min(disp_img))
              
-        ax1.imshow(disp_img, cmap='gray', origin='lower', aspect='equal', vmin=0, vmax=1, interpolation='bicubic')
+        ax1.imshow(disp_img, cmap='gray', origin='lower', aspect='equal', vmin=0, vmax=1, interpolation='nearest')
         ax1.axis('off')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plots['recon'] = fig_to_b64(fig1, tight=False)
@@ -2823,7 +2841,7 @@ class MRIReconstructionSimulator:
         if np.max(disp_ref) - np.min(disp_ref) > 1e-9:
              disp_ref = (disp_ref - np.min(disp_ref)) / (np.max(disp_ref) - np.min(disp_ref))
              
-        ax4.imshow(disp_ref, cmap='gray', origin='lower', aspect='equal', vmin=0, vmax=1, interpolation='bicubic')
+        ax4.imshow(disp_ref, cmap='gray', origin='lower', aspect='equal', vmin=0, vmax=1, interpolation='nearest')
         ax4.axis('off')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plots['phantom'] = fig_to_b64(fig4, tight=False)

@@ -323,12 +323,53 @@ def generate_neuro_pulse_ca():
 @app.route('/api/nvqlink/status', methods=['GET'])
 def nvqlink_status():
     """Returns NVQLink status."""
-# NVQLink status endpoint removed
+    return jsonify({"success": False, "error": "NVQLink removed"}), 501
 
 @app.route('/api/nvqlink/toggle', methods=['POST'])
 def nvqlink_toggle():
     """Toggles NVQLink on/off."""
-# NVQLink toggle endpoint removed
+    return jsonify({"success": False, "error": "NVQLink removed"}), 501
+
+@app.route('/api/thermometry_stream', methods=['GET'])
+def thermometry_stream():
+    try:
+        import numpy as np
+        import time
+        from flask import request
+
+        base_temp = 37.0
+        if SIMULATOR_CACHE:
+            sim = next(iter(SIMULATOR_CACHE.values()))
+            metrics = getattr(sim.classifier, 'latest_stats', {})
+            base_temp = metrics.get('inferred_mean_temp_c', 37.0)
+
+        drift = np.sin(time.time() / 5.0) * 1.5
+        mean_temp = base_temp + drift
+
+        y, x = np.ogrid[:64, :64]
+        cx = 32 + np.cos(time.time() / 2.0) * 8
+        cy = 32 + np.sin(time.time() / 2.0) * 8
+
+        dist_sq = (x - cx)**2 + (y - cy)**2
+        
+        active = request.args.get('active', 'true') == 'true'
+        peak_temp = mean_temp + (25.0 if active else 2.0) + np.random.normal(0, 0.5)
+
+        temp_grid = np.full((64, 64), 37.0)
+        temp_grid += (np.random.rand(64,64) * 0.5 - 0.25)
+        temp_grid += (peak_temp - 37.0) * np.exp(-dist_sq / 30.0)
+
+        target_temp = 43.0 if not active else 55.0
+
+        return jsonify({
+            "success": True,
+            "actual_temp": float(mean_temp + (peak_temp - mean_temp) * 0.1),
+            "max_temp": float(np.max(temp_grid)),
+            "target_temp": target_temp,
+            "grid": temp_grid.tolist()
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/signal_reconstruction/coil_geometry', methods=['POST'])
 def signal_reconstruction_coil_geometry():
@@ -419,12 +460,20 @@ def render_neurovasculature():
         fig, axes = plt.subplots(2, 2, figsize=(12, 12))
         fig.patch.set_facecolor('#0f172a')
         
+        from supervised_denoiser import AttentionDenoiser
+        denoiser = AttentionDenoiser()
+
         orientations = ['axial', 'coronal', 'sagittal']
         for idx, orientation in enumerate(orientations[:3]):
             ax = axes.flatten()[idx]
             sim.set_view(orientation, 0.5)
             
-            ax.imshow(sim.pd_map, cmap='gray', vmin=0, vmax=1.5)
+            clean_img = denoiser.fit_predict(sim.pd_map)
+            # Ensure it is scaled appropriately like the original pd_map
+            if np.max(sim.pd_map) > 0:
+                clean_img = clean_img * np.max(sim.pd_map)
+
+            ax.imshow(clean_img, cmap='gray', vmin=0, vmax=1.5)
             ax.set_title(f'{orientation.title()} - Neurovasculature', color='white')
             ax.axis('off')
             ax.set_facecolor('#0f172a')
@@ -561,7 +610,6 @@ def generate_schematics():
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
-        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/robotics/optimize_coils', methods=['POST'])
 def optimize_robotics_coils():
@@ -583,6 +631,8 @@ def optimize_robotics_coils():
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
+import os
+
 if __name__ == '__main__':
     print("=" * 80)
     print("MRI RECONSTRUCTION SIMULATOR - ENHANCED")
@@ -594,6 +644,7 @@ if __name__ == '__main__':
 
     print("  ✓ Ultra-High Resolution Neurovasculature")
     print("=" * 80)
-    print("Server running on http://0.0.0.0:5002")
+    port = int(os.environ.get('FLASK_RUN_PORT', 5002))
+    print(f"Server running on http://0.0.0.0:{port}")
     print("=" * 80)
-    app.run(host='0.0.0.0', port=5002, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=True)

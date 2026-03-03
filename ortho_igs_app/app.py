@@ -223,6 +223,7 @@ def get_robot_status():
 
 
 if __name__ == '__main__':
+    port = int(os.environ.get('FLASK_RUN_PORT', 5000))
     print("Starting NVQLink Orthopedic Server...")
-    print("Access the dashboard at http://localhost:5000")
-    app.run(port=5000, debug=True)
+    print(f"Access the dashboard at http://localhost:{port}")
+    app.run(port=port, debug=True)

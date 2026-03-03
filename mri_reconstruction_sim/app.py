@@ -326,4 +326,5 @@ def thermometry_stream():
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(port=5050, debug=True)
+    port = int(os.environ.get('FLASK_RUN_PORT', 5050))
+    app.run(port=port, debug=True)
