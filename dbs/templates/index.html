@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuromorph | DBS Treatment Planning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="dashboard">
+        <header class="glass-panel">
+            <div class="logo">NEUROMORPH DBS</div>
+            <div class="system-status">
+                <span id="status-dot"
+                    style="display:inline-block; width: 8px; height: 8px; background: #00ff00; border-radius: 50%; margin-right: 5px;"></span>
+                <span style="font-size: 11px; text-transform: uppercase;">Quantum Fornix Active</span>
+            </div>
+        </header>
+
+        <nav class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('planner', event)">Treatment Planner</button>
+            <button class="tab-btn" onclick="switchTab('conductivity', event)">Conductivity Analysis</button>
+        </nav>
+
+        <aside class="sidebar-left">
+            <div id="planner-sidebar" class="tab-content active">
+                <div class="glass-panel">
+                    <h2>Fornix Protocol</h2>
+                    <div id="fornix-protocol-stages">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="glass-panel" style="margin-top: 15px;">
+                    <h2>Parameters</h2>
+                    <div class="control-group">
+                        <label>Stimulation Voltage (V)</label>
+                        <input type="range" id="voltage-range" min="0" max="100" value="30">
+                    </div>
+                    <div class="control-group">
+                        <label>Pulse Width (ms)</label>
+                        <input type="range" id="pulse-range" min="0.01" max="1" step="0.01" value="0.2">
+                    </div>
+                    <button class="btn-primary" id="btn-simulate">Run Analysis</button>
+                </div>
+            </div>
+
+            <div id="conductivity-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Conductivity Stats</h2>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avg-cond-val">0.182</div>
+                        <div class="stat-label">Avg. Conductivity (S/m)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="anisotropy-val">High</div>
+                        <div class="stat-label">Fornix Anisotropy</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-view">
+            <div id="planner-main" class="tab-content active" style="height: 100%;">
+                <div id="canvas-container" style="height: 100%;">
+                    <div id="overlay-data" class="glass-panel" style="padding: 10px; width: 150px;">
+                        <div style="font-size: 10px; color: var(--accent-pink);">FEA FIELD STRENGTH</div>
+                        <div id="field-strength-val" style="font-size: 18px; font-weight: 700;">0.00 T</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="conductivity-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <h2>Neural Conductivity Map</h2>
+                    <div id="conductivity-grid-container"
+                        style="flex-grow: 1; display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar-right">
+            <div class="glass-panel mb-15">
+                <h2>Statistical Yield</h2>
+                <div class="stat-card">
+                    <div class="stat-value" id="yield-value">0.00</div>
+                    <div class="stat-label">Yield Optimization (%)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="quantum-freq-val">--</div>
+                    <div class="stat-label">Quantum Optimal Freq (Hz)</div>
+                </div>
+            </div>
+
+            <div class="glass-panel" id="system-design-panel">
+                <h2>Equipment Specs</h2>
+                <div id="system-specs-list" style="font-size: 11px; color: var(--text-dim);">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </aside>
+
+        <section class="bottom-shelf glass-panel">
+            <h2>Circuit & Bio-Signals</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 150px;">
+                <svg id="circuit-svg" viewBox="0 0 400 200"></svg>
+                <div style="position: relative;">
+                    <canvas id="signal-canvas"></canvas>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

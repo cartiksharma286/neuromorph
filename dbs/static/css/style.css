@@ -1,0 +1,234 @@
+:root {
+    --bg-deep: #05070a;
+    --glass-bg: rgba(15, 20, 30, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --accent-cyan: #00f2ff;
+    --accent-pink: #ff00c8;
+    --accent-purple: #7000ff;
+    --text-primary: #f0f0f0;
+    --text-dim: #a0a0a0;
+    --font-main: 'Outfit', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    overflow: hidden;
+    background-image:
+        radial-gradient(circle at 20% 30%, rgba(0, 242, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(112, 0, 255, 0.05) 0%, transparent 50%);
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: 350px 1fr 300px;
+    grid-template-rows: 80px 1fr 250px;
+    height: 100vh;
+    gap: 15px;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    overflow: hidden;
+    position: relative;
+}
+
+header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, var(--glass-bg), transparent);
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+}
+
+.tab-bar {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.tab-btn {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-dim);
+    padding: 8px 20px;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    background: var(--accent-cyan);
+    color: var(--bg-deep);
+    border-color: var(--accent-cyan);
+}
+
+.tab-content {
+    display: none;
+    height: 100%;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.main-view {
+    grid-column: 2;
+    grid-row: 2;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#canvas-container {
+    flex-grow: 1;
+    border-radius: 15px;
+    background: #000;
+    position: relative;
+}
+
+.sidebar-left {
+    grid-row: 2 / 4;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.sidebar-right {
+    grid-row: 2 / 4;
+}
+
+.bottom-shelf {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent-cyan);
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.control-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+}
+
+input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent-cyan);
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.2);
+}
+
+/* Circuit Schematic Styles */
+#circuit-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.component {
+    fill: var(--glass-bg);
+    stroke: var(--accent-cyan);
+    stroke-width: 2;
+}
+
+.wire {
+    fill: none;
+    stroke: var(--text-dim);
+    stroke-width: 1;
+    stroke-dasharray: 4;
+    animation: flow 5s linear infinite;
+}
+
+.quantum-flow {
+    stroke: var(--accent-pink);
+    stroke-width: 2;
+    filter: drop-shadow(0 0 5px var(--accent-pink));
+    animation: quantum-pulse 2s infinite ease-in-out;
+}
+
+@keyframes quantum-pulse {
+
+    0%,
+    100% {
+        opacity: 0.3;
+        stroke-dashoffset: 20;
+    }
+
+    50% {
+        opacity: 1;
+        stroke-dashoffset: 0;
+    }
+}
+
+#overlay-data {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    pointer-events: none;
+}
