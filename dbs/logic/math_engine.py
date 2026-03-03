@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.special import kn
 from scipy.integrate import quad
+import random
 
 def continued_fraction_signal(freq, depth=10):
     """
@@ -66,9 +67,7 @@ def quantum_optimize_protocol(base_field):
 def get_system_specs():
     """
     Returns hardware system design specifications for the DBS equipment.
-    Enhanced with real-time operational metrics.
     """
-    import random
     return {
         "equipment_id": "NM-QM-Fornix-v2.0",
         "processor": "Cryogenic Quantum Neural Bridge",
