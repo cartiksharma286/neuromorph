@@ -14,9 +14,9 @@ import nibabel as nib
 from nibabel.testing import data_path
 import os
 from skimage.transform import resize
-import scipy.special
 from llm_modules import StatisticalClassifier
 from circuit_schematic_generator import CircuitSchematicGenerator
+from advanced_reconstruction import AdvancedReconstructionEngine
 from sklearn.cluster import KMeans
 
 
@@ -55,6 +55,7 @@ class MRIReconstructionSimulator:
         self.nvqlink_bandwidth_gbps = 400  # 400 Gbps quantum link
         self.nvqlink_latency_ns = 12  # 12 nanosecond latency
         self.classifier = StatisticalClassifier()
+        self.recon_engine = AdvancedReconstructionEngine()
 
         self.active_coil_type = 'standard'
         
@@ -2562,10 +2563,14 @@ class MRIReconstructionSimulator:
                 combined_raw = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
                 combined = self.classifier.variational_denoise(combined_raw, lambda_tv=0.05)
                 
-            elif method == 'DeepLearning':
-                # Simulated DL
-                combined = self.deep_learning_reconstruct(kspace_data)
-                
+            elif method in ['StatLLM', 'QuantumML', 'Geodesic', 'Pareto', 'Multimodal', 'Unified']:
+                # Call the Advanced Reconstruction Engine
+                combined = self.recon_engine.reconstruct(
+                    k_stack, 
+                    method=method.lower(), 
+                    coil_sensitivities=self.coils,
+                    target=self.pd_map if self.pd_map is not None else None
+                )
             elif method in ['QuantumThermometry', 'QuantumSurfaceIntegral', 'QuantumGameTheory']:
                 # These methods use SoS then overlay some physics data
                 combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
