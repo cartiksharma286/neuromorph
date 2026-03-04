@@ -53,7 +53,10 @@ new_view = """    <!-- Dementia Treatment View -->
                     <label>Pulse Width (μs)</label>
                     <input type="number" id="dementiaPulseWidth" value="90">
                 </div>
-                <button id="simulateDementiaBtn" class="btn-primary" style="margin-top:20px;">Run Cholinergic Simulation</button>
+                <div style="display:flex;gap:10px;margin-top:20px;">
+                    <button id="simulateDementiaBtn" class="btn-primary" style="flex:1;">Run Cholinergic Simulation</button>
+                    <button id="optimizeDementiaBtn" class="btn-secondary" style="flex:1;">⚡ Auto-Optimize</button>
+                </div>
             </div>
 
             <div class="card">
@@ -62,14 +65,25 @@ new_view = """    <!-- Dementia Treatment View -->
             </div>
         </div>
 
-        <div class="card">
-            <h3>Long-term Prognosis (6-Month Predictor)</h3>
-            <div style="margin-bottom:15px;">
-                <label style="color:#aaa;">Projected Duration (Months):</label>
-                <input type="number" id="treatmentMonths" value="6" style="background:#333; border:1px solid #555; colr:#fff; padding:5px; width:60px;">
-                <button id="predictDementiaBtn" class="btn-secondary" style="display:inline-block; margin-left:10px;">Predict Outcome</button>
+        <div class="grid-2">
+            <div class="card">
+                <h3>Long-term Prognosis (6-Month Predictor)</h3>
+                <div style="margin-bottom:15px;">
+                    <label style="color:#aaa;">Projected Duration (Months):</label>
+                    <input type="number" id="treatmentMonths" value="6" style="background:#333; border:1px solid #555; colr:#fff; padding:5px; width:60px;">
+                    <button id="predictDementiaBtn" class="btn-secondary" style="display:inline-block; margin-left:10px;">Predict Outcome</button>
+                </div>
+                <canvas id="dementiaPredictionCanvas" style="width:100%; height:300px;"></canvas>
             </div>
-            <canvas id="dementiaPredictionCanvas" style="width:100%; height:300px;"></canvas>
+            
+            <div class="card">
+                <h3>Continued Fraction Cholinergic Repair</h3>
+                <p style="font-size: 0.9em; color: #aaa; margin-bottom: 15px;">
+                    Optimization of acetylcholine production pathways via continued fraction convergence.
+                </p>
+                <canvas id="dementiaContinuedFractionCanvas" width="400" height="300" 
+                    style="width: 100%; height:250px; border: 1px solid #333; border-radius: 8px;"></canvas>
+            </div>
         </div>
     </div>
 """

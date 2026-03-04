@@ -411,7 +411,13 @@ def signal_reconstruction_coil_geometry():
             axes[1].set_title('K-Space', color='white')
             axes[1].axis('off')
             
-            axes[2].imshow(recon_img, cmap='gray')
+            from supervised_denoiser import AttentionDenoiser
+            denoiser = AttentionDenoiser()
+            denoised_recon_img = denoiser.fit_predict(recon_img)
+            if np.max(recon_img) > 0:
+                denoised_recon_img = denoised_recon_img * np.max(recon_img)
+
+            axes[2].imshow(denoised_recon_img, cmap='gray')
             axes[2].set_title(f'Reconstruction (SNR: {stat_metrics.get("snr_estimate", 0):.1f})', color='white')
             axes[2].axis('off')
             

@@ -1,8 +1,9 @@
+WARNING: Google Generative AI not available. Using classical simulation fallback.
 ============================================================
 DBS-PTSD Treatment System Backend Server
 ============================================================
 
-Starting server on http://localhost:5001
+Starting server on http://localhost:5070
 
 Available endpoints:
   Circuit Generation: /api/circuit/*
@@ -13,55 +14,26 @@ Available endpoints:
 [!] FOR RESEARCH AND EDUCATIONAL USE ONLY
 ============================================================
 
-Open http://localhost:5001 in your browser
+Open http://localhost:5070 in your browser
  * Serving Flask app 'server'
- * Debug mode: on
-Address already in use
-Port 5002 is in use by another program. Either identify and stop that program, or start the server with a different port.
-s (0.0.0.0)
- * Running on http://127.0.0.1:5002
- * Running on http://192.168.2.10:5002
-Press CTRL+C to quit
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 649-413-893
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /api/health HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /styles.css HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /circuit_designer.js HTTP/1.1" 304 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /brain_visualizer.js HTTP/1.1" 304 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /waveform_generator.js HTTP/1.1" 304 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /clinical_dashboard.js HTTP/1.1" 304 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /ai_optimizer.js HTTP/1.1" 304 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /fea_interface.js HTTP/1.1" 304 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /depression_dashboard.js HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /protocol_interface.js HTTP/1.1" 304 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /quantum_optimizer_ui.js HTTP/1.1" 304 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /asd_dashboard.js HTTP/1.1" 304 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /app.js HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 17:40:18] "GET /ocd_dashboard.js HTTP/1.1" 304 -
-127.0.0.1 - - [25/Jan/2026 17:40:19] "GET /api/health HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 17:40:19] "GET /api/circuit/svg HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 17:42:14] "POST /api/depression/optimize HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 17:42:14] "POST /api/depression/optimize HTTP/1.1" 200 -
-127.0.0.1 - - [25/Jan/2026 17:42:14] "POST /api/depression/optimize HTTP/1.1" 200 -
- * Detected change in '/Users/cartik_sharma/Downloads/neuromorph-main-n/deepbrain_stimulation/depression_neural_model.py', reloading
-============================================================
-DBS-PTSD Treatment System Backend Server
-============================================================
-
-Starting server on http://localhost:5001
-
-Available endpoints:
-  Circuit Generation: /api/circuit/*
-  AI Engine: /api/ai/*
-  Neural Model: /api/neural/*
-  Safety Validation: /api/safety/*
-
-[!] FOR RESEARCH AND EDUCATIONAL USE ONLY
-============================================================
-
-Open http://localhost:5001 in your browser
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 649-413-893
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5070
+ * Running on http://192.168.11.194:5070
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [03/Mar/2026 15:04:59] "[36mGET / HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:04:59] "[36mGET /styles.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /circuit_designer.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /brain_visualizer.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /waveform_generator.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /ai_optimizer.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /clinical_dashboard.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /fea_interface.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /protocol_interface.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /quantum_optimizer_ui.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /asd_dashboard.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /ocd_dashboard.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /sad_dashboard.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /hate_crime_tbi_dashboard.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [03/Mar/2026 15:05:00] "[36mGET /app.js HTTP/1.1[0m" 304 -

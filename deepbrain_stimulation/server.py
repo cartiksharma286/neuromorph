@@ -520,7 +520,8 @@ def simulate_dementia_stimulation():
                 'memory_retrieval': result['cognitive_scores'].memory_retrieval,
                 'disease_stage': result['cognitive_scores'].get_disease_stage()
             },
-            'efficacy': result['efficacy']
+            'efficacy': result['efficacy'],
+            'continued_fraction_sequence': result.get('continued_fraction_sequence', [])
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -560,6 +561,23 @@ def get_dementia_biomarkers():
         'model_biomarkers': biomarkers,
         'tracker_summary': tracker_summary
     })
+
+
+@app.route('/api/dementia/optimize', methods=['POST'])
+def optimize_dementia_params():
+    """Grid-search optimal DBS parameters for Dementia model"""
+    try:
+        data = request.json
+        target = data.get('target_region', 'nucleus_basalis')
+
+        def _run():
+            return get_dementia_model().optimize_parameters(target)
+
+        result = executor.submit(_run).result()
+        return jsonify({'success': True, 'optimization': result})
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 # ==================== OCD Model Endpoints ====================

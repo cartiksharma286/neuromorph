@@ -16,9 +16,10 @@ class DementiaDashboard {
     }
 
     async init() {
-        this.setupCanvases();
         this.setupSimulateButton();
         this.setupPredictButton();
+        this.setupOptimizeButton();
+        this.initializeContinuedFractionViz();
         await this.loadDementiaState();
     }
 
@@ -137,6 +138,9 @@ class DementiaDashboard {
                 if (response.success) {
                     this.updateCognitiveScores(response.cognitive_scores);
                     this.visualizeNeuralActivity(response.activity);
+                    if (response.continued_fraction_sequence) {
+                        this.renderContinuedFractionPlot(response.continued_fraction_sequence);
+                    }
 
                     btn.innerHTML = '✓ Simulation Complete';
                     setTimeout(() => {
@@ -159,6 +163,51 @@ class DementiaDashboard {
         btn.addEventListener('click', async () => {
             const months = parseInt(document.getElementById('treatmentMonths')?.value || 6);
             await this.predictTreatment(months);
+        });
+    }
+
+    setupOptimizeButton() {
+        const btn = document.getElementById('optimizeDementiaBtn');
+        if (!btn) return;
+
+        btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading"></div> Optimizing...';
+
+            try {
+                const params = {
+                    target_region: document.getElementById('dementiaTargetRegion')?.value || 'nucleus_basalis'
+                };
+
+                const response = await window.app.post('/dementia/optimize', params);
+
+                if (response.success && response.optimization) {
+                    const top = response.optimization.best_parameters;
+
+                    // Update UI inputs
+                    if (document.getElementById('dementiaAmplitude')) document.getElementById('dementiaAmplitude').value = top.amplitude_ma;
+                    if (document.getElementById('dementiaFrequency')) document.getElementById('dementiaFrequency').value = top.frequency_hz;
+                    if (document.getElementById('dementiaPulseWidth')) document.getElementById('dementiaPulseWidth').value = top.pulse_width_us;
+
+                    if (response.optimization.continued_fraction_sequence) {
+                        this.renderContinuedFractionPlot(response.optimization.continued_fraction_sequence);
+                    }
+
+                    btn.innerHTML = '✓ Optimization Complete';
+
+                    alert(`Optimal Parameters Found:\nAmplitude: ${top.amplitude_ma} mA\nFrequency: ${top.frequency_hz} Hz\nPulse Width: ${top.pulse_width_us} us\nExpected Efficacy: ${(response.optimization.best_efficacy * 100).toFixed(1)}%`);
+                } else {
+                    btn.innerHTML = '✗ Optimization Failed';
+                }
+            } catch (error) {
+                console.error('Optimization failed:', error);
+                btn.innerHTML = '✗ Error';
+            } finally {
+                setTimeout(() => {
+                    btn.innerHTML = '⚡ Auto-Optimize';
+                    btn.disabled = false;
+                }, 2000);
+            }
         });
     }
 
@@ -305,6 +354,86 @@ class DementiaDashboard {
             ctx.textAlign = 'center';
             ctx.fillText((value * 100).toFixed(0), x + barWidth / 2, y - 5);
         });
+    }
+
+    initializeContinuedFractionViz() {
+        const canvas = document.getElementById('dementiaContinuedFractionCanvas');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#1c1c1e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+
+        ctx.fillStyle = '#888';
+        ctx.font = '12px Inter';
+        ctx.fillText('Awaiting optimization or simulation...', 20, canvas.height / 2 - 10);
+    }
+
+    renderContinuedFractionPlot(sequence) {
+        const canvas = document.getElementById('dementiaContinuedFractionCanvas');
+        if (!canvas || !sequence) return;
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#1c1c1e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw grid
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 5; i++) {
+            const y = (canvas.height / 4) * i;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
+
+        // Draw continued fraction convergence
+        ctx.strokeStyle = '#00d4ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+
+        const step = canvas.width / (sequence.length - 1);
+        const maxVal = Math.max(...sequence);
+        const minVal = Math.min(...sequence);
+        const range = maxVal - minVal;
+
+        sequence.forEach((val, i) => {
+            const x = i * step;
+            const y = canvas.height - ((val - minVal) / range) * (canvas.height - 40) - 20;
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+        ctx.stroke();
+
+        // Draw convergence line
+        const convergedValue = sequence[sequence.length - 1];
+        const convergedY = canvas.height - ((convergedValue - minVal) / range) * (canvas.height - 40) - 20;
+
+        ctx.strokeStyle = '#4cd964';
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(0, convergedY);
+        ctx.lineTo(canvas.width, convergedY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Labels
+        ctx.fillStyle = '#888';
+        ctx.font = '10px Inter';
+        ctx.fillText('Iterations \u2192', canvas.width - 80, canvas.height - 5);
+        ctx.fillText('Convergence', 5, 15);
     }
 }
 

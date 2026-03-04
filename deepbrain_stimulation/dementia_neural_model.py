@@ -195,6 +195,27 @@ class DementiaNeuralModel:
         
         return activity_history
     
+    def compute_continued_fraction_sequence(self, n_terms: int = 20) -> List[float]:
+        """
+        Generate continued fraction sequence for cholinergic repair dynamics.
+        Models the progressively finer correction of acetylcholine production.
+        """
+        ach_factor = self.acetylcholine_level / 100.0
+        a = [ach_factor + 0.5]  # a₀
+
+        for i in range(1, n_terms):
+            a_i = 1.0 + 0.4 * np.exp(-i / 6.0) + 0.05 * np.random.randn()
+            a.append(max(0.1, a_i))
+
+        convergents = []
+        for k in range(1, n_terms):
+            value = a[0]
+            for i in range(1, k):
+                value += 1.0 / (a[i] + (1.0 / a[i+1] if i+1 < len(a) else 1.0))
+            convergents.append(value)
+
+        return convergents
+
     def apply_dbs_stimulation(self, target_region: str, amplitude_ma: float,
                              frequency_hz: float, pulse_width_us: float,
                              duration_s: float = 1.0):
@@ -247,7 +268,8 @@ class DementiaNeuralModel:
         return {
             'activity': self.activity.copy(),
             'cognitive_scores': self.cognitive_scores,
-            'efficacy': self._calculate_efficacy()
+            'efficacy': self._calculate_efficacy(),
+            'continued_fraction_sequence': self.compute_continued_fraction_sequence(20)
         }
     
     def _calculate_stimulation_effect(self, amplitude_ma: float,
@@ -322,6 +344,78 @@ class DementiaNeuralModel:
             'response_rate': response_rate,
             'responder': response_rate > 0.1,  # >10% improvement = responder
             'final_cognitive_scores': self.cognitive_scores
+        }
+    
+    def optimize_parameters(self, target_region: str, n_trials: int = 50) -> Dict:
+        """Grid-search optimal parameters for a target region"""
+        import itertools
+        
+        # Define search space
+        amps = np.linspace(1.0, 5.0, 5)     # mA
+        freqs = np.array([10, 20, 40, 60, 130]) # Hz - Focus on lower for Memory
+        pws = np.linspace(60, 150, 4)       # us
+        
+        best_efficacy = -1.0
+        best_params = {}
+        results = []
+        
+        # Save initial state
+        initial_activity = self.activity.copy()
+        initial_scores = CognitiveScores(
+            mmse=self.cognitive_scores.mmse,
+            moca=self.cognitive_scores.moca,
+            memory_encoding=self.cognitive_scores.memory_encoding,
+            memory_retrieval=self.cognitive_scores.memory_retrieval,
+            executive_function=self.cognitive_scores.executive_function,
+            attention=self.cognitive_scores.attention
+        )
+        initial_ach = self.acetylcholine_level
+        
+        for amp, freq, pw in itertools.product(amps, freqs, pws):
+            # Reset state
+            self.activity = initial_activity.copy()
+            self.cognitive_scores = CognitiveScores(
+                mmse=initial_scores.mmse,
+                moca=initial_scores.moca,
+                memory_encoding=initial_scores.memory_encoding,
+                memory_retrieval=initial_scores.memory_retrieval,
+                executive_function=initial_scores.executive_function,
+                attention=initial_scores.attention
+            )
+            self.acetylcholine_level = initial_ach
+            
+            # Apply formulation
+            res = self.apply_dbs_stimulation(target_region, amp, freq, pw)
+            eff = res['efficacy']
+            
+            params_dict = {
+                'amplitude_ma': float(amp),
+                'frequency_hz': float(freq),
+                'pulse_width_us': float(pw),
+            }
+            results.append({'params': params_dict, 'efficacy': eff})
+            
+            if eff > best_efficacy:
+                best_efficacy = eff
+                best_params = params_dict
+        
+        # Restore state
+        self.activity = initial_activity.copy()
+        self.cognitive_scores = initial_scores
+        self.acetylcholine_level = initial_ach
+        
+        # Sort top 5
+        results.sort(key=lambda x: x['efficacy'], reverse=True)
+        top_results = results[:5]
+        
+        # Compute continued fraction sequence based on the best result
+        cf_seq = self.compute_continued_fraction_sequence(20)
+        
+        return {
+            'best_parameters': best_params,
+            'best_efficacy': best_efficacy,
+            'all_results': top_results,
+            'continued_fraction_sequence': cf_seq
         }
     
     def get_biomarkers(self) -> Dict:
