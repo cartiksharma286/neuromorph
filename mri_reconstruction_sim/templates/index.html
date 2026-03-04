@@ -312,7 +312,11 @@
                     <option value="CanadianDTI">🍁 Canadian DTI (Wishart Tensor)</option>
                     <option value="CanadianFMRI_BOLD">🍁 Canadian fMRI BOLD (GLM-HRF)</option>
                     <option value="CanadianQSM">🍁 Canadian QSM (TRIUMF Iron)</option>
+                    <option disabled style="color:#334155;">── Quantum Thermometry Sequences ──</option>
                     <option value="QuantumMLThermometry">🌡️ QML MR Thermometry (Coronal)</option>
+                    <option value="QuantumRBMThermometry">🌡️ Quantum RBM Thermometry (MR)</option>
+                    <option value="StatisticalBayesianThermometry">🌡️ Statistical Dist. Thermometry (MR)</option>
+                    <option disabled style="color:#334155;">── Geometric & Advanced ──</option>
                     <option value="QuantumGeometry">⚛️ Quantum Geometry (Continued Fraction)</option>
                     <option value="RoboticsFMRI">🦾 Robotics-Aware fMRI (Interventional)</option>
                 </select>
@@ -321,22 +325,29 @@
             <div class="control-group">
                 <label>RF Coil Topology</label>
                 <select id="coils">
+                    <option disabled style="color:#334155;">── Standard Arrays ──</option>
                     <option value="standard">Birdcage (Uniform)</option>
                     <option value="custom_phased_array">8-ch Array</option>
-                    <option value="gemini_optimized_3t">Gemini 32-ch AI</option>
                     <option value="n25_array">N25 Dense Array</option>
+                    <option disabled style="color:#334155;">── AI & Geometric Coils ──</option>
+                    <option value="gemini_optimized_3t">Gemini 32-ch AI</option>
                     <option value="quantum_surface_lattice">Quantum Lattice</option>
+                    <option value="geodesic_chassis">Geodesic Chassis</option>
+                    <option disabled style="color:#334155;">── Neurovascular Coils ──</option>
                     <option value="quantum_vascular">⚛️ Quantum Vascular (Optimal SNR)</option>
                     <option value="optimized_vascular_tradeoff">⚖️ Optimized Vascular Tradeoff</option>
                     <option value="head_coil_50_turn">🧠 50-Turn Head Coil (Ultra-High Res)</option>
                     <option value="quantum_vascular_head_50">🔬 Quantum + 50-Turn (Ultimate)</option>
-                    <option value="geodesic_chassis">Geodesic Chassis</option>
-                    <option value="cardiothoracic_array">Cardiothoracic</option>
-                    <option value="knee_vascular_array">Knee Vascular Array</option>
-                    <option value="rec_engine_coil">🤖 Rec. Engine Neurovascular Coil</option>
                     <option value="neurovascular_coil">🧠 Neurovascular Coil (Adaptive Prism)</option>
-                    <option value="cardiovascular_coil">❤️ Cardiovascular Coil (Conformal)</option>
                     <option value="conformal_neurovascular_array">🌀 Conformal Neurovascular (SC Map)</option>
+                    <option value="rec_engine_coil">🤖 Rec. Engine Neurovascular Coil</option>
+                    <option disabled style="color:#334155;">── Qubit Photonic Topologies ──</option>
+                    <option value="qubit_photonic_hc_v1">🧠 Qubit Photonic Head Coil (Bit Shuffle 1)</option>
+                    <option value="qubit_photonic_hc_v2">🧠 Qubit Photonic Head Coil (Bit Shuffle 2)</option>
+                    <option disabled style="color:#334155;">── Cardiothoracic & Robotics ──</option>
+                    <option value="cardiothoracic_array">Cardiothoracic</option>
+                    <option value="cardiovascular_coil">❤️ Cardiovascular Coil (Conformal)</option>
+                    <option value="knee_vascular_array">Knee Vascular Array</option>
                     <option value="robotics_hybrid_array">🤖 Robotics Hybrid (Combinatorial)</option>
                 </select>
                 <div style="margin-top:0.6rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
@@ -602,31 +613,41 @@
             <!-- View: QML Thermometry -->
             <div id="view-thermometry" class="view-content">
                 <div class="output-box" style="width: 100%; max-width: 1000px; margin: auto;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
                         <h3 style="margin:0;">QML MR Thermometry (Real-Time)</h3>
-                        <button id="btn-thermometry-stream" onclick="toggleThermometryStream()" style="background: #f43f5e; color: white; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                        <button id="btn-thermometry-stream" onclick="toggleThermometryStream()"
+                            style="background: #f43f5e; color: white; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; cursor: pointer;">
                             ● Start Real-Time Feed
                         </button>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; align-items: start;">
+                    <div
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; align-items: start;">
                         <!-- Left: Spatial Temperature Map (Canvas) -->
                         <div class="output-submodule">
                             <div class="output-title">High-Resolution Spatial Thermal Map</div>
-                            <div class="img-window" style="aspect-ratio: auto; height: 350px; background: #000; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                                <canvas id="thermalMapCanvas" width="400" height="400" style="max-width: 100%; max-height: 100%; object-fit: contain;"></canvas>
+                            <div class="img-window"
+                                style="aspect-ratio: auto; height: 350px; background: #000; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                <canvas id="thermalMapCanvas" width="400" height="400"
+                                    style="max-width: 100%; max-height: 100%; object-fit: contain;"></canvas>
                                 <!-- Interactive Hover Box -->
-                                <div id="thermal-hover" style="position: absolute; display: none; background: rgba(0,0,0,0.8); border: 1px solid #f43f5e; color: #fff; padding: 4px 8px; border-radius: 4px; pointer-events: none; font-size: 0.8rem; z-index: 10;">
+                                <div id="thermal-hover"
+                                    style="position: absolute; display: none; background: rgba(0,0,0,0.8); border: 1px solid #f43f5e; color: #fff; padding: 4px 8px; border-radius: 4px; pointer-events: none; font-size: 0.8rem; z-index: 10;">
                                     37.0 °C
                                 </div>
                             </div>
                             <div class="metrics-bar" style="width: 100%; margin-top: 0.5rem;">
                                 <div class="metric-mini" style="flex: 1; text-align: center;">
-                                    <div class="metric-mini-val" id="meanTempVal" style="font-size: 1.5rem; color: #f43f5e; font-variant-numeric: tabular-nums;">--</div>
+                                    <div class="metric-mini-val" id="meanTempVal"
+                                        style="font-size: 1.5rem; color: #f43f5e; font-variant-numeric: tabular-nums;">
+                                        --</div>
                                     <div class="metric-mini-label">Spatially Averaged Temp</div>
                                 </div>
                                 <div class="metric-mini" style="flex: 1; text-align: center;">
-                                    <div class="metric-mini-val" id="maxTempVal" style="font-size: 1.5rem; color: #ef4444; font-variant-numeric: tabular-nums;">--</div>
+                                    <div class="metric-mini-val" id="maxTempVal"
+                                        style="font-size: 1.5rem; color: #ef4444; font-variant-numeric: tabular-nums;">
+                                        --</div>
                                     <div class="metric-mini-label">Peak Voxel Temp</div>
                                 </div>
                             </div>
@@ -635,7 +656,8 @@
                         <!-- Right: Real-Time Temporal Profile -->
                         <div class="output-submodule">
                             <div class="output-title">Temporal Temperature Tracking</div>
-                            <div style="width: 100%; height: 350px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; position: relative;">
+                            <div
+                                style="width: 100%; height: 350px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; position: relative;">
                                 <canvas id="temperatureProfileChart"></canvas>
                             </div>
                         </div>
@@ -920,7 +942,7 @@
                     if (plots.temperature_map) {
                         update('temperature_map', plots.temperature_map);
                         document.getElementById('meanTempVal').textContent = (data.metrics.inferred_mean_temp_c || 0).toFixed(1) + "°C";
-                        
+
                         // Push to Real-Time Chart if it exists
                         if (window.updateThermometryChart) {
                             window.updateThermometryChart(data.metrics.inferred_mean_temp_c || 0);
@@ -1206,7 +1228,7 @@
                 this.bufferCanvas.height = 64;
                 this.bufferCtx = this.bufferCanvas.getContext('2d');
                 this.imageData = this.bufferCtx.createImageData(64, 64);
-                
+
                 // Surgical Turbo-inspired LUT
                 this.tempLUT = this.generateTempColormap();
 
@@ -1261,10 +1283,10 @@
                 const scaleY = this.canvas.height / rect.height;
                 const x = (e.clientX - rect.left) * scaleX;
                 const y = (e.clientY - rect.top) * scaleY;
-                
+
                 const gridW = this.lastData[0].length;
                 const gridH = this.lastData.length;
-                
+
                 const gx = Math.floor((x / this.width) * gridW);
                 const gy = Math.floor((y / this.height) * gridH);
 
@@ -1280,19 +1302,19 @@
             update(gridData) {
                 if (!gridData || !gridData.length) return;
                 this.lastData = gridData;
-                
+
                 const h = gridData.length;
                 const w = gridData[0].length;
-                
+
                 if (this.bufferCanvas.width !== w || this.bufferCanvas.height !== h) {
                     this.bufferCanvas.width = w;
                     this.bufferCanvas.height = h;
                     this.imageData = this.bufferCtx.createImageData(w, h);
                 }
-                
+
                 const pixels = this.imageData.data;
                 let p = 0;
-                
+
                 // Clear main context background
                 this.ctx.fillStyle = '#111';
                 this.ctx.fillRect(0, 0, this.width, this.height);
@@ -1323,7 +1345,7 @@
         let isThermometryStreaming = false;
         let thermometryInterval = null;
         let thermalCanvasViz = null;
-        
+
         // Circular buffer histories
         const MAX_HISTORY = 40;
         let timeHistory = Array(MAX_HISTORY).fill('');
@@ -1382,7 +1404,7 @@
                     }
                 }
             });
-            
+
             thermalCanvasViz = new ThermalViz('thermalMapCanvas');
         }
 
@@ -1392,33 +1414,33 @@
                 const isActive = document.getElementById('sequence').value === 'QuantumMLThermometry';
                 const res = await fetch(`/api/thermometry_stream?active=${isActive}`);
                 const data = await res.json();
-                
+
                 if (data.success) {
                     const now = new Date();
-                    const timeStr = String(now.getMinutes()).padStart(2, '0') + ':' + 
-                                    String(now.getSeconds()).padStart(2, '0') + '.' + 
-                                    String(Math.floor(now.getMilliseconds()/100));
-                    
+                    const timeStr = String(now.getMinutes()).padStart(2, '0') + ':' +
+                        String(now.getSeconds()).padStart(2, '0') + '.' +
+                        String(Math.floor(now.getMilliseconds() / 100));
+
                     // Update Text Values
                     document.getElementById('meanTempVal').textContent = data.actual_temp.toFixed(1) + " °C";
                     document.getElementById('maxTempVal').textContent = data.max_temp.toFixed(1) + " °C";
-                    
+
                     // Canvas Grid Update
                     if (thermalCanvasViz) {
                         thermalCanvasViz.update(data.grid);
                     }
-                    
+
                     // Arrays rolling window
                     timeHistory.push(timeStr);
                     actualTempHistory.push(data.actual_temp);
                     targetTempHistory.push(data.target_temp);
-                    
+
                     if (timeHistory.length > MAX_HISTORY) {
                         timeHistory.shift();
                         actualTempHistory.shift();
                         targetTempHistory.shift();
                     }
-                    
+
                     // Chart update
                     if (thermometryChart) {
                         thermometryChart.data.labels = [...timeHistory];
@@ -1439,7 +1461,7 @@
             if (isThermometryStreaming) {
                 btn.textContent = '⏹ Stop Real-Time Feed';
                 btn.style.background = '#64748b';
-                
+
                 // Initialize modules if not already
                 if (!thermometryChart) initThermometryChart();
 
@@ -1451,7 +1473,7 @@
                 clearInterval(thermometryInterval);
             }
         }
-        
+
         // Ensure ThermalViz is ready
         document.addEventListener("DOMContentLoaded", () => {
             // Lazy-init when started to save resources

@@ -1416,6 +1416,58 @@ class MRIReconstructionSimulator:
                 
                 self.coils.append(sensitivity * phase)
 
+        elif coil_type == 'qubit_photonic_hc_v1':
+            # Qubit Photonic Neurovascular Coil 1 (Bit Shuffling)
+            # Simulates a photonic quantum circuit routing signal for maximum SNR.
+            num_elements = 32
+            
+            # Simulated "qubit" indices and their optimized routing via bit shuffling (reverse bits)
+            for i in range(num_elements):
+                # Bit reversal shuffling for routing optimization
+                # E.g. in a 5-bit system (0-31), 1 -> 16, 2 -> 8, etc.
+                shuffled_idx = int('{:05b}'.format(i)[::-1], 2)
+                
+                # Use shuffled index for geometric placement to break spatial correlations
+                angle = 2 * np.pi * shuffled_idx / num_elements
+                cx = center[1] + (N//2.1) * np.cos(angle)
+                cy = center[0] + (N//2.1) * np.sin(angle)
+                
+                dist_sq = (x - cx)**2 + (y - cy)**2
+                
+                # Highly focused, zero-loss routing simulation
+                sensitivity = 3.0 * np.exp(-dist_sq / (2 * (N//12)**2))
+                
+                # Topological Phase derived from qubit state
+                phase = np.exp(1j * (shuffled_idx * np.pi / 4))
+                self.coils.append(sensitivity * phase)
+                
+        elif coil_type == 'qubit_photonic_hc_v2':
+            # Qubit Photonic Neurovascular Coil 2 (Deep Cortical Bit Shuffling)
+            num_elements = 64
+            
+            for i in range(num_elements):
+                # 6-bit shuffle / interleave
+                # Example: interleave bits of i (e.g. 101010)
+                bits = '{:06b}'.format(i)
+                shuffled_bits = bits[1::2] + bits[0::2] # Odd bits then even bits
+                shuffled_idx = int(shuffled_bits, 2)
+                
+                # Geometric placement tailored for deep cortical penetration
+                radius_mod = (N//2.5) if (i % 2 == 0) else (N//1.9)
+                angle = 2 * np.pi * shuffled_idx / num_elements
+                
+                cx = center[1] + radius_mod * np.cos(angle)
+                cy = center[0] + radius_mod * np.sin(angle)
+                
+                dist_sq = (x - cx)**2 + (y - cy)**2
+                
+                # Extended depth profile
+                sensitivity = 3.5 * np.exp(-np.sqrt(dist_sq) / (N//5)) # Laplacian-like decay for deeper penetration
+                
+                # Complex phase state
+                phase = np.exp(1j * (shuffled_idx * np.pi / 8 + np.sin(angle)))
+                self.coils.append(sensitivity * phase)
+
         elif coil_type == 'knee_vascular_array':
             # Knee Vascular Array: 16-element cylindrical coil for knee imaging
             # Optimized for vascular reconstruction with TOF/PC sequences
@@ -2376,6 +2428,65 @@ class MRIReconstructionSimulator:
             
             q_factor = 0.002 # Superior topological noise suppression
 
+        elif sequence_type == 'QuantumRBMThermometry':
+            # Quantum Restricted Boltzmann Machine (RBM) Thermometry
+            # Uses an Energy-Based Model approach to probabilistically infer sub-voxel thermal gradients.
+            
+            # 1. Simulate base temperature profile utilizing T1 relaxation (higher T1 ~ hotter)
+            temp_proxy = 37.0 + (self.t1_map - 1000.0) * 0.04
+            self.latest_thermal_map = temp_proxy
+            
+            # 2. Physics Model - Fast Gradient Echo with thermal modulation
+            E1 = np.exp(-TR / np.maximum(self.t1_map, 1e-6))
+            M_base = self.pd_map * (1 - E1)
+            
+            # 3. Simulated RBM Hidden Layer Activation
+            # Hidden units capture non-linear, high-order tissue interactions to "sharpen" the thermal map
+            # Visible layer -> M_base, Hidden layer -> Non-linear projection
+            hidden_activation = 1.0 / (1.0 + np.exp(-(M_base - np.mean(M_base)) / np.std(M_base)))
+            
+            # Reconstruct (visible) - this denoises and highlights thermal boundaries
+            reconstructed_M = M_base * (0.5 + 0.5 * hidden_activation)
+            
+            # Apply thermal phase wrapping (simulating MR PRF shift method)
+            # Phase = gamma * alpha * B0 * TE * dT
+            thermal_phase = np.exp(1j * (temp_proxy - 37.0) * 0.1 * TE)
+            
+            M = reconstructed_M * thermal_phase
+            
+            # Extraordinary noise reduction via RBM Free Energy minimization (simulated)
+            q_factor = 0.005 
+
+        elif sequence_type == 'StatisticalBayesianThermometry':
+            # Statistical Distribution-Based Bayesian Thermometry
+            # Constructs a Bayesian Posterior for thermal mapping, minimizing noise variance.
+            
+            # 1. Base Physical proxy for temperature
+            temp_proxy = 37.0 + (self.t1_map - 1100.0) * 0.035
+            self.latest_thermal_map = temp_proxy
+            
+            # 2. Likelihood: Acquisition model (T1/T2 weighted)
+            E1 = np.exp(-TR / np.maximum(self.t1_map, 1e-6))
+            E2 = np.exp(-TE / np.maximum(self.t2_map, 1e-6))
+            likelihood_signal = self.pd_map * (1 - E1) * E2
+            
+            # 3. Prior: Anatomical (smoothness within tissue boundaries)
+            grads = np.gradient(self.pd_map)
+            edge_prob = np.sqrt(grads[0]**2 + grads[1]**2)
+            prior_confidence = np.exp(-edge_prob / 0.5) # High confidence where it's flat
+            
+            # Posterior Estimate ~ Likelihood * Prior 
+            # Denoise proportional to confidence
+            smoothed_signal = gaussian_filter(likelihood_signal, sigma=1.5)
+            M = likelihood_signal * (1 - prior_confidence) + smoothed_signal * prior_confidence
+            
+            # Highlight thermal hotspots using statistical deviations (> 2 std)
+            temp_dev = (temp_proxy - np.mean(temp_proxy)) / (np.std(temp_proxy) + 1e-9)
+            hotspots = np.where(temp_dev > 2.0, 1.2, 1.0)
+            M = M * hotspots
+            
+            q_factor = 0.015 # Very robust due to Bayesian smoothing
+
         elif sequence_type == 'RoboticsFMRI':
             # 1. Physics: Susceptibility and Actuator Noise
             # Simulated robotic tool susceptibility artifact (localized dipole)
@@ -2432,7 +2543,8 @@ class MRIReconstructionSimulator:
         QUANTUM_SEQUENCES = [
             'QuantumNVQLink', 'Gemini3.0', 'QuantumEntangled', 'ZeroPointGradients', 
             'QuantumStatisticalCongruence', 'QuantumDualIntegral', 
-            'QuantumBerryPhase', 'QuantumLowEnergyBeam', 'GenerativeTrueFISP'
+            'QuantumBerryPhase', 'QuantumLowEnergyBeam', 'GenerativeTrueFISP',
+            'QuantumRBMThermometry', 'StatisticalBayesianThermometry'
         ]
         # --- Global Signal Generation & Fallback ---
         try:
