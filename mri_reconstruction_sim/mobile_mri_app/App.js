@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 
 // Define the backend URL based on platform
 // For Android Emulator, use 10.0.2.2. For iOS Sim, use localhost. For physical device, use LAN IP.
-const SERVER_URL = Platform.OS === 'android' ? 'http://10.0.2.2:5050' : 'http://localhost:5050';
+const SERVER_URL = 'http://192.168.11.194:5050';
 
 export default function App() {
     const [imgRecon, setImgRecon] = useState(null);

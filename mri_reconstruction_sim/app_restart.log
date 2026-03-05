@@ -1,0 +1,48 @@
+================================================================================
+MRI RECONSTRUCTION SIMULATOR - FINAL PRODUCTION
+================================================================================
+Features:
+  ✓ Advanced Reconstruction Engine (All 11+ methods)
+  ✓ Quantum Vascular Coils (25 designs)
+  ✓ 50-Turn Head Coil (3.2x SNR, 300μm resolution)
+  ✓ Statistical Adaptive Pulse Sequences
+  ✓ Ultra-High Resolution Neurovasculature
+  ✓ Pareto, Geodesic, Quantum ML and StatLLM
+================================================================================
+Server running on http://0.0.0.0:5050
+================================================================================
+ * Serving Flask app 'app_final'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5050
+ * Running on http://192.168.11.194:5050
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 360-426-087
+================================================================================
+MRI RECONSTRUCTION SIMULATOR - FINAL PRODUCTION
+================================================================================
+Features:
+  ✓ Advanced Reconstruction Engine (All 11+ methods)
+  ✓ Quantum Vascular Coils (25 designs)
+  ✓ 50-Turn Head Coil (3.2x SNR, 300μm resolution)
+  ✓ Statistical Adaptive Pulse Sequences
+  ✓ Ultra-High Resolution Neurovasculature
+  ✓ Pareto, Geodesic, Quantum ML and StatLLM
+================================================================================
+Server running on http://0.0.0.0:5050
+================================================================================
+Traceback (most recent call last):
+  File "/Users/cartiksharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/app_final.py", line 658, in <module>
+    app.run(host='0.0.0.0', port=port, debug=True)
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/flask/app.py", line 662, in run
+    run_simple(t.cast(str, host), port, self, **options)
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/werkzeug/serving.py", line 1115, in run_simple
+    run_with_reloader(
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/werkzeug/_reloader.py", line 453, in run_with_reloader
+    ensure_echo_on()
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/werkzeug/_reloader.py", line 433, in ensure_echo_on
+    termios.tcsetattr(sys.stdin, termios.TCSANOW, attributes)
+termios.error: (4, 'Interrupted system call')

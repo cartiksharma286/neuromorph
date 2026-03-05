@@ -2649,14 +2649,41 @@ class MRIReconstructionSimulator:
         self.coils = new_coils
         return True
 
-    def reconstruct_image(self, kspace_data, method='SoS', noise_filter='None', morphological_cleanup=False):
+    def reconstruct_image(self, kspace_data, method='SoS', noise_filter='None', morphological_cleanup=False, expedited=False, quantum_cloud=False):
         """
         Reconstructs image from k-space data.
         HPC Optimization: Vectorized NumPy FFTs (replaces thread pool overhead).
+        If quantum_cloud and expedited are True, uses a high-speed signal-preserving tensor path
+        that explicitly bypasses computationally heavy iterative morphologic cleanups.
         """
         if not kspace_data:
             # Return zeros if no data
             return np.zeros(self.dims), []
+
+        # Quantum Cloud Expedited Path
+        if expedited and quantum_cloud:
+            import time
+            start_time = time.time()
+            
+            # Fast Vectorized IFFT
+            k_stack = np.array(kspace_data)
+            stack = np.fft.ifft2(np.fft.ifftshift(k_stack, axes=(-2, -1)), axes=(-2, -1))
+            coil_images = list(stack)
+            
+            # Direct Sum-of-Squares for maximum speed and signal preservation
+            combined = np.sqrt(np.sum(np.abs(stack)**2, axis=0))
+            
+            # Bypass iterative filtering and cleanup.
+            # Perform only adaptive windowing to recover optimal contrast.
+            final_img = self._adaptive_windowing(combined)
+            
+            # Simulate Cloud Latency/Response Time (~20-50ms)
+            elapsed = time.time() - start_time
+            if elapsed < 0.02:
+                time.sleep(0.02 - elapsed)
+                
+            self.latest_reconstructed_image = final_img
+            return final_img, coil_images
 
         # 1. Vectorized IFFT for all coils simultaneously
         k_stack = np.array(kspace_data)
@@ -2710,6 +2737,13 @@ class MRIReconstructionSimulator:
         elif noise_filter == 'Median':
             import scipy.ndimage
             final_img = scipy.ndimage.median_filter(final_img, size=3)
+        elif noise_filter == 'Supervised Denoising':
+            try:
+                from supervised_denoiser import AttentionDenoiser
+                denoiser = AttentionDenoiser()
+                final_img = denoiser.fit_predict(final_img)
+            except Exception as e:
+                print(f"Supervised Denoising failed: {e}")
             
         if morphological_cleanup:
             import skimage.morphology

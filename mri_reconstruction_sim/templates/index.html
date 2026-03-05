@@ -405,6 +405,20 @@
                 <input type="range" id="noise" min="0" max="0.2" step="0.01" value="0">
             </div>
 
+            <div class="control-group">
+                <label>Noise Management</label>
+                <select id="noise_filter" onchange="debouncedRun()">
+                    <option value="None">No Denoising</option>
+                    <option value="Supervised Denoising">🤖 Supervised Classification (Demasking)</option>
+                    <option value="Gaussian">Gaussian Smoothing</option>
+                    <option value="Median">Median Filter</option>
+                </select>
+                <div style="margin-top:0.6rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
+                    <input type="checkbox" id="morphological_cleanup" style="width: auto;" onchange="debouncedRun()">
+                    <span>Morphological Cleanup</span>
+                </div>
+            </div>
+
             <button onclick="runSimulation()">Initiate System</button>
             <button onclick="renderCortical()" style="margin-top: 0.5rem; background: #f472b6;">Cortical Pulse</button>
             <button onclick="downloadReport()"
@@ -860,6 +874,8 @@
                 flip_angle: document.getElementById('flip_angle').value,
                 resolution: 128,
                 noise: document.getElementById('noise').value,
+                noise_filter: document.getElementById('noise_filter').value,
+                morphological_cleanup: document.getElementById('morphological_cleanup').checked,
                 recon_method: document.getElementById('recon_method').value,
                 shimming: document.getElementById('shimming').checked,
                 slice_orientation: document.getElementById('slice_orientation').value,
