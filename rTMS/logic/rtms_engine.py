@@ -99,3 +99,193 @@ def run_full_simulation(condition="stroke"):
         "fea_grid": simulate_fea(),
         "bem_mesh": simulate_bem()
     }
+
+
+def get_equipment_list():
+    """
+    Returns a comprehensive list of rTMS equipment with clinical operating characteristics.
+    """
+    equipment = [
+        {
+            "id": "EQ-001",
+            "name": "MagVenture MagPro X100",
+            "category": "Stimulator Unit",
+            "description": "High-performance biphasic/monophasic TMS stimulator with cTBS and TBS capabilities.",
+            "specs": {
+                "Max Output (% MSO)": "100%",
+                "Peak E-Field (V/m)": "220",
+                "Pulse Width (µs)": "280",
+                "Frequency Range (Hz)": "0.1 – 100",
+                "Max Continuous Duty Cycle": "50%",
+                "Cooling System": "Active liquid cooling",
+                "Power Supply Voltage (V)": "200 – 240 VAC",
+                "Weight (kg)": "32"
+            },
+            "operating_characteristics": {
+                "op_temp_c": 25,
+                "max_temp_c": 40,
+                "efficiency_pct": 92,
+                "heat_dissipation_w": 180,
+                "emi_shielding_db": 45
+            }
+        },
+        {
+            "id": "EQ-002",
+            "name": "Magstim Horizon 3.0",
+            "category": "Stimulator Unit",
+            "description": "Next-gen triple-pulse TMS system with integrated neuronavigation readiness.",
+            "specs": {
+                "Max Output (% MSO)": "100%",
+                "Peak E-Field (V/m)": "200",
+                "Pulse Width (µs)": "290",
+                "Frequency Range (Hz)": "0.1 – 50",
+                "Max Continuous Duty Cycle": "40%",
+                "Cooling System": "Forced air + heat sink",
+                "Power Supply Voltage (V)": "110 – 240 VAC",
+                "Weight (kg)": "28"
+            },
+            "operating_characteristics": {
+                "op_temp_c": 22,
+                "max_temp_c": 38,
+                "efficiency_pct": 88,
+                "heat_dissipation_w": 150,
+                "emi_shielding_db": 42
+            }
+        },
+        {
+            "id": "EQ-003",
+            "name": "Figure-8 Coil (70mm Air-Cooled)",
+            "category": "Stimulation Coil",
+            "description": "Standard focal coil for precise cortical targeting in stroke motor rehab therapy.",
+            "specs": {
+                "Coil Diameter (mm)": "70",
+                "Inductance (µH)": "16.4",
+                "Resistance (mΩ)": "105",
+                "Max Surface Temperature (°C)": "41",
+                "Focal Depth (mm)": "20 – 35",
+                "Max Repetition Rate (Hz)": "30",
+                "Cooling System": "Natural convection",
+                "Weight (g)": "320"
+            },
+            "operating_characteristics": {
+                "op_temp_c": 36,
+                "max_temp_c": 41,
+                "efficiency_pct": 85,
+                "heat_dissipation_w": 40,
+                "emi_shielding_db": 30
+            }
+        },
+        {
+            "id": "EQ-004",
+            "name": "H7 Deep TMS Coil (Brainsway)",
+            "category": "Stimulation Coil",
+            "description": "H-coil geometry enabling bilateral deep prefrontal cortex activation — ideal for dementia and depression.",
+            "specs": {
+                "Coil Geometry": "H-shaped (bilateral)",
+                "Focal Depth (mm)": "50 – 70",
+                "Max Surface Temperature (°C)": "43",
+                "Inductance (µH)": "22.1",
+                "Resistance (mΩ)": "130",
+                "Max Repetition Rate (Hz)": "20",
+                "Cooling System": "Fluid-cooled helmet insert",
+                "Weight (g)": "850"
+            },
+            "operating_characteristics": {
+                "op_temp_c": 38,
+                "max_temp_c": 43,
+                "efficiency_pct": 78,
+                "heat_dissipation_w": 70,
+                "emi_shielding_db": 28
+            }
+        },
+        {
+            "id": "EQ-005",
+            "name": "Localite TMS Navigator 4.0",
+            "category": "Neuronavigation System",
+            "description": "Real-time optical tracking neuronavigation system synced with patient MRI for precise coil targeting.",
+            "specs": {
+                "Tracking Technology": "Infrared Optical",
+                "Spatial Accuracy (mm)": "< 1.5",
+                "Update Rate (Hz)": "60",
+                "MRI Compatibility": "T1 / T2 / FLAIR",
+                "Coil Interfaces": "Universal (Magstim, MagVenture, Deymed)",
+                "Display Resolution": "4K",
+                "OS": "Windows 11 Embedded"
+            },
+            "operating_characteristics": {
+                "op_temp_c": 23,
+                "max_temp_c": 35,
+                "efficiency_pct": 97,
+                "heat_dissipation_w": 25,
+                "emi_shielding_db": 55
+            }
+        },
+        {
+            "id": "EQ-006",
+            "name": "64-Channel EEG Amplifier (BrainProducts)",
+            "category": "EEG Monitoring",
+            "description": "High-resolution TMS-compatible EEG system for real-time cortical excitability monitoring.",
+            "specs": {
+                "Channels": "64 + 8 AUX",
+                "Sampling Rate (kHz)": "25",
+                "Input Impedance (MΩ)": "> 1000",
+                "CMRR (dB)": "130",
+                "ADC Resolution (bit)": "24",
+                "TMS Artifact Recovery (ms)": "< 5",
+                "Bandwidth (Hz)": "DC – 5000"
+            },
+            "operating_characteristics": {
+                "op_temp_c": 22,
+                "max_temp_c": 35,
+                "efficiency_pct": 99,
+                "heat_dissipation_w": 12,
+                "emi_shielding_db": 60
+            }
+        },
+        {
+            "id": "EQ-007",
+            "name": "Robotic Coil Positioning Arm (RPA-3)",
+            "category": "Positioning System",
+            "description": "6 DOF robotic arm for automated, reproducible coil placement with < 1mm repeatability.",
+            "specs": {
+                "Degrees of Freedom": "6",
+                "Repeatability (mm)": "0.8",
+                "Max Payload (kg)": "5",
+                "Reach (mm)": "900",
+                "Control Interface": "USB 3.0 / LAN",
+                "Force Sensor": "6-axis, 0.01 N resolution",
+                "Safety Standard": "ISO 13849 PLd"
+            },
+            "operating_characteristics": {
+                "op_temp_c": 21,
+                "max_temp_c": 40,
+                "efficiency_pct": 95,
+                "heat_dissipation_w": 55,
+                "emi_shielding_db": 35
+            }
+        },
+        {
+            "id": "EQ-008",
+            "name": "GCP rTMS Cloud Processing Node",
+            "category": "Cloud Infrastructure",
+            "description": "Tensor Processing Unit (TPU) cluster for real-time FEA/BEM statistical optimization bursts.",
+            "specs": {
+                "Node Type": "n2-highmem-32",
+                "vCPUs": "32",
+                "RAM (GB)": "256",
+                "TPU Version": "v4",
+                "Network Bandwidth (Gbps)": "100",
+                "Region": "us-central1-c",
+                "Latency (ms)": "< 12",
+                "SLA Uptime": "99.99%"
+            },
+            "operating_characteristics": {
+                "op_temp_c": 20,
+                "max_temp_c": 28,
+                "efficiency_pct": 98,
+                "heat_dissipation_w": 850,
+                "emi_shielding_db": 70
+            }
+        }
+    ]
+    return equipment

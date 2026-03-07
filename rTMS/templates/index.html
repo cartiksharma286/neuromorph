@@ -6,7 +6,6 @@
     <title>rTMS Neuromodulation Optimal Delivery Platform</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <!-- Load Plotly for Data Visualization -->
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
 </head>
 <body>
@@ -24,6 +23,9 @@
                 <button class="nav-btn" data-tab="dementia">
                     <span class="icon">🌀</span> Dementia Care
                 </button>
+                <button class="nav-btn" data-tab="equipment">
+                    <span class="icon">⚙️</span> Equipment
+                </button>
             </nav>
             <div class="server-status">
                 <div class="status-indicator"></div>
@@ -34,27 +36,27 @@
         <!-- Main Content Area -->
         <main class="main-content">
             <header class="glass-header">
-                <h1 id="tab-title">Stroke Rehabilitation Optimization</h1>
-                <p id="tab-subtitle">Dynamic rTMS Parameter Optimizaton via FEA/BEM</p>
-                
+                <div>
+                    <h1 id="tab-title">Stroke Rehabilitation Optimization</h1>
+                    <p id="tab-subtitle">Dynamic rTMS Parameter Optimization via FEA/BEM</p>
+                </div>
                 <button id="run-simulation-btn" class="primary-btn">
                     Run Cloud Simulation
                 </button>
             </header>
-            
+
             <div id="loading-overlay" class="hidden glass-panel">
                 <div class="spinner"></div>
                 <p>Executing finite element analysis and optimization on Tensor Nodes...</p>
             </div>
 
-            <div class="dashboard-grid">
-                <!-- Optimization Trajectory Panel -->
+            <!-- ── Simulation Dashboard (Stroke / Dementia) ── -->
+            <div id="simulation-view" class="dashboard-grid">
                 <div class="panel glass-panel">
                     <h3>Statistical Optimization Trajectory</h3>
                     <div id="optimization-line-chart" class="chart-container"></div>
                 </div>
 
-                <!-- Final Parameters Panel -->
                 <div class="panel glass-panel params-panel">
                     <h3>Optimal Treatment Protocol</h3>
                     <div class="params-cards">
@@ -76,17 +78,37 @@
                     </div>
                 </div>
 
-                <!-- FEA Panel -->
                 <div class="panel glass-panel large-panel">
                     <h3>Cortical Manifold FEA (E-Field)</h3>
                     <div id="fea-heatmap" class="chart-container"></div>
                 </div>
-                
-                <!-- BEM Panel -->
+
                 <div class="panel glass-panel large-panel">
-                    <h3>Boundary Element Method (BEM) Surface</h3>
+                    <h3>Boundary Element Method (BEM) — Magnetic Stress Strain Surface</h3>
                     <div id="bem-scatter" class="chart-container"></div>
                 </div>
+            </div>
+
+            <!-- ── Equipment Tab ── -->
+            <div id="equipment-view" class="hidden">
+                <!-- Summary charts row -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Operating Characteristics Comparison</h3>
+                        <div id="eq-bar-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Thermal Efficiency vs. EMI Shielding</h3>
+                        <div id="eq-scatter-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Heat Dissipation by Component</h3>
+                        <div id="eq-heat-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                </div>
+
+                <!-- Equipment cards -->
+                <div id="equipment-list" class="equipment-grid"></div>
             </div>
         </main>
     </div>
