@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rTMS Neuromodulation Optimal Delivery Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Load Plotly for Data Visualization -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass-panel">
+            <div class="logo">
+                <div class="logo-icon">M</div>
+                <h2>NeuroMorph rTMS</h2>
+            </div>
+            <nav>
+                <button class="nav-btn active" data-tab="stroke">
+                    <span class="icon">🧠</span> Stroke Care
+                </button>
+                <button class="nav-btn" data-tab="dementia">
+                    <span class="icon">🌀</span> Dementia Care
+                </button>
+            </nav>
+            <div class="server-status">
+                <div class="status-indicator"></div>
+                <span>Connected to Google Cloud</span>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="glass-header">
+                <h1 id="tab-title">Stroke Rehabilitation Optimization</h1>
+                <p id="tab-subtitle">Dynamic rTMS Parameter Optimizaton via FEA/BEM</p>
+                
+                <button id="run-simulation-btn" class="primary-btn">
+                    Run Cloud Simulation
+                </button>
+            </header>
+            
+            <div id="loading-overlay" class="hidden glass-panel">
+                <div class="spinner"></div>
+                <p>Executing finite element analysis and optimization on Tensor Nodes...</p>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Optimization Trajectory Panel -->
+                <div class="panel glass-panel">
+                    <h3>Statistical Optimization Trajectory</h3>
+                    <div id="optimization-line-chart" class="chart-container"></div>
+                </div>
+
+                <!-- Final Parameters Panel -->
+                <div class="panel glass-panel params-panel">
+                    <h3>Optimal Treatment Protocol</h3>
+                    <div class="params-cards">
+                        <div class="param-card">
+                            <span class="param-label">Target Frq</span>
+                            <span class="param-value" id="final-freq">--</span>
+                            <span class="param-unit">Hz</span>
+                        </div>
+                        <div class="param-card">
+                            <span class="param-label">Intensity</span>
+                            <span class="param-value" id="final-intensity">--</span>
+                            <span class="param-unit">% MSO</span>
+                        </div>
+                        <div class="param-card">
+                            <span class="param-label">Fitness</span>
+                            <span class="param-value" id="final-fitness">--</span>
+                            <span class="param-unit">Score</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FEA Panel -->
+                <div class="panel glass-panel large-panel">
+                    <h3>Cortical Manifold FEA (E-Field)</h3>
+                    <div id="fea-heatmap" class="chart-container"></div>
+                </div>
+                
+                <!-- BEM Panel -->
+                <div class="panel glass-panel large-panel">
+                    <h3>Boundary Element Method (BEM) Surface</h3>
+                    <div id="bem-scatter" class="chart-container"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
