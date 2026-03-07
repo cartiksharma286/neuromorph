@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
-from logic.rtms_engine import run_full_simulation, get_equipment_list
+from logic.rtms_engine import run_full_simulation, get_equipment_list, get_tremor_clinical_data
 
 app = Flask(__name__)
 CORS(app)
@@ -25,6 +25,13 @@ def equipment():
     return jsonify({
         "status": "success",
         "data": get_equipment_list()
+    })
+
+@app.route('/api/tremor-clinical', methods=['GET'])
+def tremor_clinical():
+    return jsonify({
+        "status": "success",
+        "data": get_tremor_clinical_data()
     })
 
 if __name__ == '__main__':

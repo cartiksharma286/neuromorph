@@ -23,6 +23,9 @@
                 <button class="nav-btn" data-tab="dementia">
                     <span class="icon">🌀</span> Dementia Care
                 </button>
+                <button class="nav-btn" data-tab="tremor">
+                    <span class="icon">🫀</span> Essential Tremor
+                </button>
                 <button class="nav-btn" data-tab="equipment">
                     <span class="icon">⚙️</span> Equipment
                 </button>
@@ -89,9 +92,45 @@
                 </div>
             </div>
 
+            <!-- ── Essential Tremor Tab ── -->
+            <div id="tremor-view" class="hidden">
+                <!-- Recommended Protocol Card + Evidence Table -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel">
+                        <h3>Recommended Clinical Protocol</h3>
+                        <div id="tremor-protocol-card"></div>
+                    </div>
+                    <div class="panel glass-panel large-panel">
+                        <h3>Clinical Evidence by Target Region</h3>
+                        <div id="tremor-evidence-chart" class="chart-container" style="min-height:280px;"></div>
+                    </div>
+                </div>
+                <!-- Tremor Spectrum + Session Outcomes -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Pathological Tremor Frequency Spectrum (Pre-rTMS)</h3>
+                        <div id="tremor-spectrum-chart" class="chart-container" style="min-height:280px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Session-by-Session Tremor Reduction (%)</h3>
+                        <div id="tremor-reduction-chart" class="chart-container" style="min-height:280px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>TETRAS Score Progression</h3>
+                        <div id="tremor-tetras-chart" class="chart-container" style="min-height:280px;"></div>
+                    </div>
+                </div>
+                <!-- VIM Thalamus 3D Target -->
+                <div class="dashboard-grid">
+                    <div class="panel glass-panel large-panel">
+                        <h3>VIM Thalamus 3D Targeting Cloud (MNI Space)</h3>
+                        <div id="tremor-vim-chart" class="chart-container" style="min-height:420px;"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ── Equipment Tab ── -->
             <div id="equipment-view" class="hidden">
-                <!-- Summary charts row -->
                 <div class="dashboard-grid" style="margin-bottom:24px;">
                     <div class="panel glass-panel large-panel">
                         <h3>Operating Characteristics Comparison</h3>
@@ -106,8 +145,6 @@
                         <div id="eq-heat-chart" class="chart-container" style="min-height:300px;"></div>
                     </div>
                 </div>
-
-                <!-- Equipment cards -->
                 <div id="equipment-list" class="equipment-grid"></div>
             </div>
         </main>

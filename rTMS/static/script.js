@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingOverlay  = document.getElementById('loading-overlay');
     const simulationView  = document.getElementById('simulation-view');
     const equipmentView   = document.getElementById('equipment-view');
+    const tremorView      = document.getElementById('tremor-view');
     const equipmentList   = document.getElementById('equipment-list');
 
     const finalFreq       = document.getElementById('final-freq');
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── State ────────────────────────────────────────────────────
     let currentCondition  = 'stroke';
     let equipmentLoaded   = false;
+    let tremorLoaded      = false;
 
     // ── Plotly dark theme base ───────────────────────────────────
     const plotlyLayoutDark = {
@@ -68,21 +70,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const tab = btn.getAttribute('data-tab');
             currentCondition = tab;
 
+            // Hide all views first
+            simulationView.classList.add('hidden');
+            equipmentView.classList.add('hidden');
+            tremorView.classList.add('hidden');
+            runBtn.classList.add('hidden');
+
             if (tab === 'equipment') {
-                // Show equipment view, hide simulation view and run-btn
-                simulationView.classList.add('hidden');
                 equipmentView.classList.remove('hidden');
-                runBtn.classList.add('hidden');
                 tabTitle.textContent    = 'rTMS Equipment & Machinery';
                 tabSubtitle.textContent = 'Clinical operating characteristics and system specifications';
                 if (!equipmentLoaded) loadEquipment();
 
-            } else {
-                // Show simulation view, hide equipment view
-                simulationView.classList.remove('hidden');
-                equipmentView.classList.add('hidden');
-                runBtn.classList.remove('hidden');
+            } else if (tab === 'tremor') {
+                tremorView.classList.remove('hidden');
+                tabTitle.textContent    = 'Essential Tremor Clinical Care';
+                tabSubtitle.textContent = 'Inhibitory rTMS targeting the cerebello-thalamo-cortical circuit';
+                if (!tremorLoaded) loadTremorData();
 
+            } else {
+                simulationView.classList.remove('hidden');
+                runBtn.classList.remove('hidden');
                 if (tab === 'stroke') {
                     tabTitle.textContent    = 'Stroke Rehabilitation Optimization';
                     tabSubtitle.textContent = 'Dynamic rTMS Parameter Optimization via FEA/BEM for Motor Cortex';
@@ -293,6 +301,141 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
             equipmentList.insertAdjacentHTML('beforeend', html);
         });
+    }
+
+    // ── Load & render Essential Tremor tab ───────────────────────
+    async function loadTremorData() {
+        try {
+            const res     = await fetch('/api/tremor-clinical');
+            const payload = await res.json();
+            if (payload.status !== 'success') return;
+            renderTremorTab(payload.data);
+            tremorLoaded = true;
+        } catch (err) {
+            console.error('Tremor data fetch error:', err);
+        }
+    }
+
+    function renderTremorTab(d) {
+        renderTremorProtocolCard(d.recommended_protocol);
+        renderTremorEvidenceChart(d.clinical_evidence);
+        renderTremorSpectrumChart(d.tremor_spectrum);
+        renderTremorReductionChart(d.session_outcomes);
+        renderTremorTetrasChart(d.session_outcomes);
+        renderVimChart(d.vim_target);
+    }
+
+    function renderTremorProtocolCard(p) {
+        const el = document.getElementById('tremor-protocol-card');
+        el.innerHTML = `
+        <table class="eq-spec-table" style="margin-top:8px;">
+            <tr><td>Target Region</td><td>${p.target}</td></tr>
+            <tr><td>Frequency</td><td>${p.frequency_hz} Hz (Inhibitory)</td></tr>
+            <tr><td>Intensity</td><td>${p.intensity_mso}% MSO</td></tr>
+            <tr><td>Pulses / Session</td><td>${p.pulses_session}</td></tr>
+            <tr><td>Total Sessions</td><td>${p.sessions_total}</td></tr>
+            <tr><td>Inter-Train Interval</td><td>${p.inter_train_s} s</td></tr>
+            <tr><td>Coil Type</td><td>${p.coil_type}</td></tr>
+            <tr><td>Pulse Type</td><td>${p.pulse_type}</td></tr>
+        </table>`;
+    }
+
+    function renderTremorEvidenceChart(evidence) {
+        const levelColor = { 'Level A': '#56d364', 'Level B': '#58a6ff', 'Level C': '#f1c40f' };
+        Plotly.newPlot('tremor-evidence-chart', [{
+            type: 'bar', orientation: 'h',
+            y:    evidence.map(e => e.region),
+            x:    evidence.map(e => e.pct),
+            text: evidence.map(e => `${e.level} — ${e.pct}%`),
+            textposition: 'outside',
+            textfont: { color: '#e6edf3' },
+            marker: { color: evidence.map(e => levelColor[e.level] || '#8b949e') }
+        }], {
+            ...plotlyLayoutDark,
+            xaxis: { ...plotlyLayoutDark.xaxis, title: 'Evidence Strength (%)', range: [0, 115] },
+            margin: { l: 220, r: 80, t: 20, b: 50 }
+        }, { responsive: true });
+    }
+
+    function renderTremorSpectrumChart(spec) {
+        Plotly.newPlot('tremor-spectrum-chart', [
+            {
+                x: spec.frequencies, y: spec.power,
+                type: 'scatter', mode: 'lines',
+                line: { color: '#e74c3c', width: 2.5 },
+                fill: 'tozeroy', fillcolor: 'rgba(231,76,60,0.15)',
+                name: 'ET Power'
+            },
+            {
+                x: [3, 3, 12, 12], y: [0, 3, 3, 0],
+                type: 'scatter', mode: 'none',
+                fill: 'toself', fillcolor: 'rgba(241,196,15,0.08)',
+                name: 'Pathological Band (3–12 Hz)'
+            }
+        ], {
+            ...plotlyLayoutDark,
+            xaxis: { ...plotlyLayoutDark.xaxis, title: 'Frequency (Hz)' },
+            yaxis: { ...plotlyLayoutDark.yaxis, title: 'Power (a.u.)' },
+            legend: { font: { color: '#e6edf3' } }
+        }, { responsive: true });
+    }
+
+    function renderTremorReductionChart(so) {
+        Plotly.newPlot('tremor-reduction-chart', [{
+            x: so.sessions, y: so.tremor_reduction,
+            type: 'scatter', mode: 'lines+markers',
+            line:   { color: '#56d364', width: 3, shape: 'spline' },
+            marker: { size: 8, color: '#238636' },
+            fill: 'tozeroy', fillcolor: 'rgba(86,211,100,0.1)'
+        }], {
+            ...plotlyLayoutDark,
+            xaxis: { ...plotlyLayoutDark.xaxis, title: 'Session #', dtick: 1 },
+            yaxis: { ...plotlyLayoutDark.yaxis, title: 'Tremor Reduction (%)', range: [0, 80] }
+        }, { responsive: true });
+    }
+
+    function renderTremorTetrasChart(so) {
+        Plotly.newPlot('tremor-tetras-chart', [{
+            x: so.sessions, y: so.tetras_scores,
+            type: 'scatter', mode: 'lines+markers',
+            line:   { color: '#b06ef5', width: 3, shape: 'spline' },
+            marker: { size: 8, color: '#8a2be2' },
+            fill: 'tozeroy', fillcolor: 'rgba(176,110,245,0.1)'
+        }], {
+            ...plotlyLayoutDark,
+            xaxis: { ...plotlyLayoutDark.xaxis, title: 'Session #', dtick: 1 },
+            yaxis: { ...plotlyLayoutDark.yaxis, title: 'TETRAS Score' }
+        }, { responsive: true });
+    }
+
+    function renderVimChart(vim) {
+        Plotly.newPlot('tremor-vim-chart', [{
+            x: vim.x, y: vim.y, z: vim.z,
+            mode: 'markers',
+            marker: {
+                size: 6,
+                color: vim.intensity,
+                colorscale: 'Plasma',
+                opacity: 0.85,
+                showscale: true,
+                colorbar: {
+                    title: 'Field Intensity',
+                    titlefont: { color: '#e6edf3' },
+                    tickfont:  { color: '#e6edf3' },
+                    thickness: 18
+                }
+            },
+            type: 'scatter3d'
+        }], {
+            ...plotlyLayoutDark,
+            margin: { l: 0, r: 0, t: 0, b: 0 },
+            scene: {
+                ...plotlyLayoutDark.scene,
+                xaxis: { ...plotlyLayoutDark.scene.xaxis, title: 'x (MNI)' },
+                yaxis: { ...plotlyLayoutDark.scene.yaxis, title: 'y (MNI)' },
+                zaxis: { ...plotlyLayoutDark.scene.zaxis, title: 'z (MNI)' }
+            }
+        }, { responsive: true });
     }
 
 });
