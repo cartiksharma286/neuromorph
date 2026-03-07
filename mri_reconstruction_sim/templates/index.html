@@ -417,6 +417,10 @@
                     <input type="checkbox" id="morphological_cleanup" style="width: auto;" onchange="debouncedRun()">
                     <span>Morphological Cleanup</span>
                 </div>
+                <div style="margin-top:0.6rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
+                    <input type="checkbox" id="ellipsoidal_mask" style="width: auto;" onchange="debouncedRun()">
+                    <span>Ellipsoidal Bounding Box</span>
+                </div>
             </div>
 
             <button onclick="runSimulation()">Initiate System</button>
@@ -424,6 +428,9 @@
             <button onclick="downloadReport()"
                 style="margin-top: 0.5rem; background: transparent; border: 1px solid var(--accent); color: var(--accent);">PDF
                 Report</button>
+            <button onclick="generateSeqFile()"
+                style="margin-top: 0.5rem; background: #10b981; border: none; color: white;">Download PulseSeq
+                (.seq)</button>
             <button onclick="openRoboticsModal()"
                 style="margin-top: 0.5rem; background: #6366f1; border: none; color: white;">Neurovascular
                 Robotics</button>
@@ -876,6 +883,7 @@
                 noise: document.getElementById('noise').value,
                 noise_filter: document.getElementById('noise_filter').value,
                 morphological_cleanup: document.getElementById('morphological_cleanup').checked,
+                ellipsoidal_mask: document.getElementById('ellipsoidal_mask').checked,
                 recon_method: document.getElementById('recon_method').value,
                 shimming: document.getElementById('shimming').checked,
                 slice_orientation: document.getElementById('slice_orientation').value,
@@ -1037,6 +1045,46 @@
 
         function downloadReport() {
             window.location.href = '/api/report';
+        }
+
+        async function generateSeqFile() {
+            const seq = document.getElementById('sequence').value;
+            const tr = document.getElementById('tr').value;
+            const te = document.getElementById('te').value;
+            const fa = document.getElementById('flip_angle').value;
+
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = "Generating...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/generate_seq', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sequence: seq, tr: tr, te: te, flip_angle: fa })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${seq}_${tr}_${te}.seq`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    const err = await response.json();
+                    alert("Error: " + err.error);
+                }
+            } catch (e) {
+                alert("Request failed: " + e);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
         }
 
         async function renderCortical() {

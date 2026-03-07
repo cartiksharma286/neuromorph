@@ -2649,7 +2649,7 @@ class MRIReconstructionSimulator:
         self.coils = new_coils
         return True
 
-    def reconstruct_image(self, kspace_data, method='SoS', noise_filter='None', morphological_cleanup=False, expedited=False, quantum_cloud=False):
+    def reconstruct_image(self, kspace_data, method='SoS', noise_filter='None', morphological_cleanup=False, expedited=False, quantum_cloud=False, ellipsoidal_mask=False):
         """
         Reconstructs image from k-space data.
         HPC Optimization: Vectorized NumPy FFTs (replaces thread pool overhead).
@@ -2682,6 +2682,9 @@ class MRIReconstructionSimulator:
             if elapsed < 0.02:
                 time.sleep(0.02 - elapsed)
                 
+            if ellipsoidal_mask:
+                final_img = self._apply_ellipsoidal_mask(final_img)
+
             self.latest_reconstructed_image = final_img
             return final_img, coil_images
 
@@ -2756,57 +2759,62 @@ class MRIReconstructionSimulator:
 
         self.latest_reconstructed_image = final_img
         
+        # 5. Apply Ellipsoidal Bounding Box if requested
+        if ellipsoidal_mask:
+            final_img = self._apply_ellipsoidal_mask(final_img)
+            self.latest_reconstructed_image = final_img
+
         return final_img, coil_images
+
+    def _apply_ellipsoidal_mask(self, image):
+        """
+        Creates an ellipsoidal bounding box and removes noise outside of it.
+        The region outside the ellipsoid is rendered black (zero).
+        """
+        N = self.resolution
+        y, x = np.ogrid[:N, :N]
+        center_y, center_x = N // 2, N // 2
+        
+        # Define ellipsoid axes (a, b) - roughly covering the brain area
+        # Top-down major axis (b), Right-left minor axis (a)
+        a = (N // 2) * 0.75
+        b = (N // 2) * 0.85
+        
+        mask = ((x - center_x)**2 / a**2 + (y - center_y)**2 / b**2) <= 1.0
+        
+        return image * mask
+
     def _adaptive_windowing(self, image):
         """
-        Applies Histogram-Based Denoising and Adaptive Contrast Windowing.
-
-        Steps
-        -----
-        1.  Compute Otsu's threshold to partition the image histogram into 
-            background (noise) and foreground (neurovascular signal).
-        2.  Calculate the mean noise floor from the background partition.
-        3.  Subtract the noise floor from the entire image to eliminate white speckle.
-        4.  Clip negatives to zero (only keep the true foreground signal).
-        5.  Robust percentile stretch to [0, 1].
-        6.  Adaptive gamma correction for brightness balance.
+        Applies Simple Histogram-Based Denoising and Percentile-Based Normalization.
         """
         import skimage.filters
-        img = np.abs(image)  # always work with magnitude
+        img = np.nan_to_num(np.abs(image))
 
-        # 1 — Histogram Partitioning (Otsu's Method)
+        # 1 — Histogram Partitioning (Otsu's Method) for Denoising
         try:
-            # Find threshold that minimizes intra-class variance in the histogram
             otsu_thresh = skimage.filters.threshold_otsu(img)
-            
-            # 2 — Calculate exact noise floor from the background histogram bin
             background_pixels = img[img < otsu_thresh]
             if background_pixels.size > 0:
                 noise_floor = np.mean(background_pixels) + 0.5 * np.std(background_pixels)
             else:
                 noise_floor = 0.0
         except Exception:
-            # Fallback if image is completely uniform
             noise_floor = np.percentile(img, 10)
 
-        # 3 — Background subtraction: keep only the foreground signal
+        # 2 — Background subtraction
         foreground = img - noise_floor
-        foreground = np.clip(foreground, 0, None)   # remove negative halos
-
-        # 4 — Robust range scaling (2nd → 99th percentile, excludes outlier speckles)
-        p2, p99 = np.percentile(foreground, (2, 99))
-        range_val = p99 - p2
-        if range_val < 1e-9:
-            # Fallback: absolute min/max for flat/uniform images
-            mn, mx = foreground.min(), foreground.max()
-            if mx - mn > 1e-9:
-                img_norm = (foreground - mn) / (mx - mn)
-            else:
-                return foreground   # truly uniform — return as-is
+        foreground = np.clip(foreground, 0, None)
+        
+        # 3 — Simple Robust Normalization (2nd to 99th percentile)
+        p_low, p_high = np.percentile(foreground, (2, 99))
+        if p_high - p_low > 1e-9:
+            img_norm = np.clip((foreground - p_low) / (p_high - p_low), 0.0, 1.0)
         else:
-            img_norm = np.clip((foreground - p2) / range_val, 0.0, 1.0)
+            mx_val = np.max(foreground)
+            img_norm = foreground / mx_val if mx_val > 1e-9 else foreground
 
-        # 5 — Adaptive gamma: darken if image is overexposed
+        # 4 — Basic Gamma Correction
         if np.mean(img_norm) > 0.7:
             img_norm = img_norm ** 1.3
 
@@ -2914,7 +2922,7 @@ class MRIReconstructionSimulator:
             
         return study
 
-    def generate_plots(self, kspace_data, reconstructed_img, reference_M):
+    def generate_plots(self, kspace_data, reconstructed_img, reference_M, ellipsoidal_mask=False):
         """Generates dictionary of base64 encoded plots."""
         plots = {}
         plt.style.use('dark_background')
@@ -2922,6 +2930,10 @@ class MRIReconstructionSimulator:
         # Ensure reference is magnitude for display
         if np.iscomplexobj(reference_M):
             reference_M = np.abs(reference_M)
+            
+        # Apply mask to ground truth if requested
+        if ellipsoidal_mask:
+            reference_M = self._apply_ellipsoidal_mask(reference_M)
             
         def fig_to_b64(fig, tight=True):
             try:
@@ -2988,9 +3000,8 @@ class MRIReconstructionSimulator:
         fig4, ax4 = plt.subplots(figsize=(6, 6))
         fig4.patch.set_facecolor('#0f172a')
         
-        disp_ref = np.nan_to_num(reference_M)
-        if np.max(disp_ref) - np.min(disp_ref) > 1e-9:
-             disp_ref = (disp_ref - np.min(disp_ref)) / (np.max(disp_ref) - np.min(disp_ref))
+        # Use adaptive windowing even for Ground Truth to ensure visual parity
+        disp_ref = self._adaptive_windowing(reference_M)
              
         ax4.imshow(disp_ref, cmap='gray', origin='lower', aspect='equal', vmin=0, vmax=1, interpolation='nearest')
         ax4.axis('off')
@@ -3240,7 +3251,7 @@ class MRIReconstructionSimulator:
             ax.text(0.5, 0.5, "Schematic Unavailable", color='white', ha='center')
             return fig_to_b64(fig)
 
-    def deep_learning_reconstruct(self, kspace_data):
+    def deep_learning_reconstruct(self, kspace_data, ellipsoidal_mask=False):
         """
         Simulates an AI-based reconstruction (e.g. Automap or Zero-filled U-Net).
         Enhances edge definition and suppresses sub-sampling artifacts.

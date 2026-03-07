@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, jsonify, send_file
 from flask_cors import CORS
+import numpy as np
+np.float = float # Patch for older pypulseq compatibility with newer numpy
+np.complex = complex # Patch for older sigpy compatibility
 from simulator_core import MRIReconstructionSimulator
 from statistical_adaptive_pulse import create_adaptive_sequence, ADAPTIVE_SEQUENCES
 from quantum_vascular_coils import get_coil_summary, QUANTUM_VASCULAR_COIL_LIBRARY
@@ -10,6 +13,7 @@ import generate_pdf
 import generate_report_images
 import numpy as np
 import json
+from pypulseq_generator import generate_seq_file
 
 def sanitize_for_json(obj):
     """Recursively replace NaNs and Infs with None."""
@@ -106,14 +110,15 @@ def simulate():
         kspace, M_ref = sim.acquire_signal(sequence_type=seq_type, TR=tr, TE=te, TI=ti, flip_angle=flip_angle, noise_level=noise)
         
         if recon_method == 'DeepLearning':
-            recon_img = sim.deep_learning_reconstruct(kspace)
+            recon_img = sim.deep_learning_reconstruct(kspace, ellipsoidal_mask=data.get('ellipsoidal_mask', False))
             coil_imgs = []
         else:
             recon_img, coil_imgs = sim.reconstruct_image(
                 kspace, 
                 method=recon_method,
                 noise_filter=data.get('noise_filter', 'None'),
-                morphological_cleanup=data.get('morphological_cleanup', False)
+                morphological_cleanup=data.get('morphological_cleanup', False),
+                ellipsoidal_mask=data.get('ellipsoidal_mask', False)
             )
         
         metrics = sim.compute_metrics(recon_img, M_ref)
@@ -125,7 +130,7 @@ def simulate():
         metrics['head_coil_50_enabled'] = sim.head_coil_50_turn['enabled']
         metrics['nvqlink_enabled'] = sim.nvqlink_enabled
         
-        plots = sim.generate_plots(kspace, recon_img, M_ref)
+        plots = sim.generate_plots(kspace, recon_img, M_ref, ellipsoidal_mask=data.get('ellipsoidal_mask', False))
         
         # QML Thermometry Reasoning (Plots added to dict after global generation)
         if seq_type == 'QuantumMLThermometry':
@@ -177,6 +182,28 @@ def simulate():
             "auxiliary_maps": aux_maps,
             "signal_study": signal_study
         }))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/generate_seq', methods=['POST'])
+def generate_seq():
+    """Generates and returns a .seq file for download."""
+    try:
+        data = request.json or {}
+        seq_type = data.get('sequence', 'SE')
+        tr = float(data.get('tr', 2000))
+        te = float(data.get('te', 100))
+        flip_angle = float(data.get('flip_angle', 90))
+        
+        # Mapping frontend types to generator types
+        # Frontend might send 'SpinEcho (SE)' or similar
+        clean_type = seq_type.split('(')[-1].replace(')', '').strip() if '(' in seq_type else seq_type
+        
+        file_path = generate_seq_file(clean_type, tr, te, flip_angle=flip_angle)
+        
+        return send_file(file_path, as_attachment=True, download_name=os.path.basename(file_path))
     except Exception as e:
         import traceback
         traceback.print_exc()
