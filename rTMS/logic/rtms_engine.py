@@ -370,3 +370,192 @@ def get_equipment_list():
         }
     ]
     return equipment
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Treatment Paradigm Engine
+# Stage Gating  ·  Hebbian-DBS Amplification  ·  Continued Fractions
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _continued_fraction_convergents(target_freq, depth=8):
+    """
+    Expand target_freq as a continued fraction and return the first `depth`
+    convergents.  These are used as candidate stimulation frequencies whose
+    rational approximations minimise phase-locking artefacts.
+
+      f = a0 + 1/(a1 + 1/(a2 + ...))
+
+    Returns list of dicts {iteration, a_k, p/q, approx, error_pct}.
+    """
+    x = float(target_freq)
+    a_list, p, q = [], [1, 0], [0, 1]
+    convergents = []
+    for k in range(depth):
+        a = int(x)
+        a_list.append(a)
+        p_k = a * p[-1] + p[-2]
+        q_k = a * q[-1] + q[-2]
+        approx = p_k / q_k if q_k != 0 else float('inf')
+        err = abs(approx - target_freq) / target_freq * 100
+        convergents.append({
+            "iteration": k,
+            "a_k": a,
+            "numerator": int(p_k),
+            "denominator": int(q_k),
+            "approx_freq": round(approx, 6),
+            "error_pct": round(float(err), 6)
+        })
+        p.append(p_k); q.append(q_k)
+        frac = x - a
+        if abs(frac) < 1e-10:
+            break
+        x = 1.0 / frac
+    return convergents
+
+
+def _hebbian_amplification(n_sessions=10, eta=0.04, dbs_gain=1.6, noise_std=0.05):
+    """
+    Simulate Hebbian synaptic weight amplification coupled with DBS bursting.
+
+    Hebbian rule:   Δwᵢⱼ = η · xᵢ(t) · xⱼ(t)
+    DBS coupling:   xᵢ(t) += dbs_gain · sin(2π f_dbs t)   (burst injection)
+    Decay:          w(t+1) = w(t) · (1 - λ) + Δw           (λ = forgetting)
+
+    Returns per-session pre/post firing rates, synaptic weights,
+    and DBS burst amplitudes.
+    """
+    lam = 0.02          # synaptic forgetting rate
+    f_dbs = 130         # DBS carrier frequency (Hz), typical STN/VIM target
+    t = np.linspace(0, 1, 200)   # 1 second time window per session
+
+    sessions, weights, pre_rates, post_rates, dbs_bursts = [], [], [], [], []
+    w = 0.1  # initial synaptic weight
+
+    for s in range(n_sessions):
+        # Pre-synaptic firing: baseline cortical oscillation + noise
+        pre = np.clip(0.5 + 0.3 * np.sin(2 * np.pi * 5 * t)
+                      + np.random.normal(0, noise_std, len(t)), 0, 1)
+
+        # DBS burst injection into post-synaptic neuron
+        dbs_burst = dbs_gain * np.abs(np.sin(2 * np.pi * f_dbs * t)) * (s / n_sessions)
+        post = np.clip(pre * w + dbs_burst * 0.3
+                       + np.random.normal(0, noise_std, len(t)), 0, 1)
+
+        # Hebbian update
+        delta_w = eta * np.mean(pre * post)
+        w = w * (1 - lam) + delta_w
+        w = float(np.clip(w, 0, 1))
+
+        sessions.append(s + 1)
+        weights.append(round(w, 4))
+        pre_rates.append(round(float(np.mean(pre)), 4))
+        post_rates.append(round(float(np.mean(post)), 4))
+        dbs_bursts.append(round(float(np.mean(dbs_burst)), 4))
+
+    return {
+        "sessions":    sessions,
+        "weights":     weights,
+        "pre_rates":   pre_rates,
+        "post_rates":  post_rates,
+        "dbs_bursts":  dbs_bursts
+    }
+
+
+def _stage_gates(condition):
+    """
+    Optimal stage-gating paradigm.  Three therapeutic phases gated by
+    biomarker thresholds.
+
+    Gate function:   G(t) = H(m(t) − θ_gate)
+    where H is the Heaviside step and m(t) is the outcome metric at session t.
+
+    Phase I  — rTMS induction        (sessions 1–N₁)
+    Phase II — rTMS + DBS integration (sessions N₁+1–N₂)
+    Phase III— DBS maintenance        (sessions N₂+1–N₃)
+    """
+    if condition == "stroke":
+        N1, N2, N3 = 5, 10, 15
+        metric_name = "Motor Recovery Score (Fugl-Meyer)"
+        theta = [40, 65, 85]           # gate thresholds
+        dbs_target = "Globus Pallidus internus (GPi)"
+        dbs_freq_hz, dbs_pw_us = 130, 60
+    elif condition == "dementia":
+        N1, N2, N3 = 6, 12, 18
+        metric_name = "ADAS-Cog Score (inverted %)"
+        theta = [30, 55, 75]
+        dbs_target = "Nucleus Basalis of Meynert (NBM) / Fornix"
+        dbs_freq_hz, dbs_pw_us = 80, 90
+    else:  # tremor
+        N1, N2, N3 = 4, 8, 12
+        metric_name = "TETRAS Improvement (%)"
+        theta = [25, 50, 70]
+        dbs_target = "Ventral Intermediate Nucleus (VIM) / STN"
+        dbs_freq_hz, dbs_pw_us = 185, 60
+
+    total = N3
+    sessions = list(range(1, total + 1))
+    metric = []
+    phases = []
+    val = 0.0
+    for s in sessions:
+        noise = np.random.normal(0, 2.5)
+        if s <= N1:
+            val += np.random.uniform(5, 9) + noise
+            phase = "I — rTMS Induction"
+        elif s <= N2:
+            val += np.random.uniform(6, 11) + noise   # DBS adds amplification
+            phase = "II — rTMS + DBS Integration"
+        else:
+            val += np.random.uniform(2, 5) + noise    # DBS maintenance plateau
+            phase = "III — DBS Maintenance"
+        metric.append(round(float(np.clip(val, 0, 100)), 1))
+        phases.append(phase)
+
+    # Gate events (session at which each threshold is first crossed)
+    gate_events = []
+    for i, thr in enumerate(theta):
+        crossed = next((s for s, m in zip(sessions, metric) if m >= thr), None)
+        gate_events.append({"phase": i + 1, "threshold": thr,
+                             "session_crossed": crossed})
+
+    return {
+        "sessions":    sessions,
+        "metric":      metric,
+        "metric_name": metric_name,
+        "phases":      phases,
+        "N1": N1, "N2": N2, "N3": N3,
+        "gate_thresholds": theta,
+        "gate_events": gate_events,
+        "dbs_target":  dbs_target,
+        "dbs_freq_hz": dbs_freq_hz,
+        "dbs_pw_us":   dbs_pw_us
+    }
+
+
+def get_treatment_paradigm(condition="stroke"):
+    """
+    Returns the full optimal treatment paradigm for a given condition:
+    - Stage-gating trajectory with Heaviside gate crossings
+    - Hebbian-DBS synaptic amplification over sessions
+    - Continued fraction frequency convergents for rTMS + DBS
+    - DBS hardware protocol recommendation
+    """
+    target_freqs = {"stroke": 10.0, "dementia": 20.0, "tremor": 130.0}
+    tf = target_freqs.get(condition, 10.0)
+
+    return {
+        "condition": condition,
+        "stage_gates": _stage_gates(condition),
+        "hebbian_dbs": _hebbian_amplification(
+            n_sessions={"stroke": 15, "dementia": 18, "tremor": 12}.get(condition, 10)
+        ),
+        "cf_convergents": _continued_fraction_convergents(tf, depth=8),
+        "dbs_hardware": {
+            "stroke":  {"device": "Medtronic Percept PC", "lead": "SenSight 4-contact",
+                        "target": "GPi / M1", "voltage_v": 3.0, "impedance_ohm": 1200},
+            "dementia":{"device": "Abbott Infinity DBS", "lead": "Directional 8-contact",
+                        "target": "Fornix / NBM",  "voltage_v": 2.5, "impedance_ohm": 1400},
+            "tremor":  {"device": "Boston Scientific Vercise", "lead": "8-contact directional",
+                        "target": "VIM / cZI",     "voltage_v": 3.5, "impedance_ohm": 1100},
+        }.get(condition, {})
+    }

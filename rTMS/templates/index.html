@@ -26,6 +26,9 @@
                 <button class="nav-btn" data-tab="tremor">
                     <span class="icon">🫀</span> Essential Tremor
                 </button>
+                <button class="nav-btn" data-tab="paradigm">
+                    <span class="icon">🧩</span> Treatment Paradigm
+                </button>
                 <button class="nav-btn" data-tab="equipment">
                     <span class="icon">⚙️</span> Equipment
                 </button>
@@ -89,6 +92,49 @@
                 <div class="panel glass-panel large-panel">
                     <h3>Boundary Element Method (BEM) — Magnetic Stress Strain Surface</h3>
                     <div id="bem-scatter" class="chart-container"></div>
+                </div>
+            </div>
+
+            <!-- ── Treatment Paradigm Tab ── -->
+            <div id="paradigm-view" class="hidden">
+                <!-- Condition Selector -->
+                <div class="paradigm-selector glass-panel" style="margin-bottom:20px;padding:16px 24px;display:flex;align-items:center;gap:16px;">
+                    <span style="color:#8b949e;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Select Condition</span>
+                    <button class="paradigm-cond-btn active" data-cond="stroke">Stroke</button>
+                    <button class="paradigm-cond-btn" data-cond="dementia">Dementia</button>
+                    <button class="paradigm-cond-btn" data-cond="tremor">Essential Tremor</button>
+                    <span id="paradigm-loading" class="hidden" style="color:#58a6ff;font-size:13px;margin-left:auto;">Computing paradigm…</span>
+                </div>
+                <!-- Row 1: Stage gate + Hebbian DBS -->
+                <div class="dashboard-grid" style="margin-bottom:20px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Optimal Stage-Gating Trajectory</h3>
+                        <p id="paradigm-gate-subtitle" style="color:#8b949e;font-size:12px;margin-bottom:12px;"></p>
+                        <div id="paradigm-gate-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Hebbian-DBS Synaptic Amplification</h3>
+                        <div id="paradigm-hebbian-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>DBS Burst Amplitude (per session)</h3>
+                        <div id="paradigm-dbs-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                </div>
+                <!-- Row 2: Continued fractions + gate events + DBS hardware -->
+                <div class="dashboard-grid">
+                    <div class="panel glass-panel">
+                        <h3>Continued Fraction Frequency Convergents</h3>
+                        <div id="paradigm-cf-chart" class="chart-container" style="min-height:280px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Gate Crossing Events</h3>
+                        <div id="paradigm-gate-events"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>DBS Hardware Protocol</h3>
+                        <div id="paradigm-dbs-card"></div>
+                    </div>
                 </div>
             </div>
 

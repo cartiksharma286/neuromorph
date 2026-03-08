@@ -421,3 +421,56 @@ body {
 }
 
 .eq-op-value { width: 40px; text-align: right; flex-shrink: 0; }
+
+/* ── Treatment Paradigm Tab ── */
+.paradigm-cond-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.paradigm-cond-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.paradigm-cond-btn.active {
+    background: rgba(88, 166, 255, 0.15);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    box-shadow: 0 0 12px rgba(88, 166, 255, 0.2);
+}
+
+.gate-event-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.03);
+    margin-bottom: 10px;
+}
+
+.gate-event-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.gate-pill-1 { background: rgba(88,166,255,0.15); color:#58a6ff; border:1px solid #58a6ff; }
+.gate-pill-2 { background: rgba(86,211,100,0.15); color:#56d364; border:1px solid #56d364; }
+.gate-pill-3 { background: rgba(241,196,15,0.15);  color:#f1c40f; border:1px solid #f1c40f; }
+
+.gate-event-text { font-size: 13px; color: var(--text-secondary); }
+.gate-event-text strong { color: var(--text-primary); }
