@@ -590,15 +590,87 @@
                 </div>
             </div>
 
-            <!-- View: Cardiovascular -->
+            <!-- View: Cardiovascular Pulse Sequence Design -->
             <div id="view-cardiovascular" class="view-content">
-                <div class="output-box" style="width: 100%;">
-                    <h3>Conformal Cardiac Geometry</h3>
-                    <p style="color:var(--text-secondary); font-size:0.9rem;">
-                        Schwarz-Christoffel mapping of coil elements to cardiac contours.
-                    </p>
-                    <div class="img-window" style="aspect-ratio: 16/9; height: 400px;">
-                        <img id="img-cardio-conformal" src="" style="width:100%; height:100%; object-fit:contain;">
+                <!-- ── Controls bar ── -->
+                <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;margin-bottom:1rem;padding:0.75rem 1rem;background:var(--glass);border:1px solid var(--border);border-radius:10px;">
+                    <span style="font-weight:700;color:var(--accent);font-size:0.85rem;white-space:nowrap;">❤️ Cardiac Pulse Sequence</span>
+                    <select id="cv-seq" style="flex:1;min-width:140px;max-width:200px;">
+                        <option value="bSSFP">bSSFP (Cine)</option>
+                        <option value="SPGR">SPGR (FLASH)</option>
+                        <option value="IR-bSSFP">IR-bSSFP (MOLLI)</option>
+                        <option value="PC-MRA">Phase-Contrast MRA</option>
+                        <option value="T2-STAR">T2* GRE (Iron)</option>
+                    </select>
+                    <select id="cv-tissue-a" style="flex:1;min-width:140px;max-width:190px;">
+                        <option value="Myocardium">Myocardium</option>
+                        <option value="Blood (LV)">Blood (LV)</option>
+                        <option value="Pericardial Fat">Pericardial Fat</option>
+                        <option value="Aortic Wall">Aortic Wall</option>
+                        <option value="Coronary Vessel">Coronary Vessel</option>
+                    </select>
+                    <span style="color:var(--text-secondary);font-size:0.8rem;">vs</span>
+                    <select id="cv-tissue-b" style="flex:1;min-width:140px;max-width:190px;">
+                        <option value="Blood (LV)" selected>Blood (LV)</option>
+                        <option value="Myocardium">Myocardium</option>
+                        <option value="Pericardial Fat">Pericardial Fat</option>
+                        <option value="Aortic Wall">Aortic Wall</option>
+                        <option value="Coronary Vessel">Coronary Vessel</option>
+                    </select>
+                    <label style="font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">HR (bpm)
+                        <input id="cv-hr" type="number" value="70" min="40" max="120" style="width:60px;margin-left:0.4rem;padding:0.25rem 0.5rem;">
+                    </label>
+                    <button onclick="runCVAnalysis()" style="padding:0.5rem 1.25rem;background:linear-gradient(135deg,#f43f5e,#e11d48);border:none;color:#fff;border-radius:6px;font-weight:700;font-size:0.85rem;cursor:pointer;">▶ Analyse</button>
+                    <span id="cv-loading" style="display:none;color:#38bdf8;font-size:0.8rem;margin-left:0.5rem;">Computing…</span>
+                </div>
+
+                <!-- ── Sequence info card ── -->
+                <div id="cv-info-card" style="display:none;padding:0.75rem 1rem;background:var(--glass);border:1px solid var(--border);border-radius:10px;margin-bottom:1rem;font-size:0.82rem;color:var(--text-secondary);line-height:1.7;"></div>
+
+                <!-- ── Row 1: CNR + Signal vs FA ── -->
+                <div class="dashboard-grid" style="grid-template-columns:1fr 1fr;margin-bottom:1rem;">
+                    <div class="output-box">
+                        <div class="output-title">CNR vs Flip Angle</div>
+                        <div id="cv-cnr-chart" style="height:280px;"></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Signal Intensity vs FA (Tissue A &amp; B)</div>
+                        <div id="cv-signal-chart" style="height:280px;"></div>
+                    </div>
+                </div>
+
+                <!-- ── Row 2: SGD convergence + Classical optimizer comparison ── -->
+                <div class="dashboard-grid" style="grid-template-columns:1fr 1fr;margin-bottom:1rem;">
+                    <div class="output-box">
+                        <div class="output-title">Statistical SGD Optimisation (FA · TR convergence)</div>
+                        <div id="cv-sgd-chart" style="height:280px;"></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Classical Optimiser CNR Trajectories (GD · Nelder-Mead · L-BFGS-B)</div>
+                        <div id="cv-classical-chart" style="height:280px;"></div>
+                    </div>
+                </div>
+
+                <!-- ── Row 3: Continued fractions + Cardiac gating ── -->
+                <div class="dashboard-grid" style="grid-template-columns:1fr 1fr;margin-bottom:1rem;">
+                    <div class="output-box">
+                        <div class="output-title">Continued Fraction Convergents — Optimal FA (pₖ/qₖ)</div>
+                        <div id="cv-cf-chart" style="height:280px;"></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Cardiac Gating Simulation — k-Space Lines per Beat</div>
+                        <div id="cv-gating-chart" style="height:280px;"></div>
+                    </div>
+                </div>
+
+                <!-- ── Results summary row ── -->
+                <div class="metrics-bar" id="cv-metrics" style="display:none;margin-bottom:1rem;"></div>
+
+                <!-- ── Conformal geometry (existing) ── -->
+                <div class="output-box" style="width:100%;">
+                    <div class="output-title">Conformal Cardiac Geometry (Schwarz-Christoffel coil mapping)</div>
+                    <div class="img-window" style="aspect-ratio:16/9;height:300px;">
+                        <img id="img-cardio-conformal" src="" style="width:100%;height:100%;object-fit:contain;">
                     </div>
                 </div>
             </div>
@@ -1543,6 +1615,206 @@
             // Lazy-init when started to save resources
         });
     </script>
-</body>
 
+    <!-- Plotly for cardiovascular charts -->
+    <script src="https://cdn.plot.ly/plotly-2.30.0.min.js" charset="utf-8"></script>
+    <script>
+    // ── Cardiovascular Pulse Sequence Analysis ─────────────────────────────
+    const CV_PL = {
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor:  'rgba(0,0,0,0)',
+        font:   { color: '#94a3b8', family: 'Inter, sans-serif', size: 11 },
+        margin: { l: 50, r: 20, t: 30, b: 50 },
+        xaxis:  { gridcolor: 'rgba(255,255,255,0.07)', linecolor: 'rgba(255,255,255,0.1)' },
+        yaxis:  { gridcolor: 'rgba(255,255,255,0.07)', linecolor: 'rgba(255,255,255,0.1)' },
+        legend: { font: { color: '#e2e8f0', size: 10 } }
+    };
+
+    async function runCVAnalysis() {
+        const seq      = document.getElementById('cv-seq').value;
+        const tissueA  = document.getElementById('cv-tissue-a').value;
+        const tissueB  = document.getElementById('cv-tissue-b').value;
+        const HR       = document.getElementById('cv-hr').value;
+        const loading  = document.getElementById('cv-loading');
+
+        loading.style.display = 'inline';
+        try {
+            const params = new URLSearchParams({ seq, tissue_a: tissueA, tissue_b: tissueB, HR });
+            const res    = await fetch('/api/cardiovascular/pulse?' + params);
+            const json   = await res.json();
+            if (!json.success) { console.error(json.error); return; }
+            const d = json.data;
+
+            renderCVInfoCard(d);
+            renderCVCNRChart(d);
+            renderCVSignalChart(d);
+            renderCVSGDChart(d);
+            renderCVClassicalChart(d);
+            renderCVCFChart(d);
+            renderCVGatingChart(d);
+            renderCVMetrics(d);
+        } catch(e) { console.error(e); }
+        finally { loading.style.display = 'none'; }
+    }
+
+    function renderCVInfoCard(d) {
+        const info = d.sequence_info;
+        const card = document.getElementById('cv-info-card');
+        card.style.display = 'block';
+        card.innerHTML = `
+            <strong style="color:#f43f5e;">${d.sequence}</strong>
+            &nbsp;·&nbsp; ${info.full_name}
+            &nbsp;·&nbsp; <em>${info.use}</em>
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            Default FA: <strong style="color:#38bdf8;">${info.default.FA}°</strong>
+            &nbsp;TR: <strong style="color:#38bdf8;">${info.default.TR} ms</strong>
+            &nbsp;TE: <strong style="color:#38bdf8;">${info.default.TE} ms</strong>
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            Ernst angle (${d.fa_sweep.tissue_a}): <strong style="color:#22c55e;">${d.ernst_angle}°</strong>
+            &nbsp;Optimal FA (peak CNR): <strong style="color:#f59e0b;">${d.optimal_fa}°</strong>`;
+    }
+
+    function renderCVCNRChart(d) {
+        const fs = d.fa_sweep;
+        Plotly.newPlot('cv-cnr-chart', [{
+            x: fs.angles, y: fs.cnr,
+            type: 'scatter', mode: 'lines', fill: 'tozeroy',
+            fillcolor: 'rgba(244,63,94,0.12)',
+            line: { color: '#f43f5e', width: 2.5 },
+            name: `CNR (${fs.tissue_a} / ${fs.tissue_b})`
+        }, {
+            x: [d.optimal_fa, d.optimal_fa], y: [0, Math.max(...fs.cnr)],
+            type: 'scatter', mode: 'lines',
+            line: { color: '#f59e0b', width: 1.5, dash: 'dash' },
+            name: `Optimal FA ${d.optimal_fa}°`
+        }, {
+            x: [d.ernst_angle, d.ernst_angle], y: [0, Math.max(...fs.cnr)],
+            type: 'scatter', mode: 'lines',
+            line: { color: '#22c55e', width: 1.5, dash: 'dot' },
+            name: `Ernst α* ${d.ernst_angle}°`
+        }], { ...CV_PL, xaxis: { ...CV_PL.xaxis, title: 'Flip Angle (°)' }, yaxis: { ...CV_PL.yaxis, title: 'CNR' } }, { responsive: true });
+    }
+
+    function renderCVSignalChart(d) {
+        const fs = d.fa_sweep;
+        Plotly.newPlot('cv-signal-chart', [
+            { x: fs.angles, y: fs.signal_a, type: 'scatter', mode: 'lines',
+              line: { color: '#38bdf8', width: 2.5 }, name: fs.tissue_a },
+            { x: fs.angles, y: fs.signal_b, type: 'scatter', mode: 'lines',
+              line: { color: '#f43f5e', width: 2.5, dash: 'dot' }, name: fs.tissue_b }
+        ], { ...CV_PL, xaxis: { ...CV_PL.xaxis, title: 'Flip Angle (°)' }, yaxis: { ...CV_PL.yaxis, title: 'Signal (norm.)' } }, { responsive: true });
+    }
+
+    function renderCVSGDChart(d) {
+        const s = d.statistical_opt;
+        const t = s.trajectory;
+        Plotly.newPlot('cv-sgd-chart', [
+            { x: t.map(r => r.iteration), y: t.map(r => r.FA),
+              type: 'scatter', mode: 'lines+markers', name: 'FA (°)',
+              line: { color: '#818cf8', width: 2 }, marker: { size: 5 }, yaxis: 'y' },
+            { x: t.map(r => r.iteration), y: t.map(r => r.CNR),
+              type: 'scatter', mode: 'lines', name: 'CNR',
+              line: { color: '#22c55e', width: 2, dash: 'dot' }, yaxis: 'y2' }
+        ], {
+            ...CV_PL,
+            xaxis:  { ...CV_PL.xaxis, title: 'SGD Iteration' },
+            yaxis:  { ...CV_PL.yaxis, title: 'Flip Angle (°)' },
+            yaxis2: { ...CV_PL.yaxis, title: 'CNR', overlaying: 'y', side: 'right', showgrid: false }
+        }, { responsive: true });
+    }
+
+    function renderCVClassicalChart(d) {
+        const cl = d.classical_opt;
+        const traces = [];
+        const colors = { gradient_descent: '#f43f5e', nelder_mead: '#f59e0b', lbfgsb: '#38bdf8' };
+        const labels = { gradient_descent: 'Gradient Descent', nelder_mead: 'Nelder-Mead', lbfgsb: 'L-BFGS-B' };
+        for (const [method, result] of Object.entries(cl)) {
+            const traj = result.trajectory;
+            traces.push({
+                x: traj.map(r => r.step), y: traj.map(r => r.CNR),
+                type: 'scatter', mode: 'lines', name: labels[method],
+                line: { color: colors[method], width: 2 }
+            });
+        }
+        Plotly.newPlot('cv-classical-chart', traces, {
+            ...CV_PL,
+            xaxis: { ...CV_PL.xaxis, title: 'Optimiser Step' },
+            yaxis: { ...CV_PL.yaxis, title: 'CNR' }
+        }, { responsive: true });
+    }
+
+    function renderCVCFChart(d) {
+        const cf = d.cf_fa;
+        Plotly.newPlot('cv-cf-chart', [
+            { x: cf.map(c => c.k), y: cf.map(c => c.approx),
+              text: cf.map(c => `${c.numerator}/${c.denominator}`),
+              type: 'scatter', mode: 'lines+markers+text',
+              textposition: 'top center', textfont: { color: '#94a3b8', size: 9 },
+              line: { color: '#f59e0b', width: 2.5 }, marker: { size: 8, color: '#e67e22' },
+              name: 'CF convergent pₖ/qₖ', yaxis: 'y' },
+            { x: cf.map(c => c.k), y: cf.map(c => c.error_pct),
+              type: 'bar', marker: { color: 'rgba(244,63,94,0.35)' },
+              name: 'Approx Error (%)', yaxis: 'y2' }
+        ], {
+            ...CV_PL,
+            xaxis:  { ...CV_PL.xaxis, title: 'CF Depth k', dtick: 1 },
+            yaxis:  { ...CV_PL.yaxis, title: 'FA Approx (°)' },
+            yaxis2: { ...CV_PL.yaxis, title: 'Error (%)', overlaying: 'y', side: 'right', showgrid: false }
+        }, { responsive: true });
+    }
+
+    function renderCVGatingChart(d) {
+        const g = d.cardiac_gating;
+        const beats = g.beats;
+        Plotly.newPlot('cv-gating-chart', [
+            { x: beats.map(b => b.beat), y: beats.map(b => b.lines_acq),
+              type: 'bar', marker: { color: beats.map(b => b.lines_acq),
+              colorscale: 'RdBu', showscale: false }, name: 'Lines acquired' },
+            { x: beats.map(b => b.beat), y: beats.map(b => b.RR_ms),
+              type: 'scatter', mode: 'lines+markers', name: 'RR interval (ms)',
+              line: { color: '#f43f5e', width: 2 }, yaxis: 'y2' }
+        ], {
+            ...CV_PL,
+            xaxis:  { ...CV_PL.xaxis, title: 'Beat #', dtick: 1 },
+            yaxis:  { ...CV_PL.yaxis, title: 'k-Space Lines' },
+            yaxis2: { ...CV_PL.yaxis, title: 'RR (ms)', overlaying: 'y', side: 'right', showgrid: false },
+            annotations: [{ x: 0.5, y: 1.06, xref: 'paper', yref: 'paper', showarrow: false,
+                text: `k-Fill: <b>${(g.k_fill_fraction * 100).toFixed(1)}%</b>  ·  HR: <b>${g.HR_bpm} bpm</b>  ·  Beats: <b>${g.n_beats}</b>`,
+                font: { color: '#94a3b8', size: 10 } }]
+        }, { responsive: true });
+    }
+
+    function renderCVMetrics(d) {
+        const m   = document.getElementById('cv-metrics');
+        const so  = d.statistical_opt;
+        const cl  = d.classical_opt;
+        const best_nm   = cl.nelder_mead.final_CNR;
+        const best_bfgs = cl.lbfgsb.final_CNR;
+        m.style.display = 'grid';
+        m.innerHTML = [
+            ['SGD Optimal FA',    so.final_FA + '°'],
+            ['SGD Optimal TR',    so.final_TR + ' ms'],
+            ['Ernst Angle',       d.ernst_angle + '°'],
+            ['GD CNR',            cl.gradient_descent.final_CNR.toFixed(4)],
+            ['Nelder-Mead CNR',   best_nm.toFixed(4)],
+            ['L-BFGS-B CNR',      best_bfgs.toFixed(4)],
+            ['k-Fill Fraction',   (d.cardiac_gating.k_fill_fraction * 100).toFixed(1) + '%'],
+            ['CF Depth',          d.cf_fa.length],
+        ].map(([label, val]) => `
+            <div class="metric-mini">
+                <div class="metric-mini-val" style="font-size:1rem;color:#38bdf8;">${val}</div>
+                <div class="metric-mini-label">${label}</div>
+            </div>`).join('');
+    }
+
+    // Auto-run when cardiovascular tab is opened
+    document.addEventListener('DOMContentLoaded', () => {
+        const cvBtn = document.querySelector('.tab-trigger[onclick*="cardiovascular"]');
+        if (cvBtn) {
+            const origOnclick = cvBtn.getAttribute('onclick');
+            cvBtn.setAttribute('onclick', origOnclick + '; runCVAnalysis();');
+        }
+    });
+    </script>
+</body>
 </html>

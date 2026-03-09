@@ -14,6 +14,7 @@ import generate_report_images
 import numpy as np
 import json
 from pypulseq_generator import generate_seq_file
+from cardiovascular_pulse import run_cardiovascular_analysis, SEQUENCES as CV_SEQUENCES, CARDIAC_TISSUES
 
 def sanitize_for_json(obj):
     """Recursively replace NaNs and Infs with None."""
@@ -664,7 +665,30 @@ def optimize_robotics_coils():
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/cardiovascular/pulse', methods=['GET'])
+def cardiovascular_pulse():
+    """Full cardiovascular pulse sequence analysis — signal curves, optimization, CF, gating."""
+    try:
+        seq_name  = request.args.get('seq', 'bSSFP')
+        tissue_a  = request.args.get('tissue_a', 'Myocardium')
+        tissue_b  = request.args.get('tissue_b', 'Blood (LV)')
+        HR_bpm    = int(request.args.get('HR', 70))
+        result    = run_cardiovascular_analysis(seq_name, tissue_a, tissue_b, HR_bpm)
+        return jsonify(sanitize_for_json({'success': True, 'data': result}))
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cardiovascular/sequences', methods=['GET'])
+def cardiovascular_sequences():
+    """Returns sequence catalogue and tissue list."""
+    return jsonify({'success': True,
+        'sequences': list(CV_SEQUENCES.keys()),
+        'tissues':   list(CARDIAC_TISSUES.keys())
+    })
+
 import os
+
 
 if __name__ == '__main__':
     print("=" * 80)
