@@ -319,6 +319,13 @@
                     <option disabled style="color:#334155;">── Geometric & Advanced ──</option>
                     <option value="QuantumGeometry">⚛️ Quantum Geometry (Continued Fraction)</option>
                     <option value="RoboticsFMRI">🦾 Robotics-Aware fMRI (Interventional)</option>
+                    <option disabled style="color:#334155;">── ❤️ Cardiovascular Pulse Sequences ──</option>
+                    <option value="CV_bSSFP">❤️ bSSFP — Cardiac Cine (Bright-Blood)</option>
+                    <option value="CV_SPGR">❤️ SPGR / FLASH — Perfusion First-Pass</option>
+                    <option value="CV_IR_bSSFP">❤️ IR-bSSFP — MOLLI T1 Mapping / LGE</option>
+                    <option value="CV_PC_MRA">❤️ Phase-Contrast MRA — Flow / VENC</option>
+                    <option value="CV_T2_STAR">❤️ T2* GRE — Myocardial Iron Overload</option>
+                    <option value="CV_CS">❤️ CS-MRI — Compressed Sensing FISTA (CF Optimal)</option>
                 </select>
             </div>
 
@@ -601,6 +608,7 @@
                         <option value="IR-bSSFP">IR-bSSFP (MOLLI)</option>
                         <option value="PC-MRA">Phase-Contrast MRA</option>
                         <option value="T2-STAR">T2* GRE (Iron)</option>
+                        <option value="CS">CS-MRI FISTA (CF Optimal)</option>
                     </select>
                     <select id="cv-tissue-a" style="flex:1;min-width:140px;max-width:190px;">
                         <option value="Myocardium">Myocardium</option>
@@ -914,6 +922,33 @@
                 // T2-weighted SE default
                 document.getElementById('tr').value = 4000;
                 document.getElementById('te').value = 100;
+
+            } else if (seq.startsWith('CV_')) {
+                // ── Cardiovascular sequences — auto-switch to the Cardiovascular tab ──
+                const cvMap = {
+                    'CV_bSSFP':    { cvSeq: 'bSSFP',    tr: 3.5,  te: 1.75, fa: 60  },
+                    'CV_SPGR':     { cvSeq: 'SPGR',     tr: 5.0,  te: 2.5,  fa: 15  },
+                    'CV_IR_bSSFP': { cvSeq: 'IR-bSSFP', tr: 3.5,  te: 1.75, fa: 35  },
+                    'CV_PC_MRA':   { cvSeq: 'PC-MRA',   tr: 6.0,  te: 3.0,  fa: 20  },
+                    'CV_T2_STAR':  { cvSeq: 'T2-STAR',  tr: 200,  te: 2.5,  fa: 20  },
+                    'CV_CS':       { cvSeq: 'CS',       tr: 3.5,  te: 1.75, fa: 60  },
+                };
+                const preset = cvMap[seq];
+                if (preset) {
+                    faGroup.style.display = 'block';
+                    document.getElementById('tr').value         = preset.tr;
+                    document.getElementById('te').value         = preset.te;
+                    document.getElementById('flip_angle').value = preset.fa;
+                    // Sync the CV tab's sequence selector
+                    const cvSel = document.getElementById('cv-seq');
+                    if (cvSel) cvSel.value = preset.cvSeq;
+                }
+                // Switch view to cardiovascular
+                const cvTabBtn = document.querySelector('.tab-trigger[onclick*="cardiovascular"]');
+                if (cvTabBtn) {
+                    switchView('cardiovascular', cvTabBtn);
+                    if (typeof runCVAnalysis === 'function') runCVAnalysis();
+                }
             }
         });
 
@@ -1639,22 +1674,161 @@
 
         loading.style.display = 'inline';
         try {
-            const params = new URLSearchParams({ seq, tissue_a: tissueA, tissue_b: tissueB, HR });
-            const res    = await fetch('/api/cardiovascular/pulse?' + params);
-            const json   = await res.json();
-            if (!json.success) { console.error(json.error); return; }
-            const d = json.data;
+            if (seq === 'CS') {
+                const params = new URLSearchParams({ N: 96, gamma: 2.0 });
+                const res    = await fetch('/api/cardiovascular/cs_pulse?' + params);
+                const json   = await res.json();
+                if (!json.success) { console.error(json.error); return; }
+                const d = json.data;
+                renderCSDashboard(d);
+            } else {
+                const params = new URLSearchParams({ seq, tissue_a: tissueA, tissue_b: tissueB, HR });
+                const res    = await fetch('/api/cardiovascular/pulse?' + params);
+                const json   = await res.json();
+                if (!json.success) { console.error(json.error); return; }
+                const d = json.data;
 
-            renderCVInfoCard(d);
-            renderCVCNRChart(d);
-            renderCVSignalChart(d);
-            renderCVSGDChart(d);
-            renderCVClassicalChart(d);
-            renderCVCFChart(d);
-            renderCVGatingChart(d);
-            renderCVMetrics(d);
+                // Reset titles if returning from CS
+                document.getElementById('cv-cnr-chart').previousElementSibling.textContent = 'CNR vs Flip Angle';
+                document.getElementById('cv-signal-chart').previousElementSibling.textContent = 'Signal Intensity vs FA (Tissue A & B)';
+                document.getElementById('cv-sgd-chart').previousElementSibling.textContent = 'Statistical SGD Optimisation (FA · TR convergence)';
+                document.getElementById('cv-classical-chart').previousElementSibling.textContent = 'Classical Optimiser CNR Trajectories (GD · Nelder-Mead · L-BFGS-B)';
+                document.getElementById('cv-cf-chart').previousElementSibling.textContent = 'Continued Fraction Convergents — Optimal FA (pₖ/qₖ)';
+                document.getElementById('cv-gating-chart').previousElementSibling.textContent = 'Cardiac Gating Simulation — k-Space Lines per Beat';
+                document.getElementById('cv-gating-chart').parentElement.style.display = 'block';
+
+                renderCVInfoCard(d);
+                renderCVCNRChart(d);
+                renderCVSignalChart(d);
+                renderCVSGDChart(d);
+                renderCVClassicalChart(d);
+                renderCVCFChart(d);
+                renderCVGatingChart(d);
+                renderCVMetrics(d);
+            }
         } catch(e) { console.error(e); }
         finally { loading.style.display = 'none'; }
+    }
+
+    function renderCSDashboard(d) {
+        // Update Info Card
+        const card = document.getElementById('cv-info-card');
+        card.style.display = 'block';
+        card.innerHTML = `
+            <strong style="color:#f43f5e;">CS-MRI</strong>
+            &nbsp;·&nbsp; Compressed Sensing (VD Sampling + FISTA)
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            Resolution: <strong style="color:#38bdf8;">${d.N}×${d.N}</strong>
+            &nbsp;Acceleration R: <strong style="color:#22c55e;">${d.R_opt}x</strong>
+            &nbsp;Sparsity λ: <strong style="color:#f59e0b;">${d.lam}</strong>`;
+
+        // 1. RIP Curve (replaces CNR)
+        const ripTitle = document.getElementById('cv-cnr-chart').previousElementSibling;
+        ripTitle.textContent = 'Restricted Isometry Property (RIP) vs Acceleration R';
+        Plotly.newPlot('cv-cnr-chart', [{
+            x: d.rip_curve.R, y: d.rip_curve.rip,
+            type: 'scatter', mode: 'lines', fill: 'tozeroy',
+            fillcolor: 'rgba(56,189,248,0.12)', line: { color: '#38bdf8', width: 2.5 },
+            name: 'RIP Proxy 1-exp(-mR/N)'
+        }, {
+            x: [d.R_opt, d.R_opt], y: [0, 1],
+            type: 'scatter', mode: 'lines', line: { color: '#22c55e', width: 1.5, dash: 'dash' },
+            name: `Optimal R* = ${d.R_opt}`
+        }], { ...CV_PL, xaxis: { ...CV_PL.xaxis, title: 'Acceleration Factor (R)' }, yaxis: { ...CV_PL.yaxis, title: 'RIP Proxy' } }, { responsive: true });
+
+        // 2. Sparsity Profile (replaces Signal vs FA)
+        const spTitle = document.getElementById('cv-signal-chart').previousElementSibling;
+        spTitle.textContent = 'Wavelet Sparsity Profile (Coefficient Decay)';
+        Plotly.newPlot('cv-signal-chart', [{
+            x: d.sparsity_profile.rank, y: d.sparsity_profile.magnitude,
+            type: 'scatter', mode: 'lines', line: { color: '#f59e0b', width: 2 }, yaxis: 'y'
+        }, {
+            x: d.sparsity_profile.rank, y: d.sparsity_profile.cum_energy,
+            type: 'scatter', mode: 'lines', line: { color: '#f43f5e', width: 2, dash: 'dot' }, yaxis: 'y2'
+        }], { ...CV_PL,
+            xaxis:  { ...CV_PL.xaxis, title: 'Coefficient Rank' },
+            yaxis:  { ...CV_PL.yaxis, title: 'Magnitude' },
+            yaxis2: { ...CV_PL.yaxis, title: 'Cumulative Energy', overlaying: 'y', side: 'right' }
+        }, { responsive: true });
+
+        // 3. FISTA Convergence (replaces SGD)
+        const fistaTitle = document.getElementById('cv-sgd-chart').previousElementSibling;
+        fistaTitle.textContent = 'FISTA Convergence (LASSO Recovery)';
+        Plotly.newPlot('cv-sgd-chart', [{
+            x: d.fista_convergence.iteration, y: d.fista_convergence.residual,
+            type: 'scatter', mode: 'lines', name: 'Data Residual ‖y-Ax‖₂',
+            line: { color: '#818cf8', width: 2 }, yaxis: 'y'
+        }, {
+            x: d.fista_convergence.iteration, y: d.fista_convergence.l1_norm,
+            type: 'scatter', mode: 'lines', name: 'Sparsity ‖Ψx‖₁',
+            line: { color: '#22c55e', width: 2, dash: 'dot' }, yaxis: 'y2'
+        }], { ...CV_PL,
+            xaxis:  { ...CV_PL.xaxis, title: 'FISTA Iteration' },
+            yaxis:  { ...CV_PL.yaxis, title: 'Residual', type: 'log' },
+            yaxis2: { ...CV_PL.yaxis, title: 'L1 Norm', overlaying: 'y', side: 'right' }
+        }, { responsive: true });
+
+        // 4. Heatmaps: GT, Mask, Recon (replaces Classical)
+        const htTitle = document.getElementById('cv-classical-chart').previousElementSibling;
+        htTitle.textContent = 'Ground Truth · Sampling Mask · FISTA Recon';
+        Plotly.newPlot('cv-classical-chart', [
+            { z: d.phantom_2d, type: 'heatmap', colorscale: 'Greys', showscale: false, xaxis: 'x1', yaxis: 'y1' },
+            { z: d.mask_2d,    type: 'heatmap', colorscale: 'Blues', showscale: false, xaxis: 'x2', yaxis: 'y2' },
+            { z: d.reconstruction_2d, type: 'heatmap', colorscale: 'Greys', showscale: false, xaxis: 'x3', yaxis: 'y3' }
+        ], {
+            ...CV_PL, margin: { l: 20, r: 20, t: 20, b: 20 },
+            grid: { rows: 1, columns: 3, pattern: 'independent' },
+            xaxis1: { showgrid: false, zeroline: false, showticklabels: false }, yaxis1: { showgrid: false, zeroline: false, showticklabels: false, scaleanchor: 'x1' },
+            xaxis2: { showgrid: false, zeroline: false, showticklabels: false }, yaxis2: { showgrid: false, zeroline: false, showticklabels: false, scaleanchor: 'x2' },
+            xaxis3: { showgrid: false, zeroline: false, showticklabels: false }, yaxis3: { showgrid: false, zeroline: false, showticklabels: false, scaleanchor: 'x3' },
+            annotations: [
+                { text: 'Ground Truth', x: 0.16, y: 1.05, xref: 'paper', yref: 'paper', showarrow: false, font: { color: '#94a3b8' } },
+                { text: 'Sampling Mask', x: 0.5, y: 1.05, xref: 'paper', yref: 'paper', showarrow: false, font: { color: '#38bdf8' } },
+                { text: 'FISTA Recon', x: 0.84, y: 1.05, xref: 'paper', yref: 'paper', showarrow: false, font: { color: '#22c55e' } }
+            ]
+        }, { responsive: true });
+
+        // 5. CF Convergents for φ² (replaces CF FA)
+        const cfTitle = document.getElementById('cv-cf-chart').previousElementSibling;
+        cfTitle.textContent = 'Continued Fraction Convergents — Optimal Acceleration (R*)';
+        const cf = d.cf_convergents;
+        Plotly.newPlot('cv-cf-chart', [
+            { x: cf.map(c => c.k), y: cf.map(c => c.approx),
+              text: cf.map(c => `${c.numerator}/${c.denominator}`),
+              type: 'scatter', mode: 'lines+markers+text',
+              textposition: 'top center', textfont: { color: '#94a3b8', size: 9 },
+              line: { color: '#f59e0b', width: 2.5 }, marker: { size: 8, color: '#e67e22' },
+              name: 'CF pₖ/qₖ', yaxis: 'y' },
+            { x: cf.map(c => c.k), y: cf.map(c => c.error_pct),
+              type: 'bar', marker: { color: 'rgba(244,63,94,0.35)' },
+              name: 'Error (%)', yaxis: 'y2' }
+        ], {
+            ...CV_PL,
+            xaxis:  { ...CV_PL.xaxis, title: 'CF Depth k', dtick: 1 },
+            yaxis:  { ...CV_PL.yaxis, title: 'Acceleration Approx R' },
+            yaxis2: { ...CV_PL.yaxis, title: 'Error (%)', overlaying: 'y', side: 'right', showgrid: false }
+        }, { responsive: true });
+
+        // 6. CS Metrics
+        const m = document.getElementById('cv-metrics');
+        // Hide gating chart since we don't have a 6th CS-specific chart
+        document.getElementById('cv-gating-chart').parentElement.style.display = 'none';
+        
+        m.style.display = 'grid';
+        m.innerHTML = [
+            ['Recon PSNR',        d.metrics.PSNR_dB + ' dB'],
+            ['Acceleration R*',   d.R_opt + 'x'],
+            ['Achieved R',        d.metrics.R_achieved + 'x'],
+            ['Fill %',            d.metrics.fill_pct + '%'],
+            ['Sparsity Frac',     (d.metrics.sparsity_frac * 100).toFixed(1) + '%'],
+            ['Incoherence μ',     d.metrics.incoherence_mu],
+            ['CF Depth',          d.cf_convergents.length],
+            ['FISTA Steps',       d.n_iter_done]
+        ].map(([label, val]) => `
+            <div class="metric-mini">
+                <div class="metric-mini-val" style="font-size:1rem;color:#38bdf8;">${val}</div>
+                <div class="metric-mini-label">${label}</div>
+            </div>`).join('');
     }
 
     function renderCVInfoCard(d) {

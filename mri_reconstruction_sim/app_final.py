@@ -15,6 +15,7 @@ import numpy as np
 import json
 from pypulseq_generator import generate_seq_file
 from cardiovascular_pulse import run_cardiovascular_analysis, SEQUENCES as CV_SEQUENCES, CARDIAC_TISSUES
+from cs_cardiac_pulse import run_cs_cardiac
 
 def sanitize_for_json(obj):
     """Recursively replace NaNs and Infs with None."""
@@ -674,6 +675,18 @@ def cardiovascular_pulse():
         tissue_b  = request.args.get('tissue_b', 'Blood (LV)')
         HR_bpm    = int(request.args.get('HR', 70))
         result    = run_cardiovascular_analysis(seq_name, tissue_a, tissue_b, HR_bpm)
+        return jsonify(sanitize_for_json({'success': True, 'data': result}))
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cardiovascular/cs_pulse', methods=['GET'])
+def cardiovascular_cs_pulse():
+    """Compressed Sensing Cardiovascular MR Pulse Sequence with CF."""
+    try:
+        N = int(request.args.get('N', 96))
+        gamma = float(request.args.get('gamma', 2.0))
+        result = run_cs_cardiac(N=N, lam=0.005, n_iter=60, target_rip=0.90, gamma=gamma)
         return jsonify(sanitize_for_json({'success': True, 'data': result}))
     except Exception as e:
         import traceback; traceback.print_exc()
