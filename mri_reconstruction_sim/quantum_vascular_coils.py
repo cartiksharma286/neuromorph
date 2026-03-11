@@ -689,6 +689,82 @@ class ConformalNeurovascularCoil(QuantumVascularCoil):
         # Limit peak sensitivity for stability
         return np.clip(sensitivity, 0.1, 2.0)
 
+
+# ============================================================================
+# COIL 30: Conformal Head Coil (High-Order Schwarz-Christoffel)
+# ============================================================================
+class ConformalHeadCoil(QuantumVascularCoil):
+    """
+    Conformal Head Coil designed specifically for neurovascular head imaging.
+
+    Uses a higher-order Schwarz-Christoffel style mapping tuned for cranial
+    conformal geometry and provides an analytic derivative-based sensitivity
+    estimate. Includes a small variational-statistics helper for adaptive tuning.
+    """
+
+    def __init__(self):
+        super().__init__("Conformal Head Coil (SC High-Order)", num_elements=40)
+
+    def sensitivity_map(self, x, y, center_x, center_y, sim_res):
+        # Map to complex plane and apply a smooth SC-like derivative
+        z = ((x - center_x) + 1j * (y - center_y)) / (sim_res / 2)
+        # Simulated polygon vertices (more refined)
+        vertices = [0.6, -0.45 + 0.2j, 0.0 + 0.55j, -0.55 - 0.25j, 0.45 - 0.45j]
+        alphas = [0.6, 0.4, 0.5, 0.45, 0.55]
+
+        derivative = 1.0
+        for v, a in zip(vertices, alphas):
+            derivative *= (z - v) ** (a - 1)
+
+        sens = np.abs(derivative)
+        # Smooth and normalize
+        sens = sens / (np.percentile(sens, 95) + 1e-6)
+        return np.clip(sens, 0.05, 3.0)
+
+    def variational_tune(self, sensitivity_grid, prior_alpha=0.5):
+        """Apply a small variational Bayesian step to adjust local gains.
+
+        This returns a multiplicative gain map in [0.8, 1.2].
+        """
+        mean = np.mean(sensitivity_grid)
+        std = np.std(sensitivity_grid)
+        gain = 1.0 + prior_alpha * (sensitivity_grid - mean) / (std + 1e-6)
+        return np.clip(gain, 0.8, 1.2)
+
+
+# ============================================================================
+# COIL 31: Variational Neuro Head Coil (Bayes-Variational Surface)
+# ============================================================================
+class VariationalNeuroHeadCoil(QuantumVascularCoil):
+    """
+    Surface head coil that applies variational-statistics driven sensitivity
+    shaping. Useful for adaptive reconstruction and speckle suppression.
+    """
+
+    def __init__(self):
+        super().__init__("Variational Neuro Head Coil", num_elements=48)
+
+    def base_surface_sensitivity(self, x, y, center_x, center_y, sim_res):
+        # Radial surface coil with smooth falloff
+        dx = x - center_x
+        dy = y - center_y
+        r = np.sqrt(dx**2 + dy**2)
+        sigma = sim_res / 4.0
+        base = np.exp(-r**2 / (2 * sigma**2))
+        return base
+
+    def apply_variational_shaping(self, base_map, kappa=0.7):
+        """Apply a simple variational Bayes reweighting to emphasize structured regions.
+
+        kappa controls the strength of the prior (0..1).
+        """
+        # Local contrast metric (laplacian magnitude)
+        from scipy.ndimage import laplace
+        lap = np.abs(laplace(base_map))
+        lap_norm = lap / (np.percentile(lap, 99) + 1e-6)
+        weight = 1.0 + kappa * lap_norm
+        return np.clip(base_map * weight, 0.05, 3.0)
+
 # ============================================================================
 # Coil Registry
 # ============================================================================
@@ -722,6 +798,8 @@ QUANTUM_VASCULAR_COIL_LIBRARY = {
     27: NeurovascularCoil,
     28: CardiovascularCoil,
     29: ConformalNeurovascularCoil,
+    30: ConformalHeadCoil,
+    31: VariationalNeuroHeadCoil,
 }
 
 

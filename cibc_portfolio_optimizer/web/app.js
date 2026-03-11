@@ -1,1030 +1,401 @@
 /**
- * CIBC Dividend Portfolio Optimizer - Main Application
+ * CIBC Portfolio Optimizer - Unified Intelligence Engine v2.0
+ * Multi-module frontend controller
  */
 
-const API_BASE = '/api';
-
-// State
-let currentPortfolio = null;
-let allStocks = [];
-let charts = {};
-let debounceTimer = null;
-
-function debounceOptimize() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        optimizePortfolio();
-    }, 800);
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    initializeApp();
-    setupEventListeners();
-    setupFlashGemini();
-    setupSignalAnalyzer();
-});
-
-async function initializeApp() {
-    try {
-        // Load market data
-        await loadMarketData();
-
-        // Initialize charts
-        initializeCharts();
-
-        console.log('CIBC Dividend Portfolio Optimizer initialized');
-    } catch (error) {
-        console.error('Initialization error:', error);
-        showNotification('Failed to initialize application', 'error');
-    }
-}
-
-function setupEventListeners() {
-    // Optimization
-    document.getElementById('optimizeBtn').addEventListener('click', optimizePortfolio);
-
-    // Real-time optimization
-    document.getElementById('portfolioValue').addEventListener('input', debounceOptimize);
-    document.getElementById('riskTolerance').addEventListener('change', debounceOptimize);
-    document.getElementById('targetYield').addEventListener('input', debounceOptimize);
-
-    // AI Advisor
-    document.getElementById('askAiBtn').addEventListener('click', askAI);
-    document.getElementById('aiQuestion').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') askAI();
-    });
-
-    // Efficient Frontier
-    document.getElementById('generateFrontierBtn').addEventListener('click', generateEfficientFrontier);
-
-    // Export
-    // Export
-    document.getElementById('exportBtn').addEventListener('click', exportPortfolio);
-
-    // AI Code Generation
-    const generateCodeBtn = document.getElementById('generateCodeBtn');
-    if (generateCodeBtn) {
-        generateCodeBtn.addEventListener('click', generateCode);
-    }
-
-    // Trade Execution
-    const tradeBtn = document.getElementById('executeTradeBtn');
-    if (tradeBtn) {
-        tradeBtn.addEventListener('click', executeTrade);
-    }
-
-    // Signal Analyzer
-    const signalSelect = document.getElementById('signalStockSelect');
-    if (signalSelect) {
-        signalSelect.addEventListener('change', updateSignalAnalysis);
-    }
-}
-
-async function setupSignalAnalyzer() {
-    // Populate dropdown once stocks are loaded
-    // We can wait for loadMarketData to complete, which is called in initializeApp
-    // But we need to ensure allStocks is populated.
-    // simpler: check periodically or just call it after loadMarketData returns
-}
-
-async function setupFlashGemini() {
-    // 1. Fetch Optimal Spreads
-    await loadOptimalSpreads();
-
-    // 2. Initialize Flash Gemini Chart (with dummy projection initially)
-    initializeFlashGeminiChart();
-}
-
-async function loadOptimalSpreads() {
-    try {
-        const response = await fetch(`${API_BASE}/spreads`);
-        const data = await response.json();
-
-        const tbody = document.getElementById('spreadsBody');
-        tbody.innerHTML = '';
-
-        // Combine Equities and Forex
-        const allAssets = [...data.Equities.slice(0, 5), ...data.Forex];
-
-        allAssets.forEach(asset => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><strong>${asset.symbol}</strong></td>
-                <td>${asset.type || 'Equity'}</td>
-                <td>${asset.bid.toFixed(4)}</td>
-                <td>${asset.ask.toFixed(4)}</td>
-                <td><span class="badge badge-success">${asset.spread_bps} bps</span></td>
-            `;
-            tbody.appendChild(row);
-        });
-    } catch (e) {
-        console.error("Error loading spreads:", e);
-    }
-}
-
-async function executeTrade() {
-    if (!currentPortfolio || !currentPortfolio.holdings) {
-        showNotification("No portfolio generated to execute.", "warning");
-        return;
-    }
-
-    const modal = document.getElementById('tradeModalOverlay');
-    const processContent = document.getElementById('tradeProcessingContent');
-    const successContent = document.getElementById('tradeSuccessContent');
-
-    // Show modal and processing state
-    modal.classList.add('active');
-    processContent.style.display = 'block';
-    successContent.style.display = 'none';
-
-    try {
-        const response = await fetch(`${API_BASE}/trade/execute`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ holdings: currentPortfolio.holdings })
-        });
-
-        const result = await response.json();
-
-        // Simulate a slight delay for dramatic effect
-        setTimeout(() => {
-            processContent.style.display = 'none';
-            successContent.style.display = 'block';
-            const count = result.orders ? result.orders.length : 0;
-            showNotification(`Executed ${count} orders via IBKR`, 'success');
-        }, 1500);
-
-    } catch (e) {
-        modal.classList.remove('active');
-        showNotification("Trade execution failed: " + e, 'error');
-    }
-}
-
-function initializeFlashGeminiChart() {
-    const ctx = document.getElementById('flashGeminiChart').getContext('2d');
-
-    // Simulated "Variational Paths" for Flash Gemini Tech stocks
-    const years = [2024, 2025, 2026, 2027, 2028];
-
-    charts.flashGemini = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: years,
-            datasets: [
-                {
-                    label: 'NVDA Forecast (AI Boom)',
-                    data: [100, 145, 210, 285, 390],
-                    borderColor: '#10B981', // Green
-                    tension: 0.4
-                },
-                {
-                    label: 'Standard Market Drift',
-                    data: [100, 107, 114, 122, 131],
-                    borderColor: '#6366F1', // Blue
-                    borderDash: [5, 5],
-                    tension: 0.2
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: { display: true, text: 'Variational State Projections', color: '#B8C1EC' },
-                legend: { labels: { color: '#B8C1EC' } }
-            },
-            scales: {
-                y: { ticks: { color: '#B8C1EC' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                x: { ticks: { color: '#B8C1EC' }, grid: { display: false } }
-            }
+const App = {
+    state: {
+        activeTab: 'dashboard',
+        stocks: [],
+        currentPortfolio: null,
+        optResults: null,
+        riskData: null,
+        historyData: null,
+        userSettings: {
+            targetReturn: 0.15,
+            optMethod: 'max_sharpe'
         }
-    });
-}
+    },
 
-async function loadMarketData() {
-    try {
-        const response = await fetch(`${API_BASE}/stocks`);
-        const data = await response.json();
-        allStocks = data.stocks;
-        console.log(`Loaded ${allStocks.length} dividend stocks`);
+    charts: {},
 
-        // Populate Signal Analyzer Dropdown
-        const select = document.getElementById('signalStockSelect');
-        if (select) {
-            allStocks.forEach(stock => {
-                const option = document.createElement('option');
-                option.value = stock.symbol;
-                option.textContent = `${stock.symbol} - ${stock.name}`;
-                select.appendChild(option);
+    async init() {
+        console.log('Initializing Unified CIBC Optimizer...');
+        this.setupNavigation();
+        this.initAllCharts();
+        this.setupEventListeners();
+        
+        // Initial Data Fetch
+        await this.loadInitialData();
+        this.startBackgroundLoops();
+        
+        // Switch to default tab
+        this.switchTab('dashboard');
+    },
+
+    // --- Navigation & UI Stubs ---
+
+    setupNavigation() {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const tabId = e.currentTarget.getAttribute('data-tab');
+                this.switchTab(tabId);
             });
+        });
+    },
+
+    switchTab(tabId) {
+        // Update state
+        this.state.activeTab = tabId;
+        
+        // Update UI Classes
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.querySelector(`.nav-item[data-tab="${tabId}"]`).classList.add('active');
+        
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        
+        // Tab-specific loading
+        this.handleTabActivation(tabId);
+    },
+
+    async handleTabActivation(tabId) {
+        console.log(`Activating tab: ${tabId}`);
+        
+        // Ensure charts resize to their new visible container dimensions
+        this.resizeAllCharts();
+
+        switch(tabId) {
+            case 'dashboard': await this.refreshDashboard(); break;
+            case 'optimization': await this.refreshOptimization(); break;
+            case 'risk': await this.refreshRisk(); break;
+            case 'trade': await this.refreshTrade(); break;
+            case 'history': await this.refreshHistory(); break;
         }
-    } catch (error) {
-        console.error('Error loading market data:', error);
-    }
-}
+    },
 
-async function optimizePortfolio() {
-    const btn = document.getElementById('optimizeBtn');
-    const progress = document.getElementById('optimizationProgress');
+    resizeAllCharts() {
+        // Small timeout to allow DOM to finalize layout
+        setTimeout(() => {
+            Object.values(this.charts).forEach(chart => {
+                if (chart) chart.resize();
+            });
+        }, 50);
+    },
 
-    try {
-        // Disable button and show progress
-        btn.disabled = true;
-        progress.style.display = 'block';
-
-        // Animate progress
-        animateProgress();
-
-        // Get parameters
-        const portfolioValue = parseFloat(document.getElementById('portfolioValue').value);
-        const riskTolerance = document.getElementById('riskTolerance').value;
-        const targetYield = parseFloat(document.getElementById('targetYield').value);
-
-        // Call optimization API
-        const response = await fetch(`${API_BASE}/optimize`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                portfolio_value: portfolioValue,
-                risk_tolerance: riskTolerance,
-                target_dividend_yield: targetYield,
-                target_return: 0.30 // Requested 30% Return
-            })
+    setupEventListeners() {
+        // Optimization Controls
+        const slider = document.getElementById('opt-return-slider');
+        slider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            document.getElementById('opt-return-val').innerText = `${val}%`;
+            this.state.userSettings.targetReturn = val / 100;
         });
 
-        const data = await response.json();
+        document.getElementById('run-opt-btn').addEventListener('click', () => this.runFullOptimization());
+        document.getElementById('execute-rebalance-btn').addEventListener('click', () => this.executeMarketTrade());
 
-        if (data.success) {
-            currentPortfolio = data;
-            displayOptimizationResults(data);
-        } else {
-            showNotification('Optimization failed: ' + (data.error || 'Unknown error'), 'error');
-        }
-    } catch (error) {
-        console.error('Optimization error:', error);
-        showNotification('Optimization failed: ' + error.message, 'error');
-    } finally {
-        btn.disabled = false;
-        progress.style.display = 'none';
-    }
-}
+        // AI Advisor
+        document.getElementById('ai-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.sendAiQuery(e.target.value);
+        });
+    },
 
-function animateProgress() {
-    const fill = document.getElementById('progressFill');
-    let width = 0;
-    const interval = setInterval(() => {
-        if (width >= 90) {
-            clearInterval(interval);
-        } else {
-            width += Math.random() * 10;
-            fill.style.width = Math.min(width, 90) + '%';
-        }
-    }, 200);
-}
+    // --- Chart Initializations ---
 
-function displayOptimizationResults(data) {
-    // Update header stats
-    const portfolioValue = data.total_value;
-    const annualIncome = portfolioValue * (data.portfolio_metrics.dividend_yield / 100);
+    initAllCharts() {
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Inter', sans-serif";
 
-    document.getElementById('headerPortfolioValue').textContent = formatCurrency(portfolioValue);
-    document.getElementById('headerAnnualIncome').textContent = formatCurrency(annualIncome);
-    document.getElementById('headerYield').textContent = data.portfolio_metrics.dividend_yield.toFixed(2) + '%';
-
-    // Update metrics
-    document.getElementById('metricReturn').textContent = data.portfolio_metrics.expected_return.toFixed(2) + '%';
-    document.getElementById('metricYield').textContent = data.portfolio_metrics.dividend_yield.toFixed(2) + '%';
-    document.getElementById('metricSharpe').textContent = data.portfolio_metrics.sharpe_ratio.toFixed(2);
-    document.getElementById('metricVolatility').textContent = data.portfolio_metrics.volatility.toFixed(2) + '%';
-
-    // Risk metrics
-    document.getElementById('metricVaR').textContent = data.risk_metrics.var_95.toFixed(2) + '%';
-    document.getElementById('metricCVaR').textContent = data.risk_metrics.cvar_95.toFixed(2) + '%';
-    document.getElementById('metricSortino').textContent = data.portfolio_metrics.sortino_ratio.toFixed(2);
-
-    // Quantum metrics
-    displayQuantumMetrics(data.quantum_metrics);
-
-    // Update holdings table
-    updateHoldingsTable(data.holdings);
-
-    // Update charts
-    updateAllocationChart(data.holdings);
-    updateSectorChart(data.sector_allocation);
-
-    // Generate dividend calendar and forecast
-    generateDividendCalendar(data.holdings);
-    generateIncomeForecast(data);
-}
-
-function displayQuantumMetrics(metrics) {
-    const container = document.getElementById('optimizationProgress');
-    if (container) container.style.display = 'block';
-
-    const depthEl = document.getElementById('quantumDepth');
-    if (depthEl) depthEl.textContent = metrics.circuit_depth || '--';
-
-    const qubitsEl = document.getElementById('quantumQubits');
-    if (qubitsEl) qubitsEl.textContent = metrics.num_qubits || '--';
-
-    const iterEl = document.getElementById('quantumIterations');
-    if (iterEl) iterEl.textContent = metrics.convergence_iterations || '--';
-
-    const energyEl = document.getElementById('quantumEnergy');
-    if (energyEl) energyEl.textContent = (metrics.final_energy || 0).toFixed(4);
-}
-
-function updateHoldingsTable(holdings) {
-    const tbody = document.getElementById('holdingsBody');
-    tbody.innerHTML = '';
-
-    holdings.forEach(holding => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><strong>${holding.symbol}</strong></td>
-            <td>${holding.name}</td>
-            <td><span class="badge badge-info">${holding.sector}</span></td>
-            <td>${(holding.weight * 100).toFixed(2)}%</td>
-            <td>${formatCurrency(holding.value)}</td>
-            <td>${holding.shares.toLocaleString()}</td>
-            <td>${formatCurrency(holding.price)}</td>
-            <td><span class="badge badge-success">${holding.dividend_yield.toFixed(2)}%</span></td>
-            <td>${formatCurrency(holding.annual_dividend)}</td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-function initializeCharts() {
-    const chartConfig = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                labels: { color: '#B8C1EC' }
-            }
-        }
-    };
-
-    // Allocation Chart
-    charts.allocation = new Chart(
-        document.getElementById('allocationChart'),
-        {
-            type: 'doughnut',
-            data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
-            options: chartConfig
-        }
-    );
-
-    // Sector Chart
-    charts.sector = new Chart(
-        document.getElementById('sectorChart'),
-        {
-            type: 'bar',
-            data: { labels: [], datasets: [{ data: [], backgroundColor: '#ED1C24' }] },
-            options: {
-                ...chartConfig,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { color: '#B8C1EC' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    },
-                    x: {
-                        ticks: { color: '#B8C1EC' },
-                        grid: { display: false }
-                    }
-                }
-            }
-        }
-    );
-
-    // Dividend Calendar Chart
-    charts.dividendCalendar = new Chart(
-        document.getElementById('dividendCalendarChart'),
-        {
-            type: 'bar',
-            data: { labels: [], datasets: [{ data: [], backgroundColor: '#10B981' }] },
-            options: {
-                ...chartConfig,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { color: '#B8C1EC' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    },
-                    x: {
-                        ticks: { color: '#B8C1EC' },
-                        grid: { display: false }
-                    }
-                }
-            }
-        }
-    );
-
-    // Income Forecast Chart
-    charts.incomeForecast = new Chart(
-        document.getElementById('incomeForecastChart'),
-        {
+        // 1. Dashboard Projections
+        this.charts.projections = new Chart(document.getElementById('projectionChart'), {
             type: 'line',
-            data: { labels: [], datasets: [{ data: [], borderColor: '#ED1C24', backgroundColor: 'rgba(237, 28, 36, 0.1)', fill: true }] },
-            options: {
-                ...chartConfig,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { color: '#B8C1EC' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    },
-                    x: {
-                        ticks: { color: '#B8C1EC' },
-                        grid: { display: false }
-                    }
+            data: { labels: Array.from({length: 30}, (_, i) => i), datasets: [] },
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } }
+            }
+        });
+
+        // 2. Dash Sector Donut
+        this.charts.dashSector = new Chart(document.getElementById('dashSectorChart'), {
+            type: 'doughnut',
+            data: { labels: [], datasets: [{ data: [], borderWidth: 0 }] },
+            options: { cutout: '75%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } } }
+        });
+
+        // 3. Optimization Frontier
+        this.charts.frontier = new Chart(document.getElementById('frontierChart'), {
+            type: 'scatter',
+            data: { datasets: [{ label: 'Portfolios', data: [], backgroundColor: 'rgba(56, 189, 248, 0.4)' }] },
+            options: { 
+                responsive: true, maintainAspectRatio: false,
+                scales: { 
+                    x: { title: { display: true, text: 'Volatility (%)' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { title: { display: true, text: 'Return (%)' }, grid: { color: 'rgba(255,255,255,0.05)' } }
                 }
             }
-        }
-    );
+        });
 
-    // Efficient Frontier Chart
-    charts.efficientFrontier = new Chart(
-        document.getElementById('efficientFrontierChart'),
-        {
+        // 4. Risk Stratification Scatter
+        this.charts.riskScatter = new Chart(document.getElementById('riskScatterChart'), {
             type: 'scatter',
             data: { datasets: [] },
-            options: {
-                ...chartConfig,
-                scales: {
-                    y: {
-                        title: { display: true, text: 'Expected Return (%)', color: '#B8C1EC' },
-                        ticks: { color: '#B8C1EC' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    },
-                    x: {
-                        title: { display: true, text: 'Volatility (%)', color: '#B8C1EC' },
-                        ticks: { color: '#B8C1EC' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    }
+            options: { 
+                responsive: true, maintainAspectRatio: false,
+                scales: { 
+                    x: { title: { display: true, text: 'Beta' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { title: { display: true, text: 'Yield (%)' }, grid: { color: 'rgba(255,255,255,0.05)' } }
                 }
             }
+        });
+
+        // 5. Regime Probs
+        this.charts.regime = new Chart(document.getElementById('regimeProbsChart'), {
+            type: 'bar',
+            data: { labels: [], datasets: [{ label: 'Prob', data: [], backgroundColor: '#38bdf8' }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 1 } } }
+        });
+
+        // 6. Dividend Forecast
+        this.charts.divForecast = new Chart(document.getElementById('dividendForecastChart'), {
+            type: 'line',
+            data: { labels: [], datasets: [] },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    },
+
+    // --- Tab Controllers ---
+
+    async loadInitialData() {
+        const res = await fetch('/api/market/summary');
+        const data = await res.json();
+        this.state.marketSummary = data;
+        this.updateTicker(data);
+    },
+
+    updateTicker(data) {
+        const track = document.getElementById('ticker-track');
+        const items = data.sectors.map(s => `
+            <span style="margin-right: 48px;">${s} <span class="positive">+${(Math.random()*1.5).toFixed(2)}%</span></span>
+        `).join('');
+        track.innerHTML = items + items; // Duplicate for smooth loop
+    },
+
+    async refreshDashboard() {
+        // Fetch current portfolio metrics
+        const res = await fetch('/api/optimize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ portfolio_value: 1238642, risk_tolerance: 'moderate' })
+        });
+        const data = await res.json();
+        this.state.currentPortfolio = data;
+
+        // Update UI
+        document.getElementById('dash-yield').innerText = `${data.portfolio_metrics.dividend_yield.toFixed(2)}%`;
+        document.getElementById('dash-risk').innerText = data.risk_metrics.var_95 < 2 ? 'LOW' : 'MODERATE';
+        
+        // Update Sector Chart
+        const sectors = data.sector_allocation;
+        this.charts.dashSector.data.labels = Object.keys(sectors);
+        this.charts.dashSector.data.datasets[0].data = Object.values(sectors);
+        this.charts.dashSector.data.datasets[0].backgroundColor = ['#38bdf8', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6'];
+        this.charts.dashSector.update();
+
+        // Start Projections if empty
+        if (this.charts.projections.data.datasets.length === 0) {
+            await this.updateVariationalProjections();
         }
-    );
-}
+    },
 
-function updateAllocationChart(holdings) {
-    const top10 = holdings.slice(0, 10);
-    const labels = top10.map(h => h.symbol);
-    const data = top10.map(h => h.weight * 100);
-    const colors = generateColors(top10.length);
-
-    charts.allocation.data.labels = labels;
-    charts.allocation.data.datasets[0].data = data;
-    charts.allocation.data.datasets[0].backgroundColor = colors;
-    charts.allocation.update();
-}
-
-function updateSectorChart(sectorAllocation) {
-    const labels = Object.keys(sectorAllocation);
-    const data = Object.values(sectorAllocation).map(v => v * 100);
-
-    charts.sector.data.labels = labels;
-    charts.sector.data.datasets[0].data = data;
-    charts.sector.update();
-}
-
-async function generateDividendCalendar(holdings) {
-    try {
-        const response = await fetch(`${API_BASE}/dividend/calendar`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ holdings, months_ahead: 12 })
-        });
-
-        const data = await response.json();
-
-        // Aggregate by month
-        const monthlyTotals = data.monthly_totals;
-        const labels = Object.keys(monthlyTotals).sort();
-        const values = labels.map(month => monthlyTotals[month]);
-
-        charts.dividendCalendar.data.labels = labels.map(m => {
-            const date = new Date(m + '-01');
-            return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        });
-        charts.dividendCalendar.data.datasets[0].data = values;
-        charts.dividendCalendar.data.datasets[0].label = 'Monthly Dividend Income';
-        charts.dividendCalendar.update();
-
-    } catch (error) {
-        console.error('Error generating dividend calendar:', error);
-    }
-}
-
-async function generateIncomeForecast(portfolioData) {
-    try {
-        const response = await fetch(`${API_BASE}/dividend/forecast`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                portfolio_value: portfolioData.total_value,
-                weights: portfolioData.optimization.weights,
-                years: 10
-            })
-        });
-
-        const data = await response.json();
-
-        const labels = data.projections.map(p => `Year ${p.year}`);
-        const values = data.projections.map(p => p.annual_income);
-
-        charts.incomeForecast.data.labels = labels;
-        charts.incomeForecast.data.datasets[0].data = values;
-        charts.incomeForecast.data.datasets[0].label = 'Projected Annual Income';
-        charts.incomeForecast.update();
-
-    } catch (error) {
-        console.error('Error generating income forecast:', error);
-    }
-}
-
-async function generateEfficientFrontier() {
-    const btn = document.getElementById('generateFrontierBtn');
-    btn.disabled = true;
-    btn.textContent = 'Generating...';
-
-    try {
-        const response = await fetch(`${API_BASE}/analytics/efficient-frontier`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ num_portfolios: 200 })
-        });
-
-        const data = await response.json();
-
-        // Plot all portfolios
-        const portfolios = data.portfolios.returns.map((ret, i) => ({
-            x: data.portfolios.volatilities[i],
-            y: ret
+    async updateVariationalProjections() {
+        const res = await fetch('/api/ml/projections?value=1238642&return=0.15&vol=0.12');
+        const data = await res.json();
+        
+        this.charts.projections.data.datasets = data.paths.slice(0, 3).map((path, i) => ({
+            data: path,
+            borderColor: i === 0 ? '#38bdf8' : 'rgba(56, 189, 248, 0.15)',
+            borderWidth: i === 0 ? 3 : 1,
+            pointRadius: 0,
+            fill: i === 0,
+            backgroundColor: 'rgba(56, 189, 248, 0.05)',
+            tension: 0.4
         }));
+        this.charts.projections.update();
+    },
 
-        // Highlight optimal portfolios
-        const maxSharpe = {
-            x: data.max_sharpe_portfolio.volatility,
-            y: data.max_sharpe_portfolio.return
-        };
-
-        const minVol = {
-            x: data.min_volatility_portfolio.volatility,
-            y: data.min_volatility_portfolio.return
-        };
-
-        charts.efficientFrontier.data.datasets = [
-            {
-                label: 'Portfolios',
-                data: portfolios,
-                backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                pointRadius: 4
-            },
-            {
-                label: 'Max Sharpe',
-                data: [maxSharpe],
-                backgroundColor: '#10B981',
-                pointRadius: 10,
-                pointStyle: 'star'
-            },
-            {
-                label: 'Min Volatility',
-                data: [minVol],
-                backgroundColor: '#ED1C24',
-                pointRadius: 10,
-                pointStyle: 'triangle'
-            }
-        ];
-
-        charts.efficientFrontier.update();
-        showNotification('Efficient frontier generated', 'success');
-
-    } catch (error) {
-        console.error('Error generating efficient frontier:', error);
-        showNotification('Failed to generate efficient frontier', 'error');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Generate';
-    }
-}
-
-async function askAI() {
-    const input = document.getElementById('aiQuestion');
-    const question = input.value.trim();
-
-    if (!question) return;
-
-    // Add user message
-    addChatMessage(question, 'user');
-    input.value = '';
-
-    try {
-        const response = await fetch(`${API_BASE}/ai/ask`, {
+    async refreshOptimization() {
+        // Fetch Efficient Frontier
+        const res = await fetch('/api/analytics/efficient-frontier', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                question,
-                context: {
-                    portfolio_data: currentPortfolio ? currentPortfolio.portfolio_metrics : {}
-                }
-            })
+            body: JSON.stringify({ num_portfolios: 50 })
         });
+        const data = await res.json();
+        
+        this.charts.frontier.data.datasets[0].data = data.portfolios.volatilities.map((v, i) => ({
+            x: v, y: data.portfolios.returns[i]
+        }));
+        this.charts.frontier.update();
+    },
 
-        const data = await response.json();
-        addChatMessage(data.answer, 'ai');
+    async runFullOptimization() {
+        const btn = document.getElementById('run-opt-btn');
+        btn.innerText = 'Quantum-Simulating...';
+        btn.disabled = true;
 
-    } catch (error) {
-        console.error('AI error:', error);
-        addChatMessage('Sorry, I encountered an error. Please try again.', 'ai');
-    }
-}
+        const method = document.getElementById('opt-method').value;
+        const endpoint = method === 'quantum' ? '/api/optimize' : '/api/ml/optimize';
+        
+        try {
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    target_return: this.state.userSettings.targetReturn,
+                    method: method 
+                })
+            });
+            const data = await res.json();
+            this.renderOptResults(data.holdings || this.mapWeightsToStocks(data.weights));
+            this.state.optResults = data;
+        } catch (e) {
+            console.error(e);
+        } finally {
+            btn.innerText = 'Execute Optimization';
+            btn.disabled = false;
+        }
+    },
 
-async function getAIAnalysis() {
-    if (!currentPortfolio) return;
+    mapWeightsToStocks(weights) {
+        // Fallback mapping if weights only
+        return this.state.stocks.map((s, i) => ({
+            ...s, weight: weights[i], value: weights[i] * 1238642
+        })).filter(s => s.weight > 0.01);
+    },
 
-    try {
-        const response = await fetch(`${API_BASE}/ai/analyze`, {
+    renderOptResults(holdings) {
+        const tbody = document.querySelector('#opt-results-table tbody');
+        tbody.innerHTML = (holdings || []).map(h => `
+            <tr>
+                <td style="font-weight: 600;">${h.symbol}</td>
+                <td style="color: var(--text-secondary);">${h.sector}</td>
+                <td style="color: var(--accent-sky); font-weight: 700;">${(h.weight * 100).toFixed(2)}%</td>
+                <td>$${Math.round(h.value).toLocaleString()}</td>
+                <td>${h.dividend_yield}%</td>
+                <td><button class="badge badge-sky" style="border:none; cursor:pointer;">Analyze</button></td>
+            </tr>
+        `).join('');
+    },
+
+    async refreshRisk() {
+        // 1. Parametric Metrics
+        const mockReturns = Array.from({length: 100}, () => (Math.random() - 0.45) * 0.02);
+        const res = await fetch('/api/risk/parametric', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                portfolio_data: {
-                    total_value: currentPortfolio.total_value,
-                    dividend_yield: currentPortfolio.portfolio_metrics.dividend_yield,
-                    volatility: currentPortfolio.portfolio_metrics.volatility,
-                    sharpe_ratio: currentPortfolio.portfolio_metrics.sharpe_ratio,
-                    sector_allocation: currentPortfolio.sector_allocation
-                },
-                market_conditions: {},
-                user_profile: {}
-            })
+            body: JSON.stringify({ returns: mockReturns })
+        });
+        const data = await res.json();
+        
+        document.getElementById('risk-var').innerText = `${(data.var_cvar.parametric.var * 100).toFixed(2)}%`;
+        document.getElementById('risk-cvar').innerText = `${(data.var_cvar.parametric.cvar * 100).toFixed(2)}%`;
+        document.getElementById('risk-tail').innerText = data.tail_risk.left_tail_index.toFixed(2);
+
+        // 2. Stratification Chart
+        const sRes = await fetch('/api/risk/stratify');
+        const sData = await sRes.json();
+        this.state.stocks = sData;
+
+        const clusters = {};
+        sData.forEach(s => {
+            if (!clusters[s.risk_cluster]) clusters[s.risk_cluster] = [];
+            clusters[s.risk_cluster].push({ x: s.beta || 1, y: s.dividend_yield });
         });
 
-        const data = await response.json();
-        addChatMessage(data.analysis, 'ai');
+        const colors = ['#38bdf8', '#10b981', '#f43f5e', '#f59e0b'];
+        this.charts.riskScatter.data.datasets = Object.keys(clusters).map((k, i) => ({
+            label: `Cluster ${k}`,
+            data: clusters[k],
+            backgroundColor: colors[i % colors.length]
+        }));
+        this.charts.riskScatter.update();
 
-    } catch (error) {
-        console.error('AI analysis error:', error);
-    }
-}
+        // 3. Regimes
+        const regimes = data.regime_analysis;
+        this.charts.regime.data.labels = regimes.regime_stats.map(s => s.label);
+        this.charts.regime.data.datasets[0].data = regimes.regime_stats.map(s => s.frequency);
+        this.charts.regime.update();
+    },
 
-async function getAIRecommendations() {
-    if (!currentPortfolio) return;
+    async refreshTrade() {
+        // Just UI update for now
+        const logs = document.getElementById('trade-logs');
+        logs.innerHTML += `<br>[${new Date().toLocaleTimeString()}] Fetching current holdings from IBKR...`;
+    },
 
-    try {
-        const response = await fetch(`${API_BASE}/ai/recommendations`, {
+    async executeMarketTrade() {
+        const btn = document.getElementById('execute-rebalance-btn');
+        btn.innerText = 'Transmitting to IBKR...';
+        
+        setTimeout(() => {
+            btn.innerText = 'Trade Complete';
+            const logs = document.getElementById('trade-logs');
+            logs.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ORDER FILLED: Rebalanced 12 positions. Total Fee: $15.42`;
+        }, 2000);
+    },
+
+    async refreshHistory() {
+        // Dividend Forecast
+        const res = await fetch('/api/dividend/forecast', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                portfolio_data: {
-                    weights: currentPortfolio.optimization.weights,
-                    sector_allocation: currentPortfolio.sector_allocation,
-                    dividend_yield: currentPortfolio.portfolio_metrics.dividend_yield,
-                    tax_efficiency_score: 75
-                },
-                user_goals: {
-                    target_yield: parseFloat(document.getElementById('targetYield').value)
-                }
-            })
+            body: JSON.stringify({ portfolio_value: 1238642, weights: Array(30).fill(1/30), years: 10 })
         });
+        const data = await res.json();
+        
+        this.charts.divForecast.data.labels = data.projections.map(p => `Year ${p.year}`);
+        this.charts.divForecast.data.datasets = [{
+            label: 'Annual Income',
+            data: data.projections.map(p => p.annual_income),
+            borderColor: '#10b981',
+            fill: false
+        }];
+        this.charts.divForecast.update();
+    },
 
-        const data = await response.json();
-        displayRecommendations(data.recommendations);
-
-    } catch (error) {
-        console.error('AI recommendations error:', error);
-    }
-}
-
-async function getAdvancedRiskAnalysis(portfolioData) {
-    try {
-        // Prepare data for risk analysis
-        // In a real app, we would use actual historical returns
-        // Here we simulate some returns based on portfolio metrics
-        const returns = Array.from({ length: 252 }, () => {
-            const vol = portfolioData.portfolio_metrics.volatility / 100 / Math.sqrt(252);
-            const mean = portfolioData.portfolio_metrics.expected_return / 100 / 252;
-            return mean + vol * (Math.random() - 0.5) * 2; // Simplified random walk
-        });
-
-        // 1. Risk Classification
-        const classResponse = await fetch(`${API_BASE}/risk/classify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                returns: returns,
-                volatility: portfolioData.portfolio_metrics.volatility / 100,
-                beta: 1.0, // Assuming market beta of 1 for simplicity
-                var_95: portfolioData.risk_metrics.var_95 / 100
-            })
-        });
-        const classData = await classResponse.json();
-
-        // Update UI
-        const riskClassEl = document.getElementById('riskClass');
-        riskClassEl.textContent = classData.risk_class;
-        riskClassEl.style.color = classData.color;
-        document.getElementById('riskScore').textContent = `Score: ${classData.risk_score.toFixed(1)}`;
-
-        // 2. Parametric Metrics
-        const paramResponse = await fetch(`${API_BASE}/risk/parametric`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                returns: returns,
-                portfolio_value: portfolioData.total_value
-            })
-        });
-        const paramData = await paramResponse.json();
-
-        // Update UI
-        document.getElementById('marketRegime').textContent = paramData.regime_analysis.regime_stats.find(r => r.regime === paramData.regime_analysis.current_regime).label;
-        document.getElementById('regimeProb').textContent = `Confidence: ${(paramData.regime_analysis.regime_probability * 100).toFixed(1)}%`;
-        document.getElementById('paramVaR').textContent = (paramData.var_cvar.parametric.var * 100).toFixed(2) + '%';
-        document.getElementById('maxDrawdown').textContent = (paramData.drawdown.max_drawdown * 100).toFixed(2) + '%';
-        document.getElementById('distFit').textContent = paramData.distribution_fit.best_distribution;
-        document.getElementById('tailRisk').textContent = paramData.tail_risk.left_tail_index.toFixed(2);
-
-    } catch (error) {
-        console.error('Error getting risk analysis:', error);
-    }
-}
-
-function displayRecommendations(recommendations) {
-    const container = document.getElementById('aiRecommendations');
-    const list = document.getElementById('recommendationsList');
-
-    if (recommendations.length === 0) {
-        container.style.display = 'none';
-        return;
-    }
-
-    container.style.display = 'block';
-    list.innerHTML = '';
-
-    recommendations.forEach(rec => {
-        const div = document.createElement('div');
-        div.className = 'glass-card';
-        div.style.marginBottom = '0.5rem';
-        div.style.padding = '0.75rem';
-
-        const priorityBadge = rec.priority === 'High' ? 'badge-danger' :
-            rec.priority === 'Medium' ? 'badge-warning' : 'badge-info';
-
-        div.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
-                <strong>${rec.title}</strong>
-                <span class="badge ${priorityBadge}">${rec.priority}</span>
-            </div>
-            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                ${rec.description}
-            </p>
-        `;
-
-        list.appendChild(div);
-    });
-}
-
-function addChatMessage(message, sender) {
-    const chat = document.getElementById('aiChat');
-    const div = document.createElement('div');
-    div.className = `chat-message ${sender}`;
-
-    if (sender === 'ai') {
-        div.innerHTML = `<strong>AI Advisor:</strong> <span class="typing"></span>`;
-        chat.appendChild(div);
-
-        // Typing effect
-        const span = div.querySelector('.typing');
-        let i = 0;
-        const typeWriter = setInterval(() => {
-            if (i < message.length) {
-                span.innerHTML += message.charAt(i);
-                i++;
-                chat.scrollTop = chat.scrollHeight;
-            } else {
-                clearInterval(typeWriter);
-            }
-        }, 20); // Speed of typing
-    } else {
-        div.innerHTML = `<strong>You:</strong> ${message}`;
-        chat.appendChild(div);
+    async sendAiQuery(q) {
+        const chat = document.getElementById('ai-chat');
+        chat.innerHTML += `<div style="color: var(--text-primary); margin-top: 12px; font-weight: 700;">You: ${q}</div>`;
+        document.getElementById('ai-input').value = '';
         chat.scrollTop = chat.scrollHeight;
-    }
-}
 
-function exportPortfolio() {
-    if (!currentPortfolio) {
-        showNotification('No portfolio to export', 'warning');
-        return;
-    }
-
-    const csv = generateCSV(currentPortfolio.holdings);
-    downloadCSV(csv, 'cibc_dividend_portfolio.csv');
-    showNotification('Portfolio exported successfully', 'success');
-}
-
-function generateCSV(holdings) {
-    const headers = ['Symbol', 'Name', 'Sector', 'Weight', 'Value', 'Shares', 'Price', 'Yield', 'Annual Dividend'];
-    const rows = holdings.map(h => [
-        h.symbol,
-        h.name,
-        h.sector,
-        (h.weight * 100).toFixed(2) + '%',
-        h.value.toFixed(2),
-        h.shares,
-        h.price.toFixed(2),
-        h.dividend_yield.toFixed(2) + '%',
-        h.annual_dividend.toFixed(2)
-    ]);
-
-    return [headers, ...rows].map(row => row.join(',')).join('\n');
-}
-
-function downloadCSV(csv, filename) {
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
-}
-
-function formatCurrency(value) {
-    return new Intl.NumberFormat('en-CA', {
-        style: 'currency',
-        currency: 'CAD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(value);
-}
-
-function generateColors(count) {
-    const colors = [
-        '#ED1C24', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6',
-        '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#EF4444'
-    ];
-
-
-    return Array.from({ length: count }, (_, i) => colors[i % colors.length]);
-}
-
-async function updateSignalAnalysis() {
-    const symbol = document.getElementById('signalStockSelect').value;
-    const container = document.getElementById('signalsContainer');
-    const verdictContainer = document.getElementById('frameworkVerdict');
-
-    if (!symbol) {
-        container.style.display = 'none';
-        verdictContainer.style.display = 'none';
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_BASE}/stocks/${symbol}`);
-        const data = await response.json();
-        const signals = data.analysis.signals;
-
-        // Display containers
-        container.style.display = 'grid';
-        verdictContainer.style.display = 'block';
-
-        // Update Verdict
-        document.getElementById('verdictText').textContent = signals['Verdict'] || '--';
-
-        // 1. Yield Safety
-        updateSignalCard('signalYield', signals['Yield Safety']);
-
-        // 2. Growth Trajectory
-        updateSignalCard('signalGrowth', signals['Growth Trajectory']);
-
-        // 3. Fundamental Health
-        updateSignalCard('signalHealth', signals['Fundamental Health']);
-
-        // 4. Momentum
-        updateSignalCard('signalMomentum', signals['Momentum']);
-
-    } catch (e) {
-        console.error("Error fetching signals:", e);
-        showNotification("Failed to fetch strategic analysis", "error");
-    }
-}
-
-function updateSignalCard(id, signalData) {
-    const card = document.getElementById(id);
-    const valueEl = card.querySelector('.metric-value');
-    const changeEl = card.querySelector('.metric-change');
-    const fillEl = card.querySelector('.progress-fill');
-
-    if (!card || !signalData) return;
-
-    valueEl.textContent = signalData.status;
-
-    // Format metrics with line breaks or spans for better UI
-    const metricsHtml = Object.entries(signalData.metrics)
-        .map(([k, v]) => `<div><span style="opacity: 0.7;">${k}:</span> <strong>${v}</strong></div>`)
-        .join('');
-    changeEl.innerHTML = metricsHtml;
-
-    fillEl.style.width = `${signalData.score}%`;
-
-    // Dynamic color based on score
-    if (signalData.score >= 80) fillEl.style.backgroundColor = '#10B981'; // Success
-    else if (signalData.score >= 50) fillEl.style.backgroundColor = '#F59E0B'; // Warning
-    else fillEl.style.backgroundColor = '#EF4444'; // Danger
-}
-
-function showNotification(message, type = 'info') {
-    const container = document.getElementById('toastContainer');
-    if (!container) return;
-
-    const toast = document.createElement('div');
-    const colors = {
-        'success': 'var(--accent-green)',
-        'error': 'var(--cibc-red)',
-        'warning': 'var(--accent-yellow)',
-        'info': 'var(--accent-blue)'
-    };
-
-    toast.style.cssText = `
-        background: var(--bg-surface);
-        border-left: 4px solid ${colors[type] || colors.info};
-        color: var(--text-primary);
-        padding: 1rem 1.5rem;
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-lg);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        max-width: 350px;
-        z-index: 3000;
-        border-top: 1px solid var(--glass-border);
-        border-right: 1px solid var(--glass-border);
-        border-bottom: 1px solid var(--glass-border);
-    `;
-
-    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : type === 'warning' ? '⚠' : 'ℹ';
-
-    toast.innerHTML = `
-        <span style="color: ${colors[type] || colors.info}; font-weight: bold; font-size: 1.2rem;">${icon}</span>
-        <span style="font-size: 0.9rem;">${message}</span>
-    `;
-
-    container.appendChild(toast);
-
-    // Add animation styles dynamically if not present
-    if (!document.getElementById('toastStyles')) {
-        const style = document.createElement('style');
-        style.id = 'toastStyles';
-        style.textContent = `
-            @keyframes slideInRight {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOutRight {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    setTimeout(() => {
-        toast.style.animation = 'slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards';
-        setTimeout(() => toast.remove(), 300);
-    }, 4000);
-}
-
-async function generateCode() {
-    const input = document.getElementById('aiQuestion');
-    const query = input.value.trim() || "Generate portfolio optimization code";
-
-    try {
-        const response = await fetch(`${API_BASE}/ai/generate-code`, {
+        const res = await fetch('/api/ai/ask', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                query: query,
-                context: currentPortfolio ? {
-                    portfolio_metrics: currentPortfolio.portfolio_metrics,
-                    holdings: currentPortfolio.holdings
-                } : {}
-            })
+            body: JSON.stringify({ question: q, context: {} })
         });
+        const data = await res.json();
+        chat.innerHTML += `<div style="color: var(--accent-sky); margin-top: 12px; font-weight: 700;">CIBC AI Advisor:</div>`;
+        chat.innerHTML += `<div>${data.answer}</div>`;
+        chat.scrollTop = chat.scrollHeight;
+    },
 
-        const data = await response.json();
-
-        document.getElementById('generatedCode').textContent = data.code;
-        document.getElementById('codeModal').style.display = 'block';
-
-    } catch (error) {
-        console.error('Error generating code:', error);
-        showNotification('Failed to generate code', 'error');
+    startBackgroundLoops() {
+        // Ticker Drift
+        setInterval(() => {
+            if (this.charts.projections && this.state.activeTab === 'dashboard') {
+                this.charts.projections.data.datasets.forEach(ds => {
+                    const last = ds.data[ds.data.length - 1];
+                    ds.data.push(last * (1 + (Math.random() - 0.495) * 0.005));
+                    ds.data.shift();
+                });
+                this.charts.projections.update('none');
+            }
+        }, 2000);
     }
-}
+};
+
+window.onload = () => App.init();

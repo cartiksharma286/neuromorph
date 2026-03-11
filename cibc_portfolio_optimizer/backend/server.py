@@ -10,12 +10,13 @@ import json
 from typing import Dict, List
 
 from quantum_optimizer import DividendPortfolioOptimizer
-from dividend_engine import DividendEngine
 from market_data import MarketDataGenerator
 from qiskit_optimizer import QiskitGeodesicOptimizer
 from portfolio_analytics import PortfolioAnalytics
 from ai_advisor import AIAdvisor
 from risk_classifier import RiskClassifier
+from ml_engine import MLEngine
+from dividend_engine import DividendEngine
 from spread_optimizer import SpreadOptimizer
 from ibkr_client import IBKRClient
 
@@ -31,17 +32,20 @@ def index():
     """Serve the frontend index.html"""
     return app.send_static_file('index.html')
 
-# Initialize components
+# Initialize Engines
 market_data = MarketDataGenerator()
-# quantum_optimizer = DividendPortfolioOptimizer(num_assets=len(market_data.get_all_stocks()))
-quantum_optimizer = QiskitGeodesicOptimizer(num_assets=len(market_data.get_all_stocks()))
-dividend_engine = DividendEngine()
-portfolio_analytics = PortfolioAnalytics()
-ai_advisor = AIAdvisor()
+analytics = PortfolioAnalytics()
 risk_classifier = RiskClassifier()
+ml_engine = MLEngine()
+dividend_engine = DividendEngine()
 spread_optimizer = SpreadOptimizer()
 ibkr_client = IBKRClient()
 ibkr_client.connect()
+ai_advisor = AIAdvisor()
+
+# Quantum Optimizer setup
+quantum_optimizer = QiskitGeodesicOptimizer(num_assets=len(market_data.get_all_stocks()))
+portfolio_analytics = analytics # alias for compatibility
 
 
 @app.route('/api/stocks', methods=['GET'])
@@ -553,6 +557,78 @@ def health_check():
     })
 
 
+@app.route('/api/ml/optimize', methods=['POST'])
+def ml_optimize():
+    """ML-enhanced portfolio optimization"""
+    data = request.json
+    
+    stocks = market_data.get_all_stocks()
+    # Simulate historical returns for the assets
+    historical_returns = market_data.generate_historical_returns(days=500)
+    
+    # 1. Ledoit-Wolf Covariance
+    robust_cov = ml_engine.calculate_robust_covariance(historical_returns)
+    expected_returns = market_data.generate_expected_returns()
+    dividend_yields = market_data.get_dividend_yields()
+    
+    # 2. Optimization
+    method = data.get('method', 'max_sharpe')
+    if method == 'risk_parity':
+        weights = ml_engine.optimize_risk_parity(robust_cov)
+    else:
+        # Default max sharpe with robust covariance
+        opt_res = analytics.optimize_sharpe_ratio_ml(expected_returns, robust_cov)
+        weights = opt_res['weights']
+        
+    metrics = analytics.calculate_portfolio_metrics(weights, expected_returns, robust_cov, dividend_yields)
+    
+    return jsonify({
+        'status': 'success',
+        'weights': weights.tolist(),
+        'metrics': metrics,
+        'method': method
+    })
+
+
+@app.route('/api/ml/projections', methods=['GET'])
+def get_ml_projections():
+    """Generate outcome paths for real-time visualization"""
+    current_value = float(request.args.get('value', 100000))
+    ret = float(request.args.get('return', 0.12))
+    vol = float(request.args.get('vol', 0.18))
+    
+    paths = ml_engine.simulate_variational_paths(current_value, ret, vol, n_paths=5)
+    
+    return jsonify({
+        'paths': paths.tolist(),
+        'days': 252
+    })
+
+
+@app.route('/api/risk/stratify', methods=['GET'])
+def stratify_assets():
+    """Stratify all assets in the universe into risk clusters"""
+    stocks = market_data.get_all_stocks()
+    
+    features = []
+    for stock in stocks:
+        features.append([
+            stock['dividend_yield'],
+            stock['pe_ratio'],
+            stock['pb_ratio'],
+            stock['beta'] if 'beta' in stock else 1.0,
+            stock['rsi'] if 'rsi' in stock else 50
+        ])
+    
+    features = np.array(features)
+    clusters = risk_classifier.stratify_assets(features)
+    
+    for i, stock in enumerate(stocks):
+        stock['risk_cluster'] = int(clusters[i])
+        
+    return jsonify(stocks)
+
+
 if __name__ == '__main__':
     print("=" * 60)
     print("CIBC Dividend Portfolio Optimization System")
@@ -563,4 +639,4 @@ if __name__ == '__main__':
     print("\nServer starting on http://localhost:5001")
     print("=" * 60)
     
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='127.0.0.1', port=5001)

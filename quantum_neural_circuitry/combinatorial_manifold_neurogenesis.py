@@ -40,6 +40,8 @@ import itertools
 import matplotlib.pyplot as plt
 import os
 from game_theory_core import GameTheoryOptimizer, CombinatorialGameOptimizer
+from generative_quantum_core import UncertaintyPrincipleManifest
+from prime_math_core import PrimeVortexField
 
 class QubitAdapter:
     """Adapts manifold node states to Qubit-like interface for Game Theory."""
@@ -542,17 +544,45 @@ class PTSDDementiaRepairModel:
         # 3. Geometric Metrics
         geometry = self.calculate_geometric_metrics()
 
+        # 4. Integrated Clinical Stats for Parity
+        primer = PrimeVortexField(self.manifold.num_nodes)
+        flux = primer.calculate_surface_integral(self.manifold.graph, qubits)
+        
+        golden_ratio = (math.sqrt(5) - 1) / 2
+        deviations = [abs(w - golden_ratio) for w in weights.values()]
+        kam_stability = 1.0 - (np.mean(deviations) if deviations else 0)
+        
+        matches = 0
+        total = 0
+        for (u, v) in weights:
+            # Safely get primes for node indices
+            p_u = primer.primes[u] if u < len(primer.primes) else u*2+1
+            p_v = primer.primes[v] if v < len(primer.primes) else v*2+1
+            res = (p_u + p_v) % 24
+            if res == 0 or res in [1, 5, 7, 11, 13, 17, 19, 23]:
+               matches += 1
+            total += 1
+        congruence_ratio = matches / total if total > 0 else 0
+
         result = {
-            'betti_numbers': betti,
-            'pathological_regions': pathology,
-            'avg_clustering': avg_clustering,
-            'avg_path_length': avg_path_length,
-            'num_nodes': self.manifold.graph.number_of_nodes(),
-            'num_edges': self.manifold.graph.number_of_edges(),
-            'nash_stability_index': nash_stability,
-            'nim_game_stability': nim_stability,
-            'uncertainty_bound_compliance': uncertainty_compliance,
-            'geometry': geometry
+            'betti_numbers': {k: int(v) for k, v in betti.items() if isinstance(v, (int, np.integer, float, np.floating))},
+            'pathological_regions': {
+                'nodes': [int(n) for n in pathology['nodes']],
+                'edges': [[int(e[0]), int(e[1]), float(e[2])] for e in pathology['edges']],
+                'curvature_map': {str(k): float(v) for k, v in pathology['curvature_map'].items()}
+            },
+            'avg_clustering': float(avg_clustering),
+            'avg_path_length': float(avg_path_length) if avg_path_length != float('inf') else -1.0,
+            'num_nodes': int(self.manifold.graph.number_of_nodes()),
+            'num_edges': int(self.manifold.graph.number_of_edges()),
+            'nash_stability_index': float(nash_stability),
+            'nim_game_stability': float(nim_stability),
+            'uncertainty_bound_compliance': float(uncertainty_compliance),
+            'geometry': {k: float(v) for k, v in geometry.items()},
+            'surface_integral_flux': float(flux),
+            'kam_stability_index': float(kam_stability),
+            'ramanujan_congruence_ratio': float(congruence_ratio),
+            'prime_harmonic_connections': int(matches)
         }
         
         self._cached_analysis = result
@@ -614,6 +644,74 @@ class PTSDDementiaRepairModel:
         
         return self.repair_history
     
+    def apply_functional_treatment(self, treatment_type, intensity):
+        """
+        Applies functional treatments to the manifold model.
+        """
+        log = []
+        if self.pathology_type != 'dementia' and treatment_type != 'prime_resonance':
+            return log 
+            
+        added = 0
+        pre_analysis = self.analyze_topology()
+
+        if treatment_type == 'cognitive':
+            # Neuroplasticity: Edge creation in pathological regions
+            pathology = pre_analysis['pathological_regions']
+            num_new = int(5 * intensity)
+            for _ in range(num_new):
+                if pathology['nodes']:
+                    u = random.choice(pathology['nodes'])
+                    v = np.random.randint(0, self.manifold.num_nodes)
+                    if u != v and not self.manifold.graph.has_edge(u, v):
+                        self.manifold.graph.add_edge(u, v, weight=0.3 * intensity)
+                        # Maintain complex for Betti calc
+                        self.manifold.complex[1].append((u, v))
+                        added += 1
+            log.append(f"Cognitive Stim: Formed {added} new synaptic bridges in decayed clusters.")
+            
+        elif treatment_type == 'memory_tags':
+            # Strengthening retrieval paths
+            weights = nx.get_edge_attributes(self.manifold.graph, 'weight')
+            strengthened = 0
+            for (u, v), w in weights.items():
+                if w > 0.4:
+                    new_w = min(1.0, w + 0.4 * intensity)
+                    self.manifold.graph.add_edge(u, v, weight=new_w)
+                    strengthened += 1
+            log.append(f"Memory Tags: Re-consolidated {strengthened} high-fidelity traces.")
+            
+        elif treatment_type == 'sensory':
+            # Phase harmonization
+            target_phase = np.random.uniform(0, 2*math.pi)
+            for i in range(len(self.manifold.node_states)):
+                current_phase = (self.manifold.node_states[i] % 360) * (math.pi / 180.0)
+                diff = target_phase - current_phase
+                nudge = int(diff * (180.0/math.pi) * 0.15 * intensity)
+                self.manifold.node_states[i] += nudge
+            log.append("Sensory Integration: Harmonic phase coupling applied to manifold nodes.")
+            
+        elif treatment_type == 'prime_resonance' or treatment_type == 'geometric':
+            # Full geometric repair
+            history_before = len(self.repair_history)
+            self.apply_repair_cycle(num_cycles=1)
+            log.append("Geometric Fix: Applied Prime Congruence Neurogenesis sequence.")
+
+        # Record this as a "cycle" in history for stats engine
+        if treatment_type in ['cognitive', 'memory_tags', 'sensory']:
+            post_analysis = self.analyze_topology()
+            self.repair_history.append({
+                'cycle': len(self.repair_history),
+                'neurons_added': added,
+                'pre_betti': pre_analysis['betti_numbers'],
+                'post_betti': post_analysis['post_betti'] if 'post_betti' in locals() else post_analysis['betti_numbers'],
+                'pathological_nodes_remaining': len(post_analysis['pathological_regions']['nodes'])
+            })
+
+        # Invalidate cache
+        self._cached_analysis = None
+        return log
+
     def generate_repair_statistics(self):
         """
         Generate comprehensive statistics for the repair process.
@@ -628,7 +726,7 @@ class PTSDDementiaRepairModel:
         
         # Topological improvement
         betti_improvement = {
-            f'beta_{i}': final['post_betti'][f'beta_{i}'] - self.initial_betti[f'beta_{i}']
+            f'beta_{i}': int(final['post_betti'][f'beta_{i}'] - self.initial_betti[f'beta_{i}'])
             for i in range(3)
         }
         
@@ -654,8 +752,8 @@ class PTSDDementiaRepairModel:
         connectivity_improvement = ((final_connectivity - initial_connectivity) / max(initial_connectivity, 0.001)) * 100
         
         # Calculate repair efficiency (neurons added per pathological node resolved)
-        nodes_resolved = self.initial_pathological_nodes - final_pathological
-        repair_efficiency = nodes_resolved / max(total_neurons_added, 1)
+        nodes_resolved = int(self.initial_pathological_nodes - final_pathological)
+        repair_efficiency = float(nodes_resolved / max(total_neurons_added, 1))
 
         # --- Post Treatment Parameters ---
         
@@ -688,27 +786,27 @@ class PTSDDementiaRepairModel:
         final_nash = self.gt_optimizer.calculate_nash_stability_index(self.manifold.graph, weights, qubits)
         
         return {
-            'total_neurons_added': total_neurons_added,
-            'repair_cycles': len(self.repair_history),
+            'total_neurons_added': int(total_neurons_added),
+            'repair_cycles': int(len(self.repair_history)),
             'betti_improvement': betti_improvement,
-            'pathology_reduction_percent': pathology_reduction * 100,
-            'initial_pathological_nodes': self.initial_pathological_nodes,
-            'final_pathological_nodes': final_pathological,
-            'nodes_resolved': nodes_resolved,
-            'edge_improvement_percent': edge_improvement,
-            'connectivity_improvement_percent': connectivity_improvement,
-            'repair_efficiency': repair_efficiency,
-            'network_health_score': (pathology_reduction * 0.5 + min(edge_improvement / 100, 0.5)) * 110, # Bonus for advanced math
+            'pathology_reduction_percent': float(pathology_reduction * 100),
+            'initial_pathological_nodes': int(self.initial_pathological_nodes),
+            'final_pathological_nodes': int(final_pathological),
+            'nodes_resolved': int(nodes_resolved),
+            'edge_improvement_percent': float(edge_improvement),
+            'connectivity_improvement_percent': float(connectivity_improvement),
+            'repair_efficiency': float(repair_efficiency),
+            'network_health_score': float((pathology_reduction * 0.5 + min(edge_improvement / 100, 0.5)) * 110),
             'final_topology': final_topology,
             'post_treatment_parameters': {
-                'curvature_homogeneity': curvature_homogeneity,
-                'spectral_gap': spectral_gap,
-                'prime_resonance_index': prime_resonance_index,
-                'curvature_variance': curvature_variance,
-                'nash_stability_index': final_nash,
-                'initial_nash_stability': self.initial_nash,
-                'nim_game_stability': final_topology['nim_game_stability'],
-                'uncertainty_bound_compliance': final_topology['uncertainty_bound_compliance']
+                'curvature_homogeneity': float(curvature_homogeneity),
+                'spectral_gap': float(spectral_gap),
+                'prime_resonance_index': float(prime_resonance_index),
+                'curvature_variance': float(curvature_variance),
+                'nash_stability_index': float(final_nash),
+                'initial_nash_stability': float(self.initial_nash),
+                'nim_game_stability': float(final_topology['nim_game_stability']),
+                'uncertainty_bound_compliance': float(final_topology['uncertainty_bound_compliance'])
             }
         }
 
@@ -724,9 +822,17 @@ class PTSDDementiaRepairModel:
             fig.patch.set_facecolor('#000000')
 
             # Force graph to be connected for better layout if needed, or just layout components
+            if self.manifold.graph.number_of_nodes() == 0:
+                ax.text(0.5, 0.5, "Empty Manifold", color='white', ha='center')
+                ax.axis('off')
+                filepath = os.path.join(os.path.join(os.path.dirname(__file__), 'static'), filename)
+                plt.savefig(filepath, dpi=150, bbox_inches='tight', facecolor='#000000')
+                plt.close(fig)
+                return filename
+
             # Spectral layout is good for manifolds
             pos = nx.spectral_layout(self.manifold.graph)
-            if not pos: # Fallback
+            if not pos or len(pos) == 0: # Fallback
                 pos = nx.spring_layout(self.manifold.graph, seed=42)
 
             # Draw edges

@@ -498,6 +498,14 @@ document.getElementById('prime-intensity-slider').addEventListener('input', (e) 
     document.getElementById('prime-intensity-val').innerText = e.target.value;
 });
 
+// Manifold Intensity Slider
+const manDementiaIntensity = document.getElementById('man-dementia-intensity');
+if (manDementiaIntensity) {
+    manDementiaIntensity.addEventListener('input', (e) => {
+        document.getElementById('man-dementia-intensity-val').innerText = e.target.value;
+    });
+}
+
 document.getElementById('btn-prime-repair').addEventListener('click', async () => {
     const prime = parseInt(document.getElementById('prime-modulus').value);
     const intensity = parseFloat(document.getElementById('prime-intensity-slider').value);
@@ -552,6 +560,10 @@ document.getElementById('btn-prime-repair').addEventListener('click', async () =
         document.getElementById('prime-plasticity').innerText = stats.plasticity_index.toFixed(2);
         document.getElementById('prime-density').innerText = stats.synaptic_density.toFixed(2);
         document.getElementById('prime-coherence').innerText = stats.global_coherence.toFixed(4);
+        document.getElementById('prime-connections').innerText = stats.prime_harmonic_connections || 0;
+
+        // Sync with Clinical Tab metrics if visible
+        fetchDementiaMetrics();
 
         // Update visual graph
         updateGraphData(data.brain_state);
@@ -692,7 +704,8 @@ async function pollManifoldStats() {
             }
         }
     } catch (e) {
-        // Suppress background errors
+        // Suppress background errors - models might not be initialized yet
+        console.debug("Manifold stats polling: models not ready or server busy.");
     }
 }
 
@@ -701,10 +714,12 @@ setInterval(pollManifoldStats, 2000);
 // --- Combinatorial Manifold Functions ---
 
 async function initializeManifold(pathologyType) {
-    const btnId = `btn-${pathologyType}-init`;
+    const btnId = `btn-${pathologyType}-analyze-repair`;
     const btn = document.getElementById(btnId);
-    btn.disabled = true;
-    btn.innerText = 'Initializing...';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Initializing...';
+    }
 
     try {
         const res = await fetch('/api/manifold/initialize', {
@@ -712,23 +727,27 @@ async function initializeManifold(pathologyType) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 pathology_type: pathologyType,
-                num_neurons: 100
+                num_neurons: pathologyType === 'dementia' ? 24 : 100
             })
         });
 
         const data = await res.json();
         updateManifoldUI(pathologyType, data.baseline_topology);
 
-        // Trigger Visualization
-        document.getElementById(`${pathologyType}-viz-placeholder`).innerText = "Generating Projection...";
-        const viz = await fetchManifoldVisuals(pathologyType);
+        // Show Baseline Image immediately
+        if (data.baseline_image) {
+            const baselineImg = document.getElementById(`${pathologyType}-viz-baseline`);
+            baselineImg.src = data.baseline_image + "?t=" + new Date().getTime();
+            baselineImg.style.display = 'block';
+            document.getElementById(`${pathologyType}-viz-placeholder`).style.display = 'none';
+        }
 
-        btn.innerText = 'Re-initialize';
+        if (btn) btn.innerText = 'Analyze & Repair Manifold';
     } catch (e) {
         console.error(`Failed to initialize ${pathologyType}`, e);
-        btn.innerText = 'Error - Retry';
+        if (btn) btn.innerText = 'Error - Retry';
     } finally {
-        btn.disabled = false;
+        if (btn) btn.disabled = false;
     }
 }
 
@@ -765,10 +784,12 @@ async function fetchManifoldVisuals(pathologyType) {
 }
 
 async function applyManifoldRepair(pathologyType) {
-    const btnId = `btn-${pathologyType}-repair`;
+    const btnId = `btn-${pathologyType}-analyze-repair`;
     const btn = document.getElementById(btnId);
-    btn.disabled = true;
-    btn.innerText = 'Applying Repair...';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Applying Repair...';
+    }
 
     // Clear previous log
     const logId = `${pathologyType}-repair-log`;
@@ -778,17 +799,34 @@ async function applyManifoldRepair(pathologyType) {
         logEl.innerHTML = `<div style="color: var(--accent); border-bottom: 1px solid rgba(255,255,255,0.1);">Neural Event Log:</div><div style="color: var(--text-dim);">Initializing repair cycles...</div>`;
     }
 
+    // Get treatment type and intensity if dementia
+    let treatmentType = "geometric";
+    let intensity = 0.5;
+
+    if (pathologyType === 'dementia') {
+        const typeEl = document.getElementById('dementia-treatment-type');
+        const intEl = document.getElementById('man-dementia-intensity');
+        if (typeEl) treatmentType = typeEl.value;
+        if (intEl) intensity = parseFloat(intEl.value);
+    }
+
     try {
         const res = await fetch('/api/manifold/repair', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 pathology_type: pathologyType,
-                num_cycles: 5
+                num_cycles: 5,
+                treatment_type: treatmentType,
+                intensity: intensity
             })
         });
 
         const data = await res.json();
+
+        if (data.functional_logs) {
+            updateManifoldLog(pathologyType, null, data.functional_logs);
+        }
 
         if (data.final_statistics) {
             updateManifoldRepairUI(pathologyType, data.final_statistics);
@@ -798,12 +836,12 @@ async function applyManifoldRepair(pathologyType) {
             updateManifoldLog(pathologyType, data.repair_history);
         }
 
-        if (data.projection_image) {
-            updateManifoldProjection(pathologyType, data.projection_image);
+        if (data.repaired_image) {
+            updateManifoldProjection(pathologyType, data.repaired_image);
 
             // Show Repaired Image in the comparison view
             const repairedImg = document.getElementById(`${pathologyType}-viz-repaired`);
-            repairedImg.src = data.projection_image + "?t=" + new Date().getTime();
+            repairedImg.src = data.repaired_image + "?t=" + new Date().getTime();
             repairedImg.style.display = 'block';
             document.getElementById(`${pathologyType}-viz-repaired-placeholder`).style.display = 'none';
         }
@@ -811,30 +849,43 @@ async function applyManifoldRepair(pathologyType) {
         // Update comparison
         updateComparison();
 
-        btn.innerText = 'Apply Repair (5 cycles)';
+        if (btn) btn.innerText = 'Analyze & Repair Manifold';
     } catch (e) {
         console.error(`Failed to repair ${pathologyType}`, e);
         if (logEl) logEl.innerHTML += `<div style="color: red;">Error: ${e.message}</div>`;
-        btn.innerText = 'Error - Retry';
+        if (btn) btn.innerText = 'Error - Retry Analysis';
     } finally {
         btn.disabled = false;
     }
 }
 
-function updateManifoldLog(pathologyType, history) {
+function updateManifoldLog(pathologyType, history, functionalLogs) {
     const logId = `${pathologyType}-repair-log`;
     const logEl = document.getElementById(logId);
     if (!logEl) return;
 
     logEl.style.display = 'block';
-    logEl.innerHTML = `<div style="color: var(--accent); border-bottom: 1px solid rgba(255,255,255,0.1);">Neural Event Log:</div>`;
-
-    history.forEach(h => {
-        const line = document.createElement('div');
-        line.style.marginTop = '4px';
-        line.innerHTML = `> Cycle ${h.cycle + 1}: <span style="color: #00ff88">+${h.neurons_added} neurons</span> (Pathology: ${h.pathological_nodes_remaining})`;
-        logEl.appendChild(line);
-    });
+    
+    if (history) {
+        logEl.innerHTML = `<div style="color: var(--accent); border-bottom: 1px solid rgba(255,255,255,0.1);">Neural Event Log:</div>`;
+        history.forEach(h => {
+            const line = document.createElement('div');
+            line.style.marginTop = '4px';
+            line.innerHTML = `> Cycle ${h.cycle + 1}: <span style="color: #00ff88">+${h.neurons_added} neurons</span> (Pathology: ${h.pathological_nodes_remaining})`;
+            logEl.appendChild(line);
+        });
+    } else if (functionalLogs) {
+        // Append to existing or clear? Let's just append but show header
+        if (!logEl.innerHTML.includes("Neural Event Log")) {
+            logEl.innerHTML = `<div style="color: var(--accent); border-bottom: 1px solid rgba(255,255,255,0.1);">Neural Event Log:</div>`;
+        }
+        functionalLogs.forEach(entry => {
+            const line = document.createElement('div');
+            line.style.marginTop = '4px';
+            line.innerHTML = `<span style="color: #bc13fe">></span> ${entry}`;
+            logEl.appendChild(line);
+        });
+    }
 
     logEl.scrollTop = logEl.scrollHeight;
 }
@@ -903,19 +954,38 @@ function updateManifoldUI(pathologyType, topology) {
         const el = document.getElementById(`${prefix}-uncertainty-compliance`);
         if (el) el.innerText = topology.uncertainty_bound_compliance.toFixed(4);
     }
+
+    if (pathologyType === 'dementia') {
+        const fluxEl = document.getElementById('dementia-flux');
+        const kamEl = document.getElementById('dementia-kam');
+        const ramanujanEl = document.getElementById('dementia-ramanujan');
+        
+        if (fluxEl && topology.surface_integral_flux !== undefined) fluxEl.innerText = topology.surface_integral_flux.toFixed(4);
+        if (kamEl && topology.kam_stability_index !== undefined) {
+            kamEl.innerText = topology.kam_stability_index.toFixed(4);
+            // Also sync the prime-resonance KAM if it exists
+            const prKam = document.getElementById('val-kam-stability');
+            if (prKam) prKam.innerText = topology.kam_stability_index.toFixed(4);
+        }
+        if (ramanujanEl && topology.ramanujan_congruence_ratio !== undefined) {
+            ramanujanEl.innerText = topology.ramanujan_congruence_ratio.toFixed(4);
+            const prRam = document.getElementById('val-ramanujan');
+            if (prRam) prRam.innerText = topology.ramanujan_congruence_ratio.toFixed(4);
+        }
+    }
 }
 
 function updateManifoldRepairUI(pathologyType, stats) {
     const prefix = pathologyType;
 
     // Update repair statistics
-    const addEl = document.getElementById(`${prefix}-added`);
+    const addEl = document.getElementById(`${prefix}-added-val`);
     const cycleEl = document.getElementById(`${prefix}-cycles`);
-    const redEl = document.getElementById(`${prefix}-reduction`);
+    const redEl = document.getElementById(`${prefix}-reduction-val`);
 
     if (addEl) addEl.innerText = stats.total_neurons_added;
     if (cycleEl) cycleEl.innerText = stats.repair_cycles;
-    if (redEl) redEl.innerText = `${stats.pathology_reduction_percent.toFixed(1)}%`;
+    if (redEl) redEl.innerText = stats.pathology_reduction_percent.toFixed(1);
 
     // Update final topology
     if (stats.final_topology) {
@@ -1004,11 +1074,47 @@ async function updateComparison() {
     }
 }
 
+// Manifold state tracking
+const manifoldState = {
+    dementia: { initialized: false },
+    ptsd: { initialized: false }
+};
+
+// Unified Analyze & Repair function
+async function handleAnalyzeRepair(pathologyType) {
+    const btn = document.getElementById(`btn-${pathologyType}-analyze-repair`);
+    if (!btn) return;
+
+    const originalText = "Analyze & Repair Manifold";
+    btn.disabled = true;
+
+    try {
+        // 1. Initialize if not ready
+        if (!manifoldState[pathologyType].initialized) {
+            btn.innerText = "Initializing Manifold...";
+            await initializeManifold(pathologyType);
+            manifoldState[pathologyType].initialized = true;
+        }
+
+        // 2. Run Repair
+        btn.innerText = "Running Repair Analysis...";
+        await applyManifoldRepair(pathologyType);
+        
+        btn.innerText = originalText;
+    } catch (e) {
+        console.error(`Repair failed for ${pathologyType}:`, e);
+        btn.innerText = "Error - Retry Analysis";
+    } finally {
+        btn.disabled = false;
+    }
+}
+
 // Manifold event listeners
-document.getElementById('btn-dementia-init').addEventListener('click', () => initializeManifold('dementia'));
-document.getElementById('btn-dementia-repair').addEventListener('click', () => applyManifoldRepair('dementia'));
-document.getElementById('btn-ptsd-init').addEventListener('click', () => initializeManifold('ptsd'));
-document.getElementById('btn-ptsd-repair').addEventListener('click', () => applyManifoldRepair('ptsd'));
+const btnDemAR = document.getElementById('btn-dementia-analyze-repair');
+if (btnDemAR) btnDemAR.addEventListener('click', () => handleAnalyzeRepair('dementia'));
+
+const btnPtsdAR = document.getElementById('btn-ptsd-analyze-repair');
+if (btnPtsdAR) btnPtsdAR.addEventListener('click', () => handleAnalyzeRepair('ptsd'));
 
 // Start
 fetchCircuit();

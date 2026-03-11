@@ -1264,6 +1264,27 @@ class MRIReconstructionSimulator:
                 # Quantum phase modulation
                 phase = np.exp(1j * angle * i / num_elements)
                 self.coils.append(sensitivity * phase)
+
+        elif coil_type == 'conformal_head_coil':
+            # Use the ConformalHeadCoil from quantum_vascular_coils
+            from quantum_vascular_coils import ConformalHeadCoil
+            coil = ConformalHeadCoil()
+            # Generate a single sensitivity map shaped by the SC derivative
+            sens = coil.sensitivity_map(x, y, center[1], center[0], N)
+            # Optionally apply variational tune based on local map
+            gain = coil.variational_tune(sens)
+            final = sens * gain
+            self.coils.append(final)
+
+        elif coil_type == 'variational_neuro_head':
+            # Use the VariationalNeuroHeadCoil
+            from quantum_vascular_coils import VariationalNeuroHeadCoil
+            coil = VariationalNeuroHeadCoil()
+            base = coil.base_surface_sensitivity(x, y, center[1], center[0], N)
+            shaped = coil.apply_variational_shaping(base)
+            # Add small complex phase diversity for multi-channel behavior
+            phase = np.exp(1j * (x * 0.02 + y * 0.015))
+            self.coils.append(shaped * phase)
         
         elif coil_type == 'head_coil_50_turn':
             # 50-Turn Head Coil for Ultra-High Resolution Neuroimaging
@@ -2057,6 +2078,31 @@ class MRIReconstructionSimulator:
             q_factor = max(0.002, optimized_q) 
             
             # Statistical Imitation (Synthesizing Detail)
+        
+        elif sequence_type == 'neuro_angiography' or sequence_type == 'TOF-like-Angio' or sequence_type == 'TOF':
+            # Time-of-Flight like angiography simulation
+            # Emphasize vascular mask (long T1, flow enhancement), short TE
+            vascular_mask = (self.t1_map > 1200) & (self.t2_map > 90)
+            base = self.pd_map * (1 - np.exp(-TR / T1_safe))
+            # Short TE preserves flow signal; simulate small flow enhancement
+            flow_boost = 1.0 + 0.8 * vascular_mask.astype(float)
+            M = base * flow_boost * np.exp(-TE / (T2_safe + 1e-6))
+            # Add small background suppression to emphasize vessels
+            M = M * (1.0 - 0.4 * (self.pd_map < 0.2))
+            q_factor = 0.08
+
+        elif sequence_type == 'neuro_perfusion' or sequence_type == 'pCASL-like-Perfusion' or sequence_type == 'pCASL':
+            # Pseudo-continuous ASL-like perfusion simulation
+            mean = np.mean(self.pd_map)
+            std = np.std(self.pd_map)
+            # Labeling efficiency proxy based on tissue variance
+            label_eff = 0.8 * (1.0 - np.clip(std / 0.3, 0, 1))
+            # Perfusion map: higher in vascular-rich regions (high T1, high PD)
+            perf_map = (self.pd_map * (self.t1_map > 1100).astype(float)) * label_eff
+            # Simulate difference image (label - control) as small fraction of perf_map
+            perf_signal = perf_map * 0.02  # Small perfusion fraction
+            M = self.pd_map * np.exp(-TE / (T2_safe + 1e-6)) + perf_signal
+            q_factor = 0.12
             grads = np.gradient(M)
             edge_map = np.sqrt(grads[0]**2 + grads[1]**2)
             M = M + 0.2 * edge_map # Enhanced "Imitation" of sharp edges
@@ -2757,6 +2803,15 @@ class MRIReconstructionSimulator:
             # Re-apply mask to suppress small specks
             final_img = np.where(~mask | cleaned_mask, final_img, 0)
 
+        # 4b. Always run a robust speckle-suppression pass to remove
+        # small isolated bright pixels (white speckle) across all sequences
+        # and coil combinations. This keeps appearance consistent and
+        # avoids requiring the frontend to toggle cleanup options.
+        try:
+            final_img = self._suppress_speckle(final_img)
+        except Exception as e:
+            print(f"Speckle suppression failed: {e}")
+
         self.latest_reconstructed_image = final_img
         
         # 5. Apply Ellipsoidal Bounding Box if requested
@@ -2783,6 +2838,66 @@ class MRIReconstructionSimulator:
         mask = ((x - center_x)**2 / a**2 + (y - center_y)**2 / b**2) <= 1.0
         
         return image * mask
+
+    def _suppress_speckle(self, image):
+        """
+        Removes small bright speckle artifacts while preserving anatomical
+        structures. Strategy:
+         - median filter to remove impulse noise
+         - detect small bright components via thresholding + connected components
+         - replace small components with local median to preserve texture
+         - final median smoothing
+        """
+        try:
+            import numpy as _np
+            import scipy.ndimage as _ndi
+            import skimage.morphology as _morph
+
+            img = _np.nan_to_num(image).astype(_np.float64)
+
+            # 1) Light median to suppress salt-and-pepper
+            med = _ndi.median_filter(img, size=3)
+
+            # 2) Adaptive threshold for bright outliers
+            mu = _np.mean(med)
+            sigma = _np.std(med)
+            thresh = mu + max(3.0 * sigma, _np.percentile(med, 99.5) * 0.5)
+
+            bright_mask = med > thresh
+
+            # 3) Label connected components and remove small ones
+            labeled, num = _ndi.label(bright_mask)
+            if num == 0:
+                return med
+
+            sizes = _np.bincount(labeled.ravel())
+            sizes[0] = 0
+            H, W = img.shape
+            # Blob threshold: very small relative to image (0.05% by default)
+            blob_threshold = max(8, int(0.0005 * H * W))
+
+            cleaned = img.copy()
+            for lab in range(1, num + 1):
+                if sizes[lab] > 0 and sizes[lab] < blob_threshold:
+                    comp_mask = (labeled == lab)
+                    # local neighborhood median replacement
+                    dil = _ndi.binary_dilation(comp_mask, iterations=2)
+                    neighbor_vals = img[dil & ~comp_mask]
+                    if neighbor_vals.size > 0:
+                        replacement = _np.median(neighbor_vals)
+                    else:
+                        replacement = _np.median(img)
+                    cleaned[comp_mask] = replacement
+
+            # 4) Gentle median smoothing to remove residual salt-and-pepper
+            final = _ndi.median_filter(cleaned, size=3)
+            return final
+        except Exception:
+            try:
+                import scipy.ndimage as _ndi
+                return _ndi.median_filter(image, size=3)
+            except Exception:
+                return image
 
     def _adaptive_windowing(self, image):
         """

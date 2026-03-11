@@ -294,6 +294,8 @@
                     <option value="AdaptiveSE">📊 Adaptive Spin Echo (Statistical)</option>
                     <option value="AdaptiveGRE">📊 Adaptive GRE (Ernst Angle)</option>
                     <option value="AdaptiveFLAIR">📊 Adaptive FLAIR (TI Optimized)</option>
+                    <option value="neuro_angiography">🧠 Neuro Angiography (Stat-Primed)</option>
+                    <option value="neuro_perfusion">🧠 Neuro Perfusion (Stat-Primed pCASL)</option>
                     <option value="ZTE">Zero Echo Time (ZTE) - Bone</option>
                     <option value="UTE">Ultra Short TE (UTE) - Connective</option>
                     <option value="SWI">Susceptibility Weighted (SWI) - Venous</option>
@@ -347,6 +349,8 @@
                     <option value="quantum_vascular_head_50">🔬 Quantum + 50-Turn (Ultimate)</option>
                     <option value="neurovascular_coil">🧠 Neurovascular Coil (Adaptive Prism)</option>
                     <option value="conformal_neurovascular_array">🌀 Conformal Neurovascular (SC Map)</option>
+                    <option value="conformal_head_coil">🧠 Conformal Head Coil (SC High-Order)</option>
+                    <option value="variational_neuro_head">🧠 Variational Neuro Head Coil</option>
                     <option value="rec_engine_coil">🤖 Rec. Engine Neurovascular Coil</option>
                     <option disabled style="color:#334155;">── Qubit Photonic Topologies ──</option>
                     <option value="qubit_photonic_hc_v1">🧠 Qubit Photonic Head Coil (Bit Shuffle 1)</option>
@@ -1305,6 +1309,34 @@
                     `;
                     cardsEl.appendChild(card);
                 });
+
+                // Also request local stat-primed Neuro sequences and append them
+                const adaptives = ['neuro_angiography', 'neuro_perfusion'];
+                for (const aseq of adaptives) {
+                    try {
+                        const ar = await fetch('/api/adaptive_sequence/generate', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ type: aseq })
+                        });
+                        const ad = await ar.json();
+                        if (ad.success) {
+                            const p = ad.sequence || ad;
+                            const card = document.createElement('div');
+                            card.className = 'output-box';
+                            card.style.cssText = 'align-items:flex-start; cursor:default;';
+                            card.innerHTML = `
+                                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;flex-wrap:wrap;">
+                                    <span style="font-size:0.85rem;font-weight:700;color:var(--accent);">${p.sequence || p.name}</span>
+                                </div>
+                                <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.6rem;">${p.description || ''}</div>
+                                <table style="border-collapse:collapse;margin-bottom:0.75rem;">
+                                    ${Object.entries(p).filter(([k]) => ['tr','te','ti','flip_angle','label_duration_ms','post_label_delay_ms'].includes(k)).map(([k,v]) => `<tr><td style="color:#94a3b8;padding:2px 8px 2px 0;font-size:0.72rem;white-space:nowrap;">${k.toUpperCase()}</td><td style="color:var(--accent);font-weight:600;font-size:0.72rem;">${v}</td></tr>`).join('')}
+                                </table>
+                            `;
+                            cardsEl.appendChild(card);
+                        }
+                    } catch (e) { console.warn('Adaptive seq fetch failed', e); }
+                }
 
             } catch (err) {
                 statusEl.textContent = '❌ Network error: ' + err.message;

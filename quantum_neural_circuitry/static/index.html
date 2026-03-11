@@ -509,6 +509,21 @@
                                 </div>
                             </div>
 
+                            <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+                                <div class="mini-metric-card" style="padding: 8px; background: rgba(0, 243, 255, 0.03); border-radius: 4px; border: 1px solid rgba(0, 243, 255, 0.1);">
+                                    <div style="font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase;">Surface Flux</div>
+                                    <div id="dementia-flux" style="font-size: 0.9rem; color: var(--primary); font-family: 'Orbitron';">--</div>
+                                </div>
+                                <div class="mini-metric-card" style="padding: 8px; background: rgba(255, 238, 0, 0.03); border-radius: 4px; border: 1px solid rgba(255, 238, 0, 0.1);">
+                                    <div style="font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase;">KAM Stability</div>
+                                    <div id="dementia-kam" style="font-size: 0.9rem; color: var(--accent); font-family: 'Orbitron';">--</div>
+                                </div>
+                                <div class="mini-metric-card" style="padding: 8px; background: rgba(188, 19, 254, 0.03); border-radius: 4px; border: 1px solid rgba(188, 19, 254, 0.1);">
+                                    <div style="font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase;">Ramanujan</div>
+                                    <div id="dementia-ramanujan" style="font-size: 0.9rem; color: var(--secondary); font-family: 'Orbitron';">--</div>
+                                </div>
+                            </div>
+
                             <div style="margin-top: 15px;">
                                 <div class="stat-row">
                                     <span class="stat-label">Nash Equilibrium Stability</span>
@@ -522,25 +537,67 @@
                                     <span class="stat-label">Heisenberg Compliance</span>
                                     <span class="stat-value" id="dementia-uncertainty-compliance">--</span>
                                 </div>
-                                <!-- System Telemetry (Restored for High Perf Monitoring) -->
+                                <!-- System Telemetry -->
                                 <div
                                     style="display: flex; gap: 10px; margin-top: 10px; font-size: 0.7rem; color: var(--text-dim); border-top: 1px dotted rgba(255,255,255,0.1); padding-top: 8px;">
                                     <span>Nodes: <span id="dementia-nodes">--</span></span>
                                     <span>Edges: <span id="dementia-edges">--</span></span>
                                     <span>Stability: <span id="dementia-pathological" class="degraded">--</span></span>
-                                    <span id="dementia-added" style="display:none">0</span>
+                                    <span id="dementia-added" style="display:inline; margin-left: 5px; color: var(--accent);">+<span id="dementia-added-val">0</span></span>
                                     <span id="dementia-cycles" style="display:none">0</span>
-                                    <span id="dementia-reduction" style="display:none">0%</span>
+                                    <span id="dementia-reduction" style="display:inline; margin-left: 5px; color: var(--secondary);"><span id="dementia-reduction-val">0</span>% Res</span>
                                 </div>
                             </div>
 
-                            <div class="repair-controls" style="margin-top: 20px;">
-                                <button id="btn-dementia-init" class="btn secondary"
-                                    style="flex: 1;">Initialize</button>
-                                <button id="btn-dementia-repair" class="btn accent" style="flex: 2;">Apply Geometric
-                                    Fix</button>
+                            <div class="treatment-selection" style="margin-top: 20px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                                <label style="font-size: 0.7rem; color: var(--text-dim); display: block; margin-bottom: 8px; font-family: 'Orbitron'; text-transform: uppercase; letter-spacing: 1px;">Therapeutic Protocol</label>
+                                <select id="dementia-treatment-type" class="btn" style="width: 100%; background: #000; border: 1px solid var(--border); color: #fff; height: 32px; font-size: 0.8rem; margin-bottom: 12px; cursor: pointer; padding: 0 5px;">
+                                    <option value="geometric">Geometric Fix (Neurogenesis)</option>
+                                    <option value="cognitive">Cognitive Stimulation</option>
+                                    <option value="memory_tags">Memory Retrieval Cues</option>
+                                    <option value="sensory">Sensory Integration</option>
+                                </select>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <label style="font-size: 0.7rem; color: var(--text-dim);">Intensity: <span id="man-dementia-intensity-val" style="color: var(--accent); font-weight: bold;">0.5</span></label>
+                                    <input type="range" id="man-dementia-intensity" min="0.1" max="1.0" step="0.1" value="0.5" style="width: 65%; cursor: pointer;">
+                                </div>
+                                
+                                <div class="repair-controls" style="display: flex; gap: 10px;">
+                                    <button id="btn-dementia-analyze-repair" class="btn accent" style="flex: 1; font-size: 0.8rem; height: 40px; box-shadow: 0 0 15px rgba(255, 238, 0, 0.2);">Analyze & Repair Manifold</button>
+                                </div>
                             </div>
 
+                            <!-- Repair Log -->
+                            <div id="dementia-repair-log"
+                                style="margin-top: 10px; height: 80px; overflow-y: auto; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 4px; padding: 5px; font-family: monospace; font-size: 0.8rem; color: var(--text-dim); display: none;">
+                                <div style="color: var(--accent); border-bottom: 1px solid rgba(255,255,255,0.1);">Neural
+                                    Event Log:</div>
+                            </div>
+
+                            <!-- Visual Projections -->
+                            <div class="manifold-visuals" style="margin-top:15px; display:flex; gap:10px;">
+                                <div style="flex:1;">
+                                    <div style="font-size:0.8rem; color:var(--text-dim); margin-bottom:5px;">Baseline
+                                        Projection</div>
+                                    <img id="dementia-viz-baseline" src=""
+                                        style="width:100%; border-radius:4px; border:1px solid var(--border); display:none;">
+                                    <div id="dementia-viz-placeholder"
+                                        style="width:100%; height:120px; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:0.8rem;">
+                                        Initialize to View</div>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-size:0.8rem; color:var(--text-dim); margin-bottom:5px;">Repaired State
+                                    </div>
+                                    <img id="dementia-viz-repaired" src=""
+                                        style="width:100%; border-radius:4px; border:1px solid var(--border); display:none;">
+                                    <div id="dementia-viz-repaired-placeholder"
+                                        style="width:100%; height:120px; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:0.8rem;">
+                                        Pending Repair</div>
+                                </div>
+                            </div>
+
+                            <!-- Real-time Projection Feed -->
                             <div class="visual-projections" style="margin-top: 20px;">
                                 <div id="dementia-projection-container" style="display: none;">
                                     <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;">Manifold
@@ -626,9 +683,7 @@
                             </div>
 
                             <div class="repair-controls" style="margin-top: 20px;">
-                                <button id="btn-ptsd-init" class="btn secondary" style="flex: 1;">Initialize</button>
-                                <button id="btn-ptsd-repair" class="btn accent" style="flex: 2;">Apply Congruence
-                                    Fix</button>
+                                <button id="btn-ptsd-analyze-repair" class="btn accent" style="width: 100%; height: 40px; box-shadow: 0 0 15px rgba(255, 238, 0, 0.2);">Analyze & Repair Manifold</button>
                             </div>
 
                             <div class="visual-projections" style="margin-top: 20px;">

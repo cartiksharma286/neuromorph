@@ -355,12 +355,83 @@ class QMLThermometrySequence(StatisticalAdaptivePulseSequence):
         }
 
 
+class NeurovascularAngiographySequence(StatisticalAdaptivePulseSequence):
+    """
+    Neurovascular Angiography sequence that adapts TE/TR and flow-weighting
+    based on tissue statistics to maximize vessel contrast while suppressing
+    speckle from noisy reconstructions.
+    """
+
+    def __init__(self, nvqlink_enabled=False):
+        super().__init__(nvqlink_enabled)
+        self.sequence_name = "Neurovascular Angiography (Stat-Primed)"
+
+    def generate_sequence(self, tissue_stats):
+        # Start from a TOF-like short-TE protocol and adapt TE for vessel contrast
+        base_tr = 20
+        base_te = 3
+
+        # Use tissue variance to set flow-sensitizing weighting
+        sigma = tissue_stats.get('std_intensity', 0.1)
+        # More variance -> increase flow weighting (longer TE) up to limit
+        te_adj = base_te + min(12, 40 * sigma)
+        tr_adj = base_tr + min(50, 200 * (1.0 - tissue_stats.get('mean_intensity', 0.5)))
+
+        # Flip angle optimized for vessel-to-tissue contrast (Ernst-like heuristic)
+        t1_vessel = 900
+        flip = np.arccos(np.exp(-tr_adj / t1_vessel)) * 180 / np.pi
+
+        return {
+            'sequence': 'TOF-like-Angio',
+            'tr': float(tr_adj),
+            'te': float(te_adj),
+            'flip_angle': float(flip),
+            'description': f"Neuro Angio (σ={sigma:.3f})",
+            'nvqlink_accelerated': self.nvqlink_enabled
+        }
+
+
+class NeurovascularPerfusionSequence(StatisticalAdaptivePulseSequence):
+    """
+    Perfusion-oriented neurovascular sequence that uses statistical primers
+    (posterior mean/std) to choose inversion times and labeling efficiency
+    for pseudo-continuous ASL-like acquisition.
+    """
+
+    def __init__(self, nvqlink_enabled=False):
+        super().__init__(nvqlink_enabled)
+        self.sequence_name = "Neurovascular Perfusion (Stat-Primed)"
+
+    def generate_sequence(self, tissue_stats):
+        mean = tissue_stats.get('mean_intensity', 0.5)
+        std = tissue_stats.get('std_intensity', 0.1)
+
+        # Pseudo-ASL labeling duration scales with tissue variance
+        label_dur = 1500 * (0.5 + min(1.0, std / 0.2))
+        post_label_delay = 800 * (1.0 - np.clip(mean, 0.1, 0.9))
+
+        tr = label_dur + post_label_delay + 500
+        te = 10 + 5 * (std / 0.2)
+
+        return {
+            'sequence': 'pCASL-like-Perfusion',
+            'tr': float(tr),
+            'te': float(te),
+            'label_duration_ms': float(label_dur),
+            'post_label_delay_ms': float(post_label_delay),
+            'description': f"Neuro Perfusion (mean={mean:.2f}, std={std:.2f})",
+            'nvqlink_accelerated': self.nvqlink_enabled
+        }
+
+
 ADAPTIVE_SEQUENCES = {
     'adaptive_se': AdaptiveSpinEcho,
     'adaptive_gre': AdaptiveGradientEcho,
     'adaptive_flair': AdaptiveFLAIR,
     'stroke_imaging_elliptic': StrokeImagingPulseSequence,
     'qml_thermometry': QMLThermometrySequence,
+    'neuro_angiography': NeurovascularAngiographySequence,
+    'neuro_perfusion': NeurovascularPerfusionSequence,
 }
 
 

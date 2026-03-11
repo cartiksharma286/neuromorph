@@ -383,21 +383,6 @@ class DementiaTreatmentModel(QuantumCircuitModel):
             flux = self.prime_field.calculate_surface_integral(self.topology, self.qubits)
             log.append(f" Network Surface Flux: {flux:.4f} (SUPER-CRITICAL)")
 
-        elif treatment_type == 'generative_ai':
-            # Gemini 3.0 Mode: Generative Quantum Control
-            log.append("Engaging Gemini 3.0 Generative Driver...")
-            
-            # 1. Predict Optimal Hamiltonian
-            gen_weights = self.gen_ai.predict_optimal_hamiltonian(self.entanglements)
-            self.entanglements.update(gen_weights)
-            log.append(" Hamiltonian Parameters optimized via Variational Inference.")
-            
-            # 2. Minimize Free Energy
-            current_energy = self.gen_ai.derive_variational_energy(self.topology, self.qubits)
-            log.append(f" System Free Energy Minimized to: {current_energy:.4f}")
-            
-            # 3. Aggressive Repatterning
-            self.plasticity = 0.95
 
 
 
@@ -437,6 +422,7 @@ class DementiaTreatmentModel(QuantumCircuitModel):
             "surface_integral_flux": flux,
             "kam_stability_index": kam_stability,
             "ramanujan_congruence_ratio": congruence_ratio,
+            "prime_harmonic_connections": matches,
             "plasticity_index": self.plasticity,
             "synaptic_density": len(self.entanglements) / (self.num_qubits * 4),
             "global_coherence": np.mean([q.excitation_prob for q in self.qubits]),
@@ -539,8 +525,16 @@ circuit = QuantumCircuitModel(num_qubits=20)
 dementia_brain = DementiaTreatmentModel(num_qubits=24)
 
 # Combinatorial Manifold Models
-manifold_dementia = None  # Lazy initialization
-manifold_ptsd = None  # Lazy initialization
+# Auto-initialize models to support immediate polling and "Full Working Condition"
+try:
+    print("Auto-initializing Manifold Models (Reduced Scale for Speed)...")
+    manifold_dementia = PTSDDementiaRepairModel(num_neurons=40, pathology_type='dementia')
+    manifold_ptsd = PTSDDementiaRepairModel(num_neurons=40, pathology_type='ptsd')
+    print("Models Initialized.")
+except Exception as e:
+    print(f"Auto-initialization warning: {e}")
+    manifold_dementia = None
+    manifold_ptsd = None
 
 @app.get("/api/circuit")
 def get_circuit():
@@ -594,6 +588,11 @@ def apply_treatment(input: TreatmentInput):
         
     logs = dementia_brain.apply_treatment(input.treatment_type, safe_intensity, input.prime_modulus)
     
+    # Propagate to Manifold Model for parity
+    global manifold_dementia
+    if manifold_dementia is not None:
+        manifold_dementia.apply_functional_treatment(input.treatment_type, safe_intensity)
+
     if remediation_note:
         logs.insert(0, f"[REMEDIATION] {remediation_note}")
 
@@ -732,6 +731,8 @@ class ManifoldInitRequest(BaseModel):
 class ManifoldRepairRequest(BaseModel):
     pathology_type: str
     num_cycles: int = 5
+    treatment_type: str = "geometric"
+    intensity: float = 0.5
 
 @app.post("/api/manifold/initialize")
 def initialize_manifold(req: ManifoldInitRequest):
@@ -741,14 +742,16 @@ def initialize_manifold(req: ManifoldInitRequest):
     try:
         if req.pathology_type == 'dementia':
             manifold_dementia = PTSDDementiaRepairModel(
-                num_neurons=req.num_neurons, 
+                num_neurons=24, 
                 pathology_type='dementia'
             )
             baseline = manifold_dementia.analyze_topology()
+            baseline_image = manifold_dementia.generate_projection_image("manifold_dementia_baseline.png")
             return {
                 "status": "initialized",
                 "pathology": "dementia",
-                "baseline_topology": baseline
+                "baseline_topology": baseline,
+                "baseline_image": baseline_image
             }
         elif req.pathology_type == 'ptsd':
             manifold_ptsd = PTSDDementiaRepairModel(
@@ -756,10 +759,12 @@ def initialize_manifold(req: ManifoldInitRequest):
                 pathology_type='ptsd'
             )
             baseline = manifold_ptsd.analyze_topology()
+            baseline_image = manifold_ptsd.generate_projection_image("manifold_ptsd_baseline.png")
             return {
                 "status": "initialized",
                 "pathology": "ptsd",
-                "baseline_topology": baseline
+                "baseline_topology": baseline,
+                "baseline_image": baseline_image
             }
         else:
             raise HTTPException(status_code=400, detail="Invalid pathology type")
@@ -792,19 +797,37 @@ def apply_manifold_repair(req: ManifoldRepairRequest):
             if manifold_dementia is None:
                 # Auto-initialize if not done
                 manifold_dementia = PTSDDementiaRepairModel(
-                    num_neurons=100, 
+                    num_neurons=24, 
                     pathology_type='dementia'
                 )
             
+            if req.treatment_type != "geometric":
+                functional_log = manifold_dementia.apply_functional_treatment(req.treatment_type, req.intensity)
+                
+                # Propagate to Clinical/Quantum model for parity
+                dementia_brain.apply_treatment(req.treatment_type, req.intensity)
+
+                stats = manifold_dementia.generate_repair_statistics()
+                projection_file = manifold_dementia.generate_projection_image(f"manifold_dementia_repaired.png")
+                
+                return {
+                    "pathology": "dementia",
+                    "functional_logs": functional_log,
+                    "final_statistics": stats,
+                    "repaired_image": projection_file,
+                    "baseline_image": f"manifold_dementia_baseline.png"
+                }
+            
             repair_history = manifold_dementia.apply_repair_cycle(num_cycles=req.num_cycles)
             stats = manifold_dementia.generate_repair_statistics()
-            projection_file = manifold_dementia.generate_projection_image(f"combinatorial_dementia_projection.png")
+            projection_file = manifold_dementia.generate_projection_image(f"manifold_dementia_repaired.png")
             
             return {
                 "pathology": "dementia",
                 "repair_history": repair_history,
                 "final_statistics": stats,
-                "projection_image": projection_file
+                "repaired_image": projection_file,
+                "baseline_image": f"manifold_dementia_baseline.png"
             }
             
         elif req.pathology_type == 'ptsd':
@@ -817,13 +840,14 @@ def apply_manifold_repair(req: ManifoldRepairRequest):
             
             repair_history = manifold_ptsd.apply_repair_cycle(num_cycles=req.num_cycles)
             stats = manifold_ptsd.generate_repair_statistics()
-            projection_file = manifold_ptsd.generate_projection_image(f"combinatorial_ptsd_projection.png")
+            projection_file = manifold_ptsd.generate_projection_image(f"manifold_ptsd_repaired.png")
             
             return {
                 "pathology": "ptsd",
                 "repair_history": repair_history,
                 "final_statistics": stats,
-                "projection_image": projection_file
+                "repaired_image": projection_file,
+                "baseline_image": f"manifold_ptsd_baseline.png"
             }
         else:
             raise HTTPException(status_code=400, detail="Invalid pathology type")
@@ -901,20 +925,22 @@ def get_manifold_comparison():
     """Compare dementia and PTSD repair outcomes."""
     global manifold_dementia, manifold_ptsd
     
-    results = {}
+    results = {
+        'dementia': None,
+        'ptsd': None
+    }
     
     if manifold_dementia is not None:
-        dementia_stats = manifold_dementia.generate_repair_statistics()
-        if dementia_stats:
-            results['dementia'] = dementia_stats
+        try:
+            results['dementia'] = manifold_dementia.generate_repair_statistics()
+        except:
+            pass
     
     if manifold_ptsd is not None:
-        ptsd_stats = manifold_ptsd.generate_repair_statistics()
-        if ptsd_stats:
-            results['ptsd'] = ptsd_stats
-    
-    if not results:
-        raise HTTPException(status_code=404, detail="No manifold models initialized or repaired")
+        try:
+            results['ptsd'] = manifold_ptsd.generate_repair_statistics()
+        except:
+            pass
     
     return results
 
@@ -938,4 +964,4 @@ app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 if __name__ == "__main__":
     port = int(os.environ.get('FLASK_RUN_PORT', 8082))
-    uvicorn.run(app, host="127.0.0.1", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=port)

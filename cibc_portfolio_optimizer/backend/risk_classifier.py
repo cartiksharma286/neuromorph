@@ -8,6 +8,7 @@ from scipy import stats
 from scipy.optimize import curve_fit
 from typing import Dict, List, Tuple, Optional
 from sklearn.mixture import GaussianMixture
+from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 
@@ -17,6 +18,12 @@ class RiskClassifier:
     def __init__(self):
         self.scaler = StandardScaler()
         self.risk_classes = ['Low Risk', 'Moderate Risk', 'High Risk', 'Very High Risk']
+        self.stratifier = KMeans(n_clusters=4, random_state=42)
+        
+    def stratify_assets(self, assets_features: np.ndarray) -> np.ndarray:
+        """Stratify assets into risk clusters using KMeans"""
+        normalized_features = self.scaler.fit_transform(assets_features)
+        return self.stratifier.fit_predict(normalized_features)
         
     def classify_asset_risk(self, returns: np.ndarray, volatility: float, 
                            beta: float, var_95: float) -> Dict:
