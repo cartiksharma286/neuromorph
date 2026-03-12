@@ -7,6 +7,7 @@
     <title>NeuroPulse: MRI Reconstruction Simulator</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/app.js"></script>
     <style>
         :root {
             --bg-primary: #020617;
@@ -813,6 +814,15 @@
 
             <!-- View: SNR Analytics -->
             <div id="view-snr" class="view-content">
+                <div style="display:flex; gap:1rem; margin-bottom:1rem;">
+                    <button onclick="loadSNRMatrixData()" style="flex:1; max-width:200px; padding:0.75rem; background:linear-gradient(135deg, #38bdf8, #0ea5e9); color:#020617; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
+                        ↻ Load SNR Matrix
+                    </button>
+                    <div style="flex:1; padding:0.75rem; background:#0f172a; border:1px solid #334155; border-radius:8px; color:#94a3b8; font-size:0.85rem; display:flex; align-items:center;">
+                        📊 SNR analysis for all coil &amp; sequence combinations
+                    </div>
+                </div>
+                
                 <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
                     <div class="output-box">
                         <div class="output-title">Spatial SNR Distribution Map</div>
