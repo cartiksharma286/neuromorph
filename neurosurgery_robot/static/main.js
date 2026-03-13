@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cryoViz = new CryoViz('cryo-canvas');
 
     // UI Elements
-    const elLinkStatus = document.getElementById('link-status');
-    const elLinkLatency = document.getElementById('link-latency');
+    const elSystemStatus = document.getElementById('system-status');
+    const elLoopRate = document.getElementById('loop-rate');
     const elLaserInd = document.getElementById('laser-indicator');
     const elMaxTemp = document.getElementById('max-temp');
     const elCursorVal = document.getElementById('cursor-val');
@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let guidanceActive = false;
     let targetX = 0.5;
     let targetZ = 0.5;
+    let telemetryInFlight = false;
 
     // Interactive Thermometry
     thermalViz.setHoverCallback((val) => {
@@ -97,6 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Polling Loop
     setInterval(async () => {
+        if (telemetryInFlight) {
+            return;
+        }
+        telemetryInFlight = true;
         try {
             const res = await fetch('/api/telemetry');
             const data = await res.json();
@@ -131,12 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Update UI
-            if (data.nvqlink) {
-                elLinkStatus.textContent = data.nvqlink.status;
-                elLinkLatency.textContent = data.nvqlink.latency.toFixed(1) + ' ms';
-                if (data.nvqlink.active) {
-                    elLinkStatus.style.color = 'var(--success)';
-                }
+            if (data.system) {
+                elSystemStatus.textContent = data.system.status;
+                elLoopRate.textContent = data.system.loop_hz.toFixed(0) + ' Hz';
+                elSystemStatus.style.color = data.system.simulation_running ? 'var(--success)' : 'var(--danger)';
             }
 
             // Update Robotics Tab Telemetry
@@ -190,13 +193,49 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 elLaserInd.classList.remove('active');
             }
-            elLaserInd.classList.remove('active');
-        }
 
+            // Update 5G guidance status if active
+            if (fiveGActive) {
+                try {
+                    const five_g_resp = await fetch('/api/guidance/5g/status');
+                    if (five_g_resp.ok) {
+                        const five_g_data = await five_g_resp.json();
+                        
+                        // Update status display
+                        const statusEl = document.getElementById('5g-status');
+                        const progressEl = document.getElementById('5g-progress');
+                        const waypointsEl = document.getElementById('5g-waypoints');
+                        
+                        if (statusEl) statusEl.textContent = five_g_data.active ? 'ACTIVE' : 'IDLE';
+                        if (progressEl) progressEl.textContent = (five_g_data.progress * 100).toFixed(1) + '%';
+                        if (waypointsEl) waypointsEl.textContent = five_g_data.current_waypoint + '/' + five_g_data.total_waypoints;
+                        
+                        // Update robot visualization with trajectory
+                        if (five_g_data.trajectory && five_g_data.trajectory.length > 0) {
+                            robotViz.update5GGuidance(five_g_data.trajectory);
+                            robotViz.update5GProgress(five_g_data.progress);
+                        }
+                        
+                        // Check if ablation completed
+                        if (five_g_data.completed) {
+                            fiveGActive = false;
+                            btn5G.textContent = "ACTIVATE 5G GUIDANCE";
+                            btn5G.style.background = "linear-gradient(135deg, #06b6d4, #22d3ee)";
+                            btnAuto5G.textContent = "AUTO-ABLATE (Complete)";
+                            btnAuto5G.disabled = false;
+                            log("✅ 5G-Guided Ablation COMPLETED");
+                        }
+                    }
+                } catch (e) {
+                    // 5G status endpoint might not have been called yet
+                }
+            }
         } catch (e) {
-        console.error("Telemetry failed", e);
-    }
-}, 100); // 10Hz UI update
+            console.error("Telemetry failed", e);
+        } finally {
+            telemetryInFlight = false;
+        }
+    }, 250); // 4Hz UI update for stable network communication
 
 const btnLaser = document.getElementById('btn-enable-laser');
 const btnSim = document.getElementById('btn-start-sim');
@@ -269,6 +308,63 @@ if (btnCryo) {
     });
 }
 
+// 5G Guidance System Controls
+let fiveGActive = false;
+const btn5G = document.getElementById('btn-enable-5g');
+const btnAuto5G = document.getElementById('btn-auto-5g-ablation');
+
+if (btn5G) {
+    btn5G.addEventListener('click', async () => {
+        fiveGActive = !fiveGActive;
+
+        if (fiveGActive) {
+            btn5G.textContent = "DEACTIVATE 5G GUIDANCE";
+            btn5G.style.background = "linear-gradient(135deg, #0891b2, #06b6d4)";
+            btn5G.classList.add('active');
+            btnAuto5G.style.opacity = "1.0";
+            btnAuto5G.style.cursor = "pointer";
+            log("🛰️ 5G Neural Path Guidance INITIATED");
+            
+            // Activate 5G guidance on backend
+            await fetch('/api/guidance/5g', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled: true })
+            });
+        } else {
+            btn5G.textContent = "ACTIVATE 5G GUIDANCE";
+            btn5G.style.background = "linear-gradient(135deg, #06b6d4, #22d3ee)";
+            btn5G.classList.remove('active');
+            btnAuto5G.style.opacity = "0.5";
+            btnAuto5G.style.cursor = "not-allowed";
+            log("🛰️ 5G Guidance DEACTIVATED");
+            
+            // Deactivate on backend
+            await fetch('/api/guidance/5g', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled: false })
+            });
+        }
+    });
+}
+
+if (btnAuto5G) {
+    btnAuto5G.addEventListener('click', async () => {
+        if (!fiveGActive) {
+            log("⚠️ Enable 5G Guidance first");
+            return;
+        }
+        
+        btnAuto5G.textContent = "AUTO-ABLATION RUNNING...";
+        btnAuto5G.disabled = true;
+        log("🔥 5G-Guided Auto-Ablation STARTED");
+        
+        // The 5G system will automatically control the robot and laser
+        // Monitor progress via telemetry updates
+    });
+}
+
 // Send coordinates on mouse move over 3D canvas (simplified)
 const container = document.getElementById('canvas-3d');
 container.addEventListener('mousemove', (e) => {
@@ -288,15 +384,19 @@ container.addEventListener('mousemove', (e) => {
 });
 
 async function sendControl(x, z, laser, cryo) {
-    await fetch('/api/control', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            target: { x: x, y: 0, z: z },
-            laser: laser,
-            cryo: cryo
-        })
-    });
+    try {
+        await fetch('/api/control', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                target: { x: x, y: 0, z: z },
+                laser: laser,
+                cryo: cryo
+            })
+        });
+    } catch (err) {
+        console.error('Control channel error', err);
+    }
 }
 
 function log(msg) {

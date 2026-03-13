@@ -39,23 +39,25 @@ class ThermalViz {
         const steps = 1000;
         const lut = new Uint8ClampedArray(steps * 4);
 
-        // Professional Surgical Color Palette
-        // 37-38: Transparent
-        // 38-42: Violets/Blues (Near Target)
-        // 42-50: Aquas/Greens (Coagulation range)
-        // 50-65: Yellows/Oranges (Ablation start)
-        // 65-80: Deep Reds (High intensity)
-        // 80-100: White-Hot Core
+        // Clinical intraoperative MR thermometry PRF-shift color palette
+        // Optimised for targeted laser heating of tumour tissue
+        // 37–38.5: Transparent (normal body temp)
+        // 38.5–45:  Cool blue (pre-heating)
+        // 45–55:    Teal/aqua (hyperthermia onset)
+        // 55–65:    Yellow/orange (active coagulation)
+        // 65–80:    Red (ablation zone)
+        // 80–100:   White-hot core (necrosis)
         const stops = [
-            { t: 37.0, c: [0, 0, 0, 0] },
-            { t: 38.0, c: [60, 0, 150, 40] },
-            { t: 40.0, c: [0, 80, 255, 100] },
-            { t: 43.0, c: [0, 255, 200, 140] },
-            { t: 48.0, c: [0, 255, 0, 180] },
-            { t: 55.0, c: [255, 255, 0, 210] },
-            { t: 65.0, c: [255, 120, 0, 230] },
-            { t: 80.0, c: [255, 0, 0, 250] },
-            { t: 95.0, c: [255, 255, 255, 255] },
+            { t: 37.0,  c: [  0,   0,   0,   0] },
+            { t: 38.5,  c: [  0,   0, 210,  18] },
+            { t: 41.0,  c: [  0,  60, 255,  60] },
+            { t: 45.0,  c: [  0, 190, 255, 120] },
+            { t: 50.0,  c: [  0, 255, 190, 160] },
+            { t: 55.0,  c: [140, 255,   0, 190] },
+            { t: 60.0,  c: [255, 230,   0, 215] },
+            { t: 68.0,  c: [255, 110,   0, 235] },
+            { t: 78.0,  c: [255,  10,   0, 248] },
+            { t: 90.0,  c: [255, 255, 255, 255] },
             { t: 100.0, c: [255, 255, 255, 255] }
         ];
 
@@ -122,8 +124,12 @@ class ThermalViz {
         const gy = Math.floor((y / rect.height) * 64);
 
         if (gx >= 0 && gx < 64 && gy >= 0 && gy < 64) {
-            if (this.lastData[gy] && this.lastData[gy][gx] !== undefined) {
-                this.onHover(this.lastData[gy][gx]);
+            // Account for stride-2 downsampling if data is 128x128
+            const stride = this.lastData.length > 64 ? 2 : 1;
+            const srcY = Math.min(gy * stride, this.lastData.length - 1);
+            const srcX = Math.min(gx * stride, (this.lastData[0] || []).length - 1);
+            if (this.lastData[srcY] && this.lastData[srcY][srcX] !== undefined) {
+                this.onHover(this.lastData[srcY][srcX]);
             }
         }
     }
@@ -167,6 +173,8 @@ class ThermalViz {
         }
 
         // 2. Prepare Thermal Overlay
+        // Data from backend may be 128x128 — stride-2 downsample to fill 64x64 buffer
+        const stride = activeData.length > 64 ? 2 : 1;
         const pixels = this.imageData.data;
         let p = 0;
         let maxVal = 0;
@@ -174,7 +182,7 @@ class ThermalViz {
 
         for (let y = 0; y < 64; y++) {
             for (let x = 0; x < 64; x++) {
-                const val = activeData[y][x];
+                const val = activeData[y * stride][x * stride];
                 if (val > maxVal) maxVal = val;
 
                 if (this.mode === 'DAMAGE') {
@@ -209,9 +217,11 @@ class ThermalViz {
 
         // 4. Enhanced Laser Visuals
         if (laserActive && laserPos) {
-            // Map grid pos to canvas pos
-            const lx = (laserPos.x / 64.0) * this.width;
-            const ly = (laserPos.y / 64.0) * this.height;
+            // laserPos is [x, z] normalised 0-1 from backend
+            const lpx = Array.isArray(laserPos) ? laserPos[0] : (laserPos.x || 0);
+            const lpy = Array.isArray(laserPos) ? laserPos[1] : (laserPos.y || 0);
+            const lx = lpx * this.width;
+            const ly = lpy * this.height;
 
             // Pulsing effect frequency
             const pulse = 1.0 + 0.15 * Math.sin(this.frame * 0.4);

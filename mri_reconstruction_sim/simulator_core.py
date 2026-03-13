@@ -59,6 +59,9 @@ class MRIReconstructionSimulator:
 
         self.active_coil_type = 'standard'
         
+        # Phantom type tracking for adaptive ellipsoidal masking
+        self.phantom_type = 'brain'
+        
     def renderCorticalSurface2D(self, slice_idx=None):
         """Generates a high-fidelity 2D cortical surface phantom."""
         N = self.resolution
@@ -129,6 +132,9 @@ class MRIReconstructionSimulator:
 
     def setup_phantom(self, use_real_data=True, phantom_type='brain'):
         """Generates T1, T2, PD maps. Tries to load real data first if brain."""
+        # Store phantom type for use in adaptive denoising/masking
+        self.phantom_type = phantom_type
+        
         if phantom_type == 'cardiac':
             self._generate_cardiac_phantom()
             return
@@ -2779,6 +2785,11 @@ class MRIReconstructionSimulator:
         # 3. Adaptive Windowing & Cache
         final_img = self._adaptive_windowing(combined)
         
+        # 3.5. Apply ellipsoidal mask early if requested, to constrain denoising to neurovascular region
+        apply_ellipsoid_early = ellipsoidal_mask and noise_filter in ['Supervised Denoising', 'None']
+        if apply_ellipsoid_early:
+            final_img = self._apply_ellipsoidal_mask(final_img)
+        
         # 4. Apply extra filtering if requested
         if noise_filter == 'Gaussian':
             import scipy.ndimage
@@ -2814,8 +2825,8 @@ class MRIReconstructionSimulator:
 
         self.latest_reconstructed_image = final_img
         
-        # 5. Apply Ellipsoidal Bounding Box if requested
-        if ellipsoidal_mask:
+        # 5. Apply Ellipsoidal Bounding Box if requested and not already applied
+        if ellipsoidal_mask and not apply_ellipsoid_early:
             final_img = self._apply_ellipsoidal_mask(final_img)
             self.latest_reconstructed_image = final_img
 
@@ -2823,21 +2834,98 @@ class MRIReconstructionSimulator:
 
     def _apply_ellipsoidal_mask(self, image):
         """
-        Creates an ellipsoidal bounding box and removes noise outside of it.
-        The region outside the ellipsoid is rendered black (zero).
+        Creates an adaptive ellipsoidal bounding box for denoising outside the neurovascular image.
+        Uses intelligent fitting based on image content and phantom type.
+        The region outside the ellipsoid gradually transitions to zero (soft boundary).
         """
-        N = self.resolution
-        y, x = np.ogrid[:N, :N]
-        center_y, center_x = N // 2, N // 2
+        try:
+            from ellipsoidal_artifact_removal import EllipsoidalArtifactRemover
+            
+            # Use adaptive ellipsoid fitting based on actual image content
+            remover = EllipsoidalArtifactRemover(
+                phantom_type=self.phantom_type,
+                resolution=self.resolution
+            )
+            
+            # Fit ellipsoid adaptively to image intensity distribution
+            remover.adaptive_ellipsoid_fit(image)
+            
+            # Create binary ellipsoidal mask
+            mask = remover.create_ellipsoidal_mask()
+            
+            # Apply smooth boundary transition using Gaussian blur at edges
+            # This prevents hard artifacts at the boundary
+            from scipy.ndimage import gaussian_filter
+            smooth_mask = gaussian_filter(mask.astype(float), sigma=2.0)
+            
+            # Apply the smooth mask (gradual transition outside ellipsoid)
+            masked_image = image * smooth_mask
+            
+            return masked_image
+            
+        except Exception as e:
+            # Fallback to simple ellipsoidal mask if advanced version fails
+            print(f"Adaptive ellipsoid fitting failed: {e}. Using fallback.")
+            N = self.resolution
+            y, x = np.ogrid[:N, :N]
+            center_y, center_x = N // 2, N // 2
+            
+            # Type-specific fallback dimensions
+            if self.phantom_type == 'brain':
+                a = (N // 2) * 0.75
+                b = (N // 2) * 0.85
+            elif self.phantom_type == 'cardiac':
+                a = (N // 2) * 0.65
+                b = (N // 2) * 0.70
+            else:  # knee
+                a = (N // 2) * 0.68
+                b = (N // 2) * 0.90
+            
+            mask = ((x - center_x)**2 / a**2 + (y - center_y)**2 / b**2) <= 1.0
+            
+            # Smooth boundary
+            from scipy.ndimage import gaussian_filter
+            smooth_mask = gaussian_filter(mask.astype(float), sigma=2.0)
+            
+            return image * smooth_mask
+
+    def _apply_denoising_with_ellipsoidal_mask(self, image, use_supervised=False):
+        """
+        Integrated denoising and ellipsoidal masking pipeline.
+        Applies supervised denoising (if requested) followed by adaptive ellipsoidal masking
+        with intelligent boundary handling for neurovascular images.
         
-        # Define ellipsoid axes (a, b) - roughly covering the brain area
-        # Top-down major axis (b), Right-left minor axis (a)
-        a = (N // 2) * 0.75
-        b = (N // 2) * 0.85
+        Parameters
+        ----------
+        image : np.ndarray
+            The reconstructed image to denoise and mask
+        use_supervised : bool
+            Whether to use supervised attention-based denoising
+            
+        Returns
+        -------
+        np.ndarray
+            Denoised and masked image
+        """
+        # Step 1: Apply supervised denoising if requested
+        if use_supervised:
+            try:
+                from supervised_denoiser import AttentionDenoiser
+                denoiser = AttentionDenoiser(
+                    patch_size=8,
+                    n_features=16,
+                    lambda_sub=0.85,
+                    signal_pct=75.0,
+                    noise_pct=10.0
+                )
+                image = denoiser.fit_predict(image)
+            except Exception as e:
+                print(f"Supervised denoising failed, continuing without: {e}")
         
-        mask = ((x - center_x)**2 / a**2 + (y - center_y)**2 / b**2) <= 1.0
+        # Step 2: Apply adaptive ellipsoidal masking
+        masked_image = self._apply_ellipsoidal_mask(image)
         
-        return image * mask
+        return masked_image
 
     def _suppress_speckle(self, image):
         """

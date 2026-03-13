@@ -1,152 +1,262 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_file
 import numpy as np
 import threading
 import time
 import os
+import io
+import base64
 
-# Try to import quantum-enhanced robot, fallback to classical
+# Set matplotlib to use non-interactive backend BEFORE importing pyplot
+import matplotlib
+matplotlib.use('Agg')  # Use Agg backend for non-GUI rendering
+import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
+
+# Import enhanced surgical components
+from precision_kinematics import PrecisionRobot6DOF
+from enhanced_thermometry import EnhancedThermometry
+from enhanced_cryo import EnhancedCryoModule
+from level_set_segmentation import LevelSetSegmentation
+
+# Try to import optional modules
+
 try:
-    from robot_kinematics_quantum import QuantumEnhancedRobot6DOF
-    QUANTUM_AVAILABLE = True
-    print("Quantum-enhanced kinematics loaded successfully!")
-except ImportError:
-    from robot_kinematics import Robot6DOF
-    QUANTUM_AVAILABLE = False
-    print("Using classical kinematics (quantum module not available)")
+    from game_theory import GameTheoryController
+    HAS_GAME_THEORY = True
+except:
+    HAS_GAME_THEORY = False
+    GameTheoryController = None
 
-from thermometry import MRIThermometry
-from nvqlink import NVQLink
-from game_theory import GameTheoryController
-from cryo import CryoModule
-from vasculature import VasculatureSpectralAnalyzer
-from generative_heating import GenerativeTissueHeating
-from guidance_system import AutomatedGuidanceSystem
+try:
+    from vasculature import VasculatureSpectralAnalyzer
+    HAS_VASCULATURE = True
+except:
+    HAS_VASCULATURE = False
+    VasculatureSpectralAnalyzer = None
+
+try:
+    from guidance_system import AutomatedGuidanceSystem
+    HAS_GUIDANCE = True
+except:
+    HAS_GUIDANCE = False
+    AutomatedGuidanceSystem = None
+
+try:
+    from five_g_guidance import FiveGNeuralPathway, LaserDeliveryOptimizer
+    HAS_5G_GUIDANCE = True
+except:
+    HAS_5G_GUIDANCE = False
+    FiveGNeuralPathway = None
+    LaserDeliveryOptimizer = None
 
 app = Flask(__name__)
 
-# Global Simulation State
-if QUANTUM_AVAILABLE:
-    robot = QuantumEnhancedRobot6DOF()
-else:
-    robot = Robot6DOF()
-    
-thermo = MRIThermometry(width=64, height=64)
-cryo = CryoModule(width=64, height=64)
-link = NVQLink()
-gt_controller = GameTheoryController()
-vasculature = VasculatureSpectralAnalyzer(num_nodes=64)
-gen_heating = GenerativeTissueHeating()
-guidance = None 
+# Helper function to convert numpy types to Python native types
+def numpy_to_native(obj):
+    """Recursively convert numpy types to native Python types"""
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, (np.bool_, bool)):
+        return bool(obj)
+    elif isinstance(obj, (np.integer, np.int64, np.int32)):
+        return int(obj)
+    elif isinstance(obj, (np.floating, np.float64, np.float32)):
+        return float(obj)
+    elif isinstance(obj, np.generic):
+        return obj.item()
+    elif isinstance(obj, dict):
+        return {k: numpy_to_native(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [numpy_to_native(item) for item in obj]
+    return obj
+
+# Global Simulation State - Enhanced
+robot = PrecisionRobot6DOF()
+thermo = EnhancedThermometry(width=128, height=128)
+cryo = EnhancedCryoModule(width=128, height=128)
+segmentation = LevelSetSegmentation(width=128, height=128)
+
+# Initialize segmentation from anatomy
+segmentation.initialize_from_image(thermo.tissue_type)
+gt_controller = GameTheoryController() if HAS_GAME_THEORY else None
+vasculature = VasculatureSpectralAnalyzer(num_nodes=64) if HAS_VASCULATURE else None
+guidance = None
+five_g_guidance = None
+laser_optimizer = LaserDeliveryOptimizer() if HAS_5G_GUIDANCE else None
 
 # State variables
 simulation_running = True
 laser_enabled = False
 cryo_enabled = False
-target_coords = {'x': 0.1, 'y': 0.0, 'z': 0.6}
-use_quantum_mode = QUANTUM_AVAILABLE
+ablation_active = False
+target_pos = np.array([0.5, 0.0, 0.5])
+CONTROL_LOOP_HZ = 50.0
+
+# Visualization caching
+_viz_cache = {
+    'temp_viz': None,
+    'cryo_viz': None,
+    'cache_time': 0,
+    'cache_interval': 0.2  # Update visualizations every 200ms, not every 100ms
+}
+
+def _should_update_viz():
+    """Check if it's time to update cached visualizations"""
+    return (time.time() - _viz_cache['cache_time']) > _viz_cache['cache_interval']
+
+def _update_viz_cache():
+    """Update cached visualizations"""
+    global _viz_cache
+    
+    if not _should_update_viz():
+        return
+    
+    try:
+        temp_map = thermo.get_map()
+        damage_map = thermo.get_damage_map()
+        cryo_map = cryo.get_ice_map()
+        seg_data = segmentation.get_visualization_data()
+        
+        # Create thermal visualization
+        fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+        fig.patch.set_facecolor('#0f172a')
+        
+        ax1 = axes[0]
+        im1 = ax1.imshow(temp_map, cmap='hot', vmin=20, vmax=80)
+        ax1.set_title('Temperature (°C)', color='white', fontsize=9, fontweight='bold')
+        ax1.axis('off')
+        plt.colorbar(im1, ax=ax1, label='°C')
+        
+        ax2 = axes[1]
+        ax2.imshow(temp_map, cmap='gray', alpha=0.7)
+        ax2.contour(seg_data['tumor_mask'], levels=[0.5], colors='red', linewidths=2)
+        ax2.contour(seg_data['safe_zone'], levels=[0.5], colors='yellow', linewidths=1, linestyles='--')
+        ax2.set_title('Tumor & Safety', color='white', fontsize=9, fontweight='bold')
+        ax2.axis('off')
+        
+        plt.tight_layout()
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png', facecolor='#0f172a', dpi=80)
+        buf.seek(0)
+        plt.close(fig)
+        _viz_cache['temp_viz'] = base64.b64encode(buf.getvalue()).decode()
+        
+        # Create cryo visualization
+        fig, ax = plt.subplots(figsize=(5, 5))
+        fig.patch.set_facecolor('#0f172a')
+        im = ax.imshow(cryo_map, cmap='Blues', vmin=0, vmax=1)
+        ax.set_title('Cryo Ice Ball', color='white', fontsize=9, fontweight='bold')
+        ax.axis('off')
+        plt.colorbar(im, ax=ax, label='Ice Fraction')
+        
+        plt.tight_layout()
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png', facecolor='#0f172a', dpi=80)
+        buf.seek(0)
+        plt.close(fig)
+        _viz_cache['cryo_viz'] = base64.b64encode(buf.getvalue()).decode()
+        
+        _viz_cache['cache_time'] = time.time()
+    except Exception as e:
+        print(f"Visualization cache error: {e}")
+
+
+def get_system_state():
+    """Expose runtime state for the UI without NVQLink-specific telemetry."""
+    return {
+        'status': 'CONNECTED' if simulation_running else 'DISCONNECTED',
+        'loop_hz': CONTROL_LOOP_HZ,
+        'simulation_running': simulation_running,
+        'modules': {
+            'robot': True,
+            'thermal': True,
+            'cryo': True,
+            'segmentation': True,
+            'guidance': HAS_GUIDANCE,
+            'vasculature': HAS_VASCULATURE,
+            'game_theory': HAS_GAME_THEORY,
+        },
+    }
+
 
 def simulation_loop():
-    global simulation_running, laser_enabled, cryo_enabled, target_coords, guidance
+    """Main simulation loop with enhanced surgical physics"""
+    global simulation_running, laser_enabled, cryo_enabled, ablation_active, target_pos, guidance, five_g_guidance
     
-    # Connect Link
-    link.connect()
+    loop_count = 0
     
     while simulation_running:
-        # Automated Guidance Logic
-        if guidance and guidance.active:
-            # We pass current robot FK (x, y, z)
-            # Robot Z is mapped to Grid Y in guidance logic
-            current_pos = robot.fk(robot.joints)
-            
-            tgt, fire_laser = guidance.get_next_target(current_pos)
-            
-            if tgt:
-                target_coords['x'] = tgt[0]
-                target_coords['z'] = tgt[1]
-                laser_enabled = fire_laser
+        loop_count += 1
+        
+        # 1. Robot Control - Update towards target
+        robot.update_control(target_pos)
+        current_pos, current_T = robot.forward_kinematics(robot.joints)
+
+        # Check for 5G guidance first (highest priority)
+        if five_g_guidance and five_g_guidance.active:
+            next_target, should_fire = five_g_guidance.get_next_waypoint(current_pos)
+            if next_target is not None:
+                target_pos = np.array([next_target[0], target_pos[1], next_target[1]])
+                laser_enabled = should_fire
+                ablation_active = should_fire
             else:
-                # Done or inactive
-                if guidance.completed:
-                    print("Guidance completed.")
-                    # Keep laser off
-                    laser_enabled = False
+                five_g_guidance.active = False
+                laser_enabled = False
+                ablation_active = False
+        # Then check for regular guidance
+        elif guidance and guidance.active:
+            guided_target, fire_laser = guidance.get_next_target(current_pos)
+            if guided_target is not None:
+                target_pos = np.array([guided_target[0], target_pos[1], guided_target[1]])
+                laser_enabled = fire_laser
+                ablation_active = fire_laser
+            elif guidance.completed:
+                laser_enabled = False
+                ablation_active = False
         
-        # 1. Update Robot with Game Theory
-        telemetry = link.process_telemetry({}, None)
-        coeffs = telemetry.get('solver_coeffs', [])
+        # 2. Map robot position to thermal grid
+        tx = np.clip(current_pos[0], 0, 1.0)
+        ty = np.clip(current_pos[1] + 0.5, 0, 1.0)  # Offset for centered coordinate system
+        tz = np.clip(current_pos[2], 0, 1.0)
         
-        current_fk = robot.fk(robot.joints)
-        move_vec = gt_controller.get_optimal_move(current_fk, 
-                                                 [target_coords['x'], target_coords['y'], target_coords['z']], 
-                                                 coeffs)
+        # 3. Update level set segmentation periodically
+        if loop_count % 5 == 0:
+            segmentation.evolve(thermo.get_map(), iterations=2)
         
-        target_step = current_fk + move_vec
-        robot.ik_step(target_step)
+        # Get tumor location from segmentation
+        tumor_center = segmentation.get_center_of_mass()
         
-        joints, end_effector = robot.joints, robot.fk(robot.joints)
-        
-        # 2. Map Robot Pos to Grid
-        grid_x = int((end_effector[0] + 0.5) * 64)
-        grid_y = int((end_effector[2]) * 64) 
-        grid_x = max(0, min(63, grid_x))
-        grid_y = max(0, min(63, grid_y))
-        
-        # 3. Vasculature Update (Finite Math)
-        vasculature.update()
-        vascular_spec = vasculature.get_analysis()
-        
-        # 4. Apply Modalities with Generative AI & Quantum Surface Integral
-        
-        # Generative AI Control Action (Quantum Machine Learning)
-        # 1. Identify Tumor Target from Anatomy
-        tumor_mask = (cryo.anatomy_map > 0.8).astype(float)
-        
-        # 2. Generate Optimal Heat Pattern (QML)
-        # We perform this optimization step
-        heat_pattern = gen_heating.generate_heating_pattern(tumor_mask, mode="Standard")
-        
-        # 3. Statistical Classifier for Efficacy
-        chem_prob = gen_heating.statistical_classifier(thermo.get_map(), tumor_mask)
-        
-        # Get Power Leve
-        current_max_temp = np.max(thermo.get_map())
-        ai_control = gen_heating.get_control_action(current_max_temp)
-        ai_power = ai_control['power'] * (1.0 + chem_prob) # Boost power if probable success
-        
-        # Vascular modulation
-        ablation_modulator = 1.0 / (1.0 + vascular_spec['spectral_radius']) 
-        
-        # Quantum Flux (Surface Integral Approximation)
-        grad_phi = np.linalg.norm(move_vec)
-        psi_avg = np.mean(thermo.get_map())
-        quantum_flux = psi_avg * grad_phi * 100.0 
-        
-        # Combine Modalities
-        effective_power = ai_power * ablation_modulator * (1.0 + quantum_flux * 0.1)
-        
-        # Heat with QML Pattern
-        thermo.apply_laser(grid_x, grid_y, power=effective_power, enabled=laser_enabled, pattern=heat_pattern)
-        thermo.update()
-        
-        # Cold (Cryo Ablation)
-        # Automatically trigger Cryo if Laser is active to create "Thermal Shock" at tumor site
-        # or if explicitly enabled
-        auto_cryo = False
-        if laser_enabled and current_max_temp > 45.0:
-            auto_cryo = True # Dual ablation
+        # 4. Apply laser heating at robot position
+        if laser_enabled and ablation_active:
+            # Dynamic power based on temperature
+            current_temp = thermo.T[int(tz * 128), int(tx * 128)]
             
-        final_cryo_enabled = cryo_enabled or auto_cryo
-        cryo.apply_cryo(grid_x, grid_y, pressure_level=3000, enabled=final_cryo_enabled)
+            # Use adaptive laser power if 5G optimizer is available
+            if laser_optimizer and five_g_guidance and five_g_guidance.active:
+                power_watts = laser_optimizer.compute_optimal_power(current_temp)
+            else:
+                power_watts = 60.0 if current_temp < 50 else 30.0
+            
+            thermo.apply_heat_source(tx, tz, power_watts=power_watts, radius_mm=2.5)
+        
+        # 5. Apply cryo-ablation
+        if cryo_enabled:
+            cryo.activate_cryoprobe(tx, tz, power_pct=80.0)
+        else:
+            cryo.deactivate_cryoprobe()
+        
+        # 6. Update thermal physics
+        thermo.update()
         cryo.update()
         
-        # 5. NVQLink Telemetry Processing
-        link.process_telemetry(robot_state={'joints': joints.tolist()}, thermal_data=thermo.get_map())
-        
-        time.sleep(0.05) 
+        time.sleep(1.0 / CONTROL_LOOP_HZ)
 
-# Start background thread
+
+# Start simulation thread
 sim_thread = threading.Thread(target=simulation_loop, daemon=True)
 sim_thread.start()
+
+
 
 @app.route('/')
 def index():
@@ -154,158 +264,346 @@ def index():
 
 @app.route('/api/telemetry')
 def get_telemetry():
-    joints, end_effector = robot.joints.tolist(), robot.fk(robot.joints).tolist()
-    temp_map = thermo.get_map().tolist()
-    damage_map = thermo.get_damage_map().tolist()
-    cryo_map = cryo.get_map().tolist()
-    mr_anatomy = cryo.anatomy_map.tolist()
-    temp_hist = thermo.get_history()
-    vasc_spec = vasculature.get_analysis()
+    """Get real-time telemetry data - optimized for fast response"""
+    # Update visualizations cache (non-blocking)
+    _update_viz_cache()
     
-    # Get GenAI state
-    current_max_temp = np.max(thermo.get_map())
-    ai_state = gen_heating.get_control_action(current_max_temp)
+    pos, T = robot.forward_kinematics(robot.joints)
+    safety = robot.get_safety_status()
     
-    # Get quantum metrics if available
+    temp_map = thermo.get_map()
+    damage_map = thermo.get_damage_map()
+    cryo_map = cryo.get_ice_map()
     quantum_metrics = {}
-    if QUANTUM_AVAILABLE and hasattr(robot, 'get_quantum_metrics'):
+    if hasattr(robot, 'get_quantum_metrics'):
         quantum_metrics = robot.get_quantum_metrics()
+    guidance_state = {
+        'active': guidance.active if guidance else False,
+        'completed': guidance.completed if guidance else False,
+    }
+    vasculature_analysis = vasculature.get_analysis() if vasculature else {}
     
-    # Get thermometry performance metrics
-    thermo_perf = {}
-    if hasattr(thermo, 'get_performance_metrics'):
-        thermo_perf = thermo.get_performance_metrics()
+    cryo_metrics = cryo.get_damage_metrics()
+    thermo_metrics = thermo.get_performance_metrics()
     
-    return jsonify({
-        'joints': joints,
-        'position': end_effector,
-        'temperature_map': temp_map,
-        'damage_map': damage_map,
-        'cryo_map': cryo_map,
-        'mr_anatomy': mr_anatomy,
-        'temp_history': temp_hist,
-        'vasculature': vasc_spec,
-        'gen_ai': {
-            'target_temp': ai_state['target_temp'],
-            'model_state': ai_state['model_state'],
-            'mode': ai_state['mode'],
-            'generated_profile': gen_heating.generated_profile.tolist() if hasattr(gen_heating, 'generated_profile') and isinstance(gen_heating.generated_profile, np.ndarray) else []
-        },
-        'guidance': {
-            'active': guidance.active if guidance else False,
-            'completed': guidance.completed if guidance else False
-        },
-        'nvqlink': {
-            'status': link.status,
-            'latency': link.latency_ms,
-            'active': link.active
-        },
-        'quantum': {
-            'enabled': QUANTUM_AVAILABLE,
-            'metrics': quantum_metrics
-        },
-        'thermometry': {
-            'high_performance': True,
-            'metrics': thermo_perf
-        },
+    return jsonify(numpy_to_native({
+        'joints': robot.get_joint_angles_degrees().tolist(),
+        'position': pos.tolist(),
+        'target_pos': target_pos.tolist(),
+        'temperature_map': temp_map.tolist(),
+        'damage_map': damage_map.tolist(),
+        'cryo_map': cryo_map.tolist(),
+        'mr_anatomy': thermo.tissue_type.tolist(),
+        'temp_history': thermo.get_history()[-100:],
         'laser_enabled': laser_enabled,
         'cryo_enabled': cryo_enabled,
-        'laser_pos': {'x': thermo.laser_pos[0], 'y': thermo.laser_pos[1]} if hasattr(thermo, 'laser_pos') else None
-    })
+        'ablation_active': ablation_active,
+        'laser_pos': [float(np.clip(pos[0], 0, 1.0)), float(np.clip(pos[2], 0, 1.0))],
+        'guidance': guidance_state,
+        'system': get_system_state(),
+        'quantum': {
+            'enabled': bool(quantum_metrics),
+            'metrics': quantum_metrics,
+        },
+        'vasculature': vasculature_analysis,
+        'robot': {
+            'position_error_m': float(robot.position_error),
+            'safety': safety,
+        },
+        'thermal': {
+            'max_temperature': float(np.max(temp_map)),
+            'mean_temperature': float(np.mean(temp_map)),
+            'visualization': _viz_cache['temp_viz'],
+            'metrics': thermo_metrics,
+        },
+        'cryo': {
+            'visualization': _viz_cache['cryo_viz'],
+            'metrics': cryo_metrics,
+            'active': cryo.probe_active,
+        },
+        'segmentation': {
+            'tumor_center': segmentation.get_center_of_mass().tolist(),
+            'tumor_volume_pixels': segmentation.get_tumor_volume_pixels(),
+            'quality_metrics': segmentation.evaluate_segmentation_quality(),
+        },
+        'control': {
+            'laser_enabled': laser_enabled,
+            'cryo_enabled': cryo_enabled,
+            'ablation_active': ablation_active,
+        },
+    }))
 
 @app.route('/api/control', methods=['POST'])
-def control_robot():
-    global target_coords, laser_enabled, cryo_enabled
-    data = request.json
+def control():
+    """Control robot, laser, and cryo"""
+    global laser_enabled, cryo_enabled, ablation_active, target_pos
     
-    if 'target' in data:
-        target_coords['x'] = float(data['target']['x'])
-        target_coords['z'] = float(data['target']['z'])
-        
+    data = request.json or {}
+    
+    if 'target_pos' in data:
+        target_pos = np.array([
+            data['target_pos']['x'],
+            data['target_pos']['y'],
+            data['target_pos']['z']
+        ])
+    elif 'target' in data:
+        target_pos = np.array([
+            float(data['target']['x']),
+            float(data['target'].get('y', 0.0)),
+            float(data['target']['z'])
+        ])
+    
     if 'laser' in data:
         laser_enabled = bool(data['laser'])
+        if 'ablation' not in data:
+            ablation_active = laser_enabled
     
     if 'cryo' in data:
         cryo_enabled = bool(data['cryo'])
-        
-    if 'mode' in data:
-        print(f"Switching AI Mode to: {data['mode']}")
-        gen_heating.generate_heating_curve(mode=data['mode'])
-        
-    return jsonify({'status': 'ok'})
+    
+    if 'ablation' in data:
+        ablation_active = bool(data['ablation'])
+    
+    if 'home' in data and data['home']:
+        robot.home()
+    
+    return jsonify({'status': 'ok', 'updated': True})
 
 @app.route('/api/guidance', methods=['POST'])
 def toggle_guidance():
-    global guidance, laser_enabled
-    data = request.json
-    enabled = data.get('enabled', False)
-    
+    """Toggle automated guidance for tumor coverage."""
+    global guidance, laser_enabled, ablation_active
+
+    if not HAS_GUIDANCE:
+        return jsonify({'status': 'unavailable', 'enabled': False}), 501
+
+    data = request.json or {}
+    enabled = bool(data.get('enabled', False))
+
     if enabled:
-        print("Initializing Automated Guidance...")
-        guidance = AutomatedGuidanceSystem(cryo.anatomy_map)
+        guidance_map = segmentation.get_visualization_data()['ablation_region']
+        guidance = AutomatedGuidanceSystem(
+            guidance_map,
+            width=guidance_map.shape[0],
+            height=guidance_map.shape[1],
+        )
         guidance.start()
-        # Ensure Standard heating mode is on for precision
-        gen_heating.generate_heating_curve(mode="GENTLE") 
     else:
         if guidance:
             guidance.stop()
         laser_enabled = False
-            
-    return jsonify({'status': 'ok'})
+        ablation_active = False
+
+    return jsonify({
+        'status': 'ok',
+        'enabled': enabled,
+        'guidance_active': guidance.active if guidance else False,
+    })
+
+
+@app.route('/api/guidance/5g', methods=['POST'])
+def toggle_5g_guidance():
+    """Toggle 5G neural pathway guided ablation system."""
+    global five_g_guidance, laser_enabled, ablation_active
+    
+    if not HAS_5G_GUIDANCE:
+        return jsonify({'status': 'unavailable', 'enabled': False}), 501
+    
+    data = request.json or {}
+    enabled = bool(data.get('enabled', False))
+    
+    if enabled:
+        # Get segmentation and anatomy data
+        seg_data = segmentation.get_visualization_data()
+        tumor_mask = seg_data.get('tumor_mask', np.zeros((128, 128)))
+        anatomy_map = thermo.tissue_type
+        
+        # Initialize 5G guidance system
+        five_g_guidance = FiveGNeuralPathway(
+            anatomy_map=anatomy_map,
+            tumor_mask=tumor_mask,
+            width=anatomy_map.shape[0],
+            height=anatomy_map.shape[1],
+        )
+        five_g_guidance.active = True
+        five_g_guidance.current_idx = 0
+        
+        laser_enabled = False  # Will be controlled by 5G system
+        ablation_active = False
+    else:
+        if five_g_guidance:
+            five_g_guidance.active = False
+        laser_enabled = False
+        ablation_active = False
+    
+    return jsonify({
+        'status': 'ok',
+        'enabled': enabled,
+        '5g_status': 'active' if five_g_guidance and five_g_guidance.active else 'inactive',
+    })
+
+
+@app.route('/api/guidance/5g/status')
+def get_5g_guidance_status():
+    """Get 5G guidance system status and visualization."""
+    if not five_g_guidance:
+        return jsonify({
+            'active': False,
+            'completed': False,
+            'progress': 0.0,
+            'current_waypoint': 0,
+            'total_waypoints': 0,
+            'trajectory': [],
+            'neural_pathways': [],
+            'safe_corridors': [],
+        })
+    
+    viz_data = five_g_guidance.get_visualization_data()
+    
+    return jsonify(numpy_to_native({
+        'active': bool(five_g_guidance.active),
+        'completed': five_g_guidance.completed,
+        'progress': viz_data['progress'],
+        'current_waypoint': five_g_guidance.current_idx,
+        'total_waypoints': len(five_g_guidance.optimal_trajectory),
+        'trajectory': viz_data['trajectory'].tolist() if viz_data['trajectory'] is not None else [],
+        'neural_pathways': viz_data['neural_pathways'].tolist() if viz_data['neural_pathways'] is not None else [],
+        'safe_corridors': viz_data['safe_corridors'].tolist() if viz_data['safe_corridors'] is not None else [],
+    }))
+
 
 @app.route('/api/quantum/status')
 def quantum_status():
-    """Get quantum system status and metrics"""
-    if not QUANTUM_AVAILABLE:
-        return jsonify({'enabled': False, 'message': 'Quantum mode not available'})
-    
+    """Get quantum metrics exposed by the robot controller."""
     metrics = robot.get_quantum_metrics() if hasattr(robot, 'get_quantum_metrics') else {}
-    
-    return jsonify({
-        'enabled': True,
+    return jsonify(numpy_to_native({
+        'enabled': bool(metrics),
         'coherence': metrics.get('coherence', 0.0),
         'uncertainty': metrics.get('uncertainty', 0.0),
         'qml_fidelity': metrics.get('qml_fidelity', 0.0),
         'tracking_error': metrics.get('tracking_error', 0.0),
-        'avg_tracking_error': metrics.get('avg_tracking_error', 0.0)
-    })
+        'avg_tracking_error': metrics.get('avg_tracking_error', 0.0),
+    }))
+
 
 @app.route('/api/quantum/train', methods=['POST'])
 def train_quantum():
-    """Train quantum ML component"""
-    if not QUANTUM_AVAILABLE:
-        return jsonify({'error': 'Quantum mode not available'}), 400
-    
-    data = request.json
-    num_steps = data.get('steps', 10)
-    
-    if hasattr(robot, 'train_qml'):
-        losses = robot.train_qml(num_steps)
-        return jsonify({
-            'status': 'training_complete',
-            'steps': num_steps,
-            'final_loss': losses[-1] if losses else 0.0,
-            'loss_history': losses
-        })
-    else:
-        return jsonify({'error': 'Training not supported'}), 400
+    """Train the robot's quantum model if the implementation supports it."""
+    if not hasattr(robot, 'train_qml'):
+        return jsonify({'error': 'Training not supported'}), 501
+
+    data = request.json or {}
+    num_steps = int(data.get('steps', 10))
+    losses = robot.train_qml(num_steps)
+    return jsonify(numpy_to_native({
+        'status': 'training_complete',
+        'steps': num_steps,
+        'final_loss': losses[-1] if losses else 0.0,
+        'loss_history': losses,
+    }))
+
 
 @app.route('/api/reports/quantum_kalman')
 def get_quantum_report():
-    """Get path to quantum Kalman technical report"""
-    report_path = os.path.join(os.path.dirname(__file__), 
-                               'Quantum_Kalman_Surgical_Robotics_Report.tex')
-    
-    if os.path.exists(report_path):
-        return jsonify({
-            'available': True,
-            'path': report_path,
-            'format': 'LaTeX',
-            'title': 'Quantum Kalman Operators for Advanced Pose Estimation in Neurosurgical Robotics'
-        })
-    else:
+    """Return metadata for the bundled quantum robotics report."""
+    report_path = os.path.join(
+        os.path.dirname(__file__),
+        'Quantum_Kalman_Surgical_Robotics_Report.tex',
+    )
+    if not os.path.exists(report_path):
         return jsonify({'available': False})
 
+    return jsonify({
+        'available': True,
+        'path': report_path,
+        'format': 'LaTeX',
+        'title': 'Quantum Kalman Operators for Advanced Pose Estimation in Neurosurgical Robotics',
+    })
+
+@app.route('/api/trajectory/plan', methods=['POST'])
+def plan_trajectory():
+    """Plan robot trajectory to position"""
+    data = request.json or {}
+    target = np.array([data['x'], data['y'], data['z']])
+    duration = data.get('duration', 5.0)
+    path_type = data.get('path_type', 'linear')
+    
+    trajectory = robot.plan_trajectory(target, duration=duration, path_type=path_type)
+    
+    return jsonify({
+        'planned': len(trajectory) > 0,
+        'waypoints': len(trajectory),
+        'duration': duration,
+    })
+
+@app.route('/api/segmentation/quality')
+def segmentation_quality():
+    """Get segmentation quality metrics"""
+    metrics = segmentation.evaluate_segmentation_quality()
+    
+    return jsonify(numpy_to_native({
+        'quality': 'excellent' if metrics['circularity'] > 0.7 else 'good',
+        'metrics': metrics,
+        'tumor_ready_for_ablation': metrics['circularity'] > 0.6,
+    }))
+
+@app.route('/api/ablation/plan', methods=['POST'])
+def plan_ablation():
+    """Plan ablation trajectory for tumor"""
+    data = request.json or {}
+    method = data.get('method', 'sequential')  # sequential, concentric, spiral
+    
+    tumor_center = segmentation.get_center_of_mass()
+    ablation_region = segmentation.get_ablation_region()
+    
+    # Get ablation waypoints
+    if method == 'sequential':
+        # Simple center targeting
+        waypoints = [tumor_center]
+    elif method == 'concentric':
+        # Concentric circles around tumor
+        center = tumor_center
+        waypoints = []
+        for radius in np.linspace(0.02, 0.08, 4):
+            for angle in np.linspace(0, 2*np.pi, 8, endpoint=False):
+                x = center[0] + radius * np.cos(angle)
+                z = center[1] + radius * np.sin(angle)
+                waypoints.append([np.clip(x, 0, 1), np.clip(z, 0, 1)])
+    else:  # spiral
+        center = tumor_center
+        waypoints = []
+        for t in np.linspace(0, 2*np.pi, 20):
+            r = 0.02 + 0.04 * (t / (2*np.pi))
+            x = center[0] + r * np.cos(t)
+            z = center[1] + r * np.sin(t)
+            waypoints.append([np.clip(x, 0, 1), np.clip(z, 0, 1)])
+    
+    return jsonify(numpy_to_native({
+        'method': method,
+        'waypoints': waypoints,
+        'tumor_center': tumor_center.tolist(),
+        'tumor_center_px': [int(tumor_center[0]*128), int(tumor_center[1]*128)],
+    }))
+
+@app.route('/api/thermal/history')
+def thermal_history():
+    """Get thermal history for plotting"""
+    history = thermo.get_history()
+    
+    return jsonify(numpy_to_native({
+        'max_temps': history[-100:] if len(history) > 100 else history,
+        'simulation_time_s': thermo.accumulated_time,
+    }))
+
 if __name__ == '__main__':
-    port = int(os.environ.get('FLASK_RUN_PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    port = int(os.environ.get('FLASK_RUN_PORT', 5001))
+    host = os.environ.get('FLASK_RUN_HOST', '0.0.0.0')
+    print(f"\n{'='*60}")
+    print(f"🚀 NeuroMorph Surgical Robotics Platform")
+    print(f"{'='*60}")
+    print(f"Starting Server on http://{host}:{port}")
+    print(f"Simulation Loop: Active (50Hz)")
+    print(f"Components: Thermal | Cryo | Robot | Segmentation")
+    print(f"{'='*60}\n")
+    app.run(host=host, port=port, debug=False)
+

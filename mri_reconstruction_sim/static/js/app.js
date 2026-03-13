@@ -1,3 +1,45 @@
+// Global state for simulation data
+let lastSimulationData = null;
+
+// Tab switching function
+function switchView(viewId, buttonElement) {
+    // Hide all view-content divs
+    const allViews = document.querySelectorAll('.view-content');
+    allViews.forEach(view => {
+        view.classList.remove('active');
+    });
+    
+    // Remove active class from all tab triggers
+    const allTabs = document.querySelectorAll('.tab-trigger');
+    allTabs.forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show the selected view
+    const selectedView = document.getElementById('view-' + viewId);
+    if (selectedView) {
+        selectedView.classList.add('active');
+    }
+    
+    // Mark the clicked button as active
+    if (buttonElement) {
+        buttonElement.classList.add('active');
+    }
+    
+    // Load data for the specific tab
+    setTimeout(() => {
+        if (viewId === 'snr') {
+            loadSNRMatrixData();
+        } else if (viewId === 'analytics') {
+            loadDistributionAnalytics();
+        } else if (viewId === 'quantum-geometry') {
+            loadQuantumGeometry();
+        } else if (viewId === 'robotics-analytics') {
+            loadRoboticsAnalytics();
+        }
+    }, 100);
+}
+
 // SNR Matrix Table Loader and Display
 function loadSNRMatrix() {
     const insightsDiv = document.getElementById('snr-insights');
@@ -130,3 +172,110 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Also allow programmatic triggering
 window.loadSNRMatrixData = loadSNRMatrix;
+
+// Distribution Analysis Loader
+function loadDistributionAnalytics() {
+    const detailsDiv = document.getElementById('analytics-details');
+    const imgDiv = document.getElementById('img-distribution_curve');
+    
+    if (!detailsDiv || !imgDiv) return;
+    
+    detailsDiv.innerHTML = '<div style="color: #38bdf8;">Loading distribution analysis...</div>';
+    
+    fetch('/api/distribution_analysis')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.image) {
+                imgDiv.src = 'data:image/png;base64,' + data.image;
+            }
+            if (data.details) {
+                detailsDiv.innerHTML = data.details;
+            }
+        })
+        .catch(err => {
+            detailsDiv.innerHTML = '<div style="color: #ef4444;">Error loading distribution analysis</div>';
+            console.error('Distribution Analysis Error:', err);
+        });
+}
+
+// Quantum Geometry Loader
+function loadQuantumGeometry() {
+    const insightsDiv = document.getElementById('quantum-insights');
+    const rekImg = document.getElementById('img-quantum-recon');
+    const kspaceImg = document.getElementById('img-quantum-kspace');
+    const manifoldImg = document.getElementById('img-quantum-manifold');
+    
+    if (!rekImg) return;
+    
+    insightsDiv.innerHTML = '<div style="color: #38bdf8;">Loading quantum geometry analysis...</div>';
+    
+    fetch('/api/quantum_geometry')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (data.recon_image) rekImg.src = 'data:image/png;base64,' + data.recon_image;
+                if (data.kspace_image) kspaceImg.src = 'data:image/png;base64,' + data.kspace_image;
+                if (data.manifold_image) manifoldImg.src = 'data:image/png;base64,' + data.manifold_image;
+                
+                // Update metrics
+                if (data.metrics) {
+                    const metrics = data.metrics;
+                    document.getElementById('metricNormVal').textContent = (metrics.metric_norm || 0).toFixed(3);
+                    document.getElementById('curvatureMax').textContent = (metrics.curvature || 0).toFixed(3);
+                    document.getElementById('cfDepthVal').textContent = metrics.cf_depth || '32-bit';
+                }
+                
+                // Update insights
+                if (data.insights) {
+                    insightsDiv.innerHTML = data.insights;
+                }
+            }
+        })
+        .catch(err => {
+            insightsDiv.innerHTML = '<div style="color: #ef4444;">Error loading quantum geometry: ' + err.message + '</div>';
+        });
+}
+
+// Robotics Analytics Loader
+function loadRoboticsAnalytics() {
+    const metricsDiv = document.getElementById('robotics-metrics');
+    const imgDiv = document.getElementById('img-robotics-map');
+    const statusDiv = document.getElementById('robotics-status-badge');
+    
+    if (!metricsDiv || !imgDiv) return;
+    
+    metricsDiv.innerHTML = '<div style="color: #38bdf8;">Loading robotics analytics...</div>';
+    
+    fetch('/api/robotics_analytics')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (data.image) imgDiv.src = 'data:image/png;base64,' + data.image;
+                
+                // Update status
+                if (data.status) {
+                    statusDiv.textContent = data.status;
+                    statusDiv.style.color = data.status === 'ACTIVE' ? '#22c55e' : '#f43f5e';
+                }
+                
+                // Update metrics
+                if (data.metrics) {
+                    let metricsHtml = '';
+                    Object.keys(data.metrics).forEach(key => {
+                        metricsHtml += `
+                            <div class="metric-mini">
+                                <div class="metric-mini-val">${(data.metrics[key]).toFixed(2)}</div>
+                                <div class="metric-mini-label">${key.replace(/_/g, ' ').toUpperCase()}</div>
+                            </div>
+                        `;
+                    });
+                    metricsDiv.innerHTML = metricsHtml;
+                }
+            }
+        })
+        .catch(err => {
+            metricsDiv.innerHTML = '<div style="color: #ef4444;">Error loading robotics analytics</div>';
+            console.error('Robotics Analytics Error:', err);
+        });
+}
+

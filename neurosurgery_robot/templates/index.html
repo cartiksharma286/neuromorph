@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NVQLink Neurosurgical Robot</title>
+    <title>NeuroMorph Surgical Robot</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -18,16 +18,16 @@
         <!-- Header -->
         <header class="glass-panel">
             <div class="logo">
-                <h1>NeuroMorph <span class="highlight">NVQLink</span></h1>
+                <h1>NeuroMorph <span class="highlight">Surgical</span></h1>
             </div>
             <div class="status-bar">
                 <div class="status-item">
-                    <span class="label">LINK STATUS</span>
-                    <span class="value" id="link-status">OFFLINE</span>
+                    <span class="label">SYSTEM STATUS</span>
+                    <span class="value" id="system-status">STARTING</span>
                 </div>
                 <div class="status-item">
-                    <span class="label">LATENCY</span>
-                    <span class="value" id="link-latency">-- ms</span>
+                    <span class="label">LOOP RATE</span>
+                    <span class="value" id="loop-rate">-- Hz</span>
                 </div>
                 <div class="status-item">
                     <span class="label">LASER STATE</span>
@@ -57,6 +57,7 @@
                         <button class="tab-btn active" data-tab="tab-thermo">Visual RF</button>
                         <button class="tab-btn" data-tab="tab-cryo">N2 Cryo</button>
                         <button class="tab-btn" data-tab="tab-robotics">Surgical Robotics</button>
+                        <button class="tab-btn" data-tab="tab-5g">5G Guidance</button>
                     </div>
 
                     <!-- Thermal Tab -->
@@ -118,7 +119,7 @@
 
                     <!-- Robotics Tab -->
                     <div id="tab-robotics" class="tab-content robotics-view">
-                        <h2 style="color: #a78bfa;">6DOF Kinematics & Quantum Metrics</h2>
+                        <h2 style="color: #a78bfa;">6DOF Kinematics & System Metrics</h2>
 
                         <div class="robotics-grid">
                             <div class="telemetry-box">
@@ -148,7 +149,7 @@
                         </div>
 
                         <div class="quantum-metrics-box" style="margin-top: 20px;">
-                            <h3>Quantum Interop Status</h3>
+                            <h3>Advanced Control Status</h3>
                             <div class="metrics">
                                 <div class="metric">
                                     <span class="m-label">Coherence</span>
@@ -159,6 +160,42 @@
                                     <span class="m-value" id="q-fidelity" style="color: #a78bfa;">0.00</span>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5G Neural Pathway Guidance Tab -->
+                <div id="tab-5g" class="tab-content 5g-view">
+                    <h2 style="color: #06b6d4;">🛰️ 5G Neural Pathway Guidance</h2>
+                    <div class="guidance-container">
+                        <p style="color: #7dd3fc; font-size: 12px; margin: 10px 0;">Real-time neural pathway mapping with optimal laser delivery trajectory</p>
+                        
+                        <div class="metrics" style="margin-bottom: 15px;">
+                            <div class="metric">
+                                <span class="m-label">Guidance Status</span>
+                                <span class="m-value" id="5g-status" style="color: #06b6d4;">Inactive</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Progress</span>
+                                <span class="m-value" id="5g-progress" style="color: #06b6d4;">0%</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Waypoints</span>
+                                <span class="m-value" id="5g-waypoints" style="color: #06b6d4;">0/0</span>
+                            </div>
+                        </div>
+
+                        <div style="width: 100%; height: 180px; background: #0f172a; border: 1px solid #06b6d4; border-radius: 8px; margin-bottom: 15px; padding: 10px; box-sizing: border-box; overflow: hidden;">
+                            <canvas id="5g-neural-map" width="200" height="160" style="width: 100%; height: 100%;"></canvas>
+                        </div>
+
+                        <div class="sidebar-controls">
+                            <button id="btn-enable-5g" class="btn-primary" style="background: linear-gradient(135deg, #06b6d4, #22d3ee); width: 100%; margin-bottom: 10px;">
+                                ACTIVATE 5G GUIDANCE
+                            </button>
+                            <button id="btn-auto-5g-ablation" class="btn-primary" style="background: linear-gradient(135deg, #0891b2, #06b6d4); width: 100%; opacity: 0.5; cursor: not-allowed;">
+                                AUTO-ABLATE (Inactive)
+                            </button>
                         </div>
                     </div>
                 </div>

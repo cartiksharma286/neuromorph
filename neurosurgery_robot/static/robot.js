@@ -68,8 +68,7 @@ class RobotViz {
     }
 
     buildEnvironment() {
-        // 1. MRI Bore (Cylindrical Tunnel)
-        // Radius ~0.8m, Length ~2m
+        // 1. MRI Bore (Cylindrical Tunnel — no coil rings)
         const boreGeo = new THREE.CylinderGeometry(1.2, 1.2, 4, 32, 1, true);
         const boreMat = new THREE.MeshStandardMaterial({
             color: 0xeeeeee,
@@ -82,18 +81,10 @@ class RobotViz {
         bore.position.set(0, 0.5, 0);
         this.scene.add(bore);
 
-        const housingGeo = new THREE.BoxGeometry(3, 3, 4);
-        const housingMat = new THREE.MeshStandardMaterial({ color: 0xe0e0e0 });
+        // 2. 5G Signal Lines — outside the scanner bore
+        this._build5GLines();
 
-        const coilGeo = new THREE.TorusGeometry(1.15, 0.02, 16, 64);
-        const coilMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
-        for (let z = -1.5; z <= 1.5; z += 0.5) {
-            const coil = new THREE.Mesh(coilGeo, coilMat);
-            coil.position.set(0, 0.5, z);
-            this.scene.add(coil);
-        }
-
-        // 2. Patient Visualization
+        // 3. Patient Visualization
         const patientGroup = new THREE.Group();
         this.scene.add(patientGroup);
 
@@ -167,6 +158,89 @@ class RobotViz {
         this.simPath = curve;
     }
 
+    _build5GLines() {
+        // 5G transmission lines radiate outward from outside the bore
+        // Placed at bore ends (x = ±2.5) as antenna towers
+        this._5gLines = [];
+        this._5gPhase = 0;
+
+        const signalMat = new THREE.LineBasicMaterial({
+            color: 0x06b6d4,
+            transparent: true,
+            opacity: 0.85,
+        });
+
+        const numAntennas = 8;
+        const antennaPositions = [
+            new THREE.Vector3(-2.5, 0.5, 0),
+            new THREE.Vector3( 2.5, 0.5, 0),
+        ];
+
+        for (const origin of antennaPositions) {
+            // Vertical tower
+            const towerGeo = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(origin.x, -0.3, origin.z),
+                new THREE.Vector3(origin.x,  1.8, origin.z),
+            ]);
+            this.scene.add(new THREE.Line(towerGeo, new THREE.LineBasicMaterial({ color: 0x64748b })));
+
+            // Radial signal arcs from antenna top toward the bore
+            for (let i = 0; i < numAntennas; i++) {
+                const angle = (i / numAntennas) * Math.PI * 2;
+                const dir = new THREE.Vector3(
+                    Math.cos(angle) * 0.6 * (origin.x < 0 ? 1 : -1),
+                    Math.sin(angle * 0.5) * 0.3,
+                    Math.sin(angle) * 0.8
+                );
+
+                const pts = [];
+                const steps = 20;
+                for (let s = 0; s <= steps; s++) {
+                    const t = s / steps;
+                    pts.push(new THREE.Vector3(
+                        origin.x + dir.x * t,
+                        origin.y + 0.3 + dir.y * t + Math.sin(t * Math.PI) * 0.2,
+                        origin.z + dir.z * t
+                    ));
+                }
+
+                const geo = new THREE.BufferGeometry().setFromPoints(pts);
+                const mat = new THREE.LineBasicMaterial({
+                    color: new THREE.Color().setHSL(0.52 + i * 0.015, 1.0, 0.6),
+                    transparent: true,
+                    opacity: 0.7,
+                });
+                const line = new THREE.Line(geo, mat);
+                this.scene.add(line);
+                this._5gLines.push({ line, baseOpacity: 0.7, offset: i * 0.4 });
+            }
+
+            // Pulsing ring at antenna base
+            const ringGeo = new THREE.RingGeometry(0.05, 0.12, 32);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: 0x06b6d4, side: THREE.DoubleSide, transparent: true, opacity: 0.9
+            });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.copy(origin);
+            ring.position.y += 0.35;
+            ring.rotation.x = Math.PI / 2;
+            this.scene.add(ring);
+            this._5gLines.push({ line: ring, baseOpacity: 0.9, offset: 0, isRing: true });
+        }
+    }
+
+    _animate5GLines(t) {
+        if (!this._5gLines) return;
+        for (const entry of this._5gLines) {
+            const pulse = 0.3 + 0.7 * Math.abs(Math.sin(t * 1.8 + entry.offset));
+            entry.line.material.opacity = entry.baseOpacity * pulse;
+            if (entry.isRing) {
+                const s = 0.8 + 0.5 * Math.abs(Math.sin(t * 2.2));
+                entry.line.scale.set(s, s, s);
+            }
+        }
+    }
+
     startSimulation() {
         this.simulating = true;
         this.pathTime = 0;
@@ -182,10 +256,12 @@ class RobotViz {
 
         // Create a root group for position control
         this.robotRoot = new THREE.Group();
-        // Position robot to the side of the patient (closer to head at x=0.7)
-        this.robotRoot.position.set(0.4, 0.0, 0.4);
-        // Rotate slightly to face patient
-        this.robotRoot.rotation.y = Math.PI / 4;
+        // Neurosurgical stereotactic position:
+        // Patient head is at world (0.7, 0.3, 0); robot is mounted directly above
+        // on a cranial frame so its arm hangs down into the surgical field.
+        this.robotRoot.position.set(0.7, 1.9, 0.0);
+        // Flip arm downward for top-down cranial approach
+        this.robotRoot.rotation.z = Math.PI;
         this.scene.add(this.robotRoot);
 
         // Base
@@ -305,12 +381,116 @@ class RobotViz {
     }
 
     setLaser(enabled) {
-        this.laserBeam.material.opacity = enabled ? 0.6 : 0.0;
-        // Make tumor pulse if laser is on
-        if (enabled && this.tumor) {
-            this.tumor.material.emissiveIntensity = 0.5 + Math.sin(Date.now() * 0.01) * 0.3;
-        } else if (this.tumor) {
-            this.tumor.material.emissiveIntensity = 0.1;
+        if (enabled) {
+            // Enhanced laser animation
+            this.laserBeam.material.opacity = 0.7;
+            this.laserBeam.material.emissive = new THREE.Color(0xff4444);
+            this.laserBeam.material.emissiveIntensity = 0.8 + Math.sin(Date.now() * 0.02) * 0.2;
+            
+            // Animated glow effect
+            const glowScale = 1.0 + Math.sin(Date.now() * 0.015) * 0.15;
+            this.laserBeam.scale.x = glowScale * 1.2;
+            this.laserBeam.scale.z = glowScale * 1.2;
+            
+            // Tumor ablation effects
+            if (this.tumor) {
+                this.tumor.material.emissiveIntensity = 0.6 + Math.sin(Date.now() * 0.02) * 0.3;
+                this.tumor.scale.set(1.0 + Math.sin(Date.now() * 0.03) * 0.1, 
+                                    1.0 + Math.sin(Date.now() * 0.03) * 0.1,
+                                    1.0 + Math.sin(Date.now() * 0.03) * 0.1);
+                // Change color as if ablating
+                const hue = 0.8 + Math.sin(Date.now() * 0.004) * 0.1;
+                this.tumor.material.color.setHSL(hue, 0.8, 0.5);
+            }
+        } else {
+            this.laserBeam.material.opacity = 0.0;
+            this.laserBeam.material.emissiveIntensity = 0.0;
+            this.laserBeam.scale.set(1.0, 1.0, 1.0);
+            
+            if (this.tumor) {
+                this.tumor.material.emissiveIntensity = 0.1;
+                this.tumor.scale.set(1.0, 1.0, 1.0);
+                this.tumor.material.color.set(0x8b5cf6);
+            }
+        }
+    }
+
+    update5GGuidance(trajectoryPoints) {
+        // Visualize 5G neural pathway guidance trajectory
+        // Remove previous trajectory visualization if exists
+        if (this.trajectoryPath) {
+            this.scene.remove(this.trajectoryPath);
+        }
+
+        if (!trajectoryPoints || trajectoryPoints.length === 0) return;
+
+        // Create path from trajectory points
+        const pathGeometry = new THREE.BufferGeometry();
+        const pathVertices = [];
+
+        // Convert grid coordinates to 3D space
+        for (let point of trajectoryPoints) {
+            const x = (point[0] / 128.0) - 0.5;  // Convert from grid to robot space
+            const z = point[1] / 128.0;
+            pathVertices.push(x, 0.3, z);  // y=0.3 for height in 3D
+        }
+
+        pathGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pathVertices), 3));
+
+        const pathMat = new THREE.LineBasicMaterial({
+            color: 0x00ff00,
+            linewidth: 3,
+            transparent: true,
+            opacity: 0.7,
+            fog: false
+        });
+
+        this.trajectoryPath = new THREE.Line(pathGeometry, pathMat);
+        this.scene.add(this.trajectoryPath);
+
+        // Also add waypoint spheres along the path
+        if (!this.waypointSpheres) {
+            this.waypointSpheres = [];
+        }
+
+        // Clear old spheres
+        this.waypointSpheres.forEach(sphere => this.scene.remove(sphere));
+        this.waypointSpheres = [];
+
+        // Add new waypoint spheres
+        const sphereGeo = new THREE.SphereGeometry(0.02, 16, 16);
+        const sphereMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+
+        for (let i = 0; i < Math.min(trajectoryPoints.length, 30); i++) {
+            const point = trajectoryPoints[i];
+            const x = (point[0] / 128.0) - 0.5;
+            const z = point[1] / 128.0;
+
+            const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+            sphere.position.set(x, 0.3, z);
+            this.scene.add(sphere);
+            this.waypointSpheres.push(sphere);
+        }
+    }
+
+    update5GProgress(progress) {
+        // Update 5G guidance progress visualization
+        if (this.waypointSpheres && this.waypointSpheres.length > 0) {
+            const progressIndex = Math.floor(progress * this.waypointSpheres.length);
+            
+            for (let i = 0; i < this.waypointSpheres.length; i++) {
+                if (i < progressIndex) {
+                    // Completed waypoints - blue
+                    this.waypointSpheres[i].material.color.set(0x0066ff);
+                } else if (i === progressIndex) {
+                    // Current waypoint - yellow/pulsing
+                    const pulse = 0.5 + Math.sin(Date.now() * 0.005) * 0.5;
+                    this.waypointSpheres[i].material.color.setHSL(0.15, 1.0, pulse);
+                } else {
+                    // Upcoming waypoints - green
+                    this.waypointSpheres[i].material.color.set(0x00ff00);
+                }
+            }
         }
     }
 
@@ -323,11 +503,10 @@ class RobotViz {
     animate() {
         requestAnimationFrame(this.animate);
 
-        // Piezoelectric Micro-vibration Simulation
-        // Add subtle high-freq vibration to end effector visual if simulating
-        if (this.simulating) {
-            // Move camera slightly
-        }
+        const t = Date.now() * 0.001;
+
+        // Animate 5G lines
+        this._animate5GLines(t);
 
         this.renderer.render(this.scene, this.camera);
     }

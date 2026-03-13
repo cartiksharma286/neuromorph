@@ -7,7 +7,7 @@ import requests
 import json
 
 def test_app():
-    base_url = "http://127.0.0.1:5000"
+    base_url = "http://127.0.0.1:5002"
     
     print("=" * 60)
     print("Testing Quantum-Enhanced Neurosurgery Robot")
@@ -67,15 +67,15 @@ def test_app():
     except Exception as e:
         print(f"   ❌ Failed: {e}")
     
-    # Test 4: NVQLink status
-    print("\n4. Testing NVQLink...")
+    # Test 4: System status
+    print("\n4. Testing system runtime status...")
     try:
         response = requests.get(f"{base_url}/api/telemetry", timeout=5)
         data = response.json()
-        nvq = data.get('nvqlink', {})
-        print(f"   ✅ Status: {nvq.get('status', 'Unknown')}")
-        print(f"   ✅ Latency: {nvq.get('latency', 0):.2f} ms")
-        print(f"   ✅ Active: {nvq.get('active', False)}")
+        system = data.get('system', {})
+        print(f"   ✅ Status: {system.get('status', 'Unknown')}")
+        print(f"   ✅ Loop Rate: {system.get('loop_hz', 0):.0f} Hz")
+        print(f"   ✅ Active: {system.get('simulation_running', False)}")
     except Exception as e:
         print(f"   ❌ Failed: {e}")
     

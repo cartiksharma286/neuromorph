@@ -24,91 +24,61 @@ class CryoViz {
             this.bgImageLoaded = true;
         }
 
-        this.lut = this.generateIceColormap();
+        this.lut = this.generateIceFractionColormap();
     }
 
-    generateIceColormap() {
-        // High-Precision Cryo Gradient
-        // Range -200 to +50 C (2500 steps, 0.1C res)
-        // Offset +200. Index 0 = -200C.
-        const steps = 2500;
+    generateIceFractionColormap() {
+        // Maps ice volume fraction (0 – 1) to clinical cryo-ablation colours.
+        // 256 linear steps.
+        // 0.00 = no ice → transparent
+        // 0.15 = early cooling → pale blue mist
+        // 0.35 = partial freeze → medium blue
+        // 0.55 = 50 % frozen   → bright cyan
+        // 0.75 = deep freeze   → cyan-white
+        // 1.00 = fully frozen  → pure white (lethal cryo)
+        const steps = 256;
         const lut = new Uint8ClampedArray(steps * 4);
 
-        // Control Points: Temp -> [R, G, B, A]
         const stops = [
-            { t: 37.0, c: [0, 0, 0, 0] },
-            { t: 30.0, c: [150, 200, 255, 30] },   // Cool Mist
-            { t: 10.0, c: [100, 180, 255, 80] },   // Cooling
-            { t: 0.0, c: [0, 150, 255, 120] },     // Freezing Point (Blue)
-            { t: -20.0, c: [0, 255, 255, 160] },   // Ice Formation (Cyan)
-            { t: -40.0, c: [150, 255, 255, 200] }, // Deep Freeze
-            { t: -100.0, c: [240, 250, 255, 240] },// Cryo Core (White-ish)
-            { t: -180.0, c: [255, 255, 255, 255] } // Max Cryo
+            { f: 0.00, c: [  0,   0,   0,   0] },
+            { f: 0.04, c: [180, 220, 255,  20] },
+            { f: 0.15, c: [ 80, 160, 255,  70] },
+            { f: 0.30, c: [  0, 110, 255, 130] },
+            { f: 0.50, c: [  0, 200, 245, 180] },
+            { f: 0.70, c: [100, 235, 255, 215] },
+            { f: 0.85, c: [200, 248, 255, 240] },
+            { f: 1.00, c: [255, 255, 255, 255] },
         ];
 
-        // Sort descending because we iterate typical range or just handle logic
-        // Stops are descending in standard "cooling" view, but let's just use standard interpolation
-        // Helper to find range
-        const getRange = (temp) => {
-            // Find s1, s2 such that s2.t <= temp <= s1.t 
-            // OR s1.t <= temp <= s2.t
+        for (let i = 0; i < steps; i++) {
+            const frac = i / (steps - 1);
 
-            // Stops are mixed order? No, let's look at them: 37, 30, 10... descending.
-            // Let's sort them ascending to make interpolation logic standard
-            const sortedStops = stops.sort((a, b) => a.t - b.t);
-
-            for (let i = 0; i < sortedStops.length - 1; i++) {
-                if (temp >= sortedStops[i].t && temp < sortedStops[i + 1].t) {
-                    return [sortedStops[i], sortedStops[i + 1]];
+            // Find interpolation segment
+            let s1 = stops[0], s2 = stops[1];
+            for (let j = 0; j < stops.length - 1; j++) {
+                if (frac >= stops[j].f && frac <= stops[j + 1].f) {
+                    s1 = stops[j]; s2 = stops[j + 1];
+                    break;
                 }
             }
-            if (temp < sortedStops[0].t) return [sortedStops[0], sortedStops[0]];
-            return [sortedStops[sortedStops.length - 1], sortedStops[sortedStops.length - 1]];
-        };
 
-        for (let i = 0; i < steps; i++) {
-            const temp = (i / 10.0) - 200.0;
-
-            // Clamping
-            if (temp > 37.0) {
-                lut[i * 4] = 0; lut[i * 4 + 1] = 0; lut[i * 4 + 2] = 0; lut[i * 4 + 3] = 0;
-                continue;
-            }
-            if (temp < -180.0) {
-                lut[i * 4] = 255; lut[i * 4 + 1] = 255; lut[i * 4 + 2] = 255; lut[i * 4 + 3] = 255;
-                continue;
-            }
-
-            const [s1, s2] = getRange(temp);
-
-            // Interpolate
             let ratio = 0;
-            if (Math.abs(s2.t - s1.t) > 0.001) {
-                ratio = (temp - s1.t) / (s2.t - s1.t);
-            }
+            const df = s2.f - s1.f;
+            if (Math.abs(df) > 0.0001) ratio = (frac - s1.f) / df;
 
-            const r = Math.floor(s1.c[0] + (s2.c[0] - s1.c[0]) * ratio);
-            const g = Math.floor(s1.c[1] + (s2.c[1] - s1.c[1]) * ratio);
-            const b = Math.floor(s1.c[2] + (s2.c[2] - s1.c[2]) * ratio);
-            const a = Math.floor(s1.c[3] + (s2.c[3] - s1.c[3]) * ratio);
-
-            lut[i * 4] = r;
-            lut[i * 4 + 1] = g;
-            lut[i * 4 + 2] = b;
-            lut[i * 4 + 3] = a;
+            lut[i * 4]     = Math.round(s1.c[0] + (s2.c[0] - s1.c[0]) * ratio);
+            lut[i * 4 + 1] = Math.round(s1.c[1] + (s2.c[1] - s1.c[1]) * ratio);
+            lut[i * 4 + 2] = Math.round(s1.c[2] + (s2.c[2] - s1.c[2]) * ratio);
+            lut[i * 4 + 3] = Math.round(s1.c[3] + (s2.c[3] - s1.c[3]) * ratio);
         }
         return lut;
     }
 
-    getColor(temp) {
-        // LUT Lookup
-        // Range -200 to +50
-        if (temp < -200.0) temp = -200.0;
-        if (temp > 49.9) temp = 49.9;
-
-        let idx = Math.floor((temp + 200.0) * 10.0);
-        if (idx < 0) idx = 0;
-
+    getColor(frac) {
+        // Input: ice volume fraction 0-1
+        if (frac < 0) frac = 0;
+        if (frac > 1) frac = 1;
+        const idx = Math.min(255, Math.floor(frac * 255));
         const i = idx * 4;
         return [this.lut[i], this.lut[i + 1], this.lut[i + 2], this.lut[i + 3]];
     }
@@ -137,14 +107,16 @@ class CryoViz {
         }
 
         // 2. Prepare Overlay
+        // Backend data is 128x128; buffer is 64x64 — stride-2 downsample
+        const stride = cryoData.length > 64 ? 2 : 1;
         const pixels = this.imageData.data;
         let p = 0;
 
         for (let y = 0; y < 64; y++) {
             for (let x = 0; x < 64; x++) {
-                // Fix: Row-Major [y][x]
-                const temp = cryoData[y][x];
-                const [cr, cg, cb, ca] = this.getColor(temp);
+                // Ice volume fraction 0-1
+                const frac = cryoData[y * stride][x * stride];
+                const [cr, cg, cb, ca] = this.getColor(frac);
 
                 pixels[p++] = cr;
                 pixels[p++] = cg;
@@ -155,11 +127,27 @@ class CryoViz {
 
         this.bufferCtx.putImageData(this.imageData, 0, 0);
 
-        // 3. Draw Overlay
+        // 3. Draw Overlay with bilinear smoothing for clean ice-ball edges
         this.ctx.save();
         this.ctx.globalCompositeOperation = 'source-over';
-        this.ctx.imageSmoothingEnabled = false;
+        this.ctx.imageSmoothingEnabled = true;
+        this.ctx.imageSmoothingQuality = 'high';
         this.ctx.drawImage(this.bufferCanvas, 0, 0, this.width, this.height);
         this.ctx.restore();
+
+        // 4. Cryo probe crosshair at ice-ball centre
+        if (this.bgImageLoaded) {
+            const cx = this.width * 0.5;
+            const cy = this.height * 0.5;
+            this.ctx.save();
+            this.ctx.strokeStyle = 'rgba(0, 220, 255, 0.75)';
+            this.ctx.lineWidth = 1;
+            this.ctx.setLineDash([3, 5]);
+            this.ctx.beginPath();
+            this.ctx.moveTo(cx - 20, cy); this.ctx.lineTo(cx + 20, cy);
+            this.ctx.moveTo(cx, cy - 20); this.ctx.lineTo(cx, cy + 20);
+            this.ctx.stroke();
+            this.ctx.restore();
+        }
     }
 }

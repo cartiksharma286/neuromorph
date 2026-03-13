@@ -28,7 +28,8 @@ class TestNeurosurgeryRobot(unittest.TestCase):
         self.assertIn('joints', data)
         self.assertIn('position', data)
         self.assertIn('temperature_map', data)
-        self.assertIn('nvqlink', data)
+        self.assertIn('system', data)
+        self.assertIn('quantum', data)
         print("[Pass] Connectivity Verified")
 
     def test_02_robot_control(self):
@@ -75,22 +76,15 @@ class TestNeurosurgeryRobot(unittest.TestCase):
         # Turn Off
         self.client.post('/api/control', json={'cryo': False})
 
-    def test_04_nvqlink_solver(self):
-        """Verify NVQLink Solver logic (Continued Fractions) is running"""
-        # This requires checking the internal state or side effects if not directly exposed in telemetry
-        # Our updated code DOES expose 'solver_coeffs' (Wait, did we merge that into telemetry dictionary?)
-        # Let's check telemetry again.
-        # Actually I didn't add it to the final jsonify dict in app.py in step 100, checking code...
-        # Step 100 app.py:
-        # return jsonify({ ... 'nvqlink': { 'status': ... } })
-        
-        # However, the processing loop DOES calculate it. 
-        # Let's verify the nvqlink STATUS is 'CONNECTED'
-        response = self.client.get('/api/telemetry')
+    def test_04_quantum_status_endpoint(self):
+        """Verify the documented quantum status endpoint is available"""
+        response = self.client.get('/api/quantum/status')
+        self.assertEqual(response.status_code, 200)
         data = response.json
-        status = data['nvqlink']['status']
-        self.assertEqual(status, "CONNECTED")
-        print("[Pass] NVQLink Solver Validated")
+        self.assertIn('enabled', data)
+        self.assertIn('coherence', data)
+        self.assertIn('qml_fidelity', data)
+        print("[Pass] Quantum Status Endpoint Validated")
 
 if __name__ == '__main__':
     unittest.main()

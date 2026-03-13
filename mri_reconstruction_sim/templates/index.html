@@ -329,6 +329,8 @@
                     <option value="CV_PC_MRA">❤️ Phase-Contrast MRA — Flow / VENC</option>
                     <option value="CV_T2_STAR">❤️ T2* GRE — Myocardial Iron Overload</option>
                     <option value="CV_CS">❤️ CS-MRI — Compressed Sensing FISTA (CF Optimal)</option>
+                    <option disabled style="color:#334155;">── Partial Fourier Thermometry ──</option>
+                    <option value="PartialFourierThermometry">🔬 PF Thermometry (Combinatorial k-Space)</option>
                 </select>
             </div>
 
@@ -464,6 +466,7 @@
             <button class="tab-trigger" onclick="switchView('quantum-geometry', this)">🌀 Quantum Geometry</button>
             <button class="tab-trigger" onclick="switchView('snr', this)">📈 SNR Analytics</button>
             <button class="tab-trigger" onclick="switchView('robotics-analytics', this)">🦾 Robotics Analytics</button>
+            <button class="tab-trigger" id="tab-pf-thermometry" onclick="switchView('pf-thermometry', this); generatePFThermometry();">🔬 PF Thermometry</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -811,6 +814,82 @@
                     </div>
                 </div>
             </div>
+
+            <!-- View: Partial Fourier MR Thermometry -->
+            <div id="view-pf-thermometry" class="view-content">
+
+                <!-- Controls row -->
+                <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; align-items:flex-end;">
+                    <div class="control-group" style="flex:1; min-width:160px;">
+                        <label>Partial Fourier Factor</label>
+                        <input id="pf-factor" type="range" min="0.51" max="1.0" step="0.01" value="0.75"
+                               oninput="document.getElementById('pf-factor-val').textContent=parseFloat(this.value).toFixed(2);"
+                               style="width:100%;">
+                        <span id="pf-factor-val" style="color:#38bdf8; font-size:0.85rem;">0.75</span>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:140px;">
+                        <label>Echo Time TE (ms)</label>
+                        <input id="te-pf" type="number" value="20" min="5" max="60" step="1"
+                               style="width:100%;">
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:140px;">
+                        <label>POCS Iterations</label>
+                        <select id="pocs-iters" style="width:100%;">
+                            <option value="4">4</option>
+                            <option value="8" selected>8</option>
+                            <option value="12">12</option>
+                            <option value="16">16</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <button onclick="generatePFThermometry(true)" style="padding:0.75rem 1.25rem; background:linear-gradient(135deg,#a78bfa,#7c3aed); color:#fff; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
+                            ▶ Run Sequence
+                        </button>
+                        <button id="btn-pf-dl-seq" onclick="downloadPFSeqFile()" disabled
+                            style="padding:0.75rem 1.1rem; background:linear-gradient(135deg,#34d399,#059669); color:#020617; font-weight:700; border:none; border-radius:8px; cursor:pointer; opacity:0.5;">
+                            ⬇ Download .seq
+                        </button>
+                        <button onclick="downloadPFReport()" style="padding:0.75rem 1.1rem; background:linear-gradient(135deg,#f472b6,#db2777); color:#fff; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
+                            📄 PDF Report
+                        </button>
+                        <button onclick="downloadNaturePFPub()" style="padding:0.75rem 1.1rem; background:linear-gradient(135deg,#fbbf24,#d97706); color:#020617; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
+                            🏛 Nature Publication
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Image row: mask / k-space / recon -->
+                <div class="dashboard-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:1.25rem;">
+                    <div class="output-box">
+                        <div class="output-title">Combinatorial Sampling Mask</div>
+                        <div class="img-window"><img id="img-pf-mask" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Acquired k-Space (log|S|)</div>
+                        <div class="img-window"><img id="img-pf-kspace" src=""></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">POCS Homodyne Reconstruction</div>
+                        <div class="img-window"><img id="img-pf-recon" src=""></div>
+                    </div>
+                </div>
+
+                <!-- Full-width thermometry map -->
+                <div class="output-box" style="width:100%; margin-bottom:1.25rem;">
+                    <div class="output-title">PRF Temperature Map — ΔT = Δφ / (α · 2π · γ · B₀ · TE)</div>
+                    <div class="img-window" style="max-height:380px;">
+                        <img id="img-pf-thermo" src="" style="object-fit:contain; max-height:360px;">
+                    </div>
+                </div>
+
+                <!-- Metrics grid -->
+                <div class="output-box" style="width:100%;">
+                    <div class="output-title">Acquisition &amp; Thermometry Metrics</div>
+                    <div id="pf-metrics" class="metrics-bar"
+                         style="width:100%; grid-template-columns:repeat(4,1fr);"></div>
+                </div>
+            </div>
+            <!-- END View: Partial Fourier MR Thermometry -->
 
             <!-- View: SNR Analytics -->
             <div id="view-snr" class="view-content">
@@ -1221,6 +1300,95 @@
                 }
             } catch (e) { alert("Cortical Fault"); }
             loader.style.display = 'none';
+        }
+
+        // ── Partial Fourier MR Thermometry ────────────────────────────────────
+        let _pfSeqContent = null;   // cache .seq text for download
+
+        async function generatePFThermometry(force = false) {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+
+            const pf_factor      = parseFloat(document.getElementById('pf-factor').value);
+            const te_ms          = parseFloat(document.getElementById('te-pf').value);
+            const pocs_iterations = parseInt(document.getElementById('pocs-iters').value);
+
+            try {
+                const res = await fetch('/api/pf_thermometry/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pf_factor, te_ms, pocs_iterations })
+                });
+                const data = await res.json();
+                loader.style.display = 'none';
+
+                if (!data.success) {
+                    alert('PF Thermometry error: ' + (data.error || 'unknown'));
+                    return;
+                }
+
+                // Images
+                const set = (id, b64) => {
+                    const el = document.getElementById(id);
+                    if (el && b64) el.src = 'data:image/png;base64,' + b64;
+                };
+                set('img-pf-mask',   data.mask_image);
+                set('img-pf-kspace', data.kspace_image);
+                set('img-pf-recon',  data.recon_image);
+                set('img-pf-thermo', data.thermo_image);
+
+                // Metrics
+                const m = data.metrics || {};
+                const fmtNum = (v, d=2) => (v !== undefined && v !== null) ? Number(v).toFixed(d) : '—';
+                const metricsEl = document.getElementById('pf-metrics');
+                metricsEl.innerHTML = `
+                    <div class="metric-item"><span class="metric-label">PF Factor</span><span class="metric-value">${fmtNum(m.pf_factor,2)}</span></div>
+                    <div class="metric-item"><span class="metric-label">Acceleration R</span><span class="metric-value">${fmtNum(m.acceleration_R,2)}×</span></div>
+                    <div class="metric-item"><span class="metric-label">Acquired Lines</span><span class="metric-value">${m.acquired_lines ?? '—'} / ${m.total_lines ?? '—'}</span></div>
+                    <div class="metric-item"><span class="metric-label">Peak ΔT (GT)</span><span class="metric-value">${fmtNum(m.gt_peak_delta_T,1)} °C</span></div>
+                    <div class="metric-item"><span class="metric-label">Peak T Map</span><span class="metric-value">${fmtNum(m.peak_temperature_C,1)} °C</span></div>
+                    <div class="metric-item"><span class="metric-label">Mean T Map</span><span class="metric-value">${fmtNum(m.mean_temperature_C,1)} °C</span></div>
+                    <div class="metric-item"><span class="metric-label">Temp Sensitivity</span><span class="metric-value">${fmtNum(m.temp_sensitivity_C,2)} °C</span></div>
+                    <div class="metric-item"><span class="metric-label">Noise Amplif. g</span><span class="metric-value">${fmtNum(m.noise_amplification_gPF,3)}</span></div>
+                    <div class="metric-item"><span class="metric-label">TE</span><span class="metric-value">${fmtNum(m.te_ms,1)} ms</span></div>
+                    <div class="metric-item"><span class="metric-label">B₀</span><span class="metric-value">${fmtNum(m.b0_T,1)} T</span></div>
+                    <div class="metric-item"><span class="metric-label">Inner Lines</span><span class="metric-value">${m.inner_lines_acquired ?? '—'}</span></div>
+                    <div class="metric-item"><span class="metric-label">Outer Lines (Combinadic)</span><span class="metric-value">${m.outer_lines_combinadic ?? '—'}</span></div>
+                `;
+
+                // Enable .seq download
+                _pfSeqContent = data.seq_content || null;
+                const dlBtn = document.getElementById('btn-pf-dl-seq');
+                if (dlBtn) {
+                    dlBtn.disabled = !_pfSeqContent;
+                    dlBtn.style.opacity = _pfSeqContent ? '1' : '0.5';
+                }
+            } catch (err) {
+                loader.style.display = 'none';
+                console.error('PF Thermometry error:', err);
+                alert('PF Thermometry request failed: ' + err.message);
+            }
+        }
+
+        function downloadPFSeqFile() {
+            if (!_pfSeqContent) return;
+            const pf = parseFloat(document.getElementById('pf-factor').value).toFixed(2);
+            const te = document.getElementById('te-pf').value;
+            const fname = `PF_Thermo_${pf}_20ms_${te}ms.seq`;
+            const blob = new Blob([_pfSeqContent], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = fname;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function downloadPFReport() {
+            window.location.href = '/api/pf_thermometry/report';
+        }
+
+        function downloadNaturePFPub() {
+            window.location.href = '/api/nature_pf_pub';
         }
 
         // ── Canadian Neuroimaging Pulse Sequences ─────────────────────────────
