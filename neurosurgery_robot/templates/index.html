@@ -123,7 +123,7 @@
 
                         <div class="robotics-grid">
                             <div class="telemetry-box">
-                                <h3>End Effector Position</h3>
+                                <h3>End Effector (FK)</h3>
                                 <div class="pos-row">
                                     <span class="p-axis">X</span><span class="p-val" id="pos-x">0.000</span>
                                 </div>
@@ -136,7 +136,7 @@
                             </div>
 
                             <div class="telemetry-box">
-                                <h3>Joint Angles (Rad)</h3>
+                                <h3>Joint Angles (°)</h3>
                                 <div class="joint-list" id="joint-angles">
                                     <div>J1: <span id="j1-val">0.00</span></div>
                                     <div>J2: <span id="j2-val">0.00</span></div>
@@ -148,8 +148,79 @@
                             </div>
                         </div>
 
-                        <div class="quantum-metrics-box" style="margin-top: 20px;">
-                            <h3>Advanced Control Status</h3>
+                        <!-- Quantum Kalman Filter Localisation Panel -->
+                        <div class="quantum-metrics-box" style="margin-top:16px; border:1px solid #7c3aed; border-radius:8px; padding:12px;">
+                            <h3 style="color:#c4b5fd; margin:0 0 10px 0; font-size:13px; letter-spacing:0.05em;">
+                                ⚛ QUANTUM KALMAN LOCALISATION
+                            </h3>
+                            <div class="robotics-grid" style="grid-template-columns:1fr 1fr;">
+                                <div class="telemetry-box" style="background:#1e1b4b;">
+                                    <h3 style="color:#c4b5fd;">QKF Estimate</h3>
+                                    <div class="pos-row">
+                                        <span class="p-axis" style="color:#a78bfa;">X̂</span>
+                                        <span class="p-val" id="qkf-x">0.000</span>
+                                    </div>
+                                    <div class="pos-row">
+                                        <span class="p-axis" style="color:#a78bfa;">Ŷ</span>
+                                        <span class="p-val" id="qkf-y">0.000</span>
+                                    </div>
+                                    <div class="pos-row">
+                                        <span class="p-axis" style="color:#a78bfa;">Ẑ</span>
+                                        <span class="p-val" id="qkf-z">0.000</span>
+                                    </div>
+                                </div>
+                                <div class="telemetry-box" style="background:#1e1b4b;">
+                                    <h3 style="color:#c4b5fd;">Filter State</h3>
+                                    <div class="pos-row">
+                                        <span class="p-axis" style="color:#a78bfa; font-size:10px;">COH</span>
+                                        <span class="p-val" id="qkf-coherence">1.000</span>
+                                    </div>
+                                    <div class="pos-row">
+                                        <span class="p-axis" style="color:#a78bfa; font-size:10px;">σ²</span>
+                                        <span class="p-val" id="qkf-uncertainty">0.100</span>
+                                    </div>
+                                    <div class="pos-row">
+                                        <span class="p-axis" style="color:#a78bfa; font-size:10px;">ε mm</span>
+                                        <span class="p-val" id="qkf-residual">0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MR Thermometry Tumour Segmentation Panel -->
+                        <div class="quantum-metrics-box" style="margin-top:12px; border:1px solid #0891b2; border-radius:8px; padding:12px;">
+                            <h3 style="color:#7dd3fc; margin:0 0 10px 0; font-size:13px; letter-spacing:0.05em;">
+                                🌡 MR THERMOMETRY SEGMENTATION
+                            </h3>
+                            <div class="metrics">
+                                <div class="metric">
+                                    <span class="m-label">Tumour Target</span>
+                                    <span class="m-value" id="mrt-centroid" style="color:#38bdf8;">--</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="m-label">Tumour Vol (px²)</span>
+                                    <span class="m-value" id="mrt-volume" style="color:#38bdf8;">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="m-label">Ablation Coverage</span>
+                                    <span class="m-value" id="mrt-ablation" style="color:#22d3ee;">0%</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="m-label">Necrosis Fraction</span>
+                                    <span class="m-value" id="mrt-necrosis" style="color:#f87171;">0%</span>
+                                </div>
+                            </div>
+                            <div style="margin-top:8px;">
+                                <canvas id="mrt-canvas" width="240" height="120"
+                                    style="width:100%;border:1px solid #0e7490;border-radius:4px;background:#0c1a2e;"></canvas>
+                                <p style="color:#64748b;font-size:10px;margin:4px 0 0 0;">
+                                    Red = tumour boundary · Orange = ablation zone · White = necrosis
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="quantum-metrics-box" style="margin-top:12px;">
+                            <h3>Advanced Control</h3>
                             <div class="metrics">
                                 <div class="metric">
                                     <span class="m-label">Coherence</span>

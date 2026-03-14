@@ -159,6 +159,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('q-fidelity').textContent = (data.quantum.metrics.qml_fidelity || 0).toFixed(3);
             }
 
+            // ── Quantum Kalman Localisation ──────────────────────────────
+            if (data.qkf_localization) {
+                const qkf = data.qkf_localization;
+                const ep  = qkf.estimated_position || [0,0,0];
+                const elQX = document.getElementById('qkf-x');
+                const elQY = document.getElementById('qkf-y');
+                const elQZ = document.getElementById('qkf-z');
+                const elQCoh = document.getElementById('qkf-coherence');
+                const elQUnc = document.getElementById('qkf-uncertainty');
+                const elQRes = document.getElementById('qkf-residual');
+                if (elQX) elQX.textContent = ep[0].toFixed(4);
+                if (elQY) elQY.textContent = ep[1].toFixed(4);
+                if (elQZ) elQZ.textContent = ep[2].toFixed(4);
+                if (elQCoh) {
+                    const coh = (qkf.coherence || 0).toFixed(3);
+                    elQCoh.textContent = coh;
+                    elQCoh.style.color = qkf.coherence > 0.8 ? '#4ade80' : '#facc15';
+                }
+                if (elQUnc) elQUnc.textContent = (qkf.uncertainty || 0).toExponential(2);
+                if (elQRes) {
+                    const mm = (qkf.residual_norm_mm || 0).toFixed(2);
+                    elQRes.textContent = mm;
+                    elQRes.style.color = qkf.residual_norm_mm < 1.0 ? '#4ade80' : '#f87171';
+                }
+            }
+
+            // ── MR Thermometry Segmentation ─────────────────────────────
+            if (data.mr_thermometry_seg) {
+                const seg = data.mr_thermometry_seg;
+                const elCentroid  = document.getElementById('mrt-centroid');
+                const elVolume    = document.getElementById('mrt-volume');
+                const elAblation  = document.getElementById('mrt-ablation');
+                const elNecrosis  = document.getElementById('mrt-necrosis');
+                const c = seg.centroid || [0.5, 0.5];
+                if (elCentroid)  elCentroid.textContent  = `(${c[0].toFixed(2)}, ${c[1].toFixed(2)})`;
+                if (elVolume)    elVolume.textContent     = Math.round(seg.tumor_volume_mm2 || 0) + ' px²';
+                if (elAblation)  elAblation.textContent  = ((seg.ablation_coverage || 0) * 100).toFixed(1) + '%';
+                if (elNecrosis)  elNecrosis.textContent  = ((seg.necrosis_fraction || 0) * 100).toFixed(1) + '%';
+            }
+
             // Max Val Display depends on mode
             if (thermoMode === 'TEMP') {
                 elMaxTemp.textContent = maxVal.toFixed(1) + '°C';
@@ -404,4 +444,96 @@ function log(msg) {
     li.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
     listLogs.prepend(li);
 }
-});
+
+// ── MR-Thermometry Segmentation Canvas Renderer ─────────────────────────────
+// Fetch the downsampled masks from the dedicated endpoint every 1 s and draw
+// tumour boundary (red), ablation zone (orange), necrosis (white) onto the
+// 240×120 mrt-canvas in the Robotics tab.
+const mrtCanvas = document.getElementById('mrt-canvas');
+const mrtCtx    = mrtCanvas ? mrtCanvas.getContext('2d') : null;
+
+async function refreshMRTCanvas() {
+    if (!mrtCtx) return;
+    try {
+        const resp = await fetch('/api/thermal/tumor_segmentation');
+        if (!resp.ok) return;
+        const d    = await resp.json();
+
+        const rows    = d.tumor_mask_ds   || [];
+        const ablRows = d.ablation_mask_ds || [];
+        const necRows = d.necrosis_mask_ds || [];
+        const dtRows  = d.delta_T_ds       || [];
+
+        if (!rows.length) return;
+
+        const nR = rows.length;
+        const nC = rows[0].length;
+        const cW = mrtCanvas.width  / nC;
+        const cH = mrtCanvas.height / nR;
+
+        mrtCtx.clearRect(0, 0, mrtCanvas.width, mrtCanvas.height);
+
+        // 1. Background: delta-T heat map (blue–red gradient)
+        if (dtRows.length) {
+            let maxDT = 0;
+            for (const row of dtRows)
+                for (const v of row)
+                    if (v > maxDT) maxDT = v;
+            maxDT = maxDT || 1;
+            for (let r = 0; r < nR; r++) {
+                for (let c = 0; c < nC; c++) {
+                    const frac = Math.min(dtRows[r][c] / maxDT, 1);
+                    const R = Math.round(frac * 220);
+                    const B = Math.round((1 - frac) * 80);
+                    mrtCtx.fillStyle = `rgba(${R},30,${B},0.7)`;
+                    mrtCtx.fillRect(c * cW, r * cH, cW, cH);
+                }
+            }
+        }
+
+        // 2. Ablation zone (orange, semi-transparent)
+        mrtCtx.fillStyle = 'rgba(251,146,60,0.55)';
+        for (let r = 0; r < nR; r++)
+            for (let c = 0; c < nC; c++)
+                if (ablRows[r] && ablRows[r][c])
+                    mrtCtx.fillRect(c * cW, r * cH, cW, cH);
+
+        // 3. Necrosis zone (white, semi-transparent)
+        mrtCtx.fillStyle = 'rgba(255,255,255,0.6)';
+        for (let r = 0; r < nR; r++)
+            for (let c = 0; c < nC; c++)
+                if (necRows[r] && necRows[r][c])
+                    mrtCtx.fillRect(c * cW, r * cH, cW, cH);
+
+        // 4. Tumour boundary (bright red outline)
+        mrtCtx.strokeStyle = '#ef4444';
+        mrtCtx.lineWidth   = 1;
+        for (let r = 1; r < nR - 1; r++) {
+            for (let c = 1; c < nC - 1; c++) {
+                const inside  = rows[r][c];
+                const hasEdge = (
+                    rows[r-1][c] !== inside || rows[r+1][c] !== inside ||
+                    rows[r][c-1] !== inside || rows[r][c+1] !== inside
+                );
+                if (inside && hasEdge)
+                    mrtCtx.strokeRect(c * cW, r * cH, cW, cH);
+            }
+        }
+
+        // 5. Centroid cross-hair
+        const centroid = d.centroid || [0.5, 0.5];
+        const cx = centroid[0] * mrtCanvas.width;
+        const cy = centroid[1] * mrtCanvas.height;
+        mrtCtx.strokeStyle = '#22d3ee';
+        mrtCtx.lineWidth   = 1.5;
+        mrtCtx.beginPath();
+        mrtCtx.moveTo(cx - 8, cy); mrtCtx.lineTo(cx + 8, cy);
+        mrtCtx.moveTo(cx, cy - 8); mrtCtx.lineTo(cx, cy + 8);
+        mrtCtx.stroke();
+    } catch (e) {
+        // silently skip if endpoint not ready yet
+    }
+}
+setInterval(refreshMRTCanvas, 1000);
+
+});  // end DOMContentLoaded

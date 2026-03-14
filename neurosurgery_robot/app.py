@@ -17,6 +17,8 @@ from precision_kinematics import PrecisionRobot6DOF
 from enhanced_thermometry import EnhancedThermometry
 from enhanced_cryo import EnhancedCryoModule
 from level_set_segmentation import LevelSetSegmentation
+from quantum_kalman import QuantumKalmanFilter
+from tumor_thermometry_segmentation import MRThermometrySegmenter
 
 # Try to import optional modules
 
@@ -78,6 +80,27 @@ segmentation = LevelSetSegmentation(width=128, height=128)
 
 # Initialize segmentation from anatomy
 segmentation.initialize_from_image(thermo.tissue_type)
+
+# Quantum Kalman Filter for end-effector localization (6-DOF state, 3-D measurement)
+qkf = QuantumKalmanFilter(state_dim=6, measurement_dim=3)
+
+# MR-Thermometry tumour segmenter
+mr_thermo_seg = MRThermometrySegmenter(width=128, height=128)
+
+# Shared QKF telemetry snapshot (written by simulation thread, read by HTTP thread)
+_qkf_snapshot = {
+    'estimated_position': [0.0, 0.0, 0.0],
+    'uncertainty':        0.1,
+    'coherence':          1.0,
+    'measurement_count':  0,
+}
+# Shared MR-thermometry segmentation snapshot
+_mr_seg_snapshot = {
+    'centroid':           [0.5, 0.5],
+    'tumor_volume_mm2':   0.0,
+    'ablation_coverage':  0.0,
+    'necrosis_fraction':  0.0,
+}
 gt_controller = GameTheoryController() if HAS_GAME_THEORY else None
 vasculature = VasculatureSpectralAnalyzer(num_nodes=64) if HAS_VASCULATURE else None
 guidance = None
@@ -181,7 +204,8 @@ def get_system_state():
 
 def simulation_loop():
     """Main simulation loop with enhanced surgical physics"""
-    global simulation_running, laser_enabled, cryo_enabled, ablation_active, target_pos, guidance, five_g_guidance
+    global simulation_running, laser_enabled, cryo_enabled, ablation_active, target_pos
+    global guidance, five_g_guidance, _qkf_snapshot, _mr_seg_snapshot
     
     loop_count = 0
     
@@ -191,6 +215,18 @@ def simulation_loop():
         # 1. Robot Control - Update towards target
         robot.update_control(target_pos)
         current_pos, current_T = robot.forward_kinematics(robot.joints)
+
+        # --- 2a. Quantum Kalman Filter: predict then update with FK measurement ---
+        qkf.predict()
+        qkf_estimated_state, qkf_coherence = qkf.update(current_pos)
+        _qkf_snapshot = {
+            'estimated_position': qkf_estimated_state[:3].tolist(),
+            'uncertainty':        float(qkf.get_uncertainty()),
+            'coherence':          float(qkf_coherence),
+            'measurement_count':  _qkf_snapshot['measurement_count'] + 1,
+        }
+        # Use QKF-corrected position for downstream thermal targeting
+        qkf_pos = qkf.get_position_estimate()
 
         # Check for 5G guidance first (highest priority)
         if five_g_guidance and five_g_guidance.active:
@@ -219,14 +255,38 @@ def simulation_loop():
         ty = np.clip(current_pos[1] + 0.5, 0, 1.0)  # Offset for centered coordinate system
         tz = np.clip(current_pos[2], 0, 1.0)
         
-        # 3. Update level set segmentation periodically
+        # 3. Update level-set and MR-thermometry segmentation periodically
         if loop_count % 5 == 0:
             segmentation.evolve(thermo.get_map(), iterations=2)
+        
+        if loop_count % 10 == 0:
+            seg_result = mr_thermo_seg.segment_from_thermometry(
+                thermo.get_map(), thermo.get_damage_map()
+            )
+            _mr_seg_snapshot = {
+                'centroid':          seg_result['centroid'].tolist(),
+                'tumor_volume_mm2':  seg_result['tumor_volume_mm2'],
+                'ablation_coverage': seg_result['ablation_coverage'],
+                'necrosis_fraction': seg_result['necrosis_fraction'],
+            }
+            # Auto-guide laser to thermometry-derived tumour centroid when
+            # no other guidance system is active
+            if not (guidance and guidance.active) and not (five_g_guidance and five_g_guidance.active):
+                thermo_target = mr_thermo_seg.get_laser_target()
+                if seg_result['tumor_volume_mm2'] > 4:
+                    target_pos = np.array([
+                        thermo_target[0],
+                        target_pos[1],
+                        thermo_target[1],
+                    ])
         
         # Get tumor location from segmentation
         tumor_center = segmentation.get_center_of_mass()
         
-        # 4. Apply laser heating at robot position
+        # 4. Apply laser heating – use QKF-corrected position for precision targeting
+        # Map QKF estimated position to thermal grid
+        qkf_tx = np.clip(qkf_pos[0], 0, 1.0)
+        qkf_tz = np.clip(qkf_pos[2] if len(qkf_pos) > 2 else qkf_pos[1], 0, 1.0)
         if laser_enabled and ablation_active:
             # Dynamic power based on temperature
             current_temp = thermo.T[int(tz * 128), int(tx * 128)]
@@ -237,7 +297,8 @@ def simulation_loop():
             else:
                 power_watts = 60.0 if current_temp < 50 else 30.0
             
-            thermo.apply_heat_source(tx, tz, power_watts=power_watts, radius_mm=2.5)
+            # Deliver laser at QKF-estimated position for sub-mm accuracy
+            thermo.apply_heat_source(qkf_tx, qkf_tz, power_watts=power_watts, radius_mm=2.5)
         
         # 5. Apply cryo-ablation
         if cryo_enabled:
@@ -326,6 +387,17 @@ def get_telemetry():
             'tumor_volume_pixels': segmentation.get_tumor_volume_pixels(),
             'quality_metrics': segmentation.evaluate_segmentation_quality(),
         },
+        'qkf_localization': {
+            'estimated_position': _qkf_snapshot['estimated_position'],
+            'raw_position':       pos.tolist(),
+            'uncertainty':        _qkf_snapshot['uncertainty'],
+            'coherence':          _qkf_snapshot['coherence'],
+            'measurement_count':  _qkf_snapshot['measurement_count'],
+            'residual_norm_mm':   float(np.linalg.norm(
+                np.array(_qkf_snapshot['estimated_position']) - pos
+            ) * 1000),
+        },
+        'mr_thermometry_seg': _mr_seg_snapshot,
         'control': {
             'laser_enabled': laser_enabled,
             'cryo_enabled': cryo_enabled,
@@ -584,6 +656,45 @@ def plan_ablation():
         'tumor_center': tumor_center.tolist(),
         'tumor_center_px': [int(tumor_center[0]*128), int(tumor_center[1]*128)],
     }))
+
+@app.route('/api/quantum/localization')
+def quantum_localization():
+    """Quantum Kalman Filter end-effector localisation state."""
+    pos, _ = robot.forward_kinematics(robot.joints)
+    est    = np.array(_qkf_snapshot['estimated_position'])
+    residual = pos - est
+    return jsonify(numpy_to_native({
+        'qkf_state':            qkf.state.tolist(),
+        'qkf_covariance_trace': float(np.trace(qkf.P)),
+        'qkf_coherence':        float(qkf.coherence),
+        'qkf_uncertainty':      float(qkf.get_uncertainty()),
+        'estimated_position':   est.tolist(),
+        'measured_position':    pos.tolist(),
+        'position_residual':    residual.tolist(),
+        'residual_norm_mm':     float(np.linalg.norm(residual) * 1000),
+        'measurement_count':    _qkf_snapshot['measurement_count'],
+    }))
+
+
+@app.route('/api/thermal/tumor_segmentation')
+def thermal_tumor_segmentation():
+    """On-demand MR-thermometry tumour segmentation snapshot."""
+    seg = mr_thermo_seg.segment_from_thermometry(
+        thermo.get_map(), thermo.get_damage_map()
+    )
+    return jsonify(numpy_to_native({
+        'centroid':                   seg['centroid'].tolist(),
+        'centroid_px':                seg['centroid_px'].tolist(),
+        'tumor_volume_mm2':           seg['tumor_volume_mm2'],
+        'ablation_coverage':          seg['ablation_coverage'],
+        'necrosis_fraction':          seg['necrosis_fraction'],
+        # Down-sampled masks for network efficiency (128→32)
+        'tumor_mask_ds':              seg['tumor_mask'][::4, ::4].astype(int).tolist(),
+        'ablation_mask_ds':           seg['ablation_mask'][::4, ::4].astype(int).tolist(),
+        'necrosis_mask_ds':           seg['necrosis_mask'][::4, ::4].astype(int).tolist(),
+        'delta_T_ds':                 seg['delta_T'][::4, ::4].tolist(),
+    }))
+
 
 @app.route('/api/thermal/history')
 def thermal_history():
