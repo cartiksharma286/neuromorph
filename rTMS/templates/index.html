@@ -29,6 +29,9 @@
                 <button class="nav-btn" data-tab="paradigm">
                     <span class="icon">🧩</span> Treatment Paradigm
                 </button>
+                <button class="nav-btn" data-tab="dementia-lt">
+                    <span class="icon">🧬</span> Long-Term Dementia
+                </button>
                 <button class="nav-btn" data-tab="equipment">
                     <span class="icon">⚙️</span> Equipment
                 </button>
@@ -171,6 +174,58 @@
                     <div class="panel glass-panel large-panel">
                         <h3>VIM Thalamus 3D Targeting Cloud (MNI Space)</h3>
                         <div id="tremor-vim-chart" class="chart-container" style="min-height:420px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Long-Term Dementia Care Tab ── -->
+            <div id="dementia-lt-view" class="hidden">
+                <!-- Row 1: Clinical Protocols -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Longitudinal Cognitive Assessment</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">ADAS-Cog · MMSE · MoCA tracking over 24-month treatment course</p>
+                        <div id="dlt-cognitive-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Smart Aging Biomarkers</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Amyloid/Tau PET · Hippocampal Volume · Cortical Thickness</p>
+                        <div id="dlt-biomarker-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                </div>
+                <!-- Row 2: Cortical Geodesics + BEM -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Cortical Surface Geodesics — ROI Connectivity Manifold</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Geodesic paths on Riemannian cortical manifold: d²xᵅ/dt² + Γᵅ_βγ (dxᵝ/dt)(dxᵞ/dt) = 0</p>
+                        <div id="dlt-geodesic-chart" class="chart-container" style="min-height:420px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Geodesic Path Distances</h3>
+                        <div id="dlt-geodesic-table"></div>
+                    </div>
+                </div>
+                <!-- Row 3: BEM Simulation -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>BEM Tissue Boundary Simulation — E-Field Attenuation</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">σ_k V(r) = σ_k V₀(r) + Σ (σⱼ⁺ − σⱼ⁻)/(4π) ∫ V(r\')·n̂ dS\'</p>
+                        <div id="dlt-bem-chart" class="chart-container" style="min-height:400px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Field Attenuation Through Tissue Layers</h3>
+                        <div id="dlt-attenuation-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                </div>
+                <!-- Row 4: Treatment Optimization + Protocol Cards -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel">
+                        <h3>Treatment Optimization Convergence</h3>
+                        <div id="dlt-optimization-chart" class="chart-container" style="min-height:280px;"></div>
+                    </div>
+                    <div class="panel glass-panel large-panel">
+                        <h3>Clinical Protocol Stages — Smart Aging Pathway</h3>
+                        <div id="dlt-protocol-cards"></div>
                     </div>
                 </div>
             </div>

@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tremorView      = document.getElementById('tremor-view');
     const paradigmView    = document.getElementById('paradigm-view');
     const equipmentView   = document.getElementById('equipment-view');
+    const dementiaLtView  = document.getElementById('dementia-lt-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentCondition = 'stroke';
     let equipmentLoaded  = false;
     let tremorLoaded     = false;
+    let dementiaLtLoaded = false;
     let paradigmCache    = {};
 
     // ── Plotly dark theme ────────────────────────────────────────
@@ -46,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, paradigmView, equipmentView];
+    const allViews = [simulationView, tremorView, paradigmView, equipmentView, dementiaLtView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -79,6 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'rTMS Equipment & Machinery',
             subtitle: 'Clinical operating characteristics and system specifications',
             view:     equipmentView, showRunBtn: false
+        },
+        'dementia-lt': {
+            title:    'Long-Term Dementia Care — Smart Aging',
+            subtitle: 'Cortical Surface Geodesics · Boundary Element Simulation · Protocol Optimization',
+            view:     dementiaLtView, showRunBtn: false
         }
     };
 
@@ -108,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Lazy-load data
             if (tab === 'tremor'    && !tremorLoaded)          loadTremorData();
             if (tab === 'equipment' && !equipmentLoaded)       loadEquipment();
+            if (tab === 'dementia-lt' && !dementiaLtLoaded)     loadDementiaLt();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -500,6 +508,207 @@ document.addEventListener('DOMContentLoaded', () => {
             <tr><td>Pulse Width</td><td>${sg.dbs_pw_us} µs</td></tr>
             <tr><td>DBS Target</td><td>${sg.dbs_target}</td></tr>
         </table>`;
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    //  LONG-TERM DEMENTIA CARE TAB
+    // ═════════════════════════════════════════════════════════════════
+
+    async function loadDementiaLt() {
+        try {
+            const res = await fetch('/api/dementia-longterm');
+            const payload = await res.json();
+            if (payload.status !== 'success') return;
+            renderDementiaLtTab(payload.data);
+            dementiaLtLoaded = true;
+        } catch (err) { console.error('Dementia LT error:', err); }
+    }
+
+    function renderDementiaLtTab(d) {
+        renderCognitiveTracking(d.cognitive_tracking);
+        renderBiomarkers(d.biomarkers);
+        renderCorticalGeodesics(d.geodesics);
+        renderGeodesicTable(d.geodesics.geodesics);
+        renderDltBem(d.bem_simulation);
+        renderAttenuation(d.bem_simulation.attenuation);
+        renderDltOptimization(d.optimization);
+        renderProtocolCards(d.protocols);
+    }
+
+    function renderCognitiveTracking(ct) {
+        Plotly.newPlot('dlt-cognitive-chart', [
+            { x: ct.months, y: ct.adas_cog, type: 'scatter', mode: 'lines+markers',
+              line: { color: '#e74c3c', width: 3, shape: 'spline' }, marker: { size: 6 },
+              name: 'ADAS-Cog (lower = better)', fill: 'tozeroy', fillcolor: 'rgba(231,76,60,0.06)' },
+            { x: ct.months, y: ct.mmse, type: 'scatter', mode: 'lines+markers',
+              line: { color: '#58a6ff', width: 3, shape: 'spline' }, marker: { size: 6 },
+              name: 'MMSE (higher = better)' },
+            { x: ct.months, y: ct.moca, type: 'scatter', mode: 'lines+markers',
+              line: { color: '#56d364', width: 3, shape: 'spline' }, marker: { size: 6 },
+              name: 'MoCA (higher = better)' }
+        ], {
+            ...PL,
+            xaxis: { ...PL.xaxis, title: 'Month' },
+            yaxis: { ...PL.yaxis, title: 'Score' },
+            legend: { font: { color: '#e6edf3' } }
+        }, { responsive: true });
+    }
+
+    function renderBiomarkers(bm) {
+        Plotly.newPlot('dlt-biomarker-chart', [
+            { x: bm.months, y: bm.amyloid_pet_suvr, type: 'scatter', mode: 'lines+markers',
+              line: { color: '#f1c40f', width: 2.5 }, name: 'Amyloid PET (SUVR)', yaxis: 'y' },
+            { x: bm.months, y: bm.tau_pet_suvr, type: 'scatter', mode: 'lines+markers',
+              line: { color: '#e74c3c', width: 2.5, dash: 'dot' }, name: 'Tau PET (SUVR)', yaxis: 'y' },
+            { x: bm.months, y: bm.hippocampal_volume_ml, type: 'scatter', mode: 'lines+markers',
+              line: { color: '#56d364', width: 2.5 }, name: 'Hippocampal Vol (mL)', yaxis: 'y2' },
+            { x: bm.months, y: bm.cortical_thickness_mm, type: 'scatter', mode: 'lines+markers',
+              line: { color: '#b06ef5', width: 2.5, dash: 'dash' }, name: 'Cortical Thickness (mm)', yaxis: 'y2' }
+        ], {
+            ...PL,
+            xaxis: { ...PL.xaxis, title: 'Month' },
+            yaxis:  { ...PL.yaxis, title: 'PET SUVR', side: 'left' },
+            yaxis2: { ...PL.yaxis, title: 'Volume / Thickness', overlaying: 'y', side: 'right', showgrid: false },
+            legend: { font: { color: '#e6edf3' }, x: 0, y: -0.3, orientation: 'h' }
+        }, { responsive: true });
+    }
+
+    function renderCorticalGeodesics(geo) {
+        const traces = [];
+        // Surface mesh
+        traces.push({
+            x: geo.surface.x.flat(), y: geo.surface.y.flat(), z: geo.surface.z.flat(),
+            type: 'mesh3d', opacity: 0.15, color: '#58a6ff', name: 'Cortical Surface'
+        });
+        // Geodesic paths
+        const colors = ['#e74c3c', '#58a6ff', '#56d364', '#f1c40f', '#b06ef5', '#e67e22',
+                        '#1abc9c', '#e91e63', '#00bcd4', '#ff9800', '#9c27b0', '#8bc34a'];
+        geo.geodesics.forEach((g, i) => {
+            traces.push({
+                x: g.x, y: g.y, z: g.z, type: 'scatter3d', mode: 'lines',
+                line: { color: colors[i % colors.length], width: 6 },
+                name: `${g.from_roi} → ${g.to_roi} (d=${g.arc_length.toFixed(2)})`
+            });
+        });
+        Plotly.newPlot('dlt-geodesic-chart', traces, {
+            ...PL, margin: { l: 0, r: 0, t: 0, b: 0 },
+            scene: {
+                ...PL.scene,
+                xaxis: { ...PL.scene.xaxis, title: 'x' },
+                yaxis: { ...PL.scene.yaxis, title: 'y' },
+                zaxis: { ...PL.scene.zaxis, title: 'z' },
+                camera: { eye: { x: 1.5, y: 1.5, z: 0.8 } }
+            },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 1, y: 1, bgcolor: 'rgba(0,0,0,0.3)' },
+            showlegend: true
+        }, { responsive: true });
+    }
+
+    function renderGeodesicTable(geodesics) {
+        const rows = geodesics.map(g => `
+            <tr>
+                <td style="color:#58a6ff;">${g.from_roi}</td>
+                <td style="color:#56d364;">${g.to_roi}</td>
+                <td style="color:#f1c40f;font-weight:600;">${g.arc_length.toFixed(3)}</td>
+            </tr>
+        `).join('');
+        document.getElementById('dlt-geodesic-table').innerHTML = `
+            <table class="eq-spec-table" style="margin-top:8px;">
+                <thead><tr><th style="color:#8b949e;">From ROI</th><th style="color:#8b949e;">To ROI</th><th style="color:#8b949e;">Geodesic Distance</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>`;
+    }
+
+    function renderDltBem(bem) {
+        const traces = [];
+        const layerColors = ['#e67e22', '#8b949e', '#58a6ff', '#e74c3c'];
+        bem.layers.forEach((layer, i) => {
+            traces.push({
+                x: layer.x.flat(), y: layer.y.flat(), z: layer.z.flat(),
+                type: 'mesh3d', opacity: 0.12 + i * 0.08,
+                color: layerColors[i], name: `${layer.name} (σ=${layer.conductivity} S/m)`
+            });
+        });
+        Plotly.newPlot('dlt-bem-chart', traces, {
+            ...PL, margin: { l: 0, r: 0, t: 0, b: 0 },
+            scene: {
+                ...PL.scene,
+                xaxis: { ...PL.scene.xaxis, title: 'x (m)' },
+                yaxis: { ...PL.scene.yaxis, title: 'y (m)' },
+                zaxis: { ...PL.scene.zaxis, title: 'z (m)' },
+                camera: { eye: { x: 1.8, y: 0.8, z: 0.6 } }
+            },
+            legend: { font: { color: '#e6edf3' } },
+            showlegend: true
+        }, { responsive: true });
+    }
+
+    function renderAttenuation(att) {
+        Plotly.newPlot('dlt-attenuation-chart', [{
+            x: att.depths, y: att.field_pct, type: 'scatter', mode: 'lines',
+            line: { color: '#e74c3c', width: 3, shape: 'spline' },
+            fill: 'tozeroy', fillcolor: 'rgba(231,76,60,0.1)', name: 'E-Field (%)'
+        }], {
+            ...PL,
+            xaxis: { ...PL.xaxis, title: 'Normalised Depth (scalp → cortex)' },
+            yaxis: { ...PL.yaxis, title: 'Residual E-Field (%)', range: [0, 110] },
+            shapes: [
+                { type: 'line', x0: 0.08, x1: 0.08, y0: 0, y1: 110, line: { color: '#8b949e', dash: 'dot', width: 1 } },
+                { type: 'line', x0: 0.13, x1: 0.13, y0: 0, y1: 110, line: { color: '#8b949e', dash: 'dot', width: 1 } },
+                { type: 'line', x0: 0.20, x1: 0.20, y0: 0, y1: 110, line: { color: '#8b949e', dash: 'dot', width: 1 } }
+            ],
+            annotations: [
+                { x: 0.04, y: 105, text: 'Scalp', showarrow: false, font: { color: '#e67e22', size: 10 } },
+                { x: 0.105, y: 105, text: 'Skull', showarrow: false, font: { color: '#8b949e', size: 10 } },
+                { x: 0.165, y: 105, text: 'CSF', showarrow: false, font: { color: '#58a6ff', size: 10 } },
+                { x: 0.30, y: 105, text: 'Grey Matter', showarrow: false, font: { color: '#e74c3c', size: 10 } }
+            ]
+        }, { responsive: true });
+    }
+
+    function renderDltOptimization(opt) {
+        Plotly.newPlot('dlt-optimization-chart', [
+            { x: opt.map(o => o.iteration), y: opt.map(o => o.geodesic_coverage_pct),
+              type: 'scatter', mode: 'lines+markers',
+              line: { color: '#58a6ff', width: 3 }, marker: { size: 6 },
+              name: 'Geodesic Coverage (%)' },
+            { x: opt.map(o => o.iteration), y: opt.map(o => o.bem_field_efficiency * 100),
+              type: 'scatter', mode: 'lines+markers',
+              line: { color: '#56d364', width: 3, dash: 'dash' }, marker: { size: 6 },
+              name: 'BEM Field Efficiency (%)' },
+            { x: opt.map(o => o.iteration), y: opt.map(o => o.composite_score),
+              type: 'bar', marker: { color: 'rgba(176,110,245,0.3)' },
+              name: 'Composite Score', yaxis: 'y2' }
+        ], {
+            ...PL,
+            xaxis: { ...PL.xaxis, title: 'Optimisation Iteration' },
+            yaxis:  { ...PL.yaxis, title: 'Coverage / Efficiency (%)', range: [0, 110] },
+            yaxis2: { ...PL.yaxis, title: 'Composite', overlaying: 'y', side: 'right', showgrid: false },
+            legend: { font: { color: '#e6edf3' } }
+        }, { responsive: true });
+    }
+
+    function renderProtocolCards(protocols) {
+        const stageColors = ['#58a6ff', '#56d364', '#f1c40f', '#b06ef5'];
+        document.getElementById('dlt-protocol-cards').innerHTML = protocols.map((p, i) => `
+            <div style="border-left:4px solid ${stageColors[i]};padding:16px 20px;margin-bottom:16px;
+                        background:rgba(255,255,255,0.03);border-radius:0 8px 8px 0;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <h4 style="color:${stageColors[i]};margin:0;font-size:15px;">${p.stage}</h4>
+                    <span style="color:#8b949e;font-size:12px;">${p.duration}</span>
+                </div>
+                <table class="eq-spec-table" style="margin:0;">
+                    <tr><td>Target</td><td>${p.target}</td></tr>
+                    <tr><td>Frequency</td><td>${p.frequency_hz} Hz</td></tr>
+                    <tr><td>Intensity</td><td>${p.intensity_mso}% MSO</td></tr>
+                    <tr><td>Sessions/Week</td><td>${p.sessions_per_week}</td></tr>
+                    <tr><td>Pulses/Session</td><td>${p.pulses_session}</td></tr>
+                    <tr><td>Coil</td><td>${p.coil}</td></tr>
+                    <tr><td>Adjunct Therapy</td><td>${p.adjunct}</td></tr>
+                    <tr><td style="color:#f1c40f;">Biomarker Gate</td><td style="color:#f1c40f;">${p.biomarker_gate}</td></tr>
+                </table>
+            </div>
+        `).join('');
     }
 
 });

@@ -119,14 +119,25 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update Robot
             robotViz.updateJoints(data.joints);
 
+            // Sync end-effector to 3D brain scene
+            if (data.laser_pos) {
+                _globalLaserActive  = data.laser_enabled || false;
+                _globalEffectorNorm = data.laser_pos;
+                robotViz.setEndEffectorBrain(data.laser_pos[0], data.laser_pos[1], _globalLaserActive);
+            }
+
             // Update Thermometry
             // Pass maps, anatomy, laser state and position
             const isLaserFiring = data.laser_enabled !== undefined ? data.laser_enabled : laserActive;
             const laserPos = data.laser_pos || null;
+            // Push end-effector to thermal canvas overlay
+            if (laserPos) thermalViz.setEndEffectorOverlay(laserPos[0], laserPos[1]);
             const maxVal = thermalViz.update(data.temperature_map, data.damage_map, data.mr_anatomy, isLaserFiring, laserPos);
 
             if (data.temp_history) {
-                const genAiProfile = (data.gen_ai && data.gen_ai.generated_profile) ? data.gen_ai.generated_profile : [];
+                const genAiProfile = Array.isArray(data.gen_ai?.generated_profile)
+                    ? data.gen_ai.generated_profile
+                    : [];
                 thermalViz.updateChart(data.temp_history, genAiProfile);
             }
 
@@ -197,6 +208,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (elVolume)    elVolume.textContent     = Math.round(seg.tumor_volume_mm2 || 0) + ' px²';
                 if (elAblation)  elAblation.textContent  = ((seg.ablation_coverage || 0) * 100).toFixed(1) + '%';
                 if (elNecrosis)  elNecrosis.textContent  = ((seg.necrosis_fraction || 0) * 100).toFixed(1) + '%';
+
+                // Targeting accuracy: distance from end-effector to tumour centroid (normalised px)
+                const en = seg.effector_norm || [0.5, 0.5];
+                const dx = (en[0] - c[0]);
+                const dz = (en[1] - c[1]);
+                const dist_px = Math.sqrt(dx * dx + dz * dz) * 128; // approx pixels
+                const elAcc = document.getElementById('mrt-accuracy');
+                if (elAcc) {
+                    elAcc.textContent = dist_px.toFixed(1) + ' px';
+                    elAcc.style.color = dist_px < 8 ? '#4ade80' : dist_px < 20 ? '#facc15' : '#f87171';
+                }
+            }
+
+            if (data.thermal_neuro_morphometry) {
+                const morph = data.thermal_neuro_morphometry;
+                const elConformal = document.getElementById('tnm-conformal');
+                const elDistortion = document.getElementById('tnm-distortion');
+                const elShape = document.getElementById('tnm-shape');
+                const elCf = document.getElementById('tnm-cf');
+                if (elConformal) elConformal.textContent = (morph.conformal_stability || 0).toFixed(3);
+                if (elDistortion) elDistortion.textContent = (morph.distortion_mean || 0).toFixed(3);
+                if (elShape) elShape.textContent = (morph.thermal_shape_index || 0).toFixed(3);
+                if (elCf) {
+                    const terms = morph.continued_fraction_terms || [];
+                    elCf.textContent = terms.length ? `[${terms[0]};${terms.slice(1).join(',')}]` : '[1]';
+                }
             }
 
             // Max Val Display depends on mode
@@ -405,6 +442,44 @@ if (btnAuto5G) {
     });
 }
 
+// ── Precision Target Button ───────────────────────────────────────────────────
+const btnPrecisionTarget = document.getElementById('btn-precision-target');
+if (btnPrecisionTarget) {
+    btnPrecisionTarget.addEventListener('click', async () => {
+        btnPrecisionTarget.textContent = 'LOCKING…';
+        btnPrecisionTarget.disabled = true;
+        try {
+            const resp = await fetch('/api/laser/precision_target', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fire: true })
+            });
+            const result = await resp.json();
+            const t = result.target || [0, 0];
+            log(`🎯 Precision target locked: (${t[0].toFixed(3)}, ${t[1].toFixed(3)}) — laser ${result.laser ? 'ON' : 'OFF'}`);
+            btnPrecisionTarget.textContent = 'LOCKED ✓';
+            btnPrecisionTarget.style.background = 'linear-gradient(135deg,#10b981,#34d399)';
+            setTimeout(() => {
+                btnPrecisionTarget.textContent = 'PRECISION TARGET';
+                btnPrecisionTarget.style.background = '';
+                btnPrecisionTarget.disabled = false;
+            }, 2500);
+        } catch (e) {
+            btnPrecisionTarget.textContent = 'PRECISION TARGET';
+            btnPrecisionTarget.disabled = false;
+        }
+    });
+}
+
+// ── LUT Selector ─────────────────────────────────────────────────────────────
+const lutSelector = document.getElementById('lut-selector');
+if (lutSelector) {
+    lutSelector.addEventListener('change', () => {
+        thermalViz.setLUT(lutSelector.value);
+        log(`🎨 Thermometry LUT changed to: ${lutSelector.value.toUpperCase()}`);
+    });
+}
+
 // Send coordinates on mouse move over 3D canvas (simplified)
 const container = document.getElementById('canvas-3d');
 container.addEventListener('mousemove', (e) => {
@@ -446,11 +521,17 @@ function log(msg) {
 }
 
 // ── MR-Thermometry Segmentation Canvas Renderer ─────────────────────────────
-// Fetch the downsampled masks from the dedicated endpoint every 1 s and draw
+// Fetch the downsampled masks from the dedicated endpoint every 500 ms and draw
 // tumour boundary (red), ablation zone (orange), necrosis (white) onto the
 // 240×120 mrt-canvas in the Robotics tab.
 const mrtCanvas = document.getElementById('mrt-canvas');
 const mrtCtx    = mrtCanvas ? mrtCanvas.getContext('2d') : null;
+const tnmCanvas = document.getElementById('tnm-canvas');
+const tnmCtx = tnmCanvas ? tnmCanvas.getContext('2d') : null;
+
+// Shared live state from telemetry (updated in polling loop)
+let _globalEffectorNorm = [0.5, 0.5];
+let _globalLaserActive  = false;
 
 async function refreshMRTCanvas() {
     if (!mrtCtx) return;
@@ -463,6 +544,7 @@ async function refreshMRTCanvas() {
         const ablRows = d.ablation_mask_ds || [];
         const necRows = d.necrosis_mask_ds || [];
         const dtRows  = d.delta_T_ds       || [];
+        const effNorm = d.effector_norm    || _globalEffectorNorm;
 
         if (!rows.length) return;
 
@@ -520,20 +602,178 @@ async function refreshMRTCanvas() {
             }
         }
 
-        // 5. Centroid cross-hair
+        // 5. Centroid cross-hair (tumour target)
         const centroid = d.centroid || [0.5, 0.5];
         const cx = centroid[0] * mrtCanvas.width;
         const cy = centroid[1] * mrtCanvas.height;
         mrtCtx.strokeStyle = '#22d3ee';
         mrtCtx.lineWidth   = 1.5;
+        mrtCtx.setLineDash([]);
         mrtCtx.beginPath();
         mrtCtx.moveTo(cx - 8, cy); mrtCtx.lineTo(cx + 8, cy);
         mrtCtx.moveTo(cx, cy - 8); mrtCtx.lineTo(cx, cy + 8);
         mrtCtx.stroke();
+
+        // 6. End-Effector probe position (bright cyan diamond with pulse ring)
+        const ex = effNorm[0] * mrtCanvas.width;
+        const ez = effNorm[1] * mrtCanvas.height;
+        // Pulse radius when laser active
+        const pulseR = _globalLaserActive ? (6 + 2 * Math.abs(Math.sin(Date.now() * 0.012))) : 5;
+        mrtCtx.strokeStyle = _globalLaserActive ? '#f97316' : '#22d3ee';
+        mrtCtx.lineWidth = 1.5;
+        mrtCtx.setLineDash([2, 2]);
+        mrtCtx.beginPath();
+        mrtCtx.arc(ex, ez, pulseR + 4, 0, Math.PI * 2);
+        mrtCtx.stroke();
+        mrtCtx.setLineDash([]);
+        // Diamond fill
+        mrtCtx.fillStyle = _globalLaserActive ? 'rgba(249,115,22,0.9)' : 'rgba(34,211,238,0.9)';
+        mrtCtx.beginPath();
+        mrtCtx.moveTo(ex,          ez - pulseR);
+        mrtCtx.lineTo(ex + pulseR, ez);
+        mrtCtx.lineTo(ex,          ez + pulseR);
+        mrtCtx.lineTo(ex - pulseR, ez);
+        mrtCtx.closePath();
+        mrtCtx.fill();
+
+        // 6b. Draw distance line from EE to centroid
+        mrtCtx.strokeStyle = 'rgba(250,200,0,0.55)';
+        mrtCtx.lineWidth = 1;
+        mrtCtx.setLineDash([3, 3]);
+        mrtCtx.beginPath();
+        mrtCtx.moveTo(ex, ez); mrtCtx.lineTo(cx, cy);
+        mrtCtx.stroke();
+        mrtCtx.setLineDash([]);
+
+        // 7. MRT LUT temperature colorbar (right edge)
+        const barW = 10, barH = mrtCanvas.height - 14, barX = mrtCanvas.width - 12, barY = 7;
+        const lutColors = [
+            [255,255,255],[255,10,0],[255,110,0],[255,230,0],[140,255,0],[0,255,190],[0,190,255],[0,60,255],[0,0,210]
+        ];
+        for (let py = 0; py < barH; py++) {
+            const frac = 1 - py / barH;
+            const ci = Math.min(Math.floor(frac * (lutColors.length - 1)), lutColors.length - 2);
+            const cr = frac * (lutColors.length - 1) - ci;
+            const c1 = lutColors[ci], c2 = lutColors[ci + 1];
+            const r = Math.round(c1[0] + (c2[0]-c1[0]) * cr);
+            const g = Math.round(c1[1] + (c2[1]-c1[1]) * cr);
+            const b = Math.round(c1[2] + (c2[2]-c1[2]) * cr);
+            mrtCtx.fillStyle = `rgb(${r},${g},${b})`;
+            mrtCtx.fillRect(barX, barY + py, barW, 1);
+        }
+        mrtCtx.strokeStyle = 'rgba(255,255,255,0.25)';
+        mrtCtx.lineWidth = 0.5;
+        mrtCtx.strokeRect(barX, barY, barW, barH);
+        mrtCtx.fillStyle = '#e2e8f0';
+        mrtCtx.font = '7px monospace';
+        mrtCtx.fillText('hot', barX - 2, barY + 8);
+        mrtCtx.fillText('37°', barX - 2, barY + barH);
+
     } catch (e) {
         // silently skip if endpoint not ready yet
     }
 }
-setInterval(refreshMRTCanvas, 1000);
+setInterval(refreshMRTCanvas, 500);
+
+async function refreshTNMCanvas() {
+    if (!tnmCtx) return;
+    try {
+        const resp = await fetch('/api/thermal/neuro_morphometry');
+        if (!resp.ok) return;
+        const d = await resp.json();
+        const conf = d.conformal_invariant_ds || [];
+        const bel = d.beltrami_ds || [];
+        const hot = d.hotspot_mask_ds || [];
+        if (!conf.length) return;
+
+        const rows = conf.length;
+        const cols = conf[0].length;
+        const cellW = tnmCanvas.width / cols;
+        const cellH = tnmCanvas.height / rows;
+        tnmCtx.clearRect(0, 0, tnmCanvas.width, tnmCanvas.height);
+
+        let maxBel = 0;
+        for (const row of bel)
+            for (const value of row)
+                if (value > maxBel) maxBel = value;
+        maxBel = maxBel || 1;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const confVal = Math.max(0, Math.min(1, conf[r][c] || 0));
+                const belVal = Math.max(0, Math.min(1, (bel[r] && bel[r][c] ? bel[r][c] : 0) / maxBel));
+                const hotspot = hot[r] && hot[r][c];
+                const green = Math.round(40 + 170 * confVal);
+                const red = Math.round(80 + 120 * belVal + (hotspot ? 55 : 0));
+                const blue = Math.round(40 + 140 * belVal);
+                tnmCtx.fillStyle = `rgba(${red},${green},${blue},0.85)`;
+                tnmCtx.fillRect(c * cellW, r * cellH, cellW, cellH);
+                if (hotspot) {
+                    tnmCtx.strokeStyle = 'rgba(245, 158, 11, 0.85)';
+                    tnmCtx.lineWidth = 1;
+                    tnmCtx.strokeRect(c * cellW, r * cellH, cellW, cellH);
+                }
+            }
+        }
+
+        const centroid = d.centroid || [0.5, 0.5];
+        const cx = centroid[0] * tnmCanvas.width;
+        const cy = centroid[1] * tnmCanvas.height;
+        tnmCtx.strokeStyle = '#f8fafc';
+        tnmCtx.lineWidth = 1.5;
+        tnmCtx.beginPath();
+        tnmCtx.moveTo(cx - 7, cy);
+        tnmCtx.lineTo(cx + 7, cy);
+        tnmCtx.moveTo(cx, cy - 7);
+        tnmCtx.lineTo(cx, cy + 7);
+        tnmCtx.stroke();
+
+        // End-effector overlay on TNM canvas
+        const en = d.effector_norm || _globalEffectorNorm;
+        const eex = en[0] * tnmCanvas.width;
+        const eey = en[1] * tnmCanvas.height;
+        tnmCtx.strokeStyle = _globalLaserActive ? '#f97316' : '#22d3ee';
+        tnmCtx.lineWidth = 1.2;
+        tnmCtx.beginPath();
+        tnmCtx.arc(eex, eey, 5, 0, Math.PI * 2);
+        tnmCtx.stroke();
+    } catch (e) {
+        // skip if endpoint unavailable during startup
+    }
+}
+setInterval(refreshTNMCanvas, 500);
+
+// ── Level-Set Segmentation Overlay ──────────────────────────────────
+async function refreshLevelSetOverlay() {
+    try {
+        const resp = await fetch('/api/segmentation/level_set');
+        if (!resp.ok) return;
+        const d = await resp.json();
+        if (typeof thermalViz !== 'undefined') {
+            thermalViz.setLevelSetContour(d);
+        }
+        const elVol  = document.getElementById('ls-volume');
+        const elCirc = document.getElementById('ls-circularity');
+        const elSol  = document.getElementById('ls-solidity');
+        const elBnd  = document.getElementById('ls-boundary');
+        if (elVol)  elVol.textContent  = (d.tumor_volume_px || 0) + ' px';
+        if (elCirc) elCirc.textContent = (d.circularity  || 0).toFixed(3);
+        if (elSol)  elSol.textContent  = (d.solidity     || 0).toFixed(3);
+        if (elBnd)  elBnd.textContent  = (d.boundary_length || 0) + ' px';
+    } catch (e) { /* silent — server may not be ready */ }
+}
+setInterval(refreshLevelSetOverlay, 800);
+
+const btnToggleLS = document.getElementById('btn-toggle-ls-overlay');
+if (btnToggleLS) {
+    btnToggleLS.addEventListener('click', () => {
+        if (typeof thermalViz === 'undefined') return;
+        thermalViz.toggleLevelSet();
+        const active = thermalViz._ls.active;
+        btnToggleLS.textContent   = active ? 'HIDE LEVEL-SET' : 'SHOW LEVEL-SET';
+        btnToggleLS.style.opacity = active ? '1.0' : '0.5';
+        log(`Level-Set overlay ${active ? 'shown' : 'hidden'}`);
+    });
+}
 
 });  // end DOMContentLoaded

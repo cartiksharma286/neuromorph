@@ -56,11 +56,26 @@ class QuantumGeometryContinuedFractionSequence(StatisticalAdaptivePulseSequence)
         
         opt_tr = self.continued_fraction_tr(depth=cf_depth)
         
-        # Optimize TE based on T2* decay modulated by quantum geometry
-        # TE_opt ~ T2_GM / (1 + GeometricPhase)
+        # Optimize TE based on T2* decay modulated by quantum geometry and inflection point analysis
+        # Find the inflection point of the signal decay curve: S(t) = S0 * exp(-t/T2*)
+        # The first derivative is S'(t) = -S0/T2* * exp(-t/T2*)
+        # The second derivative is S''(t) = S0/(T2*)^2 * exp(-t/T2*)
+        # To maximize SNR efficiency (SNR / sqrt(TE)), the optimal TE is frequently 
+        # around the T2* value. We apply an inflection-point inspired offset to the standard TE.
+        
         t2_gm = 110 # ms
         geometric_phase = 0.15 # Simulated Berry Phase contribution
-        opt_te = t2_gm / (1.0 + geometric_phase)
+        
+        # Inflection point reasoning: 
+        # For a decaying exponential, SNR efficiency peaks at TE = T2*.
+        # We modulate this based on the variance (noise_floor) to push the TE 
+        # slightly earlier (more signal) if noise is high, or later (more contrast) if noise is low.
+        inflection_offset = (0.5 - noise_floor) * 20 # +/- 10ms based on noise
+        
+        opt_te = (t2_gm + inflection_offset) / (1.0 + geometric_phase)
+        
+        # Ensure TE remains within reasonable bounds
+        opt_te = np.clip(opt_te, 10, 150)
         
         return {
             'sequence': 'QuantumGeometry',
@@ -68,7 +83,8 @@ class QuantumGeometryContinuedFractionSequence(StatisticalAdaptivePulseSequence)
             'te': float(opt_te),
             'cf_depth': cf_depth,
             'geometric_modulation': True,
-            'description': f"Quantum Geometry (CF Depth={cf_depth})",
+            'inflection_optimized': True,
+            'description': f"Quantum Geometry (CF={cf_depth}, Inflection-Opt TE)",
             'nvqlink_accelerated': self.nvqlink_enabled
         }
 

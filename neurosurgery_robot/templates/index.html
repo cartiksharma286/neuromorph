@@ -68,6 +68,17 @@
                             <div class="gradient-bar"></div>
                         </div>
 
+                        <!-- LUT Selector -->
+                        <div style="display:flex;align-items:center;gap:10px;margin:6px 0 2px 0;">
+                            <label style="color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:0.04em;">MR THERMO LUT</label>
+                            <select id="lut-selector" style="background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:4px;padding:3px 6px;font-size:11px;cursor:pointer;">
+                                <option value="prf">PRF-Shift (Clinical)</option>
+                                <option value="hotbody">Hot-Body (Black→White)</option>
+                                <option value="rainbow">Rainbow</option>
+                                <option value="coolwarm">Cool-Warm Diverging</option>
+                            </select>
+                        </div>
+
                         <!-- Temp Profile Plot -->
                         <div class="chart-container" style="width: 100%; height: 150px; margin-top: 10px;">
                             <canvas id="temp-profile-chart"></canvas>
@@ -92,6 +103,69 @@
                             <button id="btn-auto-ablation" class="btn-primary"
                                 style="margin-top: 10px; background: linear-gradient(135deg, #8b5cf6, #d946ef);">START
                                 AUTO-ABLATION</button>
+                        </div>
+
+                        <div class="quantum-metrics-box" style="margin-top:14px; border:1px solid #10b981; border-radius:8px; padding:12px;">
+                            <h3 style="color:#6ee7b7; margin:0 0 10px 0; font-size:13px; letter-spacing:0.05em;">
+                                THERMAL NEURO-MORPHOMETRY
+                            </h3>
+                            <div class="metrics">
+                                <div class="metric">
+                                    <span class="m-label">Conformal Stability</span>
+                                    <span class="m-value" id="tnm-conformal" style="color:#6ee7b7;">1.000</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="m-label">Distortion</span>
+                                    <span class="m-value" id="tnm-distortion" style="color:#fbbf24;">0.000</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="m-label">Shape Index</span>
+                                    <span class="m-value" id="tnm-shape" style="color:#38bdf8;">0.000</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="m-label">Continued Fraction</span>
+                                    <span class="m-value" id="tnm-cf" style="color:#c4b5fd;">[1;1,1,1]</span>
+                                </div>
+                            </div>
+                            <div style="margin-top:8px;">
+                                <canvas id="tnm-canvas" width="240" height="120"
+                                    style="width:100%;border:1px solid #065f46;border-radius:4px;background:#06131a;"></canvas>
+                                <p style="color:#64748b;font-size:10px;margin:4px 0 0 0;">
+                                    Green = conformal stability · Magenta = distortion · Amber = thermal hotspot
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Level-Set Tumour Segmentation Panel -->
+                        <div class="quantum-metrics-box" style="margin-top:14px; border:1px solid #7c3aed; border-radius:8px; padding:12px;">
+                            <h3 style="color:#c4b5fd; margin:0 0 10px 0; font-size:13px; letter-spacing:0.05em;">
+                                🔬 LEVEL-SET SEGMENTATION
+                            </h3>
+                            <div class="metrics">
+                                <div class="metric">
+                                    <span class="m-label">Tumour Volume</span>
+                                    <span class="m-value" id="ls-volume" style="color:#f0abfc;">0 px</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="m-label">Circularity</span>
+                                    <span class="m-value" id="ls-circularity" style="color:#f0abfc;">0.000</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="m-label">Solidity</span>
+                                    <span class="m-value" id="ls-solidity" style="color:#f0abfc;">1.000</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="m-label">Boundary Length</span>
+                                    <span class="m-value" id="ls-boundary" style="color:#f0abfc;">0 px</span>
+                                </div>
+                            </div>
+                            <p style="color:#64748b;font-size:10px;margin:8px 0 4px 0;">
+                                Red fill = tumour interior &middot; Red outline = boundary &middot; Yellow dash = 5 mm safety margin &middot; Cyan = &phi;=0 iso-contour &middot; Magenta + = centroid
+                            </p>
+                            <button id="btn-toggle-ls-overlay"
+                                style="margin-top:6px;width:100%;padding:6px 0;background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;">
+                                HIDE LEVEL-SET
+                            </button>
                         </div>
                     </div>
 
@@ -209,14 +283,22 @@
                                     <span class="m-label">Necrosis Fraction</span>
                                     <span class="m-value" id="mrt-necrosis" style="color:#f87171;">0%</span>
                                 </div>
+                                <div class="metric">
+                                    <span class="m-label">Targeting Error</span>
+                                    <span class="m-value" id="mrt-accuracy" style="color:#4ade80;">-- px</span>
+                                </div>
                             </div>
                             <div style="margin-top:8px;">
                                 <canvas id="mrt-canvas" width="240" height="120"
                                     style="width:100%;border:1px solid #0e7490;border-radius:4px;background:#0c1a2e;"></canvas>
                                 <p style="color:#64748b;font-size:10px;margin:4px 0 0 0;">
-                                    Red = tumour boundary · Orange = ablation zone · White = necrosis
+                                    Red = tumour boundary · Orange = ablation zone · White = necrosis · Cyan◆ = end-effector
                                 </p>
                             </div>
+                            <button id="btn-precision-target"
+                                style="margin-top:10px;width:100%;padding:8px;background:linear-gradient(135deg,#0891b2,#22d3ee);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">
+                                🎯 PRECISION TARGET
+                            </button>
                         </div>
 
                         <div class="quantum-metrics-box" style="margin-top:12px;">

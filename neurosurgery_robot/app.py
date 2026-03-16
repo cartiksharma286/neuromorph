@@ -19,6 +19,8 @@ from enhanced_cryo import EnhancedCryoModule
 from level_set_segmentation import LevelSetSegmentation
 from quantum_kalman import QuantumKalmanFilter
 from tumor_thermometry_segmentation import MRThermometrySegmenter
+from thermal_neuro_morphometry import ThermalNeuroMorphometry
+from generative_heating import GenerativeTissueHeating
 
 # Try to import optional modules
 
@@ -87,6 +89,13 @@ qkf = QuantumKalmanFilter(state_dim=6, measurement_dim=3)
 # MR-Thermometry tumour segmenter
 mr_thermo_seg = MRThermometrySegmenter(width=128, height=128)
 
+# Thermal neuro-morphometry engine
+thermal_morphometry = ThermalNeuroMorphometry(width=128, height=128)
+
+# Generative thermometry controller for target profile telemetry
+gen_heating = GenerativeTissueHeating(width=128, height=128)
+gen_heating.generate_heating_curve(duration_steps=160, mode="STANDARD")
+
 # Shared QKF telemetry snapshot (written by simulation thread, read by HTTP thread)
 _qkf_snapshot = {
     'estimated_position': [0.0, 0.0, 0.0],
@@ -95,11 +104,48 @@ _qkf_snapshot = {
     'measurement_count':  0,
 }
 # Shared MR-thermometry segmentation snapshot
+# NOTE: also stores downsampled masks so HTTP endpoints never re-run computation
+_z32  = [[0]   * 32 for _ in range(32)]
+_zf32 = [[0.0] * 32 for _ in range(32)]
 _mr_seg_snapshot = {
     'centroid':           [0.5, 0.5],
+    'centroid_px':        [64.0, 64.0],
     'tumor_volume_mm2':   0.0,
     'ablation_coverage':  0.0,
     'necrosis_fraction':  0.0,
+    'effector_norm':      [0.5, 0.5],
+    'tumor_mask_ds':      [r[:] for r in _z32],
+    'ablation_mask_ds':   [r[:] for r in _z32],
+    'necrosis_mask_ds':   [r[:] for r in _z32],
+    'delta_T_ds':         [r[:] for r in _zf32],
+}
+_thermal_morph_snapshot = {
+    'centroid':                 [0.5, 0.5],
+    'conformal_stability':      1.0,
+    'distortion_mean':          0.0,
+    'hotspot_area_px':          0,
+    'thermal_shape_index':      0.0,
+    'continued_fraction_terms': [1, 1, 1, 1],
+    'continued_fraction_value': 1.0,
+    'continued_fraction_depth': 4,
+    'principal_ratio':          1.0,
+    'curvature_energy':         0.0,
+    'conformal_invariant_ds':   [r[:] for r in _zf32],
+    'beltrami_ds':              [r[:] for r in _zf32],
+    'hotspot_mask_ds':          [r[:] for r in _z32],
+    'delta_t_ds':               [r[:] for r in _zf32],
+}
+# Shared level-set segmentation snapshot (written by sim thread, read by HTTP)
+_ls_snapshot = {
+    'boundary_ds':     [r[:] for r in _z32],
+    'tumor_mask_ds':   [r[:] for r in _z32],
+    'phi_ds':          [r[:] for r in _zf32],
+    'safe_zone_ds':    [r[:] for r in _z32],
+    'tumor_center':    [0.5, 0.5],
+    'tumor_volume_px': 0,
+    'circularity':     0.0,
+    'solidity':        1.0,
+    'boundary_length': 0,
 }
 gt_controller = GameTheoryController() if HAS_GAME_THEORY else None
 vasculature = VasculatureSpectralAnalyzer(num_nodes=64) if HAS_VASCULATURE else None
@@ -205,7 +251,7 @@ def get_system_state():
 def simulation_loop():
     """Main simulation loop with enhanced surgical physics"""
     global simulation_running, laser_enabled, cryo_enabled, ablation_active, target_pos
-    global guidance, five_g_guidance, _qkf_snapshot, _mr_seg_snapshot
+    global guidance, five_g_guidance, _qkf_snapshot, _mr_seg_snapshot, _thermal_morph_snapshot, _ls_snapshot
     
     loop_count = 0
     
@@ -258,6 +304,20 @@ def simulation_loop():
         # 3. Update level-set and MR-thermometry segmentation periodically
         if loop_count % 5 == 0:
             segmentation.evolve(thermo.get_map(), iterations=2)
+            # Capture level-set snapshot for HTTP serving
+            _ls_viz   = segmentation.get_visualization_data()
+            _ls_qual  = segmentation.evaluate_segmentation_quality()
+            _ls_snapshot = {
+                'boundary_ds':     _ls_viz['boundary_map'][::4, ::4].astype(int).tolist(),
+                'tumor_mask_ds':   _ls_viz['tumor_mask'][::4, ::4].astype(int).tolist(),
+                'phi_ds':          np.clip(_ls_viz['level_set'], -20, 20)[::4, ::4].tolist(),
+                'safe_zone_ds':    _ls_viz['safe_zone'][::4, ::4].astype(int).tolist(),
+                'tumor_center':    _ls_viz['tumor_center'].tolist(),
+                'tumor_volume_px': int(_ls_qual['tumor_volume_pixels']),
+                'circularity':     float(_ls_qual['circularity']),
+                'solidity':        float(_ls_qual['solidity']),
+                'boundary_length': int(_ls_qual['boundary_length']),
+            }
         
         if loop_count % 10 == 0:
             seg_result = mr_thermo_seg.segment_from_thermometry(
@@ -265,9 +325,16 @@ def simulation_loop():
             )
             _mr_seg_snapshot = {
                 'centroid':          seg_result['centroid'].tolist(),
+                'centroid_px':       seg_result['centroid_px'].tolist(),
                 'tumor_volume_mm2':  seg_result['tumor_volume_mm2'],
                 'ablation_coverage': seg_result['ablation_coverage'],
                 'necrosis_fraction': seg_result['necrosis_fraction'],
+                'effector_norm':     [float(np.clip(current_pos[0], 0, 1.0)),
+                                      float(np.clip(current_pos[2], 0, 1.0))],
+                'tumor_mask_ds':     seg_result['tumor_mask'][::4, ::4].astype(int).tolist(),
+                'ablation_mask_ds':  seg_result['ablation_mask'][::4, ::4].astype(int).tolist(),
+                'necrosis_mask_ds':  seg_result['necrosis_mask'][::4, ::4].astype(int).tolist(),
+                'delta_T_ds':        seg_result['delta_T'][::4, ::4].tolist(),
             }
             # Auto-guide laser to thermometry-derived tumour centroid when
             # no other guidance system is active
@@ -279,6 +346,26 @@ def simulation_loop():
                         target_pos[1],
                         thermo_target[1],
                     ])
+
+            morph_result = thermal_morphometry.analyze(
+                thermo.get_map(), thermo.get_damage_map(), thermo.tissue_type
+            )
+            _thermal_morph_snapshot = {
+                'centroid':                 morph_result['centroid'].tolist(),
+                'conformal_stability':      morph_result['conformal_stability'],
+                'distortion_mean':          morph_result['distortion_mean'],
+                'hotspot_area_px':          morph_result['hotspot_area_px'],
+                'thermal_shape_index':      morph_result['thermal_shape_index'],
+                'continued_fraction_terms': morph_result['continued_fraction_terms'],
+                'continued_fraction_value': morph_result['continued_fraction_value'],
+                'continued_fraction_depth': morph_result['continued_fraction_depth'],
+                'principal_ratio':          morph_result['principal_ratio'],
+                'curvature_energy':         morph_result['curvature_energy'],
+                'conformal_invariant_ds':   morph_result['conformal_invariant_map'][::4, ::4].tolist(),
+                'beltrami_ds':              morph_result['beltrami_map'][::4, ::4].tolist(),
+                'hotspot_mask_ds':          morph_result['hotspot_mask'][::4, ::4].astype(int).tolist(),
+                'delta_t_ds':               morph_result['delta_t'][::4, ::4].tolist(),
+            }
         
         # Get tumor location from segmentation
         tumor_center = segmentation.get_center_of_mass()
@@ -346,6 +433,13 @@ def get_telemetry():
     
     cryo_metrics = cryo.get_damage_metrics()
     thermo_metrics = thermo.get_performance_metrics()
+    current_max_temp = float(np.max(temp_map))
+    ai_state = gen_heating.get_control_action(current_max_temp)
+    generated_profile = gen_heating.generated_profile
+    if isinstance(generated_profile, np.ndarray):
+        generated_profile = generated_profile.tolist()
+    elif generated_profile is None:
+        generated_profile = []
     
     return jsonify(numpy_to_native({
         'joints': robot.get_joint_angles_degrees().tolist(),
@@ -377,6 +471,12 @@ def get_telemetry():
             'visualization': _viz_cache['temp_viz'],
             'metrics': thermo_metrics,
         },
+        'gen_ai': {
+            'target_temp': ai_state['target_temp'],
+            'model_state': ai_state['model_state'],
+            'mode': ai_state['mode'],
+            'generated_profile': generated_profile,
+        },
         'cryo': {
             'visualization': _viz_cache['cryo_viz'],
             'metrics': cryo_metrics,
@@ -398,6 +498,7 @@ def get_telemetry():
             ) * 1000),
         },
         'mr_thermometry_seg': _mr_seg_snapshot,
+        'thermal_neuro_morphometry': _thermal_morph_snapshot,
         'control': {
             'laser_enabled': laser_enabled,
             'cryo_enabled': cryo_enabled,
@@ -435,11 +536,44 @@ def control():
     
     if 'ablation' in data:
         ablation_active = bool(data['ablation'])
+
+    if 'mode' in data:
+        requested_mode = str(data['mode']).upper()
+        mode_map = {
+            'STANDARD': 'STANDARD',
+            'GENTLE': 'GENTLE',
+            'RAPID': 'RAPID',
+        }
+        gen_heating.generate_heating_curve(
+            duration_steps=160,
+            mode=mode_map.get(requested_mode, 'STANDARD')
+        )
     
     if 'home' in data and data['home']:
         robot.home()
     
     return jsonify({'status': 'ok', 'updated': True})
+
+@app.route('/api/laser/precision_target', methods=['POST'])
+def precision_target():
+    """Snap robot target to MR-thermometry tumour centroid for precision ablation."""
+    global target_pos, laser_enabled, ablation_active
+    data = request.json or {}
+    centroid = _mr_seg_snapshot.get('centroid', [0.5, 0.5])
+    cx = float(np.clip(centroid[0], 0.0, 1.0))
+    cz = float(np.clip(centroid[1], 0.0, 1.0))
+    target_pos = np.array([cx, target_pos[1], cz])
+    fire = bool(data.get('fire', False))
+    if fire:
+        laser_enabled = True
+        ablation_active = True
+    return jsonify({
+        'status': 'ok',
+        'target': [cx, cz],
+        'tumor_volume_mm2': _mr_seg_snapshot.get('tumor_volume_mm2', 0.0),
+        'laser': laser_enabled,
+    })
+
 
 @app.route('/api/guidance', methods=['POST'])
 def toggle_guidance():
@@ -460,11 +594,13 @@ def toggle_guidance():
             height=guidance_map.shape[1],
         )
         guidance.start()
+        gen_heating.generate_heating_curve(duration_steps=160, mode='GENTLE')
     else:
         if guidance:
             guidance.stop()
         laser_enabled = False
         ablation_active = False
+        gen_heating.generate_heating_curve(duration_steps=160, mode='STANDARD')
 
     return jsonify({
         'status': 'ok',
@@ -676,24 +812,22 @@ def quantum_localization():
     }))
 
 
+@app.route('/api/segmentation/level_set')
+def level_set_segmentation():
+    """Level-set tumour segmentation snapshot (served from simulation cache)."""
+    return jsonify(numpy_to_native(_ls_snapshot))
+
+
 @app.route('/api/thermal/tumor_segmentation')
 def thermal_tumor_segmentation():
-    """On-demand MR-thermometry tumour segmentation snapshot."""
-    seg = mr_thermo_seg.segment_from_thermometry(
-        thermo.get_map(), thermo.get_damage_map()
-    )
-    return jsonify(numpy_to_native({
-        'centroid':                   seg['centroid'].tolist(),
-        'centroid_px':                seg['centroid_px'].tolist(),
-        'tumor_volume_mm2':           seg['tumor_volume_mm2'],
-        'ablation_coverage':          seg['ablation_coverage'],
-        'necrosis_fraction':          seg['necrosis_fraction'],
-        # Down-sampled masks for network efficiency (128→32)
-        'tumor_mask_ds':              seg['tumor_mask'][::4, ::4].astype(int).tolist(),
-        'ablation_mask_ds':           seg['ablation_mask'][::4, ::4].astype(int).tolist(),
-        'necrosis_mask_ds':           seg['necrosis_mask'][::4, ::4].astype(int).tolist(),
-        'delta_T_ds':                 seg['delta_T'][::4, ::4].tolist(),
-    }))
+    """MR-thermometry tumour segmentation snapshot (served from simulation cache)."""
+    return jsonify(numpy_to_native(_mr_seg_snapshot))
+
+
+@app.route('/api/thermal/neuro_morphometry')
+def thermal_neuro_morphometry():
+    """Thermal neuro-morphometry snapshot with conformal invariants (served from simulation cache)."""
+    return jsonify(numpy_to_native(_thermal_morph_snapshot))
 
 
 @app.route('/api/thermal/history')

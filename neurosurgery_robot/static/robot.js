@@ -68,6 +68,30 @@ class RobotViz {
     }
 
     buildEnvironment() {
+        // ─── Surgical OR Table ───────────────────────────────────────────
+        const tableMat = new THREE.MeshStandardMaterial({
+            color: 0x4a90d9,
+            metalness: 0.55,
+            roughness: 0.35,
+        });
+        const tableTop = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.08, 0.72), tableMat);
+        tableTop.position.set(0, -0.08, 0);
+        this.scene.add(tableTop);
+
+        const legMat = new THREE.MeshStandardMaterial({ color: 0xb0b8c8, metalness: 0.8, roughness: 0.25 });
+        const legData = [[-1.25, -0.34, 0.30], [1.25, -0.34, 0.30], [-1.25, -0.34, -0.30], [1.25, -0.34, -0.30]];
+        for (const [lx, ly, lz] of legData) {
+            const leg = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.52, 0.07), legMat);
+            leg.position.set(lx, ly, lz);
+            this.scene.add(leg);
+        }
+
+        // Table pad (foam mattress look)
+        const padMat = new THREE.MeshStandardMaterial({ color: 0xecfeff, roughness: 0.9 });
+        const pad = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.07, 0.65), padMat);
+        pad.position.set(0, -0.005, 0);
+        this.scene.add(pad);
+
         // 1. MRI Bore (Cylindrical Tunnel — no coil rings)
         const boreGeo = new THREE.CylinderGeometry(1.2, 1.2, 4, 32, 1, true);
         const boreMat = new THREE.MeshStandardMaterial({
@@ -88,19 +112,19 @@ class RobotViz {
         const patientGroup = new THREE.Group();
         this.scene.add(patientGroup);
 
-        // Body (Simple Cylinder)
+        // Body (Simple Cylinder) lying on table
         const bodyGeo = new THREE.CylinderGeometry(0.25, 0.25, 1.8, 16);
         const bodyMat = new THREE.MeshStandardMaterial({ color: 0x8ecae6 }); // Hospital gown blue
         const body = new THREE.Mesh(bodyGeo, bodyMat);
         body.rotation.z = Math.PI / 2;
-        body.position.set(-0.2, 0.25, 0); // Lying on table
+        body.position.set(-0.2, 0.21, 0); // Lying on pad
         patientGroup.add(body);
 
         // Head (Sphere) - Transparent to see "inside"
         const headGeo = new THREE.SphereGeometry(0.18, 32, 32);
         const headMat = new THREE.MeshPhysicalMaterial({
             color: 0xffdbac, // Skin tone
-            transmission: 0.4,  // Glass-like transmission
+            transmission: 0.4,
             opacity: 0.5,
             transparent: true,
             roughness: 0.2,
@@ -108,15 +132,36 @@ class RobotViz {
             clearcoat: 1.0
         });
         const head = new THREE.Mesh(headGeo, headMat);
-        head.position.set(0.7, 0.3, 0); // At end of body
+        head.position.set(0.7, 0.26, 0); // On table at head end
         patientGroup.add(head);
+
+        // ─── Stereotactic Head Frame (4-pin ring) ───────────────────────
+        const frameMat = new THREE.MeshStandardMaterial({ color: 0xd4d4d4, metalness: 0.9, roughness: 0.1 });
+        const ringGeo = new THREE.TorusGeometry(0.20, 0.012, 12, 64);
+        const headRing = new THREE.Mesh(ringGeo, frameMat);
+        headRing.position.copy(head.position);
+        headRing.rotation.x = Math.PI / 2;
+        patientGroup.add(headRing);
+
+        // Four fixing pins
+        const pinGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.24, 8);
+        const pinAngles = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
+        for (const angle of pinAngles) {
+            const pin = new THREE.Mesh(pinGeo, frameMat);
+            pin.position.set(
+                head.position.x + Math.cos(angle) * 0.20,
+                head.position.y + 0.12,
+                head.position.z + Math.sin(angle) * 0.20
+            );
+            patientGroup.add(pin);
+        }
 
         // Brain Surface (Inner Layer)
         const brainGeo = new THREE.SphereGeometry(0.16, 32, 32);
         const brainMat = new THREE.MeshStandardMaterial({
             color: 0xf4f4f5,
             roughness: 0.5,
-            wireframe: true, // Grid-like structure
+            wireframe: true,
             transparent: true,
             opacity: 0.1
         });
@@ -125,7 +170,6 @@ class RobotViz {
         patientGroup.add(brain);
 
         // 3. Neurovasculature (Inside the Head)
-        // Positioned RELATIVE to Head
         const vesselGroup = new THREE.Group();
         vesselGroup.position.copy(head.position);
         this.scene.add(vesselGroup);
@@ -154,8 +198,63 @@ class RobotViz {
         this.tumor.position.set(0.05, 0.05, 0);
         vesselGroup.add(this.tumor);
 
+        // ─── End-Effector Probe-Tip Indicator (inside brain) ────────────
+        // A small glowing sphere that tracks where the laser tip is inside the brain volume
+        const tipGeo = new THREE.SphereGeometry(0.012, 16, 16);
+        this.endEffectorTipMat = new THREE.MeshStandardMaterial({
+            color: 0x22d3ee,
+            emissive: 0x22d3ee,
+            emissiveIntensity: 0.0,
+            transparent: true,
+            opacity: 0.0,
+        });
+        this.endEffectorTip = new THREE.Mesh(tipGeo, this.endEffectorTipMat);
+        this.endEffectorTip.position.copy(head.position);
+        this.scene.add(this.endEffectorTip);
+
+        // Targeting reticle ring around the probe tip
+        const reticleGeo = new THREE.RingGeometry(0.016, 0.022, 32);
+        const reticleMat = new THREE.MeshBasicMaterial({
+            color: 0x22d3ee, side: THREE.DoubleSide, transparent: true, opacity: 0.0
+        });
+        this.endEffectorReticle = new THREE.Mesh(reticleGeo, reticleMat);
+        this.endEffectorReticle.position.copy(head.position);
+        this.endEffectorReticle.rotation.x = Math.PI / 2;
+        this.scene.add(this.endEffectorReticle);
+
+        // Store head world position for projecting effector coords
+        this._headWorldPos = head.position.clone();
+
         // Save path
         this.simPath = curve;
+    }
+
+    /** Update the glowing probe tip position in brain space.
+     *  @param {number} nx  – normalised robot X ∈ [0,1]
+     *  @param {number} nz  – normalised robot Z ∈ [0,1]
+     *  @param {boolean} active – true when laser is firing
+     */
+    setEndEffectorBrain(nx, nz, active) {
+        if (!this.endEffectorTip) return;
+        // Map normalised thermal-grid coords to 3D world space around the head
+        const hp = this._headWorldPos;
+        const wx = hp.x + (nx - 0.5) * 0.30;   // ±0.15 m inside head radius
+        const wy = hp.y;
+        const wz = hp.z + (nz - 0.5) * 0.28;
+
+        this.endEffectorTip.position.set(wx, wy, wz);
+        this.endEffectorReticle.position.set(wx, wy, wz);
+
+        const intensity = active ? (0.8 + 0.2 * Math.sin(Date.now() * 0.025)) : 0.4;
+        this.endEffectorTipMat.opacity    = active ? 0.95 : 0.55;
+        this.endEffectorTipMat.emissiveIntensity = intensity;
+        this.endEffectorReticle.material.opacity = active ? 0.85 : 0.35;
+
+        // Pulse the reticle
+        if (active) {
+            const s = 1.0 + 0.3 * Math.abs(Math.sin(Date.now() * 0.018));
+            this.endEffectorReticle.scale.set(s, s, s);
+        }
     }
 
     _build5GLines() {

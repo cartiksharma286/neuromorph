@@ -4,7 +4,8 @@ from logic.rtms_engine import (
     run_full_simulation,
     get_equipment_list,
     get_tremor_clinical_data,
-    get_treatment_paradigm
+    get_treatment_paradigm,
+    get_dementia_longterm_care
 )
 
 app = Flask(__name__)
@@ -37,6 +38,10 @@ def tremor_clinical():
 def treatment_paradigm():
     condition = request.args.get('condition', 'stroke')
     return jsonify({"status": "success", "data": get_treatment_paradigm(condition)})
+
+@app.route('/api/dementia-longterm', methods=['GET'])
+def dementia_longterm():
+    return jsonify({"status": "success", "data": get_dementia_longterm_care()})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5002)
