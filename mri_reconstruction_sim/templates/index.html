@@ -464,6 +464,7 @@
             <button class="tab-trigger" onclick="switchView('thermometry', this)">🌡️ Q-Thermometry</button>
             <button class="tab-trigger" onclick="switchView('analytics', this)">📊 Distribution Analysis</button>
             <button class="tab-trigger" onclick="switchView('quantum-geometry', this)">🌀 Quantum Geometry</button>
+            <button class="tab-trigger" id="tab-inflection-pulse" onclick="switchView('inflection-pulse', this)">📈 Inflection Pulse Analysis</button>
             <button class="tab-trigger" onclick="switchView('snr', this)">📈 SNR Analytics</button>
             <button class="tab-trigger" onclick="switchView('robotics-analytics', this)">🦾 Robotics Analytics</button>
             <button class="tab-trigger" id="tab-pf-thermometry" onclick="switchView('pf-thermometry', this); generatePFThermometry();">🔬 PF Thermometry</button>
@@ -602,6 +603,25 @@
                     <div class="img-window" style="aspect-ratio: 16/9; height: 400px;">
                         <img id="img-neuro-prism" src="" style="width:100%; height:100%; object-fit:contain;">
                     </div>
+                </div>
+            </div>
+
+            <!-- View: Inflection Pulse Analysis -->
+            <div id="view-inflection-pulse" class="view-content">
+                <div class="output-box" style="width: 100%;">
+                    <h3>Inflection Pulse Optimization</h3>
+                    <p style="color:var(--text-secondary); font-size:0.9rem;">
+                        Demonstrates the applied inflection point reasoning across signal decay curves to maximize SNR efficiency.
+                    </p>
+                    <div class="img-window" style="aspect-ratio: 16/9; height: 400px;">
+                        <!-- Placeholder for relevant infographic/plot (could connect to an API endpoint later) -->
+                        <div style="color:var(--accent); display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:1rem;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                            <span>Optimized SNR via T2* Inflection Analysis</span>
+                        </div>
+                    </div>
+                    <!-- Connect to an API endpoint for sequence generation via inflection reasoning later if needed -->
+                    <button onclick="document.getElementById('sequence').value = 'QuantumGeometry'; runSimulation();" style="margin-top: 1rem; width: auto; padding: 0.5rem 1.5rem;">Run Geometry Sequence</button>
                 </div>
             </div>
 
