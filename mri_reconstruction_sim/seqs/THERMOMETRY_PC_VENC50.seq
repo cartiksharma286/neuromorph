@@ -1,0 +1,84 @@
+# Pulseq sequence file
+# Generated: 2026-03-20T09:36:24.314436
+# Sequence: THERMOMETRY_PC_VENC50
+# Description: Phase-Contrast Thermometry: TR=35ms, TE=22ms, VENC=50 cm/s
+
+[VERSION]
+major = 1
+minor = 2
+revision = 1
+
+[DEFINITIONS]
+comment = NeuroPulse thermometry and cardiac sequences
+author = NeuroPulse
+site = Advanced MRI Center
+
+[HARDWARE]
+max_grad = 32
+grad_unit = mT/m
+max_slew = 130
+slew_unit = T/m/s
+rf_ringdown = 100e-6
+rf_dead_time = 100e-6
+adc_dead_time = 10e-6
+
+[PARAMETERS]
+TR = 35e-3
+TE = 22e-3
+VENC = 50
+SliceThickness = 5e-3
+Bandwidth = 2000
+MatrixSize = 256
+FOV = 256e-3
+TemperatureCoefficient = 0.0099
+GradientMoment = 2.0
+
+[EVENTS]
+event_1:
+  type = RF_EXCITATION
+  duration = 1.5e-3
+  flipangle = 90
+  phase = 0
+
+event_2:
+  type = GRADIENT_SLICE
+  duration = 2e-3
+  area = slice_select
+
+event_3:
+  type = VELOCITY_ENCODING_GRADIENT
+  axis = x
+  duration = 2e-3
+  moment = 2.0
+  venc = 50
+
+event_4:
+  type = VELOCITY_ENCODING_GRADIENT
+  axis = y
+  duration = 2e-3
+  moment = 2.0
+  venc = 50
+
+event_5:
+  type = VELOCITY_ENCODING_GRADIENT
+  axis = z
+  duration = 2e-3
+  moment = 2.0
+  venc = 50
+  comment = Through-plane encoding for velocity + temperature
+
+event_6:
+  type = GRADIENT_READOUT
+  duration = 22e-3
+  area = calculated
+
+event_7:
+  type = ADC
+  duration = 22e-3
+  samples = 256
+  dwell = 3.9e-6
+
+event_8:
+  type = DELAY
+  duration = 13e-3
+

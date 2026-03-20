@@ -1,0 +1,61 @@
+# Pulseq sequence file
+# Generated: 2026-03-20T09:36:24.301186
+# Sequence: SE_T1
+# Description: Spin Echo: TR=600ms, TE=15ms, FA=90°
+
+[VERSION]
+major = 1
+minor = 2
+revision = 1
+
+[DEFINITIONS]
+comment = NeuroPulse thermometry and cardiac sequences
+author = NeuroPulse
+site = Advanced MRI Center
+
+[HARDWARE]
+max_grad = 32
+grad_unit = mT/m
+max_slew = 130
+slew_unit = T/m/s
+rf_ringdown = 100e-6
+rf_dead_time = 100e-6
+adc_dead_time = 10e-6
+
+[PARAMETERS]
+TR = 600e-3
+TE = 15e-3
+FlipAngle = 90
+SliceThickness = 5e-3
+Bandwidth = 2000
+MatrixSize = 256
+FOV = 256e-3
+
+[EVENTS]
+event_1:
+  type = RF_90
+  duration = 2e-3
+  strength = calculated
+  phase = 0
+
+event_2:
+  type = GRADIENT_SLICE
+  duration = 2.5e-3
+  strength = slice_select
+
+event_3:
+  type = RF_180
+  duration = 2e-3
+  strength = calculated
+  phase = 0
+
+event_4:
+  type = ADC
+  duration = 6.4e-3
+  samples = 256
+  dwell = 25e-6
+
+event_5:
+  type = DELAY
+  duration = 585e-3
+
