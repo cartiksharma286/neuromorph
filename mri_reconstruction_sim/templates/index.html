@@ -354,6 +354,7 @@
                     <option value="conformal_neurovascular_array">🌀 Conformal Neurovascular (SC Map)</option>
                     <option value="conformal_head_coil">🧠 Conformal Head Coil (SC High-Order)</option>
                     <option value="variational_neuro_head">🧠 Variational Neuro Head Coil</option>
+                    <option value="conformal_skull_array">🧠 Conformal Skull Array (CF Thermometry)</option>
                     <option value="rec_engine_coil">🤖 Rec. Engine Neurovascular Coil</option>
                     <option disabled style="color:#334155;">── Qubit Photonic Topologies ──</option>
                     <option value="qubit_photonic_hc_v1">🧠 Qubit Photonic Head Coil (Bit Shuffle 1)</option>
@@ -468,6 +469,7 @@
             <button class="tab-trigger" onclick="switchView('snr', this)">📈 SNR Analytics</button>
             <button class="tab-trigger" onclick="switchView('robotics-analytics', this)">🦾 Robotics Analytics</button>
             <button class="tab-trigger" id="tab-pf-thermometry" onclick="switchView('pf-thermometry', this); generatePFThermometry();">🔬 PF Thermometry</button>
+            <button class="tab-trigger" id="tab-skull-coil" onclick="switchView('skull-coil', this);">🧠 Conformal Skull Coil</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -910,6 +912,54 @@
                 </div>
             </div>
             <!-- END View: Partial Fourier MR Thermometry -->
+
+            <!-- View: Conformal Skull Coil -->
+            <div id="view-skull-coil" class="view-content">
+                <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; align-items:flex-end;">
+                    <div class="control-group" style="flex:1; min-width:140px;">
+                        <label>Coil Elements</label>
+                        <select id="skull-n-elements" style="width:100%;">
+                            <option value="8" selected>8</option>
+                            <option value="16">16</option>
+                            <option value="32">32</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:140px;">
+                        <label>Tumour radius (mm)</label>
+                        <input id="skull-tumour-r" type="number" value="25" min="5" max="60" step="1" style="width:100%;">
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:140px;">
+                        <label>SNR constraint β</label>
+                        <input id="skull-beta" type="range" min="0.3" max="1.0" step="0.05" value="0.7"
+                               oninput="document.getElementById('skull-beta-val').textContent=parseFloat(this.value).toFixed(2);"
+                               style="width:100%;">
+                        <span id="skull-beta-val" style="color:#38bdf8; font-size:0.85rem;">0.70</span>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <button onclick="runSkullCoil()" style="padding:0.75rem 1.25rem; background:linear-gradient(135deg,#a78bfa,#7c3aed); color:#fff; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
+                            ▶ Optimise Coil
+                        </button>
+                        <button onclick="downloadNatureHeadCoilReport()" style="padding:0.75rem 1.1rem; background:linear-gradient(135deg,#fbbf24,#d97706); color:#020617; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
+                            🏛 Nature Report PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Plot row -->
+                <div class="output-box" style="width:100%; margin-bottom:1.25rem;">
+                    <div class="output-title">Conformal Array · Shim Weights · Jaynes–Cummings State Transfer</div>
+                    <div class="img-window" style="max-height:420px;">
+                        <img id="img-skull-plot" src="" style="object-fit:contain; max-height:400px;">
+                    </div>
+                </div>
+
+                <!-- Metrics -->
+                <div class="output-box" style="width:100%;">
+                    <div class="output-title">Coil Optimisation Metrics</div>
+                    <div id="skull-metrics" class="metrics-bar" style="width:100%; grid-template-columns:repeat(4,1fr);"></div>
+                </div>
+            </div>
+            <!-- END View: Conformal Skull Coil -->
 
             <!-- View: SNR Analytics -->
             <div id="view-snr" class="view-content">
@@ -1409,6 +1459,44 @@
 
         function downloadNaturePFPub() {
             window.location.href = '/api/nature_pf_pub';
+        }
+
+        function downloadNatureHeadCoilReport() {
+            window.location.href = '/api/nature_head_coil_report';
+        }
+
+        async function runSkullCoil() {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+            const plotEl   = document.getElementById('img-skull-plot');
+            const metricsEl = document.getElementById('skull-metrics');
+            try {
+                const payload = {
+                    n_elements:    parseInt(document.getElementById('skull-n-elements').value),
+                    tumour_radius: parseFloat(document.getElementById('skull-tumour-r').value) / 1000.0,
+                    beta:          parseFloat(document.getElementById('skull-beta').value),
+                };
+                const res  = await fetch('/api/conformal_skull_coil', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+                if (data.error) { alert('Error: ' + data.error); return; }
+                if (data.plot_b64) {
+                    plotEl.src = 'data:image/png;base64,' + data.plot_b64;
+                }
+                metricsEl.innerHTML = [
+                    { label: 'SNR Tumour',      value: data.snr_tumour  ? data.snr_tumour.toExponential(3)  : '—' },
+                    { label: 'SNR Healthy',     value: data.snr_healthy ? data.snr_healthy.toExponential(3) : '—' },
+                    { label: 'Tumour/Healthy',  value: data.tumour_to_healthy_ratio ? data.tumour_to_healthy_ratio.toFixed(2) + '×' : '—' },
+                    { label: 'State Transfer',  value: data.state_transfer_efficiency ? data.state_transfer_efficiency.toFixed(4) : '—' },
+                ].map(m => `<div class="metric-card"><div class="metric-label">${m.label}</div><div class="metric-value">${m.value}</div></div>`).join('');
+            } catch(e) {
+                alert('Request failed: ' + e);
+            } finally {
+                loader.style.display = 'none';
+            }
         }
 
         // ── Canadian Neuroimaging Pulse Sequences ─────────────────────────────

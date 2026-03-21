@@ -8,6 +8,9 @@ from ellipsoidal_artifact_removal import EllipsoidalArtifactRemover, reconstruct
 from partial_fourier_thermometry import run_pf_thermometry, generate_pf_thermometry_report, PartialFourierThermometry
 from generate_nature_pf_thermometry import generate_nature_pf_thermometry_pub
 from quantum_app_integration import create_quantum_noise_reduction_blueprints
+from cf_thermometry_pulse import CF_ThermometryPulseBank, write_all_preset_seqs
+from conformal_skull_coil import ConformatSkullCoil
+from generate_nature_head_coil_report import generate_nature_head_coil_report
 import os
 import generate_pdf
 import generate_report_images
@@ -1104,6 +1107,27 @@ def nature_pf_pub():
         return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
 
 
+
+# -- Conformal Head Coil Nature PDF Route --
+
+@app.route('/api/nature_head_coil_report', methods=['GET'])
+def nature_head_coil_report():
+    """Generate and return the Nature PDF for conformal head coil + CF thermometry."""
+    try:
+        seqs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "seqs")
+        os.makedirs(seqs_dir, exist_ok=True)
+        out_path = os.path.join(seqs_dir, "Nature_HeadCoil_CF_Thermometry.pdf")
+        generate_nature_head_coil_report(output_path=out_path)
+        with open(out_path, "rb") as fh:
+            pdf_bytes = fh.read()
+        buf = io.BytesIO(pdf_bytes)
+        buf.seek(0)
+        return send_file(buf, mimetype="application/pdf", as_attachment=True,
+                         download_name="Nature_HeadCoil_CF_Thermometry.pdf")
+    except Exception as e:
+        import traceback
+        return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
+
 # ── Partial Fourier MR Thermometry endpoints ────────────────────────────────
 
 @app.route('/api/pf_thermometry/run', methods=['POST'])
@@ -1419,6 +1443,138 @@ def generate_seq():
     except Exception as e:
         import traceback
         return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
+
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Continued-Fraction MR Thermometry  (wave-train SNR + risk distributions)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.route('/api/cf_thermometry', methods=['POST'])
+def cf_thermometry():
+    """
+    Run a CF wave-train thermometry analysis.
+
+    POST body (JSON, all optional):
+        preset          : "PRFS_STANDARD" | "CF_MULTIECHO" |
+                          "CF_HIGHRES" | "CF_ABLATION"
+        n_echoes        : int   (overrides preset)
+        tr_ms           : float
+        te_min_ms       : float
+        te_max_ms       : float
+        T2star_ms       : float
+        temperature_K   : float  (δT to detect)
+        noise_sigma     : float
+        threshold_K     : float  (clinical risk threshold)
+        write_seq       : bool   (write .seq file to disk)
+    """
+    try:
+        data   = request.get_json(silent=True) or {}
+        bank   = CF_ThermometryPulseBank()
+        preset = data.get("preset", "CF_MULTIECHO")
+
+        # Build config from defaults + any overrides
+        if preset not in bank.PRESETS:
+            preset = "CF_MULTIECHO"
+        cfg = dict(bank.PRESETS[preset])
+        for key in ("n_echoes", "tr_ms", "te_min_ms", "te_max_ms",
+                    "T2star_ms", "temperature_K", "noise_sigma",
+                    "threshold_K"):
+            if key in data:
+                cfg[key] = float(data[key]) if key != "n_echoes" \
+                            else int(data[key])
+
+        result = bank.run(cfg)
+
+        if data.get("write_seq", False):
+            seqs_dir = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "seqs")
+            os.makedirs(seqs_dir, exist_ok=True)
+            bank.write_seq(cfg, seqs_dir)
+            result["seq_written"] = True
+
+        return jsonify({
+            "preset":          preset,
+            "snr_db":          result["snr"]["snr_db"],
+            "temperature_noise_K": result["snr"]["temperature_noise_K"],
+            "optimal_te_ms":   result["snr"]["optimal_te_ms"],
+            "cf_convergents":  result["cf_convergents"][:10],
+            "risk":            result["risk"],
+            "plot_b64":        result["plot_b64"],
+            "seq_text":        result["seq_text"][:2000],   # truncate for JSON
+        })
+    except Exception as e:
+        import traceback
+        return jsonify({"error": str(e),
+                        "traceback": traceback.format_exc()}), 500
+
+
+@app.route('/api/cf_thermometry/write_all_seqs', methods=['POST'])
+def cf_thermometry_write_all():
+    """Write all 4 CF thermometry preset .seq files to disk."""
+    try:
+        seqs_dir = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "seqs")
+        os.makedirs(seqs_dir, exist_ok=True)
+        written = write_all_preset_seqs(seqs_dir)
+        return jsonify({"written": written})
+    except Exception as e:
+        import traceback
+        return jsonify({"error": str(e),
+                        "traceback": traceback.format_exc()}), 500
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Conformal Skull-Surface Head Coil  (combinatorial shimming + state transfer)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.route('/api/conformal_skull_coil', methods=['POST'])
+def conformal_skull_coil():
+    """
+    Design and optimise a conformal skull-surface head coil.
+
+    POST body (JSON, all optional):
+        n_elements           : int    (default 8)
+        semi_axes            : [a,b,c] in metres
+        loop_radius          : float  metres (default 0.04)
+        tumour_center        : [x,y,z] metres
+        tumour_radius        : float  metres (default 0.025)
+        healthy_shell_factor : float  (default 2.0)
+        beta                 : float  SNR constraint ratio (default 0.7)
+        omega_cavity_MHz     : float  cavity frequency (default 127.73)
+        detuning_kHz         : float  (default 10.0)
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+
+        n_el         = int(data.get("n_elements", 8))
+        semi_axes    = tuple(data.get("semi_axes", [0.10, 0.12, 0.095]))
+        loop_radius  = float(data.get("loop_radius", 0.040))
+        tumour_center = data.get("tumour_center", [0.02, -0.01, 0.03])
+        tumour_radius = float(data.get("tumour_radius", 0.025))
+        healthy_sf   = float(data.get("healthy_shell_factor", 2.0))
+        beta         = float(data.get("beta", 0.7))
+        omega_cav    = float(data.get("omega_cavity_MHz",
+                                       127.73)) * 2 * np.pi * 1e6
+        detuning     = float(data.get("detuning_kHz", 10.0)) \
+                       * 2 * np.pi * 1e3
+
+        coil   = ConformatSkullCoil(n_el, semi_axes, loop_radius)
+        result = coil.optimise(
+            tumour_center        = tumour_center,
+            tumour_radius        = tumour_radius,
+            healthy_shell_factor = healthy_sf,
+            beta                 = beta,
+            omega_cavity         = omega_cav,
+            detuning_delta       = detuning,
+        )
+
+        return jsonify(result)
+
+    except Exception as e:
+        import traceback
+        return jsonify({"error": str(e),
+                        "traceback": traceback.format_exc()}), 500
 
 
 if __name__ == '__main__':
