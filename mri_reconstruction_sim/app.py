@@ -7,6 +7,7 @@ from cardiovascular_pulse import run_cardiovascular_analysis
 from ellipsoidal_artifact_removal import EllipsoidalArtifactRemover, reconstruct_with_ellipsoidal_removal
 from partial_fourier_thermometry import run_pf_thermometry, generate_pf_thermometry_report, PartialFourierThermometry
 from generate_nature_pf_thermometry import generate_nature_pf_thermometry_pub
+from quantum_app_integration import create_quantum_noise_reduction_blueprints
 import os
 import generate_pdf
 import generate_report_images
@@ -19,6 +20,9 @@ import io
 
 app = Flask(__name__)
 LATEST_CONTEXT = {}
+
+# Register quantum noise reduction endpoints
+create_quantum_noise_reduction_blueprints(app)
 
 @app.route('/')
 def index():
