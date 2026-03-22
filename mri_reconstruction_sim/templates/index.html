@@ -331,6 +331,8 @@
                     <option value="CV_CS">❤️ CS-MRI — Compressed Sensing FISTA (CF Optimal)</option>
                     <option disabled style="color:#334155;">── Partial Fourier Thermometry ──</option>
                     <option value="PartialFourierThermometry">🔬 PF Thermometry (Combinatorial k-Space)</option>
+                    <option disabled style="color:#334155;">── Quantum Phase Thermometry ──</option>
+                    <option value="QuantumPhaseThermometry">⚛️ Q-Phase Thermometry (CF · QML · POCS)</option>
                 </select>
             </div>
 
@@ -470,6 +472,7 @@
             <button class="tab-trigger" onclick="switchView('robotics-analytics', this)">🦾 Robotics Analytics</button>
             <button class="tab-trigger" id="tab-pf-thermometry" onclick="switchView('pf-thermometry', this); generatePFThermometry();">🔬 PF Thermometry</button>
             <button class="tab-trigger" id="tab-skull-coil" onclick="switchView('skull-coil', this);">🧠 Conformal Skull Coil</button>
+            <button class="tab-trigger" id="tab-qphase" onclick="switchView('qphase', this);">⚛️ Q-Phase Thermometry</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -960,6 +963,84 @@
                 </div>
             </div>
             <!-- END View: Conformal Skull Coil -->
+
+            <!-- View: Quantum Phase Thermometry -->
+            <div id="view-qphase" class="view-content">
+                <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; align-items:flex-end;">
+                    <div class="control-group" style="flex:1; min-width:120px;">
+                        <label>Echoes</label>
+                        <select id="qp-nechoes" style="width:100%;">
+                            <option value="6">6</option>
+                            <option value="8">8</option>
+                            <option value="10" selected>10</option>
+                            <option value="12">12</option>
+                            <option value="16">16</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:120px;">
+                        <label>PF Factor</label>
+                        <select id="qp-pf" style="width:100%;">
+                            <option value="0.5625">9/16</option>
+                            <option value="0.625" selected>5/8</option>
+                            <option value="0.75">3/4</option>
+                            <option value="0.875">7/8</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:120px;">
+                        <label>B₀ (T)</label>
+                        <select id="qp-b0" style="width:100%;">
+                            <option value="1.5">1.5</option>
+                            <option value="3.0" selected>3.0</option>
+                            <option value="7.0">7.0</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:120px;">
+                        <label>Hotspot ΔT (°C)</label>
+                        <input id="qp-dt" type="number" value="6" min="1" max="20" step="0.5" style="width:100%;">
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:100px;">
+                        <label>Matrix</label>
+                        <select id="qp-matrix" style="width:100%;">
+                            <option value="64">64</option>
+                            <option value="128" selected>128</option>
+                            <option value="256">256</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <button onclick="runQPhaseTherm()" style="padding:0.75rem 1.25rem; background:linear-gradient(135deg,#34d399,#059669); color:#fff; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
+                            ▶ Run Q-Phase Pipeline
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 plot panels -->
+                <div class="dashboard-grid" style="grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+                    <div class="output-box">
+                        <div class="output-title">Combinatorial Mask & Phase-Equiv Reconstruction</div>
+                        <div class="img-window" style="max-height:400px;"><img id="img-qp-mask" src="" style="object-fit:contain; max-height:380px;"></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Temperature Maps (Ground Truth / WLS / Wiener / QML)</div>
+                        <div class="img-window" style="max-height:400px;"><img id="img-qp-temp" src="" style="object-fit:contain; max-height:380px;"></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">Multi-Echo Phase & SNR</div>
+                        <div class="img-window" style="max-height:400px;"><img id="img-qp-snr" src="" style="object-fit:contain; max-height:380px;"></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">CF Convergent Echo Spacing</div>
+                        <div class="img-window" style="max-height:400px;"><img id="img-qp-echo" src="" style="object-fit:contain; max-height:380px;"></div>
+                    </div>
+                </div>
+
+                <!-- Metrics -->
+                <div class="output-box" style="width:100%;">
+                    <div class="output-title">Quantum Phase Thermometry Metrics</div>
+                    <div id="qp-metrics" class="metrics-bar" style="width:100%; grid-template-columns:repeat(5,1fr);"></div>
+                </div>
+                <div id="qp-seq-status" style="margin-top:0.75rem; color:#94a3b8; font-size:0.85rem;"></div>
+            </div>
+            <!-- END View: Q-Phase Thermometry -->
 
             <!-- View: SNR Analytics -->
             <div id="view-snr" class="view-content">
@@ -2307,6 +2388,48 @@
             cvBtn.setAttribute('onclick', origOnclick + '; runCVAnalysis();');
         }
     });
+
+    // ── Quantum Phase Thermometry ──────────────────────────────────────────
+    async function runQPhaseTherm() {
+        const loader = document.getElementById('loader');
+        loader.style.display = 'block';
+        try {
+            const payload = {
+                n_echoes:   parseInt(document.getElementById('qp-nechoes').value),
+                pf_factor:  parseFloat(document.getElementById('qp-pf').value),
+                B0:         parseFloat(document.getElementById('qp-b0').value),
+                hotspot_dT: parseFloat(document.getElementById('qp-dt').value),
+                matrix:     parseInt(document.getElementById('qp-matrix').value),
+            };
+            const res = await fetch('/api/quantum_phase_thermometry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const d = await res.json();
+            if (d.error) { alert('Error: ' + d.error); return; }
+            if (d.plots) {
+                const ids = ['img-qp-mask', 'img-qp-temp', 'img-qp-snr', 'img-qp-echo'];
+                d.plots.forEach((b64, i) => {
+                    if (ids[i]) document.getElementById(ids[i]).src = 'data:image/png;base64,' + b64;
+                });
+            }
+            const m = document.getElementById('qp-metrics');
+            m.innerHTML = [
+                { label: 'SNR (dB)',       value: d.snr_db  ? d.snr_db.toFixed(1)  : '—' },
+                { label: 'RMSE Raw (°C)',  value: d.rmse_raw ? d.rmse_raw.toFixed(3) : '—' },
+                { label: 'RMSE QML (°C)',  value: d.rmse_qml ? d.rmse_qml.toFixed(3) : '—' },
+                { label: 'PSNR QML (dB)',  value: d.psnr_qml ? d.psnr_qml.toFixed(1) : '—' },
+                { label: 'CRB Phase',      value: d.cramer_rao_bound ? d.cramer_rao_bound.toExponential(3) : '—' },
+            ].map(x => `<div class="metric-card"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div>`).join('');
+            const st = document.getElementById('qp-seq-status');
+            st.textContent = d.seq_path ? '✅ Pulse sequence written: ' + d.seq_path : '';
+        } catch(e) {
+            alert('Q-Phase request failed: ' + e);
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
     </script>
 </body>
 </html>

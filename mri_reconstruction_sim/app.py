@@ -11,6 +11,7 @@ from quantum_app_integration import create_quantum_noise_reduction_blueprints
 from cf_thermometry_pulse import CF_ThermometryPulseBank, write_all_preset_seqs
 from conformal_skull_coil import ConformatSkullCoil
 from generate_nature_head_coil_report import generate_nature_head_coil_report
+from quantum_phase_thermometry import run_quantum_phase_thermometry
 import os
 import generate_pdf
 import generate_report_images
@@ -1275,7 +1276,22 @@ def generate_seq():
             'DWI':                       {'desc': 'Diffusion Weighted Imaging',        'rf_shape': 'sinc'},
             'bSSFP':                     {'desc': 'balanced SSFP',                     'rf_shape': 'block'},
             'PartialFourierThermometry': {'desc': 'Partial Fourier MR Thermometry (Combinatorial)', 'rf_shape': 'block'},
+            'QuantumPhaseThermometry':    {'desc': 'Quantum Phase Thermometry (CF · QML · POCS)', 'rf_shape': 'block'},
         }
+        # ── Delegate to Quantum Phase Thermometry module if requested ───────
+        if seq_type == 'QuantumPhaseThermometry':
+            from quantum_phase_thermometry import write_seq_file, farey_echo_times
+            te_arr = farey_echo_times(n_echoes=10, te_min_ms=8.0, te_max_ms=24.0)
+            seq_path = write_seq_file(te_arr, tr_ms=tr_ms, matrix=matrix,
+                                      seq_name='QPhaseTherm_CF_Improved')
+            with open(seq_path, 'r') as fh:
+                seq_content = fh.read()
+            buf = io.BytesIO(seq_content.encode('utf-8'))
+            buf.seek(0)
+            fname = os.path.basename(seq_path)
+            return send_file(buf, mimetype='text/plain',
+                             as_attachment=True, download_name=fname)
+
         # ── Delegate to the PF-Thermometry module if requested ──────────────
         if seq_type == 'PartialFourierThermometry':
             pf_factor = float(data.get('pf_factor', 0.75))
@@ -1575,6 +1591,28 @@ def conformal_skull_coil():
         import traceback
         return jsonify({"error": str(e),
                         "traceback": traceback.format_exc()}), 500
+
+
+@app.route('/api/quantum_phase_thermometry', methods=['POST'])
+def api_quantum_phase_thermometry():
+    try:
+        p = request.get_json(force=True) or {}
+        result = run_quantum_phase_thermometry(
+            n_echoes   = int(p.get('n_echoes', 10)),
+            te_min_ms  = float(p.get('te_min_ms', 8.0)),
+            te_max_ms  = float(p.get('te_max_ms', 24.0)),
+            tr_ms      = float(p.get('tr_ms', 50.0)),
+            pf_factor  = float(p.get('pf_factor', 0.625)),
+            pocs_iters = int(p.get('pocs_iters', 14)),
+            B0         = float(p.get('B0', 3.0)),
+            matrix     = int(p.get('matrix', 128)),
+            hotspot_dT = float(p.get('hotspot_dT', 6.0)),
+            write_seq  = True,
+        )
+        return jsonify(result)
+    except Exception as e:
+        import traceback
+        return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
 
 
 if __name__ == '__main__':
