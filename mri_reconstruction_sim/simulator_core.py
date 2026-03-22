@@ -1717,6 +1717,44 @@ class MRIReconstructionSimulator:
                     sensitivity = 2.0 * sc_coil.schwarz_christoffel_sensitivity(x, y, target_x, target_y, N)
                     phase = np.exp(1j * angle)
                     self.coils.append(sensitivity * phase)
+        
+        elif coil_type == 'neurovascular_conformal':
+            # Neurovascular Conformal Coil with Chamfered Geometry
+            # 16-element cylindrical array optimized for popliteal artery imaging
+            # Features: chamfered loops, EM state transfer cues, differential circuitry
+            try:
+                from neurovascular_conformal_coil import NeurovascularConformCoil
+                
+                # Initialize coil
+                coil = NeurovascularConformCoil(n_elements=16, coil_radius=0.125)
+                self.active_quantum_coil = coil
+                
+                # Generate sensitivity maps for the grid
+                target_points = np.column_stack([x.ravel(), y.ravel(), np.zeros_like(x.ravel())])
+                S = coil.build_sensitivity_matrix(target_points / (N / 30.0))  # Scale to physical coordinates
+                
+                # Extract and reshape for each element
+                for i in range(coil.n_elements):
+                    sensitivity_vals = np.abs(S[i, :]).reshape(x.shape)
+                    
+                    # Normalize and enhance
+                    sensitivity_vals = sensitivity_vals / (np.max(sensitivity_vals) + 1e-10)
+                    sensitivity_vals = np.maximum(sensitivity_vals, 0.05)  # Floor to avoid zero array
+                    
+                    # Add phase from element orientation
+                    phase = np.exp(1j * (2 * np.pi * i / coil.n_elements))
+                    self.coils.append(sensitivity_vals * phase)
+            except ImportError:
+                # Fallback if neurovascular_conformal_coil module not available
+                for i in range(16):
+                    angle = 2 * np.pi * i / 16
+                    cx = center[1] + (N//2.2) * np.cos(angle)
+                    cy = center[0] + (N//2.2) * np.sin(angle)
+                    dist_sq = (x - cx)**2 + (y - cy)**2
+                    
+                    sensitivity = 2.2 * np.exp(-dist_sq / (2 * (N//8)**2))
+                    phase = np.exp(1j * angle)
+                    self.coils.append(sensitivity * phase)
 
         else:
              # Fallback for ANY unknown coil (Quantum, etc)

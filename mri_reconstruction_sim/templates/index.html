@@ -358,6 +358,7 @@
                     <option value="variational_neuro_head">🧠 Variational Neuro Head Coil</option>
                     <option value="conformal_skull_array">🧠 Conformal Skull Array (CF Thermometry)</option>
                     <option value="rec_engine_coil">🤖 Rec. Engine Neurovascular Coil</option>
+                    <option value="neurovascular_conformal">🫀 Neurovascular Conformal (Chamfered · EM State Transfer)</option>
                     <option disabled style="color:#334155;">── Qubit Photonic Topologies ──</option>
                     <option value="qubit_photonic_hc_v1">🧠 Qubit Photonic Head Coil (Bit Shuffle 1)</option>
                     <option value="qubit_photonic_hc_v2">🧠 Qubit Photonic Head Coil (Bit Shuffle 2)</option>
@@ -473,6 +474,7 @@
             <button class="tab-trigger" id="tab-pf-thermometry" onclick="switchView('pf-thermometry', this); generatePFThermometry();">🔬 PF Thermometry</button>
             <button class="tab-trigger" id="tab-skull-coil" onclick="switchView('skull-coil', this);">🧠 Conformal Skull Coil</button>
             <button class="tab-trigger" id="tab-qphase" onclick="switchView('qphase', this);">⚛️ Q-Phase Thermometry</button>
+            <button class="tab-trigger" id="tab-neuro-vascular" onclick="switchView('neuro-vascular', this);">🫀 Neurovascular Thermometry</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -1042,7 +1044,65 @@
             </div>
             <!-- END View: Q-Phase Thermometry -->
 
-            <!-- View: SNR Analytics -->
+            <!-- View: Neurovascular Conformal Coil Thermometry -->
+            <div id="view-neuro-vascular" class="view-content">
+                <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; align-items:flex-end;">
+                    <div class="control-group" style="flex:1; min-width:120px;">
+                        <label>Target Radius (mm)</label>
+                        <input id="nv-target-radius" type="number" value="6" min="2" max="12" step="0.5" style="width:100%;">
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:120px;">
+                        <label>B₀ (T)</label>
+                        <select id="nv-b0" style="width:100%;">
+                            <option value="1.5">1.5</option>
+                            <option value="3.0" selected>3.0</option>
+                            <option value="7.0">7.0</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:120px;">
+                        <label>PF Factor</label>
+                        <select id="nv-pf" style="width:100%;">
+                            <option value="0.5625">9/16</option>
+                            <option value="0.625" selected>5/8</option>
+                            <option value="0.75">3/4</option>
+                            <option value="0.875">7/8</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:120px;">
+                        <label>Matrix Size</label>
+                        <select id="nv-matrix" style="width:100%;">
+                            <option value="64">64</option>
+                            <option value="128" selected>128</option>
+                            <option value="256">256</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:120px;">
+                        <label>Hotspot ΔT (°C)</label>
+                        <input id="nv-dt" type="number" value="15" min="5" max="30" step="1" style="width:100%;">
+                    </div>
+                    <div style="display:flex; gap:0.75rem;">
+                        <button onclick="runNeurovascularTherm()" style="padding:0.75rem 1.25rem; background:linear-gradient(135deg,#ec4899,#be185d); color:#fff; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
+                            ▶ Run Neurovascular Pipeline
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results panel -->
+                <div class="output-box" style="width:100%; margin-bottom:1.25rem;">
+                    <div class="output-title">Temperature Reconstruction (GT | WLS | RBM/QML | Error)</div>
+                    <div class="img-window" style="max-height:500px;">
+                        <img id="img-nv-tempmap" src="" style="object-fit:contain; max-height:480px; width:100%;">
+                    </div>
+                </div>
+
+                <!-- Metrics -->
+                <div class="output-box" style="width:100%;">
+                    <div class="output-title">Neurovascular Thermometry Metrics (16-Element Chamfered Coil)</div>
+                    <div id="nv-metrics" class="metrics-bar" style="width:100%; grid-template-columns:repeat(4,1fr);"></div>
+                </div>
+                <div id="nv-seq-status" style="margin-top:0.75rem; color:#94a3b8; font-size:0.85rem;"></div>
+            </div>
+            <!-- END View: Neurovascular Thermometry -->
             <div id="view-snr" class="view-content">
                 <div style="display:flex; gap:1rem; margin-bottom:1rem;">
                     <button onclick="loadSNRMatrixData()" style="flex:1; max-width:200px; padding:0.75rem; background:linear-gradient(135deg, #38bdf8, #0ea5e9); color:#020617; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
@@ -2426,6 +2486,48 @@
             st.textContent = d.seq_path ? '✅ Pulse sequence written: ' + d.seq_path : '';
         } catch(e) {
             alert('Q-Phase request failed: ' + e);
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
+
+    async function runNeurovascularTherm() {
+        const loader = document.getElementById('loader');
+        loader.style.display = 'block';
+        try {
+            const payload = {
+                target_radius: parseFloat(document.getElementById('nv-target-radius').value) / 1000.0,
+                b0:            parseFloat(document.getElementById('nv-b0').value),
+                pf_factor:     parseFloat(document.getElementById('nv-pf').value),
+                matrix_size:   parseInt(document.getElementById('nv-matrix').value),
+                hotspot_dt:    parseFloat(document.getElementById('nv-dt').value),
+            };
+            const res = await fetch('/api/neurovascular_thermometry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const d = await res.json();
+            if (d.error) { alert('Error: ' + d.error); return; }
+            
+            // Display temperature maps
+            if (d.temperature_map_png) {
+                document.getElementById('img-nv-tempmap').src = 'data:image/png;base64,' + d.temperature_map_png;
+            }
+            
+            // Display metrics
+            const m = document.getElementById('nv-metrics');
+            m.innerHTML = [
+                { label: 'WLS RMSE (°C)',   value: d.rmse_wls ? d.rmse_wls.toFixed(3) : '—' },
+                { label: 'QML RMSE (°C)',   value: d.rmse_rbm ? d.rmse_rbm.toFixed(3) : '—' },
+                { label: 'SNR (dB)',        value: d.snr_db ? d.snr_db.toFixed(1) : '—' },
+                { label: 'Improvement (%)', value: d.improvement_percent ? d.improvement_percent.toFixed(1) : '—' },
+            ].map(x => `<div class="metric-card"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div>`).join('');
+            
+            const st = document.getElementById('nv-seq-status');
+            st.textContent = '✅ Neurovascular .seq file generated: seqs/NeurovascularThermometry.seq';
+        } catch(e) {
+            alert('Neurovascular request failed: ' + e);
         } finally {
             loader.style.display = 'none';
         }

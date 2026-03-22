@@ -1,0 +1,207 @@
+% ============================================================================
+% SIEMENS IDEA Pulseq-1.2 Sequence: Quantum Phase Thermometry
+% ============================================================================
+% Continued-Fraction Optimal Echo Spacing (CF-Farey Distribution)
+% Multi-Echo GRE with Phase-Equivalence POCS Reconstruction
+% Wiener + Quantum RBM Machine Learning Denoising
+% Compatible with SIEMENS MAGNETOM (all field strengths)
+%
+% Generated: 2026-03-22T17:14:47.168629
+% Creator: QuantumPhaseThermometry v1.0
+% Sequence Name: NeurovascularThermometry
+%
+% ============================================================================
+
+[HEADER]
+% SIEMENS sequence metadata
+Name NeurovascularThermometry
+Author QuantumPhaseThermometry
+Comment Multi-echo thermometry with quantum machine learning refinement
+Institution NeuroPulse Lab, Toronto
+Version 1.0
+Compatible SIEMENS MAGNETOM Prisma 3.0T, 7.0T; Avanto 1.5T
+
+[SEQUENCE_CONSTRAINTS]
+MinB0 1.5 T
+MaxB0 9.4 T
+MinTE 10.7 ms
+MaxTE 21.3 ms
+MinTR 50.0 ms
+MaxSlices 256
+MaxPhaseEncodingLines 32
+RequiredType MultiEcho
+RequiredPhaseEncoding GRE
+
+[VERSION]
+major 1
+minor 2
+revision 1
+
+[DEFINITIONS]
+FOV 220.0 220.0 5.0 mm
+SliceThickness 5.0 mm
+SliceSpacing 6.0 mm
+Matrix 32 32
+Bandwidth 580595.5 kHz
+FlipAngle 25.0 deg
+TR 50.000 ms
+ReaderMode ReadoutSingleShot
+NumEchoes 10
+EchoSpacingType ContinuedFraction
+SAR_Limit 2.0 W/kg
+
+[ECHOTIMES]
+% CF-Farey optimized distribution (golden ratio = 1.61803399)
+TE[0] 10.6818 ms  % PhaseAccum=332.3° SNRpen=0.85
+TE[1] 11.8636 ms  % PhaseAccum=329.2° SNRpen=0.82
+TE[2] 13.0455 ms  % PhaseAccum=326.2° SNRpen=0.79
+TE[3] 14.2273 ms  % PhaseAccum=323.1° SNRpen=0.76
+TE[4] 15.4091 ms  % PhaseAccum=320.0° SNRpen=0.72
+TE[5] 16.5909 ms  % PhaseAccum=317.0° SNRpen=0.69
+TE[6] 17.7727 ms  % PhaseAccum=313.9° SNRpen=0.66
+TE[7] 18.9545 ms  % PhaseAccum=310.8° SNRpen=0.63
+TE[8] 20.1364 ms  % PhaseAccum=307.8° SNRpen=0.61
+TE[9] 21.3182 ms  % PhaseAccum=304.7° SNRpen=0.58
+
+[CF_CONVERGENTS]
+% Golden ratio: φ = 1.61803399
+% Using Farey sequence convergents for quasi-random echo distribution
+p0/q0 = 1/1  (1.00000000)
+p1/q1 = 2/1  (2.00000000)
+p2/q2 = 3/2  (1.50000000)
+p3/q3 = 5/3  (1.66666667)
+p4/q4 = 8/5  (1.60000000)
+p5/q5 = 13/8  (1.62500000)
+p6/q6 = 21/13  (1.61538462)
+p7/q7 = 34/21  (1.61904762)
+
+[RF_BLOCKS]
+% Gaussian RF pulse (slice-selective 90° excitation)
+% Duration: ~600 µs | Bandwidth: ~2.5 kHz | Slew: 100 T/m/s
+0.0 0.000000e+00
+9.4 1.333849e-07
+18.8 2.664485e-07
+28.1 3.988701e-07
+37.5 5.303309e-07
+46.9 6.605140e-07
+56.2 7.891059e-07
+65.6 9.157968e-07
+75.0 1.040281e-06
+84.4 1.162260e-06
+93.8 1.281439e-06
+103.1 1.397530e-06
+112.5 1.510255e-06
+121.9 1.619341e-06
+131.2 1.724526e-06
+140.6 1.825557e-06
+150.0 1.922190e-06
+159.4 2.014192e-06
+168.8 2.101341e-06
+178.1 2.183428e-06
+187.5 2.260256e-06
+196.9 2.331638e-06
+206.2 2.397403e-06
+215.6 2.457392e-06
+225.0 2.511462e-06
+234.4 2.559481e-06
+243.8 2.601334e-06
+253.1 2.636920e-06
+262.5 2.666153e-06
+271.9 2.688964e-06
+281.2 2.705297e-06
+290.6 2.715112e-06
+300.0 2.718386e-06
+309.4 2.715112e-06
+318.8 2.705297e-06
+328.1 2.688964e-06
+337.5 2.666153e-06
+346.9 2.636920e-06
+356.2 2.601334e-06
+365.6 2.559481e-06
+375.0 2.511462e-06
+384.4 2.457392e-06
+393.8 2.397403e-06
+403.1 2.331638e-06
+412.5 2.260256e-06
+421.9 2.183428e-06
+431.2 2.101341e-06
+440.6 2.014192e-06
+450.0 1.922190e-06
+459.4 1.825557e-06
+468.8 1.724526e-06
+478.1 1.619341e-06
+487.5 1.510255e-06
+496.9 1.397530e-06
+506.2 1.281439e-06
+515.6 1.162260e-06
+525.0 1.040281e-06
+534.4 9.157968e-07
+543.8 7.891059e-07
+553.1 6.605140e-07
+562.5 5.303309e-07
+571.9 3.988701e-07
+581.2 2.664485e-07
+590.6 1.333849e-07
+
+[GRADIENT_BLOCKS]
+% Gradient strength (max 40 mT/m for clinical scanner)
+Gread_amplitude 0.0034 mT/m  % Readout dephasing
+Gphase_max 0.0017 mT/m  % Phase encode blips
+Gslice 24.0000 mT/m  % Slice selective (5mm @ 3T)
+
+[ADC_BLOCKS]
+% Acquisition window: ~0.00 µs dwell per sample
+Echo[0]: samples=32 dwell=0.0us delay=10.6818ms duration=0.00ms
+Echo[1]: samples=32 dwell=0.0us delay=11.8636ms duration=0.00ms
+Echo[2]: samples=32 dwell=0.0us delay=13.0455ms duration=0.00ms
+Echo[3]: samples=32 dwell=0.0us delay=14.2273ms duration=0.00ms
+Echo[4]: samples=32 dwell=0.0us delay=15.4091ms duration=0.00ms
+Echo[5]: samples=32 dwell=0.0us delay=16.5909ms duration=0.00ms
+Echo[6]: samples=32 dwell=0.0us delay=17.7727ms duration=0.00ms
+Echo[7]: samples=32 dwell=0.0us delay=18.9545ms duration=0.00ms
+Echo[8]: samples=32 dwell=0.0us delay=20.1364ms duration=0.00ms
+Echo[9]: samples=32 dwell=0.0us delay=21.3182ms duration=0.00ms
+
+[BLOCK_EVENTS]
+% Timeline: RF -> readout (10 echoes) -> rephase -> repeat
+1  1  1  1  1  1  0
+2  1  1  2  1  1  0
+3  1  1  3  1  1  0
+4  1  1  4  1  1  0
+5  1  1  5  1  1  0
+6  1  1  6  1  1  0
+7  1  1  7  1  1  0
+8  1  1  8  1  1  0
+9  1  1  9  1  1  0
+10  1  1  10  1  1  0
+11  1  1  11  1  1  0
+12  1  1  12  1  1  0
+13  1  1  13  1  1  0
+14  1  1  14  1  1  0
+15  1  1  15  1  1  0
+16  1  1  16  1  1  0
+17  1  1  17  1  1  0
+18  1  1  18  1  1  0
+19  1  1  19  1  1  0
+20  1  1  20  1  1  0
+21  1  1  21  1  1  0
+22  1  1  22  1  1  0
+23  1  1  23  1  1  0
+24  1  1  24  1  1  0
+25  1  1  25  1  1  0
+26  1  1  26  1  1  0
+27  1  1  27  1  1  0
+28  1  1  28  1  1  0
+29  1  1  29  1  1  0
+30  1  1  30  1  1  0
+31  1  1  31  1  1  0
+32  1  1  32  1  1  0
+
+[HARDWARE_NOTES]
+% Minimum gradient system: 40 mT/m @ 200 T/m/s
+% RF coil requirement: Body/Head quadrature or phased array
+% SAR estimation: 15.0 W/kg (monitor in clinical use)
+% Enable: GRE, multi-echo, phase coherence preservation
+% Disable: parallel imaging (if using POCS homodyne reconstruction)
+
+[END]

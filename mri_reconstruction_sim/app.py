@@ -12,6 +12,7 @@ from cf_thermometry_pulse import CF_ThermometryPulseBank, write_all_preset_seqs
 from conformal_skull_coil import ConformatSkullCoil
 from generate_nature_head_coil_report import generate_nature_head_coil_report
 from quantum_phase_thermometry import run_quantum_phase_thermometry
+from neurovascular_conformal_coil import run_neurovascular_thermometry, NeurovascularConformCoil
 import os
 import generate_pdf
 import generate_report_images
@@ -1593,6 +1594,76 @@ def conformal_skull_coil():
                         "traceback": traceback.format_exc()}), 500
 
 
+@app.route('/api/neurovascular_thermometry', methods=['POST'])
+def api_neurovascular_thermometry():
+    """Neurovascular conformal coil with quantum phase thermometry.
+    
+    Integrates 16-element chamfered coil array with POCS reconstruction
+    and RBM denoising for high-SNR vascular temperature monitoring.
+    """
+    try:
+        p = request.get_json(force=True) or {}
+        
+        result = run_neurovascular_thermometry(
+            target_radius   = float(p.get('target_radius', 0.006)),  # meters
+            b0              = float(p.get('b0', 3.0)),                # Tesla
+            te_array_ms     = None,  # Auto-compute from n_echoes
+            pf_factor       = float(p.get('pf_factor', 0.625)),
+            matrix_size     = int(p.get('matrix_size', 128)),
+            hotspot_dt      = float(p.get('hotspot_dt', 15.0)),      # °C
+            output_seq_file = 'seqs/NeurovascularThermometry.seq'
+        )
+        
+        # Prepare response with images encoded as base64
+        response = {
+            'success': True,
+            'rmse_wls': float(result['rmse_wls']),
+            'rmse_rbm': float(result['rmse_rbm']),
+            'snr_db': float(result['snr_db']),
+            'improvement_percent': float((result['rmse_wls'] - result['rmse_rbm']) / result['rmse_wls'] * 100),
+            'te_array_ms': result['te_array_ms'].tolist(),
+        }
+        
+        # Encode temperature maps as PNG for display
+        fig, axes = plt.subplots(2, 2, figsize=(10, 10))
+        
+        # Ground truth
+        im0 = axes[0, 0].imshow(result['temp_map_gt'], cmap='hot')
+        axes[0, 0].set_title('Ground Truth Temperature (°C)')
+        plt.colorbar(im0, ax=axes[0, 0])
+        
+        # WLS estimate
+        im1 = axes[0, 1].imshow(result['temp_map_wls'], cmap='hot')
+        axes[0, 1].set_title(f"WLS Result (RMSE {result['rmse_wls']:.3f}°C)")
+        plt.colorbar(im1, ax=axes[0, 1])
+        
+        # RBM result
+        im2 = axes[1, 0].imshow(result['temp_map_rbm'], cmap='hot')
+        axes[1, 0].set_title(f"QML RBM Result (RMSE {result['rmse_rbm']:.3f}°C)")
+        plt.colorbar(im2, ax=axes[1, 0])
+        
+        # Error map
+        error = np.abs(result['temp_map_rbm'] - result['temp_map_gt'])
+        im3 = axes[1, 1].imshow(error, cmap='viridis')
+        axes[1, 1].set_title(f"Absolute Error (max {error.max():.3f}°C)")
+        plt.colorbar(im3, ax=axes[1, 1])
+        
+        plt.tight_layout()
+        
+        # Save to bytes
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', dpi=100)
+        buf.seek(0)
+        response['temperature_map_png'] = base64.b64encode(buf.getvalue()).decode()
+        plt.close()
+        
+        return jsonify(response)
+    except Exception as e:
+        import traceback
+        return jsonify({"error": str(e),
+                        "traceback": traceback.format_exc()}), 500
+
+
 @app.route('/api/quantum_phase_thermometry', methods=['POST'])
 def api_quantum_phase_thermometry():
     try:
@@ -1617,4 +1688,4 @@ def api_quantum_phase_thermometry():
 
 if __name__ == '__main__':
     port = int(os.environ.get('FLASK_RUN_PORT', 5050))
-    app.run(port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False, threaded=True)
