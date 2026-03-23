@@ -475,6 +475,7 @@
             <button class="tab-trigger" id="tab-skull-coil" onclick="switchView('skull-coil', this);">🧠 Conformal Skull Coil</button>
             <button class="tab-trigger" id="tab-qphase" onclick="switchView('qphase', this);">⚛️ Q-Phase Thermometry</button>
             <button class="tab-trigger" id="tab-neuro-vascular" onclick="switchView('neuro-vascular', this);">🫀 Neurovascular Thermometry</button>
+            <button class="tab-trigger" id="tab-enhanced-therm" onclick="switchView('enhanced-therm', this);">🔥 Enhanced Thermometry</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -1103,6 +1104,114 @@
                 <div id="nv-seq-status" style="margin-top:0.75rem; color:#94a3b8; font-size:0.85rem;"></div>
             </div>
             <!-- END View: Neurovascular Thermometry -->
+
+            <!-- View: Enhanced Quantum MR Thermometry -->
+            <div id="view-enhanced-therm" class="view-content">
+                <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; align-items:flex-end;">
+                    <div class="control-group" style="flex:1; min-width:100px;">
+                        <label>Echoes</label>
+                        <select id="et-nechoes" style="width:100%;">
+                            <option value="6">6</option>
+                            <option value="8">8</option>
+                            <option value="10" selected>10</option>
+                            <option value="12">12</option>
+                            <option value="16">16</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:100px;">
+                        <label>PF Factor</label>
+                        <select id="et-pf" style="width:100%;">
+                            <option value="0.5625">9/16</option>
+                            <option value="0.625" selected>5/8</option>
+                            <option value="0.75">3/4</option>
+                            <option value="0.875">7/8</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:100px;">
+                        <label>B₀ (T)</label>
+                        <select id="et-b0" style="width:100%;">
+                            <option value="1.5">1.5</option>
+                            <option value="3.0" selected>3.0</option>
+                            <option value="7.0">7.0</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:100px;">
+                        <label>Hotspot ΔT (°C)</label>
+                        <input id="et-dt" type="number" value="6" min="1" max="25" step="0.5" style="width:100%;">
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:80px;">
+                        <label>Matrix</label>
+                        <select id="et-matrix" style="width:100%;">
+                            <option value="64">64</option>
+                            <option value="128" selected>128</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:100px;">
+                        <label>Target Temp (°C)</label>
+                        <input id="et-target" type="number" value="55" min="40" max="80" step="1" style="width:100%;">
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:100px;">
+                        <label>Seq Types</label>
+                        <select id="et-seqtype" multiple style="width:100%; height:60px;">
+                            <option value="multiecho_gre" selected>Multi-Echo GRE</option>
+                            <option value="epi_thermometry">EPI Thermometry</option>
+                            <option value="prfs_highres" selected>PRFS High-Res</option>
+                            <option value="stack_of_stars">Stack-of-Stars</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <button onclick="runEnhancedThermometry()" style="padding:0.75rem 1.5rem; background:linear-gradient(135deg,#f44336,#e91e63); color:#fff; font-weight:700; border:none; border-radius:8px; cursor:pointer; font-size:0.95rem;">
+                            🔥 Run Enhanced Pipeline
+                        </button>
+                        <button onclick="downloadThermSeq()" style="padding:0.75rem 1rem; background:linear-gradient(135deg,#4caf50,#2e7d32); color:#fff; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
+                            ⬇ Download .seq
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results panels -->
+                <div class="dashboard-grid" style="grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+                    <div class="output-box">
+                        <div class="output-title">🔥 Colorised MR Thermometry — Temperature Probe Control</div>
+                        <div class="img-window" style="max-height:500px; position:relative;">
+                            <img id="img-et-therm" src="" style="object-fit:contain; max-height:480px; width:100%; cursor:crosshair;">
+                        </div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">📊 Statistical Distribution Analysis (Rice/Gamma/NCX2/Rayleigh)</div>
+                        <div class="img-window" style="max-height:500px;">
+                            <img id="img-et-dist" src="" style="object-fit:contain; max-height:480px; width:100%;">
+                        </div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">🧠 Multimodal Reasoning (Phase + T1 Bayesian Fusion)</div>
+                        <div class="img-window" style="max-height:450px;">
+                            <img id="img-et-multimodal" src="" style="object-fit:contain; max-height:430px; width:100%;">
+                        </div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">⚡ FFTW-Accelerated Multi-Echo Reconstruction</div>
+                        <div class="img-window" style="max-height:450px;">
+                            <img id="img-et-fftw" src="" style="object-fit:contain; max-height:430px; width:100%;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LUT Table -->
+                <div class="output-box" style="width:100%; margin-bottom:1.25rem;">
+                    <div class="output-title">📋 Tissue Thermometry Lookup Table (PRF Sensitivity at Selected B₀)</div>
+                    <div id="et-lut-table" style="overflow-x:auto; color:#e2e8f0; font-size:0.82rem;"></div>
+                </div>
+
+                <!-- Metrics row -->
+                <div class="output-box" style="width:100%; margin-bottom:1rem;">
+                    <div class="output-title">Enhanced Thermometry Metrics</div>
+                    <div id="et-metrics" class="metrics-bar" style="width:100%; grid-template-columns:repeat(6,1fr);"></div>
+                </div>
+                <div id="et-seq-status" style="margin-top:0.5rem; color:#94a3b8; font-size:0.85rem;"></div>
+            </div>
+            <!-- END View: Enhanced Thermometry -->
+
             <div id="view-snr" class="view-content">
                 <div style="display:flex; gap:1rem; margin-bottom:1rem;">
                     <button onclick="loadSNRMatrixData()" style="flex:1; max-width:200px; padding:0.75rem; background:linear-gradient(135deg, #38bdf8, #0ea5e9); color:#020617; font-weight:700; border:none; border-radius:8px; cursor:pointer;">
@@ -2530,6 +2639,110 @@
             alert('Neurovascular request failed: ' + e);
         } finally {
             loader.style.display = 'none';
+        }
+    }
+
+    // ── Enhanced Quantum MR Thermometry ────────────────────────────────────
+    async function runEnhancedThermometry() {
+        const loader = document.getElementById('loader');
+        loader.style.display = 'block';
+        try {
+            const seqSel = document.getElementById('et-seqtype');
+            const seqTypes = Array.from(seqSel.selectedOptions).map(o => o.value);
+
+            const payload = {
+                n_echoes:    parseInt(document.getElementById('et-nechoes').value),
+                pf_factor:   parseFloat(document.getElementById('et-pf').value),
+                B0:          parseFloat(document.getElementById('et-b0').value),
+                hotspot_dT:  parseFloat(document.getElementById('et-dt').value),
+                matrix:      parseInt(document.getElementById('et-matrix').value),
+                target_temp: parseFloat(document.getElementById('et-target').value),
+                seq_types:   seqTypes,
+                probe_x:     64,
+                probe_y:     64,
+            };
+            const res = await fetch('/api/enhanced_thermometry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const d = await res.json();
+            if (!d.success) { alert('Error: ' + (d.error || 'Unknown')); return; }
+
+            // Display plots
+            if (d.plot_thermometry) document.getElementById('img-et-therm').src = 'data:image/png;base64,' + d.plot_thermometry;
+            if (d.plot_distributions) document.getElementById('img-et-dist').src = 'data:image/png;base64,' + d.plot_distributions;
+            if (d.plot_multimodal) document.getElementById('img-et-multimodal').src = 'data:image/png;base64,' + d.plot_multimodal;
+            if (d.plot_fftw_recon) document.getElementById('img-et-fftw').src = 'data:image/png;base64,' + d.plot_fftw_recon;
+
+            // Metrics
+            const m = document.getElementById('et-metrics');
+            m.innerHTML = [
+                { label: 'SNR (dB)',          value: d.snr_db != null ? d.snr_db.toFixed(1) : '—' },
+                { label: 'RMSE Raw (°C)',     value: d.rmse_raw_C != null ? d.rmse_raw_C.toFixed(4) : '—' },
+                { label: 'RMSE QML (°C)',     value: d.rmse_qml_C != null ? d.rmse_qml_C.toFixed(4) : '—' },
+                { label: 'Best Dist.',        value: d.best_distribution || '—' },
+                { label: 'Fisher min ΔT (°C)', value: d.fisher_info ? d.fisher_info.min_detectable_dT_C.toFixed(4) : '—' },
+                { label: 'FFTW Backend',      value: d.fftw_backend || '—' },
+            ].map(x => `<div class="metric-card"><div class="metric-label">${x.label}</div><div class="metric-value">${x.value}</div></div>`).join('');
+
+            // LUT table
+            if (d.lut_summary) {
+                let html = '<table style="width:100%; border-collapse:collapse; font-size:0.82rem;">';
+                html += '<tr style="border-bottom:1px solid #334155;">';
+                html += '<th style="text-align:left; padding:6px; color:#38bdf8;">Tissue</th>';
+                html += '<th style="padding:6px; color:#38bdf8;">dΦ/dT (deg/°C)</th>';
+                html += '<th style="padding:6px; color:#38bdf8;">Optimal TE (ms)</th>';
+                html += '<th style="padding:6px; color:#38bdf8;">SNR Efficiency</th>';
+                html += '<th style="padding:6px; color:#38bdf8;">Min ΔT (°C)</th>';
+                html += '</tr>';
+                for (const [tissue, info] of Object.entries(d.lut_summary)) {
+                    html += `<tr style="border-bottom:1px solid #1e293b;">`;
+                    html += `<td style="padding:5px; color:#e2e8f0;">${tissue.replace(/_/g,' ')}</td>`;
+                    html += `<td style="padding:5px; text-align:center; color:#fbbf24;">${info.dPhi_dT_deg}</td>`;
+                    html += `<td style="padding:5px; text-align:center;">${info.opt_TE_ms}</td>`;
+                    html += `<td style="padding:5px; text-align:center;">${info.snr_eff}</td>`;
+                    html += `<td style="padding:5px; text-align:center; color:#f87171;">${info.min_dT_C}</td>`;
+                    html += `</tr>`;
+                }
+                html += '</table>';
+                document.getElementById('et-lut-table').innerHTML = html;
+            }
+
+            // Seq status
+            const st = document.getElementById('et-seq-status');
+            if (d.generated_sequences && d.generated_sequences.length > 0) {
+                st.innerHTML = '✅ Generated .seq files: ' + d.generated_sequences.map(s =>
+                    `<span style="color:#4ade80; font-weight:600;">${s}</span>`).join(', ');
+            }
+        } catch(e) {
+            alert('Enhanced Thermometry failed: ' + e);
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
+
+    async function downloadThermSeq() {
+        const seqSel = document.getElementById('et-seqtype');
+        const seqType = seqSel.selectedOptions.length > 0 ? seqSel.selectedOptions[0].value : 'multiecho_gre';
+        const b0 = parseFloat(document.getElementById('et-b0').value);
+        const nEchoes = parseInt(document.getElementById('et-nechoes').value);
+        try {
+            const res = await fetch('/api/generate_thermometry_seq', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ seq_type: seqType, b0: b0, n_echoes: nEchoes }),
+            });
+            if (!res.ok) { alert('Download failed'); return; }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `THERM_${seqType}_${b0}T.seq`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch(e) {
+            alert('Download failed: ' + e);
         }
     }
     </script>

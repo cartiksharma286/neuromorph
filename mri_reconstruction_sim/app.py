@@ -13,6 +13,12 @@ from conformal_skull_coil import ConformatSkullCoil
 from generate_nature_head_coil_report import generate_nature_head_coil_report
 from quantum_phase_thermometry import run_quantum_phase_thermometry
 from neurovascular_conformal_coil import run_neurovascular_thermometry, NeurovascularConformCoil
+from quantum_thermometry_enhanced import (
+    run_enhanced_thermometry_pipeline,
+    lookup_prf_sensitivity, TISSUE_LUT, B0_LUT,
+    generate_thermometry_pulse_sequence,
+    fit_signal_distributions,
+)
 import os
 import generate_pdf
 import generate_report_images
@@ -1684,6 +1690,93 @@ def api_quantum_phase_thermometry():
     except Exception as e:
         import traceback
         return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
+
+
+# ── Enhanced Quantum Thermometry with LUT, FFTW, Multimodal ─────────────────
+
+@app.route('/api/enhanced_thermometry', methods=['POST'])
+def api_enhanced_thermometry():
+    """Enhanced quantum thermometry with lookup tables, FFTW,
+    statistical distributions, multimodal reasoning, and probe control."""
+    try:
+        p = request.get_json(force=True) or {}
+        result = run_enhanced_thermometry_pipeline(
+            n_echoes   = int(p.get('n_echoes', 10)),
+            te_min_ms  = float(p.get('te_min_ms', 6.0)),
+            te_max_ms  = float(p.get('te_max_ms', 28.0)),
+            tr_ms      = float(p.get('tr_ms', 50.0)),
+            pf_factor  = float(p.get('pf_factor', 0.625)),
+            pocs_iters = int(p.get('pocs_iters', 14)),
+            B0         = float(p.get('B0', 3.0)),
+            matrix     = int(p.get('matrix', 128)),
+            hotspot_dT = float(p.get('hotspot_dT', 6.0)),
+            probe_x    = int(p.get('probe_x', -1)),
+            probe_y    = int(p.get('probe_y', -1)),
+            target_temp = float(p.get('target_temp', 55.0)),
+            seq_types   = p.get('seq_types', ['multiecho_gre', 'prfs_highres']),
+        )
+        return jsonify({'success': True, **result})
+    except Exception as e:
+        import traceback
+        return jsonify({'success': False, 'error': str(e),
+                        'traceback': traceback.format_exc()}), 500
+
+
+@app.route('/api/thermometry_lut', methods=['GET'])
+def api_thermometry_lut():
+    """Return tissue-specific PRF thermometry lookup table."""
+    try:
+        b0 = float(request.args.get('b0', 3.0))
+        b0_key = min(B0_LUT.keys(), key=lambda k: abs(k - b0))
+        lut_data = {}
+        for tissue, factors in B0_LUT[b0_key].items():
+            lut_data[tissue] = {
+                **factors,
+                **{k: v for k, v in TISSUE_LUT.get(tissue, {}).items()
+                   if k not in ('temp_range',)},
+                'temp_range': list(TISSUE_LUT.get(tissue, {}).get('temp_range', (35, 42))),
+            }
+        return jsonify({'success': True, 'b0': b0_key, 'lut': lut_data})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/thermometry_probe', methods=['POST'])
+def api_thermometry_probe():
+    """Return temperature at a probe position from the latest thermometry run."""
+    try:
+        p = request.get_json(force=True) or {}
+        probe_x = int(p.get('x', 64))
+        probe_y = int(p.get('y', 64))
+        b0 = float(p.get('b0', 3.0))
+        tissue = p.get('tissue', 'gray_matter')
+        lut = lookup_prf_sensitivity(tissue, b0)
+        return jsonify({
+            'success': True,
+            'probe_x': probe_x,
+            'probe_y': probe_y,
+            'tissue': tissue,
+            'lut': lut,
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/generate_thermometry_seq', methods=['POST'])
+def api_generate_thermometry_seq():
+    """Generate and download a thermometry-optimised .seq file."""
+    try:
+        p = request.get_json(force=True) or {}
+        seq_type = p.get('seq_type', 'multiecho_gre')
+        b0 = float(p.get('b0', 3.0))
+        n_echoes = int(p.get('n_echoes', 8))
+        result = generate_thermometry_pulse_sequence(
+            seq_type=seq_type, b0=b0, n_echoes=n_echoes)
+        return send_file(result['seq_path'], as_attachment=True,
+                         download_name=os.path.basename(result['seq_path']))
+    except Exception as e:
+        import traceback
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 if __name__ == '__main__':

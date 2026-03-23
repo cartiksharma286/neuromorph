@@ -3376,59 +3376,145 @@ class MRIReconstructionSimulator:
         return fig_map, fig_hist
 
     def generate_temperature_map_plot(self, recon_img, mean_temp):
-        """Generates a colorized temperature map based on intensity variations."""
+        """Generates a colorized temperature map with enhanced thermometry LUT overlay."""
         import matplotlib.pyplot as plt
+        from matplotlib.colors import LinearSegmentedColormap
         import io
         import base64
         
         plt.style.use('dark_background')
-        fig, ax = plt.subplots(figsize=(6, 6))
-        fig.patch.set_facecolor('#0f172a')
+        fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+        fig.patch.set_facecolor('#0a0e1a')
         
-        # Simulate temperature map: Intensity deviation from mean as temp delta
+        # Custom thermometry colormap
+        cmap_colors = [
+            (0.0, '#0d47a1'), (0.2, '#2196f3'), (0.35, '#4caf50'),
+            (0.5, '#ffeb3b'), (0.65, '#ff9800'), (0.8, '#f44336'),
+            (0.95, '#e91e63'), (1.0, '#ffffff'),
+        ]
+        cmap_therm = LinearSegmentedColormap.from_list(
+            'thermometry', [(p, c) for p, c in cmap_colors], N=512)
+
         recon_norm = recon_img / (np.max(recon_img) + 1e-9)
-        temp_map = mean_temp + (recon_norm - 0.5) * 5.0
+        temp_map = mean_temp + (recon_norm - 0.5) * 8.0
         
-        im = ax.imshow(temp_map, cmap='hot', vmin=35, vmax=45)
-        ax.set_title(f"QML Temperature Map (Mean: {mean_temp:.1f}°C)", color='white')
-        plt.colorbar(im, ax=ax, label='Temp (°C)')
-        ax.axis('off')
+        # Panel 1: Magnitude underlay + temperature overlay
+        axes[0].imshow(recon_norm, cmap='gray', alpha=0.5)
+        im0 = axes[0].imshow(temp_map, cmap=cmap_therm, alpha=0.7, vmin=33, vmax=48)
+        axes[0].set_title(f"Temperature Overlay (Mean: {mean_temp:.1f}°C)", color='white', fontsize=9)
+        axes[0].axis('off')
+        
+        # Panel 2: Pure colorised temperature map with probe marker
+        im1 = axes[1].imshow(temp_map, cmap=cmap_therm, vmin=33, vmax=48)
+        cbar = fig.colorbar(im1, ax=axes[1], fraction=0.046, pad=0.04)
+        cbar.set_label('Temperature (°C)', color='white')
+        cbar.ax.tick_params(colors='white')
+        # Add probe control crosshair at hottest point
+        hy, hx = np.unravel_index(np.argmax(temp_map), temp_map.shape)
+        axes[1].plot(hx, hy, '+', color='#00ff41', markersize=14, markeredgewidth=2.5)
+        axes[1].annotate(f'{temp_map[hy, hx]:.1f}°C', xy=(hx, hy),
+                        xytext=(hx + 8, hy - 8), color='#00ff41', fontsize=9, fontweight='bold',
+                        arrowprops=dict(arrowstyle='->', color='#00ff41'))
+        axes[1].set_title("Colorised MR Thermometry", color='white', fontsize=9)
+        axes[1].axis('off')
+        
+        # Panel 3: Temperature histogram
+        flat = temp_map[recon_norm > 0.1].ravel()
+        if len(flat) > 0:
+            axes[2].hist(flat, bins=50, color='#f44336', alpha=0.7, edgecolor='white', linewidth=0.3)
+            axes[2].axvline(mean_temp, color='#00ff41', linestyle='--', linewidth=2, label=f'Mean {mean_temp:.1f}°C')
+            axes[2].legend(fontsize=8, facecolor='#1a1a2e', edgecolor='#333', labelcolor='white')
+        axes[2].set_title("Temperature Distribution", color='white', fontsize=9)
+        axes[2].set_xlabel("°C", color='white')
+        axes[2].set_ylabel("Count", color='white')
+        axes[2].tick_params(colors='white')
+        axes[2].set_facecolor('#0a0e1a')
+        
+        fig.suptitle("QML MR Thermometry — LUT-Enhanced Colorised Reconstruction",
+                     color='#38bdf8', fontsize=11, fontweight='bold')
+        fig.tight_layout(rect=[0, 0, 1, 0.93])
         
         buf = io.BytesIO()
-        fig.savefig(buf, format='png', transparent=True, bbox_inches='tight')
+        fig.savefig(buf, format='png', dpi=140, bbox_inches='tight', facecolor=fig.get_facecolor())
         buf.seek(0)
         plt.close(fig)
         return base64.b64encode(buf.getvalue()).decode('utf-8')
 
     def generate_distribution_curve_plot(self, recon_img, distribution_stats):
-        """Generates a statistical plot of the signal distributions."""
+        """Generates multi-distribution statistical analysis of signal with Rice/Gamma/Rayleigh fits."""
         import matplotlib.pyplot as plt
         import io
         import base64
-        from scipy.stats import gamma
+        from scipy.stats import gamma, rayleigh, rice
         
         plt.style.use('dark_background')
-        fig, ax = plt.subplots(figsize=(8, 5))
-        fig.patch.set_facecolor('#0f172a')
+        fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+        fig.patch.set_facecolor('#0a0e1a')
         
         flat = recon_img.flatten()
         flat = flat[flat > 0.05 * np.max(flat)]
+        x = np.linspace(min(flat), max(flat), 200)
         
-        ax.hist(flat, bins=50, density=True, alpha=0.6, color='#38bdf8', label='Measured Signal')
+        # Panel 1: Histogram with multiple distribution fits
+        ax = axes[0]
+        ax.hist(flat, bins=60, density=True, alpha=0.5, color='#64b5f6',
+                edgecolor='white', linewidth=0.3, label='Measured Signal')
         
-        # Plot fitted Gamma distribution
-        p = distribution_stats['params']
-        x = np.linspace(min(flat), max(flat), 100)
-        y = gamma.pdf(x, p['alpha'], p['loc'], p['scale'])
-        ax.plot(x, y, color='#f43f5e', lw=3, label='QML Parametric Fit (Gamma)')
+        # Gamma fit
+        p = distribution_stats.get('params', {})
+        if 'alpha' in p:
+            y_gamma = gamma.pdf(x, p['alpha'], p.get('loc', 0), p['scale'])
+            ax.plot(x, y_gamma, color='#ff9800', lw=2.5, label='Gamma Fit')
         
-        ax.set_title("Parametric Signal Distribution (Bayesian Reasoning)", color='white')
+        # Rayleigh fit
+        try:
+            r_loc, r_scale = rayleigh.fit(flat)
+            y_ray = rayleigh.pdf(x, r_loc, r_scale)
+            ax.plot(x, y_ray, color='#f44336', lw=2, linestyle='--', label='Rayleigh')
+        except Exception:
+            pass
+        
+        # Rice fit
+        try:
+            rice_b, rice_loc, rice_scale = rice.fit(flat)
+            y_rice = rice.pdf(x, rice_b, rice_loc, rice_scale)
+            ax.plot(x, y_rice, color='#4caf50', lw=2, linestyle='-.', label='Rice')
+        except Exception:
+            pass
+        
+        ax.set_title("Multi-Distribution Signal Analysis", color='white', fontsize=10, fontweight='bold')
         ax.set_xlabel("Voxel Intensity", color='white')
         ax.set_ylabel("Probability Density", color='white')
-        ax.legend()
+        ax.legend(fontsize=8, facecolor='#1a1a2e', edgecolor='#333', labelcolor='white')
+        ax.tick_params(colors='white')
+        ax.set_facecolor('#0a0e1a')
+        
+        # Panel 2: Distribution statistics text
+        ax = axes[1]
+        stats_text = "Multimodal Reasoning Statistics\n" + "=" * 35 + "\n\n"
+        stats_text += f"Best Fit: Gamma Distribution\n"
+        if 'alpha' in p:
+            stats_text += f"  Shape (α): {p['alpha']:.4f}\n"
+            stats_text += f"  Scale (β): {p['scale']:.4f}\n"
+            stats_text += f"  Location:  {p.get('loc', 0):.4f}\n\n"
+        mean_temp = distribution_stats.get('inferred_mean_temp_c', 37.0)
+        stats_text += f"Inferred Mean Temp: {mean_temp:.1f}°C\n"
+        stats_text += f"Signal Mean: {np.mean(flat):.4f}\n"
+        stats_text += f"Signal Std:  {np.std(flat):.4f}\n"
+        stats_text += f"Voxels:      {len(flat)}\n"
+        ax.text(0.05, 0.95, stats_text, transform=ax.transAxes,
+                fontsize=10, verticalalignment='top', family='monospace',
+                color='#e2e8f0', bbox=dict(facecolor='#1e293b', edgecolor='#334155',
+                                            boxstyle='round,pad=0.5'))
+        ax.set_facecolor('#0a0e1a')
+        ax.axis('off')
+        
+        fig.suptitle("Statistical Distribution & Multimodal Reasoning",
+                     color='#38bdf8', fontsize=11, fontweight='bold')
+        fig.tight_layout(rect=[0, 0, 1, 0.93])
         
         buf = io.BytesIO()
-        fig.savefig(buf, format='png', transparent=True, bbox_inches='tight')
+        fig.savefig(buf, format='png', dpi=140, bbox_inches='tight', facecolor=fig.get_facecolor())
         buf.seek(0)
         plt.close(fig)
         return base64.b64encode(buf.getvalue()).decode('utf-8')

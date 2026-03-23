@@ -16,6 +16,12 @@ import json
 from pypulseq_generator import generate_seq_file
 from cardiovascular_pulse import run_cardiovascular_analysis, SEQUENCES as CV_SEQUENCES, CARDIAC_TISSUES
 from cs_cardiac_pulse import run_cs_cardiac
+from quantum_thermometry_enhanced import (
+    run_enhanced_thermometry_pipeline,
+    lookup_prf_sensitivity, TISSUE_LUT, B0_LUT,
+    generate_thermometry_pulse_sequence,
+    fit_signal_distributions,
+)
 
 def sanitize_for_json(obj):
     """Recursively replace NaNs and Infs with None."""
@@ -699,6 +705,79 @@ def cardiovascular_sequences():
         'sequences': list(CV_SEQUENCES.keys()),
         'tissues':   list(CARDIAC_TISSUES.keys())
     })
+
+
+# ── Enhanced Quantum MR Thermometry ────────────────────────────────────────────
+
+@app.route('/api/enhanced_thermometry', methods=['POST'])
+def api_enhanced_thermometry():
+    try:
+        p = request.get_json(force=True) or {}
+        result = run_enhanced_thermometry_pipeline(
+            n_echoes    = int(p.get('n_echoes', 10)),
+            te_min_ms   = float(p.get('te_min_ms', 6.0)),
+            te_max_ms   = float(p.get('te_max_ms', 28.0)),
+            pf_factor   = float(p.get('pf_factor', 0.625)),
+            pocs_iters  = int(p.get('pocs_iters', 14)),
+            B0          = float(p.get('B0', 3.0)),
+            matrix      = int(p.get('matrix', 128)),
+            hotspot_dT  = float(p.get('hotspot_dT', 6.0)),
+            probe_x     = int(p.get('probe_x', -1)),
+            probe_y     = int(p.get('probe_y', -1)),
+            target_temp = float(p.get('target_temp', 55.0)),
+            seq_types   = p.get('seq_types', ['multiecho_gre', 'prfs_highres']),
+        )
+        return jsonify(sanitize_for_json({'success': True, **result}))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/thermometry_lut', methods=['GET'])
+def api_thermometry_lut():
+    try:
+        b0 = float(request.args.get('b0', 3.0))
+        b0_key = min(B0_LUT.keys(), key=lambda k: abs(k - b0))
+        lut_data = {}
+        for tissue, factors in B0_LUT[b0_key].items():
+            lut_data[tissue] = {
+                **factors,
+                **{k: v for k, v in TISSUE_LUT.get(tissue, {}).items()
+                   if k not in ('temp_range',)},
+                'temp_range': list(TISSUE_LUT.get(tissue, {}).get('temp_range', (35, 42))),
+            }
+        return jsonify(sanitize_for_json({'success': True, 'b0': b0_key, 'lut': lut_data}))
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/thermometry_probe', methods=['POST'])
+def api_thermometry_probe():
+    try:
+        p = request.get_json(force=True) or {}
+        probe_x = int(p.get('x', 64))
+        probe_y = int(p.get('y', 64))
+        tissue = p.get('tissue', 'gray_matter')
+        b0 = float(p.get('b0', 3.0))
+        lut = lookup_prf_sensitivity(tissue, b0)
+        return jsonify(sanitize_for_json({'success': True, 'probe_x': probe_x, 'probe_y': probe_y, 'tissue': tissue, 'lut': lut}))
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/generate_thermometry_seq', methods=['POST'])
+def api_generate_thermometry_seq():
+    try:
+        p = request.get_json(force=True) or {}
+        result = generate_thermometry_pulse_sequence(
+            seq_type=p.get('seq_type', 'multiecho_gre'),
+            b0=float(p.get('b0', 3.0)),
+            n_echoes=int(p.get('n_echoes', 8)))
+        return send_file(result['seq_path'], as_attachment=True,
+                         download_name=os.path.basename(result['seq_path']))
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/snr_matrix', methods=['GET'])
 def snr_matrix():
