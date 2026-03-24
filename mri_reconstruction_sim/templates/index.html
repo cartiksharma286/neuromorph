@@ -476,6 +476,7 @@
             <button class="tab-trigger" id="tab-qphase" onclick="switchView('qphase', this);">⚛️ Q-Phase Thermometry</button>
             <button class="tab-trigger" id="tab-neuro-vascular" onclick="switchView('neuro-vascular', this);">🫀 Neurovascular Thermometry</button>
             <button class="tab-trigger" id="tab-enhanced-therm" onclick="switchView('enhanced-therm', this);">🔥 Enhanced Thermometry</button>
+            <button class="tab-trigger" id="tab-rtms" onclick="switchView('rtms', this);">🧠 rTMS Neural Repair</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -1211,6 +1212,109 @@
                 <div id="et-seq-status" style="margin-top:0.5rem; color:#94a3b8; font-size:0.85rem;"></div>
             </div>
             <!-- END View: Enhanced Thermometry -->
+
+            <!-- View: rTMS Neural Repair -->
+            <div id="view-rtms" class="view-content">
+                <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; align-items:flex-end;">
+                    <div class="control-group" style="flex:1; min-width:140px;">
+                        <label>Treatment Paradigm</label>
+                        <select id="rtms-paradigm" style="width:100%;" onchange="updateRtmsInfo()">
+                            <option value="cognitive_enhancement">Cognitive Enhancement</option>
+                            <option value="memory_repair">Memory Repair (MCI/AD)</option>
+                            <option value="smart_aging" selected>Smart Aging</option>
+                            <option value="stroke_motor">Post-Stroke Motor</option>
+                            <option value="depression_repair">Depression Repair</option>
+                            <option value="neuroplasticity_boost">Neuroplasticity Boost</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:80px;">
+                        <label>Age</label>
+                        <input id="rtms-age" type="number" value="65" min="30" max="95" style="width:100%;">
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:100px;">
+                        <label>Baseline MMSE</label>
+                        <input id="rtms-mmse" type="number" value="26" min="10" max="30" step="0.5" style="width:100%;">
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:120px;">
+                        <label>Target Region</label>
+                        <select id="rtms-target" style="width:100%;">
+                            <option value="L-DLPFC" selected>L-DLPFC</option>
+                            <option value="R-DLPFC">R-DLPFC</option>
+                            <option value="L-M1">L-M1 (Motor)</option>
+                            <option value="L-IPL">L-IPL (Parietal)</option>
+                            <option value="mPFC">mPFC</option>
+                            <option value="PCC">PCC</option>
+                            <option value="Cerebellum">Cerebellum</option>
+                            <option value="L-STS">L-STS (Language)</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:100px;">
+                        <label>Coil Type</label>
+                        <select id="rtms-coil" style="width:100%;">
+                            <option value="figure8" selected>Figure-8</option>
+                            <option value="hcoil">H-Coil (Deep)</option>
+                            <option value="circular">Circular</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex:1; min-width:100px;">
+                        <label>Follow-up (years)</label>
+                        <input id="rtms-followup" type="number" value="5" min="1" max="10" style="width:100%;">
+                    </div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <button onclick="runRtmsRepair()" style="padding:0.75rem 1.5rem; background:linear-gradient(135deg,#7c3aed,#4f46e5); color:#fff; font-weight:700; border:none; border-radius:8px; cursor:pointer; font-size:0.95rem;">
+                            🧠 Run Neural Repair Pipeline
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Protocol info bar -->
+                <div id="rtms-protocol-info" style="background:#1e1b4b; border:1px solid #4338ca; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1rem; color:#c4b5fd; font-size:0.85rem;"></div>
+
+                <!-- Results panels -->
+                <div class="dashboard-grid" style="grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+                    <div class="output-box">
+                        <div class="output-title">⚡ Synaptic Plasticity & BDNF Dynamics</div>
+                        <div class="img-window" style="max-height:500px;"><img id="img-rtms-plasticity" src="" style="object-fit:contain; max-height:480px; width:100%;"></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">🧠 Cortical E-field Map (FEA)</div>
+                        <div class="img-window" style="max-height:500px;"><img id="img-rtms-efield" src="" style="object-fit:contain; max-height:480px; width:100%;"></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">📊 Cognitive Domain Trajectories</div>
+                        <div class="img-window" style="max-height:500px;"><img id="img-rtms-cognitive" src="" style="object-fit:contain; max-height:480px; width:100%;"></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-title">🧬 Smart Aging Biomarkers (Treated vs Untreated)</div>
+                        <div class="img-window" style="max-height:500px;"><img id="img-rtms-aging" src="" style="object-fit:contain; max-height:480px; width:100%;"></div>
+                    </div>
+                </div>
+                <div class="dashboard-grid" style="grid-template-columns:1fr; gap:1rem; margin-bottom:1.25rem;">
+                    <div class="output-box">
+                        <div class="output-title">🎯 Optimal Protocol Search</div>
+                        <div class="img-window" style="max-height:400px;"><img id="img-rtms-optim" src="" style="object-fit:contain; max-height:380px; width:100%;"></div>
+                    </div>
+                </div>
+
+                <!-- Metrics -->
+                <div class="output-box" style="width:100%; margin-bottom:1rem;">
+                    <div class="output-title">Neural Repair Metrics</div>
+                    <div id="rtms-metrics" class="metrics-bar" style="width:100%; grid-template-columns:repeat(6,1fr);"></div>
+                </div>
+
+                <!-- Cognitive scores table -->
+                <div class="output-box" style="width:100%; margin-bottom:1rem;">
+                    <div class="output-title">📋 Cognitive Domain Scores (Pre → Post Treatment)</div>
+                    <div id="rtms-cog-table" style="overflow-x:auto; color:#e2e8f0; font-size:0.82rem;"></div>
+                </div>
+
+                <!-- Biomarker table -->
+                <div class="output-box" style="width:100%;">
+                    <div class="output-title">🧬 Aging Biomarker Summary (Treated vs Untreated)</div>
+                    <div id="rtms-bio-table" style="overflow-x:auto; color:#e2e8f0; font-size:0.82rem;"></div>
+                </div>
+            </div>
+            <!-- END View: rTMS Neural Repair -->
 
             <div id="view-snr" class="view-content">
                 <div style="display:flex; gap:1rem; margin-bottom:1rem;">
@@ -2720,6 +2824,90 @@
         } finally {
             loader.style.display = 'none';
         }
+    }
+
+    // ── rTMS Neural Repair ────────────────────────────────────────────────────
+    const rtmsParadigmInfo = {
+        cognitive_enhancement: '10 Hz iTBS over L-DLPFC — Working memory & executive function',
+        memory_repair: '20 Hz rTMS multi-target — Hippocampal-cortical network (MCI/AD)',
+        smart_aging: '10 Hz iTBS + 10Hz combined — BDNF upregulation & cortical preservation',
+        stroke_motor: '1 Hz LF-contralesional + HF-ipsilesional — Interhemispheric rebalance',
+        depression_repair: '10 Hz Deep H-coil L-DLPFC — FDA-approved TRD protocol',
+        neuroplasticity_boost: '50 Hz cTBS — Rapid LTP-like plasticity induction',
+    };
+    function updateRtmsInfo() {
+        const p = document.getElementById('rtms-paradigm').value;
+        const el = document.getElementById('rtms-protocol-info');
+        if (el) el.innerHTML = '<b>Protocol:</b> ' + (rtmsParadigmInfo[p] || '');
+    }
+    updateRtmsInfo();
+
+    async function runRtmsRepair() {
+        const body = {
+            paradigm: document.getElementById('rtms-paradigm').value,
+            age: document.getElementById('rtms-age').value,
+            baseline_mmse: document.getElementById('rtms-mmse').value,
+            target: document.getElementById('rtms-target').value,
+            coil_type: document.getElementById('rtms-coil').value,
+            follow_up_years: document.getElementById('rtms-followup').value,
+        };
+        document.getElementById('rtms-metrics').innerHTML = '<div style="color:#94a3b8;">Running rTMS neural repair pipeline…</div>';
+        try {
+            const res = await fetch('/api/rtms_neural_repair', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify(body)
+            });
+            const d = await res.json();
+            if (!d.success) { alert('Error: ' + d.error); return; }
+
+            // Images
+            if (d.plots) {
+                document.getElementById('img-rtms-plasticity').src = 'data:image/png;base64,' + d.plots.plasticity;
+                document.getElementById('img-rtms-efield').src = 'data:image/png;base64,' + d.plots.efield;
+                document.getElementById('img-rtms-cognitive').src = 'data:image/png;base64,' + d.plots.cognitive;
+                document.getElementById('img-rtms-aging').src = 'data:image/png;base64,' + d.plots.aging;
+                document.getElementById('img-rtms-optim').src = 'data:image/png;base64,' + d.plots.optimization;
+            }
+
+            // Metrics bar
+            const pl = d.plasticity || {};
+            const cog = d.cognitive || {};
+            const ag = d.aging || {};
+            const opt = d.optimal || {};
+            document.getElementById('rtms-metrics').innerHTML = [
+                `<div class="metric-item"><span class="metric-value">${pl.plasticity_type || '—'}</span><span class="metric-label">Plasticity</span></div>`,
+                `<div class="metric-item"><span class="metric-value">${(pl.final_repair_index || 0).toFixed(4)}</span><span class="metric-label">Repair Index</span></div>`,
+                `<div class="metric-item"><span class="metric-value">${(pl.final_bdnf || 0).toFixed(1)} pg/mL</span><span class="metric-label">BDNF</span></div>`,
+                `<div class="metric-item"><span class="metric-value">${cog.baseline_mmse}→${cog.post_treatment_mmse}</span><span class="metric-label">MMSE</span></div>`,
+                `<div class="metric-item"><span class="metric-value">${(ag.brain_age_benefit_years || 0).toFixed(1)} yrs</span><span class="metric-label">Brain Age Benefit</span></div>`,
+                `<div class="metric-item"><span class="metric-value">${(opt.best_score || 0).toFixed(3)}</span><span class="metric-label">Optim Score</span></div>`,
+            ].join('');
+
+            // Cognitive table
+            const domains = Object.keys(cog.baseline_scores || {});
+            let cogHtml = '<table style="width:100%; border-collapse:collapse; font-size:0.8rem;"><tr style="background:#1e1b4b; color:#c4b5fd;"><th style="padding:6px;">Domain</th><th>Baseline (z)</th><th>Post (z)</th><th>Δ</th><th>Sensitivity</th></tr>';
+            domains.forEach(d2 => {
+                const b = cog.baseline_scores[d2];
+                const f = cog.final_scores[d2];
+                const delta = (f - b).toFixed(3);
+                const sens = (cog.domain_sensitivity[d2] || 0).toFixed(2);
+                const col = f > b ? '#4ade80' : '#f87171';
+                cogHtml += `<tr style="border-bottom:1px solid #334155;"><td style="padding:5px;">${d2.replace(/_/g,' ')}</td><td style="text-align:center;">${b.toFixed(3)}</td><td style="text-align:center; color:${col};">${f.toFixed(3)}</td><td style="text-align:center; color:${col};">${delta}</td><td style="text-align:center;">${sens}</td></tr>`;
+            });
+            cogHtml += '</table>';
+            document.getElementById('rtms-cog-table').innerHTML = cogHtml;
+
+            // Biomarker table
+            const biomarkers = ag.biomarker_summary || {};
+            let bioHtml = '<table style="width:100%; border-collapse:collapse; font-size:0.8rem;"><tr style="background:#1a2e05; color:#a3e635;"><th style="padding:6px;">Biomarker</th><th>Baseline</th><th>Untreated</th><th>Treated</th><th>Preservation %</th><th>Unit</th></tr>';
+            Object.entries(biomarkers).forEach(([bk, bv]) => {
+                const col = bv.preservation_pct > 0 ? '#4ade80' : '#f87171';
+                bioHtml += `<tr style="border-bottom:1px solid #334155;"><td style="padding:5px;">${bk.replace(/_/g,' ')}</td><td style="text-align:center;">${bv.baseline}</td><td style="text-align:center; color:#f87171;">${bv.final_untreated}</td><td style="text-align:center; color:#4ade80;">${bv.final_treated}</td><td style="text-align:center; color:${col};">${bv.preservation_pct}%</td><td style="text-align:center;">${bv.unit}</td></tr>`;
+            });
+            bioHtml += '</table>';
+            document.getElementById('rtms-bio-table').innerHTML = bioHtml;
+
+        } catch(e) { alert('Pipeline error: ' + e); }
     }
 
     async function downloadThermSeq() {

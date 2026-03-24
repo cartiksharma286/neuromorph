@@ -19,6 +19,11 @@ from quantum_thermometry_enhanced import (
     generate_thermometry_pulse_sequence,
     fit_signal_distributions,
 )
+from rtms_neural_repair import (
+    run_rtms_neural_repair_pipeline,
+    TREATMENT_PARADIGMS, CORTICAL_TARGETS, COGNITIVE_DOMAINS,
+    AGING_BIOMARKERS,
+)
 import os
 import generate_pdf
 import generate_report_images
@@ -1777,6 +1782,36 @@ def api_generate_thermometry_seq():
     except Exception as e:
         import traceback
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ── rTMS Neural Repair Endpoints ──────────────────────────────────────────────
+
+@app.route('/api/rtms_neural_repair', methods=['POST'])
+def api_rtms_neural_repair():
+    try:
+        p = request.get_json(force=True)
+        result = run_rtms_neural_repair_pipeline(
+            paradigm=p.get('paradigm', 'cognitive_enhancement'),
+            age=int(p.get('age', 65)),
+            baseline_mmse=float(p.get('baseline_mmse', 26.0)),
+            target=p.get('target', 'L-DLPFC'),
+            coil_type=p.get('coil_type', 'figure8'),
+            follow_up_years=int(p.get('follow_up_years', 5)),
+        )
+        return jsonify({'success': True, **result})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/rtms_paradigms', methods=['GET'])
+def api_rtms_paradigms():
+    return jsonify({
+        'paradigms': {k: {kk: vv for kk, vv in v.items()} for k, v in TREATMENT_PARADIGMS.items()},
+        'targets': {k: v for k, v in CORTICAL_TARGETS.items()},
+        'cognitive_domains': COGNITIVE_DOMAINS,
+        'aging_biomarkers': {k: v for k, v in AGING_BIOMARKERS.items()},
+    })
 
 
 if __name__ == '__main__':
