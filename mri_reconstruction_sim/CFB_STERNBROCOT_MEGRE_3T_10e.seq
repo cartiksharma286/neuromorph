@@ -1,0 +1,93 @@
+% ============================================================================
+% CFB Thermometry Pulse Sequence: cfb_multiecho_stern_brocot
+% Continuous Fractional Bound Engine v3.0
+% ============================================================================
+% Generated: 2026-03-24T21:24:31.483555
+% Field Strength: 3.0 T
+% Sequence: CFB_STERNBROCOT_MEGRE_3T_10e
+%
+% Echo placement: Stern-Brocot mediant tree
+% Optimal non-degenerate T2* sampling for PRF thermometry
+%
+
+[HEADER]
+Name CFB_STERNBROCOT_MEGRE_3T_10e
+Author CFB_ThermometryEngine_v3
+Comment CFB cfb_multiecho_stern_brocot thermometry for neurosurgical MR guidance
+Institution NeuroPulse Lab
+Version 3.0
+Compatible SIEMENS MAGNETOM 1.5T 3.0T 7.0T
+
+[VERSION]
+major 3
+minor 0
+revision 1
+
+[DEFINITIONS]
+FOV 220.0 220.0 3.0 mm
+SliceThickness 3.0 mm
+Matrix 128 128
+Bandwidth 580595.5 kHz
+FlipAngle 20.0 deg
+TR 45.800 ms
+NumEchoes 10
+SequenceType cfb_multiecho_stern_brocot
+ThermometryMode PRF_Shift_CFB
+TemperatureRange 35-85 C
+PrecisionTarget 0.3 C
+
+[ECHOES]
+% Echo   TE(ms)       Phase(rad)      Weight
+    1       9.000        -0.072230     0.740818
+    2      12.692        -0.101863     0.655028
+    3      15.353        -0.123216     0.599437
+    4      18.474        -0.148262     0.540214
+    5      20.294        -0.162872     0.508408
+    6      22.091        -0.177292     0.478852
+    7      27.316        -0.219225     0.402312
+    8      29.000        -0.232742     0.380349
+    9      32.077        -0.257436     0.343272
+   10      33.800        -0.271264     0.324112
+
+[RF]
+% Excitation: 20.0 deg sinc pulse (Padé-enhanced)
+NumSamples 128
+Duration 2.56 ms
+PeakAmplitude 0.003538 rad
+  0.001883  0.001902  0.001922  0.001942  0.001962  0.001983  0.002005  0.002026
+  0.002048  0.002071  0.002094  0.002117  0.002141  0.002165  0.002190  0.002215
+  0.002241  0.002267  0.002294  0.002321  0.002349  0.002377  0.002406  0.002435
+  0.002464  0.002495  0.002525  0.002556  0.002588  0.002620  0.002653  0.002685
+  0.002719  0.002752  0.002786  0.002821  0.002855  0.002890  0.002925  0.002960
+  0.002995  0.003029  0.003064  0.003099  0.003133  0.003166  0.003199  0.003231
+  0.003263  0.003293  0.003323  0.003351  0.003377  0.003402  0.003426  0.003447
+  0.003466  0.003484  0.003499  0.003512  0.003522  0.003530  0.003535  0.003538
+  0.003538  0.003535  0.003530  0.003522  0.003512  0.003499  0.003484  0.003466
+  0.003447  0.003426  0.003402  0.003377  0.003351  0.003323  0.003293  0.003263
+  0.003231  0.003199  0.003166  0.003133  0.003099  0.003064  0.003029  0.002995
+  0.002960  0.002925  0.002890  0.002855  0.002821  0.002786  0.002752  0.002719
+  0.002685  0.002653  0.002620  0.002588  0.002556  0.002525  0.002495  0.002464
+  0.002435  0.002406  0.002377  0.002349  0.002321  0.002294  0.002267  0.002241
+  0.002215  0.002190  0.002165  0.002141  0.002117  0.002094  0.002071  0.002048
+  0.002026  0.002005  0.001983  0.001962  0.001942  0.001922  0.001902  0.001883
+
+[GRADIENTS]
+Gx_readout  35.5862 mT/m   duration 33.8 ms
+Gy_phase    35.5862 mT/m   128 steps
+Gz_slice    2609.6510 mT/m   duration 2.56 ms
+
+[TIMING]
+TR 45.800 ms
+TE1 9.000 ms
+TE2 12.692 ms
+TE3 15.353 ms
+TE4 18.474 ms
+TE5 20.294 ms
+TE6 22.091 ms
+TE7 27.316 ms
+TE8 29.000 ms
+TE9 32.077 ms
+TE10 33.800 ms
+Readout_Duration 24.800 ms
+
+[END]

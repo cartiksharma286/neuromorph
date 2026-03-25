@@ -27,6 +27,12 @@ from rtms_neural_repair import (
     TREATMENT_PARADIGMS, CORTICAL_TARGETS, COGNITIVE_DOMAINS,
     AGING_BIOMARKERS,
 )
+from cfb_thermometry_sequences import (
+    CFB_SEQUENCE_CATALOGUE, generate_all_cfb_sequences,
+)
+from neurosurgical_qml_coils import (
+    NEUROSURGICAL_COIL_CATALOGUE, get_neurosurgical_coil_summary,
+)
 
 def sanitize_for_json(obj):
     """Recursively replace NaNs and Infs with None."""
@@ -873,6 +879,57 @@ def api_rtms_paradigms():
         'cognitive_domains': COGNITIVE_DOMAINS,
         'aging_biomarkers': {k: v for k, v in AGING_BIOMARKERS.items()},
     }))
+
+@app.route('/api/cfb_sequences/generate', methods=['POST'])
+def api_cfb_generate():
+    try:
+        p = request.get_json(force=True)
+        seq_key = p.get('sequence_type', None)
+        b0 = float(p.get('b0', 3.0))
+        if seq_key and seq_key in CFB_SEQUENCE_CATALOGUE:
+            result = CFB_SEQUENCE_CATALOGUE[seq_key](b0=b0)
+            return jsonify(sanitize_for_json({'success': True, 'sequences': [result]}))
+        else:
+            results = generate_all_cfb_sequences(b0=b0)
+            return jsonify(sanitize_for_json({'success': True, 'sequences': results}))
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cfb_sequences/list', methods=['GET'])
+def api_cfb_list():
+    seq_list = []
+    for key, fn in CFB_SEQUENCE_CATALOGUE.items():
+        seq_list.append({'key': key, 'description': fn.__doc__.strip().split('\n')[0] if fn.__doc__ else key})
+    return jsonify({'success': True, 'sequences': seq_list})
+
+@app.route('/api/neurosurgical_coils/list', methods=['GET'])
+def api_neurosurgical_coils_list():
+    try:
+        coils = []
+        for idx, cls in NEUROSURGICAL_COIL_CATALOGUE.items():
+            coil = cls()
+            coils.append({'id': idx, 'name': coil.name, 'elements': coil.num_elements,
+                          'frequency_mhz': coil.frequency / 1e6})
+        return jsonify(sanitize_for_json({'success': True, 'coils': coils}))
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/all_coils/list', methods=['GET'])
+def api_all_coils_list():
+    try:
+        coils = []
+        for idx, cls in QUANTUM_VASCULAR_COIL_LIBRARY.items():
+            c = cls()
+            coils.append({'id': idx, 'name': c.name, 'elements': c.num_elements,
+                          'frequency_mhz': c.frequency / 1e6, 'category': 'quantum_vascular'})
+        for idx, cls in NEUROSURGICAL_COIL_CATALOGUE.items():
+            c = cls()
+            coils.append({'id': idx, 'name': c.name, 'elements': c.num_elements,
+                          'frequency_mhz': c.frequency / 1e6, 'category': 'neurosurgical_qml'})
+        return jsonify(sanitize_for_json({'success': True, 'total': len(coils), 'coils': coils}))
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 if __name__ == '__main__':

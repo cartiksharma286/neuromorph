@@ -1,0 +1,89 @@
+% ============================================================================
+% CFB Thermometry Pulse Sequence: cfb_farey_thermometry
+% Continuous Fractional Bound Engine v3.0
+% ============================================================================
+% Generated: 2026-03-24T21:24:31.487599
+% Field Strength: 3.0 T
+% Sequence: CFB_FAREY_3T_8e
+%
+% Farey sequence order 10, mediant constraint |p1q2-p2q1|=1
+% Phase-unwrapping-safe echo placement for PRF thermometry
+%
+
+[HEADER]
+Name CFB_FAREY_3T_8e
+Author CFB_ThermometryEngine_v3
+Comment CFB cfb_farey_thermometry thermometry for neurosurgical MR guidance
+Institution NeuroPulse Lab
+Version 3.0
+Compatible SIEMENS MAGNETOM 1.5T 3.0T 7.0T
+
+[VERSION]
+major 3
+minor 0
+revision 1
+
+[DEFINITIONS]
+FOV 220.0 220.0 3.0 mm
+SliceThickness 3.0 mm
+Matrix 128 128
+Bandwidth 580595.5 kHz
+FlipAngle 20.0 deg
+TR 48.650 ms
+NumEchoes 8
+SequenceType cfb_farey_thermometry
+ThermometryMode PRF_Shift_CFB
+TemperatureRange 35-85 C
+PrecisionTarget 0.3 C
+
+[ECHOES]
+% Echo   TE(ms)       Phase(rad)      Weight
+    1       7.950        -0.063803     0.767206
+    2       9.857        -0.079109     0.719952
+    3      13.389        -0.107454     0.639994
+    4      16.850        -0.135231     0.570258
+    5      21.300        -0.170945     0.491644
+    6      25.750        -0.206659     0.423868
+    7      30.200        -0.242372     0.365435
+    8      34.650        -0.278086     0.315058
+
+[RF]
+% Excitation: 20.0 deg sinc pulse (Padé-enhanced)
+NumSamples 128
+Duration 2.56 ms
+PeakAmplitude 0.003538 rad
+  0.001883  0.001902  0.001922  0.001942  0.001962  0.001983  0.002005  0.002026
+  0.002048  0.002071  0.002094  0.002117  0.002141  0.002165  0.002190  0.002215
+  0.002241  0.002267  0.002294  0.002321  0.002349  0.002377  0.002406  0.002435
+  0.002464  0.002495  0.002525  0.002556  0.002588  0.002620  0.002653  0.002685
+  0.002719  0.002752  0.002786  0.002821  0.002855  0.002890  0.002925  0.002960
+  0.002995  0.003029  0.003064  0.003099  0.003133  0.003166  0.003199  0.003231
+  0.003263  0.003293  0.003323  0.003351  0.003377  0.003402  0.003426  0.003447
+  0.003466  0.003484  0.003499  0.003512  0.003522  0.003530  0.003535  0.003538
+  0.003538  0.003535  0.003530  0.003522  0.003512  0.003499  0.003484  0.003466
+  0.003447  0.003426  0.003402  0.003377  0.003351  0.003323  0.003293  0.003263
+  0.003231  0.003199  0.003166  0.003133  0.003099  0.003064  0.003029  0.002995
+  0.002960  0.002925  0.002890  0.002855  0.002821  0.002786  0.002752  0.002719
+  0.002685  0.002653  0.002620  0.002588  0.002556  0.002525  0.002495  0.002464
+  0.002435  0.002406  0.002377  0.002349  0.002321  0.002294  0.002267  0.002241
+  0.002215  0.002190  0.002165  0.002141  0.002117  0.002094  0.002071  0.002048
+  0.002026  0.002005  0.001983  0.001962  0.001942  0.001922  0.001902  0.001883
+
+[GRADIENTS]
+Gx_readout  35.5862 mT/m   duration 34.6 ms
+Gy_phase    35.5862 mT/m   128 steps
+Gz_slice    2609.6510 mT/m   duration 2.56 ms
+
+[TIMING]
+TR 48.650 ms
+TE1 7.950 ms
+TE2 9.857 ms
+TE3 13.389 ms
+TE4 16.850 ms
+TE5 21.300 ms
+TE6 25.750 ms
+TE7 30.200 ms
+TE8 34.650 ms
+Readout_Duration 26.700 ms
+
+[END]

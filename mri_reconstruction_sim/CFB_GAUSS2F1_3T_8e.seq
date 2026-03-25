@@ -1,0 +1,101 @@
+% ============================================================================
+% CFB Thermometry Pulse Sequence: cfb_gauss_hypergeometric
+% Continuous Fractional Bound Engine v3.0
+% ============================================================================
+% Generated: 2026-03-24T21:24:31.496669
+% Field Strength: 3.0 T
+% Sequence: CFB_GAUSS2F1_3T_8e
+%
+% Gradient weighting: ₂F₁(1/2,1;3/2;-k²) continued fraction
+% Weight range: [1.0000, 1.0966]
+% Optimal k-space density for radial thermometry
+%
+
+[HEADER]
+Name CFB_GAUSS2F1_3T_8e
+Author CFB_ThermometryEngine_v3
+Comment CFB cfb_gauss_hypergeometric thermometry for neurosurgical MR guidance
+Institution NeuroPulse Lab
+Version 3.0
+Compatible SIEMENS MAGNETOM 1.5T 3.0T 7.0T
+
+[VERSION]
+major 3
+minor 0
+revision 1
+
+[DEFINITIONS]
+FOV 220.0 220.0 3.0 mm
+SliceThickness 3.0 mm
+Matrix 128 128
+Bandwidth 580595.5 kHz
+FlipAngle 20.0 deg
+TR 60.000 ms
+NumEchoes 8
+SequenceType cfb_gauss_hypergeometric
+ThermometryMode PRF_Shift_CFB
+TemperatureRange 35-85 C
+PrecisionTarget 0.3 C
+
+[ECHOES]
+% Echo   TE(ms)       Phase(rad)      Weight
+    1       3.000        -0.024077     0.904837
+    2       9.429        -0.075670     0.730310
+    3      15.857        -0.127263     0.589446
+    4      22.286        -0.178856     0.475753
+    5      28.714        -0.230449     0.383988
+    6      35.143        -0.282042     0.309924
+    7      41.571        -0.333635     0.250145
+    8      48.000        -0.385228     0.201897
+
+[RF]
+% Excitation: 20.0 deg sinc pulse (Padé-enhanced)
+NumSamples 128
+Duration 2.56 ms
+PeakAmplitude 0.003538 rad
+  0.001883  0.001902  0.001922  0.001942  0.001962  0.001983  0.002005  0.002026
+  0.002048  0.002071  0.002094  0.002117  0.002141  0.002165  0.002190  0.002215
+  0.002241  0.002267  0.002294  0.002321  0.002349  0.002377  0.002406  0.002435
+  0.002464  0.002495  0.002525  0.002556  0.002588  0.002620  0.002653  0.002685
+  0.002719  0.002752  0.002786  0.002821  0.002855  0.002890  0.002925  0.002960
+  0.002995  0.003029  0.003064  0.003099  0.003133  0.003166  0.003199  0.003231
+  0.003263  0.003293  0.003323  0.003351  0.003377  0.003402  0.003426  0.003447
+  0.003466  0.003484  0.003499  0.003512  0.003522  0.003530  0.003535  0.003538
+  0.003538  0.003535  0.003530  0.003522  0.003512  0.003499  0.003484  0.003466
+  0.003447  0.003426  0.003402  0.003377  0.003351  0.003323  0.003293  0.003263
+  0.003231  0.003199  0.003166  0.003133  0.003099  0.003064  0.003029  0.002995
+  0.002960  0.002925  0.002890  0.002855  0.002821  0.002786  0.002752  0.002719
+  0.002685  0.002653  0.002620  0.002588  0.002556  0.002525  0.002495  0.002464
+  0.002435  0.002406  0.002377  0.002349  0.002321  0.002294  0.002267  0.002241
+  0.002215  0.002190  0.002165  0.002141  0.002117  0.002094  0.002071  0.002048
+  0.002026  0.002005  0.001983  0.001962  0.001942  0.001922  0.001902  0.001883
+
+[GRADIENTS]
+Gx_readout  35.5862 mT/m   duration 48.0 ms
+Gy_phase    35.5862 mT/m   128 steps
+Gz_slice    2609.6510 mT/m   duration 2.56 ms
+
+[HYPERGEOMETRIC_WEIGHTS]
+% ₂F₁(1/2,1;3/2;-k²) gradient density weights
+  Echo1  1.00000000
+  Echo2  1.00105028
+  Echo3  1.00430887
+  Echo4  1.01013572
+  Echo5  1.01928232
+  Echo6  1.03326855
+  Echo7  1.05553665
+  Echo8  1.09655861
+
+[TIMING]
+TR 60.000 ms
+TE1 3.000 ms
+TE2 9.429 ms
+TE3 15.857 ms
+TE4 22.286 ms
+TE5 28.714 ms
+TE6 35.143 ms
+TE7 41.571 ms
+TE8 48.000 ms
+Readout_Duration 45.000 ms
+
+[END]
