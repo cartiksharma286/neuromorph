@@ -403,6 +403,57 @@ def cfb_phase_cycling_cf(b0=3.0, n_echoes=6, fov_mm=220.0, matrix=128,
                           extra_sections=_phase_cycle_section(phase_increments[:n_phases]))
 
 
+@_register("cfb_fid_isotopes")
+def cfb_fid_isotopes(b0=3.0, n_echoes=8, fov_mm=220.0, matrix=128,
+                         slice_mm=3.0, fa_deg=25.0, output_dir=None):
+    """
+    Free Induction Decay (FID) sequence with Continued Fractions 
+    and n+/n atomicity ratios for medical isotopes.
+    
+    Generates echo/decay spacings based on rational approximations of 
+    n+/n ratios from key medical MR isotopes (e.g. 129Xe, 13C, 3He), 
+    optimizing FID sampling.
+    """
+    isotope_ratios = [1.29, 1.33, 1.30] # approximation ratios for some isotopes
+    
+    # We use a combined bound fraction median from these isotopes
+    composite_target = np.mean(isotope_ratios)
+    convs, a_coeffs = continued_fraction_convergents(composite_target, max_depth=n_echoes + 6)
+    
+    # Scale convergents functionally for T2* FID spacing points
+    base_te = 2.5
+    scale_factor = math.sqrt(2) * 20.0 # Some T2 scale
+    
+    fid_TE = []
+    for p, q in convs:
+        if q != 0:
+            val = base_te + (p/q)*scale_factor
+            if val not in fid_TE:
+                fid_TE.append(val)
+        if len(fid_TE) >= n_echoes:
+            break
+            
+    fid_TE = np.array(fid_TE)
+    fid_TE = np.clip(fid_TE, 2.5, 60.0)
+    fid_TE = np.sort(np.unique(fid_TE))
+    
+    if len(fid_TE) < n_echoes:
+        fill = np.linspace(fid_TE[-1] + 2, 60.0, n_echoes - len(fid_TE))
+        fid_TE = np.concatenate([fid_TE, fill])
+    
+    te_arr = fid_TE[:n_echoes]
+    tr = float(te_arr[-1]) + 15.0
+    
+    seq_name = f"CFB_FID_ISOTOPE_{b0:.0f}T_{n_echoes}e"
+    return _write_cfb_seq(seq_name, "cfb_fid_isotopes", b0, te_arr,
+                          tr, n_echoes, fov_mm, matrix, slice_mm, fa_deg,
+                          output_dir,
+                          extra_comments=[
+                              "% CFB Isotopic n+/n Atomicity FID model",
+                              "% Targeting medical isotopes via continued fractions"
+                          ])
+
+
 # ============================================================================
 # .seq file writer
 # ============================================================================

@@ -1,19 +1,19 @@
 % ============================================================================
-% CFB Thermometry Pulse Sequence: cfb_convergent_echo
+% CFB Thermometry Pulse Sequence: cfb_fid_isotopes
 % Continuous Fractional Bound Engine v3.0
 % ============================================================================
-% Generated: 2026-03-25T19:37:34.539252
+% Generated: 2026-03-25T19:37:34.561616
 % Field Strength: 3.0 T
-% Sequence: CFB_CONVERGENT_3T_8e
+% Sequence: CFB_FID_ISOTOPE_3T_8e
 %
-% CF expansion of sqrt(2)*T2*: [42; 2; 2; 1; 8; 1; 2; 2; 84; 2; 2; 1]
-% Convergent-optimal exponential decay sampling
+% CFB Isotopic n+/n Atomicity FID model
+% Targeting medical isotopes via continued fractions
 %
 
 [HEADER]
-Name CFB_CONVERGENT_3T_8e
+Name CFB_FID_ISOTOPE_3T_8e
 Author CFB_ThermometryEngine_v3
-Comment CFB cfb_convergent_echo thermometry for neurosurgical MR guidance
+Comment CFB cfb_fid_isotopes thermometry for neurosurgical MR guidance
 Institution NeuroPulse Lab
 Version 3.0
 Compatible SIEMENS MAGNETOM 1.5T 3.0T 7.0T
@@ -29,23 +29,23 @@ SliceThickness 3.0 mm
 Matrix 128 128
 Bandwidth 580595.5 kHz
 FlipAngle 25.0 deg
-TR 52.500 ms
+TR 75.000 ms
 NumEchoes 8
-SequenceType cfb_convergent_echo
+SequenceType cfb_fid_isotopes
 ThermometryMode PRF_Shift_CFB
 TemperatureRange 35-85 C
 PrecisionTarget 0.3 C
 
 [ECHOES]
 % Echo   TE(ms)       Phase(rad)      Weight
-    1      42.000        -0.337074     0.246597
-    2      42.400        -0.340284     0.243331
-    3      42.426        -0.340495     0.243118
-    4      42.426        -0.340496     0.243117
-    5      42.426        -0.340496     0.243117
-    6      42.426        -0.340497     0.243116
-    7      42.429        -0.340514     0.243099
-    8      42.500        -0.341087     0.242521
+    1      30.784        -0.247061     0.358387
+    2      39.270        -0.315161     0.270094
+    3      39.452        -0.316625     0.268456
+    4      39.458        -0.316674     0.268402
+    5      39.487        -0.316907     0.268142
+    6      40.212        -0.322727     0.261738
+    7      42.212        -0.338778     0.244858
+    8      60.000        -0.481535     0.135335
 
 [RF]
 % Excitation: 25.0 deg sinc pulse (Padé-enhanced)
@@ -70,20 +70,20 @@ PeakAmplitude 0.004422 rad
   0.002533  0.002506  0.002479  0.002453  0.002427  0.002402  0.002378  0.002353
 
 [GRADIENTS]
-Gx_readout  35.5862 mT/m   duration 42.5 ms
+Gx_readout  35.5862 mT/m   duration 60.0 ms
 Gy_phase    35.5862 mT/m   128 steps
 Gz_slice    2609.6510 mT/m   duration 2.56 ms
 
 [TIMING]
-TR 52.500 ms
-TE1 42.000 ms
-TE2 42.400 ms
-TE3 42.426 ms
-TE4 42.426 ms
-TE5 42.426 ms
-TE6 42.426 ms
-TE7 42.429 ms
-TE8 42.500 ms
-Readout_Duration 0.500 ms
+TR 75.000 ms
+TE1 30.784 ms
+TE2 39.270 ms
+TE3 39.452 ms
+TE4 39.458 ms
+TE5 39.487 ms
+TE6 40.212 ms
+TE7 42.212 ms
+TE8 60.000 ms
+Readout_Duration 29.216 ms
 
 [END]
