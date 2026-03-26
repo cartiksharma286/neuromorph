@@ -453,6 +453,48 @@ def cfb_fid_isotopes(b0=3.0, n_echoes=8, fov_mm=220.0, matrix=128,
                               "% Targeting medical isotopes via continued fractions"
                           ])
 
+@_register("cfb_hyperpolarized_multimodal")
+def cfb_hyperpolarized_multimodal(b0=3.0, n_echoes=8, fov_mm=220.0, matrix=128,
+                                      slice_mm=3.0, fa_deg=10.0, output_dir=None):
+    """
+    Hyperpolarized Multimodal MRI sequence with Continued Fractions.
+    Uses small flip angles to preserve non-renewable hyperpolarized magnetization 
+    (e.g., 13C pyruvate) while using finite math bounds for temporal sampling.
+    """
+    target_ratio = 1.6180339887  # Golden ratio for temporal sampling spread
+    convs, a_coeffs = continued_fraction_convergents(target_ratio, max_depth=n_echoes + 6)
+    
+    base_te = 1.5
+    scale_factor = target_ratio * 15.0 
+    
+    hp_TE = []
+    for p, q in convs:
+        if q != 0:
+            val = base_te + (p/q)*scale_factor
+            if val not in hp_TE:
+                hp_TE.append(val)
+        if len(hp_TE) >= n_echoes:
+            break
+            
+    hp_TE = np.array(hp_TE)
+    hp_TE = np.sort(np.unique(np.clip(hp_TE, 1.5, 80.0)))
+    
+    if len(hp_TE) < n_echoes:
+        fill = np.linspace(hp_TE[-1] + 2, 80.0, n_echoes - len(hp_TE))
+        hp_TE = np.concatenate([hp_TE, fill])
+    
+    te_arr = hp_TE[:n_echoes]
+    tr = float(te_arr[-1]) + 20.0
+    
+    seq_name = f"CFB_HP_MULTIMODAL_{b0:.0f}T_{n_echoes}e"
+    return _write_cfb_seq(seq_name, "cfb_hyperpolarized_multimodal", b0, te_arr,
+                          tr, n_echoes, fov_mm, matrix, slice_mm, fa_deg,
+                          output_dir,
+                          extra_comments=[
+                              "% CFB Hyperpolarized Multimodal MR",
+                              "% Preserving non-equilibrium magnetization"
+                          ])
+
 
 # ============================================================================
 # .seq file writer
