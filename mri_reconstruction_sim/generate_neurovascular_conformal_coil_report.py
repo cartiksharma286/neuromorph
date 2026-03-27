@@ -154,9 +154,9 @@ def build_pdf(output_filename):
     doc.build(story)
     
     # Cleanup
-    for f in [geom_file, sch_file, gdt_file]:
-        if os.path.exists(f):
-            os.remove(f)
+    # for f in [geom_file, sch_file, gdt_file]:
+    #     if os.path.exists(f):
+    #         os.remove(f)
 
 if __name__ == "__main__":
     stl_filename = "neurovascular_conformal_coil.stl"
