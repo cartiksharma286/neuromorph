@@ -1,0 +1,147 @@
+% =============================================================================
+% QPR + Dual-MRF + Elliptic-Modulo Resonator Sequence Bundle (3T)
+% Cardiac cine, acute stroke perfusion-diffusion, and MR-guided tumour resection
+% with robotics interoperability and quantum phase-resolved encoding.
+% =============================================================================
+% Generated: 2026-03-27
+% Sequence ID: QPR_DUALMRF_CARDIAC_STROKE_TUMORROBOT_3T_20260327
+%
+% Notes:
+% 1) Research-use sequence specification for simulation and protocol planning.
+% 2) Validate SAR, PNS, gradient slew, and robotic safety interlocks on scanner.
+%
+
+[HEADER]
+Name QPR_DUALMRF_CARDIAC_STROKE_TUMORROBOT_3T_20260327
+Author NeuroMorph_SequenceStudio
+Institution NeuroMorph Translational Imaging Lab
+Version 1.0
+FieldStrength 3.0 T
+Compatible SIEMENS GE PHILIPS (research mode)
+Comment Quantum phase-resolved dual-MRF protocol with elliptic modulo resonators and robotics interop.
+
+[VERSION]
+major 1
+minor 0
+revision 0
+
+[GLOBAL_DEFINITIONS]
+FOV 240.0 240.0 160.0 mm
+SliceThickness 1.5 mm
+ReceiverBandwidth 520.0 kHz
+PartialFourier 0.72
+ParallelImaging R=2
+MaxGradient 38.0 mT/m
+MaxSlewRate 170.0 T/m/s
+ResonatorType Elliptic_Modulo_Ring
+ResonatorEquation x^2/a^2 + y^2/b^2 = 1 mod q
+ResonatorParams a=1.0 b=0.64 q=17
+QuantumPhaseCycles 8
+DualMRFStreams T1T2 and DiffusionPerfusion
+FractionalBoundaryGapModel Delta_g(k)=g0/(k+phi)^
+GoldenRatio phi=1.61803398875
+
+[QUANTUM_PHASE_ENCODER]
+% psi_n = A_n exp(i*(omega_n*t + theta_n + pi*n/4))
+% Theta_n follow resonator map: theta_{n+1} = (3*theta_n + 2) mod 2*pi
+NumStates 8
+State0 Phase 0.000000
+State1 Phase 0.785398
+State2 Phase 1.570796
+State3 Phase 2.356194
+State4 Phase 3.141593
+State5 Phase 3.926991
+State6 Phase 4.712389
+State7 Phase 5.497787
+
+[DUAL_MRF_SCHEDULE_CARDIAC]
+% Stream A: T1/T2 cardiac tissue fingerprinting
+% Stream B: flow-sensitive blood-pool fingerprinting
+HeartRateReference 68 bpm
+TR_pattern_ms 5.2 4.8 6.1 5.0 7.3 4.9 5.8 6.4 4.7 7.0
+TE_pattern_ms 1.9 2.2 2.0 2.4 2.1 2.5 2.2 2.6 2.0 2.3
+Flip_pattern_deg 5 8 12 18 25 35 22 14 9 6
+InversionTimes_ms 18 110 240 410 620 880
+Navigator ECG_Gated + Respiratory_Belt
+FramesPerCycle 24
+
+[DUAL_MRF_SCHEDULE_STROKE]
+% Stream A: ischemic core-penumbra fingerprinting (T1/T2)
+% Stream B: diffusion-perfusion surrogate fingerprinting
+TR_pattern_ms 2800 3200 2600 3400 3000
+TE_pattern_ms 32 36 29 41 34
+b_values_s_mm2 0 150 500 1000 1500
+ASL_PLD_ms 1200 1600 2000
+Flip_pattern_deg 90 70 110 80 95
+Readout EPI_Segmented_4shot
+
+[TUMOUR_RESECTION_MRG_ROBOTICS]
+% Robotics interoperability channel for intraoperative MR guidance
+RobotInteropProtocol ROS2_DDS + DICOM-RT + OpenIGTLink
+ControlRate 50 Hz
+PoseLatencyTarget <20 ms
+SafetyInterlocks MagnetZoneLock, ToolTipTracking, SARGuard, EmergencyFreeze
+UpdatePacket fields=time,pose6d,tooltemp,ablationpower,phaseerror
+ThermometryMode PRF_MultiEcho + QPR_Phase_Unwrap
+ThermometryTE_ms 6.0 11.5 17.0 22.5
+ThermometryTR_ms 38.0
+VoxelForThermometry 1.4 1.4 2.0 mm
+TargetTracking KalmanGeodesic_Filter
+
+[ELLIPTIC_MODULO_RESONATOR_RF]
+% RF envelope: B1(t)=B0*(1+eps*cos(2*pi*f_r*t + theta_mod))*exp(-(t/tau)^2)
+% theta_mod from modulo resonator state machine
+NumSamples 96
+Duration 1.92 ms
+PeakAmplitude 0.002640 rad
+0.000220 0.000241 0.000263 0.000286 0.000310 0.000336 0.000363 0.000392
+0.000422 0.000454 0.000488 0.000524 0.000562 0.000601 0.000643 0.000687
+0.000733 0.000781 0.000832 0.000885 0.000941 0.001000 0.001061 0.001125
+0.001191 0.001260 0.001332 0.001406 0.001483 0.001563 0.001645 0.001730
+0.001817 0.001907 0.002000 0.002095 0.002192 0.002292 0.002394 0.002498
+0.002604 0.002640 0.002622 0.002590 0.002548 0.002497 0.002438 0.002372
+0.002299 0.002221 0.002139 0.002053 0.001965 0.001874 0.001782 0.001689
+0.001596 0.001503 0.001411 0.001321 0.001233 0.001148 0.001065 0.000986
+0.000911 0.000839 0.000772 0.000709 0.000650 0.000595 0.000545 0.000499
+0.000456 0.000417 0.000382 0.000350 0.000321 0.000295 0.000272 0.000251
+0.000232 0.000215 0.000200 0.000186 0.000174 0.000163 0.000153 0.000144
+0.000136 0.000128 0.000121 0.000114 0.000108 0.000102 0.000097 0.000092
+
+[GRADIENT_TRAJECTORY]
+% Beyond partial Fourier: finite completion with fractional boundary gaps
+% kx(k)=kmax*(2k/N-1), ky(k)=kmax*tanh(beta*(2k/N-1))
+% Missing half-space reconstructed by constrained finite stencil closure
+ReadoutType Spiral_inout + Cartesian_hybrid
+Gx_readout 34.20 mT/m duration 16.8 ms
+Gy_phase 31.50 mT/m 192 steps
+Gz_slice 26.80 mT/m duration 2.4 ms
+FractionalBoundaryGap_g0 0.120
+FractionalBoundaryGap_phi 1.61803398875
+FractionalBoundaryGap_alpha 1.350
+
+[TIMING_CARDIAC]
+TR_eff 5.2-7.3 ms variable
+TE_eff 1.9-2.6 ms variable
+ShotDuration 178.0 ms
+NumShots 240
+
+[TIMING_STROKE]
+TR_eff 2.6-3.4 s variable
+TE_eff 29-41 ms variable
+b_value_schedule 0/150/500/1000/1500 s/mm2
+ASL_PLD 1200/1600/2000 ms
+
+[TIMING_RESECTION]
+TR_therm 38.0 ms
+TE_multi 6.0/11.5/17.0/22.5 ms
+ThermalUpdateRate 3.3 Hz
+RoboticPoseUpdateRate 50 Hz
+
+[RECONSTRUCTION_NOTES]
+Reconstruction Dual-MRF dictionary matching + QPR phase harmonics
+DictionaryAtoms 180000
+PartialFourierCompletion FiniteStencilOrder4 + FractionalGapRegularizer
+Constraint min ||A x - y||_2^2 + lambda1 ||D x||_1 + lambda2 ||G_alpha x||_2^2
+Regularization lambda1=0.0018 lambda2=0.0140
+
+[END]
