@@ -1,18 +1,18 @@
 % ============================================================================
-% Enhanced Thermometry Pulse Sequence: PRFS_HIGHRES
+% Enhanced Thermometry Pulse Sequence: TUMOUR_ABLATION_STAT
 % ============================================================================
 % Quantum Thermometry Engine v2.0 — LUT-based, FFTW-optimised
 % with Statistical Distribution Modelling & Multimodal Reasoning
 %
-% Generated: 2026-03-30T19:23:12.501221
+% Generated: 2026-03-30T19:29:04.535255
 % Field Strength: 3.0 T
-% Sequence: THERM_PRFS_HR_3T
+% Sequence: THERM_TUMOUR_ABLATION_ADV_3T_8e
 %
 
 [HEADER]
-Name THERM_PRFS_HR_3T
+Name THERM_TUMOUR_ABLATION_ADV_3T_8e
 Author QuantumThermometryEngine_v2
-Comment Enhanced prfs_highres thermometry with LUT and multimodal reasoning
+Comment Enhanced tumour_ablation_stat thermometry with LUT and multimodal reasoning
 Institution NeuroPulse Lab
 Version 2.0
 Compatible SIEMENS MAGNETOM 1.5T 3.0T 7.0T
@@ -28,9 +28,9 @@ SliceThickness 3.0 mm
 Matrix 128 128
 Bandwidth 580595.5 kHz
 FlipAngle 20.0 deg
-TR 51.000 ms
-NumEchoes 3
-SequenceType prfs_highres
+TR 54.700 ms
+NumEchoes 8
+SequenceType tumour_ablation_stat
 ThermometryMode PRF_Shift
 TemperatureRange 35-70 C
 SAR_Limit 2.0 W/kg
@@ -47,9 +47,14 @@ SAR_Limit 2.0 W/kg
 % liver: dPhi/dT=-7.7804 deg/C opt_TE=18.0ms SNR_eff=0.049956
 
 [ECHOTIMES]
-TE[0] 24.0000 ms  % Phase/°C=-10.374deg
-TE[1] 30.0000 ms  % Phase/°C=-12.967deg
-TE[2] 36.0000 ms  % Phase/°C=-15.561deg
+TE[0] 3.5000 ms  % Phase/°C=-1.513deg
+TE[1] 3.5000 ms  % Phase/°C=-1.513deg
+TE[2] 11.8000 ms  % Phase/°C=-5.100deg
+TE[3] 11.8000 ms  % Phase/°C=-5.100deg
+TE[4] 20.1000 ms  % Phase/°C=-8.688deg
+TE[5] 28.4000 ms  % Phase/°C=-12.276deg
+TE[6] 28.4000 ms  % Phase/°C=-12.276deg
+TE[7] 36.7000 ms  % Phase/°C=-15.863deg
 
 [RF_BLOCKS]
 % Gaussian RF pulse (20° slice-selective)
@@ -124,9 +129,14 @@ Gphase_max 0.0068 mT/m
 Gslice 24.0000 mT/m
 
 [ADC_BLOCKS]
-Echo[0]: samples=128 dwell=0.0us delay=24.0000ms
-Echo[1]: samples=128 dwell=0.0us delay=30.0000ms
-Echo[2]: samples=128 dwell=0.0us delay=36.0000ms
+Echo[0]: samples=128 dwell=0.0us delay=3.5000ms
+Echo[1]: samples=128 dwell=0.0us delay=3.5000ms
+Echo[2]: samples=128 dwell=0.0us delay=11.8000ms
+Echo[3]: samples=128 dwell=0.0us delay=11.8000ms
+Echo[4]: samples=128 dwell=0.0us delay=20.1000ms
+Echo[5]: samples=128 dwell=0.0us delay=28.4000ms
+Echo[6]: samples=128 dwell=0.0us delay=28.4000ms
+Echo[7]: samples=128 dwell=0.0us delay=36.7000ms
 
 [BLOCK_EVENTS]
 1  1  1  1  1  1  0

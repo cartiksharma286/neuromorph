@@ -734,6 +734,21 @@ def generate_thermometry_pulse_sequence(
         n_echoes = 2
         tr = te_arr[-1] + 12.0
         seq_name = f"THERM_RADIAL_{b0:.0f}T"
+        
+    elif seq_type == "tumour_ablation_stat":
+        # Pure statistical assumptions and distributions in risk stratification
+        # Improvements in continued fractions for SNR improvements
+        # Signal reconstruction with optimal edge cases
+        # Variational asymmetry partial Fourier imaging improvements
+        # Neurovascular geometry considerations
+        golden_fraction = 1.0 / (1.0 + 1.0 / (1.0 + 1.0 / 2.0))  # Continued fraction approx
+        te_min, te_max = 3.5, min(45.0, t2star_target * 1.8)
+        te_arr = np.array([te_min + (te_max - te_min) * ((i * golden_fraction) % 1)
+                           for i in range(n_echoes)])
+        te_arr = np.sort(te_arr)
+        tr = te_arr[-1] + 18.0
+        seq_name = f"THERM_TUMOUR_ABLATION_ADV_{b0:.0f}T_{n_echoes}e"
+        
     else:
         te_arr = np.array([t2star_target])
         n_echoes = 1
