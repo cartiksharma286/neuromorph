@@ -88,3 +88,7 @@ To create an MRI coil in SolidWorks, follow these organized steps, considering t
 - **Assembly:** Consider whether the coil is part of a larger assembly and create an assembly file if necessary.
 
 By following these steps and considering the thought process, you can create an accurate and functional MRI coil design in SolidWorks.
+
+--- Conformal Shape Manifold Coil for Dementia --- 
+Topology: Toroidal Helix (R=0.2, r=0.05, n=10)
+Electric Circuitry (Opt SNR): {'Frequency': 300000000.0, 'Inductance (H)': 1.5e-06, 'Capacitance (F)': 1.876318215598848e-13, 'Resistance (Ohm)': 0.5, 'Quality Factor (Q)': np.float64(5654.8667764616275)}

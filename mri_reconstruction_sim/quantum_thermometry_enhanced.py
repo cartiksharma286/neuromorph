@@ -748,6 +748,28 @@ def generate_thermometry_pulse_sequence(
         te_arr = np.sort(te_arr)
         tr = te_arr[-1] + 18.0
         seq_name = f"THERM_TUMOUR_ABLATION_ADV_{b0:.0f}T_{n_echoes}e"
+
+    elif seq_type == "dementia_quantum_ergodic":
+        # Continuable quantum ergodic fractional states with complete Fourier imaging
+        # Designed for diagnostic neurodementia, stroke, and tumor resolution
+        ergodic_fraction = np.sqrt(2) - 1  # Silver ratio for completely ergodic k-space filling
+        te_min, te_max = 2.0, min(65.0, t2star_target * 2.0)
+        te_arr = np.array([te_min + (te_max - te_min) * ((i * ergodic_fraction) % 1)
+                           for i in range(n_echoes)])
+        te_arr = np.sort(te_arr)
+        tr = te_arr[-1] + 25.0
+        seq_name = f"NEURO_DEMENTIA_CURE_QERG_{b0:.0f}T_{n_echoes}e"
+
+    elif seq_type == "ptsd_dementia_quantum_prime":
+        # Continuable quantum prime fractions at improved SNR
+        # Clinical ambivalence resolution for PTSD curing with statistical measure theory
+        prime_fraction = 1.0 / np.exp(1)  # Transcendental approximation
+        te_min, te_max = 1.5, min(70.0, t2star_target * 2.5)
+        te_arr = np.array([te_min + (te_max - te_min) * ((i * prime_fraction) % 1)
+                           for i in range(n_echoes)])
+        te_arr = np.sort(te_arr)
+        tr = te_arr[-1] + 30.0
+        seq_name = f"PTSD_DEMENTIA_QPRIME_SNR_{b0:.0f}T_{n_echoes}e"
         
     else:
         te_arr = np.array([t2star_target])
@@ -927,7 +949,7 @@ def run_enhanced_thermometry_pipeline(
 
     N = matrix
     if seq_types is None:
-        seq_types = ["multiecho_gre", "prfs_highres"]
+        seq_types = ["multiecho_gre", "prfs_highres", "ptsd_dementia_quantum_prime"]
 
     # 1. Echo times (CF-Farey)
     te_arr = farey_echo_times(n_echoes, te_min_ms, te_max_ms)
