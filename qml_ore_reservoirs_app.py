@@ -104,6 +104,30 @@ SAUDI_ARABIA_CENTERS = [
     {"lat": 25.00, "lon": 48.00, "weight": 1.4, "spread": 1.0, "k": 15, "phase": np.pi/2, "label": "Khurais Node (Oil)"}
 ]
 
+SOUTH_EAST_ASIA_CENTERS = [
+    # Gulf of Thailand (Pattani Basin)
+    {"lat": 9.50, "lon": 101.00, "weight": 1.6, "spread": 1.2, "k": 11, "phase": 0.0, "label": "Pattani Phase-State (Gas/Oil)"},
+    # Sabah/Sarawak Basin (Malaysia)
+    {"lat": 5.50, "lon": 114.00, "weight": 1.8, "spread": 1.6, "k": 8, "phase": np.pi/3, "label": "Sarawak Superstate (Oil/Gas)"},
+    # Central Sumatra Basin (Indonesia)
+    {"lat": 1.00, "lon": 101.50, "weight": 1.5, "spread": 1.4, "k": 13, "phase": -np.pi/4, "label": "Sumatra Manifold (Oil)"},
+    # Kutai Basin (Kalimantan - Indonesia)
+    {"lat": -0.50, "lon": 117.50, "weight": 1.7, "spread": 1.5, "k": 9, "phase": np.pi/6, "label": "Kutai Node (Oil/Gas)"}
+]
+
+INDIA_OIL_CENTERS = [
+    # Bombay High (Offshore Mumbai)
+    {"lat": 19.30, "lon": 71.30, "weight": 1.9, "spread": 2.0, "k": 10, "phase": 0.0, "label": "Bombay High Superstate (Oil/Gas)"},
+    # Digboi / Assam-Arakan Basin
+    {"lat": 27.50, "lon": 95.50, "weight": 1.5, "spread": 1.8, "k": 8, "phase": np.pi/4, "label": "Assam-Arakan Phase-State (Oil)"},
+    # Krishna-Godavari Basin
+    {"lat": 16.50, "lon": 82.00, "weight": 1.6, "spread": 1.5, "k": 12, "phase": -np.pi/3, "label": "KG Basin Manifold (Gas/Oil)"},
+    # Cambay Basin (Gujarat)
+    {"lat": 22.00, "lon": 72.50, "weight": 1.4, "spread": 1.2, "k": 9, "phase": np.pi/2, "label": "Cambay Node (Oil)"},
+    # Cauvery Basin
+    {"lat": 11.00, "lon": 79.50, "weight": 1.2, "spread": 1.1, "k": 14, "phase": -np.pi/4, "label": "Cauvery Phase-State (Oil/Gas)"}
+]
+
 REGIONS = {
     "Massachusetts": {
         "bounds": (41.2, 42.9, -73.6, -69.8),
@@ -138,6 +162,20 @@ REGIONS = {
         "centers": SAUDI_ARABIA_CENTERS,
         "n_points": 6000,
         "center_map": {"lat": 24.0, "lon": 47.0},
+        "zoom": 4.5
+    },
+    "South East Asia Oil Signatures": {
+        "bounds": (-10.0, 15.0, 95.0, 120.0),
+        "centers": SOUTH_EAST_ASIA_CENTERS,
+        "n_points": 5000,
+        "center_map": {"lat": 4.0, "lon": 108.0},
+        "zoom": 4.5
+    },
+    "India Oil Signatures": {
+        "bounds": (5.0, 35.0, 65.0, 100.0),
+        "centers": INDIA_OIL_CENTERS,
+        "n_points": 6000,
+        "center_map": {"lat": 20.0, "lon": 82.0},
         "zoom": 4.5
     }
 }
@@ -186,6 +224,8 @@ app.layout = html.Div(
                 dcc.Tab(label="Canadian Oil-Ore Context", value="Canadian Oil-Ore Context", style={"backgroundColor":"#0a0a1a","color":"#888"}, selected_style={"backgroundColor":"#050510","color":"#ffaa00"}),
                 dcc.Tab(label="Canadian NW Quantum Manifold", value="Canadian NW Quantum Manifold", style={"backgroundColor":"#0a0a1a","color":"#888"}, selected_style={"backgroundColor":"#050510","color":"#ff44aa"}),
                 dcc.Tab(label="Saudi Arabia Oil Signatures", value="Saudi Arabia Oil Signatures", style={"backgroundColor":"#0a0a1a","color":"#888"}, selected_style={"backgroundColor":"#050510","color":"#00ff00"}),
+                dcc.Tab(label="South East Asia Oil Signatures", value="South East Asia Oil Signatures", style={"backgroundColor":"#0a0a1a","color":"#888"}, selected_style={"backgroundColor":"#050510","color":"#ffcc00"}),
+                dcc.Tab(label="India Oil Signatures", value="India Oil Signatures", style={"backgroundColor":"#0a0a1a","color":"#888"}, selected_style={"backgroundColor":"#050510","color":"#00ffff"}),
             ]
         ),
         
@@ -253,4 +293,4 @@ def update_dashboard(region, phase, min_prob):
     ]
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8054)
+    app.run(debug=True, host="0.0.0.0", port=8057)
