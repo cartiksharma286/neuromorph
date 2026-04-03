@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const paradigmView    = document.getElementById('paradigm-view');
     const equipmentView   = document.getElementById('equipment-view');
     const dementiaLtView  = document.getElementById('dementia-lt-view');
+    const dementiaDbsView = document.getElementById('dementia-dbs-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -29,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let equipmentLoaded  = false;
     let tremorLoaded     = false;
     let dementiaLtLoaded = false;
+    let dementiaDbsLoaded = false;
     let paradigmCache    = {};
 
     // ── Plotly dark theme ────────────────────────────────────────
@@ -48,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, paradigmView, equipmentView, dementiaLtView];
+    const allViews = [simulationView, tremorView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -86,6 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Long-Term Dementia Care — Smart Aging',
             subtitle: 'Cortical Surface Geodesics · Boundary Element Simulation · Protocol Optimization',
             view:     dementiaLtView, showRunBtn: false
+        },
+        'dementia-dbs': {
+            title:    'Dementia DBS Treatment Protocol',
+            subtitle: 'Statistical Manifold Distributions · Optimal Stage Gating',
+            view:     dementiaDbsView, showRunBtn: false
         }
     };
 
@@ -116,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'tremor'    && !tremorLoaded)          loadTremorData();
             if (tab === 'equipment' && !equipmentLoaded)       loadEquipment();
             if (tab === 'dementia-lt' && !dementiaLtLoaded)     loadDementiaLt();
+            if (tab === 'dementia-dbs' && !dementiaDbsLoaded)   loadDementiaDbs();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -709,6 +717,95 @@ document.addEventListener('DOMContentLoaded', () => {
                 </table>
             </div>
         `).join('');
+    }
+
+    // ── Dementia DBS Protocol Loader ──────────────────────────────
+    async function loadDementiaDbs() {
+        try {
+            const res = await fetch('/api/dbs-imaging');
+            if(!res.ok) throw new Error('API Error');
+            const result = await res.json();
+            const data = result.data;
+
+            // 1. Manifold Heatmap
+            Plotly.newPlot('dbs-manifold-chart', [{
+                z: data.manifold.z,
+                x: data.manifold.x,
+                y: data.manifold.y,
+                type: 'contour',
+                colorscale: 'Magma',
+                contours: { coloring: 'heatmap' }
+            }], {
+                ...PL,
+                xaxis: { title: 'Manifold Coord x', color: '#8b949e', gridcolor: 'rgba(255,255,255,0.1)' },
+                yaxis: { title: 'Manifold Coord y', color: '#8b949e', gridcolor: 'rgba(255,255,255,0.1)' }
+            });
+
+            // 2. Stage Gating Chart
+            const gateTraces = [
+                {
+                    x: data.gating.sessions,
+                    y: data.gating.patient_state,
+                    mode: 'lines',
+                    name: 'Patient State',
+                    line: { color: '#00f2fe', width: 3 }
+                }
+            ];
+            const colors = ['#f39c12', '#e74c3c', '#e67e22'];
+            Object.keys(data.gating.stages).forEach((stage, idx) => {
+                gateTraces.push({
+                    x: data.gating.sessions,
+                    y: data.gating.stages[stage],
+                    mode: 'lines',
+                    name: stage,
+                    line: { color: colors[idx % colors.length], dash: 'dash', width: 2 }
+                });
+            });
+
+            Plotly.newPlot('dbs-gating-chart', gateTraces, {
+                ...PL,
+                xaxis: { title: 'DBS Sessions', color: '#8b949e', gridcolor: 'rgba(255,255,255,0.1)' },
+                yaxis: { title: 'Cognitive / Biomarker State', color: '#8b949e', gridcolor: 'rgba(255,255,255,0.1)' },
+                legend: { orientation: 'h', y: 1.1 }
+            });
+
+            // 3. Timeline Chart
+            Plotly.newPlot('dbs-timeline-chart', [
+                {
+                    x: data.dbs_timeline.sessions,
+                    y: data.dbs_timeline.frequency,
+                    mode: 'lines+markers',
+                    name: 'Frequency (Hz)',
+                    line: { color: '#ff6b6b' },
+                    marker: { size: 4 }
+                },
+                {
+                    x: data.dbs_timeline.sessions,
+                    y: data.dbs_timeline.intensity,
+                    mode: 'lines',
+                    name: 'Intensity (% MSO)',
+                    line: { color: '#4ecdc4', width: 3 },
+                    yaxis: 'y2'
+                }
+            ], {
+                ...PL,
+                xaxis: { title: 'DBS Sessions', color: '#8b949e', gridcolor: 'rgba(255,255,255,0.1)' },
+                yaxis: { title: 'Frequency (Hz)', titlefont: { color: '#ff6b6b' }, tickfont: { color: '#ff6b6b' }, gridcolor: 'rgba(255,255,255,0.1)' },
+                yaxis2: {
+                    title: 'Intensity (% MSO)',
+                    titlefont: { color: '#4ecdc4' },
+                    tickfont: { color: '#4ecdc4' },
+                    overlaying: 'y',
+                    side: 'right',
+                    gridcolor: 'rgba(255,255,255,0.05)'
+                },
+                legend: { orientation: 'h', y: 1.1 }
+            });
+
+            dementiaDbsLoaded = true;
+        } catch (e) {
+            console.error('Failed to load Dementia DBS data:', e);
+        }
     }
 
 });

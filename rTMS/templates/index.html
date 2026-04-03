@@ -32,6 +32,9 @@
                 <button class="nav-btn" data-tab="dementia-lt">
                     <span class="icon">🧬</span> Long-Term Dementia
                 </button>
+                <button class="nav-btn" data-tab="dementia-dbs">
+                    <span class="icon">🌌</span> Dementia DBS Protocol
+                </button>
                 <button class="nav-btn" data-tab="equipment">
                     <span class="icon">⚙️</span> Equipment
                 </button>
@@ -226,6 +229,29 @@
                     <div class="panel glass-panel large-panel">
                         <h3>Clinical Protocol Stages — Smart Aging Pathway</h3>
                         <div id="dlt-protocol-cards"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Dementia DBS Protocol Tab ── -->
+            <div id="dementia-dbs-view" class="hidden">
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Statistical Manifold Distribution (Tau & Amyloid Aggregation)</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Probabilistic imaging of dense neuro-degenerative clusters.</p>
+                        <div id="dbs-manifold-chart" class="chart-container" style="min-height:350px;"></div>
+                    </div>
+                </div>
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Optimal Stage Gating Trajectory</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Tracking patient state through clinical thresholds with DBS modulation.</p>
+                        <div id="dbs-gating-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>DBS Parameter Timeline</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Frequency and Intensity settings dynamically gated per session.</p>
+                        <div id="dbs-timeline-chart" class="chart-container" style="min-height:300px;"></div>
                     </div>
                 </div>
             </div>

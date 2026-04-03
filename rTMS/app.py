@@ -17,6 +17,7 @@ from logic.monteris_cf_treatment import (
     jc_state_transfer,
     risk_stratification,
 )
+from logic.dbs_statistical_manifold import generate_dbs_treatment_protocol
 
 app = Flask(__name__)
 CORS(app)
@@ -52,6 +53,10 @@ def treatment_paradigm():
 @app.route('/api/dementia-longterm', methods=['GET'])
 def dementia_longterm():
     return jsonify({"status": "success", "data": get_dementia_longterm_care()})
+
+@app.route('/api/dbs-imaging', methods=['GET'])
+def dbs_imaging_protocol():
+    return jsonify({"status": "success", "data": generate_dbs_treatment_protocol()})
 
 # ── Monteris CF Treatment Paradigm Routes ────────────────────────────────────
 
