@@ -68,6 +68,7 @@ def generate_nature_dbs_dementia_report(output_filename=OUTPUT):
     abstract_style = ParagraphStyle('Abstract', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=11, leading=15, textColor=DARK_GREY, alignment=TA_JUSTIFY, spaceBefore=10, spaceAfter=20)
     h2_style = ParagraphStyle('H2', parent=styles['Heading2'], fontName='Helvetica-Bold', fontSize=14, textColor=NATURE_RED, spaceBefore=15, spaceAfter=10)
     body_style = ParagraphStyle('BodyN', parent=styles['Normal'], fontName='Helvetica', fontSize=10.5, leading=14.5, alignment=TA_JUSTIFY, textColor=DARK_GREY, spaceAfter=10)
+    math_style = ParagraphStyle('Math', parent=styles['Normal'], fontName='Helvetica-Oblique', fontSize=11, alignment=TA_CENTER, textColor=NATURE_BLUE, spaceBefore=10, spaceAfter=15)
     
     story = []
     
@@ -101,9 +102,13 @@ def generate_nature_dbs_dementia_report(output_filename=OUTPUT):
     story.append(Paragraph("Methodology: Statistical Manifolds & Gating", h2_style))
     story.append(Paragraph(
         "<b>Manifold Reconstruction:</b> Using structural MRI and PET imaging data, amyloid and tau concentrations are represented as a joint probability distribution over a 2D/3D mesh metric. "
-        "For any target point on the manifold, the relative aggregation score is calculated. This is formulated programmatically as overlapping Gaussian densities with variable noise.", body_style))
+        "For any target point on the manifold, the relative aggregation score is computed using the Radon-Nikodym derivative. This defines the disease measure &nu; relative to a healthy baseline &mu;.", body_style))
+    story.append(Paragraph("d&nu; / d&mu; (x, y) = &Sigma;<sub>i</sub> k<sub>i</sub> &centerdot; e<sup>-[(x - x<sub>i</sub>)<sup>2</sup> / 2&sigma;<sub>x</sub><sup>2</sup> + (y - y<sub>i</sub>)<sup>2</sup> / 2&sigma;<sub>y</sub><sup>2</sup>]</sup> + &epsilon;(x, y)", math_style))
     story.append(Paragraph(
-        "<b>Optimal Stage Gating:</b> The longitudinal progression defines a non-stationary Markov chain, partitioned by three functional state-gates: "
+        "<b>Optimal Stage Gating:</b> The longitudinal progression defines a non-stationary Markov chain, mapped state by state (from Session S<sub>n</sub> to S<sub>n+1</sub>) under active rTMS/DBS controls:", body_style))
+    story.append(Paragraph("S<sub>n+1</sub> = &Phi;(S<sub>n</sub>, u<sub>n</sub>) &nbsp;&nbsp;&rArr;&nbsp;&nbsp; &part;S / &part;t = &Lambda;(S) + &Omega;(u<sub>Hz</sub>, u<sub>MSO</sub>) &centerdot; S", math_style))
+    story.append(Paragraph(
+        "This defines three functional state-gates: "
         "<br/>• <i>Gate 1 (Neuro-protective)</i>: Low-frequency entrainment targeting cellular apoptosis delay. "
         "<br/>• <i>Gate 2 (Neuro-restorative)</i>: Moderated high-frequency titration, inciting vascular normalization and inflammatory reduction. "
         "<br/>• <i>Gate 3 (Synaptic Amplification)</i>: Variable, Hebbian-burst targeting long-term potentiation."
@@ -112,8 +117,12 @@ def generate_nature_dbs_dementia_report(output_filename=OUTPUT):
     # Results
     story.append(Paragraph("Algorithmic Implementation & Results", h2_style))
     story.append(Paragraph(
-        "Our engine models this neurodynamic sequence in Python, evaluating 100 theoretical treatment sessions. A non-linear growth function, <code>dbs_effect = 0.8 * (1 - np.exp(-0.03 * sessions))</code>, represents the restorative delta, mapped concurrently with natural cognitive decline."
-        " The resulting sequence shifts input intensity securely from 60% MSO up towards 80% over the therapeutic timeline, while modulating frequency along a bounded curve. We implemented this in a Dash-Flask environment, generating simultaneous probability mappings.", body_style))
+        "Our engine models this neurodynamic sequence conceptually in Python, evaluating 100 treatment iterations. The non-linear growth heuristic E(n) for DBS effect over n sessions opposes the base cognitive decay C(n):", body_style))
+    story.append(Paragraph("E(n) = &kappa; (1 - e<sup>-&lambda; &centerdot; n</sup>) ; &nbsp; C(n) = &delta;<sub>0</sub> - &gamma; &centerdot; n", math_style))
+    story.append(Paragraph("S(n) = C(n) + &Sigma; E(n) + &alpha; sin(&omega; n)", math_style))
+    story.append(Paragraph(
+        "Where the scaling factors represent restorative deltas (capped organically over the timeline), while an oscillatory Hebbian boost (&alpha; &centerdot; sin(&omega;n)) overlays synaptic recovery cycles."
+        " The resulting sequence shifts device intensity from 60% MSO up towards 80% MSO securely, while adapting Hz along the &Phi;(n) curve to dynamically counter aggregations.", body_style))
     
     # Table of gates
     t_data = [
