@@ -1,9 +1,17 @@
 
-import pypulseq as pp
 import numpy as np
 import os
 
+try:
+    import pypulseq as pp
+    _PYPULSEQ_AVAILABLE = True
+except Exception:
+    pp = None
+    _PYPULSEQ_AVAILABLE = False
+
 def generate_seq_file(sequence_type, tr, te, flip_angle=90, matrix_size=128, fov=256e-3):
+    if not _PYPULSEQ_AVAILABLE:
+        return None  # pypulseq unavailable due to dependency conflict
     """
     Generates a .seq file using pypulseq for the specified parameters.
     Returns the path to the generated file.

@@ -1783,6 +1783,33 @@ class MRIReconstructionSimulator:
             t2 = T2_safe
             M = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
 
+        elif sequence_type == 'ML':
+            from quantum_pulse_sequences import QuantumPulseSequences
+            qps = QuantumPulseSequences(TE=TE, TR=TR, T1=1200.0, T2=80.0)
+            t1 = T1_safe
+            t2 = T2_safe
+            M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
+            noisy_M = M_base + np.random.normal(0, 0.05, size=M_base.shape)
+            M = qps.improve_snr_supervised_ml(noisy_M)
+
+        elif sequence_type == 'supervised grammar':
+            from quantum_pulse_sequences import QuantumPulseSequences
+            qps = QuantumPulseSequences(TE=TE, TR=TR, T1=1200.0, T2=80.0)
+            t1 = T1_safe
+            t2 = T2_safe
+            M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
+            t_eval = np.linspace(0, TE+TR, M_base.shape[1] if len(M_base.shape)>1 else 1)
+            semantic_env = qps.semantic_ontology_pulse_sequence(t_eval)
+            M = M_base * np.abs(np.mean(semantic_env))
+
+        elif sequence_type == 'QuantObservables':
+            from quantum_pulse_sequences import QuantumPulseSequences
+            qps = QuantumPulseSequences(TE=TE, TR=TR, T1=1200.0, T2=80.0)
+            t1 = T1_safe
+            t2 = T2_safe
+            M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
+            M = qps.quantum_observable_reconstruction(M_base)
+
         elif sequence_type == 'GRE':
             t1 = np.maximum(self.t1_map, 1e-6)
             t2 = np.maximum(self.t2_map, 1e-6)

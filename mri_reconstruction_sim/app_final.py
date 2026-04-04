@@ -13,7 +13,11 @@ import generate_pdf
 import generate_report_images
 import numpy as np
 import json
-from pypulseq_generator import generate_seq_file
+try:
+    from pypulseq_generator import generate_seq_file
+except Exception:
+    def generate_seq_file(*args, **kwargs):
+        return None
 from cardiovascular_pulse import run_cardiovascular_analysis, SEQUENCES as CV_SEQUENCES, CARDIAC_TISSUES
 from cs_cardiac_pulse import run_cs_cardiac
 from quantum_thermometry_enhanced import (
@@ -945,7 +949,7 @@ if __name__ == '__main__':
     print("  ✓ Ultra-High Resolution Neurovasculature")
     print("  ✓ Pareto, Geodesic, Quantum ML and StatLLM")
     print("=" * 80)
-    port = int(os.environ.get('FLASK_RUN_PORT', 5050))
+    port = int(os.environ.get('FLASK_RUN_PORT', 5055))
     print(f"Server running on http://0.0.0.0:{port}")
     print("=" * 80)
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
