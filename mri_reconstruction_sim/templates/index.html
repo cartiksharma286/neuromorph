@@ -351,6 +351,9 @@
                     <option value="ML">ML</option>
                     <option value="supervised grammar">supervised grammar</option>
                     <option value="QuantObservables">QuantObservables</option>
+                    <option value="InflectionThermometry">🌡️ Inflection Thermometry (PRF·C60)</option>
+                    <option value="FullereneDiffeo">⚽ Fullerene C60 Diffeomorphic</option>
+                    <option value="HebbianAblation">🧠 Hebbian Ablation Amplification</option>
                 </select>
             </div>
 
@@ -508,6 +511,7 @@
             <button class="tab-trigger" id="tab-neuro-vascular" onclick="switchView('neuro-vascular', this);">🫀 Neurovascular Thermometry</button>
             <button class="tab-trigger" id="tab-enhanced-therm" onclick="switchView('enhanced-therm', this);">🔥 Enhanced Thermometry</button>
             <button class="tab-trigger" id="tab-rtms" onclick="switchView('rtms', this);">🧠 rTMS Neural Repair</button>
+            <button class="tab-trigger" id="tab-fullerene-inflection" onclick="switchView('fullerene-inflection', this); runFullereneInflection();">⚽ Fullerene·Inflection</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -1346,6 +1350,78 @@
                 </div>
             </div>
             <!-- END View: rTMS Neural Repair -->
+
+            <!-- View: Fullerene·Inflection Thermometry -->
+            <div id="view-fullerene-inflection" class="view-content">
+                <div style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; align-items:flex-end;">
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.8rem;">B₀ (T)</label>
+                        <select id="fi-b0" style="background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:0.4rem 0.6rem;">
+                            <option value="1.5">1.5 T</option>
+                            <option value="3.0" selected>3.0 T</option>
+                            <option value="7.0">7.0 T</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.8rem;">TE (ms)</label>
+                        <input type="number" id="fi-te" value="20" min="5" max="100" step="1"
+                               style="width:80px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:0.4rem 0.6rem;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.8rem;">ΔT max (°C)</label>
+                        <input type="number" id="fi-dt" value="20" min="5" max="60" step="1"
+                               style="width:80px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:0.4rem 0.6rem;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.8rem;">Hotspot radius</label>
+                        <input type="number" id="fi-radius" value="0.15" min="0.05" max="0.4" step="0.01"
+                               style="width:90px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:0.4rem 0.6rem;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.8rem;">C60 coils</label>
+                        <select id="fi-ncoils" style="background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:0.4rem 0.6rem;">
+                            <option value="20">20-element</option>
+                            <option value="32">32-element</option>
+                            <option value="60" selected>60-element (C₆₀)</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.8rem;">Hebbian η</label>
+                        <input type="number" id="fi-eta" value="0.05" min="0.005" max="0.5" step="0.005"
+                               style="width:80px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:0.4rem 0.6rem;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.8rem;">Diffeo steps</label>
+                        <select id="fi-diffeo" style="background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:0.4rem 0.6rem;">
+                            <option value="4">4</option>
+                            <option value="8" selected>8</option>
+                            <option value="16">16</option>
+                        </select>
+                    </div>
+                    <button onclick="runFullereneInflection()"
+                            style="padding:0.6rem 1.2rem; background:linear-gradient(135deg,#a78bfa,#6d28d9); color:#fff; font-weight:700; border:none; border-radius:8px; cursor:pointer; align-self:flex-end;">
+                        ▶ Run Pipeline
+                    </button>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div class="output-panel" style="grid-column:1/-1;">
+                        <div class="output-title">⚽ Fullerene C60 · Inflection Thermometry · Diffeomorphic · Hebbian Reconstruction</div>
+                        <div id="fi-image-container" style="text-align:center; min-height:300px; display:flex; align-items:center; justify-content:center;">
+                            <span style="color:#475569;">Click ▶ Run Pipeline to start the 6-step reconstruction</span>
+                        </div>
+                    </div>
+                    <div class="output-panel">
+                        <div class="output-title">📊 Pipeline Metrics</div>
+                        <div id="fi-metrics" style="font-family:monospace; font-size:0.82rem; color:#94a3b8; line-height:1.7;"></div>
+                    </div>
+                    <div class="output-panel">
+                        <div class="output-title">🫀 Coil Coverage · C60 Geometry</div>
+                        <div id="fi-coil-info" style="font-family:monospace; font-size:0.82rem; color:#94a3b8; line-height:1.7;"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- END View: Fullerene·Inflection Thermometry -->
 
             <div id="view-snr" class="view-content">
                 <div style="display:flex; gap:1rem; margin-bottom:1rem;">
@@ -2962,6 +3038,67 @@
             URL.revokeObjectURL(url);
         } catch(e) {
             alert('Download failed: ' + e);
+        }
+    }
+
+    // ── Fullerene·Inflection Thermometry ─────────────────────────────────────
+    async function runFullereneInflection() {
+        const imgContainer = document.getElementById('fi-image-container');
+        const metricsDiv   = document.getElementById('fi-metrics');
+        const coilDiv      = document.getElementById('fi-coil-info');
+        imgContainer.innerHTML = '<span style="color:#a78bfa;">⏳ Running 6-step pipeline…</span>';
+        metricsDiv.innerHTML   = '';
+        coilDiv.innerHTML      = '';
+
+        const payload = {
+            B0:             parseFloat(document.getElementById('fi-b0').value),
+            TE:             parseFloat(document.getElementById('fi-te').value) / 1000.0,
+            delta_T_max:    parseFloat(document.getElementById('fi-dt').value),
+            hotspot_radius: parseFloat(document.getElementById('fi-radius').value),
+            n_coils:        parseInt(document.getElementById('fi-ncoils').value),
+            hebbian_eta:    parseFloat(document.getElementById('fi-eta').value),
+            n_diffeo_steps: parseInt(document.getElementById('fi-diffeo').value),
+            matrix:         128,
+            fov_m:          0.256,
+        };
+
+        try {
+            const [runResp, coilResp] = await Promise.all([
+                fetch('/api/fullerene_inflection/run', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                }),
+                fetch(`/api/fullerene_inflection/coil_spec?n_coils=${payload.n_coils}&fov_m=${payload.fov_m}`)
+            ]);
+
+            const data      = await runResp.json();
+            const coilData  = await coilResp.json();
+
+            if (!data.success) throw new Error(data.error);
+
+            imgContainer.innerHTML =
+                `<img src="data:image/png;base64,${data.image}" style="max-width:100%; border-radius:8px;" alt="Fullerene Inflection Pipeline">`;
+
+            const m = data.metrics || {};
+            metricsDiv.innerHTML = [
+                `Inflection voxels: <span style="color:#a78bfa;">${data.inflection_voxels || 0}</span>`,
+                `Coil SoS coverage: <span style="color:#34d399;">${(data.coil_coverage_pct||0).toFixed(1)} %</span>`,
+                `Diffeo stability: <span style="color:#38bdf8;">${(m.diffeo_stability||0).toFixed(4)}</span>`,
+                `Hebbian gain (dB): <span style="color:#fb923c;">${(m.hebbian_snr_db||0).toFixed(2)}</span>`,
+                `Thermometry SNR (dB): <span style="color:#f472b6;">${(m.thermometry_snr_db||0).toFixed(2)}</span>`,
+            ].map(s => `<div>${s}</div>`).join('');
+
+            if (coilData.success) {
+                coilDiv.innerHTML = [
+                    `Geometry: <span style="color:#a78bfa;">${coilData.geometry}</span>`,
+                    `Elements: <span style="color:#34d399;">${coilData.n_coils}</span>`,
+                    `FOV: <span style="color:#38bdf8;">${(coilData.fov_m*100).toFixed(1)} cm</span>`,
+                    `Coverage: <span style="color:#fb923c;">${(coilData.coverage_pct||0).toFixed(1)} %</span>`,
+                ].map(s => `<div>${s}</div>`).join('');
+            }
+        } catch(err) {
+            imgContainer.innerHTML = `<span style="color:#f87171;">Error: ${err.message}</span>`;
         }
     }
     </script>

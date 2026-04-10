@@ -1810,6 +1810,41 @@ class MRIReconstructionSimulator:
             M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
             M = qps.quantum_observable_reconstruction(M_base)
 
+        elif sequence_type == 'InflectionThermometry':
+            # PRF-shift MR thermometry + fullerene C60 coil weighting + inflection detection
+            from inflection_thermometry import InflectionThermometry, FullereneCoilArray
+            t1 = T1_safe; t2 = T2_safe
+            M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
+            thermo = InflectionThermometry(B0=3.0, TE=TE * 1e-3, alpha=-0.01e-6)
+            delta_T = 15.0 * np.exp(-((np.indices(M_base.shape)[0] - M_base.shape[0]*0.5)**2 +
+                                      (np.indices(M_base.shape)[1] - M_base.shape[1]*0.5)**2) /
+                                     (2 * (M_base.shape[0]*0.1)**2))
+            phase_series = thermo.compute_prf_phase(np.stack([M_base * (1 + 0.02*i) for i in range(10)], axis=0),
+                                                     np.stack([delta_T * (i / 9.0) for i in range(10)], axis=0))
+            inflection_map = thermo.detect_inflection_points(phase_series)
+            coils = FullereneCoilArray(n_coils=60, fov=(M_base.shape[0] * 1e-3, M_base.shape[1] * 1e-3))
+            _, sos = coils.combined_sensitivity(M_base.shape)
+            M = M_base * sos * (1.0 + 0.3 * inflection_map)
+
+        elif sequence_type == 'FullereneDiffeo':
+            # FullereneCoilArray + DiffeomorphicDistribution stabilised reconstruction
+            from inflection_thermometry import FullereneCoilArray, DiffeomorphicDistribution
+            t1 = T1_safe; t2 = T2_safe
+            M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
+            coils = FullereneCoilArray(n_coils=60, fov=(M_base.shape[0] * 1e-3, M_base.shape[1] * 1e-3))
+            _, sos = coils.combined_sensitivity(M_base.shape)
+            diffeo = DiffeomorphicDistribution(n_steps=8, regularisation=0.1)
+            result = diffeo.stable_distribution(M_base * sos)
+            M = result['warped'].astype(np.float32)
+
+        elif sequence_type == 'HebbianAblation':
+            # Hebbian gain amplification on SE signal for tumour ablation SNR
+            from inflection_thermometry import HebbianAmplification
+            t1 = T1_safe; t2 = T2_safe
+            M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
+            hebbian = HebbianAmplification(eta=0.05, n_epochs=20, threshold=0.3)
+            M = hebbian.amplify(M_base).astype(np.float32)
+
         elif sequence_type == 'GRE':
             t1 = np.maximum(self.t1_map, 1e-6)
             t2 = np.maximum(self.t2_map, 1e-6)

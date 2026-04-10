@@ -936,6 +936,105 @@ def api_all_coils_list():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+# ---------------------------------------------------------------------------
+# Fullerene·Inflection Thermometry API (C60 coil + PRF + diffeomorphic + Hebbian)
+# ---------------------------------------------------------------------------
+
+@app.route('/api/fullerene_inflection/coil_spec', methods=['GET'])
+def api_fullerene_coil_spec():
+    """Return C60 fullerene coil spatial layout and coverage statistics."""
+    try:
+        from inflection_thermometry import FullereneCoilArray
+        fov_m = float(request.args.get('fov_m', 0.256))
+        n_coils = int(request.args.get('n_coils', 60))
+        coil = FullereneCoilArray(n_coils=n_coils, fov=(fov_m, fov_m))
+        positions = coil.coil_positions.tolist()
+        _, sos = coil.combined_sensitivity((128, 128))
+        coverage_pct = float(np.mean(sos > 0.1) * 100)
+        return jsonify(sanitize_for_json({
+            'success': True,
+            'n_coils': n_coils,
+            'fov_m': fov_m,
+            'coil_positions': positions,
+            'coverage_pct': coverage_pct,
+            'geometry': 'C60 truncated-icosahedron'
+        }))
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/fullerene_inflection/run', methods=['POST'])
+def api_fullerene_inflection_run():
+    """
+    Run the full 6-step Fullerene·Inflection pipeline:
+    PRF thermometry → Fullerene coil weighting → Diffeomorphic stabilisation
+    → Hebbian amplification → Inflection boundary map → base64 composite image.
+    """
+    try:
+        from inflection_thermometry import run_fullerene_inflection_pipeline
+        data = request.get_json(force=True) or {}
+        B0 = float(data.get('B0', 3.0))
+        TE = float(data.get('TE', 0.02))
+        delta_T_max = float(data.get('delta_T_max', 20.0))
+        hotspot_radius = float(data.get('hotspot_radius', 0.15))
+        n_coils = int(data.get('n_coils', 60))
+        hebbian_eta = float(data.get('hebbian_eta', 0.05))
+        n_diffeo_steps = int(data.get('n_diffeo_steps', 8))
+        matrix = int(data.get('matrix', 128))
+        fov_m = float(data.get('fov_m', 0.256))
+
+        result = run_fullerene_inflection_pipeline(
+            B0=B0, TE=TE, delta_T_max=delta_T_max,
+            hotspot_radius=hotspot_radius, n_coils=n_coils,
+            hebbian_eta=hebbian_eta, n_diffeo_steps=n_diffeo_steps,
+            matrix=matrix, fov_m=fov_m
+        )
+
+        import io
+        import base64
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+
+        fig, axes = plt.subplots(2, 3, figsize=(15, 10), facecolor='#0a0a0a')
+        fig.suptitle('Fullerene C60·Inflection Thermometry Pipeline', color='cyan', fontsize=13)
+        panels = [
+            ('temp_map',         'PRF ΔT Map',              'hot'),
+            ('coil_sensitivity', 'C60 Coil Sensitivity',    'viridis'),
+            ('warped_image',     'Diffeomorphic Stabilised', 'gray'),
+            ('amplified_image',  'Hebbian Amplified',        'inferno'),
+            ('inflection_map',   'Inflection Boundaries',    'coolwarm'),
+            ('final_composite',  'Final Composite Recon',    'magma'),
+        ]
+        for ax, (key, title, cmap) in zip(axes.flat, panels):
+            ax.set_facecolor('#0a0a0a')
+            img_data = result.get(key)
+            if img_data is not None:
+                im = ax.imshow(img_data, cmap=cmap, aspect='equal')
+                plt.colorbar(im, ax=ax, fraction=0.046)
+            ax.set_title(title, color='white', fontsize=9)
+            ax.axis('off')
+        plt.tight_layout()
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', dpi=100, bbox_inches='tight',
+                    facecolor='#0a0a0a')
+        plt.close(fig)
+        buf.seek(0)
+        img_b64 = base64.b64encode(buf.read()).decode('utf-8')
+
+        metrics = result.get('metrics', {})
+        return jsonify(sanitize_for_json({
+            'success': True,
+            'image': img_b64,
+            'metrics': metrics,
+            'inflection_voxels': int(result.get('inflection_voxels', 0)),
+            'coil_coverage_pct': float(result.get('coil_coverage_pct', 0)),
+        }))
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     print("=" * 80)
     print("MRI RECONSTRUCTION SIMULATOR - FINAL PRODUCTION")
