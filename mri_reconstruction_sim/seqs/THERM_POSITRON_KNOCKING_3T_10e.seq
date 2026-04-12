@@ -1,18 +1,18 @@
 % ============================================================================
-% Enhanced Thermometry Pulse Sequence: EPI_THERMOMETRY
+% Enhanced Thermometry Pulse Sequence: POSITRON_KNOCKING
 % ============================================================================
 % Quantum Thermometry Engine v2.0 — LUT-based, FFTW-optimised
 % with Statistical Distribution Modelling & Multimodal Reasoning
 %
-% Generated: 2026-04-10T18:25:22.143681
+% Generated: 2026-04-10T18:25:22.151548
 % Field Strength: 3.0 T
-% Sequence: THERM_EPI_3T
+% Sequence: THERM_POSITRON_KNOCKING_3T_10e
 %
 
 [HEADER]
-Name THERM_EPI_3T
+Name THERM_POSITRON_KNOCKING_3T_10e
 Author QuantumThermometryEngine_v2
-Comment Enhanced epi_thermometry thermometry with LUT and multimodal reasoning
+Comment Enhanced positron_knocking thermometry with LUT and multimodal reasoning
 Institution NeuroPulse Lab
 Version 2.0
 Compatible SIEMENS MAGNETOM 1.5T 3.0T 7.0T
@@ -28,9 +28,9 @@ SliceThickness 3.0 mm
 Matrix 128 128
 Bandwidth 580595.5 kHz
 FlipAngle 20.0 deg
-TR 60.000 ms
-NumEchoes 1
-SequenceType epi_thermometry
+TR 110.597 ms
+NumEchoes 10
+SequenceType positron_knocking
 ThermometryMode PRF_Shift
 TemperatureRange 35-70 C
 SAR_Limit 2.0 W/kg
@@ -47,7 +47,16 @@ SAR_Limit 2.0 W/kg
 % liver: dPhi/dT=-7.7804 deg/C opt_TE=18.0ms SNR_eff=0.049956
 
 [ECHOTIMES]
-TE[0] 27.0000 ms  % Phase/°C=-11.671deg
+TE[0] 1.0000 ms  % Phase/°C=-0.432deg
+TE[1] 8.1234 ms  % Phase/°C=-3.511deg
+TE[2] 19.6494 ms  % Phase/°C=-8.493deg
+TE[3] 26.7728 ms  % Phase/°C=-11.572deg
+TE[4] 38.2987 ms  % Phase/°C=-16.554deg
+TE[5] 45.4222 ms  % Phase/°C=-19.633deg
+TE[6] 49.8247 ms  % Phase/°C=-21.536deg
+TE[7] 56.9481 ms  % Phase/°C=-24.615deg
+TE[8] 68.4741 ms  % Phase/°C=-29.597deg
+TE[9] 75.5975 ms  % Phase/°C=-32.676deg
 
 [RF_BLOCKS]
 % Gaussian RF pulse (20° slice-selective)
@@ -120,11 +129,18 @@ TE[0] 27.0000 ms  % Phase/°C=-11.671deg
 Gread_amplitude 0.0137 mT/m
 Gphase_max 0.0068 mT/m
 Gslice 24.0000 mT/m
-EPI_blip_amplitude 0.0034 mT/m
-EPI_echo_spacing 0.500 ms
 
 [ADC_BLOCKS]
-Echo[0]: samples=128 dwell=0.0us delay=27.0000ms
+Echo[0]: samples=128 dwell=0.0us delay=1.0000ms
+Echo[1]: samples=128 dwell=0.0us delay=8.1234ms
+Echo[2]: samples=128 dwell=0.0us delay=19.6494ms
+Echo[3]: samples=128 dwell=0.0us delay=26.7728ms
+Echo[4]: samples=128 dwell=0.0us delay=38.2987ms
+Echo[5]: samples=128 dwell=0.0us delay=45.4222ms
+Echo[6]: samples=128 dwell=0.0us delay=49.8247ms
+Echo[7]: samples=128 dwell=0.0us delay=56.9481ms
+Echo[8]: samples=128 dwell=0.0us delay=68.4741ms
+Echo[9]: samples=128 dwell=0.0us delay=75.5975ms
 
 [BLOCK_EVENTS]
 1  1  1  1  1  1  0

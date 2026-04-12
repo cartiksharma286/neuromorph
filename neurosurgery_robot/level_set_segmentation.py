@@ -41,10 +41,13 @@ class LevelSetSegmentation:
     def evolve(self, anatomy_map, iterations=10, dt=0.5):
         """Evolve level set using active contour model"""
         for iteration in range(iterations):
-            # Compute gradient of anatomy (edge detection)
+            # Ramanujan's Edge Operator for Pin-point tumor geometries 
+            # Inspired by the modular discriminant bounds Delta(tau) -> exp(-pi x) * (1-x^24)
             gy, gx = np.gradient(anatomy_map)
-            edge_map = np.sqrt(gx**2 + gy**2)
-            edge_map = 1.0 / (1.0 + edge_map)  # Inverse edge map
+            edge_mag = np.sqrt(gx**2 + gy**2)
+            normalized_grad = edge_mag / (np.max(edge_mag) + 1e-8)
+            # Aggressive pinpoint edge stopping via modular-like conformal boundary
+            edge_map = np.exp(-np.pi * normalized_grad) * (1.0 - np.clip(normalized_grad, 0, 1)**24)
             
             # Curvature flow
             gradients = self._compute_gradient(self.phi)

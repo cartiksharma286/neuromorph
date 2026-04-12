@@ -11,9 +11,10 @@ import matplotlib
 matplotlib.use('Agg')  # Use Agg backend for non-GUI rendering
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
+from matplotlib.colors import LinearSegmentedColormap
 
-# Import enhanced surgical components
 from precision_kinematics import PrecisionRobot6DOF
+from slam_kinematics import SlamEnhancedRobot
 from enhanced_thermometry import EnhancedThermometry
 from enhanced_cryo import EnhancedCryoModule
 from level_set_segmentation import LevelSetSegmentation
@@ -21,6 +22,11 @@ from quantum_kalman import QuantumKalmanFilter
 from tumor_thermometry_segmentation import MRThermometrySegmenter
 from thermal_neuro_morphometry import ThermalNeuroMorphometry
 from generative_heating import GenerativeTissueHeating
+from nvqlink import NVQLinkBridge
+from quantum_ml_segmentation import QuantumMLSegmenter
+
+nvqlink = NVQLinkBridge()
+qml_segmenter = QuantumMLSegmenter()
 
 # Try to import optional modules
 
@@ -75,7 +81,7 @@ def numpy_to_native(obj):
     return obj
 
 # Global Simulation State - Enhanced
-robot = PrecisionRobot6DOF()
+robot = SlamEnhancedRobot()
 thermo = EnhancedThermometry(width=128, height=128)
 cryo = EnhancedCryoModule(width=128, height=128)
 segmentation = LevelSetSegmentation(width=128, height=128)
@@ -154,11 +160,12 @@ five_g_guidance = None
 laser_optimizer = LaserDeliveryOptimizer() if HAS_5G_GUIDANCE else None
 
 # State variables
-simulation_running = True
+simulation_running = True # Default Control States
 laser_enabled = False
 cryo_enabled = False
 ablation_active = False
-target_pos = np.array([0.5, 0.0, 0.5])
+target_pos = np.array([0.5, 0.5, 0.5])
+cryo_lut_name = 'grayscale'
 CONTROL_LOOP_HZ = 50.0
 
 # Visualization caching
@@ -210,10 +217,14 @@ def _update_viz_cache():
         plt.close(fig)
         _viz_cache['temp_viz'] = base64.b64encode(buf.getvalue()).decode()
         
-        # Create cryo visualization
+        # Create cryo visualization with custom Egg-shell LUT
         fig, ax = plt.subplots(figsize=(5, 5))
         fig.patch.set_facecolor('#0f172a')
-        im = ax.imshow(cryo_map, cmap='Blues', vmin=0, vmax=1)
+        
+        lut_colors = ['#0f172a', '#312e81', '#3730a3', '#4338ca', '#3b82f6', '#0ea5e9', '#22d3ee', '#67e8f9'] # Deep blue -> Indigo -> Vibrant Cyan
+        custom_egg_lut = LinearSegmentedColormap.from_list('egg_lut', lut_colors)
+        
+        im = ax.imshow(cryo_map, cmap=custom_egg_lut, vmin=0, vmax=1)
         ax.set_title('Cryo Ice Ball', color='white', fontsize=9, fontweight='bold')
         ax.axis('off')
         plt.colorbar(im, ax=ax, label='Ice Fraction')
@@ -412,8 +423,8 @@ def index():
 
 @app.route('/api/telemetry')
 def get_telemetry():
-    """Get real-time telemetry data - optimized for fast response"""
-    # Update visualizations cache (non-blocking)
+    
+    # Update visualizations cache
     _update_viz_cache()
     
     pos, T = robot.forward_kinematics(robot.joints)
@@ -425,6 +436,11 @@ def get_telemetry():
     quantum_metrics = {}
     if hasattr(robot, 'get_quantum_metrics'):
         quantum_metrics = robot.get_quantum_metrics()
+    
+    # Global state variables (ensure these are accessible)
+    # These are defined as globals in app.py
+    global laser_enabled, cryo_enabled, ablation_active, target_pos, cryo_lut_name
+    
     guidance_state = {
         'active': guidance.active if guidance else False,
         'completed': guidance.completed if guidance else False,
@@ -440,6 +456,70 @@ def get_telemetry():
         generated_profile = generated_profile.tolist()
     elif generated_profile is None:
         generated_profile = []
+        
+    # ── Level-Set + QML Pinpoint Geometry ───────────────────────────
+    ls_mask = segmentation.tumor_mask # 128x128
+    qml_mask = qml_segmenter.refine_geometry(ls_mask, thermo.tissue_type)
+    
+    # Extract explicit RGB map for Cryo Egg geometries, pinpointed at QML/LS geometry
+    # We use the QML mask to modulate the cryo profile visibility at the tumor
+    refined_cryo = cryo_map * (0.4 + 0.6 * qml_mask)
+    
+    # Professional LUT definitions
+    if cryo_lut_name == 'spectral_ice':
+        lut_colors = ['#0f172a', '#1d4ed8', '#2563eb', '#3b82f6', '#06b6d4', '#22d3ee', '#ec4899', '#ffffff']
+    elif cryo_lut_name == 'clinical_prf':
+        lut_colors = ['#0f172a', '#0ea5e9', '#0284c7', '#0369a1', '#e0f2fe']
+    elif cryo_lut_name == 'deep_frost':
+        lut_colors = ['#0f172a', '#172554', '#1e3a8a', '#1e40af', '#3b82f6', '#93c5fd']
+    elif cryo_lut_name == 'grayscale':
+        lut_colors = ['#000000', '#222222', '#555555', '#888888', '#aaaaaa', '#dddddd', '#ffffff']
+    elif cryo_lut_name == 'frost_edge':
+        lut_colors = ['#083344', '#0e7490', '#22d3ee', '#a5f3fc', '#ffffff']
+    else:
+        lut_colors = ['#0f172a', '#312e81', '#3730a3', '#4338ca', '#3b82f6']
+        
+    custom_egg_lut = LinearSegmentedColormap.from_list('dynamic_lut', lut_colors)
+    rgb_map = custom_egg_lut(refined_cryo)[:, :, :3]
+    
+    # Downsample matrix to prevent heavy JSON overhead while providing pure RGB map representation
+    rgb_map_ds = rgb_map[::2, ::2, :].tolist()
+    
+    # ── Multimodal Reasoning Engine ──
+    # Synthesize MRI, Cryo, Thermo, and QML metrics into actionable clinical text.
+    reasoning_insights = []
+    if cryo.probe_active:
+        reasoning_insights.append("🧊 Cryo-Ablation ACTIVE.")
+        if cryo_metrics.get('fully_frozen_pixels', 0) > 10:
+            reasoning_insights.append(f"Lethal ice core expanding (Radius: {cryo_metrics['ice_ball_radius_mm']:.1f} mm).")
+        else:
+            reasoning_insights.append("Initial ice crystal formation phase.")
+            
+        # Check intersection with QML mask
+        ice_tumor_overlap = np.sum((cryo_map > 0.5) & (qml_mask > 0.5))
+        tumor_size = np.sum(qml_mask > 0.5)
+        if tumor_size > 0:
+            coverage = ice_tumor_overlap / tumor_size
+            reasoning_insights.append(f"Tumor target coverage: {coverage*100:.1f}%.")
+            if coverage > 0.95:
+                reasoning_insights.append("✅ Optimal ablation margins achieved. Recommend transition to thawing.")
+    else:
+        if current_max_temp > 45:
+            reasoning_insights.append("🔥 Hyperthermic ablation in progress.")
+        else:
+            reasoning_insights.append("⏸ System in observation mode.")
+            
+    if qml_segmenter and qml_segmenter.get_qml_metadata()['spectral_coherence'] > 0.98:
+        reasoning_insights.append("⚛ QML pinpoint geometry maintains high coherence. Boundaries are locked.")
+        
+    reasoning_text = " ".join(reasoning_insights)
+
+    # Wrap in NVQLink Packet
+    qml_metadata = qml_segmenter.get_qml_metadata()
+    cryo_packet = nvqlink.package_rgb_matrix(rgb_map_ds)
+    cryo_packet['qml_metrics'] = qml_metadata
+    cryo_packet['cryo_lut_colors'] = lut_colors
+    cryo_packet['brin_state'] = qml_metadata.get('brin_state', 0)
     
     return jsonify(numpy_to_native({
         'joints': robot.get_joint_angles_degrees().tolist(),
@@ -461,6 +541,7 @@ def get_telemetry():
             'metrics': quantum_metrics,
         },
         'vasculature': vasculature_analysis,
+        'slam': robot.get_slam_metrics() if hasattr(robot, 'get_slam_metrics') else {},
         'robot': {
             'position_error_m': float(robot.position_error),
             'safety': safety,
@@ -479,9 +560,11 @@ def get_telemetry():
         },
         'cryo': {
             'visualization': _viz_cache['cryo_viz'],
+            'nvqlink_packet': cryo_packet,
             'metrics': cryo_metrics,
             'active': cryo.probe_active,
         },
+        'multimodal_reasoning': reasoning_text,
         'segmentation': {
             'tumor_center': segmentation.get_center_of_mass().tolist(),
             'tumor_volume_pixels': segmentation.get_tumor_volume_pixels(),
@@ -509,7 +592,7 @@ def get_telemetry():
 @app.route('/api/control', methods=['POST'])
 def control():
     """Control robot, laser, and cryo"""
-    global laser_enabled, cryo_enabled, ablation_active, target_pos
+    global laser_enabled, cryo_enabled, ablation_active, target_pos, cryo_lut_name
     
     data = request.json or {}
     
@@ -533,6 +616,9 @@ def control():
     
     if 'cryo' in data:
         cryo_enabled = bool(data['cryo'])
+        
+    if 'cryo_color_profile' in data:
+        cryo_lut_name = str(data['cryo_color_profile'])
     
     if 'ablation' in data:
         ablation_active = bool(data['ablation'])
@@ -850,5 +936,6 @@ if __name__ == '__main__':
     print(f"Simulation Loop: Active (50Hz)")
     print(f"Components: Thermal | Cryo | Robot | Segmentation")
     print(f"{'='*60}\n")
-    app.run(host=host, port=port, debug=False)
+    # Enable threaded mode to handle multiple concurrent telemetry requests from the UI
+    app.run(host=host, port=port, debug=False, threaded=True)
 

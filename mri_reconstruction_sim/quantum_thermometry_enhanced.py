@@ -770,6 +770,16 @@ def generate_thermometry_pulse_sequence(
         te_arr = np.sort(te_arr)
         tr = te_arr[-1] + 30.0
         seq_name = f"PTSD_DEMENTIA_QPRIME_SNR_{b0:.0f}T_{n_echoes}e"
+
+    elif seq_type == "positron_knocking":
+        # Finite math optimization with positron knocking
+        pos_fraction = (math.sqrt(5) - 1) / 2
+        te_min, te_max = 1.0, min(80.0, t2star_target * 3.0)
+        te_arr = np.array([te_min + (te_max - te_min) * ((i * pos_fraction) % 1)
+                           for i in range(n_echoes)])
+        te_arr = np.sort(te_arr)
+        tr = te_arr[-1] + 35.0
+        seq_name = f"THERM_POSITRON_KNOCKING_{b0:.0f}T_{n_echoes}e"
         
     else:
         te_arr = np.array([t2star_target])

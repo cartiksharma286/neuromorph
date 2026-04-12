@@ -25,11 +25,11 @@ class EnhancedCryoModule:
         self.probe_temp = -150.0  # Argon cryo temperature
         
         # Physical parameters
-        self.cooling_power = 50.0  # Watts
+        self.cooling_power = 150.0  # Watts (Increased for faster simulation feedback)
         self.thermal_conductivity = 0.5  # W/(m·K) tissue
-        self.ice_conductivity = 2.2     # W/(m·K) ice
+        self.ice_conductivity = 5.2     # W/(m·K) ice (Enhanced conductivity)
         self.freeze_point = 0.0  # °C
-        self.max_freeze_radius = 0.15  # Normalized radius
+        self.max_freeze_radius = 0.25  # Normalized radius (Larger ice ball)
         
         # Tissue properties
         self.latent_heat_fusion = 334000.0  # J/kg for ice formation
@@ -70,10 +70,15 @@ class EnhancedCryoModule:
         
         # Joule-Thomson cooling distribution (Gaussian with exponential falloff)
         yy, xx = np.meshgrid(np.arange(self.height), np.arange(self.width), indexing='ij')
-        dist = np.sqrt((xx - px)**2 + (yy - py)**2)
+        
+        max_dist = max(self.width, self.height) * self.max_freeze_radius
+        
+        # Egg Shell Geometry deformation
+        # Creates an ovoid/egg shape by asymmetrically scaling the distance metric 
+        egg_skew = 1.0 - 0.4 * np.clip((yy - py) / (max_dist + 1e-4), -1.0, 1.0)
+        dist = np.sqrt((xx - px)**2 + (yy - py)**2) * egg_skew
         
         # Cooling power distribution: rapidly falls off with distance
-        max_dist = max(self.width, self.height) * self.max_freeze_radius
         cooling_factor = np.exp(-(dist / max_dist) ** 2)
         
         # Temperature reduction rate (°C/s)
