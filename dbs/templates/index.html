@@ -108,11 +108,21 @@
         </aside>
 
         <section class="bottom-shelf glass-panel">
-            <h2>Circuit & Bio-Signals</h2>
+            <h2>Finite Element Simulation of Cortical Surfaces (DBS Machinery)</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 150px;">
-                <svg id="circuit-svg" viewBox="0 0 400 200"></svg>
                 <div style="position: relative;">
-                    <canvas id="signal-canvas"></canvas>
+                    <div style="font-size: 10px; color: var(--accent-pink); margin-bottom: 5px;">CORTICAL CURRENT DENSITY</div>
+                    <canvas id="fea-cortical-canvas" style="width: 100%; height: 100%; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px;"></canvas>
+                </div>
+                <div style="display: flex; flex-direction: column; justify-content: center; gap: 10px;">
+                    <div class="stat-card" style="background: rgba(0,0,0,0.5);">
+                        <div class="stat-value" id="fea-max-field">0.86 V/mm</div>
+                        <div class="stat-label">Max Activation Field</div>
+                    </div>
+                    <div class="stat-card" style="background: rgba(0,0,0,0.5);">
+                        <div class="stat-value" id="fea-volume">1,240 mm³</div>
+                        <div class="stat-label">Volume of Tissue Activated (VTA)</div>
+                    </div>
                 </div>
             </div>
         </section>

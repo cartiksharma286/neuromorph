@@ -1,0 +1,99 @@
+/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.0.2 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/Users/cartiksharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/app_final.py", line 16, in <module>
+    from pypulseq_generator import generate_seq_file
+  File "/Users/cartiksharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/pypulseq_generator.py", line 2, in <module>
+    import pypulseq as pp
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/pypulseq/__init__.py", line 32, in <module>
+    from pypulseq.make_adiabatic_pulse import make_adiabatic_pulse
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/pypulseq/make_adiabatic_pulse.py", line 5, in <module>
+    from sigpy.mri.rf import hypsec, wurst
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/sigpy/__init__.py", line 12, in <module>
+    from sigpy import alg, app, config, linop, prox
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/sigpy/alg.py", line 8, in <module>
+    from sigpy import backend, util
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/sigpy/backend.py", line 6, in <module>
+    from sigpy import config
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/sigpy/config.py", line 34, in <module>
+    import torch  # noqa
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/torch/__init__.py", line 1477, in <module>
+    from .functional import *  # noqa: F403
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/torch/functional.py", line 9, in <module>
+    import torch.nn.functional as F
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+================================================================================
+MRI RECONSTRUCTION SIMULATOR - FINAL PRODUCTION
+================================================================================
+Features:
+  ✓ Advanced Reconstruction Engine (All 11+ methods)
+  ✓ Quantum Vascular Coils (25 designs)
+  ✓ 50-Turn Head Coil (3.2x SNR, 300μm resolution)
+  ✓ Statistical Adaptive Pulse Sequences
+  ✓ Ultra-High Resolution Neurovasculature
+  ✓ Pareto, Geodesic, Quantum ML and StatLLM
+================================================================================
+Server running on http://0.0.0.0:5050
+================================================================================
+ * Serving Flask app 'app_final'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5050
+ * Running on http://192.168.2.14:5050
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+
+A module that was compiled using NumPy 1.x cannot be run in
+NumPy 2.0.2 as it may crash. To support both 1.x and 2.x
+versions of NumPy, modules must be compiled with NumPy 2.0.
+Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+
+If you are a user of the module, the easiest solution will be to
+downgrade to 'numpy<2' or try to upgrade the affected module.
+We expect that some modules will need time to support NumPy 2.
+
+Traceback (most recent call last):  File "/Users/cartiksharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/app_final.py", line 16, in <module>
+    from pypulseq_generator import generate_seq_file
+  File "/Users/cartiksharma/Downloads/neuromorph-main-10/mri_reconstruction_sim/pypulseq_generator.py", line 2, in <module>
+    import pypulseq as pp
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/pypulseq/__init__.py", line 32, in <module>
+    from pypulseq.make_adiabatic_pulse import make_adiabatic_pulse
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/pypulseq/make_adiabatic_pulse.py", line 5, in <module>
+    from sigpy.mri.rf import hypsec, wurst
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/sigpy/__init__.py", line 12, in <module>
+    from sigpy import alg, app, config, linop, prox
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/sigpy/alg.py", line 8, in <module>
+    from sigpy import backend, util
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/sigpy/backend.py", line 6, in <module>
+    from sigpy import config
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/sigpy/config.py", line 34, in <module>
+    import torch  # noqa
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/torch/__init__.py", line 1477, in <module>
+    from .functional import *  # noqa: F403
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/torch/functional.py", line 9, in <module>
+    import torch.nn.functional as F
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/torch/nn/__init__.py", line 1, in <module>
+    from .modules import *  # noqa: F403
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/torch/nn/modules/__init__.py", line 35, in <module>
+    from .transformer import TransformerEncoder, TransformerDecoder, \
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/torch/nn/modules/transformer.py", line 20, in <module>
+    device: torch.device = torch.device(torch._C._get_default_device()),  # torch.device('cpu'),
+ * Debugger is active!
+ * Debugger PIN: 360-426-087

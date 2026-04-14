@@ -141,42 +141,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 thermalViz.updateChart(data.temp_history, genAiProfile);
             }
 
-            // Update Cryo via NVQLink telemetry
-            if (data.cryo && data.cryo.nvqlink_packet) {
-                const packet = data.cryo.nvqlink_packet;
-                cryoViz.update(packet, data.mr_anatomy);
-                
-                // Update QML UI metrics if available
-                if (packet.qml_metrics) {
-                    const elFer = document.getElementById('qml-fermat-val');
-                    const elEll = document.getElementById('qml-elliptic-val');
-                    const elBrin = document.getElementById('qml-brin-val');
-
-                    if (elFid) elFid.textContent = packet.qml_metrics.qml_fidelity.toFixed(3);
-                    if (elCoh) elCoh.textContent = packet.qml_metrics.spectral_coherence.toFixed(3);
-                    if (elAcc) elAcc.textContent = packet.qml_metrics.pinpoint_accuracy_mm.toFixed(2) + " mm";
-                    if (elFer) elFer.textContent = packet.qml_metrics.fermat_depth;
-                    if (elEll) elEll.textContent = (packet.qml_metrics.elliptic_resonance || 0).toFixed(4);
-                    if (elBrin) elBrin.textContent = "Σ" + (packet.brin_state || 0);
-
-                    // Update LUT Preview
-                    const elLutBar = document.getElementById('lut-gradient-bar');
-                    const elLutName = document.getElementById('lut-name-display');
-                    if (elLutBar && packet.cryo_lut_colors) {
-                        elLutBar.style.background = `linear-gradient(to right, ${packet.cryo_lut_colors.join(', ')})`;
-                        if (elLutName) {
-                            elLutName.textContent = (packet.cryo_lut_name || "Unknown").toUpperCase();
-                        }
-                    }
-                }
-            }
-
-            // Update Multimodal Reasoning
-            if (data.multimodal_reasoning) {
-                const elReasoning = document.getElementById('multimodal-reasoning-text');
-                if (elReasoning) {
-                    elReasoning.textContent = data.multimodal_reasoning;
-                }
+            // Update Cryo
+            if (data.cryo_map) {
+                cryoViz.update(data.cryo_map, data.mr_anatomy);
             }
 
             // Update UI
@@ -197,20 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const el = document.getElementById(`j${i + 1}-val`);
                     if (el) el.textContent = val.toFixed(2);
                 });
-            }
-            // Update Control state sync (Cryo button)
-            if (data.cryo_enabled !== undefined) {
-                cryoActive = data.cryo_enabled;
-                const btnCryo = document.getElementById('btn-enable-cryo');
-                if (btnCryo) {
-                    if (cryoActive) {
-                        btnCryo.textContent = "DEACTIVATE CRYO";
-                        btnCryo.style.background = "linear-gradient(135deg, #ef4444, #f87171)";
-                    } else {
-                        btnCryo.textContent = "ACTIVATE CRYO";
-                        btnCryo.style.background = "linear-gradient(135deg, #3b82f6, #93c5fd)";
-                    }
-                }
             }
             if (data.quantum && data.quantum.metrics) {
                 document.getElementById('q-coherence').textContent = (data.quantum.metrics.coherence || 0).toFixed(3);
@@ -415,46 +368,20 @@ const btnCryo = document.getElementById('btn-enable-cryo');
 if (btnCryo) {
     btnCryo.addEventListener('click', () => {
         cryoActive = !cryoActive;
-        const elIndicator = document.getElementById('cryo-status-indicator');
+
         if (cryoActive) {
             btnCryo.textContent = "DEACTIVATE CRYO";
             btnCryo.style.background = "linear-gradient(135deg, #ef4444, #f87171)"; // Red/Warning
             btnCryo.classList.add('active');
-            if (elIndicator) {
-                elIndicator.style.background = "#ef4444";
-                elIndicator.style.boxShadow = "0 0 10px #ef4444";
-            }
             log("Cryo System ACTIVATED");
         } else {
             btnCryo.textContent = "ACTIVATE CRYO";
             btnCryo.style.background = "linear-gradient(135deg, #3b82f6, #93c5fd)"; // Blue
             btnCryo.classList.remove('active');
-            if (elIndicator) {
-                elIndicator.style.background = "#334155";
-                elIndicator.style.boxShadow = "none";
-            }
             log("Cryo System DEACTIVATED");
         }
 
         sendControl(targetX, targetZ, false, cryoActive);
-    });
-}
-
-const selCryoLut = document.getElementById('cryo-lut-selector');
-if (selCryoLut) {
-    selCryoLut.addEventListener('change', () => {
-        const selectedProfile = selCryoLut.value;
-        log("Cryo Color Profile changed to " + selectedProfile);
-        
-        const payload = {
-            target: { x: targetX, y: 0, z: targetZ },
-            cryo_color_profile: selectedProfile
-        };
-        fetch('/api/control', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        }).catch(err => console.error(err));
     });
 }
 
@@ -605,11 +532,9 @@ const tnmCtx = tnmCanvas ? tnmCanvas.getContext('2d') : null;
 // Shared live state from telemetry (updated in polling loop)
 let _globalEffectorNorm = [0.5, 0.5];
 let _globalLaserActive  = false;
-let _mrtInFlight = false;
 
 async function refreshMRTCanvas() {
-    if (!mrtCtx || _mrtInFlight) return;
-    _mrtInFlight = true;
+    if (!mrtCtx) return;
     try {
         const resp = await fetch('/api/thermal/tumor_segmentation');
         if (!resp.ok) return;
@@ -746,16 +671,12 @@ async function refreshMRTCanvas() {
 
     } catch (e) {
         // silently skip if endpoint not ready yet
-    } finally {
-        _mrtInFlight = false;
     }
 }
 setInterval(refreshMRTCanvas, 500);
 
-let _tnmInFlight = false;
 async function refreshTNMCanvas() {
-    if (!tnmCtx || _tnmInFlight) return;
-    _tnmInFlight = true;
+    if (!tnmCtx) return;
     try {
         const resp = await fetch('/api/thermal/neuro_morphometry');
         if (!resp.ok) return;
@@ -818,17 +739,12 @@ async function refreshTNMCanvas() {
         tnmCtx.stroke();
     } catch (e) {
         // skip if endpoint unavailable during startup
-    } finally {
-        _tnmInFlight = false;
     }
 }
 setInterval(refreshTNMCanvas, 500);
 
 // ── Level-Set Segmentation Overlay ──────────────────────────────────
-let _lsInFlight = false;
 async function refreshLevelSetOverlay() {
-    if (_lsInFlight) return;
-    _lsInFlight = true;
     try {
         const resp = await fetch('/api/segmentation/level_set');
         if (!resp.ok) return;
@@ -845,7 +761,6 @@ async function refreshLevelSetOverlay() {
         if (elSol)  elSol.textContent  = (d.solidity     || 0).toFixed(3);
         if (elBnd)  elBnd.textContent  = (d.boundary_length || 0) + ' px';
     } catch (e) { /* silent — server may not be ready */ }
-    finally { _lsInFlight = false; }
 }
 setInterval(refreshLevelSetOverlay, 800);
 

@@ -30,11 +30,11 @@ class ThermalViz {
         this.bufferCtx = this.bufferCanvas.getContext('2d');
         this.imageData = this.bufferCtx.createImageData(64, 64);
 
-        // Load MR Background for "Color on Grayscale"
+        // Load MR Background (Grayscale Clinical Baseline)
         this.bgImage = new Image();
-        this.bgImage.src = '/static/mr_cortex_tumor.png';
         this.bgLoaded = false;
         this.bgImage.onload = () => { this.bgLoaded = true; };
+        this.bgImage.src = '/static/mr_cortex_tumor.png';
 
         // Initialize Colormaps
         this.luts = {
@@ -353,7 +353,25 @@ class ThermalViz {
 
         // 1. Draw Background (MRI Image)
         if (this.bgLoaded) {
+            this.ctx.globalAlpha = 1.0;
             this.ctx.drawImage(this.bgImage, 0, 0, this.width, this.height);
+        }
+        
+        // 1b. Draw Voxel Anatomy (Faint contrast enhancer if PNG is loaded)
+        if (anatomyData) {
+            this.ctx.save();
+            this.ctx.globalAlpha = this.bgLoaded ? 0.2 : 1.0;
+            const fw = this.width / 64;
+            const fh = this.height / 64;
+            const stride = anatomyData.length > 64 ? 2 : 1;
+            for (let y = 0; y < 64; y++) {
+                for (let x = 0; x < 64; x++) {
+                    const val = Math.floor(anatomyData[y * stride][x * stride] * 180);
+                    this.ctx.fillStyle = `rgb(${val},${val},${val})`;
+                    this.ctx.fillRect(x * fw, y * fh, fw + 0.5, fh + 0.5);
+                }
+            }
+            this.ctx.restore();
         } else {
             this.ctx.fillStyle = '#0a0a0a';
             this.ctx.fillRect(0, 0, this.width, this.height);

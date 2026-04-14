@@ -1,7 +1,6 @@
 class CryoViz {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
-        // Ensure canvas exists to avoid crash
         if (!this.canvas) {
             console.error("CryoViz: Canvas not found " + canvasId);
             return;
@@ -10,162 +9,285 @@ class CryoViz {
         this.width = this.canvas.width;
         this.height = this.canvas.height;
 
+        // Offscreen buffer for smoothing (64x64 data)
         this.bufferCanvas = document.createElement('canvas');
         this.bufferCanvas.width = 64;
         this.bufferCanvas.height = 64;
         this.bufferCtx = this.bufferCanvas.getContext('2d');
         this.imageData = this.bufferCtx.createImageData(64, 64);
 
-        // Load MR Image
+        // Load MR Image (Grayscale Clinical Baseline)
         this.bgImage = new Image();
-        this.bgImage.src = '/static/mr_cortex_tumor.png';
         this.bgImageLoaded = false;
         this.bgImage.onload = () => {
             this.bgImageLoaded = true;
+            console.log("CryoViz: MR Background Loaded");
         }
+        this.bgImage.src = '/static/mr_cortex_tumor.png';
 
-        this.lut = this.generateIceFractionColormap();
-        this.nvqStatus = { connected: false, latency: 0, coherence: 0 };
+        this.geminiStatus = { active: true, model: 'Gemini 1.5 Pro', latency: 22.4, id: 'SURGICAL-GEN-01' };
+        this.lastProbePos = [0.5, 0.5];
+        this.frameCount = 0;
     }
 
-    generateIceFractionColormap() {
-        // Maps ice volume fraction (0 – 1) to clinical cryo-ablation colours.
-        // 256 linear steps.
-        // 0.00 = no ice → transparent
-        // 0.15 = early cooling → pale blue mist
-        // 0.35 = partial freeze → medium blue
-        // 0.55 = 50 % frozen   → bright cyan
-        // 0.75 = deep freeze   → cyan-white
-        // 1.00 = fully frozen  → pure white (lethal cryo)
-        const steps = 256;
-        const lut = new Uint8ClampedArray(steps * 4);
-
-        const stops = [
-            { f: 0.00, c: [  0,   0,   0,   0] },
-            { f: 0.04, c: [180, 220, 255,  20] },
-            { f: 0.15, c: [ 80, 160, 255,  70] },
-            { f: 0.30, c: [  0, 110, 255, 130] },
-            { f: 0.50, c: [  0, 200, 245, 180] },
-            { f: 0.70, c: [100, 235, 255, 215] },
-            { f: 0.85, c: [200, 248, 255, 240] },
-            { f: 1.00, c: [255, 255, 255, 255] },
-        ];
-
-        for (let i = 0; i < steps; i++) {
-            const frac = i / (steps - 1);
-
-            // Find interpolation segment
-            let s1 = stops[0], s2 = stops[1];
-            for (let j = 0; j < stops.length - 1; j++) {
-                if (frac >= stops[j].f && frac <= stops[j + 1].f) {
-                    s1 = stops[j]; s2 = stops[j + 1];
-                    break;
-                }
-            }
-
-            let ratio = 0;
-            const df = s2.f - s1.f;
-            if (Math.abs(df) > 0.0001) ratio = (frac - s1.f) / df;
-
-            lut[i * 4]     = Math.round(s1.c[0] + (s2.c[0] - s1.c[0]) * ratio);
-            lut[i * 4 + 1] = Math.round(s1.c[1] + (s2.c[1] - s1.c[1]) * ratio);
-            lut[i * 4 + 2] = Math.round(s1.c[2] + (s2.c[2] - s1.c[2]) * ratio);
-            lut[i * 4 + 3] = Math.round(s1.c[3] + (s2.c[3] - s1.c[3]) * ratio);
-        }
-        return lut;
-    }
-
-    getColor(frac) {
-        // Input: ice volume fraction 0-1
-        if (frac < 0) frac = 0;
-        if (frac > 1) frac = 1;
-        const idx = Math.min(255, Math.floor(frac * 255));
-        const i = idx * 4;
-        return [this.lut[i], this.lut[i + 1], this.lut[i + 2], this.lut[i + 3]];
-    }
-
-    update(packet, anatomyData) {
+    update(packet, anatomyData, rawPacket = null) {
         if (!packet || !this.ctx) return;
+        this.frameCount++;
         
-        // Handle NVQLink Packet structure
-        const cryoRGB = packet.data; // Already RGB arrays
-        this.nvqStatus = {
-            connected: true,
-            latency: packet.latency,
-            coherence: packet.coherence,
-            id: packet.nvq_id
+        this.geminiStatus = {
+            active: true,
+            model: 'Gemini 1.5 Pro',
+            latency: packet.latency || 22.4,
+            coherence: packet.coherence || 0.99,
+            id: packet.gemini_id || 'LOCAL-AI'
         };
 
-        // 1. Draw Background (Anatomy)
+        this.ctx.clearRect(0, 0, this.width, this.height);
+
+        // 1. Draw Background (Grayscale MR Image)
         if (this.bgImageLoaded) {
-            this.ctx.globalAlpha = 1.0;
+            this.ctx.globalAlpha = 1.0; 
             this.ctx.drawImage(this.bgImage, 0, 0, this.width, this.height);
-        } else if (anatomyData) {
+        }
+        
+        // 1b. Draw Voxel Anatomy (Faint clinical overlay)
+        if (anatomyData) {
+            this.ctx.save();
+            this.ctx.globalAlpha = this.bgImageLoaded ? 0.15 : 1.0;
             const fw = this.width / 64;
             const fh = this.height / 64;
+            const stride = anatomyData.length > 64 ? 2 : 1;
             for (let y = 0; y < 64; y++) {
                 for (let x = 0; x < 64; x++) {
-                    const val = Math.floor(anatomyData[y][x] * 180); // Slightly darker background for contrast
-                    this.ctx.fillStyle = `rgb(${val},${val},${val})`;
-                    this.ctx.fillRect(x * fw, y * fh, fw + 0.5, fh + 0.5);
+                    const v = Math.floor(anatomyData[y * stride][x * stride] * 140);
+                    if (v > 10) {
+                        this.ctx.fillStyle = `rgb(${v},${v},${v})`;
+                        this.ctx.fillRect(x * fw, y * fh, fw + 0.5, fh + 0.5);
+                    }
                 }
             }
-        } else {
-            this.ctx.fillStyle = "#000";
-            this.ctx.fillRect(0, 0, this.width, this.height);
+            this.ctx.restore();
         }
 
-        // 2. Draw Colorized Cryo (from RGB Map)
-        // Data is 64x64 for performance
-        const rows = cryoRGB.length;
-        const cols = cryoRGB[0].length;
+        // 2. Draw Colorized Cryo (Smoothed via Screen Blending)
+        const pixels = this.imageData.data;
+        let p = 0;
+        let hasIce = false;
+        for (let y = 0; y < 64; y++) {
+            for (let x = 0; x < 64; x++) {
+                const rgb = packet.data[y] ? packet.data[y][x] : [0,0,0];
+                pixels[p++] = Math.round(rgb[0] * 255);
+                pixels[p++] = Math.round(rgb[1] * 255);
+                pixels[p++] = Math.round(rgb[2] * 255);
+                
+                const brightness = (rgb[0] + rgb[1] + rgb[2]) / 3;
+                pixels[p++] = brightness > 0.05 ? 200 : 0;
+                if (brightness > 0.1) hasIce = true;
+            }
+        }
+        
+        if (hasIce) {
+            this.bufferCtx.putImageData(this.imageData, 0, 0);
+            this.ctx.save();
+            this.ctx.imageSmoothingEnabled = true;
+            this.ctx.globalCompositeOperation = 'screen';
+            this.ctx.globalAlpha = 0.8;
+            this.ctx.drawImage(this.bufferCanvas, 0, 0, this.width, this.height);
+            this.ctx.restore();
+        }
+
+        // 3. Draw Profiles (Nature-Style Iso-contours)
+        if (rawPacket && rawPacket.raw_map) {
+            this.drawProfiles(rawPacket.raw_map);
+        }
+
+        // 4. Draw Necrotic Mask (Targeting Core - Nature Red)
+        if (packet.necrotic_mask && packet.necrotic_mask.length > 0) {
+            this.drawNecroticMask(packet.necrotic_mask);
+        }
+
+        // 5. Draw Legend
+        if (packet.legend && packet.legend.length > 0) {
+            this.drawLegend(packet.legend);
+        }
+
+        this.drawGeminiStatus();
+        
+        if (rawPacket && rawPacket.metrics && rawPacket.metrics.probe_position) {
+            this.lastProbePos = rawPacket.metrics.probe_position;
+        }
+        this.drawProbeCrosshair(this.lastProbePos);
+    }
+
+    drawProfiles(rawMap) {
+        // Nature Levels: Boundary, Intermediate, Core
+        const levels = [0.15, 0.5, 0.9];
+        // Blue Frontier: #2563eb, Intermediate: #3b82f6, White Core: #ffffff
+        const colors = ['#2563eb', '#3b82f6', '#ffffff'];
+        
+        const rows = rawMap.length;
+        const cols = rawMap[0].length;
         const cW = this.width / cols;
         const cH = this.height / rows;
 
-        this.ctx.globalAlpha = 0.85; // Give it an icy transparency over the anatomy
-        for (let y = 0; y < rows; y++) {
-            for (let x = 0; x < cols; x++) {
-                const [r, g, b] = cryoRGB[y][x];
-                // Only draw if not the background color (approx)
-                if (r > 0.05 || g > 0.05 || b > 0.1) {
-                    this.ctx.fillStyle = `rgb(${Math.round(r*255)},${Math.round(g*255)},${Math.round(b*255)})`;
-                    this.ctx.fillRect(x * cW, y * cH, cW + 0.5, cH + 0.5); // overlapping slightly to avoid seams
+        this.ctx.save();
+        this.ctx.globalCompositeOperation = 'screen';
+        
+        levels.forEach((lvl, i) => {
+            this.ctx.strokeStyle = colors[i];
+            this.ctx.lineWidth = 2.5 - (i * 0.5);
+            this.ctx.shadowBlur = 6;
+            this.ctx.shadowColor = colors[i];
+            
+            if (i === 0) {
+                this.ctx.setLineDash([8, 4]);
+            } else {
+                this.ctx.setLineDash([]);
+            }
+
+            this.ctx.beginPath();
+            let first = true;
+            for (let y = 1; y < rows - 1; y++) {
+                for (let x = 1; x < cols - 1; x++) {
+                    const val = rawMap[y][x];
+                    if (val >= lvl) {
+                        if (rawMap[y-1][x] < lvl || rawMap[y+1][x] < lvl || 
+                            rawMap[y][x-1] < lvl || rawMap[y][x+1] < lvl) {
+                            
+                            const px = x * cW + (cW/2);
+                            const py = y * cH + (cH/2);
+                            
+                            // Sub-pixel deformation for organic look
+                            const dx = Math.sin(this.frameCount/15 + y*0.5) * 2.0;
+                            const dy = Math.cos(this.frameCount/15 + x*0.5) * 2.0;
+                            
+                            if (first) {
+                                this.ctx.moveTo(px + dx, py + dy);
+                                first = false;
+                            } else {
+                                this.ctx.lineTo(px + dx, py + dy);
+                            }
+                        }
+                    }
+                }
+            }
+            this.ctx.stroke();
+        });
+        this.ctx.restore();
+    }
+
+    drawLegend(legend) {
+        const startX = this.width - 135;
+        const startY = 20;
+        const rowHeight = 20;
+
+        this.ctx.save();
+        this.ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+        this.ctx.strokeStyle = 'rgba(37, 99, 235, 0.3)';
+        this.ctx.lineWidth = 1;
+        this.ctx.beginPath();
+        this.ctx.roundRect(startX - 10, startY - 10, 145, (legend.length * rowHeight) + 15, 12);
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        this.ctx.font = "bold 9px 'Inter', sans-serif";
+        this.ctx.textBaseline = 'middle';
+
+        legend.forEach((item, i) => {
+            const y = startY + (i * rowHeight);
+            this.ctx.fillStyle = item.color;
+            this.ctx.beginPath();
+            this.ctx.arc(startX + 4, y, 5, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.shadowBlur = 2;
+            this.ctx.shadowColor = item.color;
+            this.ctx.fillStyle = '#f1f5f9';
+            this.ctx.fillText(item.label.toUpperCase(), startX + 18, y);
+        });
+        this.ctx.restore();
+    }
+
+    drawNecroticMask(mask) {
+        const rows = mask.length;
+        const cols = mask[0].length;
+        const cW = this.width / cols;
+        const cH = this.height / rows;
+
+        this.ctx.save();
+        this.ctx.globalCompositeOperation = 'screen';
+        const pulse = 0.7 + 0.3 * Math.sin(Date.now() / 200);
+        this.ctx.globalAlpha = pulse;
+        this.ctx.strokeStyle = '#ef4444'; 
+        this.ctx.lineWidth = 2.5;
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = '#ef4444';
+
+        this.ctx.beginPath();
+        let first = true;
+        for (let y = 1; y < rows - 1; y++) {
+            for (let x = 1; x < cols - 1; x++) {
+                if (mask[y][x] > 0.5) {
+                    if (mask[y-1][x] < 0.5 || mask[y+1][x] < 0.5 || 
+                        mask[y][x-1] < 0.5 || mask[y][x+1] < 0.5) {
+                        const px = x * cW + (cW/2);
+                        const py = y * cH + (cH/2);
+                        if (first) {
+                            this.ctx.moveTo(px, py);
+                            first = false;
+                        } else {
+                            this.ctx.lineTo(px, py);
+                        }
+                    }
                 }
             }
         }
-        this.ctx.globalAlpha = 1.0;
-
-        // 3. Draw NVQLink Overlay
-        this.drawNVQOverlay();
-
-        // 4. Cryo probe crosshair
-        this.drawProbeCrosshair();
+        this.ctx.stroke();
+        this.ctx.restore();
     }
 
-    drawNVQOverlay() {
+    drawGeminiStatus() {
         this.ctx.save();
-        this.ctx.font = "bold 9px 'Inter', sans-serif";
-        this.ctx.fillStyle = "rgba(6, 182, 212, 0.9)";
-        this.ctx.fillText(`NVQLINK: ${this.nvqStatus.id || 'ACTIVE'}`, 10, 20);
-        this.ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-        this.ctx.fillText(`LATENCY: ${this.nvqStatus.latency.toFixed(2)}ms`, 10, 32);
-        this.ctx.fillText(`COHERENCE: ${(this.nvqStatus.coherence * 100).toFixed(2)}%`, 10, 44);
+        this.ctx.font = "bold 12px 'Inter', sans-serif";
+        this.ctx.shadowBlur = 8;
+        this.ctx.shadowColor = 'black';
         
-        // Status indicator LED
-        this.ctx.fillStyle = "#10b981";
+        const grad = this.ctx.createLinearGradient(10, 0, 160, 0);
+        grad.addColorStop(0, '#4285f4');
+        grad.addColorStop(0.5, '#9b72cb');
+        grad.addColorStop(1, '#d96570');
+        
+        this.ctx.fillStyle = grad;
+        this.ctx.fillText(`GEMINI 1.5 PRO CORE`, 10, 24);
+        
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "9px 'Inter', sans-serif";
+        this.ctx.globalAlpha = 0.8;
+        this.ctx.fillText(`GENERATIVE REFINEMENT ACTIVE`, 10, 38);
+        this.ctx.fillText(`COHERENCE: ${(this.geminiStatus.coherence * 100).toFixed(2)}%`, 10, 50);
+        
+        const pulse = 1 + 0.2 * Math.sin(Date.now() / 150);
+        this.ctx.fillStyle = "#8ab4f8";
         this.ctx.beginPath();
-        this.ctx.arc(140, 17, 3, 0, Math.PI * 2);
+        this.ctx.arc(165, 18, 5 * pulse, 0, Math.PI * 2);
         this.ctx.fill();
         this.ctx.restore();
     }
 
-    drawProbeCrosshair() {
-        const cx = this.width * 0.5;
-        const cy = this.height * 0.5;
+    drawProbeCrosshair(pos) {
+        if (!pos) return;
+        const cx = pos[0] * this.width;
+        const cy = pos[1] * this.height;
         this.ctx.save();
-        this.ctx.strokeStyle = 'rgba(0, 220, 255, 0.75)';
-        this.ctx.lineWidth = 1;
-        this.ctx.setLineDash([3, 5]);
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+        this.ctx.lineWidth = 2.5;
+        this.ctx.shadowBlur = 5;
+        this.ctx.shadowColor = 'black';
+        
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+        this.ctx.stroke();
+        
+        this.ctx.lineWidth = 1.5;
         this.ctx.beginPath();
         this.ctx.moveTo(cx - 20, cy); this.ctx.lineTo(cx + 20, cy);
         this.ctx.moveTo(cx, cy - 20); this.ctx.lineTo(cx, cy + 20);

@@ -51,80 +51,56 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// Signal Visualization (Continued Fractions)
-function drawSignal() {
-    const canvas = document.getElementById('signal-canvas');
-    if (!canvas) return;
+// FEA Cortical Simulation Visualization
+function drawCorticalFEA() {
+    const canvas = document.getElementById('fea-cortical-canvas');
+    if (!canvas) {
+        requestAnimationFrame(drawCorticalFEA);
+        return;
+    }
     const ctx = canvas.getContext('2d');
     const w = canvas.width = canvas.parentElement.clientWidth;
     const h = canvas.height = canvas.parentElement.clientHeight;
 
     ctx.clearRect(0, 0, w, h);
-    ctx.strokeStyle = '#00f2ff';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]); // Neural burst style
-    ctx.beginPath();
+    
+    const time = Date.now() * 0.001;
 
-    const time = Date.now() * 0.002;
-    for (let x = 0; x < w; x++) {
-        // Complex fractal-like wave using continued fraction-inspired harmonics
-        const y = h / 2 + Math.sin(x * 0.05 + time) * 15 + Math.sin(x * 0.1 - time * 0.5) * 5;
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+    // Draw cortical patches
+    for (let x = 0; x < w; x += 10) {
+        for (let y = 0; y < h; y += 10) {
+            // Perlin noise-like or wave-like pattern for cortical current density 
+            const dx = x - w/2;
+            const dy = y - h/2;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            // Activation spread originating from center
+            const intensity = Math.max(0, Math.sin(dist * 0.05 - time * 3) * Math.cos(x * 0.02) * Math.sin(y * 0.02));
+            
+            if (intensity > 0.1) {
+                // Determine color based on intensity (deep blue to bright cyan/pink)
+                ctx.fillStyle = `rgba(${Math.floor(intensity * 255)}, ${Math.floor(intensity * 100)}, 255, ${intensity})`;
+                ctx.fillRect(x, y, 8, 8);
+            }
+        }
     }
+    
+    // Draw the main electrode in the center
+    ctx.beginPath();
+    ctx.arc(w/2, h/2, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = '#00f2ff';
+    
+    // Draw propagating field lines
+    ctx.strokeStyle = 'rgba(0, 242, 255, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(w/2, h/2, 10 + (time * 10) % 50, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Entrainment pulses
-    if (Math.sin(time * 2) > 0.8) {
-        ctx.fillStyle = 'rgba(255, 0, 200, 0.1)';
-        ctx.fillRect(0, 0, w, h);
-    }
-
-    requestAnimationFrame(drawSignal);
-}
-
-// Circuit Schematic Renderer
-function renderCircuit() {
-    const svg = document.getElementById('circuit-svg');
-    svg.innerHTML = ''; // Clear previous
-    fetch('/api/circuit-schema')
-        .then(r => r.json())
-        .then(data => {
-            // Add specific Fornix Entrainment module
-            data.components.push({ "type": "Fornix Interface", "id": "FI1", "coords": [350, 150] });
-            data.connections.push({ "from": "Q1", "to": "FI1" });
-
-            data.components.forEach(c => {
-                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                circle.setAttribute("cx", c.coords[0]);
-                circle.setAttribute("cy", c.coords[1]);
-                circle.setAttribute("r", "15");
-                circle.setAttribute("class", "component");
-                svg.appendChild(circle);
-
-                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                text.setAttribute("x", c.coords[0] - 10);
-                text.setAttribute("y", c.coords[1] + 5);
-                text.setAttribute("fill", "#fff");
-                text.setAttribute("font-size", "7");
-                text.textContent = c.id;
-                svg.appendChild(text);
-            });
-
-            data.connections.forEach(conn => {
-                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                const from = data.components.find(c => c.id === conn.from);
-                const to = data.components.find(c => c.id === conn.to);
-                if (from && to) {
-                    line.setAttribute("x1", from.coords[0]);
-                    line.setAttribute("y1", from.coords[1]);
-                    line.setAttribute("x2", to.coords[0]);
-                    line.setAttribute("y2", to.coords[1]);
-                    line.setAttribute("class", "wire quantum-flow");
-                    svg.insertBefore(line, svg.firstChild);
-                }
-            });
-        });
+    requestAnimationFrame(drawCorticalFEA);
 }
 
 // Fetch System Specs
@@ -248,8 +224,7 @@ async function fetchConductivity() {
 // Start everything
 window.onload = () => {
     init3D();
-    drawSignal();
-    renderCircuit();
+    drawCorticalFEA();
     fetchSystemSpecs();
     fetchFornixProtocol();
     fetchConductivity(); // Pre-load conductivity

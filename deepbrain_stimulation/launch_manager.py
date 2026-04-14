@@ -33,7 +33,7 @@ def kill_process_on_port(port):
         pass # No process found
 
 def main():
-    port = 5002
+    port = 5070
     ip = get_ip_address()
     
     print(f"Configuration: IP={ip}, Port={port}")

@@ -1,18 +1,18 @@
 % ============================================================================
-% Enhanced Thermometry Pulse Sequence: MULTIECHO_GRE
+% Enhanced Thermometry Pulse Sequence: PTSD_DEMENTIA_QUANTUM_PRIME
 % ============================================================================
 % Quantum Thermometry Engine v2.0 — LUT-based, FFTW-optimised
 % with Statistical Distribution Modelling & Multimodal Reasoning
 %
-% Generated: 2026-04-14T05:57:34.756189
+% Generated: 2026-04-14T05:57:34.763048
 % Field Strength: 3.0 T
-% Sequence: THERM_MEGRE_3T_10e
+% Sequence: PTSD_DEMENTIA_QPRIME_SNR_3T_10e
 %
 
 [HEADER]
-Name THERM_MEGRE_3T_10e
+Name PTSD_DEMENTIA_QPRIME_SNR_3T_10e
 Author QuantumThermometryEngine_v2
-Comment Enhanced multiecho_gre thermometry with LUT and multimodal reasoning
+Comment Enhanced ptsd_dementia_quantum_prime thermometry with LUT and multimodal reasoning
 Institution NeuroPulse Lab
 Version 2.0
 Compatible SIEMENS MAGNETOM 1.5T 3.0T 7.0T
@@ -28,9 +28,9 @@ SliceThickness 3.0 mm
 Matrix 128 128
 Bandwidth 580595.5 kHz
 FlipAngle 20.0 deg
-TR 47.994 ms
+TR 96.098 ms
 NumEchoes 10
-SequenceType multiecho_gre
+SequenceType ptsd_dementia_quantum_prime
 ThermometryMode PRF_Shift
 TemperatureRange 35-70 C
 SAR_Limit 2.0 W/kg
@@ -47,16 +47,16 @@ SAR_Limit 2.0 W/kg
 % liver: dPhi/dT=-7.7804 deg/C opt_TE=18.0ms SNR_eff=0.049956
 
 [ECHOTIMES]
-TE[0] 4.0000 ms  % Phase/°C=-1.729deg
-TE[1] 7.2461 ms  % Phase/°C=-3.132deg
-TE[2] 12.4984 ms  % Phase/°C=-5.402deg
-TE[3] 15.7446 ms  % Phase/°C=-6.805deg
-TE[4] 20.9969 ms  % Phase/°C=-9.076deg
-TE[5] 24.2430 ms  % Phase/°C=-10.479deg
-TE[6] 26.2492 ms  % Phase/°C=-11.346deg
-TE[7] 29.4953 ms  % Phase/°C=-12.749deg
-TE[8] 34.7477 ms  % Phase/°C=-15.019deg
-TE[9] 37.9938 ms  % Phase/°C=-16.423deg
+TE[0] 1.5000 ms  % Phase/°C=-0.648deg
+TE[1] 8.5992 ms  % Phase/°C=-3.717deg
+TE[2] 15.6985 ms  % Phase/°C=-6.786deg
+TE[3] 22.7977 ms  % Phase/°C=-9.854deg
+TE[4] 26.6997 ms  % Phase/°C=-11.541deg
+TE[5] 33.7990 ms  % Phase/°C=-14.609deg
+TE[6] 40.8982 ms  % Phase/°C=-17.678deg
+TE[7] 51.8995 ms  % Phase/°C=-22.433deg
+TE[8] 58.9987 ms  % Phase/°C=-25.502deg
+TE[9] 66.0979 ms  % Phase/°C=-28.570deg
 
 [RF_BLOCKS]
 % Gaussian RF pulse (20° slice-selective)
@@ -131,16 +131,16 @@ Gphase_max 0.0068 mT/m
 Gslice 24.0000 mT/m
 
 [ADC_BLOCKS]
-Echo[0]: samples=128 dwell=0.0us delay=4.0000ms
-Echo[1]: samples=128 dwell=0.0us delay=7.2461ms
-Echo[2]: samples=128 dwell=0.0us delay=12.4984ms
-Echo[3]: samples=128 dwell=0.0us delay=15.7446ms
-Echo[4]: samples=128 dwell=0.0us delay=20.9969ms
-Echo[5]: samples=128 dwell=0.0us delay=24.2430ms
-Echo[6]: samples=128 dwell=0.0us delay=26.2492ms
-Echo[7]: samples=128 dwell=0.0us delay=29.4953ms
-Echo[8]: samples=128 dwell=0.0us delay=34.7477ms
-Echo[9]: samples=128 dwell=0.0us delay=37.9938ms
+Echo[0]: samples=128 dwell=0.0us delay=1.5000ms
+Echo[1]: samples=128 dwell=0.0us delay=8.5992ms
+Echo[2]: samples=128 dwell=0.0us delay=15.6985ms
+Echo[3]: samples=128 dwell=0.0us delay=22.7977ms
+Echo[4]: samples=128 dwell=0.0us delay=26.6997ms
+Echo[5]: samples=128 dwell=0.0us delay=33.7990ms
+Echo[6]: samples=128 dwell=0.0us delay=40.8982ms
+Echo[7]: samples=128 dwell=0.0us delay=51.8995ms
+Echo[8]: samples=128 dwell=0.0us delay=58.9987ms
+Echo[9]: samples=128 dwell=0.0us delay=66.0979ms
 
 [BLOCK_EVENTS]
 1  1  1  1  1  1  0

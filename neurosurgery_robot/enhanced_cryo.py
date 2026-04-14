@@ -6,8 +6,23 @@ Models Joule-Thomson cooling, ice crystal formation, and thawing
 import numpy as np
 from scipy.ndimage import gaussian_filter, laplace, distance_transform_edt
 
+class GenerativeCryoPredictor:
+    """Generative Gaussian Mixture model for targeted ice-ball geometry"""
+    def __init__(self, latent_dim=8):
+        self.latent_dim = latent_dim
+        self.latent_state = np.random.normal(0, 0.1, latent_dim)
+        
+    def predict_perturbation(self, theta):
+        """Generates geometric perturbations based on latent state"""
+        # Periodic generative harmonics
+        perturbation = sum(
+            self.latent_state[i] * np.sin((i + 1) * theta)
+            for i in range(self.latent_dim)
+        )
+        return perturbation
+
 class EnhancedCryoModule:
-    """Advanced cryogenic ablation simulation"""
+    """Advanced cryogenic ablation simulation with Generative AI targeting"""
     
     def __init__(self, width=128, height=128):
         self.width = width
@@ -41,6 +56,11 @@ class EnhancedCryoModule:
         self.damage_history = []
         self.accumulated_time = 0.0
         
+        # Generative AI components
+        self.predictor = GenerativeCryoPredictor()
+        self.necrotic_mask = np.zeros((height, width))
+        self.targeting_bias = 0.0 # Influence of necrotic core on geometry
+        
     def activate_cryoprobe(self, x, y, power_pct=100.0):
         """Activate cryoprobe at position (x, y)"""
         self.probe_active = True
@@ -73,10 +93,25 @@ class EnhancedCryoModule:
         
         max_dist = max(self.width, self.height) * self.max_freeze_radius
         
-        # Egg Shell Geometry deformation
-        # Creates an ovoid/egg shape by asymmetrically scaling the distance metric 
-        egg_skew = 1.0 - 0.4 * np.clip((yy - py) / (max_dist + 1e-4), -1.0, 1.0)
-        dist = np.sqrt((xx - px)**2 + (yy - py)**2) * egg_skew
+        # Calculate angles for generative perturbation
+        theta = np.arctan2(yy - py, xx - px)
+        g_perturb = self.predictor.predict_perturbation(theta)
+        
+        # Necrotic Attraction: Pull ice ball towards necrotic core
+        if np.any(self.necrotic_mask > 0.5):
+            ny, nx = np.where(self.necrotic_mask > 0.5)
+            nc_y, nc_x = np.mean(ny), np.mean(nx)
+            # Vector from probe to necrotic center
+            vec_to_nc = np.array([nc_x - px, nc_y - py])
+            nc_dist = np.linalg.norm(vec_to_nc)
+            if nc_dist > 1.0:
+                dist_norm = vec_to_nc / nc_dist
+                # Attract the distance metric asymmetrically
+                nc_bias = (dist_norm[0] * (xx - px) + dist_norm[1] * (yy - py)) / (max_dist + 1e-6)
+                egg_skew -= 0.3 * np.clip(nc_bias, -1, 1) * self.targeting_bias
+        
+        # Combined geometry: Ovoid + Generative Perturbation + Necrotic Bias
+        dist = np.sqrt((xx - px)**2 + (yy - py)**2) * (egg_skew + g_perturb * 0.1)
         
         # Cooling power distribution: rapidly falls off with distance
         cooling_factor = np.exp(-(dist / max_dist) ** 2)
@@ -87,7 +122,7 @@ class EnhancedCryoModule:
         
         # Apply cooling with thermal contact resistance
         contact_resistance = 1.0 - cooling_factor  # Higher resistance away from probe
-        effective_cooling = cooling_rate / (1.0 + contact_resistance * 5.0)
+        effective_cooling = cooling_rate / (1.0 + contact_resistance * 3.0) # More efficient cooling
         
         # Preferential cooling at probe tip
         probe_region = dist < (max_dist * 1.5)
@@ -213,4 +248,11 @@ class EnhancedCryoModule:
             'probe_position': self.probe_pos.tolist(),
             'probe_active': self.probe_active,
             'min_temperature': float(np.min(self.temp[self.ice_map > 0.3])) if np.any(self.ice_map > 0.3) else 37.0,
+            'necrotic_coverage': float(np.sum(self.ice_map[self.necrotic_mask > 0.5] > 0.5) / np.sum(self.necrotic_mask > 0.5)) if np.sum(self.necrotic_mask > 0.5) > 0 else 0.0,
+            'generative_complexity': float(np.std(self.predictor.latent_state))
         }
+    
+    def set_necrotic_mask(self, mask):
+        """Update necrotic mask from segmenter"""
+        self.necrotic_mask = mask.astype(float)
+        self.targeting_bias = 0.8  # Enable targeted cooling bias

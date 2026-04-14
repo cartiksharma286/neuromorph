@@ -48,24 +48,26 @@ class EnhancedThermometry:
         # Create synthetic brain anatomy
         xx, yy = np.meshgrid(np.linspace(-1, 1, self.width), np.linspace(-1, 1, self.height))
         
-        # White matter (background)
-        self.tissue_type[(xx**2 + yy**2) < 0.7] = 0
+        # White matter (background) - Low contrast (0.3)
+        self.tissue_type.fill(0.3)
         
-        # Gray matter (central region)
-        self.tissue_type[(xx**2 + 0.5*yy**2) < 0.5] = 1
+        # Gray matter (central region) - Mid contrast (0.6)
+        gray_matter_mask = (xx**2 + 0.5*yy**2) < 0.5
+        self.tissue_type[gray_matter_mask] = 0.6
         
-        # Tumor (high intensity region)
+        # Tumor (high intensity region) - High contrast (1.0)
         tumor_mask = ((xx - 0.2)**2 + (yy - 0.2)**2) < 0.05
-        self.tissue_type[tumor_mask] = 2
+        self.tissue_type[tumor_mask] = 1.0
     
-    def get_tissue_parameters(self, tissue_id):
-        """Get tissue-specific thermal parameters"""
-        params = {
-            0: {'rho': 1040, 'c': 3300, 'k': 0.48, 'omega_b': 0.003, 'Q_m': 300},  # White matter
-            1: {'rho': 1050, 'c': 3400, 'k': 0.51, 'omega_b': 0.008, 'Q_m': 700},  # Gray matter
-            2: {'rho': 1050, 'c': 3520, 'k': 0.52, 'omega_b': 0.012, 'Q_m': 1500}, # Tumor
-        }
-        return params.get(tissue_id, params[0])
+    def get_tissue_parameters(self, value):
+        """Get tissue-specific thermal parameters based on map value"""
+        # Map values back to types
+        if abs(value - 0.6) < 0.1:
+            return {'rho': 1050, 'c': 3400, 'k': 0.51, 'omega_b': 0.008, 'Q_m': 700}  # Gray matter
+        elif abs(value - 1.0) < 0.1:
+            return {'rho': 1050, 'c': 3520, 'k': 0.52, 'omega_b': 0.012, 'Q_m': 1500} # Tumor
+        else:
+            return {'rho': 1040, 'c': 3300, 'k': 0.48, 'omega_b': 0.003, 'Q_m': 300}   # White matter
     
     def apply_heat_source(self, x, y, power_watts, radius_mm=2.0):
         """Apply laser heat source at position (x, y) normalized to [0,1]"""
