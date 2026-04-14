@@ -12,50 +12,58 @@ def simulate():
     data = request.json
     beer_units = float(data.get('beer', 0.0))  # Pints or units of <4.5% beer
     medication = float(data.get('medication', 0.0))
+    nicotine = float(data.get('nicotine', 0.0))
+    polymath_load = float(data.get('polymath_load', 0.0))  # Physics/Polymath structured cognition
     
     # Base variances for neurotransmitters
     base_dopamine_var = 1.0
     
     # Mathematical Modeling:
-    # Beer (<4.5% ABV) has a much milder impact on dopamine variance and prefrontal inhibition 
-    # compared to hard spirits. 
+    # Beer (<4.5% ABV) has a much milder impact on dopamine variance 
     beer_impact = beer_units * 0.35 
+    nicotine_impact = nicotine * 0.4
     
-    dopamine_var = base_dopamine_var + (beer_impact * 1.5) - (medication * 1.2)
+    # Polymath physics-based cognitive load acts as a dopamine "sink",
+    # channeling striatal activity into structured frontostriatal tracts
+    # thereby actively reducing volatile pathologial variance while raising organized node activity.
+    polymath_buffer = polymath_load * 0.6
+    
+    dopamine_var = base_dopamine_var + (beer_impact * 1.5) + (nicotine_impact * 1.5) - (medication * 1.2) - polymath_buffer
     dopamine_var = max(0.1, dopamine_var)
     
     # QML Interventional Protocol Pipeline Simulation
     optimal_tms_freq = 10.0 + (dopamine_var * 8.5)
-    treatment_yield = max(0, min(99.9, 65.0 - (beer_impact * 30.0) + (medication * 45.0)))
+    treatment_yield = max(0, min(99.9, 65.0 - (beer_impact * 30.0) + (nicotine_impact * 15.0) + (medication * 45.0) + (polymath_load * 20.0)))
     
     # Corrective Cognitive Behavioral Traits & Feedback Correlates
-    cbt_optimization_score = min(100.0, max(0.0, 50.0 + (medication * 35.0) - (beer_impact * 45.0)))
+    cbt_optimization_score = min(100.0, max(0.0, 50.0 + (medication * 35.0) + (nicotine_impact * 25.0) + (polymath_load * 30.0) - (beer_impact * 45.0) - (nicotine_impact * beer_impact * 40.0)))
     
     cbt_traits = []
     feedback_correlate = ""
     
     if cbt_optimization_score > 80:
-        cbt_traits = ["Enhanced Emotional Regulation", "High Cognitive Flexibility", "Stable Reality Testing"]
-        feedback_correlate = "Optimal behavior state. Mild beer intake (<4.5%) permits social reward networks without destabilizing prefrontal gating. Prime window for cognitive reframing protocols."
+        cbt_traits = ["Enhanced Emotional Regulation", "Optimized Sensory Gating", "High Cognitive Flexibility", "Hyper-Structured Reality Testing", "Striatal Pattern Anchoring"]
+        feedback_correlate = "Optimal behavior state. Physics-based polymath processing actively grounds striatal dopamine into deterministic pathways, providing a profound cognitive buffer against volatility. Highly primed for advanced cognitive reframing."
     elif cbt_optimization_score > 50:
-        cbt_traits = ["Moderate Frustration Tolerance", "Adequate Threat Assessment", "Variable Social Processing"]
-        feedback_correlate = "Therapeutic window maintained. Pharmacological stability counteracts mild alcoholic inhibition. Implement standard behavioral reinforcement."
+        cbt_traits = ["Moderate Frustration Tolerance", "Adequate Threat Assessment", "Transient Attentional Focus", "Logical Anchoring"]
+        feedback_correlate = "Therapeutic window maintained. Polymath cognitive load is successfully engaging frontostriatal networks to offset chemical/pathological volatility."
     else:
-        cbt_traits = ["Impaired Executive Function", "Heightened Threat Perception", "Reduced Cortical Control"]
-        feedback_correlate = "Sub-optimal for CBT. Beer intake is overwhelming pharmacological safeguards, increasing mesolimbic dopamine volatility. Recommend pausing interventions."
+        cbt_traits = ["Impaired Executive Function", "Heightened Threat Perception", "Sensory Overload / Reduced Cortical Control"]
+        feedback_correlate = "Sub-optimal. Volatile chemical administration is overwhelming the prefrontal cortex's ability to maintain structured polymathic/physics computations. Cognitive buffering collapses."
 
     # Statistical Distribution
-    mean_symptom = (beer_impact * 2.5) - (medication * 2.0)
+    mean_symptom = (beer_impact * 2.5) + (nicotine_impact * 1.0) - (medication * 2.0) - (polymath_buffer * 1.5)
     x = np.linspace(-10, 10, 200)
     y = (1 / (dopamine_var * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mean_symptom) / dopamine_var) ** 2)
     
     # Brain region simulated activity
-    pfc_val = max(0.1, 1.0 - (beer_impact*0.8) + (medication*0.5))
+    # Physics computation heavily drives up PFC and Striatum structurally.
+    pfc_val = max(0.1, 1.0 - (beer_impact*0.8) + (nicotine_impact*1.2) + (medication*0.5) + (polymath_load * 1.2))
     neural_nodes = [
         {'id': 'Prefrontal Cortex (PFC)', 'val': pfc_val, 'x': 0, 'y': 2.5, 'z': 2},
-        {'id': 'Amygdala', 'val': min(2.5, 0.8 + (beer_impact*1.2) - (medication*0.9)), 'x': -1, 'y': 1.0, 'z': -1},
-        {'id': 'Hippocampus', 'val': min(2.5, 0.9 + (beer_impact*1.0) - (medication*0.7)), 'x': 1, 'y': 1.0, 'z': -1},
-        {'id': 'Striatum', 'val': base_dopamine_var * (1.0 + beer_impact - medication*0.5), 'x': 0, 'y': 1.5, 'z': 0}
+        {'id': 'Amygdala', 'val': min(2.5, 0.8 + (beer_impact*1.2) + (nicotine_impact*0.5) - (medication*0.9) - (polymath_load*0.4)), 'x': -1, 'y': 1.0, 'z': -1},
+        {'id': 'Hippocampus', 'val': min(2.5, 0.9 + (beer_impact*1.0) + (nicotine_impact*0.3) - (medication*0.7) + (polymath_load*0.5)), 'x': 1, 'y': 1.0, 'z': -1},
+        {'id': 'Striatum', 'val': base_dopamine_var * (1.0 + beer_impact + nicotine_impact - medication*0.5) + (polymath_load * 2.0), 'x': 0, 'y': 1.5, 'z': 0}
     ]
     
     # Hebbian Amplification & Cortical Monitoring for Optimal Control

@@ -79,11 +79,13 @@ function drawBrainNodes(nodes) {
 async function runSimulation() {
     const beer = document.getElementById('beer-slider').value;
     const medication = document.getElementById('medication-slider').value;
+    const nicotine = document.getElementById('nicotine-slider').value;
+    const polymath_load = document.getElementById('polymath-slider').value;
     
     const response = await fetch('/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ beer, medication })
+        body: JSON.stringify({ beer, medication, nicotine, polymath_load })
     });
     
     const data = await response.json();
@@ -136,6 +138,16 @@ document.getElementById('beer-slider').addEventListener('input', (e) => {
 
 document.getElementById('medication-slider').addEventListener('input', (e) => {
     document.getElementById('medication-val').innerText = format(e.target.value);
+    runSimulation();
+});
+
+document.getElementById('nicotine-slider').addEventListener('input', (e) => {
+    document.getElementById('nicotine-val').innerText = format(e.target.value);
+    runSimulation();
+});
+
+document.getElementById('polymath-slider').addEventListener('input', (e) => {
+    document.getElementById('polymath-val').innerText = format(e.target.value);
     runSimulation();
 });
 

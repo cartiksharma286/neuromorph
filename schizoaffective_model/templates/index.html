@@ -103,6 +103,16 @@
             box-shadow: 0 0 10px var(--accent-pink);
         }
 
+        #nicotine-slider::-webkit-slider-thumb {
+            background: #ffaa00;
+            box-shadow: 0 0 10px #ffaa00;
+        }
+
+        #polymath-slider::-webkit-slider-thumb {
+            background: #bc00ff;
+            box-shadow: 0 0 10px #bc00ff;
+        }
+
         .stat-card {
             background: rgba(0, 0, 0, 0.3);
             padding: 15px;
@@ -171,6 +181,24 @@
                 </div>
                 <input type="range" class="slider" id="medication-slider" min="0" max="2" step="0.05" value="1">
                 <div style="text-align: center; margin-top: 5px; font-weight: bold; color: #00ff88;"><span id="medication-val">1.00</span> Dose</div>
+            </div>
+            
+            <div class="control-group" style="margin-top: 20px;">
+                <label>Nicotine (nAChR Agonism / Self-Medication)</label>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
+                    <span>None</span><span>High (mg)</span>
+                </div>
+                <input type="range" class="slider" id="nicotine-slider" min="0" max="2" step="0.05" value="0">
+                <div style="text-align: center; margin-top: 5px; font-weight: bold; color: #ffaa00;"><span id="nicotine-val">0.00</span> Units</div>
+            </div>
+            
+            <div class="control-group" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <label style="color: #bc00ff;">Polymath Load (Physics / Complex Math Structuring)</label>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
+                    <span>Resting</span><span>Deep Focus</span>
+                </div>
+                <input type="range" class="slider" id="polymath-slider" min="0" max="2" step="0.05" value="0">
+                <div style="text-align: center; margin-top: 5px; font-weight: bold; color: #bc00ff;"><span id="polymath-val">0.00</span> Intensity</div>
             </div>
 
             <div style="margin-top: auto;">
