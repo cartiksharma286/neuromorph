@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schizoaffective Disorder & Neuropharmacology Modeler</title>
+    <!-- Chart.js for Statistical Distributions -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --panel-bg: rgba(20, 25, 35, 0.85);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-blue: #00f2ff;
+            --accent-pink: #ff007f;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aab5;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            gap: 20px;
+            width: 100%;
+            max-width: 1400px;
+            height: calc(100vh - 80px);
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        h1, h2, h3 {
+            margin: 0;
+            font-weight: 400;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: var(--accent-blue);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-blue);
+        }
+
+        #medication-slider::-webkit-slider-thumb {
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+        }
+
+        #beer-slider::-webkit-slider-thumb {
+            background: var(--accent-pink);
+            box-shadow: 0 0 10px var(--accent-pink);
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-blue);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .brain-viz {
+            position: relative;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Human_brain_midsagittal_view_description.JPG/300px-Human_brain_midsagittal_view_description.JPG') no-repeat center center;
+            background-size: contain;
+            flex-grow: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            filter: grayscale(100%) opacity(0.5);
+        }
+
+        .node {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-pink) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.4; }
+        }
+    </style>
+</head>
+<body>
+    <header style="width: 100%; max-width: 1400px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <h1 style="color: var(--accent-blue); font-size: 1.8rem; margin-bottom: 5px;">Neuromorph</h1>
+            <div style="color: var(--text-secondary); font-size: 0.9rem;">Schizoaffective Disorder Neural Correlates & QML Optimization</div>
+        </div>
+        <div style="font-size: 0.8rem; color: #00ff88;">• Quantum Intervention Simulator Online</div>
+    </header>
+
+    <div class="dashboard">
+        <!-- Controls & State -->
+        <div class="panel">
+            <h2>Pharmacology Constraints</h2>
+            
+            <div class="control-group">
+                <label>Beer Intake (<4.5% ABV)</label>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
+                    <span>Sober</span><span>High (Units)</span>
+                </div>
+                <input type="range" class="slider" id="beer-slider" min="0" max="4" step="0.5" value="0">
+                <div style="text-align: center; margin-top: 5px; font-weight: bold; color: var(--accent-pink);"><span id="beer-val">0.00</span> Units</div>
+            </div>
+
+            <div class="control-group" style="margin-top: 20px;">
+                <label>Medication (Antipsychotic / Mood Stabilizer)</label>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
+                    <span>None</span><span>Therapeutic</span>
+                </div>
+                <input type="range" class="slider" id="medication-slider" min="0" max="2" step="0.05" value="1">
+                <div style="text-align: center; margin-top: 5px; font-weight: bold; color: #00ff88;"><span id="medication-val">1.00</span> Dose</div>
+            </div>
+
+            <div style="margin-top: auto;">
+                <h2>Optimization & Trajectory Metrics</h2>
+                <div class="stat-card" style="border-color: #ffaa00; margin-bottom: 10px;">
+                    <div class="stat-value" id="hebbian-amp">1.00</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Hebbian Amplification Efficiency</div>
+                </div>
+                <div class="stat-card" style="border-color: #00f2ff; margin-bottom: 10px;">
+                    <div class="stat-value" id="cortical-control">1.00</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Prefrontal Cortical Control Index</div>
+                </div>
+                <div class="stat-card" style="border-color: #ff0055; margin-bottom: 10px;">
+                    <div class="stat-value" id="relapse-prob">15.0%</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Minimal Relapse Probability</div>
+                </div>
+                <div style="border-top: 1px solid var(--border-color); padding-top: 10px;">
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">Dopamine Variance: <span id="dopamine-var" style="color: #fff; font-weight: bold;">1.00</span> \(\sigma^2\)</div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">Mean Symptom Shift: <span id="symptom-score" style="color: #fff; font-weight: bold;">0.00</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualizer -->
+        <div class="panel">
+            <h2>Schizoaffective Neural Network Density</h2>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">Simulating prefrontal inhibition vs. subcortical hyperactivation</p>
+            <div class="brain-viz" id="brain-container">
+                <!-- Nodes appended via JS -->
+            </div>
+            
+            <div style="height: 250px; margin-top: 20px;">
+                <canvas id="distribution-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Treatment Optimization -->
+        <div class="panel">
+            <h2>QML Intervention Protocol</h2>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 20px;">
+                Optimizing neuromodulation parameters across simulated quantum states to counteract neurochemical variances.
+            </p>
+
+            <div class="stat-card" style="margin-bottom: 15px;">
+                <div class="stat-value" id="tms-freq">10.0 Hz</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Optimal Neuromodulation Frequency</div>
+            </div>
+
+            <div class="stat-card" style="border-color: #00ff88; margin-bottom: 25px;">
+                <div class="stat-value" id="treatment-yield">85.0%</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Projected Therapeutic Yield</div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <h3 style="color: #ffaa00; margin-bottom: 10px;">Corrective Cognitive Traits & Feedback</h3>
+                <div id="cbt-traits-list" style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; font-size: 0.85rem; color: #fff;">
+                    <!-- JS population -->
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; font-size: 0.8rem; font-style: italic;" id="cbt-feedback">
+                    <!-- JS population -->
+                </div>
+            </div>
+
+            <h3 style="margin-top: 20px;">Regional Activity Profile</h3>
+            <div id="regions" style="margin-top: 10px; font-size: 0.9rem; display: flex; flex-direction: column; gap: 10px;">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Core App Script -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
