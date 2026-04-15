@@ -1417,6 +1417,18 @@ class MRIReconstructionSimulator:
                 sensitivity = sensitivity / (np.max(np.abs(sensitivity)) + 1e-9)
                 self.coils.append(sensitivity * 2.5) # Gain factor
 
+        elif coil_type == 'qubit_photonic_coil':
+            # Qubit Photonic Circuitry Array
+            num_elements = 16
+            for i in range(num_elements):
+                ang = 2 * np.pi * i / num_elements
+                cx, cy = center[1] + (N//2)*np.cos(ang), center[0] + (N//2)*np.sin(ang)
+                dist = np.sqrt((x - cx)**2 + (y - cy)**2) + 1e-3
+                sens = np.exp(-dist / (N//3)) * np.exp(1j * (dist / (N//4) + ang))
+                # Add qubit entanglement photonic noise/contrast
+                sens *= (1.0 + 0.1 * np.random.rand(N, N) * np.sin(x/(N/8)))
+                self.coils.append(sens)
+
         elif coil_type == 'geodesic_chassis':
             # Geodesic Head Coil: Geometric distribution based on Golden Angle
             num_elements = 64 
@@ -1844,6 +1856,22 @@ class MRIReconstructionSimulator:
             M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
             hebbian = HebbianAmplification(eta=0.05, n_epochs=20, threshold=0.3)
             M = hebbian.amplify(M_base).astype(np.float32)
+
+        elif sequence_type == 'qml_photonic_therm_v1':
+            from qml_photonic_thermometry import run_qml_thermometry_sim
+            qml_sim = run_qml_thermometry_sim(sequence_type, getattr(self, 'last_coil_config', [self.latest_sequence_type])[0])
+            t1 = T1_safe
+            t2 = T2_safe
+            # Enhance contrast based on QML factors
+            M = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2) * (qml_sim['snr']/100.0)
+            
+        elif sequence_type == 'qml_photonic_therm_v2':
+            from qml_photonic_thermometry import run_qml_thermometry_sim
+            qml_sim = run_qml_thermometry_sim(sequence_type, getattr(self, 'last_coil_config', [self.latest_sequence_type])[0])
+            t1 = T1_safe
+            t2 = T2_safe
+            # Deep photonic geometry contrast
+            M = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2) * (qml_sim['snr']/80.0)
 
         elif sequence_type == 'GRE':
             t1 = np.maximum(self.t1_map, 1e-6)
