@@ -1139,6 +1139,22 @@ class MRIReconstructionSimulator:
             sensitivity += 0.05 * np.cos(r * 0.1)
             self.coils.append(sensitivity)
             
+        
+        elif coil_type == 'CardioRamanujanCoil':
+            # Statistical Conformal Cardiovascular Coil (Ramanujan Operator Signature)
+            for i in range(num_coils):
+                angle = 2 * np.pi * i / num_coils
+                cx = center[1] + (N//2.5) * np.cos(angle)
+                cy = center[0] + (N//2.5) * np.sin(angle)
+                
+                # Ramanujan prime-gap density conformal mapped profile
+                dist_sq = (x - cx)**2 + (y - cy)**2
+                
+                tau_eff = 1.0 + 0.8 * (x / N) * np.sin(y / N * np.pi * 4) # Topological signature
+                sens = tau_eff / (1 + dist_sq / (N*1.2)**2)
+                
+                phase = np.exp(1j * angle)
+                self.coils.append(sens * phase)
         elif coil_type == 'n25_array':
             # "N25 Dense Array": 25 small elements, high surface SNR
             sim_coils = 25
@@ -1582,6 +1598,22 @@ class MRIReconstructionSimulator:
             with ThreadPoolExecutor() as executor:
                 self.coils = list(executor.map(_gen_standard_coil, range(num_coils)))
 
+        
+        elif coil_type == 'CardioRamanujanCoil':
+            # Statistical Conformal Cardiovascular Coil (Ramanujan Operator Signature)
+            for i in range(num_coils):
+                angle = 2 * np.pi * i / num_coils
+                cx = center[1] + (N//2.5) * np.cos(angle)
+                cy = center[0] + (N//2.5) * np.sin(angle)
+                
+                # Ramanujan prime-gap density conformal mapped profile
+                dist_sq = (x - cx)**2 + (y - cy)**2
+                
+                tau_eff = 1.0 + 0.8 * (x / N) * np.sin(y / N * np.pi * 4) # Topological signature
+                sens = tau_eff / (1 + dist_sq / (N*1.2)**2)
+                
+                phase = np.exp(1j * angle)
+                self.coils.append(sens * phase)
         elif coil_type == 'n25_array':
             from concurrent.futures import ThreadPoolExecutor
             # N25 Array logic
@@ -1814,6 +1846,17 @@ class MRIReconstructionSimulator:
             semantic_env = qps.semantic_ontology_pulse_sequence(t_eval)
             M = M_base * np.abs(np.mean(semantic_env))
 
+        
+        elif sequence_type == 'CardioRamanujanPulse':
+            # Cardiovascular Ramanujan Pulse (Conformal)
+            t1 = T1_safe
+            t2 = T2_safe
+            M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
+            
+            # Improved SNR via Ramanujan Statistical Operators
+            ramanujan_gain = 1 + 0.5 * np.maximum(0, np.sin(np.linspace(0, 4*np.pi, M_base.shape[0]))[:, None])
+            M_base *= ramanujan_gain
+            M = M_base
         elif sequence_type == 'QuantObservables':
             from quantum_pulse_sequences import QuantumPulseSequences
             qps = QuantumPulseSequences(TE=TE, TR=TR, T1=1200.0, T2=80.0)

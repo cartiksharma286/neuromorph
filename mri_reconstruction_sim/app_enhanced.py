@@ -73,7 +73,7 @@ def simulate():
             # NVQLink disabled (removed per user request)
             
             phantom_type = 'brain'
-            if coil_mode == 'cardiothoracic_array' or coil_mode == 'cardiovascular_coil':
+            if coil_mode in ['cardiothoracic_array', 'cardiovascular_coil', 'CardioRamanujanCoil']:
                 phantom_type = 'cardiac'
             elif coil_mode == 'knee_vascular_array':
                 phantom_type = 'knee'
