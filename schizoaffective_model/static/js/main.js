@@ -81,11 +81,12 @@ async function runSimulation() {
     const medication = document.getElementById('medication-slider').value;
     const nicotine = document.getElementById('nicotine-slider').value;
     const polymath_load = document.getElementById('polymath-slider').value;
+    const legal_trouble = document.getElementById('legal-slider').value;
     
     const response = await fetch('/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ beer, medication, nicotine, polymath_load })
+        body: JSON.stringify({ beer, medication, nicotine, polymath_load, legal_trouble })
     });
     
     const data = await response.json();
@@ -148,6 +149,11 @@ document.getElementById('nicotine-slider').addEventListener('input', (e) => {
 
 document.getElementById('polymath-slider').addEventListener('input', (e) => {
     document.getElementById('polymath-val').innerText = format(e.target.value);
+    runSimulation();
+});
+
+document.getElementById('legal-slider').addEventListener('input', (e) => {
+    document.getElementById('legal-val').innerText = format(e.target.value);
     runSimulation();
 });
 

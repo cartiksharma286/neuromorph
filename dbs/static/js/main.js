@@ -233,3 +233,319 @@ window.onload = () => {
     // Auto-refresh telemetry every 5 seconds
     setInterval(fetchSystemSpecs, 5000);
 };
+
+// --- DEMENTIA STAGING GENERATIVE PROTOCOL ---
+
+let dementiaChart = null;
+
+async function runDementiaStaging() {
+    const prompt = document.getElementById('gen-ai-prompt').value;
+    const declineRate = parseFloat(document.getElementById('decline-range').value);
+    const dbsAmp = parseFloat(document.getElementById('dementia-dbs-amp').value);
+
+    // Call backend endpoint
+    const response = await fetch('/api/dementia-staging', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt, decline_rate: declineRate, dbs_amplitude: dbsAmp })
+    });
+    
+    if (!response.ok) return;
+    const res = await response.json();
+    
+    // Update text
+    document.getElementById('dementia-insight').innerText = res.generative_insight;
+    
+    // Render Chart
+    const ctx = document.getElementById('dementia-chart');
+    if (!ctx) return;
+    if (dementiaChart) dementiaChart.destroy();
+    
+    const times = res.time_months;
+    const traj = res.cognitive_trajectory;
+    // Map variance
+    const upper_bound = res.clinical_distributions.map(d => d.mean + d.std/1.5);
+    const lower_bound = res.clinical_distributions.map(d => Math.max(0, d.mean - d.std/1.5));
+
+    dementiaChart = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: times.map(t => Math.round(t)),
+            datasets: [
+                {
+                    label: 'Clinical Variance (Upper)',
+                    data: upper_bound,
+                    borderColor: 'transparent',
+                    backgroundColor: 'rgba(0, 242, 255, 0.2)',
+                    fill: '+1',
+                    pointRadius: 0,
+                    tension: 0.4
+                },
+                {
+                    label: 'Clinical Variance (Lower)',
+                    data: lower_bound,
+                    borderColor: 'transparent',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0.4
+                },
+                {
+                    label: 'Temporal Cognitive Trajectory',
+                    data: traj,
+                    borderColor: '#ff00c8',
+                    borderWidth: 3,
+                    fill: false,
+                    pointRadius: 1,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true, labels: { color: '#a0aab5' } }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Treatment Timeline (Months)', color: '#00f2ff'}, ticks: { color: '#a0aab5' } },
+                y: { title: { display: true, text: 'Structural Neurological Retention (Score)', color: '#00f2ff'}, ticks: { color: '#a0aab5' }, min: 0, max: 35 }
+            }
+        }
+    });
+}
+
+
+// Auto trigger bindings
+document.addEventListener("DOMContentLoaded", () => {
+    const dr = document.getElementById('decline-range');
+    const da = document.getElementById('dementia-dbs-amp');
+    const ga = document.getElementById('gen-ai-prompt');
+    
+    if (dr) dr.addEventListener('input', runDementiaStaging);
+    if (da) da.addEventListener('input', runDementiaStaging);
+    if (ga) ga.addEventListener('change', runDementiaStaging);
+    
+    // Attempt init run
+    setTimeout(runDementiaStaging, 500); 
+});
+
+
+// --- Added Dementia Optimization & FEA Functionality ---
+
+let dementiaChartInstance = null;
+
+function updateDementiaChart() {
+    const dbsAmp = document.getElementById('voltage-range') ? document.getElementById('voltage-range').value : 30; // mapping voltage to amplitude 
+    const declineRate = document.getElementById('dementia-decline-range') ? document.getElementById('dementia-decline-range').value : 0.05;
+    const prompt = document.getElementById('dementia-prompt') ? document.getElementById('dementia-prompt').value : 'baseline';
+    
+    fetch('/api/dementia-staging', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            dbs_amplitude: dbsAmp, 
+            decline_rate: declineRate,
+            prompt: prompt
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const ctx = document.getElementById('dementia-chart')?.getContext('2d');
+        if (!ctx) return;
+        
+        if (dementiaChartInstance) {
+            dementiaChartInstance.destroy();
+        }
+        
+        const upperBounds = data.cognitive_trajectory.map((val, i) => val + data.clinical_distributions[i].std);
+        const lowerBounds = data.cognitive_trajectory.map((val, i) => Math.max(0, val - data.clinical_distributions[i].std));
+        
+        dementiaChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.time_months,
+                datasets: [
+                    {
+                        label: 'Mean Trajectory',
+                        data: data.cognitive_trajectory,
+                        borderColor: '#00ffcc',
+                        backgroundColor: 'rgba(0, 255, 204, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: '+1 Std Dev',
+                        data: upperBounds,
+                        borderColor: 'rgba(255, 0, 127, 0.5)',
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: '-1 Std Dev',
+                        data: lowerBounds,
+                        borderColor: 'rgba(255, 0, 127, 0.5)',
+                        borderDash: [5, 5],
+                        fill: '-1',
+                        backgroundColor: 'rgba(255, 0, 127, 0.1)',
+                        pointRadius: 0,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: 'Months' } },
+                    y: { title: { display: true, text: 'Cognitive Score (MMSE)' }, min: 0 }
+                }
+            }
+        });
+    }).catch(e => console.error("Error charting dementia:", e));
+}
+
+let largeFeaScene, largeFeaCamera, largeFeaRenderer, largeFeaMesh, rfCoilMesh, emFieldParticles;
+let emParticlesGeo;
+
+function initLargerFEA() {
+    const container = document.getElementById('fea-large-container');
+    if (!container) return;
+    
+    // Clear past children
+    container.innerHTML = '';
+    
+    largeFeaScene = new THREE.Scene();
+    largeFeaCamera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+    largeFeaCamera.position.z = 20;
+    
+    largeFeaRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    largeFeaRenderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(largeFeaRenderer.domElement);
+    
+    // --- CORTICAL SURFACE MANIFOLD
+    const feaNodes = document.getElementById('fea-nodes') ? parseInt(document.getElementById('fea-nodes').value) : 1000;
+    const detail = Math.min(6, Math.max(1, Math.floor(feaNodes / 200)));
+    
+    const geo = new THREE.IcosahedronGeometry(6, detail);
+    const positions = geo.attributes.position;
+    for(let i = 0; i < positions.count; i++) {
+        let x = positions.getX(i);
+        let y = positions.getY(i);
+        let z = positions.getZ(i);
+        let bump = 1 + 0.15 * Math.sin(x*2) * Math.cos(y*2) + 0.05 * Math.sin(z*4);
+        positions.setXYZ(i, x*bump, y*bump, z*bump);
+    }
+    geo.computeVertexNormals();
+    
+    // Heatmap style coloring based on Z position for basic FEA visual
+    geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(positions.count * 3), 3));
+    const colors = geo.attributes.color;
+    for(let i = 0; i < positions.count; i++) {
+        const val = (positions.getY(i) + 6) / 12; // roughly 0 to 1
+        colors.setXYZ(i, 1.0, val, 0.2); // yellow-red FEA heat gradient
+    }
+
+    const mat = new THREE.MeshPhongMaterial({
+        vertexColors: true,
+        emissive: 0x221100,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.8,
+        side: THREE.DoubleSide
+    });
+    
+    largeFeaMesh = new THREE.Mesh(geo, mat);
+    largeFeaScene.add(largeFeaMesh);
+
+    // --- RF COIL CIRCUITRY
+    const coilGeo = new THREE.TorusKnotGeometry( 8.5, 0.3, 150, 16, 2, 5 );
+    const coilMat = new THREE.MeshStandardMaterial({ 
+        color: 0xaaaaaa, 
+        metalness: 0.9, 
+        roughness: 0.1,
+        emissive: 0x001155
+    });
+    rfCoilMesh = new THREE.Mesh(coilGeo, coilMat);
+    largeFeaScene.add(rfCoilMesh);
+
+    // --- ELECTROMAGNETIC FIELD PARTICLES
+    emParticlesGeo = new THREE.BufferGeometry();
+    const pCount = 1000;
+    const pArray = new Float32Array(pCount * 3);
+    for(let i=0; i<pCount*3; i++) {
+        pArray[i] = (Math.random() - 0.5) * 35; // Random spread
+    }
+    emParticlesGeo.setAttribute('position', new THREE.BufferAttribute(pArray, 3));
+    const particleMat = new THREE.PointsMaterial({
+        color: 0x00ffff,
+        size: 0.25,
+        transparent: true,
+        opacity: 0.6,
+        blending: THREE.AdditiveBlending
+    });
+    emFieldParticles = new THREE.Points(emParticlesGeo, particleMat);
+    largeFeaScene.add(emFieldParticles);
+    
+    // LIGHTING
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(10, 20, 10);
+    largeFeaScene.add(light);
+    const ambientLight = new THREE.AmbientLight(0x404040); 
+    largeFeaScene.add(ambientLight);
+    
+    animateLargeFEA();
+}
+
+function animateLargeFEA() {
+    if(!largeFeaRenderer) return;
+    requestAnimationFrame(animateLargeFEA);
+    
+    const time = Date.now() * 0.001;
+
+    if(largeFeaMesh) {
+        largeFeaMesh.rotation.y += 0.002;
+    }
+    if(rfCoilMesh) {
+        rfCoilMesh.rotation.y -= 0.005;
+        rfCoilMesh.rotation.x = Math.sin(time*0.5) * 0.2;
+        // Pulse the emissive color of the coil to simulate RF activation
+        rfCoilMesh.material.emissiveIntensity = 0.5 + 0.5 * Math.sin(time * 8);
+    }
+    
+    // Animate EM Field particles to simulate magnetic flux toroidal vortex
+    if(emFieldParticles) {
+        const positions = emParticlesGeo.attributes.position.array;
+        for(let i=0; i<positions.length; i+=3) {
+            let x = positions[i];
+            let y = positions[i+1];
+            let z = positions[i+2];
+
+            const r = Math.sqrt(x*x + z*z) + 0.0001;
+            const theta = Math.atan2(z, x) + 0.015; 
+            positions[i] = r * Math.cos(theta);
+            positions[i+2] = r * Math.sin(theta);
+            positions[i+1] += (15 / r) * 0.1 * Math.sin(time * 3 + r); 
+
+            if(positions[i+1] > 17) positions[i+1] = -17; 
+            if(positions[i+1] < -17) positions[i+1] = 17;
+        }
+        emParticlesGeo.attributes.position.needsUpdate = true;
+    }
+
+    largeFeaRenderer.render(largeFeaScene, largeFeaCamera);
+}
+
+// Automatically load models if clicking their tab
+window.addEventListener('click', (e) => {
+    if(e.target.classList.contains('tab-btn')) {
+        setTimeout(() => {
+            if(document.getElementById('dementia-sidebar') && document.getElementById('dementia-sidebar').classList.contains('active')) {
+                updateDementiaChart();
+            }
+            if(document.getElementById('fea-sidebar') && document.getElementById('fea-sidebar').classList.contains('active') && !largeFeaRenderer) {
+                initLargerFEA();
+            }
+        }, 100);
+    }
+});
+
