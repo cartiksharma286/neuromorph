@@ -283,6 +283,10 @@
             <div class="control-group">
                 <label>Sequence Protocol</label>
                 <select id="sequence">
+                    <option value="OrthopedicKneePulse">Orthopedic Knee (Geodesic Map)</option>
+                    <option value="GenAIOrthopedicPulse">Orthopedic GenAI Pulse</option>
+                    <option value="QuantumMLShoulderPulse">Shoulder Quantum ML Pulse</option>
+                    <option value="FiniteMathElbowPulse">Elbow Finite Math Pulse</option>
                     <option value="SE">Spin Echo (SE)</option>
                     <option value="GRE">Gradient Echo (GRE)</option>
                     <option value="InversionRecovery">Inversion Recovery</option>
@@ -366,6 +370,10 @@
                 <label>RF Coil Topology</label>
                 <select id="coils">
                     <option disabled style="color:#334155;">── Standard Arrays ──</option>
+                    <option value="OrthopedicKneeCoil">Orthopedic Knee Coil</option>
+                    <option value="ConformalKneeQubitCoil">Conformal Knee Qubit Coil</option>
+                    <option value="ShoulderJointCoil">Shoulder Joint Coil</option>
+                    <option value="ElbowJointCoil">Elbow Joint Coil</option>
                     <option value="standard">Birdcage (Uniform)</option>
                     <option value="custom_phased_array">8-ch Array</option>
                     <option value="n25_array">N25 Dense Array</option>
@@ -1585,6 +1593,41 @@
                         style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 1rem;">
                         Waiting for manifold projection...
                     </div>
+                </div>
+            </div>
+
+            <!-- View: Frostbite CFD -->
+            <div id="view-frostbite" class="view-content" style="display: none;">
+                <h2>Frostbite Thermal Therapy (Computational Fluid Dynamics)</h2>
+                <div class="panel">
+                    <h3>Optimal Temperature Staging Protocol Integration</h3>
+                    <p>Simulating advection-diffusion heat transfer to resolve ischemic zones and reverse deep tissue gangrene.</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="number" id="cfd-v" value="0.5" step="0.1" placeholder="Advection Vx" style="padding: 5px;">
+                        <input type="number" id="cfd-alpha" value="0.5" step="0.1" placeholder="Thermal Diffusivity" style="padding: 5px;">
+                        <button onclick="runFrostbite()" style="padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; background: #27ae60; color: white;">Run CFD Simulator</button>
+                    </div>
+                    <pre id="frostbite-metrics" style="background:#f4f4f4; padding:10px;"></pre>
+                    <img id="img-frostbite" style="max-width: 100%; border: 1px solid #ddd; margin-top: 10px;">
+                </div>
+            </div>
+
+            <!-- View: Clinical Frostbite Profile -->
+            <div id="view-frostbite-clinical" class="view-content" style="display: none;">
+                <h2>Clinical Treatment Profile: Frostbite Integration</h2>
+                <div class="panel">
+                    <h3>Generate Optimal Multi-Stage Treatment Pathway</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <select id="fb-severity" style="padding: 5px;">
+                            <option value="1st Degree (Superficial)">1st Degree (Superficial)</option>
+                            <option value="2nd Degree (Mild)">2nd Degree (Mild)</option>
+                            <option value="3rd Degree (Severe)" selected>3rd Degree (Severe)</option>
+                            <option value="4th Degree (Deep)">4th Degree (Deep)</option>
+                        </select>
+                        <button onclick="runFrostbiteClinical()" style="padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; background: #8e44ad; color: white;">Generate Profile</button>
+                    </div>
+                    <pre id="frostbite-clinical-metrics" style="background:#f4f4f4; padding:10px;"></pre>
+                    <img id="img-frostbite-clinical" style="max-width: 100%; border: 1px solid #ddd; margin-top: 10px;">
                 </div>
             </div>
 
@@ -3300,6 +3343,54 @@
                 document.getElementById('img-tes-genai').src = data.plots.tes_genai_map ? "data:image/png;base64," + data.plots.tes_genai_map : '';
             } else {
                 document.getElementById('tes-genai-metrics').innerText = 'Error: ' + JSON.stringify(data);
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function runFrostbite() {
+        try {
+            document.getElementById('frostbite-metrics').innerText = 'Starting CFD Solver...';
+            document.getElementById('img-frostbite').src = '';
+            const payload = {
+                vx: document.getElementById('cfd-v').value || 0.5,
+                diffusivity: document.getElementById('cfd-alpha').value || 0.5,
+                steps: 100,
+                therapy_temp: 40.0,
+                core_temp: -5.0
+            };
+            const res = await fetch('/api/frostbite_therapy', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(payload) 
+            });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('frostbite-metrics').innerText = JSON.stringify(data.metrics, null, 2);
+                document.getElementById('img-frostbite').src = data.plots.frostbite_cfd_map ? "data:image/png;base64," + data.plots.frostbite_cfd_map : '';
+            } else {
+                document.getElementById('frostbite-metrics').innerText = 'Error: ' + JSON.stringify(data);
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function runFrostbiteClinical() {
+        try {
+            document.getElementById('frostbite-clinical-metrics').innerText = 'Generating Treatment Profile...';
+            document.getElementById('img-frostbite-clinical').src = '';
+            const payload = { severity: document.getElementById('fb-severity').value };
+            const res = await fetch('/api/frostbite_clinical_profile', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(payload) 
+            });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('frostbite-clinical-metrics').innerText = JSON.stringify(data.metrics, null, 2);
+                if(data.plots.clinical_timeline) {
+                    document.getElementById('img-frostbite-clinical').src = "data:image/png;base64," + data.plots.clinical_timeline;
+                }
+            } else {
+                document.getElementById('frostbite-clinical-metrics').innerText = 'Error: ' + JSON.stringify(data);
             }
         } catch(e) { console.error(e); }
     }

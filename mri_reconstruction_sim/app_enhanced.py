@@ -76,10 +76,14 @@ def simulate():
             # NVQLink disabled (removed per user request)
             
             phantom_type = 'brain'
-            if coil_mode in ['cardiothoracic_array', 'cardiovascular_coil', 'CardioRamanujanCoil']:
+            if coil_mode in ['cardiothoracic_array', 'cardiovascular_coil', 'CardioRamanujanCoil'] or seq_type in ['CardioRamanujanPulse']:
                 phantom_type = 'cardiac'
-            elif coil_mode == 'knee_vascular_array':
+            elif coil_mode in ['knee_vascular_array', 'OrthopedicKneeCoil', 'ConformalKneeQubitCoil'] or seq_type in ['OrthopedicKneePulse', 'GenAIOrthopedicPulse']:
                 phantom_type = 'knee'
+            elif coil_mode == 'ShoulderJointCoil' or seq_type == 'QuantumMLShoulderPulse':
+                phantom_type = 'shoulder'
+            elif coil_mode == 'ElbowJointCoil' or seq_type == 'FiniteMathElbowPulse':
+                phantom_type = 'elbow'
     
             sim.setup_phantom(use_real_data=True, phantom_type=phantom_type)
             sim.generate_coil_sensitivities(num_coils=num_coils, coil_type=coil_mode, optimal_shimming=use_shimming)
@@ -1323,6 +1327,129 @@ def api_fullerene_inflection_coil_spec():
                   'y_m': round(float(np.sin(a) * fov_m / 2), 5),
                   'sensitivity': round(float(1.0 / (1 + i * 0.01)), 4)} for i, a in enumerate(angles)]
         return jsonify({'success': True, 'coil_specs': specs, 'n_coils': n_coils, 'fov_m': fov_m})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/frostbite_therapy', methods=['POST'])
+def simulate_frostbite_therapy():
+    try:
+        data = request.json or {}
+        nx, ny = 50, 50
+        dx, dy = 1.0, 1.0
+        dt = 0.2
+        steps = int(data.get('steps', 150))
+        alpha = float(data.get('diffusivity', 0.5))
+        vx = float(data.get('vx', 0.5))
+        vy = float(data.get('vy', 0.2))
+        therapy_temp = float(data.get('therapy_temp', 40.0))
+        core_temp = float(data.get('core_temp', -5.0))
+        normal_temp = 37.0
+        
+        T = np.ones((nx, ny)) * normal_temp
+        T[15:35, 15:35] = core_temp
+        
+        T[0, :] = therapy_temp
+        T[-1, :] = therapy_temp
+        T[:, 0] = therapy_temp
+        T[:, -1] = therapy_temp
+
+        for _ in range(steps):
+            T_new = T.copy()
+            diffusion = (
+                alpha * (T[2:, 1:-1] - 2*T[1:-1, 1:-1] + T[:-2, 1:-1]) / dx**2 +
+                alpha * (T[1:-1, 2:] - 2*T[1:-1, 1:-1] + T[1:-1, :-2]) / dy**2
+            )
+            advection = (
+                vx * (T[1:-1, 1:-1] - T[:-2, 1:-1]) / dx +
+                vy * (T[1:-1, 1:-1] - T[1:-1, :-2]) / dy
+            )
+            T_new[1:-1, 1:-1] = T[1:-1, 1:-1] + dt * (diffusion - advection)
+            
+            T_new[0, :] = therapy_temp
+            T_new[-1, :] = therapy_temp
+            T_new[:, 0] = therapy_temp
+            T_new[:, -1] = therapy_temp
+            T = T_new
+
+        fig, ax = plt.subplots(figsize=(6, 5))
+        c = ax.imshow(T.T, origin='lower', cmap='inferno', vmin=core_temp, vmax=therapy_temp, extent=[0, nx, 0, ny])
+        plt.colorbar(c, ax=ax, label='Temperature (°C)')
+        ax.set_title('Frostbite CFD Thermal Profile')
+        
+        contours = ax.contour(T.T, levels=[0.0, 10.0, 20.0, 30.0], colors='white', linewidths=0.5, extent=[0, nx, 0, ny])
+        ax.clabel(contours, inline=True, fontsize=8, fmt='%.1f °C')
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', dpi=120, bbox_inches='tight')
+        plt.close(fig)
+        img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+        
+        metrics = {
+            'minimum_tissue_temp': round(float(np.min(T)), 2),
+            'average_tissue_temp': round(float(np.mean(T)), 2),
+            'frostbite_cleared': bool(np.min(T) > 0.0),
+            'protocol_optimization_score': round(float(np.mean(T[15:35, 15:35])), 2),
+            'optimal_therapy_temp': 41.5 if core_temp < -10 else 39.5,
+            'optimal_duration_mins': round((steps * dt) / 60, 2),
+            'recommended_flow_rate_vx': 0.8 if alpha < 0.3 else 0.4
+        }
+
+        return jsonify({'success': True, 'plots': {'frostbite_cfd_map': img_b64}, 'metrics': metrics})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/frostbite_clinical_profile', methods=['POST'])
+def generate_frostbite_clinical_profile():
+    try:
+        data = request.json or {}
+        severity = data.get('severity', '3rd Degree (Severe)')
+        
+        # Clinical staging baseline 
+        phases = [
+            ("Rapid Rewarming (37-39°C)", 0, 2),
+            ("Topical Aloe Vera & Debridement", 2, 24),
+            ("Systemic Ibuprofen (NSAID)", 2, 72),
+            ("MRI/SPECT Viability Assessment", 48, 120),
+        ]
+        
+        # Branching protocols based on severity severity
+        if 'Severe' in severity or 'Deep' in severity:
+            phases.insert(1, ("Thrombolytics (IV tPA) & Heparin", 2, 24))
+            phases.append(("Delayed Surgical Demarcation", 336, 1000))
+        elif 'Superficial' not in severity:
+            phases.append(("Clear Blebs & Splinting", 24, 168))
+
+        fig, ax = plt.subplots(figsize=(8, len(phases) * 0.6 + 1))
+        y_ticks = []
+        y_labels = []
+        
+        for i, (task, start, end) in enumerate(phases):
+            ax.barh(i, end - start, left=start, height=0.5, color='teal')
+            y_ticks.append(i)
+            y_labels.append(task)
+            
+        ax.set_yticks(y_ticks)
+        ax.set_yticklabels(y_labels)
+        ax.set_xlabel('Time Post-Exposure (Hours) - Log Scale')
+        ax.set_xscale('symlog')
+        ax.set_title(f'Optimal Clinical Treatment Profile: {severity} Frostbite')
+        ax.grid(True, axis='x', linestyle='--', alpha=0.6)
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', dpi=120, bbox_inches='tight')
+        plt.close(fig)
+        img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+
+        metrics = {
+            "diagnosis_profile": severity,
+            "immediate_action": "Immerse affected area in circulating water bath (37°C - 39°C) for 15-30 mins.",
+            "pharmacology": "Ibuprofen daily (arachidonic acid cascade inhibition). tPA if cyanosis is deep." if 'Severe' in severity or 'Deep' in severity else "Ibuprofen array.",
+            "long_term_strategy": "Allow tissue to completely outline and demarcate over 1-3 months before amputation to preserve viable length." if 'Severe' in severity else "Manage locally and observe."
+        }
+
+        return jsonify({'success': True, 'plots': {'clinical_timeline': img_b64}, 'metrics': metrics})
+
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

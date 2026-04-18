@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frostbite Thermal Therapy - CFD Simulator</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { margin-top: 0; color: #2c3e50; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 0.9em; }
+        input[type="number"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; }
+        button:hover { background-color: #2980b9; }
+        .result-panel { margin-top: 30px; text-align: center; display: none; }
+        .result-panel img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; }
+        .metrics { display: flex; justify-content: space-around; background: #ecf0f1; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .metric-box { text-align: center; }
+        .metric-val { font-size: 1.5em; font-weight: bold; color: #e74c3c; display: block; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Tab Styles */
+        .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
+        .tab-btn { padding: 10px 20px; border: none; background: none; font-size: 16px; font-weight: bold;cursor: pointer; color: #7f8c8d; }
+        .tab-btn.active { color: #2c3e50; border-bottom: 3px solid #3498db; margin-bottom: -2px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Frostbite Thermal Therapy</h1>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('cfd', this)">CFD Simulator</button>
+        <button class="tab-btn" onclick="switchTab('sml', this)">Statistical ML Profile</button>
+    </div>
+    
+    <!-- Tab 1: CFD Simulator -->
+    <div id="tab-cfd" class="tab-content active">
+        <p>Simulate heat transfer and advection fluid dynamics corresponding to active thermal intervention for deep-tissue frostbite recovery.</p>
+
+    
+    <div class="controls">
+        <div>
+            <label>Therapy Temperature (°C)</label>
+            <input type="number" id="therapy_temp" value="40" step="0.5" />
+        </div>
+        <div>
+            <label>Simulation Steps</label>
+            <input type="number" id="steps" value="150" step="10" />
+        </div>
+        <div>
+            <label>Active Rewarming Flow (V_x)</label>
+            <input type="number" id="vx" value="0.5" step="0.1" />
+        </div>
+        <div>
+            <label>Active Rewarming Flow (V_y)</label>
+            <input type="number" id="vy" value="0.2" step="0.1" />
+        </div>
+        <div>
+            <label>Thermal Diffusivity (&alpha;)</label>
+            <input type="number" id="diffusivity" value="0.5" step="0.1" />
+        </div>
+        <div>
+            <label>Initial Core Temp (°C)</label>
+            <input type="number" id="core_temp" value="-5" step="1" />
+        </div>
+    </div>
+    
+    <button onclick="runSimulation()">Compute Thermal Dynamics</button>
+    <div id="loader" class="loader"></div>
+
+    <div id="result" class="result-panel">
+        <div class="metrics">
+            <div class="metric-box">
+                Min. Tissue Temp
+                <span class="metric-val" id="min_val">--</span>
+            </div>
+            <div class="metric-box">
+                Frostbite Cleared
+                <span class="metric-val" id="cleared_val" style="color:#27ae60;">--</span>
+            </div>
+            <div class="metric-box">
+                Avg. Tissue Temp
+                <span class="metric-val" id="avg_val">--</span>
+            </div>
+            <div class="metric-box">
+                Optimal Therapy Temp
+                <span class="metric-val" id="opt_val" style="color:#e67e22;">--</span>
+            </div>
+        </div>
+        <h3>Heating Profile</h3>
+        <img id="heat_map_img" alt="Heating Profile Computations" />
+    </div>
+    </div>
+    
+    <!-- Tab 2: SML Profile -->
+    <div id="tab-sml" class="tab-content">
+        <h2>Optimal Treatment Profile via Statistical Machine Learning</h2>
+        <p>This profile uses statistical modeling to predict the most effective patient rewarming timeline based on historical metrics.</p>
+        <div id="sml-content" style="text-align:center;">
+             <p>Select this tab to initiate the model.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+async function runSimulation() {
+    const btn = document.querySelector('button');
+    btn.disabled = true;
+    document.getElementById('loader').style.display = 'block';
+    document.getElementById('result').style.display = 'none';
+
+    const payload = {
+        therapy_temp: document.getElementById('therapy_temp').value,
+        steps: document.getElementById('steps').value,
+        vx: document.getElementById('vx').value,
+        vy: document.getElementById('vy').value,
+        diffusivity: document.getElementById('diffusivity').value,
+        core_temp: document.getElementById('core_temp').value
+    };
+
+    try {
+        const res = await fetch('/api/simulate_frostbite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            document.getElementById('min_val').innerText = (data.metrics.minimum_tissue_temp || 0).toFixed(2) + ' °C';
+            document.getElementById('avg_val').innerText = (data.metrics.average_tissue_temp || 0).toFixed(2) + ' °C';
+            document.getElementById('cleared_val').innerText = data.metrics.frostbite_cleared ? 'YES' : 'NO';
+            document.getElementById('cleared_val').style.color = data.metrics.frostbite_cleared ? '#27ae60' : '#c0392b';
+            document.getElementById('opt_val').innerText = (data.metrics.optimal_therapy_temp || 0).toFixed(2);
+            
+            document.getElementById('heat_map_img').src = 'data:image/png;base64,' + data.image_b64;
+            document.getElementById('result').style.display = 'block';
+        } else {
+            alert('Simulation failed.');
+        }
+    } catch (e) {
+        alert('Network or server error');
+        console.error(e);
+    } finally {
+        btn.disabled = false;
+        document.getElementById('loader').style.display = 'none';
+    }
+}
+
+function switchTab(tabId, element) {
+    document.querySelectorAll('.tab-content').forEach(d => {
+        d.classList.remove('active');
+        d.style.display = 'none';
+    });
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+    const activeTab = document.getElementById('tab-' + tabId);
+    if(activeTab) {
+        activeTab.classList.add('active');
+        activeTab.style.display = 'block';
+    }
+    element.classList.add('active');
+
+    if (tabId === 'sml') {
+        loadSMLProfile();
+    }
+}
+
+async function loadSMLProfile() {
+    const smlContent = document.getElementById('sml-content');
+    if (smlContent.innerHTML.includes('<img')) return; // already loaded
+
+    smlContent.innerHTML = '<div class="loader" style="display:block;"></div><p>Generating statistical ML model...</p>';
+    try {
+        const res = await fetch('/api/sml_frostbite_profile');
+        const data = await res.json();
+        if (data.success) {
+            smlContent.innerHTML = `
+                <img src="data:image/png;base64,${data.image_b64}" style="max-width:100%; border:1px solid #ddd; margin-top:20px;">
+                <div class="metrics" style="margin-top:20px;">
+                    <div class="metric-box">
+                        <span class="metric-title">ML Optimal Temp</span>
+                        <span class="metric-val" id="ml-temp">${data.optimal_temp.toFixed(1)} °C</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-title">Est. Rewarming Time</span>
+                        <span class="metric-val" id="ml-time">${data.estimated_time.toFixed(1)} mins</span>
+                    </div>
+                </div>
+                <p><strong>Note:</strong> ${data.recommendation}</p>
+            `;
+        } else {
+            smlContent.innerHTML = '<p>Error loading SML profile.</p>';
+        }
+    } catch {
+        smlContent.innerHTML = '<p>Network error generating SML profile.</p>';
+    }
+}
+</script>
+
+</body>
+</html>

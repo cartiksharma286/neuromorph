@@ -142,6 +142,14 @@ class MRIReconstructionSimulator:
         if phantom_type == 'knee':
             self._generate_knee_phantom()
             return
+            
+        if phantom_type == 'shoulder':
+            self._generate_shoulder_phantom()
+            return
+            
+        if phantom_type == 'elbow':
+            self._generate_elbow_phantom()
+            return
 
         if use_real_data:
             if self.load_real_data():
@@ -1027,6 +1035,86 @@ class MRIReconstructionSimulator:
             }
         }
 
+    def _generate_shoulder_phantom(self):
+        N = self.resolution
+        self.t1_map = np.zeros(self.dims)
+        self.t2_map = np.zeros(self.dims)
+        self.pd_map = np.zeros(self.dims)
+        
+        y, x = np.ogrid[:N, :N]
+        center = (N//2, N//2)
+        
+        # Humerus head
+        mask_humerus = ((x - center[1]*1.2)**2 + (y - center[0])**2 < (N//5)**2)
+        self.t1_map[mask_humerus] = 365
+        self.t2_map[mask_humerus] = 133
+        self.pd_map[mask_humerus] = 0.9
+        
+        # Glenoid fossa (scapula)
+        mask_glenoid = ((x - center[1]*0.6)**2 / (N//6)**2 + (y - center[0])**2 / (N//3)**2 < 1) & (x < center[1]*0.8)
+        self.t1_map[mask_glenoid] = 365
+        self.t2_map[mask_glenoid] = 133
+        self.pd_map[mask_glenoid] = 0.9
+        
+        # Labrum & Cartilage
+        mask_cart = ((x - center[1]*1.2)**2 + (y - center[0])**2 < (N//4.5)**2) & ~mask_humerus & ~mask_glenoid
+        self.t1_map[mask_cart] = 1240
+        self.t2_map[mask_cart] = 27
+        self.pd_map[mask_cart] = 0.7
+        
+        # Muscle (Deltoid, etc)
+        mask_muscle = ((x - center[1])**2 / (N//1.5)**2 + (y - center[0])**2 / (N//1.2)**2 < 1) & ~mask_humerus & ~mask_glenoid & ~mask_cart
+        self.t1_map[mask_muscle] = 900
+        self.t2_map[mask_muscle] = 50
+        self.pd_map[mask_muscle] = 0.8
+        
+        self.vol_t1 = np.repeat(self.t1_map[:, :, np.newaxis], N, axis=2)
+        self.vol_t2 = np.repeat(self.t2_map[:, :, np.newaxis], N, axis=2)
+        self.vol_pd = np.repeat(self.pd_map[:, :, np.newaxis], N, axis=2)
+
+    def _generate_elbow_phantom(self):
+        N = self.resolution
+        self.t1_map = np.zeros(self.dims)
+        self.t2_map = np.zeros(self.dims)
+        self.pd_map = np.zeros(self.dims)
+        
+        y, x = np.ogrid[:N, :N]
+        center = (N//2, N//2)
+        
+        # Humerus (distal)
+        mask_humerus = ((x - center[1])**2 / (N//6)**2 + (y - center[0] + N//3)**2 / (N//2.5)**2 < 1) & (y < center[0])
+        self.t1_map[mask_humerus] = 365
+        self.t2_map[mask_humerus] = 133
+        self.pd_map[mask_humerus] = 0.9
+        
+        # Ulna (proximal)
+        mask_ulna = ((x - center[1]*1.1)**2 / (N//7)**2 + (y - center[0] - N//3)**2 / (N//2.5)**2 < 1) & (y >= center[0])
+        self.t1_map[mask_ulna] = 365
+        self.t2_map[mask_ulna] = 133
+        self.pd_map[mask_ulna] = 0.9
+        
+        # Radius (proximal)
+        mask_radius = ((x - center[1]*0.8)**2 / (N//7)**2 + (y - center[0] - N//3)**2 / (N//2.5)**2 < 1) & (y >= center[0])
+        self.t1_map[mask_radius] = 365
+        self.t2_map[mask_radius] = 133
+        self.pd_map[mask_radius] = 0.9
+        
+        # Cartilage
+        mask_cart = ((x - center[1])**2 / (N//4)**2 + (y - center[0])**2 / (N//8)**2 < 1) & ~mask_humerus & ~mask_ulna & ~mask_radius
+        self.t1_map[mask_cart] = 1240
+        self.t2_map[mask_cart] = 27
+        self.pd_map[mask_cart] = 0.7
+        
+        # Background tissue
+        mask_bg = ((x - center[1])**2 / (N//1.5)**2 + (y - center[0])**2 / (N//1.2)**2 < 1) & ~mask_humerus & ~mask_ulna & ~mask_radius & ~mask_cart
+        self.t1_map[mask_bg] = 900
+        self.t2_map[mask_bg] = 50
+        self.pd_map[mask_bg] = 0.8
+        
+        self.vol_t1 = np.repeat(self.t1_map[:, :, np.newaxis], N, axis=2)
+        self.vol_t2 = np.repeat(self.t2_map[:, :, np.newaxis], N, axis=2)
+        self.vol_pd = np.repeat(self.pd_map[:, :, np.newaxis], N, axis=2)
+
     def _generate_synthetic_phantom(self):
         """Generates synthetic T1, T2, and PD maps for a brain slice."""
         N = self.resolution
@@ -1199,6 +1287,19 @@ class MRIReconstructionSimulator:
             
 
 
+        elif coil_type == 'ElbowJointCoil':
+            # Specialized conformal coil wrapping around the humerus-ulna-radius joint
+            for i in range(num_coils):
+                angle = i * 2 * np.pi / max(1, num_coils)
+                x_pos = center[1] + (N//3.5) * np.cos(angle)
+                y_pos = center[0] + (N//3.5) * np.sin(angle)
+                dist_sq = (x - x_pos)**2 + (y - y_pos)**2
+                
+                # High sensitivity near the cartilage and ulnar groove
+                sensitivity = 2.5 * np.exp(-dist_sq / (2 * (N//5)**2))
+                phase = np.exp(1j * (x * np.cos(angle)*0.02 + y * np.sin(angle)*0.03))
+                self.coils.append(sensitivity * phase)
+                
         elif coil_type == 'cardiothoracic_array':
             # Cardiothoracic Coil: Anterior (Chest) and Posterior (Spine) Arrays
             # Ideal for Heart/Lung imaging updates
@@ -2770,11 +2871,18 @@ class MRIReconstructionSimulator:
             'QuantumRBMThermometry', 'StatisticalBayesianThermometry'
         ]
         # --- Global Signal Generation & Fallback ---
+        # Ensure M is defined; if not (unhandled sequence), default to GRE
+        if 'M' not in locals():
+            if sequence_type == 'FiniteMathElbowPulse':
+                M_base = self.pd_map * (1 - np.exp(-TR / T1_safe)) * np.exp(-TE / T2_safe)
+                laplacian = np.zeros_like(M_base)
+                laplacian[1:-1, 1:-1] = (M_base[2:, 1:-1] + M_base[:-2, 1:-1] + M_base[1:-1, 2:] + M_base[1:-1, :-2] - 4*M_base[1:-1, 1:-1])
+                alpha = 0.55
+                M = np.abs(M_base + alpha * laplacian)
+            else:
+                print(f"Warning: Sequence '{sequence_type}' not handled. Defaulting to Gradient Echo.")
+                M = self.pd_map * np.exp(-TE / self.t2_map)
         try:
-            # Ensure M is defined; if not (unhandled sequence), default to GRE
-            if 'M' not in locals():
-                 print(f"Warning: Sequence '{sequence_type}' not handled. Defaulting to Gradient Echo.")
-                 M = self.pd_map * np.exp(-TE / self.t2_map)
 
             M = np.nan_to_num(M)
 
