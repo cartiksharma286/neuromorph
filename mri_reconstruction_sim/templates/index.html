@@ -520,6 +520,9 @@
             <button class="tab-trigger" id="tab-enhanced-therm" onclick="switchView('enhanced-therm', this);">🔥 Enhanced Thermometry</button>
             <button class="tab-trigger" id="tab-rtms" onclick="switchView('rtms', this);">🧠 rTMS Neural Repair</button>
             <button class="tab-trigger" id="tab-fullerene-inflection" onclick="switchView('fullerene-inflection', this); runFullereneInflection();">⚽ Fullerene·Inflection</button>
+            <button class="tab-trigger" id="tab-seqrank" onclick="switchView('seqrank', this); runSeqRank();">🏆 Sequence Ranker</button>
+            <button class="tab-trigger" id="tab-tes-qml" onclick="switchView('tes-qml', this); runTesQml();">⚡ tES Gangrene (QML)</button>
+            <button class="tab-trigger" id="tab-tes-genai" onclick="switchView('tes-genai', this); runTesGenai();">🧠 tES Gangrene (GenAI)</button>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -1430,6 +1433,83 @@
                 </div>
             </div>
             <!-- END View: Fullerene·Inflection Thermometry -->
+
+            <div id="view-seqrank" class="view-content">
+                <h2 style="color:#f1f5f9; margin-bottom:1rem;">🏆 Pulse Sequence Ranker</h2>
+                <p style="color:#94a3b8; margin-bottom:1rem;">Parameterize sequences to find the top 3 performers by SNR.</p>
+                <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.2rem;">
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.85rem;">TR (ms)</label>
+                        <input type="number" id="sr-tr" value="1000" min="100" max="10000" style="width:90px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:4px 8px;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.85rem;">TE (ms)</label>
+                        <input type="number" id="sr-te" value="30" min="1" max="300" style="width:90px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:4px 8px;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.85rem;">Flip Angle (°)</label>
+                        <input type="number" id="sr-fa" value="60" min="1" max="180" style="width:90px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:4px 8px;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.85rem;">Coil Array</label>
+                        <select id="sr-coil" style="background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:4px 8px;">
+                            <option value="standard">Birdcage (Standard)</option>
+                            <option value="cardiothoracic_array">Cardiothoracic Array</option>
+                            <option value="cardiovascular_coil">Cardiovascular Coil</option>
+                            <option value="CardioRamanujanCoil" selected>❤️ Ramanujan Conformal Coil</option>
+                            <option value="quantum_vascular">Quantum Vascular</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                        <label style="color:#94a3b8; font-size:0.85rem;">Noise Level</label>
+                        <input type="number" id="sr-noise" value="0.05" min="0" max="1" step="0.01" style="width:90px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:4px 8px;">
+                    </div>
+                    <div style="display:flex; align-items:flex-end;">
+                        <button onclick="runSeqRank()" style="background:#6366f1; color:#fff; border:none; border-radius:8px; padding:8px 22px; cursor:pointer; font-weight:600;">▶ Rank Sequences</button>
+                    </div>
+                </div>
+                <div id="sr-status" style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.8rem;"></div>
+                <div id="sr-report" style="background:#0f172a; border:1px solid #1e293b; border-radius:10px; padding:1rem; min-height:200px;"></div>
+            </div>
+            <!-- END View: Sequence Ranker -->
+
+            <!-- View: tES Gangrene (QML) -->
+            <div id="view-tes-qml" class="view-content">
+                <h2 style="color:#f1f5f9; margin-bottom:1rem;">⚡ Transcutaneous Electrical Stimulation: Quantum Machine Learning for Gangrene</h2>
+                <p style="color:#94a3b8; margin-bottom:1rem;">Clinical optimization protocol mapping Hebbian modifications for nicotine-induced gangrene recovery.</p>
+                <button onclick="runTesQml()" style="background:#10b981; color:#fff; border:none; border-radius:8px; padding:8px 22px; cursor:pointer; font-weight:600; margin-bottom:1rem;">▶ Execute QML Probabilistic Estimator</button>
+                <div class="dashboard-grid">
+                    <div class="output-box" style="grid-column: span 1;">
+                        <div class="output-title">Differential Estimates &amp; Risk Metrics (QML)</div>
+                        <div id="tes-qml-metrics" style="background:#0f172a; font-family:monospace; padding:1rem; border-radius:8px; color:#94a3b8; white-space:pre-wrap;"></div>
+                    </div>
+                    <div class="output-box" style="grid-column: span 1;">
+                        <div class="output-title">Probabilistic Tissue Viability Map</div>
+                        <div class="img-window">
+                            <img id="img-tes-qml" src="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: tES Gangrene (GenAI) -->
+            <div id="view-tes-genai" class="view-content">
+                <h2 style="color:#f1f5f9; margin-bottom:1rem;">🧠 Transcutaneous Electrical Stimulation: GenAI Treatment Pathways</h2>
+                <p style="color:#94a3b8; margin-bottom:1rem;">Interventional therapeutics evaluating optimal structural and physiological protocols for gangrenous tissue preservation.</p>
+                <button onclick="runTesGenai()" style="background:#3b82f6; color:#fff; border:none; border-radius:8px; padding:8px 22px; cursor:pointer; font-weight:600; margin-bottom:1rem;">▶ Generate Therapeutic Protocol</button>
+                <div class="dashboard-grid">
+                    <div class="output-box" style="grid-column: span 1;">
+                        <div class="output-title">Optimal Treatment Protocol (GenAI)</div>
+                        <div id="tes-genai-metrics" style="background:#0f172a; font-family:monospace; padding:1rem; border-radius:8px; color:#94a3b8; white-space:pre-wrap;"></div>
+                    </div>
+                    <div class="output-box" style="grid-column: span 1;">
+                        <div class="output-title">Viability Differentiation &amp; Hebbian Recovery</div>
+                        <div class="img-window">
+                            <img id="img-tes-genai" src="">
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div id="view-snr" class="view-content">
                 <div style="display:flex; gap:1rem; margin-bottom:1rem;">
@@ -3108,6 +3188,120 @@
         } catch(err) {
             imgContainer.innerHTML = `<span style="color:#f87171;">Error: ${err.message}</span>`;
         }
+    }
+
+    async function runSeqRank() {
+        const tr = parseFloat(document.getElementById('sr-tr').value) || 1000;
+        const te = parseFloat(document.getElementById('sr-te').value) || 30;
+        const fa = parseFloat(document.getElementById('sr-fa').value) || 60;
+        const coil = document.getElementById('sr-coil').value;
+        const noise = parseFloat(document.getElementById('sr-noise').value) || 0.05;
+        const statusEl = document.getElementById('sr-status');
+        const reportEl = document.getElementById('sr-report');
+
+        const sequences = [
+            {id: 'SE',                label: 'Spin Echo (SE)'},
+            {id: 'GRE',               label: 'Gradient Echo (GRE)'},
+            {id: 'FLAIR',             label: 'FLAIR'},
+            {id: 'SSFP',              label: 'TrueFISP / bSSFP'},
+            {id: 'DWI',               label: 'Diffusion Weighted (DWI)'},
+            {id: 'CV_bSSFP',          label: '❤️ bSSFP Cardiac Cine'},
+            {id: 'CV_SPGR',           label: '❤️ SPGR Perfusion'},
+            {id: 'CardioRamanujanPulse', label: '❤️ Ramanujan Conformal Pulse'},
+            {id: 'AdaptiveSE',        label: '📊 Adaptive Spin Echo'},
+            {id: 'AdaptiveGRE',       label: '📊 Adaptive GRE'},
+            {id: 'QuantumBerryPhase', label: '⚛️ Quantum Berry Phase'},
+            {id: 'StatisticalBayesianInference', label: '📈 Bayesian Inference'},
+        ];
+
+        statusEl.textContent = `⏳ Running ${sequences.length} sequences... please wait.`;
+        reportEl.innerHTML = '';
+
+        const results = [];
+        for (const seq of sequences) {
+            try {
+                const resp = await fetch('/api/simulate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        sequence: seq.id, tr, te, ti: 0,
+                        flip_angle: fa, coils: coil,
+                        num_coils: 8, noise, recon_method: 'SENSE', resolution: 128
+                    })
+                });
+                const data = await resp.json();
+                const snr = data.metrics?.snr_estimate ?? 0;
+                results.push({id: seq.id, label: seq.label, snr});
+            } catch(e) {
+                results.push({id: seq.id, label: seq.label, snr: 0});
+            }
+        }
+
+        results.sort((a, b) => b.snr - a.snr);
+        const top3 = results.slice(0, 3);
+        const medals = ['🥇', '🥈', '🥉'];
+
+        statusEl.textContent = `✅ Ranked ${results.length} sequences. Parameters: TR=${tr}ms  TE=${te}ms  FA=${fa}°  Coil=${coil}  Noise=${noise}`;
+
+        const tableRows = results.map((r, i) => {
+            const highlight = i < 3 ? 'background:#1e293b; font-weight:600;' : '';
+            const medal = i < 3 ? medals[i] + ' ' : `${i+1}. `;
+            const snrColor = r.snr > 1.5 ? '#34d399' : r.snr > 0.8 ? '#fbbf24' : '#f87171';
+            return `<tr style="${highlight}">
+                <td style="padding:8px 12px; color:#e2e8f0;">${medal}${r.label}</td>
+                <td style="padding:8px 12px; color:${snrColor}; text-align:right;">${r.snr.toFixed(3)}</td>
+            </tr>`;
+        }).join('');
+
+        const top3Cards = top3.map((r, i) => `
+            <div style="flex:1; background:#1e293b; border:2px solid #6366f1; border-radius:10px; padding:1rem; text-align:center;">
+                <div style="font-size:2rem;">${medals[i]}</div>
+                <div style="color:#f1f5f9; font-weight:700; font-size:1rem; margin:0.4rem 0;">${r.label}</div>
+                <div style="color:#34d399; font-size:1.4rem; font-weight:800;">${r.snr.toFixed(3)}</div>
+                <div style="color:#94a3b8; font-size:0.75rem;">SNR Estimate</div>
+            </div>`).join('');
+
+        reportEl.innerHTML = `
+            <h3 style="color:#f1f5f9; margin-bottom:0.8rem;">🏆 Top 3 Pulse Sequences</h3>
+            <div style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">${top3Cards}</div>
+            <h4 style="color:#94a3b8; margin-bottom:0.5rem;">Full Ranking</h4>
+            <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
+                <thead>
+                    <tr style="border-bottom:1px solid #334155;">
+                        <th style="padding:8px 12px; text-align:left; color:#64748b;">Pulse Sequence</th>
+                        <th style="padding:8px 12px; text-align:right; color:#64748b;">SNR Estimate</th>
+                    </tr>
+                </thead>
+                <tbody>${tableRows}</tbody>
+            </table>`;
+    }
+
+    async function runTesQml() {
+        try {
+            document.getElementById('tes-qml-metrics').innerText = 'Starting QML Probabilistic Optimization...';
+            const res = await fetch('/api/tes_gangrene/qml', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}' });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('tes-qml-metrics').innerText = JSON.stringify(data.metrics, null, 2);
+                document.getElementById('img-tes-qml').src = data.plots.tes_qml_map ? "data:image/png;base64," + data.plots.tes_qml_map : '';
+            } else {
+                document.getElementById('tes-qml-metrics').innerText = 'Error: ' + JSON.stringify(data);
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function runTesGenai() {
+        try {
+            document.getElementById('tes-genai-metrics').innerText = 'Generating Interventional GenAI Protocol...';
+            const res = await fetch('/api/tes_gangrene/genai', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}' });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('tes-genai-metrics').innerText = JSON.stringify(data.metrics, null, 2);
+                document.getElementById('img-tes-genai').src = data.plots.tes_genai_map ? "data:image/png;base64," + data.plots.tes_genai_map : '';
+            } else {
+                document.getElementById('tes-genai-metrics').innerText = 'Error: ' + JSON.stringify(data);
+            }
+        } catch(e) { console.error(e); }
     }
     </script>
 </body>
