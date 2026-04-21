@@ -166,7 +166,23 @@
             <h2>Finite Element Simulation of Cortical Surfaces (DBS Machinery)</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 150px;">
                 <div style="position: relative;">
-                    <div style="font-size: 10px; color: var(--accent-pink); margin-bottom: 5px;">CORTICAL CURRENT DENSITY</div>
+                    
+                    <div style="font-size: 10px; color: var(--accent-pink); margin-bottom: 5px;">CORTICAL CURRENT DENSITY (BEM)</div>
+                    <div style="position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 4px; font-size: 10px; color: white; width: 220px; z-index: 10; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px);">
+                        <div style="font-weight: bold; margin-bottom: 6px; color: #00f2ff; font-size: 10px;">BOUNDARY ELEMENT ISOLINES LUT</div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 9px; margin-bottom: 3px;">
+                            <span>0.0</span>
+                            <span style="font-weight:bold;">E-Field (V/mm)</span>
+                            <span>1.5+</span>
+                        </div>
+                        <div style="height: 12px; width: 100%; background: linear-gradient(to right, rgb(153,128,128), rgb(0,0,128), rgb(0,128,255), rgb(0,255,128), rgb(255,255,0), rgb(255,128,0), rgb(255,0,0)); border: 1px solid #444; border-radius: 2px; margin-bottom: 6px;"></div>
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 9px;">
+                            <div style="width:14px; height:2px; background: white;"></div> 
+                            <span>Boundary Contours (Δ=0.1 step)</span>
+                        </div>
+                    </div>
+
+
                     <canvas id="fea-cortical-canvas" style="width: 100%; height: 100%; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px;"></canvas>
                 </div>
                 <div style="display: flex; flex-direction: column; justify-content: center; gap: 10px;">
@@ -186,7 +202,7 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=2"></script>
 </body>
 
 </html>
