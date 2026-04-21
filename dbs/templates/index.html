@@ -26,6 +26,7 @@
             <button class="tab-btn active" onclick="switchTab('planner', event)">Treatment Planner</button>
             <button class="tab-btn" onclick="switchTab('conductivity', event)">Conductivity Analysis</button>
             <button class="tab-btn" onclick="switchTab('dementia', event)">Dementia Opt. Protocol</button>
+            <button class="tab-btn" onclick="switchTab('stage', event)">Stage-Gated Protocol</button>
             <button class="tab-btn" onclick="switchTab('fea', event)">Cortical FEA Manifolds</button>
         </nav>
 
@@ -85,6 +86,16 @@
                 </div>
             </div>
 
+            <div id="stage-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Stage-Gated Protocol</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Utilizing Queueing Models (M/M/1) to balance tau protein aggregation rates against glymphatic clearance.
+                    </p>
+                    <button class="btn-primary" id="btn-fetch-stages" onclick="fetchStageProtocol()">Optimize Stages</button>
+                </div>
+            </div>
+
             <div id="fea-sidebar" class="tab-content">
                 <div class="glass-panel">
                     <h2>Cortical FEA Modifiers</h2>
@@ -127,6 +138,17 @@
                     <div style="flex-grow: 1; position: relative;">
                         <!-- Using Chart.js script injection dynamically via JS -->
                         <canvas id="dementia-chart" style="width:100%; height:100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="stage-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <h2>Clinical DBS Stage-Gated Protocol for Dementia Care</h2>
+                    <div id="stage-protocol-container" style="flex-grow: 1; overflow-y: auto; padding: 10px; display: grid; gap: 15px; grid-template-columns: 1fr;">
+                        <div style="color: var(--text-dim); text-align: center; margin-top: 50px;">
+                            Click "Optimize Stages" to generate queueing progression protocol.
+                        </div>
                     </div>
                 </div>
             </div>

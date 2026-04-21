@@ -2,7 +2,7 @@
 
 # Ensure dependencies
 echo "Installing Dependencies: Flask, Numpy, Scikit-Learn..."
-pip install flask flask-cors numpy scikit-learn
+pip3 install flask flask-cors numpy scikit-learn
 
 if [ -f "backend/server.py" ]; then
     # Start Python Backend
@@ -32,7 +32,7 @@ else
 fi
 
 echo "Systems Online."
-echo "API: http://localhost:5001"
+echo "API: http://localhost:5005"
 echo "UI:  http://localhost:3000"
 
 trap "kill $PY_PID $NODE_PID" EXIT

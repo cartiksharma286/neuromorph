@@ -75,12 +75,8 @@ class ClimateEngine:
         if not self.is_trained:
             return 0.0
             
-        scaled = np.array([
-            features[0] * 30 + 10,
-            features[1] * 80 + 10,
-            features[2] * 50,
-            features[3]
-        ]).reshape(1, -1)
+        # Fix scaling bug: The model was trained on features in [0, 1] range!
+        scaled = np.array(features).reshape(1, -1)
         
         prob = self.classifier.predict_proba(scaled)[0][1]
         
