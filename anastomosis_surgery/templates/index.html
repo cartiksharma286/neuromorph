@@ -41,6 +41,7 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('cpd')">Coherent Point Drift (Wishart)</button>
             <button class="tab-btn" onclick="switchTab('pigeon')">Pigeonhole Combinatorial Manifold</button>
+            <button class="tab-btn" onclick="switchTab('feynman')">Feynman Path Integral</button>
         </div>
         
         <div class="grid">
@@ -68,6 +69,18 @@
                     <div class="stat-card" style="border-left-color: #ff0055;">
                         <div style="color:#8892b0; font-size:12px; text-transform:uppercase;">Combinatorial Residual</div>
                         <div class="stat-value" id="error-val-pigeon">0.000</div>
+                    </div>
+                </div>
+
+                <div id="content-feynman" class="tab-content">
+                    <button class="btn btn-feynman" onclick="runRegistration('feynman')" style="background: linear-gradient(135deg, #00ffaa, #0055ff);">Run Feynman Path Integral Map</button>
+                    <div class="stat-card">
+                        <div style="color:#8892b0; font-size:12px; text-transform:uppercase;">Quantum Status</div>
+                        <div class="stat-value" id="status-val-feynman">Waiting</div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #00ffaa;">
+                        <div style="color:#8892b0; font-size:12px; text-transform:uppercase;">Action Residual</div>
+                        <div class="stat-value" id="error-val-feynman">0.000</div>
                     </div>
                 </div>
 
@@ -101,11 +114,13 @@
             
             if(mode === 'cpd') {
                 log("> Initializing Wishart + Primes Surfboard Pattern...");
-            } else {
+            } else if (mode === 'pigeon') {
                 log("> Initializing Pigeonhole Combinatorial Manifold Mapping...");
+            } else {
+                log("> Initializing Feynman Path Integral Registration...");
             }
             
-            fetch(mode === 'cpd' ? '/api/cpd' : '/api/pigeonhole')
+            fetch(mode === 'cpd' ? '/api/cpd' : (mode === 'pigeon' ? '/api/pigeonhole' : '/api/feynman'))
             .then(r=>r.json()).then(data => {
                 traj = data.trajectory;
                 targetPts = data.target;
@@ -115,9 +130,12 @@
                 if(mode === 'cpd') {
                     log("> Applying Wishart Matrix Deformations...");
                     log("> Aligning equivalence using continued fractions (primes)...");
-                } else {
+                } else if (mode === 'pigeon') {
                     log("> Identifying Attractor Holes & Source Pigeons...");
                     log("> Applying Dirichlet Energy operator gradients...");
+                } else {
+                    log("> Summing over possible alignment histories...");
+                    log("> Using properties of numbers for residual differential action...");
                 }
                 animate(mode);
             });
@@ -149,18 +167,19 @@
             const trace1 = {
                 x: targetPts.map(p=>p[0]), y: targetPts.map(p=>p[1]),
                 mode: 'markers', type: 'scatter', name: 'Target Excision (Deformed)',
-                marker: { color: mode === 'cpd' ? '#ff0055' : '#ffaa00', size: mode === 'pigeon' ? 8 : 6 }
+                marker: { color: mode === 'cpd' ? '#ff0055' : (mode === 'pigeon' ? '#ffaa00' : '#00ffaa'), size: mode === 'pigeon' ? 8 : 6 }
             };
             const trace2 = {
                 x: current.map(p=>p[0]), y: current.map(p=>p[1]),
                 mode: 'lines+markers', type: 'scatter', name: 'Source Surfboard Pattern',
-                marker: { color: mode === 'cpd' ? '#00f2ff' : '#aa00ff', size: 6 },
-                line: { color: mode === 'cpd' ? 'rgba(0, 242, 255, 0.4)' : 'rgba(170, 0, 255, 0.4)' }
+                marker: { color: mode === 'cpd' ? '#00f2ff' : (mode === 'pigeon' ? '#aa00ff' : '#0055ff'), size: 6 },
+                line: { color: mode === 'cpd' ? 'rgba(0, 242, 255, 0.4)' : (mode === 'pigeon' ? 'rgba(170, 0, 255, 0.4)' : 'rgba(0, 85, 255, 0.4)') }
             };
 
             const titles = {
                 'cpd': `Non-Rigid Alignment Iteration ${frame + 1} (Residual Diff Eq)`,
-                'pigeon': `Pigeonhole Map Iteration ${frame + 1} (Combinatorial Relaxation)`
+                'pigeon': `Pigeonhole Map Iteration ${frame + 1} (Combinatorial Relaxation)`,
+                'feynman': `Feynman Path Integral Iteration ${frame + 1} (Sum Over Histories)`
             };
 
             const layout = {
