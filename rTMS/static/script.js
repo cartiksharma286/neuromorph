@@ -249,9 +249,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const oc    = items.map(e => e.operating_characteristics);
 
         Plotly.newPlot('eq-bar-chart', [
-            { name: 'Efficiency (%)',    type: 'bar', x: names, y: oc.map(o => o.efficiency_pct),    marker: { color: '#58a6ff' } },
-            { name: 'EMI Shielding (dB)',type: 'bar', x: names, y: oc.map(o => o.emi_shielding_db), marker: { color: '#8a2be2' } }
-        ], { ...PL, barmode: 'group', legend: { font: { color: '#e6edf3' } }, xaxis: { ...PL.xaxis, tickangle: -25, tickfont: { size: 11 } } }, { responsive: true });
+            { name: 'Efficiency',       type: 'bar', x: names, y: oc.map(o => o.efficiency_pct),                  customdata: oc.map(o => o.efficiency_pct + '%'),      hovertemplate: '%{x}<br>Efficiency: %{customdata}<extra></extra>', marker: { color: '#58a6ff' } },
+            { name: 'EMI Shielding',    type: 'bar', x: names, y: oc.map(o => (o.emi_shielding_db / 80) * 100),   customdata: oc.map(o => o.emi_shielding_db + ' dB'), hovertemplate: '%{x}<br>EMI Shielding: %{customdata}<extra></extra>', marker: { color: '#8a2be2' } },
+            { name: 'Op Temp',          type: 'bar', x: names, y: oc.map(o => (o.op_temp_c / 60) * 100),          customdata: oc.map(o => o.op_temp_c + ' °C'),         hovertemplate: '%{x}<br>Op Temp: %{customdata}<extra></extra>', marker: { color: '#2ea043' } },
+            { name: 'Max Temp',         type: 'bar', x: names, y: oc.map(o => (o.max_temp_c / 60) * 100),         customdata: oc.map(o => o.max_temp_c + ' °C'),        hovertemplate: '%{x}<br>Max Temp: %{customdata}<extra></extra>', marker: { color: '#f85149' } },
+            { name: 'Heat Dissipation', type: 'bar', x: names, y: oc.map(o => (o.heat_dissipation_w / 900) * 100),customdata: oc.map(o => o.heat_dissipation_w + ' W'), hovertemplate: '%{x}<br>Heat Dissip: %{customdata}<extra></extra>', marker: { color: '#db6d28' } }
+        ], { ...PL, barmode: 'group', legend: { font: { color: '#e6edf3' } },
+             xaxis: { ...PL.xaxis, tickangle: -25, tickfont: { size: 11 } },
+             yaxis: { ...PL.yaxis, title: 'Relative Scale (%)', range: [0, 100] }
+           }, { responsive: true });
 
         Plotly.newPlot('eq-scatter-chart', [{
             x: oc.map(o => o.emi_shielding_db), y: oc.map(o => o.efficiency_pct), text: names,
@@ -290,6 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${barRow('EMI Shield (dB)', oc.emi_shielding_db, 80)}
                     ${barRow('Op Temp (°C)',   oc.op_temp_c,          60)}
                     ${barRow('Max Temp (°C)',  oc.max_temp_c,         60)}
+                    ${barRow('Heat Dissip. (W)', oc.heat_dissipation_w, 900)}
                 </div>
             </div>`);
         });
@@ -632,9 +639,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const layerColors = ['#e67e22', '#8b949e', '#58a6ff', '#e74c3c'];
         bem.layers.forEach((layer, i) => {
             traces.push({
-                x: layer.x.flat(), y: layer.y.flat(), z: layer.z.flat(),
-                type: 'mesh3d', opacity: 0.12 + i * 0.08,
-                color: layerColors[i], name: `${layer.name} (σ=${layer.conductivity} S/m)`
+                x: layer.x, y: layer.y, z: layer.z, surfacecolor: layer.potential,
+                type: 'surface', opacity: 0.15 + i * 0.15,
+                colorscale: 'Jet', showscale: i === bem.layers.length - 1,
+                colorbar: { title: 'Atten. Potential', thickness: 15, titlefont: { color: '#e6edf3' }, tickfont: { color: '#e6edf3' } },
+                name: layer.name
             });
         });
         Plotly.newPlot('dlt-bem-chart', traces, {

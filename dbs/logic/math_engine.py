@@ -77,7 +77,10 @@ def get_system_specs():
         "probe_array": "Multi-Contact Nanofiber (Pt/Ir)",
         "impedance_check": f"{random.uniform(0.8, 1.1):.2f} k\u03a9",
         "thermal_limit": f"{random.uniform(36.8, 37.5):.1f}\u00b0C",
-        "congruence_stability": "99.999%"
+        "congruence_stability": "99.999%",
+        "operation_characteristics": "Continuous Markovian Temporal Pulse Tracking",
+        "power_efficiency": "96.4% Optimization (Sub-mW dissipation)",
+        "emi_shielding": "Titanium-Nitride Multi-Layer MICS Insulation"
     }
 
 def analyze_fornix_biosignals(freq):
