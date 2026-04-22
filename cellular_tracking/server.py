@@ -530,4 +530,4 @@ if __name__ == '__main__':
     print("=" * 50)
     print("Server starting on http://localhost:5001")
     print("=" * 50)
-    app.run(debug=True, port=5001, host='0.0.0.0')
+    app.run(debug=True, port=5003, host='0.0.0.0')

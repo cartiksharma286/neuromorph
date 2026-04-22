@@ -1036,3 +1036,110 @@ function showToast(message, type = 'info') {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
+
+// ==== CFD Simulation Logic ====
+function runCFDSimulation() {
+    if (window.cfdAnimationId) cancelAnimationFrame(window.cfdAnimationId);
+    let el = document.getElementById('cfd-overlay');
+    if (el) el.innerText = 'Simulating Navier-Stokes...';
+    
+    const canvas = document.getElementById('cfdCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    const pressure = parseInt(document.getElementById('cfd-pressure').value);
+    const viscosity = parseInt(document.getElementById('cfd-viscosity').value);
+    
+    document.getElementById('cfd-pressure-val').innerText = pressure;
+    document.getElementById('cfd-viscosity-val').innerText = viscosity;
+    
+    let particles = [];
+    for (let i = 0; i < 300; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (pressure / 20) * (Math.random() * 0.5 + 0.5),
+            vy: (Math.random() - 0.5) * 2,
+            size: Math.random() * 3 + 1
+        });
+    }
+
+    function animate() {
+        ctx.fillStyle = 'rgba(10, 10, 15, 0.2)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        particles.forEach(p => {
+            let damping = viscosity / 100;
+            let flowSpeed = (pressure / 50) * (1 - Math.pow(p.y - canvas.height/2, 2) / Math.pow(canvas.height/2, 2));
+            
+            p.x += flowSpeed * (1 - damping);
+            p.y += p.vy * (1 - damping);
+            
+            if (p.x > canvas.width) p.x = 0;
+            if (p.y < 0) p.y = canvas.height;
+            if (p.y > canvas.height) p.y = 0;
+            
+            ctx.fillStyle = '#00f2ff';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        
+        window.cfdAnimationId = requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// ==== Photonics Optical Simulation ====
+function runPhotonics() {
+    if (window.opticalAnimationId) cancelAnimationFrame(window.opticalAnimationId);
+    let el2 = document.getElementById('optical-overlay');
+    if (el2) el2.innerText = 'Rendering Scatter Patterns...';
+    
+    const canvas = document.getElementById('opticalCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    const wavelength = parseInt(document.getElementById('optical-wave').value);
+    const refractIndex = parseInt(document.getElementById('optical-refract').value) / 10;
+    
+    document.getElementById('optical-wave-val').innerText = wavelength;
+    document.getElementById('optical-refract-val').innerText = refractIndex.toFixed(1);
+    
+    let time = 0;
+    
+    function animateOptical() {
+        ctx.fillStyle = 'rgba(10, 10, 15, 0.4)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.strokeStyle = `hsl(${(wavelength - 400) / 300 * 360}, 100%, 50%)`;
+        ctx.lineWidth = 2;
+        
+        const center = { x: canvas.width / 2, y: canvas.height / 2 };
+        
+        for (let i = 1; i < 15; i++) {
+            let trRadius = (i * refractIndex * 15) + (Math.sin(time + i) * 10);
+            const radius = Math.abs(trRadius);
+            
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        time += 0.05 * (600 / wavelength);
+        window.opticalAnimationId = requestAnimationFrame(animateOptical);
+    }
+    animateOptical();
+}
+
+window.addEventListener('load', () => {
+    let c_p = document.getElementById('cfd-pressure');
+    let c_v = document.getElementById('cfd-viscosity');
+    if(c_p) c_p.addEventListener('input', runCFDSimulation);
+    if(c_v) c_v.addEventListener('input', runCFDSimulation);
+
+    let o_w = document.getElementById('optical-wave');
+    let o_r = document.getElementById('optical-refract');
+    if(o_w) o_w.addEventListener('input', runPhotonics);
+    if(o_r) o_r.addEventListener('input', runPhotonics);
+});
