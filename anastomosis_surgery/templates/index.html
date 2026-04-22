@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coherent Point Drift: Anastomosis Registration</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui; background: #0f0f13; color: white; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 20px; }
+        h2 { margin: 0; color: #00f2ff; }
+        p { color: #8892b0; margin-top: 5px; }
+        
+        /* TABS CSS */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; justify-content: center; }
+        .tab-btn { background: transparent; color: #8892b0; border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; cursor: pointer; border-radius: 6px; font-weight: bold; transition: all 0.2s; }
+        .tab-btn.active { background: rgba(0, 242, 255, 0.1); border-color: #00f2ff; color: #00f2ff; }
+        .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.05); }
+
+        .btn { background: linear-gradient(135deg, #ff007f, #7f00ff); color: #fff; border: none; padding: 12px 24px; cursor: pointer; border-radius: 6px; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: transform 0.2s; }
+        .btn:hover { transform: scale(1.05); }
+        .btn-pigeon { background: linear-gradient(135deg, #00f2ff, #7f00ff); }
+        
+        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        #plot { width: 100%; height: 600px; background: #1a1a24; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+        .side-panel { display: flex; flex-direction: column; gap: 20px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: flex; flex-direction: column; gap: 20px; }
+        
+        .math-panel { background: #1a1a24; padding: 20px; border-radius: 8px; font-family: monospace; color: #ff00ff; border: 1px solid rgba(255,0,255,0.2); overflow-y: auto; height: 300px; font-size: 12px; line-height: 1.5; }
+        .stat-card { background: #1a1a24; padding: 20px; border-radius: 8px; border-left: 4px solid #00f2ff; }
+        .stat-value { font-size: 24px; color: #fff; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Non-Rigid Registration: Surfboard Patterns</h2>
+            <p>Anastomosis & Plastic Surgery Tool</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('cpd')">Coherent Point Drift (Wishart)</button>
+            <button class="tab-btn" onclick="switchTab('pigeon')">Pigeonhole Combinatorial Manifold</button>
+        </div>
+        
+        <div class="grid">
+            <div id="plot"></div>
+            
+            <div class="side-panel">
+                <div id="content-cpd" class="tab-content active">
+                    <button class="btn" onclick="runRegistration('cpd')">Run Anastomosis CPD (Wishart + Primes)</button>
+                    <div class="stat-card">
+                        <div style="color:#8892b0; font-size:12px; text-transform:uppercase;">Registration Status</div>
+                        <div class="stat-value" id="status-val-cpd">Waiting</div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #ff00ff;">
+                        <div style="color:#8892b0; font-size:12px; text-transform:uppercase;">Differential Equation Error</div>
+                        <div class="stat-value" id="error-val-cpd">0.000</div>
+                    </div>
+                </div>
+
+                <div id="content-pigeon" class="tab-content">
+                    <button class="btn btn-pigeon" onclick="runRegistration('pigeon')">Run Pigeonhole Combinatorial Map</button>
+                    <div class="stat-card">
+                        <div style="color:#8892b0; font-size:12px; text-transform:uppercase;">Manifold Status</div>
+                        <div class="stat-value" id="status-val-pigeon">Waiting</div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #ff0055;">
+                        <div style="color:#8892b0; font-size:12px; text-transform:uppercase;">Combinatorial Residual</div>
+                        <div class="stat-value" id="error-val-pigeon">0.000</div>
+                    </div>
+                </div>
+
+                <div class="math-panel" id="log">
+                    > System Initialization Complete.<br>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let traj = [];
+        let targetPts = [];
+        let frame = 0;
+        let currentMode = 'cpd';
+
+        function switchTab(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.querySelector(`.tab-btn[onclick="switchTab('${mode}')"]`).classList.add('active');
+            document.getElementById(`content-${mode}`).classList.add('active');
+            
+            log(`> Switched to ${mode.toUpperCase()} Registration Mode`);
+        }
+
+        function runRegistration(mode) {
+            document.getElementById(`status-val-${mode}`).innerText = 'Simulating...';
+            document.getElementById(`error-val-${mode}`).innerText = 'Computing...';
+            
+            if(mode === 'cpd') {
+                log("> Initializing Wishart + Primes Surfboard Pattern...");
+            } else {
+                log("> Initializing Pigeonhole Combinatorial Manifold Mapping...");
+            }
+            
+            fetch(mode === 'cpd' ? '/api/cpd' : '/api/pigeonhole')
+            .then(r=>r.json()).then(data => {
+                traj = data.trajectory;
+                targetPts = data.target;
+                frame = 0;
+                
+                log(`> Loaded ${data.source.length} keypoints.`);
+                if(mode === 'cpd') {
+                    log("> Applying Wishart Matrix Deformations...");
+                    log("> Aligning equivalence using continued fractions (primes)...");
+                } else {
+                    log("> Identifying Attractor Holes & Source Pigeons...");
+                    log("> Applying Dirichlet Energy operator gradients...");
+                }
+                animate(mode);
+            });
+        }
+
+        function log(msg) {
+            const el = document.getElementById('log');
+            el.innerHTML += msg + "<br>";
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function animate(mode) {
+            if (frame >= traj.length) {
+                document.getElementById(`status-val-${mode}`).innerText = 'Converged';
+                document.getElementById(`status-val-${mode}`).style.color = '#00ff88';
+                log(`> Convergence Achieved! Structure registered via ${mode.toUpperCase()}.`);
+                return;
+            }
+            
+            const current = traj[frame];
+            
+            // Calculate pseudo RMSE error for visualization
+            let err = 0;
+            current.forEach((pt, i) => {
+                err += Math.pow(pt[0] - targetPts[i][0], 2) + Math.pow(pt[1] - targetPts[i][1], 2);
+            });
+            document.getElementById(`error-val-${mode}`).innerText = (err / current.length).toFixed(4);
+
+            const trace1 = {
+                x: targetPts.map(p=>p[0]), y: targetPts.map(p=>p[1]),
+                mode: 'markers', type: 'scatter', name: 'Target Excision (Deformed)',
+                marker: { color: mode === 'cpd' ? '#ff0055' : '#ffaa00', size: mode === 'pigeon' ? 8 : 6 }
+            };
+            const trace2 = {
+                x: current.map(p=>p[0]), y: current.map(p=>p[1]),
+                mode: 'lines+markers', type: 'scatter', name: 'Source Surfboard Pattern',
+                marker: { color: mode === 'cpd' ? '#00f2ff' : '#aa00ff', size: 6 },
+                line: { color: mode === 'cpd' ? 'rgba(0, 242, 255, 0.4)' : 'rgba(170, 0, 255, 0.4)' }
+            };
+
+            const titles = {
+                'cpd': `Non-Rigid Alignment Iteration ${frame + 1} (Residual Diff Eq)`,
+                'pigeon': `Pigeonhole Map Iteration ${frame + 1} (Combinatorial Relaxation)`
+            };
+
+            const layout = {
+                plot_bgcolor: '#1a1a24', paper_bgcolor: '#1a1a24',
+                font: { color: '#fff' },
+                title: titles[mode],
+                xaxis: { range: [-15, 15], gridcolor: '#333' }, 
+                yaxis: { range: [-10, 10], gridcolor: '#333', scaleanchor: "x", scaleratio: 1 },
+                transition: {duration: 0}
+            };
+
+            Plotly.react('plot', [trace1, trace2], layout);
+            frame++;
+            setTimeout(() => animate(mode), 100);
+        }
+        
+        // Initial empty plot
+        Plotly.newPlot('plot', [], {
+            plot_bgcolor: '#1a1a24', paper_bgcolor: '#1a1a24', font: { color: '#fff' },
+            xaxis: { range: [-15, 15], gridcolor: '#333' }, 
+            yaxis: { range: [-10, 10], gridcolor: '#333', scaleanchor: "x", scaleratio: 1 },
+            title: "Awaiting Source Pattern Data"
+        });
+    </script>
+</body>
+</html>
