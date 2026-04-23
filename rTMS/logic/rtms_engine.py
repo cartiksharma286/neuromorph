@@ -367,6 +367,28 @@ def get_equipment_list():
                 "heat_dissipation_w": 850,
                 "emi_shielding_db": 70
             }
+        },
+        {
+            "id": "EQ-009",
+            "name": "Boston Scientific Vercise Genus",
+            "category": "Neuromodulation Device (DBS)",
+            "description": "Directional Deep Brain Stimulation system with multiple independent current control, designed for precise targeting in essential tremor and advanced research in dementia cure and stroke repair.",
+            "specs": {
+                "Lead Type": "Directional 8-contact",
+                "Stimulation Type": "Multiple Independent Current Control (MICC)",
+                "Pulse Width (µs)": "10 – 400",
+                "Frequency Range (Hz)": "2 – 255",
+                "Current Output (mA)": "0 – 25.5",
+                "MRI Compatibility": "1.5T and 3T Full Body",
+                "Battery Type": "Rechargeable (Vercise Genus R16) / Non-Rechargeable (P16)"
+            },
+            "operating_characteristics": {
+                "op_temp_c": 37,
+                "max_temp_c": 41,
+                "efficiency_pct": 98,
+                "heat_dissipation_w": 2,
+                "emi_shielding_db": 65
+            }
         }
     ]
     return equipment
@@ -601,26 +623,23 @@ def _cortical_surface_geodesics(n_paths=12, resolution=80):
     }
 
 
-def _dementia_bem_simulation(n_layers=4, resolution=30):
+def _dementia_bem_simulation(n_layers=4, resolution=30, include_dbs=True):
     """
     Boundary Element Method simulation for dementia-specific head model.
     Models concentric tissue boundaries (scalp, skull, CSF, grey matter)
     and computes rTMS-induced electric field attenuation at each layer.
-
-    BEM integral equation:
-        σ_k V(r) = σ_k V_0(r) + Σ_j (σ_j⁺ - σ_j⁻)/(4π) ∫ V(r') (r-r')/|r-r'|³ · n̂ dS'
-
-    Returns layer meshes with field potentials for 3D visualisation.
+    Also models Deep Brain Stimulation (DBS) outwards field from the newly added
+    Boston Scientific Vercise Genus device.
     """
     conductivities = {
         "Scalp": 0.33,
         "Skull": 0.0042,
         "CSF": 1.79,
-        "Grey Matter": 0.33
+        "Grey Matter": 0.33,
+        "Deep Brain (DBS Target)": 0.45
     }
-    radii = [1.0, 0.92, 0.87, 0.80]
-    layer_names = list(conductivities.keys())
-
+    radii = [1.0, 0.92, 0.87, 0.80, 0.25]
+    
     layers = []
     for idx, (name, sigma) in enumerate(conductivities.items()):
         r = radii[idx]
@@ -628,9 +647,10 @@ def _dementia_bem_simulation(n_layers=4, resolution=30):
         phi = np.linspace(0, np.pi, resolution // 2)
         TH, PH = np.meshgrid(theta, phi)
 
-        # Add age-related cortical thinning for grey matter
         if name == "Grey Matter":
             R_layer = r + 0.04 * np.sin(6 * TH) * np.cos(5 * PH) - 0.02
+        elif name == "Deep Brain (DBS Target)":
+            R_layer = r + 0.01 * np.sin(2 * TH) * np.cos(2 * PH)
         else:
             R_layer = r + 0.02 * np.sin(3 * TH) * np.cos(3 * PH)
 
@@ -638,8 +658,18 @@ def _dementia_bem_simulation(n_layers=4, resolution=30):
         Y = R_layer * np.sin(PH) * np.sin(TH)
         Z = R_layer * np.cos(PH)
 
-        # Compute BEM potential at each boundary node
-        potential = sigma * np.exp(-Z**2 / 0.5) * (1 + 0.3 * np.sin(4 * TH))
+        # Baseline rTMS incoming potential
+        potential_rtms = sigma * np.exp(-Z**2 / 0.5) * (1 + 0.3 * np.sin(4 * TH))
+        
+        # DBS out-radiating potential from center (z=0, x=0, y=0)
+        # The Boston Scientific Vercise Genus (MICC) delivers highly directional currents
+        dist_from_center = np.sqrt(X**2 + Y**2 + Z**2)
+        dbs_potential = 0.0
+        if include_dbs:
+            # High intensity near center (directional field via MICC tuning)
+            dbs_potential = 1.5 * np.exp(-dist_from_center / 0.3) * (1 + 0.5 * np.cos(PH))
+
+        potential = potential_rtms + dbs_potential
 
         layers.append({
             "name": name,
@@ -651,7 +681,6 @@ def _dementia_bem_simulation(n_layers=4, resolution=30):
             "potential": potential.tolist()
         })
 
-    # Compute field attenuation profile through layers
     depths = np.linspace(0, 1, 50)
     attenuation = []
     for d in depths:
@@ -660,6 +689,10 @@ def _dementia_bem_simulation(n_layers=4, resolution=30):
             boundary = radii[idx]
             if d >= (1 - boundary):
                 v *= np.exp(-sigma * (d - (1 - boundary)) * 5)
+        # Add DBS amplification deep
+        if include_dbs and d > 0.6:
+            v += 45.0 * np.exp(-(d - 0.75)**2 / 0.05)
+            
         attenuation.append(round(float(v), 2))
 
     return {
