@@ -99,21 +99,22 @@ def analyze_fornix_biosignals(freq):
         "coherence": "High" if random.random() > 0.3 else "Low"
     }
 
-def simulate_fornix_conductivity(grid_size=10):
+def simulate_fornix_conductivity(grid_size=10, base_cond=0.20, anisotropy=0.1, curvature=2.0):
     """
-    Simulates a spatial conductivity map for the fornix region.
+    Simulates a spatial conductivity map for cortical surfaces and white matter.
     Returns a 2D grid representing electrical conductivity (S/m) 
-    with white matter anisotropy scaling.
+    with anisotropy scaling and structural folding properties.
     """
-    # Base conductivity for white matter ~0.15 S/m
-    base = 0.15
-    grid = np.full((grid_size, grid_size), base)
-    # Add some anisotropy / fiber-track-inspired variations
+    grid = np.full((grid_size, grid_size), base_cond)
+    # Add cortical folding and anisotropy variations
     for i in range(grid_size):
         for j in range(grid_size):
-            # Simulate a "curve" representing the fornix arch
-            dist_to_arch = abs(j - (5 + 2 * np.sin(i / 1.5)))
-            grid[i, j] += max(0, 0.1 * (1 - dist_to_arch / 3.0))
+            # Simulate cortical gyro-sulcal structural folds
+            dist_to_arch = abs(j - (5 + curvature * np.sin(i / 1.5)))
+            
+            # Cortical grey matter has higher conductivity (around 0.33 S/m) while white matter is less.
+            # Mixing this via the wave to simulate crossing structural tissues.
+            grid[i, j] += max(0, anisotropy * (1 - dist_to_arch / 3.0))
     
     return grid.tolist()
 

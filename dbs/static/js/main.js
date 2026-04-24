@@ -185,14 +185,21 @@ function drawCorticalFEA() {
         const posArray = window.brainMesh.geometry.attributes.position.array;
         const scalarArray = window.brainMesh.geometry.attributes.scalar.array;
         
+        const rfRange = document.getElementById('rf-freq-range');
+        const pwrRange = document.getElementById('power-eff-range');
+        const rf = rfRange ? parseFloat(rfRange.value) : 2.4;
+        const pwr = pwrRange ? parseFloat(pwrRange.value) : 90;
+        const efficiencyFactor = pwr / 100.0;
+        
         for(let i = 0, j = 0; i < posArray.length; i+=3, j++) {
             let dx = posArray[i] - sourcePos.x;
             let dy = posArray[i+1] - sourcePos.y;
             let dz = posArray[i+2] - sourcePos.z;
             let r = Math.sqrt(dx*dx + dy*dy + dz*dz);
             
-            let rf_pulse = Math.max(0, Math.sin(window.bemTime * 3.0 - r * 1.5)); 
-            let targetE = (1.0 / (r * r + 0.1)) * rf_pulse * 12.0;
+            // Adjust mathematical manifold with proprioceptive feedback parameters
+            let rf_pulse = Math.max(0, Math.sin(window.bemTime * rf - r * (1.5 / efficiencyFactor))); 
+            let targetE = (1.0 / (r * r + 0.1)) * rf_pulse * 12.0 * efficiencyFactor;
             
             scalarArray[j] = scalarArray[j] * 0.85 + targetE * 0.15;
         }
@@ -301,19 +308,48 @@ async function fetchFornixProtocol() {
 
 // Fetch and Render Conductivity Map
 async function fetchConductivity() {
-    const response = await fetch('/api/fornix-conductivity');
+    let base_cond = 0.20;
+    let anisotropy = 0.1;
+    let curvature = 2.0;
+
+    const baseCondMap = document.getElementById('base-cond-map');
+    const anisoMap = document.getElementById('aniso-map');
+    const curveMap = document.getElementById('curve-map');
+    
+    if (baseCondMap) {
+        base_cond = parseFloat(baseCondMap.value);
+        anisotropy = parseFloat(anisoMap.value);
+        curvature = parseFloat(curveMap.value);
+        
+        document.getElementById('base-cond-disp').textContent = base_cond.toFixed(2);
+        document.getElementById('aniso-disp').textContent = anisotropy.toFixed(2);
+        document.getElementById('curve-disp').textContent = curvature.toFixed(1);
+    }
+    
+    const response = await fetch('/api/fornix-conductivity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            base_cond: base_cond,
+            anisotropy: anisotropy,
+            curvature: curvature
+        })
+    });
+    
     const data = await response.json();
     const container = document.getElementById('conductivity-grid-container');
     container.innerHTML = '';
 
     let total = 0;
+    let elements = 0;
     data.grid.forEach(row => {
         row.forEach(val => {
             total += val;
+            elements += 1;
             const cell = document.createElement('div');
             cell.style.aspectRatio = '1';
-            // Scale color from deep blue to cyan based on conductivity
-            const intensity = Math.min(100, (val - 0.15) * 500);
+            // Adjusted scaling for higher conductivity
+            const intensity = Math.min(100, Math.max(0, (val - (base_cond - 0.05)) * (500 / Math.max(0.1, anisotropy * 5))));
             cell.style.background = `rgba(0, 242, 255, ${0.1 + intensity / 100})`;
             cell.style.borderRadius = '2px';
             cell.title = `Cond: ${val.toFixed(3)} S/m`;
@@ -321,8 +357,20 @@ async function fetchConductivity() {
         });
     });
 
-    document.getElementById('avg-cond-val').textContent = (total / 100).toFixed(3);
+    document.getElementById('avg-cond-val').textContent = (total / elements).toFixed(3);
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const updateBtn = document.getElementById('btn-update-conductivity');
+    if (updateBtn) {
+        updateBtn.addEventListener('click', fetchConductivity);
+    }
+    const sliders = ['base-cond-map', 'aniso-map', 'curve-map'];
+    sliders.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', fetchConductivity);
+    });
+});
 
 // Start everything
 window.onload = () => {
@@ -704,4 +752,51 @@ async function fetchStageProtocol() {
     } catch(err) {
         console.error(err);
     }
+}
+
+function loadClinicalProtocols() {
+    const listContainer = document.getElementById('protocols-list-container');
+    listContainer.innerHTML = '<p style="color: #00f2ff;">Analyzing deep brain targets...<br>Compiling dementia stimulation parameters...</p>';
+    
+    fetch('/api/clinical-protocols', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        let html = '';
+        data.protocols.forEach((p, idx) => {
+            html += `
+                <div style="background: rgba(0, 242, 255, 0.05); border: 1px solid rgba(0, 242, 255, 0.2); padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: top; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 10px;">
+                        <h3 style="color: #fff; margin: 0; font-size: 16px;">Target ${idx + 1}: ${p.lobe}</h3>
+                        <span style="background: var(--accent-pink); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white;">Analysis Complete</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; font-family: monospace;">
+                        <div style="background: rgba(0,0,0,0.5); padding: 8px; border: 1px dashed rgba(255,255,255,0.15); border-radius: 4px;">
+                            <div style="color: var(--text-dim); font-size: 10px;">FREQUENCY</div>
+                            <div style="color: #00ff00; font-size: 14px; font-weight: bold;">${p.frequency}</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.5); padding: 8px; border: 1px dashed rgba(255,255,255,0.15); border-radius: 4px;">
+                            <div style="color: var(--text-dim); font-size: 10px;">PULSE WIDTH</div>
+                            <div style="color: #00f2ff; font-size: 14px; font-weight: bold;">${p.pulse_width}</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.5); padding: 8px; border: 1px dashed rgba(255,255,255,0.15); border-radius: 4px;">
+                            <div style="color: var(--text-dim); font-size: 10px;">VOLTAGE OPTIMA</div>
+                            <div style="color: #ff00ff; font-size: 14px; font-weight: bold;">${p.voltage}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-dim); font-size: 11px; text-transform: uppercase; margin-bottom: 5px;">Mechanistic Rationale</div>
+                        <div style="color: #ddd; font-size: 13px; line-height: 1.4;">${p.description}</div>
+                    </div>
+                </div>
+            `;
+        });
+        listContainer.innerHTML = html;
+    })
+    .catch(e => {
+        console.error(e);
+        listContainer.innerHTML = '<p style="color: red;">Error fetching protocol generation analysis.</p>';
+    });
 }

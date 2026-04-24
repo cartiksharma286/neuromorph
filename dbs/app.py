@@ -59,9 +59,16 @@ def system_specs():
 def fornix_protocol():
     return jsonify(get_fornix_protocol())
 
-@app.route('/api/fornix-conductivity')
+@app.route('/api/fornix-conductivity', methods=['POST', 'GET'])
 def fornix_conductivity():
-    grid = simulate_fornix_conductivity()
+    if request.method == 'POST':
+        data = request.json or {}
+        base_cond = float(data.get('base_cond', 0.20))
+        anisotropy = float(data.get('anisotropy', 0.1))
+        curvature = float(data.get('curvature', 2.0))
+        grid = simulate_fornix_conductivity(base_cond=base_cond, anisotropy=anisotropy, curvature=curvature)
+    else:
+        grid = simulate_fornix_conductivity()
     return jsonify({"grid": grid})
 
 @app.route('/api/analyze-biosignals', methods=['POST'])
@@ -116,6 +123,48 @@ def dementia_staging():
         "cognitive_trajectory": cognitive_scores,
         "clinical_distributions": clinical_distributions,
         "generative_insight": "Generative AI derived finite optimal temporal progression mapping over 60 months. The clinical distribution shows variance mapping under high DBS amplitude and generative prompts, indicative of cognitive structural retention and temporal optimization."
+    })
+
+@app.route('/api/clinical-protocols', methods=['POST', 'GET'])
+def clinical_protocols():
+    return jsonify({
+        "protocols": [
+            {
+                "lobe": "Nucleus Basalis of Meynert (NBM)",
+                "frequency": "20 Hz",
+                "pulse_width": "100 μs",
+                "voltage": "1.5 - 3.0 V",
+                "description": "Low-frequency stimulation of the primary source of cholinergic projections to the cortex. Directly targets Alzheimer's disease by modulating acetylcholine release and cortical plasticity."
+            },
+            {
+                "lobe": "Subthalamic Nucleus (STN)",
+                "frequency": "130 Hz",
+                "pulse_width": "60 μs",
+                "voltage": "2.5 V",
+                "description": "Standard high-frequency stimulation primarily for motor control, but shows collateral cognitive-preservation properties via basal ganglia-thalamocortical loops."
+            },
+            {
+                "lobe": "Globus Pallidus internus (GPi)",
+                "frequency": "130 - 150 Hz",
+                "pulse_width": "90 μs",
+                "voltage": "3.0 V",
+                "description": "Modifies indirect pathways to alleviate motor-cognitive dual burdens. Useful for dementia with Lewy bodies or Parkinson's-related dementia variants."
+            },
+            {
+                "lobe": "Ventral Capsule / Ventral Striatum (VC/VS)",
+                "frequency": "100 - 130 Hz",
+                "pulse_width": "90 μs",
+                "voltage": "4.0 V",
+                "description": "Targets psychiatric comorbidities (e.g., severe depression, OCD) often accompanying late-stage dementia, improving overall cognitive availability."
+            },
+            {
+                "lobe": "Fornix",
+                "frequency": "130 Hz",
+                "pulse_width": "90 μs",
+                "voltage": "2.0 - 4.0 V",
+                "description": "Stimulates the Circuit of Papez, driving hippocampal neurogenesis and memory circuit stabilization in early Alzheimer's."
+            }
+        ]
     })
 
 if __name__ == '__main__':

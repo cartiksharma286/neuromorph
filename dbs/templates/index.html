@@ -29,9 +29,20 @@
             <button class="tab-btn" onclick="switchTab('electrical', event)">Electrical Specs</button>
             <button class="tab-btn" onclick="switchTab('fea', event)">Cortical FEA Manifolds</button>
             <button class="tab-btn" onclick="switchTab('smartaging', event)">Smart Aging Sim</button>
+            <button class="tab-btn" onclick="switchTab('protocols', event)">Clinical Protocols</button>
         </nav>
 
         <aside class="sidebar-left">
+            <div id="protocols-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Clinical Targets</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Discover lobes of the brain (other than the fornix) that can be stimulated with Deep Brain Stimulation for Dementia.
+                    </p>
+                    <button class="btn-primary" id="btn-generate-protocols" onclick="loadClinicalProtocols()" style="margin-top: 10px;">Run Analysis</button>
+                </div>
+            </div>
+
             <div id="planner-sidebar" class="tab-content active">
                 <div class="glass-panel">
                     <h2>Fornix Protocol</h2>
@@ -55,6 +66,22 @@
             </div>
 
             <div id="conductivity-sidebar" class="tab-content">
+                <div class="glass-panel" style="margin-bottom: 15px;">
+                    <h2>Cortical Parameters</h2>
+                    <div class="control-group">
+                        <label>Base Conductivity (S/m) <span id="base-cond-disp">0.20</span></label>
+                        <input type="range" id="base-cond-map" min="0.05" max="0.5" step="0.01" value="0.20">
+                    </div>
+                    <div class="control-group">
+                        <label>Anisotropy Gradient <span id="aniso-disp">0.1</span></label>
+                        <input type="range" id="aniso-map" min="0.01" max="0.5" step="0.01" value="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label>Cortical Curvature <span id="curve-disp">2.0</span></label>
+                        <input type="range" id="curve-map" min="0.5" max="5.0" step="0.1" value="2.0">
+                    </div>
+                    <button class="btn-primary" id="btn-update-conductivity" style="margin-top: 10px;">Update Map</button>
+                </div>
                 <div class="glass-panel">
                     <h2>Conductivity Stats</h2>
                     <div class="stat-card">
@@ -63,7 +90,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" id="anisotropy-val">High</div>
-                        <div class="stat-label">Fornix Anisotropy</div>
+                        <div class="stat-label">Cortical Anisotropy</div>
                     </div>
                 </div>
             </div>
@@ -143,6 +170,15 @@
         </aside>
 
         <main class="main-view">
+            <div id="protocols-main" class="tab-content" style="height: 100%; overflow-y: auto;">
+                <div class="glass-panel" style="margin-top: 20px; padding: 20px; background: rgba(0, 0, 0, 0.4);">
+                    <h2 style="color: #00f2ff; border-bottom: 1px solid rgba(0, 242, 255, 0.3); padding-bottom: 20px;">Dementia Protocol Analysis Results</h2>
+                    <div id="protocols-list-container">
+                        <p style="color: var(--text-dim);">Awaiting protocol generation...</p>
+                    </div>
+                </div>
+            </div>
+
             <div id="planner-main" class="tab-content active" style="height: 100%;">
                 <div id="canvas-container" style="height: 100%;">
                     <div id="overlay-data" class="glass-panel" style="padding: 10px; width: 150px;">
