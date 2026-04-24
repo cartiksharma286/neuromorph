@@ -25,7 +25,8 @@ body {
 .dashboard {
     display: grid;
     grid-template-columns: 350px 1fr 300px;
-    grid-template-rows: 80px 1fr 250px;
+    grid-template-rows: 80px auto 1fr 200px;
+    grid-template-areas: "header header header" "tabs tabs tabs" "left main right" "left bottom right";
     height: 100vh;
     gap: 15px;
     padding: 15px;
@@ -44,7 +45,7 @@ body {
 }
 
 header {
-    grid-column: 1 / -1;
+    grid-area: header;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -61,7 +62,7 @@ header {
 }
 
 .tab-bar {
-    grid-column: 1 / -1;
+    grid-area: tabs;
     display: flex;
     gap: 10px;
     margin-bottom: 5px;
@@ -96,11 +97,11 @@ header {
 }
 
 .main-view {
-    grid-column: 2;
-    grid-row: 2;
+    grid-area: main;
     padding: 0;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 #canvas-container {
@@ -111,19 +112,21 @@ header {
 }
 
 .sidebar-left {
-    grid-row: 2 / 4;
+    grid-area: left;
     display: flex;
     flex-direction: column;
     gap: 15px;
+    overflow-y: auto;
 }
 
 .sidebar-right {
-    grid-row: 2 / 4;
+    grid-area: right;
+    overflow-y: auto;
 }
 
 .bottom-shelf {
-    grid-column: 2;
-    grid-row: 3;
+    grid-area: bottom;
+    overflow-y: auto;
 }
 
 h2 {
