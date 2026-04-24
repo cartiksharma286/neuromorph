@@ -130,39 +130,46 @@ def clinical_protocols():
     return jsonify({
         "protocols": [
             {
-                "lobe": "Nucleus Basalis of Meynert (NBM)",
-                "frequency": "20 Hz",
-                "pulse_width": "100 μs",
-                "voltage": "1.5 - 3.0 V",
-                "description": "Low-frequency stimulation of the primary source of cholinergic projections to the cortex. Directly targets Alzheimer's disease by modulating acetylcholine release and cortical plasticity."
+                "lobe": "Frontal Lobe (dlPFC)",
+                "frequency": "100-130 Hz",
+                "pulse_width": "90-120 μs",
+                "voltage": "3.0-5.0 V",
+                "description": "Targets executive function, working memory, and behavioral regulation. High-frequency stimulation helps stabilize mood and cognitive flexibility in frontotemporal decline."
             },
             {
-                "lobe": "Subthalamic Nucleus (STN)",
-                "frequency": "130 Hz",
-                "pulse_width": "60 μs",
-                "voltage": "2.5 V",
-                "description": "Standard high-frequency stimulation primarily for motor control, but shows collateral cognitive-preservation properties via basal ganglia-thalamocortical loops."
+                "lobe": "Temporal Lobe (Hippocampus/EC)",
+                "frequency": "50-130 Hz",
+                "pulse_width": "60-90 μs",
+                "voltage": "1.5-3.5 V",
+                "description": "Directly interfaces with memory encoding structures. Stimulation enhances neurogenesis, synaptic plasticity, and spatial navigation consolidation."
             },
             {
-                "lobe": "Globus Pallidus internus (GPi)",
-                "frequency": "130 - 150 Hz",
+                "lobe": "Parietal Lobe (Precuneus/PCC)",
+                "frequency": "20-50 Hz",
+                "pulse_width": "60-100 μs",
+                "voltage": "2.0-4.0 V",
+                "description": "Modulates the Default Mode Network (DMN). Low to mid-frequency stimulation increases local glucose metabolism and reverses hypometabolism seen in early AD."
+            },
+            {
+                "lobe": "Insular Lobe (Anterior Insula)",
+                "frequency": "100-130 Hz",
                 "pulse_width": "90 μs",
-                "voltage": "3.0 V",
-                "description": "Modifies indirect pathways to alleviate motor-cognitive dual burdens. Useful for dementia with Lewy bodies or Parkinson's-related dementia variants."
+                "voltage": "2.5-4.0 V",
+                "description": "Crucial for emotional awareness and salience network regulation. Target for treating severe apathy and loss of empathy in FTD."
             },
             {
-                "lobe": "Ventral Capsule / Ventral Striatum (VC/VS)",
-                "frequency": "100 - 130 Hz",
-                "pulse_width": "90 μs",
-                "voltage": "4.0 V",
-                "description": "Targets psychiatric comorbidities (e.g., severe depression, OCD) often accompanying late-stage dementia, improving overall cognitive availability."
+                "lobe": "Deep Brain (NBM / Fornix)",
+                "frequency": "20-130 Hz",
+                "pulse_width": "90-100 μs",
+                "voltage": "1.5-4.0 V",
+                "description": "Modulates acetylcholine release, cholinergic projections, and the Circuit of Papez, driving hippocampal neurogenesis and preserving cognitive structures."
             },
             {
-                "lobe": "Fornix",
-                "frequency": "130 Hz",
-                "pulse_width": "90 μs",
-                "voltage": "2.0 - 4.0 V",
-                "description": "Stimulates the Circuit of Papez, driving hippocampal neurogenesis and memory circuit stabilization in early Alzheimer's."
+                "lobe": "Deep Brain (STN / GPi)",
+                "frequency": "130-150 Hz",
+                "pulse_width": "60-90 μs",
+                "voltage": "2.5-3.5 V",
+                "description": "Modifies indirect pathways to alleviate motor-cognitive dual burdens. Preserves collateral cognitive function in Lewy Body / Parkinson's Dementia."
             }
         ]
     })
