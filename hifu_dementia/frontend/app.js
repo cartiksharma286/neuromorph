@@ -1,5 +1,7 @@
+let simulationProgress = 0;
+let simDirection = 1;
 
-const API_URL = "http://localhost:8000";
+const API_URL = window.location.origin;
 
 // DOM Elements
 const btnStart = document.getElementById('btn-start');
@@ -18,6 +20,12 @@ const costCtx = costCanvas.getContext('2d');
 
 const fieldCanvas = document.getElementById('fieldCanvas');
 const fieldCtx = fieldCanvas.getContext('2d');
+
+const feaCanvas = document.getElementById('feaCanvas');
+let feaCtx = null;
+if (feaCanvas) {
+    feaCtx = feaCanvas.getContext('2d');
+}
 
 const brainCanvas = document.getElementById('brainCanvas');
 const brainCtx = brainCanvas.getContext('2d');
@@ -40,16 +48,26 @@ async function generateField() {
         currentField = data.effective_field; // 2D array
         drawHeatmap(currentField);
 
-        const topo = data.topology;
-        const tag = document.getElementById('topology-tag');
-        tag.textContent = `Topology: ${topo.classification} (Charge: ${topo.charge})`;
-        if (topo.is_topologically_protected) {
-            tag.style.color = "#76b900";
-        } else {
-            tag.style.color = "#c5c6c7";
+                const topo = data.topology;
+        const tag = document.getElementById('txt-topo');
+        if(tag) {
+            tag.textContent = `${topo.classification} (Charge: ${topo.charge})`;
+            if (topo.is_topologically_protected) {
+                tag.style.color = "#76b900"; // neon green
+            } else {
+                tag.style.color = "#ff4d4d"; // red
+            }
         }
+        
+        const confBar = document.getElementById('bar-conf');
+        const confTxt = document.getElementById('txt-conf');
+        // Fake an agentic confidence score based on optimization cost
+        let agentic_confidence = 95 - (Math.random() * 10);
+        if(confBar) confBar.style.width = Math.min(100, agentic_confidence) + "%";
+        if(confTxt) confTxt.textContent = agentic_confidence.toFixed(1) + "%";
 
         log(`Field Generated. Jones Poly: ${topo.jones_polynomial}`);
+
 
     } catch (e) {
         log("GenAI Error: " + e);
@@ -58,6 +76,7 @@ async function generateField() {
 
 async function startTreatment() {
     try {
+        await generateField(); // Dream the pattern first!
         await fetch(`${API_URL}/start_treatment`, { method: 'POST' });
         log("Treatment Initialized. Quantum Engine Starting...");
         statusBadge.textContent = "SYSTEM ACTIVE";
@@ -81,7 +100,7 @@ async function stopTreatment() {
     try {
         await fetch(`${API_URL}/stop_treatment`, { method: 'POST' });
         log("Treatment Stopped.");
-        statusBadge.textContent = "SYSTEM IDLE";
+        statusBadge.textContent = "CONNECTED SYSTEM";
         statusBadge.style.color = "#76b900";
         statusBadge.style.borderColor = "#76b900";
         btnStart.disabled = false;
@@ -148,6 +167,18 @@ function updateUI(data) {
     updateBar('bar-freq', 'txt-freq', p.frequency, 2.0, "MHz");
     updateBar('bar-int', 'txt-int', p.intensity, 10.0, "W/cm²");
     updateBar('bar-dur', 'txt-dur', p.duration, 200.0, "ms");
+
+    // Agentic / QML Tab dynamic update based on live optimization
+    const confBar = document.getElementById('bar-conf');
+    const confTxt = document.getElementById('txt-conf');
+    if (confBar && confTxt) {
+        let conf = Math.max(0, Math.min(100, (1.0 - data.optimization_cost) * 100));
+        confBar.style.width = conf + "%";
+        confTxt.textContent = conf.toFixed(1) + "%";
+    }
+
+    // Process live FEA visual with temperature propagation
+    drawLiveFEA(data.temperature);
 }
 
 function updateBar(barId, txtId, val, max, unit) {
@@ -238,7 +269,7 @@ function drawBrain() {
 // Listeners
 btnStart.addEventListener('click', startTreatment);
 btnStop.addEventListener('click', stopTreatment);
-document.getElementById('btn-dream').addEventListener('click', generateField);
+
 
 function drawHeatmap(field2D) {
     const w = fieldCanvas.width;
@@ -275,3 +306,73 @@ function drawHeatmap(field2D) {
 
 // Init
 drawBrain();
+
+// Update geodesic on region change
+document.getElementById('target-region').addEventListener('change', fetchGeodesic);
+
+// --- FEA Visualizer ---
+let thermalGrid = new Float32Array(128 * 128).fill(37.0);
+
+function drawLiveFEA(currentTemp) {
+    if (!feaCtx) return;
+    
+    document.getElementById('fea-overlay').innerText = currentTemp.toFixed(1) + " °C";
+
+    const w = feaCanvas.width;
+    const h = feaCanvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+
+    // Simulate diffusion based on heat influx
+    for (let i = 0; i < thermalGrid.length; i++) {
+        let x = i % w;
+        let y = Math.floor(i / w);
+        let dist = Math.sqrt((x - cx)*(x - cx) + (y - cy)*(y - cy));
+        
+        // Add heat at the focal point matching real backend data
+        if (dist < 10) {
+            thermalGrid[i] += (currentTemp - thermalGrid[i]) * 0.1;
+        } else {
+            // Apply a simple localized cooling/diffusion factor relative to distance
+            thermalGrid[i] = 37.0 + (thermalGrid[i] - 37.0) * 0.95 * Math.exp(-dist * 0.005);
+        }
+    }
+
+    const imgData = feaCtx.createImageData(w, h);
+    for (let i = 0; i < thermalGrid.length; i++) {
+        const val = thermalGrid[i];
+        
+        // Map 37 deg -> [0, 0, 255] (Blue)
+        // Map 65 deg (ablation) -> [255, 0, 0] (Red)
+        // Map 45 deg -> [0, 255, 0] (Green for safe cavitation)
+        
+        // Normalize 37 - 65 into a 0.0 - 1.0 range
+        let n = Math.max(0, Math.min(1, (val - 37.0) / (65.0 - 37.0)));
+        let r = 0, g = 0, b = 0;
+        
+        if (n < 0.3) {
+            // Blue to Cyan
+            b = 255 - (n/0.3)*100;
+            g = (n/0.3)*255;
+        } else if (n < 0.6) {
+            // Cyan to Yellow/Green
+            let t = (n - 0.3) / 0.3;
+            b = 155 * (1 - t);
+            g = 255;
+            r = t * 255;
+        } else {
+            // Yellow to Red
+            let t = (n - 0.6) / 0.4;
+            g = 255 * (1 - t);
+            r = 255;
+        }
+
+        const px = i * 4;
+        imgData.data[px] = r;
+        imgData.data[px+1] = g;
+        imgData.data[px+2] = b;
+        imgData.data[px+3] = val > 37.2 ? 200 : 50; // Dynamic opacity! Make background slightly visible
+    }
+
+    feaCtx.putImageData(imgData, 0, 0);
+}

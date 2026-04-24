@@ -19,7 +19,7 @@
                 <div class="nvidia-logo"></div>
                 <h1>HIFU <span class="highlight">QUANTUM</span> DEMENTIA SYSTEM</h1>
             </div>
-            <div class="status-badge" id="system-status">SYSTEM IDLE</div>
+            <div class="status-badge" id="system-status">CONNECTED SYSTEM</div>
         </header>
 
         <main>
@@ -69,7 +69,7 @@
             </div>
 
             <!-- Center Column: 3D Visualization -->
-            <div class="column center-col">
+                        <div class="column center-col">
                 <section class="glass-panel viz-panel">
                     <h2>Cortical Geodesic Targeting</h2>
                     <div class="canvas-wrapper">
@@ -77,6 +77,21 @@
                     </div>
                     <div class="overlay-info">
                         <p>Geodesic Optimization: <span id="geo-status">Calculating...</span></p>
+                    </div>
+                </section>
+                <section class="glass-panel viz-panel" style="margin-top: 20px; display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <h2>Acoustic Field (GenAI)</h2>
+                        <div class="canvas-wrapper" style="height: 150px; display: flex; justify-content: center; align-items: center;">
+                            <canvas id="fieldCanvas" width="128" height="128" style="transform: scale(1.1);"></canvas>
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <h2>Live HIFU FEA (Thermal)</h2>
+                        <div class="canvas-wrapper" style="height: 150px; display: flex; justify-content: center; align-items: center; position: relative;">
+                            <canvas id="feaCanvas" width="128" height="128" style="transform: scale(1.1); border-radius: 8px;"></canvas>
+                            <div id="fea-overlay" style="position: absolute; bottom: 5px; right: 5px; font-size: 0.7rem; color: var(--neon-blue); background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px;">37.0 °C</div>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -93,28 +108,51 @@
                     <p class="subtext">Target: 80% Permeability</p>
                 </section>
 
-                <section class="glass-panel params-panel">
-                    <h2>Optimal Parameters</h2>
-                    <div class="param-item">
-                        <label>Frequency</label>
-                        <div class="bar-container">
-                            <div class="bar-fill" id="bar-freq" style="width: 0%"></div>
-                        </div>
-                        <span id="txt-freq">0 MHz</span>
+                                <section class="glass-panel params-panel" style="display: flex; flex-direction: column;">
+                    <div class="tabs-header" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <button class="tab-btn active" id="btn-tab-params" onclick="document.getElementById('tab-params').style.display='block'; document.getElementById('tab-agentic').style.display='none'; this.classList.add('active'); document.getElementById('btn-tab-agentic').classList.remove('active');" style="background: transparent; color: var(--neon-blue); padding: 5px; flex: 1; border: 1px solid var(--neon-blue);">Treatment Params</button>
+                        <button class="tab-btn" id="btn-tab-agentic" onclick="document.getElementById('tab-agentic').style.display='block'; document.getElementById('tab-params').style.display='none'; this.classList.add('active'); document.getElementById('btn-tab-params').classList.remove('active');" style="background: transparent; color: var(--neon-green); padding: 5px; flex: 1; border: 1px solid var(--neon-green);">Agentic / QML</button>
                     </div>
-                    <div class="param-item">
-                        <label>Intensity</label>
-                        <div class="bar-container">
-                            <div class="bar-fill" id="bar-int" style="width: 0%"></div>
+                    <div id="tab-params" class="tab-content" style="display: block;">
+                        <h2>Optimal Parameters</h2>
+                        <div class="param-item">
+                            <label>Frequency</label>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="bar-freq" style="width: 0%"></div>
+                            </div>
+                            <span id="txt-freq">0 MHz</span>
                         </div>
-                        <span id="txt-int">0 W/cm²</span>
+                        <div class="param-item">
+                            <label>Intensity</label>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="bar-int" style="width: 0%"></div>
+                            </div>
+                            <span id="txt-int">0 W/cm²</span>
+                        </div>
+                        <div class="param-item">
+                            <label>Duration</label>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="bar-dur" style="width: 0%"></div>
+                            </div>
+                            <span id="txt-dur">0 ms</span>
+                        </div>
                     </div>
-                    <div class="param-item">
-                        <label>Duration</label>
-                        <div class="bar-container">
-                            <div class="bar-fill" id="bar-dur" style="width: 0%"></div>
+                    <div id="tab-agentic" class="tab-content" style="display: none;">
+                        <h2 style="color: var(--neon-green);">Agentic AI & Quantum Stats</h2>
+                        <div class="param-item">
+                            <label>Vortex Topology Status</label>
+                            <span id="txt-topo" style="color: var(--text-white); font-family: var(--font-head); display: block; margin-top: 5px; margin-bottom: 15px; font-weight: bold;">Standby</span>
                         </div>
-                        <span id="txt-dur">0 ms</span>
+                        <div class="param-item">
+                            <label>Agentic Confidence Score</label>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="bar-conf" style="width: 0%; background: var(--neon-green)"></div>
+                            </div>
+                            <span id="txt-conf" style="color: var(--neon-green);">0%</span>
+                        </div>
+                        <div style="font-size: 0.8rem; margin-top: 15px; color: var(--text-gray); line-height: 1.4;">
+                            * Breaking Blood Brain Barrier (BBB) utilizing Variational Quantum Circuit (VQC) and Agentic pathfinding through cortical manifolds.
+                        </div>
                     </div>
                 </section>
 

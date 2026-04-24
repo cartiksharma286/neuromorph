@@ -6,12 +6,14 @@ import numpy as np
 import asyncio
 from typing import List, Dict
 
-from .qml_optimizer import QMLOptimizer
-from .bbb_sim import BBBSimulation
-from .statistical_measures import calculate_var, calculate_cvar
-from .geodesics import compute_geodesic, variational_measure_weight
-from .generative_field import GenerativeAcousticField
-from .knot_theory import detect_vortex_topology
+from qml_optimizer import QMLOptimizer
+from bbb_sim import BBBSimulation
+from statistical_measures import calculate_var, calculate_cvar
+from geodesics import compute_geodesic, variational_measure_weight
+from generative_field import GenerativeAcousticField
+from knot_theory import detect_vortex_topology
+
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -139,6 +141,9 @@ async def get_geodesic_path(start_u: float, start_v: float, end_u: float, end_v:
         "measure_weight": weight
     }
 
+
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)

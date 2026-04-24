@@ -78,7 +78,8 @@ def compute_geodesic(start, end, n_points=10):
         path_energy, 
         x0, 
         args=(start, end, manifold, n_points),
-        method='L-BFGS-B'
+        method='L-BFGS-B',
+        options={'maxiter': 8, 'ftol': 1e-2}
     )
     
     if result.success:

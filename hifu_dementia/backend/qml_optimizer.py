@@ -1,7 +1,7 @@
 
 import numpy as np
 from scipy.optimize import minimize
-from .statistical_measures import quantum_fidelity, von_neumann_entropy
+from statistical_measures import quantum_fidelity, von_neumann_entropy
 # Note: In a real simulation, we would import detect_vortex_topology here
 # but for performance in the optimization loop, we will use a lightweight proxy.
 
