@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EHR & Multimodal PACS LLM Framework</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body { font-family: -apple-system, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #2C3E50; }
+        .form-group { margin-bottom: 15px; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #2980B9; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-right: 10px; }
+        button:hover { background-color: #1A5276; }
+        .llm-results { margin-top: 20px; padding: 20px; background: #EAEDED; border-left: 5px solid #27AE60; display: none; }
+        .file-upload { display: inline-block; padding: 10px; border: 1px dashed #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; background: #fafafa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Clinical EHR Management with PACS</h1>
+        <p>Integrates structured reporting with Multimodal LLM Workflows for precise clinical outcomes and payment processing integration.</p>
+        
+        <div class="form-group">
+            <label>Patient ID:</label>
+            <input type="text" id="pid" placeholder="e.g. PT-4092">
+        </div>
+        <div class="form-group">
+            <label>Patient Name:</label>
+            <input type="text" id="pname" placeholder="e.g. John Doe">
+        </div>
+        <div class="form-group">
+            <label>Clinical Encounter Notes (Symptoms, history):</label>
+            <textarea id="precords" rows="5" placeholder="Enter clinical assessment text here (e.g. patient presents with tremor and dementia symptoms)..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Upload PACS DICOM Imagery (Optional):</label>
+            <input type="file" id="pacs_file" class="file-upload" accept="image/*,.dcm">
+        </div>
+        <button onclick="submitPatient()">Evaluate via Generative AI Inference</button>
+        
+        <div class="llm-results" id="result-box">
+            <h3 style="margin-top:0;">🤖 Generative AI Based Inferential Inflective Reasoning</h3>
+            <p><strong>Predicted ICD Code: </strong> <span id="res-icd" style="background:#f1c40f; padding: 2px 6px; border-radius: 4px;"></span></p>
+            <p><strong>Clinical Analysis: </strong> <span id="res-analysis"></span></p>
+            <p><strong>Clinical Pathway: </strong> <span id="res-pathway"></span></p>
+            <p><strong>Clinical Prescription Outcome: </strong> <span id="res-prescription" style="color:red; font-weight:bold;"></span></p>
+            <p><strong>Decisive Outcome: </strong> <span id="res-outcome"></span></p>
+            <br/>
+            <p style="background:#D4EFDF; padding:10px; border-radius:4px; font-family: monospace;"><strong>Billing & Payment Status: </strong> <span id="res-payment"></span></p>
+        </div>
+    </div>
+
+    <script>
+        function submitPatient() {
+            const pacsInput = document.getElementById('pacs_file');
+            const data = {
+                id: document.getElementById('pid').value,
+                name: document.getElementById('pname').value,
+                records: document.getElementById('precords').value,
+                pacs_data: pacsInput.files.length > 0 ? pacsInput.files[0].name : null // Mocking upload
+            };
+            
+            document.getElementById('result-box').style.display = 'none';
+
+            fetch('/api/patient', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(res => {
+                const out = res.llm_outcome;
+                document.getElementById('res-icd').innerText = out.icd_code;
+                document.getElementById('res-analysis').innerText = out.analysis;
+                document.getElementById('res-pathway').innerText = out.pathway;
+                document.getElementById('res-prescription').innerText = out.prescription;
+                document.getElementById('res-outcome').innerText = out.decisive_outcome;
+                document.getElementById('res-payment').innerText = out.payment_status;
+                document.getElementById('result-box').style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>

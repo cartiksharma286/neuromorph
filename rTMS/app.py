@@ -6,7 +6,8 @@ from logic.rtms_engine import (
     get_equipment_list,
     get_tremor_clinical_data,
     get_treatment_paradigm,
-    get_dementia_longterm_care
+    get_dementia_longterm_care,
+    get_ocd_fea_simulation
 )
 from logic.monteris_cf_treatment import (
     full_treatment_paradigm,
@@ -57,6 +58,10 @@ def dementia_longterm():
 @app.route('/api/dbs-imaging', methods=['GET'])
 def dbs_imaging_protocol():
     return jsonify({"status": "success", "data": generate_dbs_treatment_protocol()})
+
+@app.route('/api/ocd-treatment', methods=['GET'])
+def ocd_treatment():
+    return jsonify({"status": "success", "data": get_ocd_fea_simulation()})
 
 # ── Monteris CF Treatment Paradigm Routes ────────────────────────────────────
 

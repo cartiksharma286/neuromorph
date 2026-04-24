@@ -23,6 +23,9 @@
                 <button class="nav-btn" data-tab="dementia">
                     <span class="icon">🌀</span> Dementia Care
                 </button>
+                <button class="nav-btn" data-tab="ocd">
+                    <span class="icon">🔄</span> OCD Treatment
+                </button>
                 <button class="nav-btn" data-tab="tremor">
                     <span class="icon">🫀</span> Essential Tremor
                 </button>
@@ -109,6 +112,7 @@
                     <button class="paradigm-cond-btn active" data-cond="stroke">Stroke</button>
                     <button class="paradigm-cond-btn" data-cond="dementia">Dementia</button>
                     <button class="paradigm-cond-btn" data-cond="tremor">Essential Tremor</button>
+                    <button class="paradigm-cond-btn" data-cond="ocd">OCD Treatment</button>
                     <span id="paradigm-loading" class="hidden" style="color:#58a6ff;font-size:13px;margin-left:auto;">Computing paradigm…</span>
                 </div>
                 <!-- Row 1: Stage gate + Hebbian DBS -->
@@ -141,6 +145,20 @@
                         <h3>DBS Hardware Protocol</h3>
                         <div id="paradigm-dbs-card"></div>
                     </div>
+                </div>
+            </div>
+
+            <!-- ── OCD Treatment Tab ── -->
+            <div id="ocd-view" class="hidden dashboard-grid">
+                <div class="panel glass-panel large-panel">
+                    <h3>Continued Fraction RF Tuning Convergence</h3>
+                    <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Frequency matching for optimal OCD rTMS / DBS protocols.</p>
+                    <div id="ocd-cf-chart" class="chart-container" style="min-height:300px;"></div>
+                </div>
+                <div class="panel glass-panel large-panel" style="grid-column: span 2;">
+                    <h3>Cortical Surface Deep FEA (dACC / ALIC)</h3>
+                    <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Finite Element Analysis map highlighting spatial V/m convergence.</p>
+                    <div id="ocd-fea-surface" class="chart-container" style="min-height:450px;"></div>
                 </div>
             </div>
 
