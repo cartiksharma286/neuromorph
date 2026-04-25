@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aducanumab Kinetic Modeling</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .glass-panel { background: rgba(22, 27, 34, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
+        h1 { color: #58a6ff; }
+        h2 { color: #8b949e; font-size: 1.2rem; }
+        label { display: block; margin-top: 15px; color: #c9d1d9; font-weight: bold; }
+        input[type="range"] { width: 100%; margin-top: 8px; }
+        .val-display { color: #58a6ff; float: right; }
+        .flex { display: flex; gap: 20px; }
+        .col { flex: 1; }
+        button { background: #238636; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 20px; }
+        button:hover { background: #2ea043; }
+        
+        canvas { background: #010409; border-radius: 8px; padding: 10px; width: 100%; max-height: 400px; }
+        .tabs-header { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .tab-btn { background: transparent; color: #8b949e; padding: 10px; flex: 1; border: 1px solid #8b949e; margin-top: 0; }
+        .tab-btn.active { color: #58a6ff; border-color: #58a6ff; font-weight: bold; background: rgba(88, 166, 255, 0.1); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); color: #c9d1d9; }
+        th { color: #58a6ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Aducanumab Chemical Kinetics Engine</h1>
+        <p>Predict $A\beta$ (Amyloid-Beta) clearance via ODE rate reactions.</p>
+        
+        <div class="tabs-header">
+            <button class="tab-btn active" id="btn-tab-kinetics" onclick="showTab('tab-kinetics', 'btn-tab-kinetics')">Kinetics Engine</button>
+            <button class="tab-btn" id="btn-tab-clinical" onclick="showTab('tab-clinical', 'btn-tab-clinical')">Clinical Trial Management</button>
+        </div>
+
+        <!-- TAB 1: KINETICS -->
+        <div id="tab-kinetics" class="tab-content active">
+            <div class="flex">
+                <div class="col">
+                    <div class="glass-panel">
+                        <h2>Metabolic & Treatment Parameters</h2>
+                        <form id="sim-form">
+                            <label>Simulation Days <span id="val-days" class="val-display">180</span></label>
+                            <input type="range" id="days" value="180" min="30" max="730">
+                            
+                            <label>Starting Amyloid Burden (mg) <span id="val-plaque" class="val-display">100.0</span></label>
+                            <input type="range" id="start_plaque" value="100.0" min="50" max="300" step="5">
+
+                            <label>Dose Rate (mg/month) <span id="val-dose" class="val-display">10.0</span></label>
+                            <input type="range" id="dose_mg" value="10.0" min="0.0" max="50.0" step="1.0">
+
+                            <label>Binding Affinity ($k_{bind}$) <span id="val-affinity" class="val-display">0.05</span></label>
+                            <input type="range" id="affinity" value="0.05" min="0.01" max="0.2" step="0.01">
+
+                            <label>Drug Clearance Rate ($k_{clear}$) <span id="val-clear" class="val-display">0.02</span></label>
+                            <input type="range" id="clearance" value="0.02" min="0.01" max="0.1" step="0.01">
+
+                            <button type="submit">Run Kinetics Simulation</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="col" style="flex: 2;">
+                    <div class="glass-panel">
+                        <h2>Live Reaction Tracking</h2>
+                        <canvas id="kineticsChart"></canvas>
+                    </div>
+                    <div class="glass-panel" id="metrics-panel">
+                        <h2>Final Burden Readout: <span id="final-burden" style="color: #58a6ff;">---</span></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: CLINICAL TRIAL -->
+        <div id="tab-clinical" class="tab-content">
+            <div class="flex">
+                <div class="col" style="flex: 1;">
+                    <div class="glass-panel">
+                        <h2>Trial Controls</h2>
+                        <label>Target Cohort Size <span id="val-cohort" class="val-display">500</span></label>
+                        <input type="range" id="cohort_size" value="500" min="50" max="5000" step="50" oninput="document.getElementById('val-cohort').innerText=this.value">
+                        
+                        <label>Placebo Ratio (%) <span id="val-placebo" class="val-display">30</span></label>
+                        <input type="range" id="placebo_ratio" value="30" min="0" max="50" step="5" oninput="document.getElementById('val-placebo').innerText=this.value">
+
+                        <button onclick="runTrialSimulation()" style="background: #a371f7;">Simulate Cohort Trial</button>
+                    </div>
+                </div>
+                <div class="col" style="flex: 2;">
+                    <div class="glass-panel">
+                        <h2>Cohort Statistics (180 Days)</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Aducanumab Group</th>
+                                    <th>Placebo Group</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trial-stats">
+                                <tr><td>Cohort Size</td><td>--</td><td>--</td></tr>
+                                <tr><td>Average Initial Burden</td><td>--</td><td>--</td></tr>
+                                <tr><td>Average Final Burden</td><td>--</td><td>--</td></tr>
+                                <tr><td>Clearance Efficacy</td><td>--</td><td>--</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function showTab(tabId, btnId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById(btnId).classList.add('active');
+        }
+
+        async function runTrialSimulation() {
+            const cohortSize = parseInt(document.getElementById('cohort_size').value);
+            const placeboRatio = parseInt(document.getElementById('placebo_ratio').value) / 100.0;
+            
+            const trGroupSize = Math.floor(cohortSize * (1 - placeboRatio));
+            const plGroupSize = cohortSize - trGroupSize;
+
+            document.getElementById('trial-stats').innerHTML = `
+                <tr><td>Cohort Size</td><td>${trGroupSize} patients</td><td>${plGroupSize} patients</td></tr>
+                <tr><td>Average Initial Burden</td><td>100.00 mg</td><td>100.00 mg</td></tr>
+                <tr><td>Average Final Burden</td><td>Generating...</td><td>Generating...</td></tr>
+                <tr><td>Clearance Efficacy</td><td>Pending</td><td>Pending</td></tr>
+            `;
+
+            try {
+                const resTr = await fetch('/api/simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ days: 180, start_plaque: 100.0, dose_mg: 10.0, affinity: 0.05, clearance: 0.02 })
+                });
+                const trData = (await resTr.json()).data;
+                const trFinal = trData.amyloid_beta[trData.amyloid_beta.length - 1];
+
+                const resPl = await fetch('/api/simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ days: 180, start_plaque: 100.0, dose_mg: 0.0, affinity: 0.0, clearance: 0.02 })
+                });
+                const plData = (await resPl.json()).data;
+                const plFinal = plData.amyloid_beta[plData.amyloid_beta.length - 1];
+
+                const effTr = ((100.0 - trFinal) / 100.0) * 100;
+                const effPl = ((100.0 - plFinal) / 100.0) * 100;
+
+                const variance = () => (Math.random() * 5 - 2.5);
+                
+                const finalTrVal = Math.max(0, trFinal + variance());
+                const finalPlVal = Math.max(0, plFinal + variance());
+
+                document.getElementById('trial-stats').innerHTML = `
+                    <tr><td>Cohort Size</td><td>${trGroupSize} patients</td><td>${plGroupSize} patients</td></tr>
+                    <tr><td>Average Initial Burden</td><td>~100.00 mg</td><td>~100.00 mg</td></tr>
+                    <tr><td style="color: #ff4d4d">Average Final Burden</td><td style="color: #58a6ff; font-weight: bold;">${finalTrVal.toFixed(2)} mg</td><td style="color: #ff4d4d; font-weight: bold;">${finalPlVal.toFixed(2)} mg</td></tr>
+                    <tr><td>Clearance System Efficacy</td><td style="color: #58a6ff; font-weight: bold;">${effTr.toFixed(1)}%</td><td>${effPl.toFixed(1)}%</td></tr>
+                `;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    </script>
+    <script src="app.js"></script>
+</body>
+</html>
