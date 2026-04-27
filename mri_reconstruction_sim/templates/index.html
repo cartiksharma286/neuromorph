@@ -178,12 +178,13 @@
         /* Tabs */
         .nav-tabs {
             display: flex;
+            flex-wrap: wrap;
             gap: 0.5rem;
             margin-bottom: 1.5rem;
             background: var(--bg-secondary);
-            padding: 0.25rem;
+            padding: 0.5rem;
             border-radius: 10px;
-            width: fit-content;
+            width: 100%;
         }
 
         .tab-trigger {
@@ -283,6 +284,8 @@
             <div class="control-group">
                 <label>Sequence Protocol</label>
                 <select id="sequence">
+                    <option value="StrokeRepairQML">🧠 Stroke Repair (QML 30% SNR)</option>
+                    <option value="DementiaCureQML">🧠 Dementia Cure (QML 30% SNR)</option>
                     <option value="OrthopedicKneePulse">Orthopedic Knee (Geodesic Map)</option>
                     <option value="GenAIOrthopedicPulse">Orthopedic GenAI Pulse</option>
                     <option value="QuantumMLShoulderPulse">Shoulder Quantum ML Pulse</option>
@@ -507,30 +510,33 @@
         </aside>
 
         <main>
-            <button class="tab-trigger active" onclick="switchView('dashboard', this)">Dashboard</button>
-            <button class="tab-trigger" onclick="switchView('study', this)">Signal AI</button>
-            <button class="tab-trigger" onclick="switchView('spectroscopy', this)">Q-Spectroscopy</button>
-            <button class="tab-trigger" onclick="switchView('cortical', this)">Cortical View</button>
-            <button class="tab-trigger" onclick="switchView('neurovascular', this)">Neurovascular</button>
-            <button class="tab-trigger" onclick="switchView('cardiovascular', this)">Cardiovascular</button>
-            <button class="tab-trigger" id="tab-neuroseq"
-                onclick="switchView('neuroseq', this); generateNeuroPulseCA();">🍁 NeuroSeq CA</button>
-            <button class="tab-trigger" onclick="switchView('thermometry', this)">🌡️ Q-Thermometry</button>
-            <button class="tab-trigger" onclick="switchView('analytics', this)">📊 Distribution Analysis</button>
-            <button class="tab-trigger" onclick="switchView('quantum-geometry', this)">🌀 Quantum Geometry</button>
-            <button class="tab-trigger" id="tab-inflection-pulse" onclick="switchView('inflection-pulse', this)">📈 Inflection Pulse Analysis</button>
-            <button class="tab-trigger" onclick="switchView('snr', this)">📈 SNR Analytics</button>
-            <button class="tab-trigger" onclick="switchView('robotics-analytics', this)">🦾 Robotics Analytics</button>
-            <button class="tab-trigger" id="tab-pf-thermometry" onclick="switchView('pf-thermometry', this); generatePFThermometry();">🔬 PF Thermometry</button>
-            <button class="tab-trigger" id="tab-skull-coil" onclick="switchView('skull-coil', this);">🧠 Conformal Skull Coil</button>
-            <button class="tab-trigger" id="tab-qphase" onclick="switchView('qphase', this);">⚛️ Q-Phase Thermometry</button>
-            <button class="tab-trigger" id="tab-neuro-vascular" onclick="switchView('neuro-vascular', this);">🫀 Neurovascular Thermometry</button>
-            <button class="tab-trigger" id="tab-enhanced-therm" onclick="switchView('enhanced-therm', this);">🔥 Enhanced Thermometry</button>
-            <button class="tab-trigger" id="tab-rtms" onclick="switchView('rtms', this);">🧠 rTMS Neural Repair</button>
-            <button class="tab-trigger" id="tab-fullerene-inflection" onclick="switchView('fullerene-inflection', this); runFullereneInflection();">⚽ Fullerene·Inflection</button>
-            <button class="tab-trigger" id="tab-seqrank" onclick="switchView('seqrank', this); runSeqRank();">🏆 Sequence Ranker</button>
-            <button class="tab-trigger" id="tab-tes-qml" onclick="switchView('tes-qml', this); runTesQml();">⚡ tES Gangrene (QML)</button>
-            <button class="tab-trigger" id="tab-tes-genai" onclick="switchView('tes-genai', this); runTesGenai();">🧠 tES Gangrene (GenAI)</button>
+            <div class="nav-tabs">
+                <button class="tab-trigger active" onclick="switchView('dashboard', this)">Dashboard</button>
+                <button class="tab-trigger" onclick="switchView('study', this)">Signal AI</button>
+                <button class="tab-trigger" onclick="switchView('spectroscopy', this)">Q-Spectroscopy</button>
+                <button class="tab-trigger" onclick="switchView('cortical', this)">Cortical View</button>
+                <button class="tab-trigger" onclick="switchView('neurovascular', this)">Neurovascular</button>
+                <button class="tab-trigger" onclick="switchView('cardiovascular', this)">Cardiovascular</button>
+                <button class="tab-trigger" id="tab-neuroseq" onclick="switchView('neuroseq', this); generateNeuroPulseCA();">🍁 NeuroSeq CA</button>
+                <button class="tab-trigger" onclick="switchView('thermometry', this)">🌡️ Q-Thermometry</button>
+                <button class="tab-trigger" onclick="switchView('analytics', this)">📊 Distribution Analysis</button>
+                <button class="tab-trigger" onclick="switchView('quantum-geometry', this)">🌀 Quantum Geometry</button>
+                <button class="tab-trigger" id="tab-inflection-pulse" onclick="switchView('inflection-pulse', this)">📈 Inflection Pulse</button>
+                <button class="tab-trigger" onclick="switchView('snr', this)">📈 SNR Analytics</button>
+                <button class="tab-trigger" onclick="switchView('robotics-analytics', this)">🦾 Robotics</button>
+                <button class="tab-trigger" id="tab-pf-thermometry" onclick="switchView('pf-thermometry', this); generatePFThermometry();">🔬 PF Thermometry</button>
+                <button class="tab-trigger" id="tab-skull-coil" onclick="switchView('skull-coil', this);">🧠 Conformal Skull</button>
+                <button class="tab-trigger" id="tab-qphase" onclick="switchView('qphase', this);">⚛️ Q-Phase</button>
+                <button class="tab-trigger" id="tab-neuro-vascular" onclick="switchView('neuro-vascular', this);">🫀 Neurovascular Therm</button>
+                <button class="tab-trigger" id="tab-enhanced-therm" onclick="switchView('enhanced-therm', this);">🔥 Enhanced Therm</button>
+                <button class="tab-trigger" id="tab-rtms" onclick="switchView('rtms', this);">🧠 rTMS Neural Repair</button>
+                <button class="tab-trigger" id="tab-fullerene-inflection" onclick="switchView('fullerene-inflection', this); runFullereneInflection();">⚽ Fullerene·Inflection</button>
+                <button class="tab-trigger" id="tab-seqrank" onclick="switchView('seqrank', this); runSeqRank();">🏆 Sequence Ranker</button>
+                <button class="tab-trigger" id="tab-tes-qml" onclick="switchView('tes-qml', this); runTesQml();">⚡ tES Gangrene (QML)</button>
+                <button class="tab-trigger" id="tab-tes-genai" onclick="switchView('tes-genai', this); runTesGenai();">🧠 tES Gangrene (GenAI)</button>
+                <button class="tab-trigger" id="tab-stroke-qml" onclick="switchView('stroke-qml', this); runStrokeQml();">🧠 Stroke Repair (QML)</button>
+                <button class="tab-trigger" id="tab-dementia-qml" onclick="switchView('dementia-qml', this); runDementiaQml();">🧠 Dementia Cure (QML)</button>
+            </div>
 
             <!-- View: Dashboard (Grid Layout) -->
             <div id="view-dashboard" class="view-content active">
@@ -1515,6 +1521,30 @@
                         <div class="img-window">
                             <img id="img-tes-genai" src="">
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-stroke-qml" class="view-content">
+                <h2 style="color:#f1f5f9; margin-bottom:1rem;">🧠 QML: Stroke Repair Sequence</h2>
+                <p style="color:#94a3b8; margin-bottom:1rem;">Innovative neuroimaging sequence with quantum machine learning to improve SNR for stroke repair diagnostics.</p>
+                <button onclick="runStrokeQml()" style="background:#3b82f6; color:#fff; border:none; border-radius:8px; padding:8px 22px; cursor:pointer; font-weight:600; margin-bottom:1rem;">▶ Run QML Stroke Repair Analysis</button>
+                <div class="dashboard-grid">
+                    <div class="output-box" style="grid-column: span 2;">
+                        <div class="output-title">Sequence Optimization Results</div>
+                        <div id="stroke-qml-metrics" style="background:#0f172a; font-family:monospace; padding:1rem; border-radius:8px; color:#94a3b8; white-space:pre-wrap;">Ready to test.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-dementia-qml" class="view-content">
+                <h2 style="color:#f1f5f9; margin-bottom:1rem;">🧠 QML: Dementia Cure Sequence</h2>
+                <p style="color:#94a3b8; margin-bottom:1rem;">Innovative neuroimaging sequence featuring quantum machine learning aimed at enhancing biomarker SNR for dementia cure paradigms.</p>
+                <button onclick="runDementiaQml()" style="background:#3b82f6; color:#fff; border:none; border-radius:8px; padding:8px 22px; cursor:pointer; font-weight:600; margin-bottom:1rem;">▶ Run QML Dementia Cure Analysis</button>
+                <div class="dashboard-grid">
+                    <div class="output-box" style="grid-column: span 2;">
+                        <div class="output-title">Sequence Optimization Results</div>
+                        <div id="dementia-qml-metrics" style="background:#0f172a; font-family:monospace; padding:1rem; border-radius:8px; color:#94a3b8; white-space:pre-wrap;">Ready to test.</div>
                     </div>
                 </div>
             </div>
@@ -3343,6 +3373,32 @@
                 document.getElementById('img-tes-genai').src = data.plots.tes_genai_map ? "data:image/png;base64," + data.plots.tes_genai_map : '';
             } else {
                 document.getElementById('tes-genai-metrics').innerText = 'Error: ' + JSON.stringify(data);
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function runStrokeQml() {
+        try {
+            document.getElementById('stroke-qml-metrics').innerText = 'Processing QML Enhancements for Stroke Repair...';
+            const res = await fetch('/api/qml_pulse/stroke_repair', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}' });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('stroke-qml-metrics').innerText = JSON.stringify(data.metrics, null, 2);
+            } else {
+                document.getElementById('stroke-qml-metrics').innerText = 'Error: ' + JSON.stringify(data);
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function runDementiaQml() {
+        try {
+            document.getElementById('dementia-qml-metrics').innerText = 'Processing QML Enhancements for Dementia Sequecing...';
+            const res = await fetch('/api/qml_pulse/dementia_cure', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}' });
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('dementia-qml-metrics').innerText = JSON.stringify(data.metrics, null, 2);
+            } else {
+                document.getElementById('dementia-qml-metrics').innerText = 'Error: ' + JSON.stringify(data);
             }
         } catch(e) { console.error(e); }
     }

@@ -1884,6 +1884,48 @@ def api_all_coils_list():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+from quantum_neuroimaging_qml import get_stroke_repair_sequence, get_dementia_cure_sequence
+
+@app.route('/api/qml_pulse/stroke_repair', methods=['POST'])
+def api_stroke_repair():
+    try:
+        seq = get_stroke_repair_sequence()
+        final_snr = seq.apply()
+        return jsonify({
+            'success': True,
+            'metrics': {
+                'name': seq.name,
+                'tag': seq.tag,
+                'condition': seq.condition,
+                'base_snr': round(seq.base_snr, 1),
+                'expected_improvement': f"{seq.snr_improvement * 100}%",
+                'enhanced_snr': round(final_snr, 1),
+                'message': 'Stroke repair mapping stabilized with 30% enhanced Signal-to-Noise Ratio (SNR).'
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/qml_pulse/dementia_cure', methods=['POST'])
+def api_dementia_cure():
+    try:
+        seq = get_dementia_cure_sequence()
+        final_snr = seq.apply()
+        return jsonify({
+            'success': True,
+            'metrics': {
+                'name': seq.name,
+                'tag': seq.tag,
+                'condition': seq.condition,
+                'base_snr': round(seq.base_snr, 1),
+                'expected_improvement': f"{seq.snr_improvement * 100}%",
+                'enhanced_snr': round(final_snr, 1),
+                'message': 'Dementia cognitive biomarkers localized with 30% enhanced Signal-to-Noise Ratio (SNR).'
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('FLASK_RUN_PORT', 5050))
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False, threaded=True)
