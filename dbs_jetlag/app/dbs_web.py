@@ -76,11 +76,30 @@ def index():
     fea_url = None
     protocols = get_protocols() if tab == 'protocols' else None
     # Defaults
-    time_steps = int(request.form.get('time_steps', 200))
-    neurons = int(request.form.get('neurons', 50))
-    dbs_intensity = float(request.form.get('dbs_intensity', 1.0))
-    apnea_factor = float(request.form.get('apnea_factor', 0.5))
-    fea_grid = int(request.form.get('fea_grid', 20))
+
+    def safe_int(val, default, minv=None, maxv=None):
+        try:
+            v = int(val)
+            if minv is not None: v = max(v, minv)
+            if maxv is not None: v = min(v, maxv)
+            return v
+        except Exception:
+            return default
+
+    def safe_float(val, default, minv=None, maxv=None):
+        try:
+            v = float(val)
+            if minv is not None: v = max(v, minv)
+            if maxv is not None: v = min(v, maxv)
+            return v
+        except Exception:
+            return default
+
+    time_steps = safe_int(request.form.get('time_steps', 200), 200, 50, 500)
+    neurons = safe_int(request.form.get('neurons', 50), 50, 10, 200)
+    dbs_intensity = safe_float(request.form.get('dbs_intensity', 1.0), 1.0, 0.0, 2.0)
+    apnea_factor = safe_float(request.form.get('apnea_factor', 0.5), 0.5, 0.0, 1.0)
+    fea_grid = safe_int(request.form.get('fea_grid', 20), 20, 5, 50)
 
     if tab == 'simulate' and request.method == 'POST':
         np.random.seed(42)
@@ -88,9 +107,10 @@ def index():
         weights = np.random.rand(neurons, neurons) * 0.1
         activity_history = [activity.copy()]
         apnea_events = np.random.binomial(1, apnea_factor, time_steps)
+        dt = 0.1  # continuous time step
         for t in range(time_steps):
-            # DBS effect
-            activity += dbs_intensity * np.dot(weights, activity)
+            # DBS effect (continuous time scale)
+            activity += dt * dbs_intensity * np.dot(weights, activity)
             # Sleep apnea event: sudden drop in activity
             if apnea_events[t]:
                 activity *= 0.7
@@ -112,17 +132,16 @@ def index():
         plot_url = base64.b64encode(buf.read()).decode('utf8')
         # FEA-like simulation: DBS field in a 2D grid
         grid = np.zeros((fea_grid, fea_grid))
-        # Place DBS electrode at center
         center = fea_grid // 2
         for i in range(fea_grid):
             for j in range(fea_grid):
                 dist = np.sqrt((i-center)**2 + (j-center)**2)
-                # Simulate field decay with distance
                 grid[i, j] = dbs_intensity * np.exp(-dist/3)
         fig2, ax2 = plt.subplots(figsize=(4,4))
         c = ax2.imshow(grid, cmap='Blues', interpolation='bilinear')
         ax2.set_title('DBS Field (FEA Approx)')
-        plt.colorbar(c, ax=ax2, label='Field Strength')
+        # Fix: create colorbar on the same figure as ax2
+        fig2.colorbar(c, ax=ax2, label='Field Strength')
         plt.tight_layout()
         buf2 = io.BytesIO()
         plt.savefig(buf2, format='png')
