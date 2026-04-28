@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuromorph | Jet Lag Mitigation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <header class="glass-panel">
+            <div class="logo">NEUROMORPH JET-LAG</div>
+            <div class="system-status">
+                <span id="status-dot"></span>
+                <span id="status-text">Hebbian Engine Active</span>
+            </div>
+        </header>
+
+        <section class="main-content">
+            <div class="left-panel">
+                <div class="glass-panel control-card">
+                    <h2>Simulation Parameters</h2>
+                    <div class="control-group">
+                        <label>DBS Intensity (Energy Transfer)</label>
+                        <input type="range" id="dbs-intensity" min="0" max="2" step="0.05" value="0.8">
+                        <span class="val-display" id="dbs-val">0.8</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Hebbian Learning Rate</label>
+                        <input type="range" id="hebbian-rate" min="0" max="0.1" step="0.001" value="0.02">
+                        <span class="val-display" id="hebbian-val">0.02</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Prime Repair Modulus</label>
+                        <input type="range" id="prime-mod" min="5" max="50" step="1" value="17">
+                        <span class="val-display" id="prime-val">17</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Target Circadian Phase (rad)</label>
+                        <input type="range" id="target-phase" min="0" max="6.28" step="0.01" value="0">
+                        <span class="val-display" id="target-val">0.00</span>
+                    </div>
+                    <button id="toggle-sim" class="btn-primary">START MITIGATION</button>
+                    <button id="reset-sim" class="btn-secondary">RESET NETWORK</button>
+                </div>
+
+                <div class="glass-panel stats-card">
+                    <h2>Network Health</h2>
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <div class="label">Order Parameter</div>
+                            <div class="value" id="order-param">0.00</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">Pruned Cells</div>
+                            <div class="value" id="pruned-count">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="center-panel">
+                <div class="glass-panel viz-card">
+                    <h2>Representational Neural Manifold</h2>
+                    <div id="brain-viz-container"></div>
+                    <div class="overlay-info">
+                        <p id="insight-text">Awaiting transmission...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="glass-panel chart-card">
+                    <h2>Phase Distribution</h2>
+                    <canvas id="phase-chart"></canvas>
+                </div>
+                <div class="glass-panel chart-card">
+                    <h2>Mitigation Progress</h2>
+                    <canvas id="mitigation-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <footer class="glass-panel">
+            <p><strong>Clinical Note:</strong> Congruential prime repair leverages prime-based indexing to prune asynchronous neuronal clusters, accelerating circadian re-alignment through Hebbian synaptic amplification.</p>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
