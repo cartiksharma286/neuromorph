@@ -106,7 +106,10 @@ def generate_pdf(filename):
         body_style
     ))
     # Equation 1: B-field with italics and proper sub/superscripts
-    elements.append(Paragraph("<i>B</i>(<i>z</i>) = (<i>μ₀</i> · <i>I</i> · <i>R</i>²) / (2 · (<i>R</i>² + <i>z</i>²)<sup>1.5</sup>)", equation_style))
+    elements.append(Paragraph(
+        "<b><font size='14'><i>B</i>(<i>z</i>) = \frac{<i>μ₀</i> \cdot <i>I</i> \cdot <i>R</i><sup>2</sup>}{2 \cdot (<i>R</i><sup>2</sup> + <i>z</i><sup>2</sup>)^{3/2}}</font></b>",
+        equation_style
+    ))
     
     elements.append(Paragraph("2.2 Continued Fraction Signal Decomposition", ParagraphStyle('SubSection', fontName='Helvetica-Bold', fontSize=10)))
     elements.append(Paragraph(
@@ -115,8 +118,15 @@ def generate_pdf(filename):
         body_style
     ))
     # Equation 2: Continued Fraction
-    # ReportLab supports <sub> and <sup>
-    elements.append(Paragraph("<i>f</i>(<i>ν</i>) = <i>a</i>₀ / [<i>b</i>₀ + <i>a</i>₁ / (<i>b</i>₁ + <i>a</i>₂ / (<i>b</i>₂ + ...))]", equation_style))
+    # Improved continued fraction formatting for readability
+    elements.append(Paragraph(
+        """
+        <b><font size='14'>
+        <i>f</i>(<i>ν</i>) = <i>a</i><sub>0</sub> / [<i>b</i><sub>0</sub> + <i>a</i><sub>1</sub> / (<i>b</i><sub>1</sub> + <i>a</i><sub>2</sub> / (<i>b</i><sub>2</sub> + ...)))]
+        </font></b>
+        """,
+        equation_style
+    ))
     
     # Statistical Optimization
     elements.append(Paragraph("2.3 Statistical Congruence Optimization", ParagraphStyle('SubSection', fontName='Helvetica-Bold', fontSize=10)))
@@ -125,7 +135,10 @@ def generate_pdf(filename):
         "with a congruence-based periodic stability factor:",
         body_style
     ))
-    elements.append(Paragraph("<i>Y</i><sub>opt</sub> = <i>Y</i><sub>base</sub> + ( (<i>Y</i><sub>base</sub> · 100) mod 7.3 ) / 10", equation_style))
+    elements.append(Paragraph(
+        "<b><font size='14'><i>Y</i><sub>opt</sub> = <i>Y</i><sub>base</sub> + \frac{\left( <i>Y</i><sub>base</sub> \cdot 100 \right) \bmod 7.3}{10}</font></b>",
+        equation_style
+    ))
 
     # Methods
     elements.append(Paragraph("3. Methods", section_style))

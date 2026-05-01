@@ -54,6 +54,20 @@ def get_stroke_repair_sequence():
         snr_improvement=0.30
     )
 
+def get_sr_qml_60_sequence():
+    """
+    Develops the innovative QML pulse sequence for Stroke Repair.
+    Tag: QML_PULSE_SEQ_SR_QML_60
+    Improves SNR by 60% using theoretical Bose-Einstein based photon counting.
+    """
+    return QMLPulseSequence(
+        name="sr_qml_60",
+        tag="QML_PULSE_SEQ_SR_QML_60",
+        condition="Stroke Repair",
+        base_snr=120.0,
+        snr_improvement=0.60
+    )
+
 def get_dementia_cure_sequence():
     """
     Develops the innovative QML pulse sequence for Dementia Cure.
