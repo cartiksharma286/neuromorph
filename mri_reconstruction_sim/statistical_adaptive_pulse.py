@@ -424,6 +424,54 @@ class NeurovascularPerfusionSequence(StatisticalAdaptivePulseSequence):
         }
 
 
+class HyperpolarizedAdaptiveSequence(StatisticalAdaptivePulseSequence):
+    """Hyperpolarized MRI pulse sequence with statistical optimization techniques."""
+    
+    def __init__(self, nvqlink_enabled=False):
+        super().__init__(nvqlink_enabled)
+        self.sequence_name = "Hyperpolarized MRI Seq"
+        
+    def generate_sequence(self, tissue_stats):
+        """Generates optimized parameters tailored to hyperpolarized agent dynamics."""
+        base_params = {'tr': 50, 'te': 2}
+        adapted = self.adapt_parameters(base_params, tissue_stats, target_contrast='T1')
+        
+        # Hyperpolarized specific adjustments
+        flip_angle = 5.0 + 10.0 * (1.0 - np.clip(tissue_stats.get('std_intensity', 0.1), 0, 1))
+        
+        return {
+            'sequence': 'Hyperpolarized-BSSFP',
+            'tr': adapted['optimized_tr'],
+            'te': adapted['optimized_te'],
+            'flip_angle': float(flip_angle),
+            'description': f"Hyperpolarized Seq (CNR: {adapted['predicted_cnr']:.2f})",
+            'nvqlink_accelerated': self.nvqlink_enabled
+        }
+        
+    def simulate_signal_reconstruction(self, noise_level=0.05):
+        """Simulates signal reconstruction and estimates SNR."""
+        # Simple signal simulation model for hyperpolarized tracking
+        # Simulated signal amplitude decays with metabolism/T1 and pulsing
+        signal_amplitude = 100.0 * np.exp(-0.1) 
+        
+        # Add statistical noise
+        noise = np.random.normal(0, noise_level * 100, 1000)
+        signal = signal_amplitude + noise
+        
+        # Reconstruct (mean of signal)
+        reconstructed_signal = np.mean(signal)
+        variance = np.std(signal)
+        
+        # SNR estimate (mean signal / std deviation of noise)
+        snr_estimate = reconstructed_signal / (noise_level * 100 + 1e-6)
+        
+        return {
+            'reconstructed_amplitude': reconstructed_signal,
+            'snr_estimate': snr_estimate,
+            'noise_level': noise_level
+        }
+
+
 ADAPTIVE_SEQUENCES = {
     'adaptive_se': AdaptiveSpinEcho,
     'adaptive_gre': AdaptiveGradientEcho,
@@ -432,6 +480,7 @@ ADAPTIVE_SEQUENCES = {
     'qml_thermometry': QMLThermometrySequence,
     'neuro_angiography': NeurovascularAngiographySequence,
     'neuro_perfusion': NeurovascularPerfusionSequence,
+    'hyperpolarized': HyperpolarizedAdaptiveSequence,
 }
 
 
