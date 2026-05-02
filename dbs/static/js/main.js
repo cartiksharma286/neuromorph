@@ -800,3 +800,91 @@ function loadClinicalProtocols() {
         listContainer.innerHTML = '<p style="color: red;">Error fetching protocol generation analysis.</p>';
     });
 }
+
+let paretoChartInstance = null;
+
+async function runParetoOptimization() {
+    const lambda = document.getElementById("pareto-lambda-map").value;
+    
+    // API request to math engine
+    try {
+        const res = await fetch('/api/pareto_frontier', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lambda: lambda })
+        });
+        const data = await res.json();
+        
+        // Update Chart
+        const ctx = document.getElementById('pareto-chart').getContext('2d');
+        if (paretoChartInstance) {
+            paretoChartInstance.destroy();
+        }
+        
+        // x axis represents generic trade-off continuous variable
+        const labels = Array.from({length: 100}, (_, i) => (i / 100).toFixed(2));
+        
+        paretoChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Striatal Activation Target (%)',
+                        data: data.striatal,
+                        borderColor: '#00ffcc',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Serotonin Release Yield (%)',
+                        data: data.serotonin,
+                        borderColor: '#ff00ff',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#a0a0b0' } },
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                xMin: data.optimal_x.toFixed(2),
+                                xMax: data.optimal_x.toFixed(2),
+                                borderColor: 'white',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                label: {
+                                    content: 'Nash Equilibrium',
+                                    enabled: true,
+                                    position: 'top'
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 120,
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: '#a0a0b0' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#a0a0b0', maxTicksLimit: 10 }
+                    }
+                }
+            }
+        });
+        
+        document.getElementById('pareto-yield').innerText = data.optimal_striatal.toFixed(1) + "%";
+        document.getElementById('pareto-serotonin').innerText = data.optimal_serotonin.toFixed(1) + "%";
+        
+    } catch(err) {
+        console.error("Error drawing pareto chart: ", err);
+    }
+}

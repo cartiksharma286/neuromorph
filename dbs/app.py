@@ -24,6 +24,40 @@ def simulate():
         "results": results
     })
 
+@app.route('/api/pareto_frontier', methods=['POST'])
+def pareto_frontier():
+    import numpy as np
+    data = request.json or {}
+    lambda_val = float(data.get('lambda', 0.5))
+    
+    # Simulate Combinatorial Game Theory Pareto frontier
+    # Player 1: Striatal Activation
+    # Player 2: Serotonin Release (SR)
+    # Using continuous fraction bounds and finite math equilibria
+    # Striatum(x) = (1 - exp(-x/lambda))
+    # SR(y) = (1 - x^2) + epsilon*lambda
+    
+    x_vals = np.linspace(0, 1, 100)
+    
+    striatal_activation = (1.0 - np.exp(-x_vals / lambda_val)) * 100
+    serotonin_release = ((1.0 - x_vals**1.5) + (0.1 * lambda_val)) * 100
+    
+    # Pareto optimal point (Nash intersection representation)
+    # where Striatal ~ Serotonin
+    diffs = np.abs(striatal_activation - serotonin_release)
+    opt_idx = np.argmin(diffs)
+    
+    opt_striatal = float(striatal_activation[opt_idx])
+    opt_serotonin = float(serotonin_release[opt_idx])
+    
+    return jsonify({
+        "striatal": striatal_activation.tolist(),
+        "serotonin": serotonin_release.tolist(),
+        "optimal_x": float(x_vals[opt_idx]),
+        "optimal_striatal": opt_striatal,
+        "optimal_serotonin": opt_serotonin
+    })
+
 @app.route('/api/analyze-signal', methods=['POST'])
 def analyze_signal():
     data = request.json

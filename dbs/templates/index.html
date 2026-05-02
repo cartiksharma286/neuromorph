@@ -30,6 +30,7 @@
             <button class="tab-btn" onclick="switchTab('fea', event)">Cortical FEA Manifolds</button>
             <button class="tab-btn" onclick="switchTab('smartaging', event)">Smart Aging Sim</button>
             <button class="tab-btn" onclick="switchTab('protocols', event)">Clinical Protocols</button>
+            <button class="tab-btn" onclick="switchTab('pareto', event)">Pareto Optimization</button>
         </nav>
 
         <aside class="sidebar-left">
@@ -167,6 +168,19 @@
                 </div>
             </div>
 
+            <div id="pareto-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Combinatorial Game Theory</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Calculate the optimal pareto frontier balancing Striatal Activation and Serotonin Release using combinatorial game equilibria.
+                    </p>
+                    <div style="margin-bottom: 15px;">
+                        <label>Subthalamic Coupling (\(\lambda\)) <span id="pareto-lambda-disp">0.5</span></label>
+                        <input type="range" id="pareto-lambda-map" min="0.1" max="1.0" step="0.1" value="0.5" oninput="document.getElementById('pareto-lambda-disp').innerText = this.value">
+                    </div>
+                    <button class="btn-primary" id="btn-pareto-sim" onclick="runParetoOptimization()" style="margin-top: 10px;">Find Equilibria</button>
+                </div>
+            </div>
         </aside>
 
         <main class="main-view">
@@ -287,6 +301,31 @@
                         </div>
                         <div style="margin-top: 15px; color: var(--text-dim); font-size: 13px; text-align: center; max-width: 600px;">
                             Simulation demonstrates optimized non-linear cognitive preservation over a 10-year horizon, leveraging closed-loop telemetry and dynamic power-efficiency algorithms to maximize neural yield.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="pareto-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <div class="panel-header">
+                        <h2 style="font-size: 14px;">Equilibria: Pareto Frontier</h2>
+                        <div class="status-indicator">
+                            <span style="display:inline-block; width: 8px; height: 8px; background: #ff00ff; border-radius: 50%; margin-right: 5px;"></span>
+                            <span>Nash Computed</span>
+                        </div>
+                    </div>
+                    <div style="flex-grow: 1; position: relative; padding: 20px;">
+                        <canvas id="pareto-chart" style="width: 100%; height: 100%; max-height: 400px;"></canvas>
+                    </div>
+                    <div id="pareto-metrics" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px;">
+                        <div class="stat-card">
+                            <div class="stat-value" id="pareto-yield" style="color: #00ffcc;">--</div>
+                            <div class="stat-label">Optimal Striatal Yield</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="pareto-serotonin" style="color: #ff00ff;">--</div>
+                            <div class="stat-label">Serotonin Preservation</div>
                         </div>
                     </div>
                 </div>
