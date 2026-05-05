@@ -94,7 +94,45 @@ async function runOptimization() {
         alert("Optimization Failed");
         console.error(e);
     } finally {
-        btn.textContent = "Run Statistical Optimization";
+        if (currentStrategy === 'quantum') {
+            btn.textContent = "Run Quantum Optimization";
+        } else if (currentStrategy === 'fractions') {
+            btn.textContent = "Run Continued Fraction Model";
+        } else {
+            btn.textContent = "Run Statistical Optimization";
+        }
         btn.disabled = false;
+    }
+}
+
+let currentStrategy = 'quantum';
+
+function selectStrategy(strategy, btnElement) {
+    currentStrategy = strategy;
+    
+    // Update button styles
+    document.querySelectorAll('.strat-btn').forEach(btn => {
+        btn.style.color = '#64748b';
+        btn.style.fontWeight = 'normal';
+    });
+    btnElement.style.color = 'var(--accent-cyan)';
+    btnElement.style.fontWeight = 'bold';
+    
+    const titleObj = document.getElementById('allocation-title');
+    const badgeObj = document.getElementById('modelBadge');
+    const runBtn = document.querySelector('.btn-primary');
+    
+    if (strategy === 'quantum') {
+        titleObj.innerText = "Optimized Allocation: Quantum Evaluator";
+        badgeObj.innerHTML = "Model: Phase-Space Quantum Portfolio";
+        runBtn.textContent = "Run Quantum Optimization";
+    } else if (strategy === 'fractions') {
+        titleObj.innerText = "Optimized Allocation: Recursive Fractions";
+        badgeObj.innerHTML = "Model: High-Frequency N-depth Continued Fraction";
+        runBtn.textContent = "Run Continued Fraction Model";
+    } else if (strategy === 'statistical') {
+        titleObj.innerText = "Optimized Allocation: Entropy Regulated";
+        badgeObj.innerHTML = "Model: Dirichlet Posterior + Info Entropy";
+        runBtn.textContent = "Run Statistical Optimization";
     }
 }

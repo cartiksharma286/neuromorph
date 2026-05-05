@@ -78,9 +78,15 @@
 
         <!-- Right Panel: Results -->
         <div class="panel right-panel">
+            <div class="strategy-tabs" style="display:flex; margin-bottom: 20px; gap: 15px; border-bottom: 1px solid #1e293b; padding-bottom: 10px;">
+                <button class="strat-btn active" onclick="selectStrategy('quantum', this)" style="background:transparent; border:none; color:var(--accent-cyan); font-weight:bold; cursor:pointer; padding:5px 10px;">1. Quantum Surface Integrals</button>
+                <button class="strat-btn" onclick="selectStrategy('fractions', this)" style="background:transparent; border:none; color:#64748b; cursor:pointer; padding:5px 10px;">2. Continued Fractions Payouts</button>
+                <button class="strat-btn" onclick="selectStrategy('statistical', this)" style="background:transparent; border:none; color:#64748b; cursor:pointer; padding:5px 10px;">3. Statistical Estimates</button>
+            </div>
+            
             <div class="results-header">
-                <h2>Optimized Allocation</h2>
-                <div class="model-badge">Model: Ridge Regression + NVQ Sensitivity</div>
+                <h2 id="allocation-title">Optimized Allocation: Quantum Evaluator</h2>
+                <div class="model-badge" id="modelBadge">Model: Phase-Space Quantum Portfolio \(\Sigma\)</div>
             </div>
 
             <div class="holdings-container">
