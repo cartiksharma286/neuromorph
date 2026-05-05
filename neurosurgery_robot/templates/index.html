@@ -58,6 +58,7 @@
                         <button class="tab-btn" data-tab="tab-cryo">N2 Cryo</button>
                         <button class="tab-btn" data-tab="tab-robotics">Surgical Robotics</button>
                         <button class="tab-btn" data-tab="tab-5g">5G Guidance</button>
+                        <button class="tab-btn" data-tab="tab-prostate">Prostate Surgery</button>
                     </div>
 
                     <!-- Thermal Tab -->
@@ -352,6 +353,42 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="tab-prostate" class="tab-content">
+                    <h2 style="color: #3b82f6;">🔬 Prostate Imaging DCI</h2>
+                    <div class="prostate-container" style="width: 100%;">
+                        <p style="color: #93c5fd; font-size: 12px; margin: 10px 0;">Pulse Sequence SNR Simulation using Phi Continued Fractions</p>
+                        
+                        <div id="prostate-img-container" style="width: 100%; min-height: 200px; background: #0f172a; border: 1px solid #3b82f6; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <span style="color:#475569; font-size:12px;">Run simulation to view reconstructured prostate k-space...</span>
+                        </div>
+
+                        <div class="sidebar-controls">
+                            <button id="btn-run-prostate" class="btn-primary" style="background: linear-gradient(135deg, #3b82f6, #60a5fa); width: 100%; margin-bottom: 10px;" onclick="runProstateSim()">
+                                RECONSTRUCT SNR (PHI DCI)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                    function runProstateSim() {
+                        const container = document.getElementById('prostate-img-container');
+                        container.innerHTML = '<span style="color:#60a5fa;">Simulating phi interference & k-space transforms...</span>';
+                        fetch('/api/prostate_snr')
+                            .then(r => r.json())
+                            .then(data => {
+                                if(data.success) {
+                                    container.innerHTML = `<img src="${data.image}" style="width:100%; height:auto; display:block;">`;
+                                } else {
+                                    container.innerHTML = '<span style="color:#ef4444;">Simulation failed</span>';
+                                }
+                            })
+                            .catch(err => {
+                                container.innerHTML = `<span style="color:#ef4444;">Error: ${err}</span>`;
+                            });
+                    }
+                </script>
 
                 <div class="glass-panel logs-view">
                     <h2>System Logs</h2>

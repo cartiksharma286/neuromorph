@@ -824,7 +824,7 @@ def get_snr_matrix():
     try:
         # Generate SNR data for different coil types and sequences
         coil_types = ['Standard', 'Birdcage', 'Surface Array', 'Quantum Vascular', 'Head Coil', 'Knee Coil']
-        sequences = ['SE', 'GRE', 'STIR', 'FLAIR', 'Spiral', 'EPI', 'T2*', 'DementiaCurePulse']
+        sequences = ['SE', 'GRE', 'STIR', 'FLAIR', 'Spiral', 'EPI', 'T2*', 'DementiaCurePulse', 'Prostate_DCI_Phi']
         
         matrix_data = []
         for coil in coil_types:
@@ -1285,6 +1285,7 @@ def generate_seq():
 
         # Sequence-specific physics parameters
         SEQ_PARAMS = {
+            'Prostate_DCI_Phi':          {'desc': 'Prostate DCI (Continued Fraction Phi Spin Echo)', 'rf_shape': 'sinc'},
             'DementiaCurePulse':         {'desc': 'Dementia Cure Pulse Sequence (Continued Fractions + Stat. Var.)', 'rf_shape': 'block'},
             'SE':                        {'desc': 'Spin Echo',                         'rf_shape': 'sinc'},
             'InversionRecovery':         {'desc': 'Inversion Recovery',                'rf_shape': 'sinc'},

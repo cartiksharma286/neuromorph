@@ -943,6 +943,61 @@ def thermal_history():
         'simulation_time_s': thermo.accumulated_time,
     }))
 
+@app.route('/api/prostate_snr')
+def prostate_snr():
+    import base64
+    import io
+    from scipy.fft import fft2, ifft2, fftshift
+
+    # 1. Create a simulated prostate mask (ellipse)
+    x = np.linspace(-1, 1, 256)
+    y = np.linspace(-1, 1, 256)
+    X, Y = np.meshgrid(x, y)
+    
+    # Peripheral zone and central zone
+    prostate_base = 1.0 * np.exp(-(X**2)/0.3 - (Y**2)/0.4)
+    tumor = 0.8 * np.exp(-((X-0.3)**2 + (Y-0.2)**2)/0.02)
+    noise = np.random.normal(0, 0.4, X.shape)
+    
+    # Original image heavily degraded by noise
+    original = prostate_base + tumor + noise
+    
+    # 2. Convert to k-space
+    k_space = fftshift(fft2(original))
+    k_mag = np.log(np.abs(k_space) + 1)
+    
+    # 3. Apply Phi DCI SNR reconstruction filter
+    # Golden ratio convergents: 1.618
+    phi_filter = np.exp(-1.618 * (X**2 + Y**2) * 5)
+    
+    k_space_recon = k_space * phi_filter
+    k_mag_recon = np.log(np.abs(k_space_recon) + 1)
+    
+    # Back to spatial domain
+    recon = np.abs(ifft2(fftshift(k_space_recon)))
+    
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    axes[0].imshow(original, cmap='bone')
+    axes[0].set_title('Raw Degraded Signal')
+    axes[0].axis('off')
+    
+    axes[1].imshow(k_mag, cmap='viridis')
+    axes[1].set_title('K-Space')
+    axes[1].axis('off')
+    
+    axes[2].imshow(recon, cmap='bone')
+    axes[2].set_title('Prostate Phi-DCI SNR Recon')
+    axes[2].axis('off')
+    
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', facecolor='#0f172a', dpi=150)
+    buf.seek(0)
+    plt.close(fig)
+    
+    b64_img = base64.b64encode(buf.read()).decode('utf-8')
+    return jsonify({"success": True, "image": r"data:image/png;base64," + b64_img})
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('FLASK_RUN_PORT', 5001))
     host = os.environ.get('FLASK_RUN_HOST', '0.0.0.0')

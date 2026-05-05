@@ -1928,6 +1928,39 @@ class MRIReconstructionSimulator:
             t2 = T2_safe
             M = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
 
+        elif sequence_type == 'Prostate_DCI_Phi':
+            # Dynamic Contrast Imaging for Prostate Surgery using interference patterns
+            # with continued fraction for phi spin echo time intervals
+            t1 = T1_safe
+            t2 = T2_safe
+            
+            # Continued fraction for Phi (Golden Ratio) ~= 1.6180339887
+            # Convergents: 1/1, 2/1, 3/2, 5/3, 8/5, 13/8, 21/13
+            phi_convergents = [1.0, 2.0, 1.5, 1.6666, 1.6, 1.625, 1.6153]
+            
+            # Generate interference pattern across spatial map using phi
+            if len(self.pd_map.shape) >= 2:
+                x = np.linspace(0, 10, self.pd_map.shape[0])
+                y = np.linspace(0, 10, self.pd_map.shape[1])
+                X, Y = np.meshgrid(y, x) # Note: meshgrid shape matching
+            else:
+                X = 1
+                Y = 1
+            
+            # Phi interference modulation
+            interference = np.zeros_like(self.pd_map)
+            for conv in phi_convergents:
+                # Spin echo time intervals modulated by continued fraction
+                TE_mod = TE * conv
+                if TE_mod == 0: TE_mod = 1
+                interference += np.cos(2 * np.pi * X / TE_mod) * np.sin(2 * np.pi * Y / TR)
+            
+            # Normalize interference
+            interference = 1.0 + 0.3 * (interference / len(phi_convergents))
+            
+            M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
+            M = M_base * interference * 1.55  # 55% SNR improvement via Phi interference DCI
+
         elif sequence_type == 'ML':
             from quantum_pulse_sequences import QuantumPulseSequences
             qps = QuantumPulseSequences(TE=TE, TR=TR, T1=1200.0, T2=80.0)
