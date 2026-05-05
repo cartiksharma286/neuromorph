@@ -173,7 +173,7 @@
                             <th>Base Pop</th>
                             <th>New Pop</th>
                             <th>Growth (%)</th>
-                            <th>Est. GDP / Capita ($)</th>
+                            <th>Est. GDP / Capita (CAD / EUR)</th>
                         </tr>
                     </thead>
                     <tbody id="resultsBody">
@@ -196,7 +196,8 @@
 
     <script>
         const formatPop = new Intl.NumberFormat('en-CA');
-        const formatCurr = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+        const formatCAD = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 });
+        const formatEUR = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 
         async function runSimulation() {
             const btn = document.querySelector('.btn');
@@ -221,7 +222,7 @@
                         <td style="color: #94a3b8;">${formatPop.format(r.base_pop)}</td>
                         <td style="color: #fff; font-weight:bold;">${formatPop.format(r.new_pop)}</td>
                         <td class="growth-positive">+${r.growth_pct}%</td>
-                        <td style="color: var(--accent-cyan); font-weight:bold;">${formatCurr.format(r.est_gdp_pc)}</td>
+                        <td style="color: var(--accent-cyan); font-weight:bold;">${formatCAD.format(r.est_gdp_pc)} / ${formatEUR.format(r.est_gdp_pc * 0.68)}</td>
                     `;
                     tbody.appendChild(tr);
                 });
