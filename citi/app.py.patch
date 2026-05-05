@@ -1,0 +1,32 @@
+--- app.py
++++ app.py
+@@ -107,6 +107,29 @@
+     return jsonify(list(results.values()))
+ 
+ 
++@app.route('/api/market_data')
++def market_data():
++    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
++    sp500_base = 5000
++    lithium_base = 14000
++    vix_base = 13.5
++    
++    sp500 = [{"month": m, "price": round(sp500_base * (1 + (i*0.01) + random.uniform(-0.02, 0.02)), 2)} for i, m in enumerate(months)]
++    lithium = [{"month": m, "price": round(lithium_base * (1 + (i*0.02) + random.uniform(-0.05, 0.05)), 2)} for i, m in enumerate(months)]
++    vix = [{"month": m, "price": round(vix_base * (1 + random.uniform(-0.1, 0.2)), 2)} for m in months]
++    
++    return jsonify({
++        "sp500": sp500,
++        "lithium": lithium,
++        "vix": vix,
++        "meta": {
++            "sp_target": sp500[-1]["price"],
++            "lithium_target": lithium[-1]["price"],
++            "vix_target": vix[-1]["price"]
++        }
++    })
++
++
+ @app.route('/api/minerals/strategy', methods=['POST'])
+ def mineral_strategy():
+     data = request.json

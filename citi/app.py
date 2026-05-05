@@ -50,9 +50,62 @@ def download_report():
              
     return send_from_directory('.', report_file, as_attachment=True)
 
+@app.after_request
+def no_cache_html(response):
+    if 'text/html' in response.content_type:
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    return response
+
+
 @app.route('/')
 def serve_index():
     return send_from_directory('www', 'index.html')
+
+@app.route('/api/market_data')
+def market_data():
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    sp500_base = 5000
+    lithium_base = 14000
+    vix_base = 13.5
+    
+    sp500 = [{"month": m, "price": round(sp500_base * (1 + (i*0.01) + random.uniform(-0.02, 0.02)), 2)} for i, m in enumerate(months)]
+    lithium = [{"month": m, "price": round(lithium_base * (1 + (i*0.02) + random.uniform(-0.05, 0.05)), 2)} for i, m in enumerate(months)]
+    vix = [{"month": m, "price": round(vix_base * (1 + random.uniform(-0.1, 0.2)), 2)} for m in months]
+
+    # Yield Curve (Treasury & Corporate spreads)
+    maturities = ["1M", "3M", "6M", "1Y", "2Y", "5Y", "10Y", "30Y"]
+    yield_curve = []
+    for i, mat in enumerate(maturities):
+        inversion_discount = -0.8 if i < 3 else 0.0
+        treasury = round(4.5 + inversion_discount + (i * 0.12) + random.uniform(-0.15, 0.15), 2)
+        corporate = round(treasury + 1.0 + (i * 0.05) + random.uniform(-0.1, 0.1), 2)
+        yield_curve.append({"maturity": mat, "treasury": treasury, "corporate": corporate})
+
+    # Market Characteristics
+    ten_y = yield_curve[6]["treasury"]
+    characteristics = {
+        "pe_ratio": round(random.uniform(20.0, 28.0), 1),
+        "earnings_yield": round(random.uniform(3.5, 5.2), 2),
+        "10y_treasury": ten_y,
+        "equity_risk_premium": round(ten_y - random.uniform(0.5, 1.5), 2),
+        "credit_spread": round(yield_curve[6]["corporate"] - ten_y, 2),
+        "vix_current": vix[-1]["price"]
+    }
+
+    return jsonify({
+        "sp500": sp500,
+        "lithium": lithium,
+        "vix": vix,
+        "yield_curve": yield_curve,
+        "characteristics": characteristics,
+        "meta": {
+            "sp_target": sp500[-1]["price"],
+            "lithium_target": lithium[-1]["price"],
+            "vix_target": vix[-1]["price"]
+        }
+    })
 
 @app.route('/api/portfolio')
 def get_portfolio():
@@ -267,6 +320,23 @@ def generate_mineral_strategy():
 
 # ... IBKR ...
 
+@app.route('/api/connect_ibkr', methods=['POST'])
+def connect_ibkr():
+    """
+    Simulates NVQLink broker connection handshake.
+    In production this would authenticate via IBKR TWS API / FIX protocol.
+    """
+    session_token = f"NVQ-{random.randint(100000, 999999)}"
+    return jsonify({
+        "status": "connected",
+        "message": f"NVQLink session established ({session_token})",
+        "session_token": session_token,
+        "protocol": "FIX 4.4 / NVQLink v2",
+        "latency_ms": round(random.uniform(1.2, 4.8), 2),
+        "market_data_feed": "live"
+    })
+
+
 @app.route('/api/optimize_trade', methods=['POST'])
 def optimize_trade():
     """
@@ -437,15 +507,14 @@ def place_order():
     """
     data = request.json
     ticker = data.get('ticker')
-    action = data.get('action') # BUY / SELL
+    action = data.get('action')  # BUY / SELL
     price = data.get('price')
-    quantity = data.get('quantity', 100) # Default lot size
-    
-    # Simulate routing delay
-    import time
-    time.sleep(0.8)
-    
-    # Generate random Order ID
+    quantity = data.get('quantity', 100)  # Default lot size
+
+    if not ticker or action not in ('BUY', 'SELL'):
+        return jsonify({"error": "Invalid order parameters"}), 400
+
+    # Generate order ID (no blocking sleep — protocol responds immediately)
     order_id = f"ORD-{random.randint(10000, 99999)}-{ticker}"
     
     return jsonify({
