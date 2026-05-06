@@ -1,0 +1,26 @@
+Starting background simulation thread...
+Starting Sunnybrook Cloud Console...
+ * Serving Flask app 'app'
+ * Debug mode: on
+2026-05-06 16:05:06,253 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:3055
+ * Running on http://192.168.2.14:3055
+2026-05-06 16:05:06,253 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-05-06 16:05:06,257 - werkzeug - INFO -  * Restarting with stat
+2026-05-06 16:05:06,866 - werkzeug - WARNING -  * Debugger is active!
+2026-05-06 16:05:06,902 - werkzeug - INFO -  * Debugger PIN: 360-426-087
+Starting background simulation thread...
+Starting Sunnybrook Cloud Console...
+Traceback (most recent call last):
+  File "/Users/cartiksharma/Downloads/neuromorph-main-10/network_topology_w_rf_coil/sunnybrook_console/backend/app.py", line 234, in <module>
+    app.run(host='0.0.0.0', port=3055, debug=True, threaded=True)
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/flask/app.py", line 612, in run
+    run_simple(t.cast(str, host), port, self, **options)
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/werkzeug/serving.py", line 1115, in run_simple
+    run_with_reloader(
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/werkzeug/_reloader.py", line 453, in run_with_reloader
+    ensure_echo_on()
+  File "/Users/cartiksharma/Library/Python/3.9/lib/python/site-packages/werkzeug/_reloader.py", line 433, in ensure_echo_on
+    termios.tcsetattr(sys.stdin, termios.TCSANOW, attributes)
+termios.error: (4, 'Interrupted system call')

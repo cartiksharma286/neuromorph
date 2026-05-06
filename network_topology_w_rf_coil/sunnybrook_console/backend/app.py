@@ -231,4 +231,4 @@ def optimize_coil():
 if __name__ == '__main__':
     print("Starting Sunnybrook Cloud Console...")
     # threaded=True is default in recent Flask versions, but good to be explicit or use gunicorn in prod
-    app.run(port=3000, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=3055, debug=True, threaded=True)
