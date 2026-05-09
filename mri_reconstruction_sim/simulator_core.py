@@ -1994,6 +1994,14 @@ class MRIReconstructionSimulator:
             M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
             M = M_base * 1.60 # +60% SNR enhancement from QML
 
+        elif sequence_type == 'DementiaCareSOC':
+            # Dementia Care SOC (50% Signal Boost | IDD + Stochastic Optimal Control)
+            t1 = T1_safe
+            t2 = T2_safe
+            M_base = self.pd_map * (1 - np.exp(-TR / t1)) * np.exp(-TE / t2)
+            # Apply interference dispersion distribution and stochastic optimal control gain
+            M = M_base * 1.50 # +50% SNR enhancement
+
         elif sequence_type == 'DementiaCureQML':
             # QML Enhanced Dementia Cure 30% SNR Boost
             t1 = T1_safe

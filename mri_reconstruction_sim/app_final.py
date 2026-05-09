@@ -855,6 +855,55 @@ def snr_matrix():
 
 import os
 
+# ── Dementia Care SOC Endpoint ────────────────────────────────────────────────
+
+@app.route('/api/qml_pulse/dementia_care_soc', methods=['POST'])
+def api_dementia_care_soc():
+    """
+    50% signal-boost dementia care sequence:
+    Interference Dispersion Distributions + Stochastic Optimal Control (HJB).
+    """
+    try:
+        from quantum_neuroimaging_qml import get_dementia_care_soc_sequence
+        seq = get_dementia_care_soc_sequence()
+        final_snr = seq.apply()
+
+        # Also run the full SOC + IDD analysis via the adaptive sequence class
+        soc_seq = create_adaptive_sequence('dementia_care_soc', False)
+        mock_kspace = np.random.default_rng(11).standard_normal((128, 128)) + \
+                      1j * np.random.default_rng(12).standard_normal((128, 128))
+        tissue_stats = soc_seq.estimate_tissue_statistics(mock_kspace)
+        seq_params   = soc_seq.generate_sequence(tissue_stats)
+
+        return jsonify(sanitize_for_json({
+            'success': True,
+            'metrics': {
+                'name':               seq.name,
+                'tag':                seq.tag,
+                'condition':          seq.condition,
+                'base_snr':           round(seq.base_snr, 1),
+                'expected_improvement': f"{int(seq.snr_improvement * 100)}%",
+                'enhanced_snr':       round(final_snr, 1),
+                'optimal_tr_ms':      seq_params['tr'],
+                'optimal_te_ms':      seq_params['te'],
+                'optimal_flip_angle': seq_params['flip_angle'],
+                'signal_boost_pct':   seq_params['signal_boost_pct'],
+                'dominant_noise_model': seq_params['dominant_noise_model'],
+                'interference_suppression_gain': seq_params['interference_suppression_gain'],
+                'dispersion_weights': seq_params['dispersion_weights'],
+                'soc_cnr_improvement_pct': seq_params['soc_cnr_improvement_pct'],
+                'message': (
+                    'Dementia care biomarkers enhanced with 50% signal boost via '
+                    'Interference Dispersion Distributions (IDD) and '
+                    'Stochastic Optimal Control (HJB).'
+                ),
+            }
+        }))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # ── rTMS Neural Repair Endpoints ──────────────────────────────────────────────
 
 @app.route('/api/rtms_neural_repair', methods=['POST'])
@@ -1048,7 +1097,7 @@ if __name__ == '__main__':
     print("  ✓ Ultra-High Resolution Neurovasculature")
     print("  ✓ Pareto, Geodesic, Quantum ML and StatLLM")
     print("=" * 80)
-    port = int(os.environ.get('FLASK_RUN_PORT', 5055))
+    port = int(os.environ.get('FLASK_RUN_PORT', 5057))
     print(f"Server running on http://0.0.0.0:{port}")
     print("=" * 80)
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)

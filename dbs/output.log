@@ -290,3 +290,6 @@
 127.0.0.1 - - [07/May/2026 15:45:33] "GET /api/system-specs HTTP/1.1" 200 -
 127.0.0.1 - - [07/May/2026 15:47:04] "GET /api/system-specs HTTP/1.1" 200 -
 127.0.0.1 - - [07/May/2026 15:54:34] "GET /api/system-specs HTTP/1.1" 200 -
+127.0.0.1 - - [09/May/2026 11:57:17] "GET / HTTP/1.1" 200 -
+/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/multiprocessing/resource_tracker.py:216: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

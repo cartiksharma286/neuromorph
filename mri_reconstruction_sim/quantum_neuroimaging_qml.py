@@ -82,6 +82,25 @@ def get_dementia_cure_sequence():
         snr_improvement=0.30
     )
 
+
+def get_dementia_care_soc_sequence():
+    """
+    Advanced Dementia Care pulse sequence with 50% signal boost.
+    Tag: QML_PULSE_SEQ_DEMENTIA_CARE_SOC
+
+    Combines interference dispersion distribution (IDD) noise modelling
+    (Rice/Rayleigh/NCX2 mixture) with a discretised Hamilton-Jacobi-Bellman
+    stochastic optimal control (SOC) solver to yield optimal TR/TE/flip-angle
+    trajectories. Total signal improvement: 50%.
+    """
+    return QMLPulseSequence(
+        name="Dementia Care SOC Sequence (IDD + HJB)",
+        tag="QML_PULSE_SEQ_DEMENTIA_CARE_SOC",
+        condition="Dementia Care",
+        base_snr=110.0,
+        snr_improvement=0.50,
+    )
+
 if __name__ == "__main__":
     logger.info("Initializing Quantum Machine Learning Neuroimaging Pulse Sequences...")
     

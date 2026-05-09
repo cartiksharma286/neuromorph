@@ -80,11 +80,12 @@ def run_beamformer():
     # Run the simulation script
     import subprocess
     # Run synchronously for now (simulation is faster with vectorization)
-    result = subprocess.run([sys.executable, 'meg_simulation.py'], cwd=os.path.dirname(os.path.abspath(__file__)))
+    cwd_path = os.path.dirname(os.path.abspath(__file__))
+    result = subprocess.run([sys.executable, 'meg_simulation.py'], cwd=cwd_path)
     
     if result.returncode == 0:
         # Read the generated HTML
-        with open('meg_simulation_interactive.html', 'r') as f:
+        with open(os.path.join(cwd_path, 'meg_simulation_interactive.html'), 'r') as f:
             return f.read()
     else:
         return "<h1>Error running Beamformer Simulation</h1>"
