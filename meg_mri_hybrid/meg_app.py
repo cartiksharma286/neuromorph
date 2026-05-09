@@ -58,6 +58,7 @@ def index():
             <div class="controls">
                 <button class="btn" onclick="startSim('/run_simulation')">Run BET & SSS Analysis</button>
                 <button class="btn btn-secondary" onclick="startSim('/run_beamformer')">Run Beamformer & Geodesics</button>
+                <button class="btn btn-accent" onclick="startSim('/run_qml_source_localization')">Run QML Source Localization</button>
                 <button class="btn btn-secondary" onclick="startSim('/run_dewar')">Run Dewar Quantum CFD</button>
                 <button class="btn btn-accent" onclick="startSim('/run_nvqlink')">Run Real-Time NVQLink SSS</button>
                 <button class="btn btn-success" onclick="startSim('/run_prime_vortex')">Run Prime Vortex Generator</button>
@@ -99,6 +100,18 @@ def run_beamformer():
             return f.read()
     else:
         return "<h1>Error running Beamformer Simulation</h1>"
+
+@app.route('/run_qml_source_localization')
+def run_qml_source_localization():
+    import subprocess
+    cwd_path = os.path.dirname(os.path.abspath(__file__))
+    result = subprocess.run([sys.executable, 'meg_qml_source_localization.py'], cwd=cwd_path)
+    
+    if result.returncode == 0:
+        with open(os.path.join(cwd_path, 'qml_localization_report.html'), 'r') as f:
+            return f.read()
+    else:
+        return "<h1>Error running QML Source Localization Simulation</h1>"
 
 @app.route('/run_nvqlink')
 def run_nvq():
