@@ -59,6 +59,7 @@ def index():
                 <button class="btn" onclick="startSim('/run_simulation')">Run BET & SSS Analysis</button>
                 <button class="btn btn-secondary" onclick="startSim('/run_beamformer')">Run Beamformer & Geodesics</button>
                 <button class="btn btn-accent" onclick="startSim('/run_qml_source_localization')">Run QML Source Localization</button>
+                <button class="btn btn-secondary" onclick="startSim('/run_meg_lut')">MEG Neuroimage LUT Visuals</button>
                 <button class="btn btn-secondary" onclick="startSim('/run_dewar')">Run Dewar Quantum CFD</button>
                 <button class="btn btn-accent" onclick="startSim('/run_nvqlink')">Run Real-Time NVQLink SSS</button>
                 <button class="btn btn-success" onclick="startSim('/run_prime_vortex')">Run Prime Vortex Generator</button>
@@ -112,6 +113,18 @@ def run_qml_source_localization():
             return f.read()
     else:
         return "<h1>Error running QML Source Localization Simulation</h1>"
+
+@app.route('/run_meg_lut')
+def run_meg_lut():
+    import subprocess
+    cwd_path = os.path.dirname(os.path.abspath(__file__))
+    result = subprocess.run([sys.executable, 'meg_grayscaled_lut_visualization.py'], cwd=cwd_path)
+    
+    if result.returncode == 0:
+        with open(os.path.join(cwd_path, 'meg_neuroimage_lut_report.html'), 'r') as f:
+            return f.read()
+    else:
+        return "<h1>Error running MEG LUT Visuals</h1>"
 
 @app.route('/run_nvqlink')
 def run_nvq():
