@@ -21,24 +21,31 @@ def index():
     <head>
         <title>MEG Advanced Processing Node</title>
         <style>
-            body { background: #0f172a; color: #e2e8f0; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-            .card { background: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; text-align: center; max-width: 500px; width: 100%; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); }
+            body { background: #0f172a; color: #e2e8f0; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 100vh; margin: 0; padding-top: 2rem; }
+            .card { background: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; text-align: center; max-width: 800px; width: 100%; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); z-index: 10; }
             h1 { margin-top: 0; color: #818cf8; }
-            p { color: #94a3b8; margin-bottom: 2rem; }
-            .btn { display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; cursor: pointer; border: none; font-size: 1rem; transition: transform 0.2s; margin: 5px; }
+            p { color: #94a3b8; margin-bottom: 1rem; }
+            .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+            .btn { display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; cursor: pointer; border: none; font-size: 0.95rem; transition: transform 0.2s; }
             .btn-secondary { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
-            .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4); }
             .btn-accent { background: linear-gradient(135deg, #ec4899, #f43f5e); }
             .btn-success { background: linear-gradient(135deg, #10b981, #34d399); }
+            .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4); }
             .spinner { border: 4px solid #334155; border-top: 4px solid #818cf8; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: none; margin: 0 auto 1rem; }
             @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            #viewer { width: 95vw; height: 75vh; border: none; border-radius: 12px; margin-top: 20px; background: #1e293b; display: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); }
         </style>
         <script>
             function startSim(route) {
-                document.querySelectorAll('.btn').forEach(b => b.style.display = 'none');
                 document.getElementById('spinner').style.display = 'block';
-                document.getElementById('status').innerText = 'Running Simulation (this may take a few seconds)...';
-                window.location.href = route;
+                document.getElementById('status').innerText = 'Running Simulation...';
+                const viewer = document.getElementById('viewer');
+                viewer.style.display = 'block';
+                viewer.src = route;
+                viewer.onload = function() {
+                    document.getElementById('spinner').style.display = 'none';
+                    document.getElementById('status').innerText = 'Simulation Complete.';
+                };
             }
         </script>
     </head>
@@ -47,13 +54,16 @@ def index():
             <h1>MEG Processing Node</h1>
             <p>Dedicated compute node for MEG/MRI Hybrid Simulations.</p>
             <div id="spinner" class="spinner"></div>
-            <p id="status">Ready to compute.</p>
-            <button class="btn" onclick="startSim('/run_simulation')">Run BET & SSS Analysis</button>
-            <button class="btn btn-secondary" onclick="startSim('/run_dewar')">Run Dewar Quantum CFD</button>
-            <button class="btn btn-accent" onclick="startSim('/run_nvqlink')">Run Real-Time NVQLink SSS</button>
-            <button class="btn btn-secondary" onclick="startSim('/run_beamformer')">Run Beamformer & Geodesics</button>
-            <button class="btn btn-success" onclick="startSim('/run_prime_vortex')">Run Prime Vortex Generator</button>
+            <p id="status" style="font-weight: bold;">Ready to compute.</p>
+            <div class="controls">
+                <button class="btn" onclick="startSim('/run_simulation')">Run BET & SSS Analysis</button>
+                <button class="btn btn-secondary" onclick="startSim('/run_beamformer')">Run Beamformer & Geodesics</button>
+                <button class="btn btn-secondary" onclick="startSim('/run_dewar')">Run Dewar Quantum CFD</button>
+                <button class="btn btn-accent" onclick="startSim('/run_nvqlink')">Run Real-Time NVQLink SSS</button>
+                <button class="btn btn-success" onclick="startSim('/run_prime_vortex')">Run Prime Vortex Generator</button>
+            </div>
         </div>
+        <iframe id="viewer"></iframe>
     </body>
     </html>
     """
