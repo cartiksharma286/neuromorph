@@ -17,4 +17,4 @@ import app_final
 if __name__ == '__main__':
     # Force the app to run if it doesn't already
     if hasattr(app_final, 'app'):
-        app_final.app.run(host='0.0.0.0', port=5050, debug=True)
+        app_final.app.run(host='0.0.0.0', port=5055, debug=False, use_reloader=False)
