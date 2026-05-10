@@ -28,6 +28,8 @@
                 <li onclick="switchTab('cost')"><a href="#">Cost & Billing</a></li>
                 <li onclick="switchTab('security')"><a href="#">Security</a></li>
                 <li onclick="switchTab('coil')"><a href="#">RF Coil Design</a></li>
+                <li onclick="switchTab('mr-infra')"><a href="#">MR Signal Reconstruction</a></li>
+                <li onclick="switchTab('mr-research')"><a href="#">MR Research Computing</a></li>
             </ul>
             <div class="status-panel">
                 <div class="status-item">
@@ -130,6 +132,44 @@
                     <h3>Security protocols</h3>
                     <p>Encryption: <strong>AES-256-GCM + Kyber-512</strong></p>
                     <p>Threat Level: <span id="security-threat-level">LOW</span></p>
+                </div>
+            </div>
+
+            <!-- VIEW: MR SIGNAL RECONSTRUCTION -->
+            <div id="view-mr-infra" class="view-section" style="display: none;">
+                <div class="card">
+                    <h3>Network Topology and Computing Infrastructure</h3>
+                    <p>Architecture for efficient MR image signal reconstruction and imaging.</p>
+                    <div style="margin-top: 20px;">
+                        <p><strong>Edge Nodes:</strong> Scanner gateways for real-time Fourier Transform approximation.</p>
+                        <p><strong>Cloud HPC:</strong> GPU-enabled processing clusters for Non-Cartesian k-space data gridding.</p>
+                        <p><strong>Network Path:</strong> High-bandwidth/low-latency direct connections between DICOM nodes and AI segmentation services.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: MR RESEARCH COMPUTING -->
+            <div id="view-mr-research" class="view-section" style="display: none;">
+                <div class="card">
+                    <h3>MR Research Computing & Cloud Topology</h3>
+                    <p>Advanced cloud cluster topology and network infrastructure specifications for Magnetic Resonance Imaging research.</p>
+                    <div style="margin-top: 20px; display: flex; gap: 20px;">
+                        <div style="flex: 1;">
+                            <h4 style="margin-top: 0; color: var(--accent-blue);">Cloud Cluster Topology</h4>
+                            <p><strong>Hybrid Core:</strong> On-premises edge nodes handling acute clinical data, seamlessly interacting with multi-cloud resources.</p>
+                            <p><strong>AWS/GCP Extensibility:</strong> Spot instance fleets configured for massive parallelized parameter grid searches and large-cohort AI training.</p>
+                            <p><strong>Quantum Accelerators:</strong> Experimental NVIDIA Quantum nodes for bleeding-edge simulation of spin-dynamics.</p>
+                        </div>
+                        <div style="flex: 1; border-left: 1px solid var(--border-color); padding-left: 20px;">
+                            <h4 style="margin-top: 0; color: var(--accent-blue);">MRI Computing Infrastructure Specs</h4>
+                            <ul style="list-style-type: none; padding-left: 0; line-height: 1.6;">
+                                <li><strong>Storage:</strong> Distributed Ceph File System, 10 PB high-IOPS NVMe tier for active datasets.</li>
+                                <li><strong>Compute Nodes:</strong> Compute-optimized instances (128 vCPUs, 1TB RAM) for traditional imaging pipelines (FSL, FreeSurfer).</li>
+                                <li><strong>GPU Acceleration:</strong> A100/H100 instances for dense tensor operations and neural network reconstruction.</li>
+                                <li><strong>Network Fabric:</strong> InfoBand 400Gbps switches for internal cluster communication.</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
 

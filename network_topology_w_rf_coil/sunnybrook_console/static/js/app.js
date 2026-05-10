@@ -33,7 +33,7 @@ function switchTab(tabId) {
     document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
     // Ideally map tabId to index, simple hack here:
     // This assumes order: Dashboard, Topology, Cluster, Cost, Security, Coil
-    const map = { 'dashboard': 0, 'topology': 1, 'cluster': 2, 'cost': 3, 'security': 4, 'coil': 5 };
+    const map = { 'dashboard': 0, 'topology': 1, 'cluster': 2, 'cost': 3, 'security': 4, 'coil': 5, 'mr-infra': 6, 'mr-research': 7 };
     document.querySelectorAll('.nav-links li')[map[tabId]].classList.add('active');
 
     // Update Title
@@ -43,13 +43,19 @@ function switchTab(tabId) {
         'cluster': 'Cluster Schematics',
         'cost': 'Cost Optimization & Billing',
         'security': 'Security Operations',
-        'coil': 'NVQLink Generator'
+        'coil': 'NVQLink Generator',
+        'mr-infra': 'MR Signal Reconstruction Infra',
+        'mr-research': 'MR Research Computing'
     };
     document.getElementById('page-title').innerText = titles[tabId];
 
     // Lazy load topology if needed
     if (tabId === 'topology') {
         renderGraph();
+    }
+    // Lazy load MR Graph
+    if (tabId === 'mr-infra') {
+        renderMRGraph();
     }
 }
 
@@ -359,5 +365,126 @@ async function runCoilOptimization() {
     } finally {
         btn.innerText = "Run Optimization";
         btn.disabled = false;
+    }
+}
+
+let mrSimulationInitialzed = false;
+function renderMRGraph() {
+    if (mrSimulationInitialzed) return;
+    mrSimulationInitialzed = true;
+
+    const container = document.getElementById('mr-topology-graph');
+    container.innerHTML = '';
+    
+    // Explicit sizing
+    const width = container.clientWidth || 800;
+    const height = container.clientHeight || 450;
+
+    const nodes = [
+        { id: "Scanner 1", group: 1, type: "device" },
+        { id: "Scanner 2", group: 1, type: "device" },
+        { id: "Edge Processor", group: 2, type: "gateway" },
+        { id: "Local Data Lake", group: 2, type: "storage" },
+        { id: "Compute Canada Gateway", group: 3, type: "gateway" },
+        { id: "Niagara Cluster", group: 4, type: "compute" },
+        { id: "Cedar GPU Cluster", group: 4, type: "compute" },
+        { id: "Beluga GPU Cluster", group: 4, type: "compute" },
+        { id: "Clinical Viewer", group: 5, type: "device" }
+    ];
+
+    const links = [
+        { source: "Scanner 1", target: "Edge Processor", value: 5 },
+        { source: "Scanner 2", target: "Edge Processor", value: 5 },
+        { source: "Edge Processor", target: "Local Data Lake", value: 10 },
+        { source: "Edge Processor", target: "Compute Canada Gateway", value: 20 },
+        { source: "Compute Canada Gateway", target: "Niagara Cluster", value: 10 },
+        { source: "Compute Canada Gateway", target: "Cedar GPU Cluster", value: 15 },
+        { source: "Compute Canada Gateway", target: "Beluga GPU Cluster", value: 15 },
+        { source: "Niagara Cluster", target: "Local Data Lake", value: 10 },
+        { source: "Cedar GPU Cluster", target: "Local Data Lake", value: 15 },
+        { source: "Beluga GPU Cluster", target: "Local Data Lake", value: 15 },
+        { source: "Local Data Lake", target: "Clinical Viewer", value: 5 }
+    ];
+
+    const svg = d3.select("#mr-topology-graph")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id).distance(100))
+        .force("charge", d3.forceManyBody().strength(-400))
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+    const link = svg.append("g")
+        .attr("class", "links")
+        .selectAll("line")
+        .data(links)
+        .join("line")
+        .attr("stroke", "#64748b")
+        .attr("stroke-width", d => Math.sqrt(d.value));
+
+    const color = d3.scaleOrdinal()
+        .domain([1, 2, 3, 4, 5])
+        .range(["#38bdf8", "#fbbf24", "#a78bfa", "#f87171", "#34d399"]);
+
+    const node = svg.append("g")
+        .attr("class", "nodes")
+        .selectAll("circle")
+        .data(nodes)
+        .join("circle")
+        .attr("r", 15)
+        .attr("fill", d => color(d.group))
+        .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+
+    node.append("title")
+        .text(d => d.id);
+
+    const labels = svg.append("g")
+        .attr("class", "labels")
+        .selectAll("text")
+        .data(nodes)
+        .join("text")
+        .attr("dy", -20)
+        .attr("dx", 0)
+        .attr("text-anchor", "middle")
+        .text(d => d.id)
+        .attr("fill", "#e2e8f0")
+        .attr("font-size", "12px");
+
+    simulation.on("tick", () => {
+        link
+            .attr("x1", d => Math.max(15, Math.min(width - 15, d.source.x)))
+            .attr("y1", d => Math.max(15, Math.min(height - 15, d.source.y)))
+            .attr("x2", d => Math.max(15, Math.min(width - 15, d.target.x)))
+            .attr("y2", d => Math.max(15, Math.min(height - 15, d.target.y)));
+
+        node
+            .attr("cx", d => Math.max(15, Math.min(width - 15, d.x)))
+            .attr("cy", d => Math.max(15, Math.min(height - 15, d.y)));
+            
+        labels
+            .attr("x", d => Math.max(15, Math.min(width - 15, d.x)))
+            .attr("y", d => Math.max(15, Math.min(height - 15, d.y)));
+    });
+
+    function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
     }
 }
