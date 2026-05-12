@@ -44,57 +44,45 @@ def generate_report():
     story = []
     
     # Title
-    story.append(Paragraph("Optimizing International Trade Tariff Subsidies via Finite Mathematics and Cooperative Game Theory", title_style))
+    story.append(Paragraph("A Comprehensive Multidisciplinary Mathematical Framework for Global Trade and NACETA Tariffs", title_style))
     
     # Abstract
-    abstract_text = ("<b>Abstract:</b> This report details the deployment of finite mathematics, specifically "
-                     "covariance matrix algebras, continued fraction expansions, and Shapley value allocations, to optimize "
-                     "international trade dynamics. Focusing on the substitution of traditional agreements (e.g., CETA) across grain, "
-                     "beef, and mineral ore sectors, we demonstrate mathematically verifiable, fair-trade structures using "
-                     "non-zero-sum cooperative game computations.")
+    abstract_text = ("<b>Abstract:</b> This report presents a unified theoretical approach to modeling international trade tariffs and subsidies, particularly within the NACETA framework. By integrating cooperative game theory, finite mathematics for portfolio optimization, continued fractions for verifiability, kinetic econophysics for socio-economic stability, and quantum-inspired Feynman path integrals for predictive route modeling, we establish an exact, mathematically optimal blueprint for global resource exchange.")
     story.append(Paragraph(abstract_text, abstract_style))
     
-    # Introduction
-    story.append(Paragraph("1. Introduction", heading_style))
-    story.append(Paragraph("Modern international trade introduces complex multi-agent tariff negotiations. By modeling trade "
-                           "as a cooperative game, we can ensure surplus value is distributed symmetrically proportional to "
-                           "sectoral equity. This guarantees a mathematically fair model for Canada and the EU.", body_style))
+    # 1. Cooperative Game Theory
+    story.append(Paragraph("1. Cooperative Game Theory: Surplus Division", heading_style))
+    story.append(Paragraph("To model tariff subsidies, we assume a cooperative game where stakeholders (e.g., Canada and the EU) form coalitions. The Shapley value defines a unique, fair distribution of trade surplus by assigning to each participant their marginal average contribution over all possible permutations:", body_style))
+    story.append(Paragraph("<i>φ<sub>i</sub>(v) = ∑ [|S|!(n - |S| - 1)! / n!] [v(S ∪ {i}) - v(S)]</i>", body_style))
+    story.append(Paragraph("This finite summation guarantees Pareto efficiency and symmetry in resource subsidies.", body_style))
     
-    # Finite Mathematics
-    story.append(Paragraph("2. Finite Mathematics in Portfolio Allocations", heading_style))
-    story.append(Paragraph("The allocation of trade dividends across Grain, Beef, and Mineral Ore relies on finite state arrays "
-                           "and covariance matrices. Expected portfolio models act over finite states to minimize variance. "
-                           "By computing the portfolio volatility as the dot product of transposed weight vectors and finite covariance matrices, "
-                           "decision-makers map deterministic substitution risks directly into optimal dividend allocations.", body_style))
+    # 2. Portfolio Optimization
+    story.append(Paragraph("2. Finite Mathematics in Dividend Trade Portfolios", heading_style))
+    story.append(Paragraph("The allocation of capital between Grain, Beef, and Mineral Ore trade states relies on mean-variance optimizations. Given a weight vector <i>w</i> and a finite state covariance matrix <i>Σ</i>, the portfolio volatility risk is defined as:", body_style))
+    story.append(Paragraph("<i>σ<sub>p</sub> = √(w<sup>T</sup> Σ w)</i>", body_style))
+    story.append(Paragraph("This quadratic form allows states to perfectly hedge their tariff-adjusted dividend portfolios across substitutable sectors.", body_style))
     
-    # Shapley Values
-    story.append(Paragraph("3. Cooperative Trade Subventions via Shapley Value", heading_style))
-    story.append(Paragraph("Subsidies and tariffs form a coalition game. The Shapley value provides a unique mapping derived from "
-                           "finite factorial summations over all possible coalition permutations. This calculation dictates "
-                           "equitable extraction of tariffs between Canada and the EU, negating arbitrarily weighted trade wars "
-                           "and isolating each participant's marginal market contribution.", body_style))
+    # 3. Continued Fractions
+    story.append(Paragraph("3. Trade Verifiability via Continued Fractions", heading_style))
+    story.append(Paragraph("Exchange rates and tariff ratios form complex rational numbers that must be insulated against floating-point asymmetries. We utilize the continued fraction expansion:", body_style))
+    story.append(Paragraph("<i>x = a<sub>0</sub> + 1 / (a<sub>1</sub> + 1 / (a<sub>2</sub> + ...))</i>", body_style))
+    story.append(Paragraph("The convergents of these finite sequences algorithmically map the negotiated quantum of tariffs, allowing immediate verifiability of declared exchange ledgers.", body_style))
     
-    # Continued Fractions
-    story.append(Paragraph("4. Verifiability using Continued Fractions", heading_style))
-    story.append(Paragraph("Trade exchange ratios (e.g., Beef volume relative to Mineral Ore volume) are scrutinized using algorithms "
-                           "generating continued fraction expansions. The principal convergents of this expansion algorithmically limit "
-                           "bounds of rational tariff approximations, cementing a mathematically verifiable transaction ledger "
-                           "impervious to floating-point manipulation or asymmetric inflation.", body_style))
-                           
-    # Econophysics
-    story.append(Paragraph("5. Econophysics and Optimal Resource Allocation", heading_style))
-    story.append(Paragraph("Expanding the finite analytical model, we introduce econophysics to conceptualize trade networks as aggregate "
-                           "thermodynamic interactions. Employing the Boltzmann-Gibbs entropy maximization principle:", body_style))
-    story.append(Paragraph("<i>S = -k<sub>B</sub> Σ p<sub>i</sub> ln(p<sub>i</sub>)</i>", body_style))
-    story.append(Paragraph("we derive optimal global resource distributions. In these scenarios, trade sectors act as collision particles "
-                           "exchanging economic 'energy' (capital/resources), maintaining a socio-economic equilibrium defined by exponential wealth "
-                           "distributions. This allows robust predictions of resource liquidity across Canada and EU networks.", body_style))
+    # 4. Econophysics
+    story.append(Paragraph("4. Socio-Economic Kinetic Exchange Models", heading_style))
+    story.append(Paragraph("Expanding statistical mechanics via the Chakraborti-Chakrabarti model, we account for saving propensity <i>λ</i> during pairwise trade collisions. Rather than a pure Monopolistic Boltzmann-Gibbs collapse, capital adheres to a target Gamma distribution:", body_style))
+    story.append(Paragraph("<i>P(w) = C w<sup>3λ/(1-λ)</sup> exp(-w/T)</i>", body_style))
+    story.append(Paragraph("This demonstrates that parameterized partial wealth retention mathematically ensures a stable mid-class trade equilibrium.", body_style))
+    
+    # 5. Feynman Path Integrals
+    story.append(Paragraph("5. Path Integrals & Optimal Neural Net Routing", heading_style))
+    story.append(Paragraph("Evaluating global supply chains requires optimizing among an infinite set of logistical routes. Applying Feynman's path integral formulation:", body_style))
+    story.append(Paragraph("<i>K(x<sub>b</sub>, t<sub>b</sub>; x<sub>a</sub>, t<sub>a</sub>) = ∫ exp((i/ℏ) S[x(t)]) Dx(t)</i>", body_style))
+    story.append(Paragraph("we define the classical action <i>S[x(t)]</i> as trade friction (cost). A predictive neural network layer translates these lowest-friction paths into maximal probability weightings, dictating the ultimate asset portfolio distribution (e.g., billions in Beef vs Mineral Ore) for the NACETA block.", body_style))
     
     # Conclusion
     story.append(Paragraph("6. Conclusion", heading_style))
-    story.append(Paragraph("Deploying computational finite mathematics establishes absolute transparency and Pareto optimality "
-                           "within bilateral trade ecosystems. This algorithmic construct provides an immediate, empirically verifiable "
-                           "baseline for modern non-coercive global trade implementations.", body_style))
+    story.append(Paragraph("By spanning cooperative coalitions, exact finite linear algebra, rational sequence mathematics, thermodynamic econophysics, and quantum routing algorithms, this synthesized model ensures that all multi-agent trade policies under NACETA remain transparent, mathematically fair, and strictly optimal.", body_style))
     
     doc.build(story)
 
