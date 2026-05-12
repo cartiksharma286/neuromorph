@@ -104,23 +104,45 @@ def main():
         st.info("The continued fraction expansion isolates the dominant rational approximations (convergents). In verifiable trading systems, these convergents strictly map to the negotiated quantum of tariffs under the cooperative gamification model, verifying the integrity of the data.")
 
     with tab4:
-        st.header("Econophysics of Global Trade")
-        st.subheader("Resource Entropy & Optimal Trading Scenarios")
-        st.write("Modeling the macro-economic interactions via statistical mechanics and kinetic gas theory analogies. Trade flow is visualized as energy exchange maximizing entropy.")
+        st.header("Socio-Economic Econophysics of Global Trade")
+        st.subheader("Kinetic Market Exchange & Macro-Economic Optimization")
+        st.write("Expanding the basic statistical mechanics model to a **Chakraborti-Chakrabarti kinetic exchange model**. By parameterizing 'Saving Propensity' (the fraction of resources retained during trades), we optimize the socio-economic equilibrium from a pure Boltzmann distribution into a stable state preventing systemic monopolies.")
         
-        temperature = st.slider("Market 'Temperature' (Volatility/Liquidity)", 1.0, 10.0, 5.0)
-        particles = st.slider("Number of Trade Actors", 100, 1000, 500)
+        col_a, col_b, col_c = st.columns(3)
+        with col_a:
+            particles = st.slider("Number of Trade Actors", 500, 5000, 2000)
+        with col_b:
+            saving_propensity = st.slider("Saving Propensity (λ)", 0.0, 0.95, 0.35, 0.05)
+        with col_c:
+            trade_cycles = st.slider("Trade Volume (Iterations x100)", 10, 500, 100)
+            
+        with st.spinner("Simulating kinetic trade interactions..."):
+            # Kinetic Exchange Model with Saving Propensity
+            np.random.seed(42)
+            wealth = np.ones(particles) * 100.0 # Initial uniform trade allocation
+            
+            # Vectorized fast pairwise simulation
+            for _ in range(trade_cycles):
+                idx1 = np.random.permutation(particles)
+                idx2 = np.random.permutation(particles)
+                eps = np.random.uniform(0, 1, particles)
+                
+                # Conserved trade with symmetric savings
+                pool = (1 - saving_propensity) * (wealth[idx1] + wealth[idx2])
+                new_w1 = saving_propensity * wealth[idx1] + eps * pool
+                new_w2 = saving_propensity * wealth[idx2] + (1 - eps) * pool
+                
+                wealth[idx1] = new_w1
+                wealth[idx2] = new_w2
+                
+            fig_data = np.histogram(wealth, bins=60, density=True)
+            hist_df = pd.DataFrame({"Resource State (Wealth)": fig_data[1][:-1], "Optimal Market State Density": fig_data[0]})
         
-        # Boltzmann-Gibbs distribution for wealth/trade volume
-        wealth = np.random.exponential(scale=temperature, size=particles)
+        st.area_chart(hist_df.set_index("Resource State (Wealth)"))
         
-        fig_data = np.histogram(wealth, bins=50)
-        hist_df = pd.DataFrame({"Trade Volume": fig_data[1][:-1], "Frequency": fig_data[0]})
-        
-        st.bar_chart(hist_df.set_index("Trade Volume"))
-        st.write("**Boltzmann-Gibbs Entropy Formula:**")
-        st.latex(r"S = -k_B \sum p_i \ln(p_i)")
-        st.info("The distribution models optimal resource allocation matching a Pareto-like exponential decay under conserved global trade value.")
+        st.write("**Optimal Target Density (Gamma Framework for Kinetic Saving):**")
+        st.latex(r"P(w) = C w^{\frac{3\lambda}{1-\lambda}} \exp\left(-\frac{w}{T}\right)")
+        st.success(f"**Optimization Insights:** With a saving propensity of **{saving_propensity:.2f}**, the socio-economic trade distribution moves away from a pure exponential monopolistic state (Pareto extreme) to an optimized middle-class stabilization framework. The mathematical model parametrizes fair resource allocation rules dynamically matching real-world bilateral tariff protections.")
 
 if __name__ == '__main__':
     main()
