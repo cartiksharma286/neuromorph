@@ -23,10 +23,11 @@ def main():
     st.title("International Tariff Subsidies & Trade Agreements App")
     st.write("Exploring trade dynamics between Canada and the EU (in lieu of CETA).")
 
-    tab1, tab2, tab3 = st.tabs([
+    tab1, tab2, tab3, tab4 = st.tabs([
         "CETA Trade & Cooperative Game Theory", 
         "Dividend Trade Portfolio Optimizations", 
-        "Comparative Analysis (Continued Fractions)"
+        "Trade Verifiability (Continued Fractions)",
+        "Econophysics of Global Trade"
     ])
 
     with tab1:
@@ -101,6 +102,25 @@ def main():
         
         st.latex(r"a_0 + \frac{1}{a_1 + \frac{1}{a_2 + \dots}}")
         st.info("The continued fraction expansion isolates the dominant rational approximations (convergents). In verifiable trading systems, these convergents strictly map to the negotiated quantum of tariffs under the cooperative gamification model, verifying the integrity of the data.")
+
+    with tab4:
+        st.header("Econophysics of Global Trade")
+        st.subheader("Resource Entropy & Optimal Trading Scenarios")
+        st.write("Modeling the macro-economic interactions via statistical mechanics and kinetic gas theory analogies. Trade flow is visualized as energy exchange maximizing entropy.")
+        
+        temperature = st.slider("Market 'Temperature' (Volatility/Liquidity)", 1.0, 10.0, 5.0)
+        particles = st.slider("Number of Trade Actors", 100, 1000, 500)
+        
+        # Boltzmann-Gibbs distribution for wealth/trade volume
+        wealth = np.random.exponential(scale=temperature, size=particles)
+        
+        fig_data = np.histogram(wealth, bins=50)
+        hist_df = pd.DataFrame({"Trade Volume": fig_data[1][:-1], "Frequency": fig_data[0]})
+        
+        st.bar_chart(hist_df.set_index("Trade Volume"))
+        st.write("**Boltzmann-Gibbs Entropy Formula:**")
+        st.latex(r"S = -k_B \sum p_i \ln(p_i)")
+        st.info("The distribution models optimal resource allocation matching a Pareto-like exponential decay under conserved global trade value.")
 
 if __name__ == '__main__':
     main()
