@@ -51,34 +51,42 @@ def generate_report():
     story.append(Paragraph(abstract_text, abstract_style))
     
     # 1. Cooperative Game Theory
-    story.append(Paragraph("1. Cooperative Game Theory: Surplus Division", heading_style))
-    story.append(Paragraph("To model tariff subsidies, we assume a cooperative game where stakeholders (e.g., Canada and the EU) form coalitions. The Shapley value defines a unique, fair distribution of trade surplus by assigning to each participant their marginal average contribution over all possible permutations:", body_style))
-    story.append(Paragraph("<i>φ<sub>i</sub>(v) = ∑ [|S|!(n - |S| - 1)! / n!] [v(S ∪ {i}) - v(S)]</i>", body_style))
-    story.append(Paragraph("This finite summation guarantees Pareto efficiency and symmetry in resource subsidies.", body_style))
+    story.append(Paragraph("1. Cooperative Game Theory: Shapley Value Derivations", heading_style))
+    story.append(Paragraph("To explicitly derive the tariff subsidy constraints under cooperative mechanics, we assume a finite player set <i>N</i> representing trade blocs. Let <i>v(S)</i> be the characteristic function measuring surplus for coalition <i>S</i>.", body_style))
+    story.append(Paragraph("For any ordering (permutation) <i>π</i> of <i>N</i>, the marginal contribution of bloc <i>i</i> is derived as <i>v(S ∪ {i}) - v(S)</i>, where <i>S</i> represents blocs preceding <i>i</i>. Assuming a uniform probability <i>1 / |N|!</i> for each sequence, we derive the Shapley expectation:", body_style))
+    story.append(Paragraph("<i>E[φ] = Σ<sub>π ∈ N!</sub> (1 / |N|!) [v(S<sub>π</sub> ∪ {i}) - v(S<sub>π</sub>)]</i>", body_style))
+    story.append(Paragraph("Since the number of permutations where <i>S</i> is of size <i>|S|</i> represents exactly <i>|S|! (|N| - |S| - 1)!</i> orderings, substituting this translates directly to the finite exact discrete sum:", body_style))
+    story.append(Paragraph("<i>φ<sub>i</sub>(v) = ∑<sub>S ⊆ N ∖ {i}</sub> [|S|!(n - |S| - 1)! / n!] [v(S ∪ {i}) - v(S)]</i>", body_style))
     
     # 2. Portfolio Optimization
-    story.append(Paragraph("2. Finite Mathematics in Dividend Trade Portfolios", heading_style))
-    story.append(Paragraph("The allocation of capital between Grain, Beef, and Mineral Ore trade states relies on mean-variance optimizations. Given a weight vector <i>w</i> and a finite state covariance matrix <i>Σ</i>, the portfolio volatility risk is defined as:", body_style))
-    story.append(Paragraph("<i>σ<sub>p</sub> = √(w<sup>T</sup> Σ w)</i>", body_style))
-    story.append(Paragraph("This quadratic form allows states to perfectly hedge their tariff-adjusted dividend portfolios across substitutable sectors.", body_style))
+    story.append(Paragraph("2. Finite Constrained Dividend Trade Optimizations", heading_style))
+    story.append(Paragraph("The allocation matrix between Grain, Beef, and Mineral Ore requires establishing a finite Lagrangian minimization to isolate maximum dividend yield against minimal risk <i>σ<sub>p</sub><sup>2</sup></i>. We structure the portfolio variance derived linearly as:", body_style))
+    story.append(Paragraph("<i>σ<sub>p</sub><sup>2</sup> = w<sup>T</sup> Σ w</i>", body_style))
+    story.append(Paragraph("Subject to the finite deterministic constraint that sum of portfolio weights equals 1: <i>w<sup>T</sup> <b>1</b> = 1</i>. To derive the closed-form optimal allocation, we introduce Lagrange multiplier <i>γ</i>:", body_style))
+    story.append(Paragraph("<i>L(w, γ) = (1/2) w<sup>T</sup> Σ w - γ(w<sup>T</sup> <b>1</b> - 1)</i>", body_style))
+    story.append(Paragraph("Taking the partial derivative with respect to the weight vector <i>w</i> and setting to 0 yields <i>Σ w = γ <b>1</b></i>, solving explicitly to <i>w = γ Σ<sup>-1</sup> <b>1</b></i>. Multiplying by <i><b>1</b><sup>T</sup></i> provides the final derived finite matrix allocation solving precisely for our optimal international trade asset weighting.", body_style))
     
     # 3. Continued Fractions
-    story.append(Paragraph("3. Trade Verifiability via Continued Fractions", heading_style))
-    story.append(Paragraph("Exchange rates and tariff ratios form complex rational numbers that must be insulated against floating-point asymmetries. We utilize the continued fraction expansion:", body_style))
+    story.append(Paragraph("3. Algorithm Derivation of Verifiable Continued Fractions", heading_style))
+    story.append(Paragraph("For transparent verification of fractional tariffs <i>p/q</i>, we apply repeated applications of the finite Euclidean division algorithm. Setting <i>r<sub>0</sub> = p</i> and <i>r<sub>1</sub> = q</i>, we iterate:", body_style))
+    story.append(Paragraph("<i>r<sub>k-1</sub> = a<sub>k</sub> r<sub>k</sub> + r<sub>k+1</sub></i>", body_style))
+    story.append(Paragraph("Rearranging isolates the fraction <i>r<sub>k-1</sub> / r<sub>k</sub> = a<sub>k</sub> + r<sub>k+1</sub> / r<sub>k</sub> = a<sub>k</sub> + 1 / (r<sub>k</sub> / r<sub>k+1</sub>)</i>. Inductively substituting this finite recurrence backwards precisely generates the continued fraction expansion:", body_style))
     story.append(Paragraph("<i>x = a<sub>0</sub> + 1 / (a<sub>1</sub> + 1 / (a<sub>2</sub> + ...))</i>", body_style))
-    story.append(Paragraph("The convergents of these finite sequences algorithmically map the negotiated quantum of tariffs, allowing immediate verifiability of declared exchange ledgers.", body_style))
     
     # 4. Econophysics
-    story.append(Paragraph("4. Socio-Economic Kinetic Exchange Models", heading_style))
-    story.append(Paragraph("Expanding statistical mechanics via the Chakraborti-Chakrabarti model, we account for saving propensity <i>λ</i> during pairwise trade collisions. Rather than a pure Monopolistic Boltzmann-Gibbs collapse, capital adheres to a target Gamma distribution:", body_style))
+    story.append(Paragraph("4. Kinetic Exchange and Fokker-Planck Econophysics Derivation", heading_style))
+    story.append(Paragraph("We simulate individual trade states iteratively as physical kinetic gas collisions where energy equates to capital. Let actors have wealth <i>w<sub>i</sub>, w<sub>j</sub></i> tracking saving propensity <i>λ</i> and random exchange proportion <i>ε</i>. The conservation transaction derivations equate to:", body_style))
+    story.append(Paragraph("<i>w<sub>i</sub>' = λ w<sub>i</sub> + ε(1 - λ)(w<sub>i</sub> + w<sub>j</sub>)</i>", body_style))
+    story.append(Paragraph("<i>w<sub>j</sub>' = λ w<sub>j</sub> + (1 - ε)(1 - λ)(w<sub>i</sub> + w<sub>j</sub>)</i>", body_style))
+    story.append(Paragraph("Under iterative expansion, setting the steady-state wealth moments across agents matches solving a stationary diffusion Fokker-Planck derivation. Analytically integrating the equilibrium continuous limit leads exactly to the generalized Gamma distribution preventing monopole exponential collapses:", body_style))
     story.append(Paragraph("<i>P(w) = C w<sup>3λ/(1-λ)</sup> exp(-w/T)</i>", body_style))
-    story.append(Paragraph("This demonstrates that parameterized partial wealth retention mathematically ensures a stable mid-class trade equilibrium.", body_style))
     
     # 5. Feynman Path Integrals
-    story.append(Paragraph("5. Path Integrals & Optimal Neural Net Routing", heading_style))
-    story.append(Paragraph("Evaluating global supply chains requires optimizing among an infinite set of logistical routes. Applying Feynman's path integral formulation:", body_style))
-    story.append(Paragraph("<i>K(x<sub>b</sub>, t<sub>b</sub>; x<sub>a</sub>, t<sub>a</sub>) = ∫ exp((i/ℏ) S[x(t)]) Dx(t)</i>", body_style))
-    story.append(Paragraph("we define the classical action <i>S[x(t)]</i> as trade friction (cost). A predictive neural network layer translates these lowest-friction paths into maximal probability weightings, dictating the ultimate asset portfolio distribution (e.g., billions in Beef vs Mineral Ore) for the NACETA block.", body_style))
+    story.append(Paragraph("5. Path Integrals Logistical Integrations via Functional Calculus", heading_style))
+    story.append(Paragraph("For predictive neural nets in trade routing (NACETA logistics), we transition classical supply chain logistics to quantum probability amplitudes. Trade paths are discretized over <i>N</i> temporal hops with action <i>S = ∫ L(x, ẋ) dt</i> representing cumulative logistic friction.", body_style))
+    story.append(Paragraph("To derive the optimal distribution, we integrate over all logistical paths limits:", body_style))
+    story.append(Paragraph("<i>K(x<sub>b</sub>, t<sub>b</sub>; x<sub>a</sub>, t<sub>a</sub>) = lim<sub>N→∞</sub> ∫ ... ∫ exp((i/ℏ) ∑ L(x<sub>k</sub>, ẋ<sub>k</sub>) Δt) dx<sub>1</sub>...dx<sub>N-1</sub></i>", body_style))
+    story.append(Paragraph("In the discrete neural network framework, the infinite-dimensional functional measure <i>Dx(t)</i> collapses into the normalized softmax limits of simulated routing weights <i>W<sub>i</sub> = exp(-Cost<sub>i</sub> / κ) / Z</i>, algorithmically isolating the definitive 'classical path of least action'.", body_style))
     
     # Conclusion
     story.append(Paragraph("6. Conclusion", heading_style))
