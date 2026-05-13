@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quantum Neural Circuitry | Quantum Theoretic Statistics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -202,6 +202,8 @@
             <div class="tab" data-tab="treatment">Dementia Treatment</div>
             <div class="tab" data-tab="prime">Prime Resonance Repair</div>
             <div class="tab" data-tab="quantum-stat">Quantum Theoretic Statistics</div>
+            <div class="tab" data-tab="qcf">Quantum Stats & Continued Fractions</div>
+            <div class="tab" data-tab="tbi">TBI Repair (Neuronal Simulation)</div>
         </div>
 
         <main>
@@ -434,6 +436,51 @@
                         style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.7rem; color: var(--text-dim); font-family: 'Orbitron';">
                         <span>Phase (X) -></span>
                         <span><- Excitation (Y)</span>
+                    </div>
+                </div>
+            </div>
+
+            
+            <!-- QCF Tab -->
+            <div class="tab-content" id="qcf-tab">
+                <h3>Quantum Statistical Distributions & Continued Fractions</h3>
+                <div class="card">
+                    <p>Improve neural circuitry utilizing statistical distributions integrated via continued fraction expansions.</p>
+                    <button id="btn-apply-qcf" class="btn">Apply QCF Improvement</button>
+                    <pre id="qcf-output" style="margin-top: 15px; background: #1a1a2e; padding: 10px; border-radius: 5px; color: #4deeea; overflow-x: auto;"></pre>
+                </div>
+            </div>
+
+            <!-- TBI Repair Tab -->
+            <div class="tab-content" id="tbi-tab">
+                <div class="cbt-panel">
+                    <div class="panel-header">
+                        <h2>TBI Repair (Neuronal Simulation via Continued Fractions)</h2>
+                        <span class="status-indicator" style="border-color: var(--accent); color: var(--accent);">Simulator Ready</span>
+                    </div>
+                    <div class="card">
+                        <p style="color: var(--text-dim); margin-bottom: 20px;">
+                            Simulate neuronal repair for Traumatic Brain Injury (TBI) utilizing continued fraction divergence pathways to model axonal regeneration and synaptic healing across damaged cognitive zones.
+                        </p>
+                        
+                        <div class="input-group" style="margin-bottom: 15px;">
+                            <label>Base Neuronal State (Connectivity %)</label>
+                            <input type="range" id="tbi-base-state" min="10" max="90" value="40" style="width: 100%;">
+                            <span id="tbi-base-val" style="color: var(--accent);">40%</span>
+                        </div>
+                        
+                        <div class="input-group" style="margin-bottom: 15px;">
+                            <label>Divergence Order (Continued Fraction Expansion)</label>
+                            <input type="range" id="tbi-divergence-order" min="1" max="100" value="10" style="width: 100%;">
+                            <span id="tbi-order-val" style="color: var(--accent);">10</span>
+                        </div>
+
+                        <button id="btn-simulate-tbi" class="btn full-width accent">Simulate TBI Neuronal Repair</button>
+                        
+                        <div id="tbi-simulation-results" style="margin-top: 20px; display: none;">
+                            <h3 style="color: var(--accent); margin-bottom: 10px;">Simulation Results:</h3>
+                            <canvas id="tbi-chart" style="width: 100%; height: 250px; margin-bottom: 15px;"></canvas>                            <pre id="tbi-output" style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 5px; color: #4deeea; white-space: pre-wrap; word-wrap: break-word; font-family: 'Orbitron', monospace; font-size: 0.9rem; border: 1px solid var(--border);"></pre>
+                        </div>
                     </div>
                 </div>
             </div>

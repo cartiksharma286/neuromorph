@@ -1120,3 +1120,60 @@ if (btnPtsdAR) btnPtsdAR.addEventListener('click', () => handleAnalyzeRepair('pt
 fetchCircuit();
 fetchDementiaMetrics();
 draw();
+
+
+    // QCF Logic
+    const btnApplyQcf = document.getElementById('btn-apply-qcf');
+    if (btnApplyQcf) {
+        btnApplyQcf.addEventListener('click', async () => {
+            const out = document.getElementById('qcf-output');
+            out.textContent = "Processing Quantum Statistical Distributions...";
+            try {
+                const response = await fetch('/api/quantum_cf/apply');
+                const data = await response.json();
+                out.textContent = JSON.stringify(data, null, 2);
+            } catch (err) {
+                out.textContent = "Error: " + err;
+            }
+        });
+    }
+
+    // TBI Logic
+    const tbiBaseState = document.getElementById('tbi-base-state');
+    const tbiBaseVal = document.getElementById('tbi-base-val');
+    const tbiDivergenceOrder = document.getElementById('tbi-divergence-order');
+    const tbiOrderVal = document.getElementById('tbi-order-val');
+    
+    if (tbiBaseState && tbiBaseVal) {
+        tbiBaseState.addEventListener('input', (e) => {
+            tbiBaseVal.textContent = e.target.value + '%';
+        });
+    }
+    
+    if (tbiDivergenceOrder && tbiOrderVal) {
+        tbiDivergenceOrder.addEventListener('input', (e) => {
+            tbiOrderVal.textContent = e.target.value;
+        });
+    }
+
+    const btnSimulateTbi = document.getElementById('btn-simulate-tbi');
+    if (btnSimulateTbi) {
+        btnSimulateTbi.addEventListener('click', async () => {
+            const resContainer = document.getElementById('tbi-simulation-results');
+            const out = document.getElementById('tbi-output');
+            
+            resContainer.style.display = 'block';
+            out.textContent = "Simulating neuronal repair via continued fraction divergences...\nInitializing phase spaces...";
+            
+            try {
+                const baseState = document.getElementById('tbi-base-state').value;
+                const order = document.getElementById('tbi-divergence-order').value;
+                
+                const response = await fetch(`/api/tbi/simulate?base_state=${baseState}&divergence_order=${order}`);
+                const data = await response.json();
+                out.textContent = JSON.stringify(data, null, 2);
+            } catch (err) {
+                out.textContent = "Error during simulation: " + err;
+            }
+        });
+    }

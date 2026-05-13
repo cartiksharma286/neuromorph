@@ -11,6 +11,7 @@ import random
 import os
 import time
 import threading
+from quantum_continued_fractions import QuantumContinuedFractions
 from ane_simulation import ane_processor
 from prime_math_core import PrimeVortexField
 from combinatorial_manifold_neurogenesis import (
@@ -958,6 +959,65 @@ def reset_manifold(pathology_type: str):
     else:
         raise HTTPException(status_code=400, detail="Invalid pathology type")
 
+
+
+qcf_model = QuantumContinuedFractions(num_qubits=24)
+
+@app.get("/api/quantum_cf/apply")
+def apply_quantum_cf():
+    try:
+        res = qcf_model.apply_quantum_statistical_distribution()
+        return {"status": "success", "data": res}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/tbi/simulate")
+def simulate_tbi_repair(base_state: float = 40.0, divergence_order: int = 10):
+    try:
+        import math
+        # Simulate neural repair via continued fractions
+        val = (3 + math.sqrt(13)) / 2 # Example bronze ratio topological marker
+        
+        divergence_sequence = []
+        current_connectivity = base_state
+        
+        a0 = int(val)
+        rem = val - a0
+        fraction_expansion = [a0]
+        
+        for _ in range(divergence_order):
+            if rem < 1e-10:
+                break
+            inv = 1.0 / rem
+            ak = int(inv)
+            fraction_expansion.append(ak)
+            rem = inv - ak
+            
+            # Neural repair heuristic based on continued fraction term
+            boost = (math.log(ak + 1) * 2.5) + (10.0 / (ak + 1))
+            current_connectivity += boost
+            if current_connectivity > 100.0:
+                current_connectivity = 100.0
+                
+            divergence_sequence.append({
+                "term": ak,
+                "boost": round(boost, 3),
+                "connectivity": round(current_connectivity, 2)
+            })
+            
+            if current_connectivity >= 100.0:
+                break
+
+        return {
+            "status": "success",
+            "base_state": base_state,
+            "final_connectivity": round(current_connectivity, 2),
+            "expansion": fraction_expansion,
+            "divergence_pathway": divergence_sequence,
+            "message": f"TBI neural network successfully repaired up to {round(current_connectivity, 2)}% via continued fraction divergences."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Mount static files at the end to ensure API routes take precedence
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
