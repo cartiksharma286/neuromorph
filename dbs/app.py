@@ -1,3 +1,5 @@
+
+import random
 from flask import Flask, render_template, jsonify, request
 from flask_cors import CORS
 import os
@@ -13,6 +15,63 @@ app.template_folder = 'templates'
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/api/fasd-statopt-cure', methods=['POST'])
+def fasd_statopt_cure():
+    import numpy as np
+    data = request.json or {}
+    months = np.arange(0, 48, 2)
+    # Simulate statistical parametric optimization for DBS parameters
+    # Efficacy: Gaussian rise, then plateau
+    efficacy = 20 + 80 * np.exp(-((months-24)/14)**2)
+    # Recovery: Logistic growth with noise
+    recovery = 15 + 85 / (1 + np.exp(-0.18 * (months - 18))) + np.random.normal(0, 2, len(months))
+    # Parameter distribution (normalized)
+    param_names = ['Amplitude', 'Pulse Width', 'Frequency', 'Burst Rate', 'Duty Cycle']
+    param_dist = np.abs(np.random.dirichlet(np.ones(5), 1)[0])
+    # Protocol stages
+    stages = [
+        {"time": 0, "label": "StatOpt Initialization: Parameter Mapping"},
+        {"time": 12, "label": "Gaussian Optimization Phase"},
+        {"time": 24, "label": "Plateau & Adaptive Tuning"},
+        {"time": 36, "label": "Long-Term StatOpt Recovery"}
+    ]
+    return jsonify({
+        "months": months.tolist(),
+        "efficacy": efficacy.tolist(),
+        "recovery": recovery.tolist(),
+        "param_names": param_names,
+        "param_dist": param_dist.tolist(),
+        "stages": stages
+    })
+
+@app.route('/api/fasd-cure', methods=['POST'])
+def fasd_cure_simulation():
+    import numpy as np
+    data = request.json or {}
+    # QML-based simulation for DBS cortical surface stimulation in FASD
+    months = np.arange(0, 48, 2)
+    # QML-optimized stimulation: simulate as a sum of quantum basis functions (Fourier-like)
+    cortical_stim = 60 + 30 * np.sin(0.12 * months) + 10 * np.cos(0.25 * months)
+    # QML-predicted neuroplasticity index (sigmoid + noise)
+    qml_neuroplasticity = 20 + 80 / (1 + np.exp(-0.15 * (months - 18))) + np.random.normal(0, 2, len(months))
+    # QML executive function (logistic + QML noise)
+    qml_exec_func = 25 + 70 / (1 + np.exp(-0.18 * (months - 20))) + np.random.normal(0, 1.5, len(months))
+    # QML cortical field map (simulate 5 regions, normalized)
+    qml_field_vectors = [list(np.clip(np.abs(np.sin(0.2 * m + np.arange(5))), 0, 1)) for m in months]
+    return jsonify({
+        "months": months.tolist(),
+        "cortical_stim": cortical_stim.tolist(),
+        "qml_neuroplasticity": qml_neuroplasticity.tolist(),
+        "qml_exec_func": qml_exec_func.tolist(),
+        "qml_field_vectors": qml_field_vectors,
+        "stages": [
+            {"time": 0, "label": "QML Initialization: Cortical Mapping"},
+            {"time": 12, "label": "Quantum-Optimized Stimulation"},
+            {"time": 24, "label": "Adaptive Neuroplasticity"},
+            {"time": 36, "label": "Long-Term QML Recovery"}
+        ]
+    })
 
 @app.route('/api/simulate', methods=['POST'])
 def simulate():

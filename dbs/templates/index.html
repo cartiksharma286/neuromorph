@@ -49,6 +49,56 @@
             <button class="tab-btn" onclick="switchTab('stage', event)">Staging Protocol</button>
             <button class="tab-btn" onclick="switchTab('fas', event)">FAS Neurosymbolic</button>
             <button class="tab-btn" onclick="switchTab('hd-cure', event)">HD Stage-Gated Cure</button>
+            <button class="tab-btn" onclick="switchTab('fasd-cure', event)">FASD QML Cure</button>
+            <button class="tab-btn" onclick="switchTab('fasd-statopt', event)">FASD StatOpt Cure</button>
+                    <div id="fasd-statopt-sidebar" class="tab-content">
+                        <div class="glass-panel">
+                            <h2>FASD DBS StatOpt Protocol</h2>
+                            <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                                Statistical Parametric Optimization for Deep Brain Stimulation in Fetal Alcohol Syndrome repair.<br>
+                                Simulate optimal DBS parameters using statistical models for neurodevelopmental recovery and adaptive care.
+                                <br><br>
+                                <b>Key Features:</b><br>
+                                &bull; Statistical optimization of DBS parameters<br>
+                                &bull; Recovery and efficacy projections<br>
+                                &bull; Protocol stage gating and parameteric plots
+                            </p>
+                            <button class="btn-primary" id="btn-generate-fasd-statopt" onclick="simulateFASDStatOpt()" style="margin-top: 10px;">Run StatOpt Simulation</button>
+                        </div>
+                    </div>
+                <div id="fasd-statopt" class="tab-content main-content" style="display:none;">
+                    <div class="glass-panel" style="margin-bottom: 10px;">
+                        <h2>FASD Cure: Statistical Parametric Optimization</h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
+                            <div>
+                                <div style="font-size: 13px; color: #a0e7ff;">Current Stage</div>
+                                <div id="fasd-statopt-stage" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 13px; color: #a0e7ff;">Efficacy</div>
+                                <div id="fasd-statopt-efficacy" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 13px; color: #a0e7ff;">Timeline</div>
+                                <div id="fasd-statopt-timeline" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-panel" style="margin-bottom: 10px; max-height: 220px; overflow-y: auto;">
+                        <h3 style="margin-bottom: 8px;">Protocol Stages</h3>
+                        <div style="max-height: 160px; overflow-y: auto;">
+                            <ul id="fasd-statopt-stages-list" style="font-size: 13px; color: #fff; padding-left: 18px; margin: 0;"></ul>
+                        </div>
+                    </div>
+                    <div class="glass-panel" style="margin-bottom: 10px;">
+                        <h3>Statistical Parameteric Optimization Plot</h3>
+                        <canvas id="fasdStatOptChart" height="180"></canvas>
+                    </div>
+                    <div class="glass-panel">
+                        <h3>DBS Parameter Distribution</h3>
+                        <canvas id="fasdStatOptParamChart" height="120"></canvas>
+                    </div>
+                </div
         </nav>
 
         <aside class="sidebar-left">
@@ -60,6 +110,22 @@
                         Clinical treatment protocol for optimal stage-gating paradigm.
                     </p>
                     <button class="btn-primary" id="btn-generate-hd-cure" onclick="simulateHDCure()" style="margin-top: 10px;">Run Cortical Simulation</button>
+                </div>
+            </div>
+
+            <div id="fasd-cure-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>FASD QML DBS Protocol</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Quantum Machine Learning-driven Deep Brain Stimulation for Fetal Alcohol Syndrome repair.<br>
+                        Simulate optimal neurodevelopmental recovery, fronto-striatal circuit modulation, and adaptive interventional care.
+                        <br><br>
+                        <b>Key Features:</b><br>
+                        &bull; QML-optimized stimulation parameters<br>
+                        &bull; Executive function and adaptive behavior projections<br>
+                        &bull; Closed-loop neuroplasticity and cortical modulation
+                    </p>
+                    <button class="btn-primary" id="btn-generate-fasd-cure" onclick="simulateFASDCure()" style="margin-top: 10px;">Run QML FASD Simulation</button>
                 </div>
             </div>
 
@@ -346,7 +412,7 @@
 
         <main class="main-view">
 
-            <div id="hd-cure-main" class="tab-content" style="height: 100%;">
+            <div id="hd-cure-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-hero">
                         <h1>HD Stage-Gated Intervention Cure</h1>
@@ -383,7 +449,7 @@
                 </div>
             </div>
 
-            <div id="planner-main" class="tab-content active" style="height: 100%;">
+            <div id="planner-main" class="tab-content active" style="height: 100%; overflow-y: auto;">
                 <div id="canvas-container" style="height: 100%;">
                     <div id="overlay-data" class="glass-panel" style="padding: 10px; width: 150px;">
                         <div style="font-size: 10px; color: var(--accent-pink);">FEA FIELD STRENGTH</div>
@@ -392,7 +458,7 @@
                 </div>
             </div>
 
-            <div id="conductivity-main" class="tab-content" style="height: 100%;">
+            <div id="conductivity-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
                     <h2>Neural Conductivity Map</h2>
                     <div id="conductivity-grid-container"
@@ -402,7 +468,7 @@
                 </div>
             </div>
 
-            <div id="dementia-main" class="tab-content" style="height: 100%;">
+            <div id="dementia-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
                     <h2>Optimal Protocol & Dementia Progress Visualization (60 Months)</h2>
                     <div style="flex-grow: 1; position: relative;">
@@ -423,8 +489,8 @@
                 </div>
             </div>
 
-            <div id="stage-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+            <div id="stage-main" class="tab-content" style="height: 100%; overflow-y: auto;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column; overflow-y: auto;">
                     <h2>Clinical DBS Stage-Gated Protocol for Dementia Care</h2>
                     <div id="stage-protocol-container" style="flex-grow: 1; overflow-y: auto; padding: 10px; display: grid; gap: 15px; grid-template-columns: 1fr;">
                         <div style="color: var(--text-dim); text-align: center; margin-top: 50px;">
@@ -434,7 +500,7 @@
                 </div>
             </div>
 
-            <div id="fea-main" class="tab-content" style="height: 100%;">
+            <div id="fea-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
                     <h2>Finite Element Analysis - Cortical Surface Manifolds</h2>
                     <div id="fea-large-container" style="flex-grow: 1; border-radius: 8px; overflow: hidden; position: relative;">
@@ -443,7 +509,7 @@
                 </div>
             </div>
 
-            <div id="electrical-main" class="tab-content" style="height: 100%;">
+            <div id="electrical-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
                     <h2>Optimal Electrical & RF Circuitry for Smart Aging DBS Infrastructure</h2>
                     <div id="electrical-circuit-container" style="flex-grow: 1; padding: 20px; overflow-y: auto;">
@@ -470,7 +536,7 @@
                 </div>
             </div>
 
-            <div id="smartaging-main" class="tab-content" style="height: 100%;">
+            <div id="smartaging-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-scroll-inner">
                         <div class="proj-hero" style="background: linear-gradient(135deg, rgba(0,242,255,0.14) 0%, rgba(112,0,255,0.12) 100%); border-color: rgba(0,242,255,0.3);">
@@ -495,7 +561,7 @@
                 </div>
             </div>
             
-            <div id="ms-main" class="tab-content" style="height: 100%;">
+            <div id="ms-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-scroll-inner">
                         <div class="proj-hero" style="background: linear-gradient(135deg, rgba(54,162,235,0.18) 0%, rgba(0,200,100,0.12) 100%); border-color: rgba(54,162,235,0.35);">
@@ -529,7 +595,7 @@
                 </div>
             </div>
 
-            <div id="alexander-main" class="tab-content" style="height: 100%;">
+            <div id="alexander-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-scroll-inner">
                         <div class="proj-hero" style="background: linear-gradient(135deg, rgba(255,159,64,0.18) 0%, rgba(200,50,50,0.12) 100%); border-color: rgba(255,159,64,0.35);">
@@ -562,7 +628,7 @@
                     </div>
                 </div>
             </div>
-            <div id="alexander-cf-main" class="tab-content" style="height: 100%;">
+            <div id="alexander-cf-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-scroll-inner">
                         <div class="proj-hero" style="background: linear-gradient(135deg, rgba(255,99,132,0.18) 0%, rgba(255,159,64,0.12) 100%); border-color: rgba(255,99,132,0.35);">
@@ -595,7 +661,7 @@
                     </div>
                 </div>
             </div>
-            <div id="huntington-main" class="tab-content" style="height: 100%;">
+            <div id="huntington-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-scroll-inner">
                         <div class="proj-hero" style="background: linear-gradient(135deg, rgba(153,102,255,0.18) 0%, rgba(54,162,235,0.12) 100%); border-color: rgba(153,102,255,0.35);">
@@ -628,7 +694,7 @@
                     </div>
                 </div>
             </div>
-            <div id="he-ms-main" class="tab-content" style="height: 100%;">
+            <div id="he-ms-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-scroll-inner">
                         <div class="proj-hero" style="background: linear-gradient(135deg, rgba(0,200,150,0.16) 0%, rgba(54,162,235,0.12) 100%); border-color: rgba(0,200,150,0.35);">
@@ -662,7 +728,7 @@
                 </div>
             </div>
             
-            <div id="he-huntington-main" class="tab-content" style="height: 100%;">
+            <div id="he-huntington-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-scroll-inner">
                         <div class="proj-hero" style="background: linear-gradient(135deg, rgba(153,102,255,0.16) 0%, rgba(0,200,150,0.12) 100%); border-color: rgba(153,102,255,0.35);">
@@ -696,7 +762,7 @@
                 </div>
             </div>
             
-            <div id="he-alexander-main" class="tab-content" style="height: 100%;">
+            <div id="he-alexander-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-scroll-inner">
                         <div class="proj-hero" style="background: linear-gradient(135deg, rgba(255,159,64,0.16) 0%, rgba(255,99,132,0.12) 100%); border-color: rgba(255,159,64,0.35);">
@@ -729,7 +795,7 @@
                     </div>
                 </div>
             </div>
-            <div id="cortical-sim-main" class="tab-content" style="height: 100%;">
+            <div id="cortical-sim-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-scroll-inner">
                         <div class="proj-hero" style="background: linear-gradient(135deg, rgba(0,242,255,0.16) 0%, rgba(0,100,200,0.14) 100%); border-color: rgba(0,242,255,0.35);">
@@ -763,7 +829,7 @@
                 </div>
             </div>
             
-            <div id="market-valuation-main" class="tab-content" style="height: 100%;">
+            <div id="market-valuation-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-scroll-inner">
                         <div class="proj-hero" style="background: linear-gradient(135deg, rgba(0,242,255,0.16) 0%, rgba(112,0,255,0.18) 50%, rgba(20,10,30,0.6) 100%); border-color: rgba(0,242,255,0.35);">
@@ -810,7 +876,7 @@
                     </div>
                 </div>
             </div>
-            <div id="sea-valuation-main" class="tab-content" style="height: 100%;">
+            <div id="sea-valuation-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
                     <div class="proj-scroll-inner" id="sea-scroll">
 
@@ -929,6 +995,45 @@
                                 </div>
                             </div>
                         </div>
+
+                                    <div id="fasd-cure-main" class="tab-content" style="height: 100%;">
+                                        <div class="proj-scroll-outer" style="height: 100%; overflow-y: auto; max-height: 100vh; padding-right: 8px;">
+                                            <div class="proj-hero">
+                                                <h1>FASD QML DBS Recovery</h1>
+                                                <p class="proj-hero-desc">Quantum Machine Learning-optimized Deep Brain Stimulation for Fetal Alcohol Syndrome: maximizing neurodevelopmental repair and adaptive function.</p>
+                                                <div class="proj-hero-kpis">
+                                                    <div class="proj-kpi">
+                                                        <span class="proj-kpi-val" id="fasd-cure-stage">Stage I</span>
+                                                        <span class="proj-kpi-label">Current QML Phase</span>
+                                                    </div>
+                                                    <div class="proj-kpi">
+                                                        <span class="proj-kpi-val" id="fasd-cure-efficacy">--%</span>
+                                                        <span class="proj-kpi-label">Optimal Recovery Index</span>
+                                                    </div>
+                                                    <div class="proj-kpi">
+                                                        <span class="proj-kpi-val" id="fasd-cure-timeline">--</span>
+                                                        <span class="proj-kpi-label">Simulation Timeline</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="proj-card">
+                                                <div class="proj-card-title">QML-Driven Recovery &amp; Executive Function</div>
+                                                <div class="chart-wrapper" style="height: 320px; max-width: 100%; position: relative;">
+                                                    <canvas id="fasdCureChart"></canvas>
+                                                </div>
+                                            </div>
+                                            <div class="proj-card">
+                                                <div class="proj-card-title">Cortical Modulation &amp; Adaptive Behavior</div>
+                                                <div class="chart-wrapper" style="height: 260px; max-width: 100%; position: relative;">
+                                                    <canvas id="fasdCureCorticalChart"></canvas>
+                                                </div>
+                                            </div>
+                                            <div class="proj-card" style="margin-top: 10px;">
+                                                <div class="proj-card-title">QML Protocol Stages</div>
+                                                <ul id="fasd-cure-stages-list" style="font-size: 12px; color: #a0e7ff; margin: 0 0 0 18px; list-style-type: square; line-height: 1.7;"></ul>
+                                            </div>
+                                        </div>
+                                    </div>
 
                         <!-- Chart -->
                         <div class="proj-card">

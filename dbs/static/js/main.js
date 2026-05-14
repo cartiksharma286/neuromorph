@@ -1,3 +1,260 @@
+// --- FASD StatOpt Cure Simulation ---
+function simulateFASDStatOpt() {
+    const out = document.getElementById('fasd-statopt-stage');
+    if (out) out.innerText = 'Simulating...';
+    fetch('/api/fasd-statopt-cure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Update KPIs
+        if (document.getElementById('fasd-statopt-stage')) document.getElementById('fasd-statopt-stage').innerText = data.stages[0].label;
+        if (document.getElementById('fasd-statopt-efficacy')) document.getElementById('fasd-statopt-efficacy').innerText = Math.round(data.efficacy[data.efficacy.length-1]) + '%';
+        if (document.getElementById('fasd-statopt-timeline')) document.getElementById('fasd-statopt-timeline').innerText = 'Months 0-48';
+        renderFASDStatOptChart(data);
+        renderFASDStatOptParamChart(data);
+        // Render protocol stages
+        const stagesList = document.getElementById('fasd-statopt-stages-list');
+        if (stagesList && data.stages) {
+            stagesList.innerHTML = data.stages.map(s => `<li><b>${s.label}</b> <span style='color:#fff;'>@ Month ${s.time}</span></li>`).join('');
+        }
+    })
+    .catch(e => {
+        if (out) out.innerText = 'Error';
+        console.error('FASD StatOpt simulation error:', e);
+    });
+}
+
+function renderFASDStatOptChart(data) {
+    const ctx = document.getElementById('fasdStatOptChart');
+    if (!ctx) return;
+    if (window.fasdStatOptChartInstance) window.fasdStatOptChartInstance.destroy();
+    window.fasdStatOptChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.months.map(m => `M${m}`),
+            datasets: [
+                {
+                    label: 'Optimized Efficacy',
+                    data: data.efficacy,
+                    borderColor: '#00ffcc',
+                    backgroundColor: 'rgba(0,255,204,0.13)',
+                    tension: 0.45,
+                    fill: true,
+                    pointRadius: 2
+                },
+                {
+                    label: 'Recovery Index',
+                    data: data.recovery,
+                    borderColor: '#ff00c8',
+                    backgroundColor: 'rgba(255,0,200,0.13)',
+                    tension: 0.45,
+                    fill: true,
+                    pointRadius: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Statistical Parametric Optimization (DBS for FASD)'
+                },
+                legend: {
+                    labels: { color: '#a0e7ff', font: { size: 12 } }
+                }
+            },
+            layout: { padding: 0 },
+            scales: {
+                x: { title: { display: true, text: 'Months', color: '#a0e7ff' }, ticks: { color: '#a0e7ff' } },
+                y: { min: 0, max: 120, title: { display: true, text: 'Score / Index', color: '#a0e7ff' }, ticks: { color: '#a0e7ff' } }
+            }
+        }
+    });
+}
+
+function renderFASDStatOptParamChart(data) {
+    const ctx = document.getElementById('fasdStatOptParamChart');
+    if (!ctx) return;
+    if (window.fasdStatOptParamChartInstance) window.fasdStatOptParamChartInstance.destroy();
+    window.fasdStatOptParamChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.param_names,
+            datasets: [
+                {
+                    label: 'DBS Parameter Distribution',
+                    data: data.param_dist,
+                    backgroundColor: [
+                        'rgba(0,255,204,0.7)',
+                        'rgba(255,0,200,0.7)',
+                        'rgba(0,242,255,0.7)',
+                        'rgba(255,206,86,0.7)',
+                        'rgba(153,102,255,0.7)'
+                    ],
+                    borderRadius: 6,
+                    barPercentage: 0.7,
+                    categoryPercentage: 0.7
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'DBS Parameter Distribution (StatOpt)'
+                },
+                legend: {
+                    labels: { color: '#a0e7ff', font: { size: 12 } }
+                }
+            },
+            layout: { padding: 0 },
+            scales: {
+                x: { ticks: { color: '#a0e7ff' } },
+                y: { min: 0, max: 1, ticks: { color: '#a0e7ff' } }
+            }
+        }
+    });
+}
+// --- FASD Cure Simulation ---
+function simulateFASDCure() {
+    const out = document.getElementById('fasd-cure-stage');
+    if (out) out.innerText = 'Simulating...';
+    fetch('/api/fasd-cure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Update KPIs
+        if (document.getElementById('fasd-cure-stage')) document.getElementById('fasd-cure-stage').innerText = data.stages[0].label;
+        if (document.getElementById('fasd-cure-efficacy')) document.getElementById('fasd-cure-efficacy').innerText = Math.round(data.qml_neuroplasticity[data.qml_neuroplasticity.length-1]) + '%';
+        if (document.getElementById('fasd-cure-timeline')) document.getElementById('fasd-cure-timeline').innerText = 'Months 0-48';
+        renderFASDQMLChart(data);
+        renderFASDQMLCorticalChart(data);
+        // Render QML protocol stages
+        const stagesList = document.getElementById('fasd-cure-stages-list');
+        if (stagesList && data.stages) {
+            stagesList.innerHTML = data.stages.map(s => `<li><b>${s.label}</b> <span style='color:#fff;'>@ Month ${s.time}</span></li>`).join('');
+        }
+    })
+    .catch(e => {
+        if (out) out.innerText = 'Error';
+        console.error('FASD Cure simulation error:', e);
+    });
+}
+
+function renderFASDQMLChart(data) {
+    const ctx = document.getElementById('fasdCureChart');
+    if (!ctx) return;
+    if (window.fasdCureChartInstance) window.fasdCureChartInstance.destroy();
+    window.fasdCureChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.months.map(m => `M${m}`),
+            datasets: [
+                {
+                    label: 'QML Cortical Stimulation',
+                    data: data.cortical_stim,
+                    borderColor: '#00ffcc',
+                    backgroundColor: 'rgba(0,255,204,0.13)',
+                    tension: 0.45,
+                    fill: true,
+                    pointRadius: 2
+                },
+                {
+                    label: 'QML Neuroplasticity Index',
+                    data: data.qml_neuroplasticity,
+                    borderColor: '#ff00c8',
+                    backgroundColor: 'rgba(255,0,200,0.13)',
+                    tension: 0.45,
+                    fill: true,
+                    pointRadius: 2
+                },
+                {
+                    label: 'QML Executive Function',
+                    data: data.qml_exec_func,
+                    borderColor: '#00f2ff',
+                    backgroundColor: 'rgba(0,242,255,0.13)',
+                    tension: 0.45,
+                    fill: true,
+                    pointRadius: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'QML-Driven DBS Cortical Stimulation & Recovery'
+                },
+                legend: {
+                    labels: { color: '#a0e7ff', font: { size: 12 } }
+                }
+            },
+            layout: { padding: 0 },
+            scales: {
+                x: { title: { display: true, text: 'Months', color: '#a0e7ff' }, ticks: { color: '#a0e7ff' } },
+                y: { min: 0, max: 120, title: { display: true, text: 'Score / Index', color: '#a0e7ff' }, ticks: { color: '#a0e7ff' } }
+            }
+        }
+    });
+}
+
+function renderFASDQMLCorticalChart(data) {
+    const ctx = document.getElementById('fasdCureCorticalChart');
+    if (!ctx) return;
+    if (window.fasdCureCorticalChartInstance) window.fasdCureCorticalChartInstance.destroy();
+    window.fasdCureCorticalChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['F-Striatal', 'GABA', 'Thalamic', 'Prefrontal', 'Cerebellar'],
+            datasets: [
+                {
+                    label: 'QML Cortical Field (final month)',
+                    data: data.qml_field_vectors[data.qml_field_vectors.length-1],
+                    backgroundColor: [
+                        'rgba(0,255,204,0.7)',
+                        'rgba(255,0,200,0.7)',
+                        'rgba(0,242,255,0.7)',
+                        'rgba(255,206,86,0.7)',
+                        'rgba(153,102,255,0.7)'
+                    ],
+                    borderRadius: 6,
+                    barPercentage: 0.7,
+                    categoryPercentage: 0.7
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'QML Cortical Surface Stimulation (FASD)'
+                },
+                legend: {
+                    labels: { color: '#a0e7ff', font: { size: 12 } }
+                }
+            },
+            layout: { padding: 0 },
+            scales: {
+                x: { ticks: { color: '#a0e7ff' } },
+                y: { min: 0, max: 1, ticks: { color: '#a0e7ff' } }
+            }
+        }
+    });
+}
 // Neuromorph DBS Main Logic
 
 let scene, camera, renderer, headGeometry, FEA_particles;
