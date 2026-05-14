@@ -34,6 +34,15 @@
             <button class="tab-btn" onclick="switchTab('smartaging', event)">Smart Aging Sim</button>
             <button class="tab-btn" onclick="switchTab('protocols', event)">Clinical Protocols</button>
             <button class="tab-btn" onclick="switchTab('pareto', event)">Pareto Optimization</button>
+            <button class="tab-btn" onclick="switchTab('ms', event)">MS Ablation</button>
+            <button class="tab-btn" onclick="switchTab('alexander', event)">Alexander's Disease</button>
+            <button class="tab-btn" onclick="switchTab('alexander-cf', event)">Alexander CF Addendum</button>
+            <button class="tab-btn" onclick="switchTab('huntington', event)">Huntington's Disease</button>
+            <button class="tab-btn" onclick="switchTab('he-ms', event)">HE: MS</button>
+            <button class="tab-btn" onclick="switchTab('he-huntington', event)">HE: Huntington's</button>
+            <button class="tab-btn" onclick="switchTab('he-alexander', event)">HE: Alexander's</button>
+            <button class="tab-btn" onclick="switchTab('cortical-sim', event)">Cortical Simulation</button>
+            <button class="tab-btn" onclick="switchTab('market-valuation', event)">Net Market Valuation (2026-2036)</button>
         </nav>
 
         <aside class="sidebar-left">
@@ -168,6 +177,92 @@
                         Cognitive optimization simulation based on electrical parameters.
                     </p>
                     <button class="btn-primary" id="run-smart-aging" style="margin-top: 10px;">Run Cognitive Sim</button>
+                </div>
+            </div>
+
+            <div id="ms-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>MS Plaque Ablation (CF)</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Simulate Neural Recovery and Plaque Density Mitigation for Multiple Sclerosis utilizing Continued Fractions and Ramanujan Operators.
+                    </p>
+                    <button class="btn-primary" id="btn-simulate-ms" onclick="simulateMS()" style="margin-top: 10px;">Run Ramanujan CF Mitigation</button>
+                </div>
+            </div>
+
+            <div id="alexander-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Alexander's Disease Mitigation</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Rosenthal fiber mitigation mapping via Quantum Machine Learning and Feynman Path Integrals in an adaptive ablation sense.
+                    </p>
+                    <button class="btn-primary" id="btn-simulate-alexander" onclick="simulateAlexander()" style="margin-top: 10px;">Run QML Adaptive Ablation</button>
+                </div>
+            </div>
+            <div id="alexander-cf-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Alexander's Disease CF Addendum</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Simulation of Neural Recovery and Rosenthal fiber plaque ablation evaluated with Continued Fractions.
+                    </p>
+                    <button class="btn-primary" id="btn-simulate-alexander-cf" onclick="simulateAlexanderCF()" style="margin-top: 10px;">Run CF Ablation</button>
+                </div>
+            </div>
+            <div id="huntington-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Huntington's Disease</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Cortical simulations with electrical target specs utilizing statistical parametric optimization circuitry for interventional repair.
+                    </p>
+                    <button class="btn-primary" id="btn-simulate-huntington" onclick="simulateHuntington()" style="margin-top: 10px;">Run Interventional Simulation</button>
+                </div>
+            </div>
+            <div id="he-ms-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>MS Health Economics</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Evaluate health economics, evidence-based outcomes, and cost-utility of DBS for Multiple Sclerosis.
+                    </p>
+                    <button class="btn-primary" id="btn-simulate-he-ms" onclick="simulateHEMS()" style="margin-top: 10px;">Run HE Analysis</button>
+                </div>
+            </div>
+            
+            <div id="he-huntington-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Huntington's HE</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Analyze health economics and evidence-based outcomes for interventional DBS in Huntington's disease.
+                    </p>
+                    <button class="btn-primary" id="btn-simulate-he-huntington" onclick="simulateHEHuntington()" style="margin-top: 10px;">Run HE Analysis</button>
+                </div>
+            </div>
+            
+            <div id="he-alexander-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Alexander's HE</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Analyze cost-effectiveness and health outcomes for Rosenthal fiber ablation in Alexander's disease.
+                    </p>
+                    <button class="btn-primary" id="btn-simulate-he-alexander" onclick="simulateHEAlexander()" style="margin-top: 10px;">Run HE Analysis</button>
+                </div>
+            </div>
+            <div id="cortical-sim-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Cortical Simulation</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Simulate cortical networks, pyramidal neuron firing rates, and macro-scale projection costs.
+                    </p>
+                    <button class="btn-primary" id="btn-simulate-cortical" onclick="simulateCortical()" style="margin-top: 10px;">Run Cortical Sim</button>
+                </div>
+            </div>
+            
+            <div id="market-valuation-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Market Valuation</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Calculate projection costs and net market valuation over a 10-year period to 2036.
+                    </p>
+                    <button class="btn-primary" id="btn-simulate-market" onclick="simulateMarketValuation()" style="margin-top: 10px;">Project 10-Year Valuation</button>
                 </div>
             </div>
 
@@ -309,6 +404,191 @@
                 </div>
             </div>
             
+            <div id="ms-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <h2>Multiple Sclerosis Plaque Mitigation (Ramanujan CF)</h2>
+                    <div style="display: flex; gap: 10px; flex: 1;">
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                            <h3>Quantum Machine Learning & CF Specifications</h3>
+                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                                <li><strong>Target Structure:</strong> Thalamus & Basal Ganglia</li>
+                                <li><strong>Frequency Range:</strong> 130 - 180 Hz (Dynamic CF Tuning)</li>
+                                <li><strong>Algorithm:</strong> Ramanujan CF Operators</li>
+                            </ul>
+                            <h3>Mitigation Log</h3>
+                            <pre id="ms-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting simulation...</pre>
+                        </div>
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
+                            <canvas id="ms-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="alexander-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <h2>Alexander's Disease: Rosenthal Fiber Mitigation</h2>
+                    <div style="display: flex; gap: 10px; flex: 1;">
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                            <h3>Adaptive Ablation Specifications</h3>
+                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                                <li><strong>Modeling constraint:</strong> Feynman Path Integrals</li>
+                                <li><strong>Target Structure:</strong> White Matter Astrocytes</li>
+                                <li><strong>Framework:</strong> QML Adaptive Ablation</li>
+                            </ul>
+                            <h3>Ablation Log</h3>
+                            <pre id="alexander-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting simulation...</pre>
+                        </div>
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
+                            <canvas id="alexander-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="alexander-cf-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <h2>Alexander's Disease: Continued Fraction Addendum</h2>
+                    <div style="display: flex; gap: 10px; flex: 1;">
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                            <h3>CF Neural Recovery Specifications</h3>
+                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                                <li><strong>Modeling constraint:</strong> Continued Fractions</li>
+                                <li><strong>Target Structure:</strong> White Matter Astrocytes</li>
+                                <li><strong>Framework:</strong> QML CF Plaque Ablation</li>
+                            </ul>
+                            <h3>Ablation Log</h3>
+                            <pre id="alexander-cf-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting simulation...</pre>
+                        </div>
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
+                            <canvas id="alexander-cf-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="huntington-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <h2>Huntington's Disease Cortical Repair Simulation</h2>
+                    <div style="display: flex; gap: 10px; flex: 1;">
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                            <h3>Statistical Parametric Optimization Circuitry</h3>
+                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                                <li><strong>Target Structure:</strong> Motor Cortex & Striatum</li>
+                                <li><strong>Circuitry:</strong> Statistical Parametric Optimization</li>
+                                <li><strong>Intervention:</strong> Cortical Repair Modulation</li>
+                            </ul>
+                            <h3>Optimization Log</h3>
+                            <pre id="huntington-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting simulation...</pre>
+                        </div>
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
+                            <canvas id="huntington-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="he-ms-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <h2>Health Economics: Multiple Sclerosis DBS</h2>
+                    <div style="display: flex; gap: 10px; flex: 1;">
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                            <h3>Evidence-Based Outcomes & Cost Utility</h3>
+                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                                <li><strong>QALY Gain:</strong> +2.5 Years Expected</li>
+                                <li><strong>ICER:</strong> $45,000 / QALY</li>
+                                <li><strong>Healthcare Savings:</strong> Reduced hospitalization by 40%</li>
+                            </ul>
+                            <h3>Economic Log</h3>
+                            <pre id="he-ms-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting HE calculation...</pre>
+                        </div>
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
+                            <canvas id="he-ms-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="he-huntington-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <h2>Health Economics: Huntington's DBS</h2>
+                    <div style="display: flex; gap: 10px; flex: 1;">
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                            <h3>Interventional Outcomes & Value</h3>
+                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                                <li><strong>QALY Gain:</strong> +3.1 Years Expected</li>
+                                <li><strong>ICER:</strong> $38,000 / QALY</li>
+                                <li><strong>Caregiver Burden:</strong> Reduced by 60%</li>
+                            </ul>
+                            <h3>Economic Log</h3>
+                            <pre id="he-huntington-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting HE calculation...</pre>
+                        </div>
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
+                            <canvas id="he-huntington-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="he-alexander-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <h2>Health Economics: Alexander's Disease DBS</h2>
+                    <div style="display: flex; gap: 10px; flex: 1;">
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                            <h3>Ablation Outcomes & Utility Mapping</h3>
+                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                                <li><strong>QALY Gain:</strong> +4.0 Years Expected</li>
+                                <li><strong>ICER:</strong> $41,500 / QALY</li>
+                                <li><strong>Symptom Control:</strong> 75% reduction in seizures</li>
+                            </ul>
+                            <h3>Economic Log</h3>
+                            <pre id="he-alexander-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting HE calculation...</pre>
+                        </div>
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
+                            <canvas id="he-alexander-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="cortical-sim-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <h2>Cortical Dynamics & Projection Costs</h2>
+                    <div style="display: flex; gap: 10px; flex: 1;">
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                            <h3>Network & Projection Metrics</h3>
+                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                                <li><strong>Active Synapses:</strong> 1.2 x 10^9</li>
+                                <li><strong>Global Projection Energy:</strong> 45.2 mWh</li>
+                                <li><strong>Cortical Coherence:</strong> High Synchronization (Gamma band)</li>
+                            </ul>
+                            <h3>Simulation Log</h3>
+                            <pre id="cortical-sim-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting cortical data...</pre>
+                        </div>
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
+                            <canvas id="cortical-sim-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="market-valuation-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+                    <h2>Net Market Valuation (2026-2036)</h2>
+                    <div style="display: flex; gap: 10px; flex: 1;">
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                            <h3>10-Year Valuation & Projection Costs</h3>
+                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                                <li><strong>CAGR:</strong> 18.5% Expected</li>
+                                <li><strong>Forecast (2036):</strong> $12.4 Billion</li>
+                                <li><strong>R&D / Projection Costs:</strong> Normalized at 15% ARR</li>
+                            </ul>
+                            <h3>Economic Engine Log</h3>
+                            <pre id="market-valuation-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting 10-year projection data...</pre>
+                        </div>
+                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
+                            <canvas id="market-valuation-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="pareto-main" class="tab-content" style="height: 100%;">
                 <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
                     <div class="panel-header">
