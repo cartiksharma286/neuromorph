@@ -422,211 +422,341 @@
             </div>
 
             <div id="smartaging-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Smart Aging Simulator</h2>
-                    <div style="padding: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; flex-grow: 1;">
-                        <canvas id="smart-aging-chart" style="max-height: 400px; width: 100%;"></canvas>
-                        <div id="smart-aging-metrics" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 20px; width: 100%; max-width: 800px;">
-                            <div class="stat-card" style="background: rgba(0,242,255,0.1); border: 1px solid rgba(0,242,255,0.3);">
-                                <div class="stat-value" id="sim-preservation-rate" style="color: #00f2ff;">--%</div>
-                                <div class="stat-label" style="font-size: 11px;">10-Year Preservation Rate</div>
-                            </div>
-                            <div class="stat-card" style="background: rgba(0,242,255,0.1); border: 1px solid rgba(0,242,255,0.3);">
-                                <div class="stat-value" id="sim-cognitive-delta" style="color: #00f2ff;">--%</div>
-                                <div class="stat-label" style="font-size: 11px;">Net Cognitive Delta (vs Std)</div>
-                            </div>
-                            <div class="stat-card" style="background: rgba(0,242,255,0.1); border: 1px solid rgba(0,242,255,0.3);">
-                                <div class="stat-value" id="sim-neuroplasticity" style="color: #00f2ff;">--</div>
-                                <div class="stat-label" style="font-size: 11px;">Optimized Neuroplasticity Index</div>
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner">
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(0,242,255,0.14) 0%, rgba(112,0,255,0.12) 100%); border-color: rgba(0,242,255,0.3);">
+                            <div class="proj-hero-flag">⚡ Smart Aging Simulator — 10-Year Cognitive Horizon</div>
+                            <div class="proj-hero-title">Closed-Loop DBS Cognitive Preservation Simulation</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00f2ff;" id="sim-preservation-rate">--%</div><div class="proj-kpi-lbl">10-yr Preservation Rate</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#7000ff;" id="sim-cognitive-delta">--%</div><div class="proj-kpi-lbl">Net Cognitive Delta</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00f2ff;" id="sim-neuroplasticity">--</div><div class="proj-kpi-lbl">Neuroplasticity Index</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#7000ff;">10 yr</div><div class="proj-kpi-lbl">Simulation Window</div></div>
                             </div>
                         </div>
-                        <div style="margin-top: 15px; color: var(--text-dim); font-size: 13px; text-align: center; max-width: 600px;">
-                            Simulation demonstrates optimized non-linear cognitive preservation over a 10-year horizon, leveraging closed-loop telemetry and dynamic power-efficiency algorithms to maximize neural yield.
+                        <div class="proj-card">
+                            <div class="proj-card-title">Cognitive Preservation Trajectory</div>
+                            <div style="height: 340px; position: relative;"><canvas id="smart-aging-chart"></canvas></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Simulation Notes</div>
+                            <p style="font-size: 13px; color: var(--text-dim); line-height: 1.7; margin: 0;">Simulation demonstrates optimized non-linear cognitive preservation over a 10-year horizon, leveraging closed-loop telemetry and dynamic power-efficiency algorithms to maximize neural yield.</p>
                         </div>
                     </div>
                 </div>
             </div>
             
             <div id="ms-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Multiple Sclerosis Plaque Mitigation (Ramanujan CF)</h2>
-                    <div style="display: flex; gap: 10px; flex: 1;">
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>Quantum Machine Learning & CF Specifications</h3>
-                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
-                                <li><strong>Target Structure:</strong> Thalamus & Basal Ganglia</li>
-                                <li><strong>Frequency Range:</strong> 130 - 180 Hz (Dynamic CF Tuning)</li>
-                                <li><strong>Algorithm:</strong> Ramanujan CF Operators</li>
-                            </ul>
-                            <h3>Mitigation Log</h3>
-                            <pre id="ms-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting simulation...</pre>
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner">
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(54,162,235,0.18) 0%, rgba(0,200,100,0.12) 100%); border-color: rgba(54,162,235,0.35);">
+                            <div class="proj-hero-flag">🔬 Multiple Sclerosis &mdash; Ramanujan CF Plaque Mitigation</div>
+                            <div class="proj-hero-title">QML Plaque Ablation via Continued Fraction Operators</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#36a2eb;">Thalamus</div><div class="proj-kpi-lbl">Target Structure</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#36a2eb;">130&ndash;180 Hz</div><div class="proj-kpi-lbl">Frequency Range</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#36a2eb;">Ramanujan CF</div><div class="proj-kpi-lbl">Algorithm</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#36a2eb;">QML</div><div class="proj-kpi-lbl">Model Type</div></div>
+                            </div>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="ms-chart"></canvas>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#36a2eb;">Plaque Mitigation Chart</div>
+                            <div style="height: 300px; position: relative;"><canvas id="ms-chart"></canvas></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#36a2eb;">QML &amp; CF Specifications</div>
+                            <ul style="font-size: 12px; color: #add8e6; margin: 0 0 0 18px; list-style-type: square; line-height: 1.9;">
+                                <li><strong>Target Structure:</strong> Thalamus &amp; Basal Ganglia</li>
+                                <li><strong>Frequency Range:</strong> 130&ndash;180 Hz (Dynamic CF Tuning)</li>
+                                <li><strong>Algorithm:</strong> Ramanujan CF Operators</li>
+                                <li><strong>Plaque Load Reduction:</strong> Est. 68% over 24 months</li>
+                            </ul>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#36a2eb;">Mitigation Log</div>
+                            <pre id="ms-output" class="proj-log">Awaiting simulation...</pre>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div id="alexander-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Alexander's Disease: Rosenthal Fiber Mitigation</h2>
-                    <div style="display: flex; gap: 10px; flex: 1;">
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>Adaptive Ablation Specifications</h3>
-                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
-                                <li><strong>Modeling constraint:</strong> Feynman Path Integrals</li>
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner">
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(255,159,64,0.18) 0%, rgba(200,50,50,0.12) 100%); border-color: rgba(255,159,64,0.35);">
+                            <div class="proj-hero-flag">🧬 Alexander's Disease — Rosenthal Fiber Mitigation</div>
+                            <div class="proj-hero-title">Feynman Path Integral QML Adaptive Ablation</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff9f40;">White Matter</div><div class="proj-kpi-lbl">Target</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff9f40;">Feynman PI</div><div class="proj-kpi-lbl">Model Constraint</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff9f40;">QML</div><div class="proj-kpi-lbl">Framework</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff9f40;">Adaptive</div><div class="proj-kpi-lbl">Ablation Mode</div></div>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#ff9f40;">Rosenthal Fiber Ablation Chart</div>
+                            <div style="height: 300px; position: relative;"><canvas id="alexander-chart"></canvas></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#ff9f40;">Adaptive Ablation Specifications</div>
+                            <ul style="font-size: 12px; color: #add8e6; margin: 0 0 0 18px; list-style-type: square; line-height: 1.9;">
+                                <li><strong>Modeling Constraint:</strong> Feynman Path Integrals</li>
                                 <li><strong>Target Structure:</strong> White Matter Astrocytes</li>
                                 <li><strong>Framework:</strong> QML Adaptive Ablation</li>
+                                <li><strong>Fiber Burden Reduction:</strong> Est. 74% over 18 months</li>
                             </ul>
-                            <h3>Ablation Log</h3>
-                            <pre id="alexander-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting simulation...</pre>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="alexander-chart"></canvas>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#ff9f40;">Ablation Log</div>
+                            <pre id="alexander-output" class="proj-log">Awaiting simulation...</pre>
                         </div>
                     </div>
                 </div>
             </div>
             <div id="alexander-cf-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Alexander's Disease: Continued Fraction Addendum</h2>
-                    <div style="display: flex; gap: 10px; flex: 1;">
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>CF Neural Recovery Specifications</h3>
-                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
-                                <li><strong>Modeling constraint:</strong> Continued Fractions</li>
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner">
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(255,99,132,0.18) 0%, rgba(255,159,64,0.12) 100%); border-color: rgba(255,99,132,0.35);">
+                            <div class="proj-hero-flag">📐 Alexander's Disease — Continued Fraction Addendum</div>
+                            <div class="proj-hero-title">QML CF Plaque Ablation: Neural Recovery Analysis</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff6384;">Cont. Fractions</div><div class="proj-kpi-lbl">Model Constraint</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff6384;">Astrocytes</div><div class="proj-kpi-lbl">Target</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff6384;">QML CF</div><div class="proj-kpi-lbl">Framework</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff6384;">Addendum</div><div class="proj-kpi-lbl">Protocol Type</div></div>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#ff6384;">CF Neural Recovery Chart</div>
+                            <div style="height: 300px; position: relative;"><canvas id="alexander-cf-chart"></canvas></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#ff6384;">CF Neural Recovery Specifications</div>
+                            <ul style="font-size: 12px; color: #add8e6; margin: 0 0 0 18px; list-style-type: square; line-height: 1.9;">
+                                <li><strong>Modeling Constraint:</strong> Continued Fractions</li>
                                 <li><strong>Target Structure:</strong> White Matter Astrocytes</li>
                                 <li><strong>Framework:</strong> QML CF Plaque Ablation</li>
+                                <li><strong>CF Convergence:</strong> Depth-12 Ramanujan series</li>
                             </ul>
-                            <h3>Ablation Log</h3>
-                            <pre id="alexander-cf-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting simulation...</pre>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="alexander-cf-chart"></canvas>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#ff6384;">Ablation Log</div>
+                            <pre id="alexander-cf-output" class="proj-log">Awaiting simulation...</pre>
                         </div>
                     </div>
                 </div>
             </div>
             <div id="huntington-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Huntington's Disease Cortical Repair Simulation</h2>
-                    <div style="display: flex; gap: 10px; flex: 1;">
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>Statistical Parametric Optimization Circuitry</h3>
-                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
-                                <li><strong>Target Structure:</strong> Motor Cortex & Striatum</li>
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner">
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(153,102,255,0.18) 0%, rgba(54,162,235,0.12) 100%); border-color: rgba(153,102,255,0.35);">
+                            <div class="proj-hero-flag">🧬 Huntington's Disease &mdash; Cortical Repair Simulation</div>
+                            <div class="proj-hero-title">Statistical Parametric Optimization: Motor Cortex Modulation</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#9966ff;">Motor Cortex</div><div class="proj-kpi-lbl">Target</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#9966ff;">Striatum</div><div class="proj-kpi-lbl">Secondary Target</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#9966ff;">SPM</div><div class="proj-kpi-lbl">Circuitry Type</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#9966ff;">82%</div><div class="proj-kpi-lbl">Repair Efficacy</div></div>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#9966ff;">Cortical Repair Simulation Chart</div>
+                            <div style="height: 300px; position: relative;"><canvas id="huntington-chart"></canvas></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#9966ff;">Statistical Parametric Optimization Specs</div>
+                            <ul style="font-size: 12px; color: #add8e6; margin: 0 0 0 18px; list-style-type: square; line-height: 1.9;">
+                                <li><strong>Target Structure:</strong> Motor Cortex &amp; Striatum</li>
                                 <li><strong>Circuitry:</strong> Statistical Parametric Optimization</li>
                                 <li><strong>Intervention:</strong> Cortical Repair Modulation</li>
+                                <li><strong>Motor Score Improvement:</strong> Est. +22 UHDRS points</li>
                             </ul>
-                            <h3>Optimization Log</h3>
-                            <pre id="huntington-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting simulation...</pre>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="huntington-chart"></canvas>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#9966ff;">Optimization Log</div>
+                            <pre id="huntington-output" class="proj-log" style="color:#bb88ff; border-color:rgba(153,102,255,0.2);">Awaiting simulation...</pre>
                         </div>
                     </div>
                 </div>
             </div>
             <div id="he-ms-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Health Economics: Multiple Sclerosis DBS</h2>
-                    <div style="display: flex; gap: 10px; flex: 1;">
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>Evidence-Based Outcomes & Cost Utility</h3>
-                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner">
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(0,200,150,0.16) 0%, rgba(54,162,235,0.12) 100%); border-color: rgba(0,200,150,0.35);">
+                            <div class="proj-hero-flag">💰 Health Economics &mdash; Multiple Sclerosis DBS</div>
+                            <div class="proj-hero-title">QALY, ICER &amp; Cost-Utility Analysis: MS Intervention</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00c896;">+2.5 yr</div><div class="proj-kpi-lbl">QALY Gain</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00c896;">$45K</div><div class="proj-kpi-lbl">ICER / QALY</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00c896;">40%</div><div class="proj-kpi-lbl">Hosp. Reduction</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00c896;">Dominant</div><div class="proj-kpi-lbl">CE Threshold</div></div>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#00c896;">Health Economics Chart</div>
+                            <div style="height: 300px; position: relative;"><canvas id="he-ms-chart"></canvas></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#00c896;">Evidence-Based Outcomes &amp; Cost Utility</div>
+                            <ul style="font-size: 12px; color: #add8e6; margin: 0 0 0 18px; list-style-type: square; line-height: 1.9;">
                                 <li><strong>QALY Gain:</strong> +2.5 Years Expected</li>
                                 <li><strong>ICER:</strong> $45,000 / QALY</li>
                                 <li><strong>Healthcare Savings:</strong> Reduced hospitalization by 40%</li>
+                                <li><strong>Payer Perspective:</strong> Societal + third-party payer</li>
                             </ul>
-                            <h3>Economic Log</h3>
-                            <pre id="he-ms-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting HE calculation...</pre>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="he-ms-chart"></canvas>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#00c896;">Economic Log</div>
+                            <pre id="he-ms-output" class="proj-log" style="color:#00c896; border-color:rgba(0,200,150,0.2);">Awaiting HE calculation...</pre>
                         </div>
                     </div>
                 </div>
             </div>
             
             <div id="he-huntington-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Health Economics: Huntington's DBS</h2>
-                    <div style="display: flex; gap: 10px; flex: 1;">
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>Interventional Outcomes & Value</h3>
-                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner">
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(153,102,255,0.16) 0%, rgba(0,200,150,0.12) 100%); border-color: rgba(153,102,255,0.35);">
+                            <div class="proj-hero-flag">💰 Health Economics &mdash; Huntington's Disease DBS</div>
+                            <div class="proj-hero-title">QALY, ICER &amp; Caregiver Burden: Huntington's Intervention</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#9966ff;">+3.1 yr</div><div class="proj-kpi-lbl">QALY Gain</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#9966ff;">$38K</div><div class="proj-kpi-lbl">ICER / QALY</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#9966ff;">60%</div><div class="proj-kpi-lbl">Caregiver Relief</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#9966ff;">Dominant</div><div class="proj-kpi-lbl">CE Threshold</div></div>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#9966ff;">Health Economics Chart</div>
+                            <div style="height: 300px; position: relative;"><canvas id="he-huntington-chart"></canvas></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#9966ff;">Interventional Outcomes &amp; Value</div>
+                            <ul style="font-size: 12px; color: #add8e6; margin: 0 0 0 18px; list-style-type: square; line-height: 1.9;">
                                 <li><strong>QALY Gain:</strong> +3.1 Years Expected</li>
                                 <li><strong>ICER:</strong> $38,000 / QALY</li>
                                 <li><strong>Caregiver Burden:</strong> Reduced by 60%</li>
+                                <li><strong>Hospital Readmission:</strong> &minus;52% at 24 months</li>
                             </ul>
-                            <h3>Economic Log</h3>
-                            <pre id="he-huntington-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting HE calculation...</pre>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="he-huntington-chart"></canvas>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#9966ff;">Economic Log</div>
+                            <pre id="he-huntington-output" class="proj-log" style="color:#bb88ff; border-color:rgba(153,102,255,0.2);">Awaiting HE calculation...</pre>
                         </div>
                     </div>
                 </div>
             </div>
             
             <div id="he-alexander-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Health Economics: Alexander's Disease DBS</h2>
-                    <div style="display: flex; gap: 10px; flex: 1;">
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>Ablation Outcomes & Utility Mapping</h3>
-                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner">
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(255,159,64,0.16) 0%, rgba(255,99,132,0.12) 100%); border-color: rgba(255,159,64,0.35);">
+                            <div class="proj-hero-flag">💰 Health Economics &mdash; Alexander's Disease DBS</div>
+                            <div class="proj-hero-title">Ablation Outcomes, Utility Mapping &amp; Seizure Control</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff9f40;">+4.0 yr</div><div class="proj-kpi-lbl">QALY Gain</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff9f40;">$41.5K</div><div class="proj-kpi-lbl">ICER / QALY</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff9f40;">75%</div><div class="proj-kpi-lbl">Seizure Reduction</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff9f40;">Dominant</div><div class="proj-kpi-lbl">CE Threshold</div></div>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#ff9f40;">Health Economics Chart</div>
+                            <div style="height: 300px; position: relative;"><canvas id="he-alexander-chart"></canvas></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#ff9f40;">Ablation Outcomes &amp; Utility Mapping</div>
+                            <ul style="font-size: 12px; color: #add8e6; margin: 0 0 0 18px; list-style-type: square; line-height: 1.9;">
                                 <li><strong>QALY Gain:</strong> +4.0 Years Expected</li>
                                 <li><strong>ICER:</strong> $41,500 / QALY</li>
                                 <li><strong>Symptom Control:</strong> 75% reduction in seizures</li>
+                                <li><strong>Institutional Savings:</strong> $2.1M / 100 patients / year</li>
                             </ul>
-                            <h3>Economic Log</h3>
-                            <pre id="he-alexander-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting HE calculation...</pre>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="he-alexander-chart"></canvas>
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color:#ff9f40;">Economic Log</div>
+                            <pre id="he-alexander-output" class="proj-log" style="color:#ffaa55; border-color:rgba(255,159,64,0.2);">Awaiting HE calculation...</pre>
                         </div>
                     </div>
                 </div>
             </div>
             <div id="cortical-sim-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Cortical Dynamics & Projection Costs</h2>
-                    <div style="display: flex; gap: 10px; flex: 1;">
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>Network & Projection Metrics</h3>
-                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
-                                <li><strong>Active Synapses:</strong> 1.2 x 10^9</li>
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner">
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(0,242,255,0.16) 0%, rgba(0,100,200,0.14) 100%); border-color: rgba(0,242,255,0.35);">
+                            <div class="proj-hero-flag">🌐 Cortical Simulation &mdash; Dynamics &amp; Projection Costs</div>
+                            <div class="proj-hero-title">Synaptic Network Coherence &amp; Energy Projection Analysis</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00f2ff;">1.2&times;10&sup9;</div><div class="proj-kpi-lbl">Active Synapses</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00f2ff;">45.2 mWh</div><div class="proj-kpi-lbl">Projection Energy</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00f2ff;">Gamma</div><div class="proj-kpi-lbl">Coherence Band</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00f2ff;">High</div><div class="proj-kpi-lbl">Synchronization</div></div>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Cortical Dynamics Chart</div>
+                            <div style="height: 300px; position: relative;"><canvas id="cortical-sim-chart"></canvas></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Network &amp; Projection Metrics</div>
+                            <ul style="font-size: 12px; color: #add8e6; margin: 0 0 0 18px; list-style-type: square; line-height: 1.9;">
+                                <li><strong>Active Synapses:</strong> 1.2 &times; 10&sup9;</li>
                                 <li><strong>Global Projection Energy:</strong> 45.2 mWh</li>
                                 <li><strong>Cortical Coherence:</strong> High Synchronization (Gamma band)</li>
+                                <li><strong>Field Spread Radius:</strong> 2.8 mm (STN targeting)</li>
                             </ul>
-                            <h3>Simulation Log</h3>
-                            <pre id="cortical-sim-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting cortical data...</pre>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="cortical-sim-chart"></canvas>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Simulation Log</div>
+                            <pre id="cortical-sim-output" class="proj-log">Awaiting cortical data...</pre>
                         </div>
                     </div>
                 </div>
             </div>
             
             <div id="market-valuation-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Net Market Valuation (2026-2036)</h2>
-                    <div style="display: flex; gap: 10px; flex: 1;">
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>10-Year Valuation & Projection Costs</h3>
-                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
-                                <li><strong>CAGR:</strong> 18.5% Expected</li>
-                                <li><strong>Forecast (2036):</strong> $12.4 Billion</li>
-                                <li><strong>R&D / Projection Costs:</strong> Normalized at 15% ARR</li>
-                            </ul>
-                            <h3>Economic Engine Log</h3>
-                            <pre id="market-valuation-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting 10-year projection data...</pre>
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner">
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(0,242,255,0.16) 0%, rgba(112,0,255,0.18) 50%, rgba(20,10,30,0.6) 100%); border-color: rgba(0,242,255,0.35);">
+                            <div class="proj-hero-flag">🌍 Net Market Valuation &mdash; Global DBS Industry 2026&ndash;2036</div>
+                            <div class="proj-hero-title">10-Year Market Projection: Revenue, CAGR &amp; R&amp;D Economics</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00f2ff;">$12.4B</div><div class="proj-kpi-lbl">2036 Forecast</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#7000ff;">18.5%</div><div class="proj-kpi-lbl">CAGR</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00f2ff;">$1.8B</div><div class="proj-kpi-lbl">2026 Base</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#7000ff;">6.9&times;</div><div class="proj-kpi-lbl">Growth Multiple</div></div>
+                            </div>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="market-valuation-chart"></canvas>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Global Market Valuation Chart (2026&ndash;2036)</div>
+                            <div style="height: 300px; position: relative;"><canvas id="market-valuation-chart"></canvas></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Market Readiness &amp; Investment Indicators</div>
+                            <div class="proj-metric-grid">
+                                <div class="proj-metric-row"><span class="proj-metric-lbl">Global DBS Device Adoption</span><div class="proj-bar-track"><div class="proj-bar-fill" style="width:67%; background:linear-gradient(90deg,#00f2ff,#7000ff);"></div></div><span class="proj-metric-val">67%</span></div>
+                                <div class="proj-metric-row"><span class="proj-metric-lbl">R&amp;D Pipeline Maturity</span><div class="proj-bar-track"><div class="proj-bar-fill" style="width:79%; background:linear-gradient(90deg,#7000ff,#00f2ff);"></div></div><span class="proj-metric-val">79%</span></div>
+                                <div class="proj-metric-row"><span class="proj-metric-lbl">Regulatory Approval Rate</span><div class="proj-bar-track"><div class="proj-bar-fill" style="width:55%; background:linear-gradient(90deg,#00f2ff,#ff00c8);"></div></div><span class="proj-metric-val">55%</span></div>
+                                <div class="proj-metric-row"><span class="proj-metric-lbl">Closed-Loop AI Integration</span><div class="proj-bar-track"><div class="proj-bar-fill" style="width:48%; background:linear-gradient(90deg,#7000ff,#ff00c8);"></div></div><span class="proj-metric-val">48%</span></div>
+                                <div class="proj-metric-row"><span class="proj-metric-lbl">Payer Reimbursement Penetration</span><div class="proj-bar-track"><div class="proj-bar-fill" style="width:62%; background:linear-gradient(90deg,#00f2ff,#7000ff);"></div></div><span class="proj-metric-val">62%</span></div>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Year-by-Year Global Milestones</div>
+                            <div class="proj-timeline">
+                                <div class="proj-tl-row"><span class="proj-tl-year">2026</span><div class="proj-tl-bar"><div style="width:14%; background:linear-gradient(90deg,#00f2ff,#7000ff);"></div></div><span class="proj-tl-val">$1.80B</span><span class="proj-tl-tag">Market Baseline</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2027</span><div class="proj-tl-bar"><div style="width:22%; background:linear-gradient(90deg,#00f2ff,#7000ff);"></div></div><span class="proj-tl-val">$2.13B</span><span class="proj-tl-tag">Closed-Loop Trials</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2028</span><div class="proj-tl-bar"><div style="width:31%; background:linear-gradient(90deg,#7000ff,#00f2ff);"></div></div><span class="proj-tl-val">$3.10B</span><span class="proj-tl-tag">Regulatory Expansion</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2029</span><div class="proj-tl-bar"><div style="width:42%; background:linear-gradient(90deg,#00f2ff,#ff00c8);"></div></div><span class="proj-tl-val">$4.50B</span><span class="proj-tl-tag">AI Integration Wave</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2030</span><div class="proj-tl-bar"><div style="width:54%; background:linear-gradient(90deg,#7000ff,#ff00c8);"></div></div><span class="proj-tl-val">$6.20B</span><span class="proj-tl-tag">Global Rollout</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2032</span><div class="proj-tl-bar"><div style="width:69%; background:linear-gradient(90deg,#00f2ff,#7000ff);"></div></div><span class="proj-tl-val">$8.40B</span><span class="proj-tl-tag">Standard of Care</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2034</span><div class="proj-tl-bar"><div style="width:84%; background:linear-gradient(90deg,#7000ff,#00f2ff);"></div></div><span class="proj-tl-val">$10.5B</span><span class="proj-tl-tag">Payer Dominance</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2036</span><div class="proj-tl-bar"><div style="width:100%; background:linear-gradient(90deg,#00f2ff,#7000ff);"></div></div><span class="proj-tl-val">$12.4B</span><span class="proj-tl-tag tl-milestone">Market Maturity</span></div>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Economic Engine Log</div>
+                            <pre id="market-valuation-output" class="proj-log">Awaiting 10-year projection data...</pre>
                         </div>
                     </div>
                 </div>
