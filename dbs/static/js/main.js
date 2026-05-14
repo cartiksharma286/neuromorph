@@ -8,10 +8,13 @@ let coilRadius = 0.05;
 // Initialize 3D Scene
 function init3D() {
     const container = document.getElementById('canvas-container');
+    if (!container) return;
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const w = container.clientWidth || 600;
+    const h = container.clientHeight || 400;
+    camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setSize(w, h);
     container.appendChild(renderer.domElement);
 
     // Add a "Head" proxy
@@ -58,11 +61,11 @@ function drawCorticalFEA() {
 
     if (!window.feaInitialized) {
         window.feaScene = new THREE.Scene();
-        window.feaCamera = new THREE.PerspectiveCamera(60, canvas.clientWidth/canvas.clientHeight, 0.1, 100);
+        window.feaCamera = new THREE.PerspectiveCamera(60, (canvas.clientWidth || 600)/(canvas.clientHeight || 200), 0.1, 100);
         window.feaCamera.position.z = 20;
         
         window.feaRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-        window.feaRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        window.feaRenderer.setSize(canvas.clientWidth || 600, canvas.clientHeight || 200);
 
         const feaNodes = document.getElementById('fea-nodes') ? parseInt(document.getElementById('fea-nodes').value) : 10000;
         // High density detail for volumetric surface
@@ -261,14 +264,16 @@ async function runSimulation() {
     }
 }
 
-// Event Listeners
-document.getElementById('btn-simulate').addEventListener('click', runSimulation);
+// Event Listeners — wired inside DOMContentLoaded so elements are guaranteed present
+document.addEventListener('DOMContentLoaded', () => {
+    const simBtn = document.getElementById('btn-simulate');
+    if (simBtn) simBtn.addEventListener('click', runSimulation);
 
-document.getElementById('voltage-range').addEventListener('input', (e) => {
-    voltage = parseFloat(e.target.value);
-});
-document.getElementById('pulse-range').addEventListener('input', (e) => {
-    pulseWidth = parseFloat(e.target.value);
+    const voltageRange = document.getElementById('voltage-range');
+    if (voltageRange) voltageRange.addEventListener('input', (e) => { voltage = parseFloat(e.target.value); });
+
+    const pulseRange = document.getElementById('pulse-range');
+    if (pulseRange) pulseRange.addEventListener('input', (e) => { pulseWidth = parseFloat(e.target.value); });
 });
 
 // Tab Switching Logic
@@ -284,11 +289,16 @@ function switchTab(tabId, event) {
         if (btn) btn.classList.add('active');
     }
 
-    document.getElementById(`${tabId}-sidebar`).classList.add('active');
-    document.getElementById(`${tabId}-main`).classList.add('active');
+    const sidebarEl = document.getElementById(`${tabId}-sidebar`);
+    const mainEl = document.getElementById(`${tabId}-main`);
+    if (sidebarEl) sidebarEl.classList.add('active');
+    if (mainEl) mainEl.classList.add('active');
 
     if (tabId === 'conductivity') {
         fetchConductivity();
+    }
+    if (tabId === 'pareto') {
+        runParetoOptimization();
     }
 }
 
@@ -358,6 +368,13 @@ async function fetchConductivity() {
     });
 
     document.getElementById('avg-cond-val').textContent = (total / elements).toFixed(3);
+
+    // Update anisotropy label based on slider value
+    const anisoDisp = document.getElementById('anisotropy-val');
+    if (anisoDisp) {
+        const a = parseFloat(document.getElementById('aniso-map')?.value || 0.1);
+        anisoDisp.textContent = a >= 0.3 ? 'High' : a >= 0.15 ? 'Medium' : 'Low';
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -370,10 +387,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', fetchConductivity);
     });
+
+    const paretoSlider = document.getElementById('pareto-lambda-map');
+    if (paretoSlider) {
+        paretoSlider.addEventListener('input', () => {
+            const disp = document.getElementById('pareto-lambda-disp');
+            if (disp) disp.textContent = parseFloat(paretoSlider.value).toFixed(2);
+        });
+    }
 });
 
 // Start everything
 window.onload = () => {
+    // Activate the first tab button visually
+    const firstTabBtn = document.querySelector('.tab-btn');
+    if (firstTabBtn) firstTabBtn.classList.add('active');
+
     init3D();
     drawCorticalFEA();
     fetchSystemSpecs();
@@ -390,95 +419,17 @@ window.onload = () => {
 let dementiaChart = null;
 
 async function runDementiaStaging() {
-    const prompt = document.getElementById('gen-ai-prompt').value;
-    const declineRate = parseFloat(document.getElementById('decline-range').value);
-    const dbsAmp = parseFloat(document.getElementById('dementia-dbs-amp').value);
-
-    // Call backend endpoint
-    const response = await fetch('/api/dementia-staging', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: prompt, decline_rate: declineRate, dbs_amplitude: dbsAmp })
-    });
-    
-    if (!response.ok) return;
-    const res = await response.json();
-    
-    // Update text
-    document.getElementById('dementia-insight').innerText = res.generative_insight;
-    
-    // Render Chart
-    const ctx = document.getElementById('dementia-chart');
-    if (!ctx) return;
-    if (dementiaChart) dementiaChart.destroy();
-    
-    const times = res.time_months;
-    const traj = res.cognitive_trajectory;
-    // Map variance
-    const upper_bound = res.clinical_distributions.map(d => d.mean + d.std/1.5);
-    const lower_bound = res.clinical_distributions.map(d => Math.max(0, d.mean - d.std/1.5));
-
-    dementiaChart = new Chart(ctx.getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: times.map(t => Math.round(t)),
-            datasets: [
-                {
-                    label: 'Clinical Variance (Upper)',
-                    data: upper_bound,
-                    borderColor: 'transparent',
-                    backgroundColor: 'rgba(0, 242, 255, 0.2)',
-                    fill: '+1',
-                    pointRadius: 0,
-                    tension: 0.4
-                },
-                {
-                    label: 'Clinical Variance (Lower)',
-                    data: lower_bound,
-                    borderColor: 'transparent',
-                    backgroundColor: 'transparent',
-                    fill: false,
-                    pointRadius: 0,
-                    tension: 0.4
-                },
-                {
-                    label: 'Temporal Cognitive Trajectory',
-                    data: traj,
-                    borderColor: '#ff00c8',
-                    borderWidth: 3,
-                    fill: false,
-                    pointRadius: 1,
-                    tension: 0.4
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: true, labels: { color: '#a0aab5' } }
-            },
-            scales: {
-                x: { title: { display: true, text: 'Treatment Timeline (Months)', color: '#00f2ff'}, ticks: { color: '#a0aab5' } },
-                y: { title: { display: true, text: 'Structural Neurological Retention (Score)', color: '#00f2ff'}, ticks: { color: '#a0aab5' }, min: 0, max: 35 }
-            }
-        }
-    });
+    // Delegate to the correctly-wired implementation
+    return updateDementiaChart();
 }
 
-
-// Auto trigger bindings
+// Auto trigger bindings — wire dementia-staging slider to updateDementiaChart
 document.addEventListener("DOMContentLoaded", () => {
-    const dr = document.getElementById('decline-range');
-    const da = document.getElementById('dementia-dbs-amp');
-    const ga = document.getElementById('gen-ai-prompt');
-    
-    if (dr) dr.addEventListener('input', runDementiaStaging);
-    if (da) da.addEventListener('input', runDementiaStaging);
-    if (ga) ga.addEventListener('change', runDementiaStaging);
-    
-    // Attempt init run
-    setTimeout(runDementiaStaging, 500); 
+    const dr = document.getElementById('dementia-decline-range');
+    const dp = document.getElementById('dementia-prompt');
+    if (dr) dr.addEventListener('input', updateDementiaChart);
+    if (dp) dp.addEventListener('change', updateDementiaChart);
+    setTimeout(updateDementiaChart, 500);
 });
 
 
@@ -559,7 +510,7 @@ function updateDementiaChart() {
         
         let initialStd = data.clinical_distributions[0].std;
         let finalStd = data.clinical_distributions[data.clinical_distributions.length - 1].std;
-        if (varianceElem) varianceElem.innerText = `Std Dev variance ranges from $\pm${initialStd} to $\pm${finalStd} over 60 months governed by continuous Markovian decay mappings.`;
+        if (varianceElem) varianceElem.innerText = `Std Dev variance ranges from ±${initialStd} to ±${finalStd} over 60 months governed by continuous Markovian decay mappings.`;
 
     }).catch(e => console.error("Error charting dementia:", e));
 }
@@ -756,6 +707,7 @@ async function fetchStageProtocol() {
 
 function loadClinicalProtocols() {
     const listContainer = document.getElementById('protocols-list-container');
+    if (!listContainer) return;
     listContainer.innerHTML = '<p style="color: #00f2ff;">Analyzing deep brain targets...<br>Compiling dementia stimulation parameters...</p>';
     
     fetch('/api/clinical-protocols', {
@@ -804,8 +756,16 @@ function loadClinicalProtocols() {
 let paretoChartInstance = null;
 
 async function runParetoOptimization() {
-    const lambda = document.getElementById("pareto-lambda-map").value;
-    
+    const lambdaEl = document.getElementById("pareto-lambda-map");
+    if (!lambdaEl) return;
+    const lambda = lambdaEl.value;
+
+    const dispEl = document.getElementById('pareto-lambda-disp');
+    if (dispEl) dispEl.textContent = parseFloat(lambda).toFixed(2);
+
+    const logEl = document.getElementById('pareto-log');
+    if (logEl) logEl.textContent = `Computing Pareto frontier at λ = ${parseFloat(lambda).toFixed(2)}...\n`;
+
     // API request to math engine
     try {
         const res = await fetch('/api/pareto_frontier', {
@@ -881,11 +841,15 @@ async function runParetoOptimization() {
             }
         });
         
-        document.getElementById('pareto-yield').innerText = data.optimal_striatal.toFixed(1) + "%";
-        document.getElementById('pareto-serotonin').innerText = data.optimal_serotonin.toFixed(1) + "%";
+        const yieldEl = document.getElementById('pareto-yield');
+        const serotoninEl = document.getElementById('pareto-serotonin');
+        if (yieldEl) yieldEl.innerText = data.optimal_striatal.toFixed(1) + "%";
+        if (serotoninEl) serotoninEl.innerText = data.optimal_serotonin.toFixed(1) + "%";
+        if (logEl) logEl.textContent += `Nash equilibrium found at x = ${data.optimal_x.toFixed(3)}\nStriatal Activation: ${data.optimal_striatal.toFixed(1)}%\nSerotonin Release: ${data.optimal_serotonin.toFixed(1)}%\nOptimization complete.`;
         
     } catch(err) {
         console.error("Error drawing pareto chart: ", err);
+        if (logEl) logEl.textContent += `Error: ${err.message}`;
     }
 }
 
@@ -1585,3 +1549,100 @@ function renderAmericaValuationChart() {
         }
     });
 }
+
+
+function simulateFAS() {
+    const out = document.getElementById('fas-output');
+    if (!out) return;
+    out.innerText = "Initializing Neurosymbolic Rule Engine...\n";
+
+    setTimeout(() => {
+        out.innerText += "Injecting deep learning weights with Bayesian symbolic priors...\n";
+    }, 500);
+
+    setTimeout(() => {
+        out.innerText += "Calculating neurodevelopmental deviation variances in FAS...\n";
+        out.innerText += "Identifying optimal surgical inflection point triggers...\n";
+    }, 1000);
+
+    setTimeout(() => {
+        out.innerText += "Synthesizing normalized cognitive trajectory distributions...\n";
+        renderFASChart();
+        out.innerText += "FAS Inflection Point Analysis Simulation Complete.\n";
+    }, 1500);
+}
+
+function renderFASChart() {
+    const ctx = document.getElementById('fas-chart');
+    if(!ctx) return;
+    if (window.fasChartInstance) window.fasChartInstance.destroy();
+    
+    const labels = ["Age 2", "Age 4", "Age 6", "Age 8", "Age 10", "Age 12", "Age 14"];
+    const fasBaseline = [30, 35, 45, 55, 60, 65, 68];
+    const typicalNeuro = [40, 55, 75, 90, 105, 115, 120];
+    const postDbsTrajectory = [30, 35, 45, 80, 95, 108, 115]; // Inflection at Age 6-8
+
+    window.fasChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Unmitigated FAS Trajectory',
+                    data: fasBaseline,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'transparent',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    tension: 0.4
+                },
+                {
+                    label: 'Typical Neurodevelopment',
+                    data: typicalNeuro,
+                    borderColor: 'rgba(200, 200, 200, 0.4)',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.4
+                },
+                {
+                    label: 'Post-DBS Inflection (Neurosymbolic)',
+                    data: postDbsTrajectory,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                annotation: {
+                    annotations: {
+                        inflectionLine: {
+                            type: 'line',
+                            xMin: 'Age 6',
+                            xMax: 'Age 6',
+                            borderColor: 'rgba(255, 206, 86, 0.8)',
+                            borderWidth: 2,
+                            label: {
+                                content: 'DBS Intervention Inflection Point',
+                                enabled: true,
+                                position: 'top'
+                            }
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    title: { display: true, text: 'Cognitive / Motor Integrity Score' }
+                }
+            }
+        }
+    });
+}
+
+

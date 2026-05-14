@@ -46,7 +46,9 @@
             <button class="tab-btn" onclick="switchTab('sea-valuation', event)">South Asia/SEA Market (10 YR)</button>
             <button class="tab-btn" onclick="switchTab('india-valuation', event)">India Projections (10 YR)</button>
             <button class="tab-btn" onclick="switchTab('america-valuation', event)">America Projections (10 YR)</button>
-        </nav>
+            <button class="tab-btn" onclick="switchTab('stage', event)">Staging Protocol</button>
+            <button class="tab-btn" onclick="switchTab('fas', event)">FAS Neurosymbolic</button>
+                            </nav>
 
         <aside class="sidebar-left">
             <div id="protocols-sidebar" class="tab-content">
@@ -297,30 +299,40 @@
                 </div>
             </div>
 
-            <div id="pareto-sidebar" class="tab-content">
+            <div id="fas-sidebar" class="tab-content">
                 <div class="glass-panel">
-                    <h2>Combinatorial Game Theory</h2>
-                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
-                        Calculate the optimal pareto frontier balancing Striatal Activation and Serotonin Release using combinatorial game equilibria.
-                    </p>
-                    <div style="margin-bottom: 15px;">
-                        <label>Subthalamic Coupling (\(\lambda\)) <span id="pareto-lambda-disp">0.5</span></label>
-                        <input type="range" id="pareto-lambda-map" min="0.1" max="1.0" step="0.1" value="0.5" oninput="document.getElementById('pareto-lambda-disp').innerText = this.value">
-                    </div>
-                    <button class="btn-primary" id="btn-pareto-sim" onclick="runParetoOptimization()" style="margin-top: 10px;">Find Equilibria</button>
+                    <h2>FAS Neurosymbolic DBS</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);"
+                    >Fetal Alcohol Syndrome neurodevelopmental inflection point analysis via Bayesian symbolic priors and Feynman path integral trajectory mapping.</p>
+                    <button class="btn-primary" id="btn-simulate-fas" onclick="simulateFAS()" style="margin-top: 10px;">Run Neurosymbolic Sim</button>
                 </div>
             </div>
+
+            <div id="pareto-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Pareto Optimization</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Combinatorial Game Theory Pareto Frontier: Striatal Activation vs. Serotonin Release Yield under Nash Equilibrium constraints.
+                    </p>
+                    <div class="control-group">
+                        <label>Lambda Weight &lambda; <span id="pareto-lambda-disp">0.50</span></label>
+                        <input type="range" id="pareto-lambda-map" min="0.1" max="2.0" step="0.05" value="0.5">
+                    </div>
+                    <button class="btn-primary" onclick="runParetoOptimization()" style="margin-top: 10px;">Run Optimization</button>
+                    <div class="stat-card" style="margin-top: 15px; background: rgba(0, 255, 204, 0.1); border: 1px solid rgba(0, 255, 204, 0.3);">
+                        <div class="stat-label">Nash Equilibrium &mdash; Striatal Activation</div>
+                        <div class="stat-value" id="pareto-yield" style="color: #00ffcc;">--%</div>
+                    </div>
+                    <div class="stat-card" style="background: rgba(255, 0, 200, 0.1); border: 1px solid rgba(255, 0, 200, 0.3);">
+                        <div class="stat-label">Nash Equilibrium &mdash; Serotonin Release</div>
+                        <div class="stat-value" id="pareto-serotonin" style="color: #ff00c8;">--%</div>
+                    </div>
+                </div>
+            </div>
+
         </aside>
 
         <main class="main-view">
-            <div id="protocols-main" class="tab-content" style="height: 100%; overflow-y: auto;">
-                <div class="glass-panel" style="margin-top: 20px; padding: 20px; background: rgba(0, 0, 0, 0.4);">
-                    <h2 style="color: #00f2ff; border-bottom: 1px solid rgba(0, 242, 255, 0.3); padding-bottom: 20px;">Dementia Protocol Analysis Results</h2>
-                    <div id="protocols-list-container">
-                        <p style="color: var(--text-dim);">Awaiting protocol generation...</p>
-                    </div>
-                </div>
-            </div>
 
             <div id="planner-main" class="tab-content active" style="height: 100%;">
                 <div id="canvas-container" style="height: 100%;">
@@ -620,91 +632,455 @@
                 </div>
             </div>
             <div id="sea-valuation-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Regional DBS Valuation: South Asia & SEA (2026-2036)</h2>
-                    <div style="display: flex; gap: 10px; flex: 1;">
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>Emerging Market Forecasting</h3>
-                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
-                                <li><strong>CAGR (Regional):</strong> 21.2% Expected (High Growth)</li>
-                                <li><strong>Forecast (2036):</strong> $3.8 Billion</li>
-                                <li><strong>Accessibility Factor:</strong> Improving clinical infrastructure</li>
-                            </ul>
-                            <h3>Economic Engine Log</h3>
-                            <pre id="sea-valuation-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting regional 10-year projection data...</pre>
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner" id="sea-scroll">
+
+                        <!-- Hero -->
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(54,162,235,0.18) 0%, rgba(112,0,255,0.13) 100%); border-color: rgba(54,162,235,0.35);">
+                            <div class="proj-hero-flag">🌏 SOUTH ASIA &amp; SOUTH EAST ASIA</div>
+                            <div class="proj-hero-title">DBS Market Projection 2026 – 2036</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#36a2eb;">$3.8B</div>
+                                    <div class="proj-kpi-lbl">2036 Forecast</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#9966ff;">21.2%</div>
+                                    <div class="proj-kpi-lbl">CAGR</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#00f2ff;">$0.45B</div>
+                                    <div class="proj-kpi-lbl">2026 Base</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#ff00c8;">8.4×</div>
+                                    <div class="proj-kpi-lbl">Growth Multiple</div>
+                                </div>
+                            </div>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="sea-valuation-chart"></canvas>
+
+                        <!-- Chart -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">Market Value &amp; Infrastructure Spend (USD)</div>
+                            <div style="height: 280px; position: relative;">
+                                <canvas id="sea-valuation-chart"></canvas>
+                            </div>
                         </div>
+
+                        <!-- Metric bars -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">Regional Readiness Indicators</div>
+                            <div class="proj-metric-grid">
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Clinical Infrastructure</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:62%; background: linear-gradient(90deg,#36a2eb,#9966ff);"></div></div>
+                                    <span class="proj-metric-val">62%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Device Penetration</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:28%; background: linear-gradient(90deg,#36a2eb,#9966ff);"></div></div>
+                                    <span class="proj-metric-val">28%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Reimbursement Coverage</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:44%; background: linear-gradient(90deg,#36a2eb,#9966ff);"></div></div>
+                                    <span class="proj-metric-val">44%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Specialist Neurosurgeon Density</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:35%; background: linear-gradient(90deg,#36a2eb,#9966ff);"></div></div>
+                                    <span class="proj-metric-val">35%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Tech Adoption Velocity</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:76%; background: linear-gradient(90deg,#36a2eb,#9966ff);"></div></div>
+                                    <span class="proj-metric-val">76%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year milestones -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">Year-by-Year Milestone Projections</div>
+                            <div class="proj-timeline">
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#36a2eb;">2026</span><div class="proj-tl-bar"><div style="width:12%; background:#36a2eb;"></div></div><span class="proj-tl-val">$0.45B</span><span class="proj-tl-tag">Baseline</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#4db0f0;">2027</span><div class="proj-tl-bar"><div style="width:14%; background:#4db0f0;"></div></div><span class="proj-tl-val">$0.55B</span><span class="proj-tl-tag">Pilot rollouts</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#66bef5;">2028</span><div class="proj-tl-bar"><div style="width:20%; background:#66bef5;"></div></div><span class="proj-tl-val">$0.75B</span><span class="proj-tl-tag">Infra scaling</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#80ccfa;">2029</span><div class="proj-tl-bar"><div style="width:26%; background:#80ccfa;"></div></div><span class="proj-tl-val">$0.98B</span><span class="proj-tl-tag">Adoption surge</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#99d9ff;">2030</span><div class="proj-tl-bar"><div style="width:33%; background:#99d9ff;"></div></div><span class="proj-tl-val">$1.25B</span><span class="proj-tl-tag tl-milestone">🏆 1B milestone</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2032</span><div class="proj-tl-bar"><div style="width:51%; background:#9966ff;"></div></div><span class="proj-tl-val">$1.95B</span><span class="proj-tl-tag">Mid-decade peak</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2034</span><div class="proj-tl-bar"><div style="width:71%; background:#c044ff;"></div></div><span class="proj-tl-val">$2.70B</span><span class="proj-tl-tag">Maturity phase</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#ff00c8;">2036</span><div class="proj-tl-bar"><div style="width:100%; background: linear-gradient(90deg,#9966ff,#ff00c8);"></div></div><span class="proj-tl-val">$3.80B</span><span class="proj-tl-tag tl-milestone">🎯 Target</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Log -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">Economic Engine Log</div>
+                            <pre id="sea-valuation-output" class="proj-log">Awaiting regional 10-year projection data...</pre>
+                        </div>
+
                     </div>
                 </div>
             </div>
             <div id="india-valuation-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Regional DBS Valuation: India (2026-2036)</h2>
-                    <div style="display: flex; gap: 10px; flex: 1;">
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>India Market Trajectory & Scaling</h3>
-                            <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
-                                <li><strong>CAGR (Regional):</strong> 24.5% Expected (Explosive Growth)</li>
-                                <li><strong>Forecast (2036):</strong> $2.8 Billion</li>
-                                <li><strong>Primary Adoption Driver:</strong> Local manufacturing & affordable care policies</li>
-                            </ul>
-                            <h3>Economic Engine Log</h3>
-                            <pre id="india-valuation-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting India regional projection data...</pre>
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner" id="india-scroll">
+
+                        <!-- Hero -->
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(255,99,132,0.18) 0%, rgba(255,159,64,0.13) 100%); border-color: rgba(255,99,132,0.35);">
+                            <div class="proj-hero-flag">🇮🇳 INDIA</div>
+                            <div class="proj-hero-title">DBS Market Projection 2026 – 2036</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#ff6384;">$2.8B</div>
+                                    <div class="proj-kpi-lbl">2036 Forecast</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#ff9f40;">24.5%</div>
+                                    <div class="proj-kpi-lbl">CAGR</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#00f2ff;">$0.20B</div>
+                                    <div class="proj-kpi-lbl">2026 Base</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#ff00c8;">14×</div>
+                                    <div class="proj-kpi-lbl">Growth Multiple</div>
+                                </div>
+                            </div>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="india-valuation-chart"></canvas>
+
+                        <!-- Chart -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">Market Value &amp; Cost Offset (USD)</div>
+                            <div style="height: 280px; position: relative;">
+                                <canvas id="india-valuation-chart"></canvas>
+                            </div>
                         </div>
+
+                        <!-- Metric bars -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">India Market Readiness Indicators</div>
+                            <div class="proj-metric-grid">
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Local Manufacturing Capacity</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:55%; background: linear-gradient(90deg,#ff6384,#ff9f40);"></div></div>
+                                    <span class="proj-metric-val">55%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Tier-2 City Hospital Coverage</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:38%; background: linear-gradient(90deg,#ff6384,#ff9f40);"></div></div>
+                                    <span class="proj-metric-val">38%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Govt. Subsidy / Policy Support</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:71%; background: linear-gradient(90deg,#ff6384,#ff9f40);"></div></div>
+                                    <span class="proj-metric-val">71%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Neurology Specialist Availability</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:30%; background: linear-gradient(90deg,#ff6384,#ff9f40);"></div></div>
+                                    <span class="proj-metric-val">30%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Patient Awareness Index</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:48%; background: linear-gradient(90deg,#ff6384,#ff9f40);"></div></div>
+                                    <span class="proj-metric-val">48%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year milestones -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">Year-by-Year Milestone Projections</div>
+                            <div class="proj-timeline">
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#ff6384;">2026</span><div class="proj-tl-bar"><div style="width:7%; background:#ff6384;"></div></div><span class="proj-tl-val">$0.20B</span><span class="proj-tl-tag">Baseline</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#f97396;">2027</span><div class="proj-tl-bar"><div style="width:11%; background:#f97396;"></div></div><span class="proj-tl-val">$0.30B</span><span class="proj-tl-tag">Policy launch</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#f984a4;">2028</span><div class="proj-tl-bar"><div style="width:14%; background:#f984a4;"></div></div><span class="proj-tl-val">$0.40B</span><span class="proj-tl-tag">Mfg scale-up</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#ff9f40;">2029</span><div class="proj-tl-bar"><div style="width:21%; background:#ff9f40;"></div></div><span class="proj-tl-val">$0.60B</span><span class="proj-tl-tag">Tier-2 entry</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#ffb366;">2030</span><div class="proj-tl-bar"><div style="width:29%; background:#ffb366;"></div></div><span class="proj-tl-val">$0.80B</span><span class="proj-tl-tag tl-milestone">🏆 Regional hub</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2032</span><div class="proj-tl-bar"><div style="width:50%; background:#ff9f40;"></div></div><span class="proj-tl-val">$1.40B</span><span class="proj-tl-tag">Explosive growth</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2034</span><div class="proj-tl-bar"><div style="width:71%; background:#e05050;"></div></div><span class="proj-tl-val">$2.00B</span><span class="proj-tl-tag">Export readiness</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#ff00c8;">2036</span><div class="proj-tl-bar"><div style="width:100%; background: linear-gradient(90deg,#ff6384,#ff9f40);"></div></div><span class="proj-tl-val">$2.80B</span><span class="proj-tl-tag tl-milestone">🎯 Target</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Log -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">Economic Engine Log</div>
+                            <pre id="india-valuation-output" class="proj-log">Awaiting India regional projection data...</pre>
+                        </div>
+
                     </div>
                 </div>
             </div>
             
             <div id="america-valuation-main" class="tab-content" style="height: 100%;">
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner" id="america-scroll">
+
+                        <!-- Hero -->
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(75,192,192,0.18) 0%, rgba(0,242,255,0.10) 100%); border-color: rgba(75,192,192,0.35);">
+                            <div class="proj-hero-flag">🌎 AMERICAS</div>
+                            <div class="proj-hero-title">DBS Market Projection 2026 – 2036</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#4bc0c0;">$8.5B</div>
+                                    <div class="proj-kpi-lbl">2036 Forecast</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#00f2ff;">12.1%</div>
+                                    <div class="proj-kpi-lbl">CAGR</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#7fefef;">$3.5B</div>
+                                    <div class="proj-kpi-lbl">2026 Base</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color:#ff00c8;">2.4×</div>
+                                    <div class="proj-kpi-lbl">Growth Multiple</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">Market Value &amp; R&amp;D Overhead (USD)</div>
+                            <div style="height: 280px; position: relative;">
+                                <canvas id="america-valuation-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Metric bars -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">Americas Market Maturity Indicators</div>
+                            <div class="proj-metric-grid">
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Closed-Loop System Adoption</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:82%; background: linear-gradient(90deg,#4bc0c0,#00f2ff);"></div></div>
+                                    <span class="proj-metric-val">82%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Reimbursement (CMS / Private)</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:89%; background: linear-gradient(90deg,#4bc0c0,#00f2ff);"></div></div>
+                                    <span class="proj-metric-val">89%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">FDA-Cleared Indication Coverage</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:74%; background: linear-gradient(90deg,#4bc0c0,#00f2ff);"></div></div>
+                                    <span class="proj-metric-val">74%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Neurosurgery Center Density</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:91%; background: linear-gradient(90deg,#4bc0c0,#00f2ff);"></div></div>
+                                    <span class="proj-metric-val">91%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">R&amp;D Pipeline Activity</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width:95%; background: linear-gradient(90deg,#4bc0c0,#00f2ff);"></div></div>
+                                    <span class="proj-metric-val">95%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year milestones -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">Year-by-Year Milestone Projections</div>
+                            <div class="proj-timeline">
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#4bc0c0;">2026</span><div class="proj-tl-bar"><div style="width:41%; background:#4bc0c0;"></div></div><span class="proj-tl-val">$3.50B</span><span class="proj-tl-tag">Baseline</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2027</span><div class="proj-tl-bar"><div style="width:46%; background:#4bc0c0;"></div></div><span class="proj-tl-val">$3.92B</span><span class="proj-tl-tag">Adaptive DBS FDA</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2028</span><div class="proj-tl-bar"><div style="width:49%; background:#5ccece;"></div></div><span class="proj-tl-val">$4.20B</span><span class="proj-tl-tag">Closed-loop rollout</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2029</span><div class="proj-tl-bar"><div style="width:54%; background:#6ddcdc;"></div></div><span class="proj-tl-val">$4.72B</span><span class="proj-tl-tag">CMS coverage expand</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#00f2ff;">2030</span><div class="proj-tl-bar"><div style="width:60%; background:#00d4e0;"></div></div><span class="proj-tl-val">$5.10B</span><span class="proj-tl-tag tl-milestone">🏆 5B milestone</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2032</span><div class="proj-tl-bar"><div style="width:74%; background:#00b8c8;"></div></div><span class="proj-tl-val">$6.30B</span><span class="proj-tl-tag">Next-gen arrays</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year">2034</span><div class="proj-tl-bar"><div style="width:88%; background:#009bb0;"></div></div><span class="proj-tl-val">$7.50B</span><span class="proj-tl-tag">AI integration</span></div>
+                                <div class="proj-tl-row"><span class="proj-tl-year" style="color:#ff00c8;">2036</span><div class="proj-tl-bar"><div style="width:100%; background: linear-gradient(90deg,#4bc0c0,#00f2ff);"></div></div><span class="proj-tl-val">$8.50B</span><span class="proj-tl-tag tl-milestone">🎯 Target</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Log -->
+                        <div class="proj-card">
+                            <div class="proj-card-title">Economic Engine Log</div>
+                            <pre id="america-valuation-output" class="proj-log">Awaiting America regional projection data...</pre>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div id="fas-main" class="tab-content" style="height: 100%;">
+                <div class="proj-scroll-outer">
+                    <div class="proj-scroll-inner" id="fas-scroll">
+
+                        <!-- Hero Banner -->
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(255,90,0,0.18) 0%, rgba(160,0,200,0.22) 50%, rgba(20,10,30,0.6) 100%); border-color: rgba(255,90,0,0.3);">
+                            <div class="proj-hero-flag">🧬 FAS Neurosymbolic DBS — Global Market Intelligence</div>
+                            <div class="proj-hero-title">Fetal Alcohol Syndrome: Inflection Point &amp; Market Projection 2026 – 2036</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color: #ff8c42;">$2.1B</div>
+                                    <div class="proj-kpi-lbl">2036 Market Forecast</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color: #c86eff;">19.4%</div>
+                                    <div class="proj-kpi-lbl">CAGR 2026–2036</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color: #ff8c42;">$0.28B</div>
+                                    <div class="proj-kpi-lbl">2026 Base</div>
+                                </div>
+                                <div class="proj-kpi">
+                                    <div class="proj-kpi-val" style="color: #c86eff;">7.5×</div>
+                                    <div class="proj-kpi-lbl">Growth Multiple</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Neurodevelopmental Trajectory Chart -->
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color: #ff8c42;">Neurodevelopmental Trajectory &amp; DBS Inflection Simulation</div>
+                            <div style="height: 300px; position: relative;">
+                                <canvas id="fas-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Market Readiness Metrics -->
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color: #ff8c42;">FAS-DBS Market Readiness Indicators</div>
+                            <div class="proj-metric-grid">
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Clinical Trial Pipeline Maturity</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width: 72%; background: linear-gradient(90deg, #ff8c42, #c86eff);"></div></div>
+                                    <span class="proj-metric-val">72%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Neurosymbolic AI Adoption Rate</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width: 58%; background: linear-gradient(90deg, #c86eff, #ff8c42);"></div></div>
+                                    <span class="proj-metric-val">58%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Frontal Cortex Targeting Precision</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width: 84%; background: linear-gradient(90deg, #ff8c42, #ff3030);"></div></div>
+                                    <span class="proj-metric-val">84%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Payer Reimbursement Coverage</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width: 47%; background: linear-gradient(90deg, #c86eff, #7000ff);"></div></div>
+                                    <span class="proj-metric-val">47%</span>
+                                </div>
+                                <div class="proj-metric-row">
+                                    <span class="proj-metric-lbl">Post-DBS Cognitive Recovery Index</span>
+                                    <div class="proj-bar-track"><div class="proj-bar-fill" style="width: 91%; background: linear-gradient(90deg, #ff8c42, #c86eff);"></div></div>
+                                    <span class="proj-metric-val">91%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year-by-Year Milestone Timeline -->
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color: #ff8c42;">Year-by-Year Market Milestones</div>
+                            <div class="proj-timeline">
+                                <div class="proj-tl-row">
+                                    <span class="proj-tl-year">2026</span>
+                                    <div class="proj-tl-bar"><div style="width: 13%; background: linear-gradient(90deg,#ff8c42,#c86eff);"></div></div>
+                                    <span class="proj-tl-val">$0.28B</span>
+                                    <span class="proj-tl-tag">Phase I Trials</span>
+                                </div>
+                                <div class="proj-tl-row">
+                                    <span class="proj-tl-year">2027</span>
+                                    <div class="proj-tl-bar"><div style="width: 20%; background: linear-gradient(90deg,#ff8c42,#c86eff);"></div></div>
+                                    <span class="proj-tl-val">$0.42B</span>
+                                    <span class="proj-tl-tag">Bayesian Model Deployment</span>
+                                </div>
+                                <div class="proj-tl-row">
+                                    <span class="proj-tl-year">2028</span>
+                                    <div class="proj-tl-bar"><div style="width: 30%; background: linear-gradient(90deg,#ff8c42,#c86eff);"></div></div>
+                                    <span class="proj-tl-val">$0.63B</span>
+                                    <span class="proj-tl-tag">Phase II Approval</span>
+                                </div>
+                                <div class="proj-tl-row">
+                                    <span class="proj-tl-year">2029</span>
+                                    <div class="proj-tl-bar"><div style="width: 40%; background: linear-gradient(90deg,#c86eff,#ff8c42);"></div></div>
+                                    <span class="proj-tl-val">$0.88B</span>
+                                    <span class="proj-tl-tag">Pediatric DBS Centres</span>
+                                </div>
+                                <div class="proj-tl-row">
+                                    <span class="proj-tl-year">2030</span>
+                                    <div class="proj-tl-bar"><div style="width: 52%; background: linear-gradient(90deg,#c86eff,#ff3030);"></div></div>
+                                    <span class="proj-tl-val">$1.10B</span>
+                                    <span class="proj-tl-tag">Global Rollout</span>
+                                </div>
+                                <div class="proj-tl-row">
+                                    <span class="proj-tl-year">2032</span>
+                                    <div class="proj-tl-bar"><div style="width: 70%; background: linear-gradient(90deg,#ff8c42,#c86eff);"></div></div>
+                                    <span class="proj-tl-val">$1.52B</span>
+                                    <span class="proj-tl-tag">Closed-Loop AI Integration</span>
+                                </div>
+                                <div class="proj-tl-row">
+                                    <span class="proj-tl-year">2034</span>
+                                    <div class="proj-tl-bar"><div style="width: 83%; background: linear-gradient(90deg,#c86eff,#ff8c42);"></div></div>
+                                    <span class="proj-tl-val">$1.82B</span>
+                                    <span class="proj-tl-tag">Payer Standard of Care</span>
+                                </div>
+                                <div class="proj-tl-row">
+                                    <span class="proj-tl-year">2036</span>
+                                    <div class="proj-tl-bar"><div style="width: 100%; background: linear-gradient(90deg,#ff8c42,#c86eff);"></div></div>
+                                    <span class="proj-tl-val">$2.10B</span>
+                                    <span class="proj-tl-tag tl-milestone">Market Maturity</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Neurosymbolic Engine Specs + Simulation Log -->
+                        <div class="proj-card">
+                            <div class="proj-card-title" style="color: #ff8c42;">Neurosymbolic Rule Engine</div>
+                            <ul style="font-size: 12px; color: #add8e6; margin: 0 0 14px 18px; list-style-type: square; line-height: 1.8;">
+                                <li><strong>Model:</strong> Bayesian Symbolic Priors + Deep Learning Weights</li>
+                                <li><strong>Inflection Window:</strong> Age 6–8 (Neuroplasticity Peak)</li>
+                                <li><strong>Target:</strong> Frontal Cortex / Basal Ganglia</li>
+                                <li><strong>Closed-Loop Feedback:</strong> EEG δ/θ ratio gating</li>
+                            </ul>
+                            <div class="proj-card-title" style="color: #ff8c42; margin-top: 4px;">Simulation Log</div>
+                            <pre id="fas-output" class="proj-log" style="color: #ffaa55; border-color: rgba(255,140,66,0.2);">Click Run Neurosymbolic Sim to begin...</pre>
+                        </div>
+
+                    </div><!-- /proj-scroll-inner -->
+                </div><!-- /proj-scroll-outer -->
+            </div>
+
+            <div id="pareto-main" class="tab-content" style="height: 100%;">
                 <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <h2>Regional DBS Valuation: America (2026-2036)</h2>
+                    <h2>Combinatorial Game Theory Pareto Frontier (Nash Equilibrium)</h2>
                     <div style="display: flex; gap: 10px; flex: 1;">
                         <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
-                            <h3>Americas Market Maturity Map</h3>
+                            <h3>Optimality Conditions</h3>
                             <ul style="font-size: 12px; color: #add8e6; margin-top: 10px; list-style-type: square; margin-left: 20px;">
-                                <li><strong>CAGR:</strong> 12.1% Expected (Mature Scaling)</li>
-                                <li><strong>Forecast (2036):</strong> $8.5 Billion</li>
-                                <li><strong>Next-Gen Catalyst:</strong> Closed-loop adaptive stimulation arrays</li>
+                                <li><strong>Player 1:</strong> Striatal Activation (Dopaminergic Pathway)</li>
+                                <li><strong>Player 2:</strong> Serotonin Release Yield (Raphe Nucleus)</li>
+                                <li><strong>Objective:</strong> Nash Equilibrium at Pareto-Optimal &lambda;</li>
                             </ul>
-                            <h3>Economic Engine Log</h3>
-                            <pre id="america-valuation-output" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 150px; overflow-y: auto;">Awaiting America regional projection data...</pre>
+                            <h3 style="margin-top: 15px;">Optimization Log</h3>
+                            <pre id="pareto-log" style="color: #0f0; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap; height: 100px; overflow-y: auto;">Adjust &lambda; and click Run Optimization...</pre>
                         </div>
-                        <div style="flex: 1; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 350px;">
-                            <canvas id="america-valuation-chart"></canvas>
+                        <div style="flex: 2; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px; height: 380px;">
+                            <canvas id="pareto-chart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="pareto-main" class="tab-content" style="height: 100%;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
-                    <div class="panel-header">
-                        <h2 style="font-size: 14px;">Equilibria: Pareto Frontier</h2>
-                        <div class="status-indicator">
-                            <span style="display:inline-block; width: 8px; height: 8px; background: #ff00ff; border-radius: 50%; margin-right: 5px;"></span>
-                            <span>Nash Computed</span>
-                        </div>
-                    </div>
-                    <div style="flex-grow: 1; position: relative; padding: 20px;">
-                        <canvas id="pareto-chart" style="width: 100%; height: 100%; max-height: 400px;"></canvas>
-                    </div>
-                    <div id="pareto-metrics" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px;">
-                        <div class="stat-card">
-                            <div class="stat-value" id="pareto-yield" style="color: #00ffcc;">--</div>
-                            <div class="stat-label">Optimal Striatal Yield</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="pareto-serotonin" style="color: #ff00ff;">--</div>
-                            <div class="stat-label">Serotonin Preservation</div>
+            <div id="protocols-main" class="tab-content" style="height: 100%;">
+                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column; overflow-y: auto;">
+                    <h2>Clinical DBS Protocol Analysis</h2>
+                    <div id="protocols-list-container" style="flex-grow: 1;">
+                        <div style="color: var(--text-dim); text-align: center; margin-top: 50px;">
+                            Click "Run Analysis" in the sidebar to generate clinical stimulation protocol targets.
                         </div>
                     </div>
                 </div>
             </div>
+
         </main>
 
         <aside class="sidebar-right">

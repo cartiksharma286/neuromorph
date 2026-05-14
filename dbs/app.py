@@ -208,6 +208,83 @@ def clinical_protocols():
         ]
     })
 
+@app.route('/api/stage-gated-protocol')
+def stage_gated_protocol():
+    import numpy as np
+    # M/M/1 queueing model: tau aggregation (lambda) vs glymphatic clearance (mu)
+    # rho = lambda/mu (utilization), L_q = rho^2 / (1 - rho) (mean queue length)
+    stages = [
+        {
+            "stage": 1,
+            "name": "Stage I: Biomarker Audit",
+            "desc": "Baseline theta-rhythm & hippocampal connectivity audit. Establish tau aggregation baseline and glymphatic throughput metrics.",
+            "electrical": {
+                "voltage_v": 1.0,
+                "frequency_hz": "4-7 (Theta Sweep)",
+                "pulse_width_us": 90,
+                "target": "Fornix (Crucian Arch)"
+            },
+            "queueing": {
+                "lambda_arrival": round(2.1, 2),
+                "mu_clearance": round(3.5, 2),
+                "rho_utilization": round(2.1 / 3.5, 3),
+                "l_q": round((2.1 / 3.5) ** 2 / (1 - 2.1 / 3.5), 3)
+            }
+        },
+        {
+            "stage": 2,
+            "name": "Stage II: Neural Priming",
+            "desc": "Sub-threshold circuit sensitization via fixed-frequency stimulation. Enhance BDNF expression and synaptic receptor density.",
+            "electrical": {
+                "voltage_v": 2.0,
+                "frequency_hz": "5 (Fixed)",
+                "pulse_width_us": 90,
+                "target": "NBM / Basal Forebrain"
+            },
+            "queueing": {
+                "lambda_arrival": round(1.8, 2),
+                "mu_clearance": round(4.2, 2),
+                "rho_utilization": round(1.8 / 4.2, 3),
+                "l_q": round((1.8 / 4.2) ** 2 / (1 - 1.8 / 4.2), 3)
+            }
+        },
+        {
+            "stage": 3,
+            "name": "Stage III: Synaptic Entrainment",
+            "desc": "Resonant plasticity modulation at quantum-optimal frequency. Drive long-term potentiation (LTP) across hippocampal-entorhinal circuits.",
+            "electrical": {
+                "voltage_v": 3.5,
+                "frequency_hz": "Quantum Optimal (8-14 Hz)",
+                "pulse_width_us": 100,
+                "target": "Hippocampus / Entorhinal Cortex"
+            },
+            "queueing": {
+                "lambda_arrival": round(1.2, 2),
+                "mu_clearance": round(5.8, 2),
+                "rho_utilization": round(1.2 / 5.8, 3),
+                "l_q": round((1.2 / 5.8) ** 2 / (1 - 1.2 / 5.8), 3)
+            }
+        },
+        {
+            "stage": 4,
+            "name": "Stage IV: Consolidation & Maintenance",
+            "desc": "Long-term structural maintenance with adaptive closed-loop feedback. Minimize tau propagation while sustaining cognitive reserve.",
+            "electrical": {
+                "voltage_v": 2.5,
+                "frequency_hz": "130 (HF Maintenance)",
+                "pulse_width_us": 60,
+                "target": "STN / GPi (Motor-Cognitive Bridge)"
+            },
+            "queueing": {
+                "lambda_arrival": round(0.8, 2),
+                "mu_clearance": round(6.5, 2),
+                "rho_utilization": round(0.8 / 6.5, 3),
+                "l_q": round((0.8 / 6.5) ** 2 / (1 - 0.8 / 6.5), 3)
+            }
+        }
+    ]
+    return jsonify({"protocol": stages})
+
 if __name__ == '__main__':
 
-    app.run(host='0.0.0.0', debug=True, use_reloader=False, port=5003)
+    app.run(host='0.0.0.0', debug=True, use_reloader=False, port=5007)
