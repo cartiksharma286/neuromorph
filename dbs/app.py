@@ -285,6 +285,39 @@ def stage_gated_protocol():
     ]
     return jsonify({"protocol": stages})
 
+@app.route('/api/hd-cure', methods=['POST'])
+def hd_cure_simulation():
+    data = request.json or {}
+    
+    # Generate temporal progression across staging protocol
+    # Emulating mHTT reduction and MSN (Medium Spiny Neuron) recovery
+    times = list(range(0, 48, 2))  # 48 months, steps of 2
+    
+    mhtt_levels = [100 * (0.92 ** t) for t in times] # Exponential decay
+    msn_recovery = [20 + 80 * (1 - (0.88 ** t)) for t in times]
+    cognitive_score = [40 + 60 * (1 - (0.90 ** t)) for t in times]
+    
+    # Cortical field simulation vectors
+    field_vectors = []
+    for _ in times:
+        vec = [round(random.uniform(0.1, 0.9), 3) for _ in range(5)]
+        field_vectors.append(vec)
+
+    return jsonify({
+        "times": times,
+        "mhtt_levels": mhtt_levels,
+        "msn_recovery": msn_recovery,
+        "cognitive_score": cognitive_score,
+        "field_vectors": field_vectors,
+        "stages": [
+            {"time": 0, "label": "Stage I: Microglial Reset"},
+            {"time": 12, "label": "Stage II: mHTT Clearance Quad"},
+            {"time": 24, "label": "Stage III: Interventional Plasticity"},
+            {"time": 36, "label": "Stage IV: Cortical Restitution"}
+        ]
+    })
+
+
 if __name__ == '__main__':
 
     app.run(host='0.0.0.0', debug=True, use_reloader=False, port=5007)

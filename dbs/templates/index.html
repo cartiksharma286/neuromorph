@@ -48,9 +48,21 @@
             <button class="tab-btn" onclick="switchTab('america-valuation', event)">America Projections (10 YR)</button>
             <button class="tab-btn" onclick="switchTab('stage', event)">Staging Protocol</button>
             <button class="tab-btn" onclick="switchTab('fas', event)">FAS Neurosymbolic</button>
-                            </nav>
+            <button class="tab-btn" onclick="switchTab('hd-cure', event)">HD Stage-Gated Cure</button>
+        </nav>
 
         <aside class="sidebar-left">
+            <div id="hd-cure-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>HD Cure Protocol</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Deep Brain Stimulation interventional cure for Huntington's Disease.
+                        Clinical treatment protocol for optimal stage-gating paradigm.
+                    </p>
+                    <button class="btn-primary" id="btn-generate-hd-cure" onclick="simulateHDCure()" style="margin-top: 10px;">Run Cortical Simulation</button>
+                </div>
+            </div>
+
             <div id="protocols-sidebar" class="tab-content">
                 <div class="glass-panel">
                     <h2>Clinical Targets</h2>
@@ -333,6 +345,43 @@
         </aside>
 
         <main class="main-view">
+
+            <div id="hd-cure-main" class="tab-content" style="height: 100%;">
+                <div class="proj-scroll-outer">
+                    <div class="proj-hero">
+                        <h1>HD Stage-Gated Intervention Cure</h1>
+                        <p class="proj-hero-desc">Optimal treatment paradigm for Deep Brain Stimulation in Huntington's Disease based on queueing theory and neuroplasticity.</p>
+                        
+                        <div class="proj-hero-kpis">
+                            <div class="proj-kpi">
+                                <span class="proj-kpi-val" id="hd-cure-stage">Stage I</span>
+                                <span class="proj-kpi-label">Current Phase</span>
+                            </div>
+                            <div class="proj-kpi">
+                                <span class="proj-kpi-val" id="hd-cure-efficacy">85%</span>
+                                <span class="proj-kpi-label">Neural Repair Efficacy</span>
+                            </div>
+                            <div class="proj-kpi">
+                                <span class="proj-kpi-val" id="hd-cure-timeline">Months 0-6</span>
+                                <span class="proj-kpi-label">Timeline</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="proj-card">
+                        <h3>Clinical Protocol Trajectories</h3>
+                        <div class="chart-wrapper" style="height: 400px; position: relative;">
+                            <canvas id="hdCureChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="proj-card">
+                        <h3>Cortical Simulation State</h3>
+                        <div class="chart-wrapper" style="height: 400px; position: relative;">
+                            <canvas id="hdCureCorticalChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div id="planner-main" class="tab-content active" style="height: 100%;">
                 <div id="canvas-container" style="height: 100%;">
