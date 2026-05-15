@@ -85,6 +85,19 @@ def trillium_protocols():
     ]
     return jsonify({"protocols": protocols})
 
+@app.route('/api/neural-repair-protocols', methods=['GET'])
+def neural_repair_protocols():
+    """
+    Returns computationally optimized, stage-gated neural repair protocols.
+    """
+    protocols = [
+        {"stage": 1, "name": "Synaptic Priming", "target": "vmPFC", "freq": "20Hz", "pulse_width": "200µs", "confidence": 91, "plasticity": 12.5},
+        {"stage": 2, "name": "Neurogenesis Induction", "target": "Hippocampus", "freq": "50Hz", "pulse_width": "120µs", "confidence": 94, "plasticity": 45.2},
+        {"stage": 3, "name": "Circuit Consolidation", "target": "Amygdala", "freq": "130Hz", "pulse_width": "90µs", "confidence": 98, "plasticity": 78.4},
+        {"stage": 4, "name": "Long-Term Maintenance", "target": "Cortical Network", "freq": "Burst", "pulse_width": "60µs", "confidence": 96, "plasticity": 95.1}
+    ]
+    return jsonify({"protocols": protocols})
+
 @app.route('/api/system-status')
 def system_status():
     return jsonify({

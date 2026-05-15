@@ -111,6 +111,8 @@ function switchMainTab(tabId) {
         runFEASimulation();
     } else if (tabId === 'trillium') {
         runTrilliumProtocols();
+    } else if (tabId === 'repair') {
+        runNeuralRepairProtocols();
     }
 }
 
@@ -222,6 +224,49 @@ function renderTrilliumProtocols(protocols) {
             </div>
             <div style="background: rgba(0,255,0,0.1); color: #00ff00; padding: 10px 20px; border-radius: 50px; font-weight: 600;">
                 Opt Score: ${p.score}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+async function runNeuralRepairProtocols() {
+    const response = await fetch('/api/neural-repair-protocols');
+    const data = await response.json();
+    renderNeuralRepairProtocols(data.protocols);
+}
+
+function renderNeuralRepairProtocols(protocols) {
+    const container = document.getElementById('repair-timeline');
+    container.innerHTML = '';
+    
+    protocols.forEach(p => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background: rgba(0, 255, 0, 0.05); border: 1px solid rgba(0, 255, 0, 0.2); border-radius: 15px; padding: 20px; display: flex; justify-content: space-between; align-items: center;';
+        
+        card.innerHTML = `
+            <div>
+                <div style="color: #00ff00; font-weight: 600; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Stage ${p.stage}</div>
+                <div style="font-size: 18px; font-weight: 600;">${p.name}</div>
+                <div style="font-size: 12px; color: var(--text-dim); margin-top: 5px;">Target: ${p.target}</div>
+            </div>
+            <div style="display: flex; gap: 30px; text-align: center;">
+                <div>
+                    <div style="font-size: 16px; font-weight: 600;">${p.freq}</div>
+                    <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase;">Frequency</div>
+                </div>
+                <div>
+                    <div style="font-size: 16px; font-weight: 600;">${p.pulse_width}</div>
+                    <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase;">Pulse Width</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div style="background: rgba(0,198,255,0.1); color: #00c6ff; padding: 10px 15px; border-radius: 50px; font-weight: 600; font-size: 12px;">
+                    Plasticity: ${p.plasticity}%
+                </div>
+                <div style="background: rgba(0,255,0,0.1); color: #00ff00; padding: 10px 15px; border-radius: 50px; font-weight: 600; font-size: 12px;">
+                    Confidence: ${p.confidence}%
+                </div>
             </div>
         `;
         container.appendChild(card);
