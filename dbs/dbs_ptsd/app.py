@@ -72,6 +72,19 @@ def simulate_fea():
         "anisotropy_ratio": round(random.uniform(1.1, 1.5), 2)
     })
 
+@app.route('/api/trillium-protocols', methods=['GET'])
+def trillium_protocols():
+    """
+    Returns optimal clinical treatment protocols with stage gating.
+    """
+    protocols = [
+        {"stage": 1, "name": "Assessment & Baseline", "voltage": "1.5V", "freq": "60Hz", "pulse_width": "60µs", "score": 92},
+        {"stage": 2, "name": "Initial Titration", "voltage": "2.0V", "freq": "90Hz", "pulse_width": "90µs", "score": 95},
+        {"stage": 3, "name": "Optimization", "voltage": "3.5V", "freq": "130Hz", "pulse_width": "120µs", "score": 99},
+        {"stage": 4, "name": "Maintenance", "voltage": "3.0V", "freq": "100Hz", "pulse_width": "90µs", "score": 98}
+    ]
+    return jsonify({"protocols": protocols})
+
 @app.route('/api/system-status')
 def system_status():
     return jsonify({
@@ -82,4 +95,4 @@ def system_status():
     })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5008, debug=True)
+    app.run(host='0.0.0.0', port=5010, debug=True)

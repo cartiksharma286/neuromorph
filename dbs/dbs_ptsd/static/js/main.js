@@ -109,6 +109,8 @@ function switchMainTab(tabId) {
 
     if (tabId === 'fea') {
         runFEASimulation();
+    } else if (tabId === 'trillium') {
+        runTrilliumProtocols();
     }
 }
 
@@ -183,6 +185,47 @@ function renderFEACharts(data) {
 function updateFEAMetrics(data) {
     document.getElementById('fea-peak').innerText = data.peak_field;
     document.getElementById('fea-anisotropy').innerText = data.anisotropy_ratio;
+}
+
+async function runTrilliumProtocols() {
+    const response = await fetch('/api/trillium-protocols');
+    const data = await response.json();
+    renderTrilliumProtocols(data.protocols);
+}
+
+function renderTrilliumProtocols(protocols) {
+    const container = document.getElementById('trillium-timeline');
+    container.innerHTML = '';
+    
+    protocols.forEach(p => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; display: flex; justify-content: space-between; align-items: center;';
+        
+        card.innerHTML = `
+            <div>
+                <div style="color: var(--secondary); font-weight: 600; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Stage ${p.stage}</div>
+                <div style="font-size: 18px; font-weight: 600;">${p.name}</div>
+            </div>
+            <div style="display: flex; gap: 30px; text-align: center;">
+                <div>
+                    <div style="font-size: 16px; font-weight: 600;">${p.voltage}</div>
+                    <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase;">Voltage</div>
+                </div>
+                <div>
+                    <div style="font-size: 16px; font-weight: 600;">${p.freq}</div>
+                    <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase;">Frequency</div>
+                </div>
+                <div>
+                    <div style="font-size: 16px; font-weight: 600;">${p.pulse_width}</div>
+                    <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase;">Pulse Width</div>
+                </div>
+            </div>
+            <div style="background: rgba(0,255,0,0.1); color: #00ff00; padding: 10px 20px; border-radius: 50px; font-weight: 600;">
+                Opt Score: ${p.score}
+            </div>
+        `;
+        container.appendChild(card);
+    });
 }
 
 // Initial Run
