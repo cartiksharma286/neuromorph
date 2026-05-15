@@ -260,12 +260,23 @@
 <body>
     <div class="container">
         <header class="animate">
-            <div class="logo">NEUROMORPH</div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img src="/static/logo.png" alt="K Wing Logo" style="height: 50px; filter: drop-shadow(0 0 10px rgba(255,0,85,0.3));">
+                <div>
+                    <div class="logo">K WING</div>
+                    <div style="font-size: 10px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase;">Canadian Veteran Research Center</div>
+                </div>
+            </div>
             <div class="status-badge">
                 <span class="status-dot"></span>
                 <span>Quantum Bridge Active</span>
             </div>
         </header>
+
+        <section class="hero animate">
+            <h1>K Wing: Canadian Veteran Care</h1>
+            <p class="subtitle">Optimal DBS Treatment Paradigm Construction & Recovery Simulation for PTSD Trauma Recovery</p>
+        </section>
 
         <div class="nav-tabs animate" style="animation-delay: 0.1s;">
             <button class="tab-btn-main active" onclick="switchMainTab('recovery')">Recovery Simulation</button>
