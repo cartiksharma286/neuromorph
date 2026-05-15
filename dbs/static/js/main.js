@@ -1,3 +1,327 @@
+// --- Veteran Care PTSD DBS Protocol Simulation ---
+function runVeteranPTSDDBS() {
+    const resultsDiv = document.getElementById('veteran-ptsd-dbs-results');
+    if (resultsDiv) resultsDiv.innerHTML = '<p style="color: #00f2ff;">Generating optimal DBS clinical paradigms...</p>';
+    fetch('/api/veteran-ptsd-dbs-protocol', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Display optimal DBS treatment paradigms sequence
+        let seqHtml = '';
+        if (data.sequence && Array.isArray(data.sequence)) {
+            seqHtml = '<ol>' + data.sequence.map(s => `<li><b>${s.stage}</b>: <span style="color:#fff;">${s.description}</span></li>`).join('') + '</ol>';
+        }
+        document.getElementById('veteran-ptsd-dbs-protocols-list').innerHTML = seqHtml;
+        // Display protocol stages
+        let stagesHtml = '';
+        if (data.stages && Array.isArray(data.stages)) {
+            stagesHtml = '<ul>' + data.stages.map(s => `<li><b>${s.label}</b> <span style="color:#fff;">@ ${s.context}</span></li>`).join('') + '</ul>';
+        }
+        document.getElementById('veteran-ptsd-dbs-stages-list').innerHTML = stagesHtml;
+        // Simulation plot
+        if (data.simulation) renderVeteranPTSDDBSChart(data.simulation);
+        if (resultsDiv) resultsDiv.innerHTML = '';
+    })
+    .catch(e => {
+        if (resultsDiv) resultsDiv.innerHTML = '<p style="color: red;">Error generating DBS clinical paradigms.</p>';
+        console.error('Veteran PTSD DBS protocol fetch error:', e);
+    });
+}
+
+function renderVeteranPTSDDBSChart(sim) {
+    const ctx = document.getElementById('veteranPTSDDBSChart').getContext('2d');
+    if (window.veteranPTSDDBSChartInstance) window.veteranPTSDDBSChartInstance.destroy();
+    window.veteranPTSDDBSChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: sim.months,
+            datasets: [
+                {
+                    label: 'Efficacy',
+                    data: sim.efficacy,
+                    borderColor: '#00ff00',
+                    backgroundColor: 'rgba(0,255,0,0.08)',
+                    fill: true,
+                },
+                {
+                    label: 'Recovery',
+                    data: sim.recovery,
+                    borderColor: '#00f2ff',
+                    backgroundColor: 'rgba(0,242,255,0.08)',
+                    fill: true,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { labels: { color: '#fff' } }
+            },
+            scales: {
+                x: { ticks: { color: '#fff' } },
+                y: { ticks: { color: '#fff' } }
+            }
+        }
+    });
+}
+
+// --- Canadian PTSD Cortical FEA Simulation (DBS+FEA) ---
+function runCanadianPTSDCorticalFEA() {
+    const resultsDiv = document.getElementById('canadian-ptsd-fea-results');
+    if (resultsDiv) resultsDiv.innerHTML = '<p style="color: #00f2ff;">Running cortical FEA simulation...</p>';
+    fetch('/api/canadian-ptsd-cortical-fea', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Display optimal DBS treatment paradigms sequence
+        let seqHtml = '';
+        if (data.sequence && Array.isArray(data.sequence)) {
+            seqHtml = '<ol>' + data.sequence.map(s => `<li><b>${s.stage}</b>: <span style='color:#fff;'>${s.description}</span></li>`).join('') + '</ol>';
+        }
+        document.getElementById('canadian-ptsd-fea-sequence').innerHTML = seqHtml;
+        // Display FEA simulation results
+        let feaHtml = '';
+        if (data.fea_results && Array.isArray(data.fea_results)) {
+            feaHtml = '<ul>' + data.fea_results.map(r => `<li><b>${r.region}</b>: <span style='color:#a0e7ff;'>${r.stress} kPa</span> | <span style='color:#ffb347;'>${r.notes}</span></li>`).join('') + '</ul>';
+        }
+        document.getElementById('canadian-ptsd-fea-results-main').innerHTML = feaHtml;
+        // Simulation plot
+        if (data.simulation) renderCanadianPTSDLLMChart(data.simulation);
+        if (resultsDiv) resultsDiv.innerHTML = '';
+    })
+    .catch(e => {
+        if (resultsDiv) resultsDiv.innerHTML = '<p style="color: red;">Error running cortical FEA simulation.</p>';
+        console.error('Canadian PTSD FEA simulation error:', e);
+    });
+}
+
+function renderCanadianPTSDLLMChart(sim) {
+    const ctx = document.getElementById('canadianPTSDLLMChart').getContext('2d');
+    if (window.canadianPTSDLLMChartInstance) window.canadianPTSDLLMChartInstance.destroy();
+    window.canadianPTSDLLMChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: sim.months,
+            datasets: [
+                {
+                    label: 'Efficacy',
+                    data: sim.efficacy,
+                    borderColor: '#00ff00',
+                    backgroundColor: 'rgba(0,255,0,0.08)',
+                    fill: true,
+                },
+                {
+                    label: 'Recovery',
+                    data: sim.recovery,
+                    borderColor: '#00f2ff',
+                    backgroundColor: 'rgba(0,242,255,0.08)',
+                    fill: true,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { labels: { color: '#fff' } }
+            },
+            scales: {
+                x: { ticks: { color: '#fff' } },
+                y: { ticks: { color: '#fff' } }
+            }
+        }
+    });
+}
+// --- Canadian Veteran PTSD StatOpt Simulation ---
+function simulateCanadianPTSDStatOpt() {
+    const out = document.getElementById('canadian-ptsd-statopt-stage');
+    if (out) out.innerText = 'Simulating...';
+    fetch('/api/canadian-ptsd-statopt-cure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Update KPIs
+        if (document.getElementById('canadian-ptsd-statopt-stage')) document.getElementById('canadian-ptsd-statopt-stage').innerText = data.stages[0].label;
+        if (document.getElementById('canadian-ptsd-statopt-efficacy')) document.getElementById('canadian-ptsd-statopt-efficacy').innerText = Math.round(data.efficacy[data.efficacy.length-1]) + '%';
+        if (document.getElementById('canadian-ptsd-statopt-timeline')) document.getElementById('canadian-ptsd-statopt-timeline').innerText = 'Months 0-48';
+        renderCanadianPTSDStatOptChart(data);
+        renderCanadianPTSDStatOptParamChart(data);
+        // Render protocol stages
+        const stagesList = document.getElementById('canadian-ptsd-statopt-stages-list');
+        if (stagesList && data.stages) {
+            stagesList.innerHTML = data.stages.map(s => `<li><b>${s.label}</b> <span style='color:#fff;'>@ Month ${s.time}</span></li>`).join('');
+        }
+    })
+    .catch(e => {
+        if (out) out.innerText = 'Error';
+        console.error('Canadian PTSD StatOpt simulation error:', e);
+    });
+}
+
+function renderCanadianPTSDStatOptChart(data) {
+    const ctx = document.getElementById('canadianPTSDStatOptChart').getContext('2d');
+    if (window.canadianPTSDStatOptChartInstance) window.canadianPTSDStatOptChartInstance.destroy();
+    window.canadianPTSDStatOptChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.months,
+            datasets: [
+                {
+                    label: 'Efficacy',
+                    data: data.efficacy,
+                    borderColor: '#00ff00',
+                    backgroundColor: 'rgba(0,255,0,0.08)',
+                    fill: true,
+                },
+                {
+                    label: 'Recovery',
+                    data: data.recovery,
+                    borderColor: '#00f2ff',
+                    backgroundColor: 'rgba(0,242,255,0.08)',
+                    fill: true,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { labels: { color: '#fff' } }
+            },
+            scales: {
+                x: { ticks: { color: '#fff' } },
+                y: { ticks: { color: '#fff' } }
+            }
+        }
+    });
+}
+
+function renderCanadianPTSDStatOptParamChart(data) {
+    const ctx = document.getElementById('canadianPTSDStatOptParamChart').getContext('2d');
+    if (window.canadianPTSDStatOptParamChartInstance) window.canadianPTSDStatOptParamChartInstance.destroy();
+    window.canadianPTSDStatOptParamChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.param_names,
+            datasets: [
+                {
+                    label: 'Parameter Distribution',
+                    data: data.param_dist,
+                    backgroundColor: [
+                        '#00ff00', '#00f2ff', '#ff00ff', '#fff', '#ffb347'
+                    ]
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: { ticks: { color: '#fff' } },
+                y: { ticks: { color: '#fff' } }
+            }
+        }
+    });
+}
+// --- Canadian PTSD Veteran QML Care Paradigms ---
+function fetchCanadianPTSDQMLCare() {
+    const paradigmsList = document.getElementById('canadian-ptsd-qml-list');
+    if (!paradigmsList) return;
+    paradigmsList.innerHTML = '<p style="color: #00f2ff;">Fetching QML-optimized paradigms...</p>';
+    fetch('/api/canadian-ptsd-qml-care', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.paradigms || !Array.isArray(data.paradigms)) {
+            paradigmsList.innerHTML = '<p style="color: red;">No paradigms found.</p>';
+            return;
+        }
+        let html = `<div style='font-size:12px; color:#fff; margin-bottom:10px;'>${data.summary || ''}</div>`;
+        data.paradigms.forEach((p, idx) => {
+            html += `
+                <div style="background: rgba(0, 242, 255, 0.07); border: 1px solid rgba(0, 242, 255, 0.18); padding: 15px; margin-bottom: 18px; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: top; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 10px;">
+                        <h3 style="color: #fff; margin: 0; font-size: 16px;">${p.title}</h3>
+                        <span style="background: var(--accent-pink); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white;">${p.type || 'QML+GenAI'}</span>
+                    </div>
+                    <div style="color: var(--text-dim); font-size: 11px; text-transform: uppercase; margin-bottom: 5px;">Description</div>
+                    <div style="color: #ddd; font-size: 13px; line-height: 1.4; margin-bottom: 5px;">${p.description}</div>
+                    <div style="color: #a0e7ff; font-size: 12px;">AI Score: <b>${p.ai_score}</b> &nbsp; | &nbsp; <span style='color:#ffb347;'>${p.notes}</span></div>
+                </div>
+            `;
+        });
+        paradigmsList.innerHTML = html;
+    })
+    .catch(e => {
+        paradigmsList.innerHTML = '<p style="color: red;">Error fetching paradigms.</p>';
+        console.error('Canadian PTSD QML paradigms fetch error:', e);
+    });
+}
+// --- PTSD/TBI Lobe-Specific Stimulation Plans ---
+function fetchPTSDTBIPlans() {
+    const plansList = document.getElementById('ptsd-tbi-plans-list');
+    if (!plansList) return;
+    plansList.innerHTML = '<p style="color: #00f2ff;">Fetching lobe-specific plans...</p>';
+    fetch('/api/ptsd-tbi-lobe-plans', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.plans || !Array.isArray(data.plans)) {
+            plansList.innerHTML = '<p style="color: red;">No plans found.</p>';
+            return;
+        }
+        let html = `<div style='font-size:12px; color:#fff; margin-bottom:10px;'>${data.summary || ''}</div>`;
+        data.plans.forEach((p, idx) => {
+            html += `
+                <div style="background: rgba(0, 242, 255, 0.07); border: 1px solid rgba(0, 242, 255, 0.18); padding: 15px; margin-bottom: 18px; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: top; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 10px;">
+                        <h3 style="color: #fff; margin: 0; font-size: 16px;">${p.lobe}</h3>
+                        <span style="background: var(--accent-pink); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white;">${p.tbi_modification ? 'TBI-Adapted' : 'PTSD'}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; font-family: monospace;">
+                        <div style="background: rgba(0,0,0,0.5); padding: 8px; border: 1px dashed rgba(255,255,255,0.13); border-radius: 4px;">
+                            <div style="color: var(--text-dim); font-size: 10px;">FREQUENCY (Hz)</div>
+                            <div style="color: #00ff00; font-size: 14px; font-weight: bold;">${p.frequency_hz}</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.5); padding: 8px; border: 1px dashed rgba(255,255,255,0.13); border-radius: 4px;">
+                            <div style="color: var(--text-dim); font-size: 10px;">PULSE WIDTH (µs)</div>
+                            <div style="color: #00f2ff; font-size: 14px; font-weight: bold;">${p.pulse_width_us}</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.5); padding: 8px; border: 1px dashed rgba(255,255,255,0.13); border-radius: 4px;">
+                            <div style="color: var(--text-dim); font-size: 10px;">VOLTAGE (V)</div>
+                            <div style="color: #ff00ff; font-size: 14px; font-weight: bold;">${p.voltage_v}</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.5); padding: 8px; border: 1px dashed rgba(255,255,255,0.13); border-radius: 4px;">
+                            <div style="color: var(--text-dim); font-size: 10px;">SESSIONS</div>
+                            <div style="color: #fff; font-size: 14px; font-weight: bold;">${p.session_count}</div>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-dim); font-size: 11px; text-transform: uppercase; margin-bottom: 5px;">Role</div>
+                    <div style="color: #ddd; font-size: 13px; line-height: 1.4; margin-bottom: 5px;">${p.role}</div>
+                    <div style="color: #a0e7ff; font-size: 12px;">AI Score: <b>${p.ai_score}</b> &nbsp; | &nbsp; <span style='color:#ffb347;'>${p.notes}</span></div>
+                </div>
+            `;
+        });
+        plansList.innerHTML = html;
+    })
+    .catch(e => {
+        plansList.innerHTML = '<p style="color: red;">Error fetching lobe plans.</p>';
+        console.error('PTSD/TBI lobe plans fetch error:', e);
+    });
+}
 // --- FASD StatOpt Cure Simulation ---
 function simulateFASDStatOpt() {
     const out = document.getElementById('fasd-statopt-stage');
@@ -556,6 +880,15 @@ function switchTab(tabId, event) {
     }
     if (tabId === 'pareto') {
         runParetoOptimization();
+    }
+    if (tabId === 'veteran-ptsd-dbs') {
+        runVeteranPTSDDBS();
+    }
+    if (tabId === 'canada-veteran') {
+        runCanadianPTSDCorticalFEA();
+        simulateCanadianPTSDStatOpt();
+        fetchCanadianPTSDQMLCare();
+        fetchPTSDTBIPlans();
     }
 }
 

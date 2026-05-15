@@ -46,11 +46,42 @@
             <button class="tab-btn" onclick="switchTab('sea-valuation', event)">South Asia/SEA Market (10 YR)</button>
             <button class="tab-btn" onclick="switchTab('india-valuation', event)">India Projections (10 YR)</button>
             <button class="tab-btn" onclick="switchTab('america-valuation', event)">America Projections (10 YR)</button>
-            <button class="tab-btn" onclick="switchTab('stage', event)">Staging Protocol</button>
+            <!-- Removed Staging Protocol Tab -->
             <button class="tab-btn" onclick="switchTab('fas', event)">FAS Neurosymbolic</button>
             <button class="tab-btn" onclick="switchTab('hd-cure', event)">HD Stage-Gated Cure</button>
             <button class="tab-btn" onclick="switchTab('fasd-cure', event)">FASD QML Cure</button>
             <button class="tab-btn" onclick="switchTab('fasd-statopt', event)">FASD StatOpt Cure</button>
+            <button class="tab-btn" onclick="switchTab('veteran-ptsd-dbs', event)">DBS for Veteran Care PTSD</button>
+            <button class="tab-btn" onclick="switchTab('canada-veteran', event)">Canadian Veteran PTSD</button>
+        </nav>
+        <div id="veteran-ptsd-dbs-sidebar" class="tab-content">
+            <div class="glass-panel">
+                <h2>DBS for Veteran Care PTSD</h2>
+                <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                    Deep Brain Stimulation (DBS) clinical protocol simulation and visualization for optimal PTSD treatment in veterans. Review protocol sequence and efficacy plots.
+                </p>
+                <button class="btn-primary" id="btn-run-veteran-ptsd-dbs" onclick="runVeteranPTSDDBS()" style="margin-bottom: 12px;">Run DBS Protocol Simulation</button>
+                <div id="veteran-ptsd-dbs-results"></div>
+            </div>
+        </div>
+        <div id="veteran-ptsd-dbs-main" class="tab-content main-content" style="display:none;">
+            <div class="glass-panel" style="margin-bottom: 10px;">
+                <h2>Veteran Care PTSD: DBS Protocols</h2>
+                <div id="veteran-ptsd-dbs-protocols-list"></div>
+            </div>
+            <div class="glass-panel" style="margin-bottom: 10px; max-height: 220px; overflow-y: auto;">
+                <h3 style="margin-bottom: 8px;">Clinical Protocol Sequence</h3>
+                <div id="veteran-ptsd-dbs-stages-list" style="font-size: 13px; color: #fff; padding-left: 18px; margin: 0;"></div>
+            </div>
+            <div class="glass-panel">
+                <h3>DBS Efficacy & Performance Plots</h3>
+                <canvas id="veteranPTSDDBSChart" height="180"></canvas>
+            </div>
+        </div>
+
+        <!-- Veteran Care PTSD DBS tab removed -->
+                            <!-- Veteran Care PTSD DBS sidebar removed -->
+                            <!-- Veteran Care PTSD DBS main content removed -->
                     <div id="fasd-statopt-sidebar" class="tab-content">
                         <div class="glass-panel">
                             <h2>FASD DBS StatOpt Protocol</h2>
@@ -195,7 +226,7 @@
                 <div class="glass-panel">
                     <h2>Protocol Config</h2>
                     <div class="control-group">
-                        <label>Dementia Decline Rate (eta)</label>
+                        <label>Dementia Decline Rate ( eta)</label>
                         <input type="range" id="dementia-decline-range" min="0.01" max="0.1" step="0.01" value="0.05">
                     </div>
                     <div class="control-group">
@@ -410,7 +441,72 @@
 
         </aside>
 
+            <!-- Sidebar for Canadian Veteran PTSD DBS -->
+            <div id="canada-veteran-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Canadian Veteran PTSD/TBI DBS Protocols</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Deep Brain Stimulation (DBS) for Canadian veterans with PTSD/TBI: optimal clinical protocols, neurocircuitry targets, and recovery strategies.<br>
+                        <b>Key Features:</b><br>
+                        &bull; Evidence-based DBS targets for PTSD/TBI<br>
+                        &bull; Protocols tailored for Canadian veteran care<br>
+                        &bull; Recovery, efficacy, and safety metrics<br>
+                        &bull; Integration with national veteran health programs
+                    </p>
+                    <ul id="canada-veteran-characteristics" style="font-size: 13px; color: #a0e7ff; margin: 10px 0 0 18px; list-style-type: square; line-height: 1.7;"></ul>
+                    <div class="glass-panel" style="margin-top: 10px;">
+                        <h3>Protocol Stages</h3>
+                        <ul id="canada-veteran-stages" style="font-size: 12px; color: #fff; padding-left: 18px; margin: 0;"></ul>
+                    </div>
+                </div>
+            </div>
+
         <main class="main-view">
+
+                <!-- Main content for Canadian Veteran PTSD DBS -->
+                <div id="canada-veteran-main" class="tab-content" style="height: 100%; overflow-y: auto;">
+                    <div class="proj-scroll-outer">
+                        <div class="proj-hero" style="background: linear-gradient(135deg, rgba(0,102,204,0.18) 0%, rgba(255,255,255,0.10) 100%); border-color: rgba(0,102,204,0.25);">
+                            <div class="proj-hero-flag">🇨🇦 Canadian Veteran Care</div>
+                            <div class="proj-hero-title">PTSD & TBI Cure with Deep Brain Stimulation</div>
+                            <div class="proj-hero-kpis">
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#0077ff;">Amygdala, vmPFC, Hippocampus, DLPFC</div><div class="proj-kpi-lbl">Target Circuits</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#00c896;">88%</div><div class="proj-kpi-lbl">Projected Efficacy (12 mo)</div></div>
+                                <div class="proj-kpi"><div class="proj-kpi-val" style="color:#ff6384;">2026–2036</div><div class="proj-kpi-lbl">Protocol Horizon</div></div>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Optimal TBI/PTSD DBS Treatment Paradigm (FEA)</div>
+                            <div style="height: 320px; max-width: 100%; position: relative;">
+                                <canvas id="canadianPTSDLLMChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Statistical Parametric Optimization (PTSD/TBI)</div>
+                            <div style="height: 320px; max-width: 100%; position: relative;">
+                                <canvas id="canadianPTSDStatOptChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Parameter Distribution (StatOpt)</div>
+                            <div style="height: 200px; max-width: 100%; position: relative;">
+                                <canvas id="canadianPTSDStatOptParamChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">QML-Optimized Care Paradigms</div>
+                            <div id="canadian-ptsd-qml-list"></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Lobe-Specific Stimulation Plans</div>
+                            <div id="ptsd-tbi-plans-list"></div>
+                        </div>
+                        <div class="proj-card">
+                            <div class="proj-card-title">Simulation Log</div>
+                            <pre id="canada-veteran-output" class="proj-log" style="color: #0077ff; border-color: rgba(0,102,204,0.2);">Plots and protocol characteristics auto-loaded for Canadian veterans with PTSD/TBI.</pre>
+                        </div>
+                    </div>
+                </div>
 
             <div id="hd-cure-main" class="tab-content" style="height: 100%; overflow-y: auto;">
                 <div class="proj-scroll-outer">
