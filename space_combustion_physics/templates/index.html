@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Space Combustion Physics — Mission Control</title>
+  <meta name="description" content="Advanced space combustion physics simulator with PDE-based flame modelling, optimal throttle control, rocket trajectory and payload analysis."/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- Starfield -->
+<div id="stars"><canvas id="starfield"></canvas></div>
+
+<div class="app">
+<!-- ── Header ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🚀</div>
+    <div>
+      <h1>SPACE COMBUSTION PHYSICS</h1>
+      <p>Mission Control · PDE Simulation Engine v2.0</p>
+    </div>
+  </div>
+  <div class="mission-status"><div class="pulse-dot"></div>SYSTEMS NOMINAL</div>
+  <div class="header-time" id="clock"></div>
+</header>
+
+<!-- ── Tabs ── -->
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="tab-combustion">🔥 Combustion PDE</button>
+  <button class="tab-btn" data-tab="tab-throttle">⚡ Optimal Throttle</button>
+  <button class="tab-btn" data-tab="tab-traj">🛸 Trajectory</button>
+  <button class="tab-btn" data-tab="tab-payload">📦 Payload</button>
+  <button class="tab-btn" data-tab="tab-cf">∞ Continued Fractions</button>
+  <button class="tab-btn" data-tab="tab-finite">𝚽 Finite Math</button>
+</nav>
+
+<div class="panels">
+
+<!-- ══════════════════════════════════════════════════
+     TAB 1 — COMBUSTION PDE
+     ∂T/∂t = α∂²T/∂x² + Qω/(ρCp)
+     ∂Yf/∂t = D∂²Yf/∂x² − ω/ρ
+     ω = A·(ρYf)(ρYo)·exp(−Ea/RT)   [Arrhenius]
+════════════════════════════════════════════════════ -->
+<div class="panel active" id="tab-combustion">
+  <div class="section-header">
+    <h2>1-D Premixed Combustion PDE Solver</h2>
+    <p>Finite-difference integration of species conservation &amp; energy equations with Arrhenius kinetics</p>
+  </div>
+
+  <div class="eq-box" style="margin-bottom:20px">
+    ∂T/∂t &nbsp;= α·∂²T/∂x² + Q·ω/(ρ·Cₚ)&nbsp;&nbsp;&nbsp;[Energy]<br>
+    ∂Yf/∂t = D·∂²Yf/∂x² − ω/ρ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Fuel species]<br>
+    ∂Yo/∂t = D·∂²Yo/∂x² − ν·ω/ρ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Oxidizer species]<br>
+    ω &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= A·(ρYf)·(ρYo)·exp(−Eₐ/RT)&nbsp;&nbsp;&nbsp;[Arrhenius]
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Fuel / Oxidizer</label>
+      <select id="sel-fuel">
+        <option value="H2-O2">H₂ / O₂</option>
+        <option value="CH4-Air">CH₄ / Air</option>
+        <option value="RP1-LOX">RP-1 / LOX</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Equivalence Ratio φ</label>
+      <input id="inp-phi" type="number" min="0.4" max="2" step="0.05" value="1.0"/>
+    </div>
+    <div class="control-group">
+      <label>Pressure (atm)</label>
+      <input id="inp-pressure" type="number" min="0.5" max="20" step="0.5" value="1.0"/>
+    </div>
+    <button class="btn-run" id="btn-combustion">▶ Run PDE Solver</button>
+    <div class="loading" id="ld-combustion"><div class="spin"></div>Integrating PDEs…</div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi orange"><div class="kpi-value" id="kpi-Tpeak">—</div><div class="kpi-label">Peak Temperature</div></div>
+    <div class="kpi blue"><div class="kpi-value" id="kpi-SL">—</div><div class="kpi-label">Flame Speed SL</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-eta">—</div><div class="kpi-label">Combustion Efficiency</div></div>
+    <div class="kpi gold"><div class="kpi-value" id="kpi-Tad">—</div><div class="kpi-label">Adiabatic T</div></div>
+    <div class="kpi purple"><div class="kpi-value" id="kpi-xf">—</div><div class="kpi-label">Flame Position</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Temperature Profile T(x)</div>
+      <div class="chart-wrap"><canvas id="chart-temp"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Species Mass Fractions Y(x)</div>
+      <div class="chart-wrap"><canvas id="chart-species"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TAB 2 — OPTIMAL THROTTLE
+     Pontryagin's Minimum Principle
+     dv/dt = T/m − D/m − g,  dm/dt = −T/(Isp·g₀)
+════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-throttle">
+  <div class="section-header">
+    <h2>Optimal Throttle Velocity Control</h2>
+    <p>Pontryagin's Minimum Principle — fuel-optimal, time-optimal, and trajectory-optimal bang-bang/smooth control</p>
+  </div>
+
+  <div class="eq-box" style="margin-bottom:20px">
+    dv/dt = T(u)/m − D(v,h)/m − g(h)&nbsp;&nbsp;&nbsp;&nbsp;[Velocity]<br>
+    dh/dt = v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Altitude]<br>
+    dm/dt = −T(u)/(Isp·g₀)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Mass]<br>
+    Δv &nbsp;&nbsp;= Isp·g₀·ln(m₀/mf)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Tsiolkovsky]
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Specific Impulse Isp (s)</label>
+      <input id="inp-Isp" type="number" min="200" max="500" step="10" value="450"/>
+    </div>
+    <div class="control-group">
+      <label>Initial Mass m₀ (kg)</label>
+      <input id="inp-m0" type="number" min="10000" max="5000000" step="10000" value="100000"/>
+    </div>
+    <div class="control-group">
+      <label>Control Mode</label>
+      <select id="sel-mode">
+        <option value="fuel_optimal">Fuel-Optimal (bang-bang)</option>
+        <option value="time_optimal">Time-Optimal (max thrust)</option>
+        <option value="trajectory_optimal">Trajectory-Optimal (smooth)</option>
+      </select>
+    </div>
+    <button class="btn-run orange" id="btn-throttle">▶ Optimise Throttle</button>
+    <div class="loading" id="ld-throttle"><div class="spin"></div>Running ODE solver…</div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi orange"><div class="kpi-value" id="kpi-dv">—</div><div class="kpi-label">Ideal Δv</div></div>
+    <div class="kpi blue"><div class="kpi-value" id="kpi-vf">—</div><div class="kpi-label">Final Velocity</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-alt-th">—</div><div class="kpi-label">Max Altitude</div></div>
+    <div class="kpi gold"><div class="kpi-value" id="kpi-fc">—</div><div class="kpi-label">Fuel Consumed</div></div>
+    <div class="kpi purple"><div class="kpi-value" id="kpi-mr">—</div><div class="kpi-label">Mass Ratio</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Throttle Schedule u(t)</div>
+      <div class="chart-wrap"><canvas id="chart-throttle"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Velocity &amp; Altitude vs Time</div>
+      <div class="chart-wrap"><canvas id="chart-vel"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TAB 3 — TRAJECTORY
+     dx/dt = vx   dz/dt = vz
+     dvx/dt = (T·vx/|v| − Cd·ρ·A·|v|·vx)/m + gx
+     dvz/dt = (T·vz/|v| − Cd·ρ·A·|v|·vz)/m + gz
+════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-traj">
+  <div class="section-header">
+    <h2>Rocket Trajectory Simulation</h2>
+    <p>2-D gravity-turn equations of motion with atmospheric drag, variable gravity, and multi-stage propulsion</p>
+  </div>
+
+  <div class="eq-box" style="margin-bottom:20px">
+    ẋ &nbsp;= vx,&nbsp;&nbsp; ż = vz<br>
+    v̇x = (T·v̂x − D·v̂x)/m + gx(r)&nbsp;&nbsp;&nbsp;[x-acceleration]<br>
+    v̇z = (T·v̂z − D·v̂z)/m + gz(r)&nbsp;&nbsp;&nbsp;[z-acceleration]<br>
+    ṁ &nbsp;= −T/(Isp·g₀),&nbsp;&nbsp; g(r) = μ/r²
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Vehicle</label>
+      <select id="sel-vehicle">
+        <option value="Falcon9">Falcon 9</option>
+        <option value="SaturnV">Saturn V</option>
+        <option value="Starship">Starship</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Payload Mass (kg)</label>
+      <input id="inp-payload" type="number" min="100" max="200000" step="500" value="5000"/>
+    </div>
+    <div class="control-group">
+      <label>Target Orbit</label>
+      <select id="sel-orbit">
+        <option value="LEO">LEO (400 km)</option>
+        <option value="GTO">GTO (35 786 km)</option>
+        <option value="TLI">TLI (Lunar)</option>
+      </select>
+    </div>
+    <button class="btn-run green" id="btn-traj">▶ Launch Simulation</button>
+    <div class="loading" id="ld-traj"><div class="spin"></div>Integrating trajectory…</div>
+  </div>
+
+  <div class="kpi-grid" style="margin-bottom:10px">
+    <div class="kpi blue"><div class="kpi-value" id="kpi-alt-traj">—</div><div class="kpi-label">Max Altitude</div></div>
+    <div class="kpi orange"><div class="kpi-value" id="kpi-vf-traj">—</div><div class="kpi-label">Final Speed</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-dvach">—</div><div class="kpi-label">Δv Achieved</div></div>
+    <div class="kpi gold"><div class="kpi-value" id="kpi-dvreq">—</div><div class="kpi-label">Δv Required</div></div>
+  </div>
+  <div style="margin-bottom:18px" id="orbit-status"></div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Trajectory Path (Downrange vs Altitude)</div>
+      <div class="chart-wrap tall"><canvas id="chart-traj"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Speed &amp; Vehicle Mass vs Time</div>
+      <div class="chart-wrap tall"><canvas id="chart-speed"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TAB 4 — PAYLOAD
+     Tsiolkovsky + multi-stage mass budgets
+════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-payload">
+  <div class="section-header">
+    <h2>Payload &amp; Mass Budget Analysis</h2>
+    <p>Tsiolkovsky rocket equation, multi-stage Δv budgets, and propellant mass fractions</p>
+  </div>
+
+  <div class="eq-box" style="margin-bottom:20px">
+    Δv = Isp·g₀·ln(m₀/mf)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Tsiolkovsky]<br>
+    mf = m_struct + m_payload&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Final mass]<br>
+    Δv_total = Σᵢ Isp·g₀·ln(m₀ᵢ/mfᵢ)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Multi-stage]<br>
+    ζ = m_prop/m₀&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Propellant fraction]
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Isp (s)</label>
+      <input id="inp-Isp-p" type="number" value="450" min="200" max="500" step="10"/>
+    </div>
+    <div class="control-group">
+      <label>Total Mass m₀ (kg)</label>
+      <input id="inp-m0-p" type="number" value="500000" min="10000" max="5000000" step="10000"/>
+    </div>
+    <div class="control-group">
+      <label>Structure Mass (kg)</label>
+      <input id="inp-ms" type="number" value="50000" min="1000" max="500000" step="1000"/>
+    </div>
+    <div class="control-group">
+      <label>Payload Mass (kg)</label>
+      <input id="inp-mp" type="number" value="20000" min="100" max="200000" step="1000"/>
+    </div>
+    <div class="control-group">
+      <label>Stages</label>
+      <input id="inp-stages" type="number" value="2" min="1" max="4" step="1"/>
+    </div>
+    <button class="btn-run orange" id="btn-payload">▶ Compute Budget</button>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi orange"><div class="kpi-value" id="kpi-dv-pay">—</div><div class="kpi-label">Total Δv</div></div>
+    <div class="kpi blue"><div class="kpi-value" id="kpi-mr-pay">—</div><div class="kpi-label">Mass Ratio</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-propf">—</div><div class="kpi-label">Propellant Frac.</div></div>
+    <div class="kpi purple"><div class="kpi-value" id="kpi-payf">—</div><div class="kpi-label">Payload Frac.</div></div>
+  </div>
+
+  <div id="stage-dvs" style="margin-bottom:22px"></div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Mass Budget Breakdown</div>
+      <div class="chart-wrap"><canvas id="chart-pie"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Key Equations</div>
+      <div class="eq-box" style="margin-top:8px;line-height:2.2">
+        <strong style="color:var(--blue)">Tsiolkovsky Rocket Equation</strong><br>
+        Δv = Isp · g₀ · ln(m₀/mf)<br><br>
+        <strong style="color:var(--orange)">Payload Fraction</strong><br>
+        λ = m_payload / m₀<br><br>
+        <strong style="color:var(--green)">Propellant Mass Fraction</strong><br>
+        ζ = 1 − 1/e^(Δv/Isp·g₀)<br><br>
+        <strong style="color:var(--purple)">Multi-Stage Advantage</strong><br>
+        Δv_total = Σ Isp_i · g₀ · ln(R_i)
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TAB 5 — CONTINUED FRACTIONS
+     x = a₀ + 1/(a₁ + 1/(a₂ + …))
+     Convergents: p_n/q_n → best rational approximations
+════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-cf">
+  <div class="section-header">
+    <h2>Continued Fraction Expansions</h2>
+    <p>Rational approximations of key physical constants used in orbital resonance, gear ratios, and integration step sizing</p>
+  </div>
+
+  <div class="eq-box" style="margin-bottom:20px">
+    x = a₀ + 1/(a₁ + 1/(a₂ + 1/(a₃ + …)))&nbsp;&nbsp;&nbsp;[CF definition]<br>
+    p_n = a_n·p_{n-1} + p_{n-2}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Numerator recurrence]<br>
+    q_n = a_n·q_{n-1} + q_{n-2}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Denominator recurrence]<br>
+    |x − p_n/q_n| &lt; 1/(q_n·q_{n+1})&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Error bound]
+  </div>
+
+  <div style="margin-bottom:20px">
+    <button class="btn-run" id="btn-cf">▶ Compute CF Expansions</button>
+  </div>
+
+  <div id="cf-results"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TAB 6 — FINITE MATH
+     ẋ = Ax + Bu  →  Φ(t) = exp(At)
+     Eigenvalue stability analysis
+════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-finite">
+  <div class="section-header">
+    <h2>Finite Math — State-Space Rocket Dynamics</h2>
+    <p>Linear pitch-plane dynamics, state transition matrix Φ(t)=exp(At), eigenvalue stability</p>
+  </div>
+
+  <div class="eq-box" style="margin-bottom:20px">
+    ẋ = Ax + Bu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[State-space]<br>
+    x = [altitude, velocity, pitch, pitch_rate]ᵀ<br>
+    Φ(t) = e^{At} = I + At + (At)²/2! + …&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Matrix exponential]<br>
+    Stable iff Re(λᵢ) &lt; 0&nbsp;&nbsp;∀i&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Lyapunov criterion]
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Reference Velocity v_ref (m/s)</label>
+      <input id="inp-vref" type="number" value="500" min="100" max="8000" step="100"/>
+    </div>
+    <div class="control-group">
+      <label>Reference Altitude h_ref (m)</label>
+      <input id="inp-href" type="number" value="50000" min="1000" max="200000" step="5000"/>
+    </div>
+    <button class="btn-run green" id="btn-finite">▶ Compute State-Space</button>
+  </div>
+
+  <div class="kpi-grid" style="margin-bottom:20px">
+    <div class="kpi green"><div class="kpi-value" id="kpi-cond">—</div><div class="kpi-label">Condition Number</div></div>
+    <div style="display:flex;align-items:center;padding:14px" id="stab-tag"></div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="card-title">A Matrix (Linearised Pitch Dynamics)</div>
+      <div class="matrix" id="mat-A">Run computation to display…</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Eigenvalues λ</div>
+      <div class="matrix" id="eig-display">Run computation to display…</div>
+    </div>
+  </div>
+
+  <div class="section-header"><h2 style="font-size:1rem">State Transition Matrices Φ(t) = e^{At}</h2></div>
+  <div id="phi-matrices"></div>
+</div>
+
+</div><!-- /panels -->
+</div><!-- /app -->
+
+<script src="/static/js/main.js"></script>
+</body>
+</html>
