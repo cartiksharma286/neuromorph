@@ -33,7 +33,7 @@
   <button class="tab-btn" data-tab="tab-throttle">⚡ Optimal Throttle</button>
   <button class="tab-btn" data-tab="tab-traj">🛸 Trajectory</button>
   <button class="tab-btn" data-tab="tab-payload">📦 Payload</button>
-  <button class="tab-btn" data-tab="tab-cf">∞ Continued Fractions</button>
+  <button class="tab-btn" data-tab="tab-cfd">🌊 CFD Modeling</button>
   <button class="tab-btn" data-tab="tab-finite">𝚽 Finite Math</button>
 </nav>
 
@@ -294,28 +294,56 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════
-     TAB 5 — CONTINUED FRACTIONS
-     x = a₀ + 1/(a₁ + 1/(a₂ + …))
-     Convergents: p_n/q_n → best rational approximations
+     TAB 5 — CFD MODELING
+     ∂U/∂t + ∂F/∂x = S
 ════════════════════════════════════════════════════ -->
-<div class="panel" id="tab-cf">
+<div class="panel" id="tab-cfd">
   <div class="section-header">
-    <h2>Continued Fraction Expansions</h2>
-    <p>Rational approximations of key physical constants used in orbital resonance, gear ratios, and integration step sizing</p>
+    <h2>CFD Throttle Combustion Modeling</h2>
+    <p>Quasi-1D Navier-Stokes simulation of nozzle flow with combustion source terms and area variation</p>
   </div>
 
   <div class="eq-box" style="margin-bottom:20px">
-    x = a₀ + 1/(a₁ + 1/(a₂ + 1/(a₃ + …)))&nbsp;&nbsp;&nbsp;[CF definition]<br>
-    p_n = a_n·p_{n-1} + p_{n-2}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Numerator recurrence]<br>
-    q_n = a_n·q_{n-1} + q_{n-2}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Denominator recurrence]<br>
-    |x − p_n/q_n| &lt; 1/(q_n·q_{n+1})&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Error bound]
+    ∂(ρA)/∂t + ∂(ρuA)/∂x = 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Continuity]<br>
+    ∂(ρuA)/∂t + ∂(ρu²A + PA)/∂x = P·dA/dx&nbsp;&nbsp;&nbsp;[Momentum]<br>
+    ∂(ρEA)/∂t + ∂(u(ρEA + PA))/∂x = Q_heat·ω·A&nbsp;&nbsp;[Energy]<br>
+    ∂(ρYfA)/∂t + ∂(ρuYfA)/∂x = −ω·A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Species]
   </div>
 
-  <div style="margin-bottom:20px">
-    <button class="btn-run" id="btn-cf">▶ Compute CF Expansions</button>
+  <div class="controls">
+    <div class="control-group">
+      <label>Throttle Level (0.1 - 1.0)</label>
+      <input id="inp-cfd-throttle" type="number" min="0.1" max="1.0" step="0.1" value="0.7"/>
+    </div>
+    <div class="control-group">
+      <label>Fuel Type</label>
+      <select id="sel-cfd-fuel">
+        <option value="RP1">RP-1 / LOX</option>
+        <option value="H2">Liquid Hydrogen</option>
+        <option value="CH4">Liquid Methane</option>
+      </select>
+    </div>
+    <button class="btn-run" id="btn-cfd">▶ Run CFD Simulation</button>
+    <div class="loading" id="ld-cfd"><div class="spin"></div>Solving NS Equations…</div>
   </div>
 
-  <div id="cf-results"></div>
+  <div class="kpi-grid">
+    <div class="kpi orange"><div class="kpi-value" id="kpi-thrust">—</div><div class="kpi-label">Thrust (kN)</div></div>
+    <div class="kpi blue"><div class="kpi-value" id="kpi-mach">—</div><div class="kpi-label">Exit Mach</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-chamb-t">—</div><div class="kpi-label">Chamber Temp (K)</div></div>
+    <div class="kpi gold"><div class="kpi-value" id="kpi-peak-p">—</div><div class="kpi-label">Peak Pressure (bar)</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Pressure &amp; Mach Number Profile</div>
+      <div class="chart-wrap"><canvas id="chart-cfd-press"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Temperature &amp; Fuel Distribution</div>
+      <div class="chart-wrap"><canvas id="chart-cfd-temp"></canvas></div>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════

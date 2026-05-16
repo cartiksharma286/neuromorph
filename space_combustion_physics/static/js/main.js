@@ -246,32 +246,54 @@ async function runPayload(){
 }
 
 // ═══════════════════════════════════════════════
-// 5. CONTINUED FRACTIONS
+// 5. CFD MODELING
 // ═══════════════════════════════════════════════
-document.getElementById('btn-cf')?.addEventListener('click',runCF);
-async function runCF(){
-  const btn=document.getElementById('btn-cf');btn.disabled=true;
+document.getElementById('btn-cfd')?.addEventListener('click',runCFD);
+async function runCFD(){
+  const btn=document.getElementById('btn-cfd');
+  const ld=document.getElementById('ld-cfd');
+  btn.disabled=true;ld.classList.add('visible');
+  const body={
+    throttle:parseFloat(document.getElementById('inp-cfd-throttle').value),
+    fuel:document.getElementById('sel-cfd-fuel').value
+  };
   try{
-    const r=await fetch('/api/cf',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    const r=await fetch('/api/cfd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const d=await r.json();
-    const container=document.getElementById('cf-results');
-    if(!container){btn.disabled=false;return;}
-    container.innerHTML='';
-    for(const[name,info] of Object.entries(d)){
-      const coeffStr='['+info.coefficients.slice(0,1).join()+'; '+info.coefficients.slice(1).join(', ')+']';
-      const rows=info.convergents.slice(0,8).map(c=>`<tr><td>${c.n}</td><td>${c.p}</td><td>${c.q}</td><td>${(c.p/c.q).toFixed(8)}</td><td>${c.error.toExponential(2)}</td></tr>`).join('');
-      container.innerHTML+=`
-        <div class="card" style="margin-bottom:18px">
-          <div class="card-title">${name} = ${info.value.toFixed(10)}</div>
-          <div class="eq-box" style="margin-bottom:12px">CF: ${coeffStr}</div>
-          <table class="cf-table">
-            <thead><tr><th>n</th><th>p_n</th><th>q_n</th><th>p_n/q_n</th><th>|error|</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>`;
-    }
+    setKPI('kpi-thrust',d.thrust_kN.toLocaleString()+' kN');
+    setKPI('kpi-mach',d.exit_mach.toFixed(2));
+    setKPI('kpi-chamb-t',d.chamber_temp.toLocaleString()+' K');
+    setKPI('kpi-peak-p',d.peak_pressure.toFixed(1)+' bar');
+
+    destroyChart('chart-cfd-press');destroyChart('chart-cfd-temp');
+    
+    // Pressure & Mach Chart
+    charts['chart-cfd-press']=new Chart(document.getElementById('chart-cfd-press').getContext('2d'),{type:'line',
+      data:{labels:d.x.map(v=>v.toFixed(2)),datasets:[
+        {label:'Pressure (bar)',data:d.pressure,borderColor:COLORS.orange,pointRadius:0,borderWidth:2,tension:0.3,yAxisID:'y'},
+        {label:'Mach Number',data:d.mach,borderColor:COLORS.blue,pointRadius:0,borderWidth:2,tension:0.3,yAxisID:'y1'}
+      ]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},
+        plugins:{legend:{labels:{color:'#6a7fa8'}}},
+        scales:{
+          x:{ticks:{color:'#6a7fa8',maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.05)'},title:{display:true,text:'Nozzle Position x (m)',color:'#6a7fa8'}},
+          y:{ticks:{color:COLORS.orange},grid:{color:'rgba(255,255,255,0.05)'},position:'left',title:{display:true,text:'Pressure (bar)',color:COLORS.orange}},
+          y1:{ticks:{color:COLORS.blue},grid:{drawOnChartArea:false},position:'right',title:{display:true,text:'Mach Number',color:COLORS.blue}}
+        }}});
+
+    // Temp & Fuel Chart
+    charts['chart-cfd-temp']=new Chart(document.getElementById('chart-cfd-temp').getContext('2d'),{type:'line',
+      data:{labels:d.x.map(v=>v.toFixed(2)),datasets:[
+        {label:'Temperature (K)',data:d.temperature,borderColor:COLORS.red,pointRadius:0,borderWidth:2,tension:0.3,yAxisID:'y'},
+        {label:'Fuel Fraction',data:d.fuel_fraction,borderColor:COLORS.green,pointRadius:0,borderWidth:2,tension:0.3,yAxisID:'y1'}
+      ]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},
+        plugins:{legend:{labels:{color:'#6a7fa8'}}},
+        scales:{
+          x:{ticks:{color:'#6a7fa8',maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.05)'},title:{display:true,text:'Nozzle Position x (m)',color:'#6a7fa8'}},
+          y:{ticks:{color:COLORS.red},grid:{color:'rgba(255,255,255,0.05)'},position:'left',title:{display:true,text:'Temperature (K)',color:COLORS.red}},
+          y1:{ticks:{color:COLORS.green},grid:{drawOnChartArea:false},position:'right',title:{display:true,text:'Fuel Mass Fraction',color:COLORS.green},min:0,max:1}
+        }}});
   }catch(e){console.error(e);}
-  btn.disabled=false;
+  btn.disabled=false;ld.classList.remove('visible');
 }
 
 // ═══════════════════════════════════════════════

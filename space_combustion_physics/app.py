@@ -178,40 +178,102 @@ def payload_api():
             "pie":{"Propellant":round(mass_frac,1),"Structure":round(struct_frac,1),"Payload":round(pay_frac,1)}}
 
 # ─────────────────────────────────────────────
-# CONTINUED FRACTIONS
-# x = a0 + 1/(a1 + 1/(a2 + …))  →  convergents p_n/q_n
-# Applied: orbital resonance ratios, π, φ, √2
+# CFD MODELING  (Quasi-1D Compressible Flow with Combustion)
+# ∂U/∂t + ∂F/∂x = S
+# U = [ρA, ρuA, ρEA, ρYfA]ᵀ
+# S = [0, P dA/dx, Q_heat * ω * A, -ω * A]ᵀ
 # ─────────────────────────────────────────────
-def cf_expand(x, depth=15):
-    coeffs=[]; val=x
-    for _ in range(depth):
-        a=int(val); coeffs.append(a)
-        frac=val-a
-        if abs(frac)<1e-10: break
-        val=1/frac
-    return coeffs
+def run_cfd_simulation(throttle_level, fuel_type):
+    nx = 100
+    L = 2.0  # Chamber + Nozzle length (m)
+    x = np.linspace(0, L, nx)
+    dx = x[1] - x[0]
+    
+    # Area profile: Convergent-Divergent Nozzle
+    # x=0 to 0.5: Chamber, 0.5 to 1.2: Convergent, 1.2 to 2.0: Divergent
+    A = np.where(x < 0.5, 0.5, 
+                 np.where(x < 1.2, 0.5 - 0.4*(x-0.5)/0.7, 
+                          0.1 + 0.4*(x-1.2)/0.8))
+    
+    # Initial conditions
+    rho = np.ones(nx) * 1.2
+    u = np.ones(nx) * 0.1
+    P = np.ones(nx) * 101325 * (1 + 10 * throttle_level) # Inlet pressure depends on throttle
+    T = np.ones(nx) * 300
+    Yf = np.ones(nx) * 0.1
+    
+    gamma = 1.4
+    R = 287.0
+    Cp = R * gamma / (gamma - 1)
+    Q_heat = 43e6 # Fuel heating value
+    
+    # Time stepping (simplified steady-state approach via pseudo-time)
+    dt = 1e-5
+    for _ in range(500):
+        # Primitive to Conservative
+        U1 = rho * A
+        U2 = rho * u * A
+        e_int = P / (rho * (gamma - 1))
+        U3 = rho * (e_int + 0.5 * u**2) * A
+        U4 = rho * Yf * A
+        
+        # Fluxes
+        F1 = rho * u * A
+        F2 = (rho * u**2 + P) * A
+        F3 = (U3 + P * A) * u
+        F4 = rho * u * Yf * A
+        
+        # Source terms (Combustion)
+        # Simple reaction rate based on T and Yf
+        om = 5.0 * throttle_level * rho * Yf * np.exp(-5000/T)
+        S1 = np.zeros(nx)
+        # S2: Pressure term for area change
+        S2 = np.zeros(nx)
+        S2[1:-1] = P[1:-1] * (A[2:] - A[:-2]) / (2*dx)
+        S3 = Q_heat * om * A
+        S4 = -om * A
+        
+        # Update (Central difference + damping)
+        def step(U, F, S):
+            Unew = np.copy(U)
+            Unew[1:-1] = U[1:-1] - dt/dx * (F[2:] - F[:-2])/2 + dt * S[1:-1]
+            return Unew
+            
+        U1 = step(U1, F1, S1)
+        U2 = step(U2, F2, S2)
+        U3 = step(U3, F3, S3)
+        U4 = step(U4, F4, S4)
+        
+        # Conservative to Primitive
+        rho = U1 / A
+        u = U2 / (rho * A)
+        Yf = np.clip(U4 / (rho * A), 0, 1)
+        e_total = U3 / (rho * A)
+        e_int = e_total - 0.5 * u**2
+        T = np.maximum(e_int * (gamma - 1) / R, 300)
+        P = rho * R * T
+    
+    mach = u / np.sqrt(gamma * R * T)
+    thrust = (rho[-1] * u[-1]**2 + P[-1]) * A[-1]
+    
+    return {
+        "x": x.tolist(),
+        "pressure": (P / 1e5).tolist(), # bar
+        "velocity": u.tolist(),
+        "temperature": T.tolist(),
+        "mach": mach.tolist(),
+        "area": A.tolist(),
+        "fuel_fraction": Yf.tolist(),
+        "thrust_kN": round(thrust / 1000, 2),
+        "exit_mach": round(float(mach[-1]), 2),
+        "chamber_temp": round(float(T[25]), 0),
+        "peak_pressure": round(float(np.max(P/1e5)), 2)
+    }
 
-def cf_convergents(coeffs):
-    ps,qs=[],[]
-    for i,a in enumerate(coeffs):
-        if i==0: ps.append(a); qs.append(1)
-        elif i==1: ps.append(a*ps[0]+1); qs.append(a)
-        else: ps.append(a*ps[-1]+ps[-2]); qs.append(a*qs[-1]+qs[-2])
-    return ps,qs
-
-@app.route("/api/cf", methods=["POST"])
-def cf_api():
-    d=request.json
-    constants={"π":np.pi,"φ":(1+np.sqrt(5))/2,"√2":np.sqrt(2),"e":np.e,
-               "√3":np.sqrt(3),"Ω (orbital)":2*np.pi}
-    result={}
-    for name,val in constants.items():
-        coeffs=cf_expand(val,14)
-        ps,qs=cf_convergents(coeffs)
-        convs=[{"n":i,"p":ps[i],"q":qs[i],"approx":round(ps[i]/qs[i],10),
-                "error":abs(ps[i]/qs[i]-val)} for i in range(len(ps))]
-        result[name]={"value":val,"coefficients":coeffs,"convergents":convs}
-    return jsonify(result)
+@app.route("/api/cfd", methods=["POST"])
+def cfd_api():
+    d = request.json
+    return jsonify(run_cfd_simulation(float(d.get("throttle", 0.5)), d.get("fuel", "RP1")))
 
 
 # ─────────────────────────────────────────────
