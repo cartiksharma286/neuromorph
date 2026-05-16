@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Space Combustion Physics — Advanced CFD Control</title>
+  <title>Space Combustion Physics — Unified Mission Control</title>
   <link rel="stylesheet" href="/static/css/style.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
@@ -14,6 +14,9 @@
     .legend-box { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; font-size: 0.75rem; color: var(--muted); }
     .legend-item { display: flex; align-items: center; gap: 6px; }
     .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+    .tag-green { background: rgba(0,255,170,0.15); color: var(--green); border: 1px solid var(--green); }
+    .tag-red { background: rgba(255,51,102,0.15); color: var(--red); border: 1px solid var(--red); }
   </style>
 </head>
 <body>
@@ -23,20 +26,20 @@
 <div class="app">
 <header>
   <div class="logo">
-    <div class="logo-icon">🔥</div>
+    <div class="logo-icon">🚀</div>
     <div>
       <h1>NEUROMORPH SPACE SYSTEMS</h1>
-      <p>High-Fidelity CFD &amp; Combustion Dynamics</p>
+      <p>Unified Aerospace Physics &amp; Combustion Dynamics</p>
     </div>
   </div>
-  <div class="mission-status"><div class="pulse-dot"></div>CORE SIMULATOR ONLINE</div>
+  <div class="mission-status"><div class="pulse-dot"></div>MISSION READY - ALL SYSTEMS NOMINAL</div>
   <div class="header-time" id="clock"></div>
 </header>
 
 <nav class="tabs">
-  <button class="tab-btn active" data-tab="tab-cfd">🌊 Advanced CFD Solver</button>
-  <button class="tab-btn" data-tab="tab-combustion">💥 Combustion PDE</button>
-  <button class="tab-btn" data-tab="tab-throttle">⚡ Throttle Opt</button>
+  <button class="tab-btn active" data-tab="tab-cfd">🌊 CFD Solver</button>
+  <button class="tab-btn" data-tab="tab-combustion">💥 Combustion</button>
+  <button class="tab-btn" data-tab="tab-throttle">⚡ Throttle</button>
   <button class="tab-btn" data-tab="tab-traj">🛸 Trajectory</button>
   <button class="tab-btn" data-tab="tab-payload">📦 Payload</button>
   <button class="tab-btn" data-tab="tab-finite">𝚽 Finite Math</button>
@@ -44,105 +47,150 @@
 
 <div class="panels">
 
-<!-- ══════════════════════════════════════════════════
-     ADVANCED CFD TAB
-════════════════════════════════════════════════════ -->
+<!-- 1. CFD TAB -->
 <div class="panel active" id="tab-cfd">
-  <div class="section-header">
-    <h2>Governing Equations &amp; Thermal Modeling</h2>
-    <p>1-D Navier-Stokes integration with Bartz Heat Transfer and Structural Wall Dynamics</p>
-  </div>
-
+  <div class="section-header"><h2>Advanced CFD Nozzle Solver</h2><p>Lax-Friedrichs NS integration with Bartz Heat Transfer Modeling</p></div>
   <div class="grid-2">
-    <div class="math-block">
-      <strong>GAS DYNAMICS (Euler/NS)</strong><br>
-      ∂(ρA)/∂t + ∂(ρuA)/∂x = 0<br>
-      ∂(ρuA)/∂t + ∂(ρu²A + PA)/∂x = P·dA/dx<br>
-      ∂(ρEA)/∂t + ∂(u(ρEA + PA))/∂x = Q·ω·A - q_wall·π·D
-    </div>
-    <div class="math-block">
-      <strong>HEAT TRANSFER (Bartz Eq)</strong><br>
-      h_g = [0.026 / D^0.2] * [μ^0.2·Cp / Pr^0.6] * [Pc / C*]^0.8 * [Dt / r]^0.1<br>
-      q_wall = h_g * (T_gas - T_wall)<br>
-      ∂T_wall/∂t = q_wall·π·D / (ρ_w·Cp_w·V_cell)
-    </div>
+    <div class="math-block"><strong>GAS DYNAMICS</strong><br>∂(ρA)/∂t + ∂(ρuA)/∂x = 0<br>∂(ρuA)/∂t + ∂(ρu²A + PA)/∂x = P·dA/dx</div>
+    <div class="math-block"><strong>THERMAL</strong><br>h_g = [0.026/D^0.2]·[μ^0.2·Cp/Pr^0.6]·[Pc/C*]^0.8<br>q_wall = h_g·(T_gas - T_wall)</div>
   </div>
-
   <div class="controls">
-    <div class="control-group">
-      <label>Throttle Thrust %</label>
-      <input id="inp-cfd-throttle" type="number" min="0.1" max="1.0" step="0.1" value="0.8"/>
-    </div>
-    <div class="control-group">
-      <label>Propellant Mix</label>
-      <select id="sel-cfd-fuel">
-        <option value="RP1">RP-1 / LOX</option>
-        <option value="H2">LH2 / LOX</option>
-      </select>
-    </div>
-    <button class="btn-run" id="btn-cfd">▶ Initialize CFD Sequence</button>
-    <div class="loading" id="ld-cfd"><div class="spin"></div>Iterating Navier-Stokes...</div>
+    <div class="control-group"><label>Throttle %</label><input id="inp-cfd-throttle" type="number" step="0.1" value="0.8"/></div>
+    <div class="control-group"><label>Propellant</label><select id="sel-cfd-fuel"><option value="RP1">RP-1 / LOX</option><option value="H2">LH2 / LOX</option></select></div>
+    <button class="btn-run" id="btn-cfd">Initialize CFD Sequence</button>
+    <div class="loading" id="ld-cfd"><div class="spin"></div>Iterating...</div>
   </div>
-
   <div class="kpi-grid">
     <div class="kpi blue"><div class="kpi-value" id="kpi-thrust">—</div><div class="kpi-label">Thrust (kN)</div></div>
     <div class="kpi green"><div class="kpi-value" id="kpi-mach">—</div><div class="kpi-label">Exit Mach</div></div>
     <div class="kpi orange"><div class="kpi-value" id="kpi-chamb-t">—</div><div class="kpi-label">Max Gas T (K)</div></div>
     <div class="kpi red"><div class="kpi-value" id="kpi-peak-q">—</div><div class="kpi-label">Peak q (MW/m²)</div></div>
-    <div class="kpi purple"><div class="kpi-value" id="kpi-heat-loss">—</div><div class="kpi-label">Heat Loss (kW)</div></div>
   </div>
-
   <div class="scroll-v">
     <div class="grid-2">
-      <div class="card">
-        <div class="card-title">Gas Dynamics: Pressure &amp; Mach</div>
-        <div class="legend-box">
-          <div class="legend-item"><div class="dot" style="background:#ff5a00"></div> Pressure</div>
-          <div class="legend-item"><div class="dot" style="background:#00c8ff"></div> Mach</div>
-        </div>
-        <div class="chart-wrap"><canvas id="chart-cfd-press"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Thermal: Gas vs Wall Temp</div>
-        <div class="legend-box">
-          <div class="legend-item"><div class="dot" style="background:#ff3366"></div> Gas T</div>
-          <div class="legend-item"><div class="dot" style="background:#9b5fff"></div> Wall T</div>
-        </div>
-        <div class="chart-wrap"><canvas id="chart-cfd-temp-gas-wall"></canvas></div>
-      </div>
+      <div class="card"><div class="card-title">Pressure &amp; Mach</div><div class="chart-wrap"><canvas id="chart-cfd-press"></canvas></div></div>
+      <div class="card"><div class="card-title">Gas vs Wall Temp</div><div class="chart-wrap"><canvas id="chart-cfd-temp-gas-wall"></canvas></div></div>
     </div>
-    
     <div class="grid-2" style="margin-top:20px">
-      <div class="card">
-        <div class="card-title">Heat Flux Profile (q_wall)</div>
-        <div class="chart-wrap"><canvas id="chart-cfd-q"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Chemical Species: Fuel Fraction</div>
-        <div class="chart-wrap"><canvas id="chart-cfd-fuel"></canvas></div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:20px">
-      <div class="card-title">Structural Stability Log</div>
-      <div class="matrix" id="cfd-log">System idle. Waiting for initialization...</div>
+      <div class="card"><div class="card-title">Heat Flux (q_wall)</div><div class="chart-wrap"><canvas id="chart-cfd-q"></canvas></div></div>
+      <div class="card"><div class="card-title">Fuel Fraction</div><div class="chart-wrap"><canvas id="chart-cfd-fuel"></canvas></div></div>
     </div>
   </div>
 </div>
 
-<!-- Other panels simplified as placeholders for this demo -->
+<!-- 2. COMBUSTION TAB -->
 <div class="panel" id="tab-combustion">
-  <div class="section-header"><h2>Combustion PDE Solver</h2><p>Laminar flame front dynamics</p></div>
-  <button class="btn-run" id="btn-combustion">▶ Run PDE</button>
-  <div class="kpi-grid"><div class="kpi orange"><div class="kpi-value" id="kpi-Tpeak">—</div><div class="kpi-label">Peak T</div></div></div>
-  <div class="chart-wrap"><canvas id="chart-temp"></canvas></div>
-  <div class="chart-wrap"><canvas id="chart-species"></canvas></div>
+  <div class="section-header"><h2>Combustion PDE Dynamics</h2><p>Arrhenius chemical kinetics and flame front transport</p></div>
+  <div class="controls">
+    <div class="control-group"><label>Fuel</label><select id="sel-fuel"><option value="H2-O2">H2-O2</option><option value="RP1-LOX">RP1-LOX</option><option value="CH4-Air">CH4-Air</option></select></div>
+    <div class="control-group"><label>Equivalence Ratio (φ)</label><input id="inp-phi" type="number" step="0.1" value="1.0"/></div>
+    <button class="btn-run" id="btn-combustion">Run PDE Solver</button>
+    <div class="loading" id="ld-combustion"><div class="spin"></div>Solving Arrhenius...</div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi orange"><div class="kpi-value" id="kpi-Tpeak">—</div><div class="kpi-label">Peak Temp (K)</div></div>
+    <div class="kpi blue"><div class="kpi-value" id="kpi-SL">—</div><div class="kpi-label">Flame Speed (m/s)</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-eta">—</div><div class="kpi-label">Efficiency (%)</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Temperature Gradient</div><div class="chart-wrap"><canvas id="chart-temp"></canvas></div></div>
+    <div class="card"><div class="card-title">Species Concentration</div><div class="chart-wrap"><canvas id="chart-species"></canvas></div></div>
+  </div>
 </div>
 
-<div class="panel" id="tab-throttle"><h2>Throttle Optimization</h2><p>Pontryagin minimum principle results.</p><button class="btn-run" onclick="alert('Simulation running...')">Run</button></div>
-<div class="panel" id="tab-traj"><h2>Trajectory Analysis</h2><p>Orbital insertion simulation.</p></div>
-<div class="panel" id="tab-payload"><h2>Payload Budget</h2><p>Tsiolkovsky mass fractions.</p></div>
-<div class="panel" id="tab-finite"><h2>Finite Math</h2><p>State-space dynamics linearisation.</p></div>
+<!-- 3. THROTTLE TAB -->
+<div class="panel" id="tab-throttle">
+  <div class="section-header"><h2>Optimal Throttle Control</h2><p>Pontryagin's Minimum Principle for Fuel-Optimal Trajectories</p></div>
+  <div class="controls">
+    <div class="control-group"><label>Specific Impulse (s)</label><input id="inp-Isp" type="number" value="450"/></div>
+    <div class="control-group"><label>Initial Mass (kg)</label><input id="inp-m0" type="number" value="100000"/></div>
+    <div class="control-group"><label>Mode</label><select id="sel-mode"><option value="fuel_optimal">Fuel Optimal</option><option value="time_optimal">Time Optimal</option></select></div>
+    <button class="btn-run" id="btn-throttle">Compute Control Law</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi gold"><div class="kpi-value" id="kpi-dv">—</div><div class="kpi-label">Ideal Δv (m/s)</div></div>
+    <div class="kpi blue"><div class="kpi-value" id="kpi-fc">—</div><div class="kpi-label">Fuel Consumed (t)</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-vf">—</div><div class="kpi-label">Final Velocity (m/s)</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Throttle Sequence</div><div class="chart-wrap"><canvas id="chart-throttle"></canvas></div></div>
+    <div class="card"><div class="card-title">Velocity &amp; Altitude</div><div class="chart-wrap"><canvas id="chart-vel"></canvas></div></div>
+  </div>
+</div>
+
+<!-- 4. TRAJECTORY TAB -->
+<div class="panel" id="tab-traj">
+  <div class="section-header"><h2>Gravity Turn Trajectory</h2><p>2-D orbital insertion dynamics with atmospheric drag</p></div>
+  <div class="controls">
+    <div class="control-group">
+      <label>Vehicle Configuration</label>
+      <select id="sel-vehicle">
+        <option value="Falcon9">Falcon 9 (Block 5)</option>
+        <option value="Starship">Starship / Super Heavy</option>
+        <option value="SaturnV">Saturn V (Apollo)</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Payload Mass (kg)</label>
+      <input id="inp-payload" type="number" value="5000" step="500"/>
+    </div>
+    <div class="control-group">
+      <label>Target Orbit</label>
+      <select id="sel-orbit">
+        <option value="LEO">LEO (Circular 200km)</option>
+        <option value="GTO">GTO (Elliptical)</option>
+      </select>
+    </div>
+    <button class="btn-run" id="btn-traj">Launch HPC Simulation</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi blue"><div class="kpi-value" id="kpi-alt-traj">—</div><div class="kpi-label">Apogee (km)</div></div>
+    <div class="kpi orange"><div class="kpi-value" id="kpi-dvach">—</div><div class="kpi-label">Δv Achieved (m/s)</div></div>
+    <div class="kpi red"><div class="kpi-value" id="kpi-maxq">—</div><div class="kpi-label">Max Q (kPa)</div></div>
+    <div class="kpi" id="orbit-status">WAITING...</div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Flight Path (X vs Z)</div><div class="chart-wrap"><canvas id="chart-traj"></canvas></div></div>
+    <div class="card"><div class="card-title">Orbital Velocity</div><div class="chart-wrap"><canvas id="chart-speed"></canvas></div></div>
+  </div>
+</div>
+
+<!-- 5. PAYLOAD TAB -->
+<div class="panel" id="tab-payload">
+  <div class="section-header"><h2>Payload &amp; Mass Budget</h2><p>Multi-stage Tsiolkovsky staging and delta-v analysis</p></div>
+  <div class="controls">
+    <div class="control-group"><label>Stages</label><input id="inp-stages" type="number" value="2"/></div>
+    <div class="control-group"><label>Payload Mass (kg)</label><input id="inp-mp" type="number" value="20000"/></div>
+    <button class="btn-run" id="btn-payload">Calculate Staging</button>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Mass Distribution</div>
+      <div class="chart-wrap" style="height:300px"><canvas id="chart-pie"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Stage delta-v Budget</div>
+      <div id="stage-dvs" class="matrix" style="height:300px; overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. FINITE MATH TAB -->
+<div class="panel" id="tab-finite">
+  <div class="section-header"><h2>State-Space Stability Analysis</h2><p>Linearized dynamics and eigenvalues for control feedback</p></div>
+  <div class="controls">
+    <button class="btn-run" id="btn-finite">Run Eigen-Analysis</button>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">System Matrix A</div><div class="matrix" id="mat-A"></div></div>
+    <div class="card">
+      <div class="card-title">Eigenvalues &amp; Stability</div>
+      <div class="matrix" id="eig-display"></div>
+      <div id="stab-tag" style="margin-top:10px"></div>
+    </div>
+  </div>
+  <div id="phi-matrices" style="margin-top:20px"></div>
+</div>
 
 </div>
 </div>
