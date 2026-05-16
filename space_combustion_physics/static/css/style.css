@@ -179,6 +179,19 @@ header{
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
+.scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll-container::-webkit-scrollbar-track {
+  background: rgba(0, 200, 255, 0.05);
+  border-radius: 4px;
+}
+.scroll-container::-webkit-scrollbar-thumb {
+  background: var(--blue);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 200, 255, 0.5);
+}
+
 @media(max-width:900px){
   .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
   header{padding:14px 18px}
