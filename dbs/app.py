@@ -67,44 +67,47 @@ def pareto_frontier():
     import numpy as np
     data = request.json or {}
     lambda_val = float(data.get('lambda', 0.5))
-    
+    prompt = data.get('prompt', 'baseline')
+    dbs_amplitude = float(data.get('dbs_amplitude', 30))
+    base_decline_rate = float(data.get('base_decline_rate', 0.05))
+
     # Simulate Combinatorial Game Theory Pareto frontier
     # Player 1: Striatal Activation
     # Player 2: Serotonin Release (SR)
     # Using continuous fraction bounds and finite math equilibria
     # Striatum(x) = (1 - exp(-x/lambda))
     # SR(y) = (1 - x^2) + epsilon*lambda
-    
+
     # S(t) = S0 * exp(-beta * t) + Integral(DBS_yield * Hebbian * dt)
     time_steps = np.linspace(0, 60, 60) # 60 months (5 years)
-    
+
     # Gen AI evolution factor
     ai_factor = 1.0
     if 'plasticity' in prompt.lower():
         ai_factor = 1.5
     elif 'aggressive' in prompt.lower():
         ai_factor = 0.8
-        
+
     cognitive_scores = []
     clinical_distributions = []
-    
+
     S0 = 30.0 # MMSE max score
     for t in time_steps:
         # Finite math equation for temporal paradigm
-        decay = base_decline_rate * (1 + 0.1 * np.sin(t)) 
+        decay = base_decline_rate * (1 + 0.1 * np.sin(t))
         dbs_effect = (dbs_amplitude * 0.4) * ai_factor * (1 - np.exp(-t/12.0))
-        
+
         score_t = S0 * np.exp(-decay * (t/12.0)) + dbs_effect
         score_t = max(0, min(30, score_t))
         cognitive_scores.append(round(score_t, 2))
-        
+
         # Clinical Statistical Distribution at time t
         std_dev = max(1.0, 5.0 - (dbs_amplitude * 0.5)) + (t/24.0)
         clinical_distributions.append({
             "mean": round(score_t, 2),
             "std": round(std_dev, 2)
         })
-        
+
     return jsonify({
         "time_months": time_steps.tolist(),
         "cognitive_trajectory": cognitive_scores,
