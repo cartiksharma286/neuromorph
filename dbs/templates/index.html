@@ -564,13 +564,13 @@
                 </div>
             </div>
 
-            <div id="dementia-main" class="tab-content" style="height: 100%; overflow-y: auto;">
-                <div class="glass-panel" style="height: 100%; display: flex; flex-direction: column;">
+
+            <div id="dementia-main" class="tab-content" style="height: 100%; max-height: 90vh; overflow-y: auto;">
+                <div class="glass-panel" style="min-height: 500px; display: flex; flex-direction: column;">
                     <h2>Optimal Protocol & Dementia Progress Visualization (60 Months)</h2>
-                    <div style="flex-grow: 1; position: relative;">
+                    <div style="flex-grow: 1; position: relative; min-height: 350px;">
                         <!-- Using Chart.js script injection dynamically via JS -->
                         <canvas id="dementia-chart" style="width:100%; height:100%; max-height: 350px;"></canvas>
-                        
                         <div style="margin-top: 20px; display: grid; gap: 15px; grid-template-columns: 1fr 1fr; width: 100%;">
                             <div class="stat-card" style="background: rgba(0, 255, 204, 0.1); border: 1px solid rgba(0, 255, 204, 0.3);">
                                 <div class="stat-label">Generative AI Insight</div>
@@ -580,6 +580,16 @@
                                 <div class="stat-label">Stochastic Progression Constraint</div>
                                 <div id="dementia-variance" style="font-size: 12px; color: #ff007f; margin-top: 5px; line-height: 1.4;">--</div>
                             </div>
+                        </div>
+                        <div id="dementia-characteristics" style="margin-top: 24px; padding: 16px; background: rgba(0,0,0,0.08); border-radius: 8px; border: 1px solid #00ffcc; max-height: 200px; overflow-y: auto;">
+                            <h3 style="color:#00ffcc; margin-bottom: 8px;">Key Characteristics</h3>
+                            <ul style="font-size: 13px; color: #fff; line-height: 1.5;">
+                                <li>Non-linear cognitive decline and recovery trajectories visualized over 60 months.</li>
+                                <li>Protocol parameters: decline rate (η), stimulation amplitude, and generative AI prompt.</li>
+                                <li>Stochastic bounds (±Std Dev) reflect clinical variability and patient-specific response.</li>
+                                <li>Insight and variance metrics update dynamically with protocol optimization.</li>
+                                <li>Plots are interactive and scrollable for detailed review.</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
