@@ -47,10 +47,25 @@
             <button class="tab-btn" onclick="switchTab('india-valuation', event)">India Projections (10 YR)</button>
             <button class="tab-btn" onclick="switchTab('america-valuation', event)">America Projections (10 YR)</button>
             <!-- Removed Staging Protocol Tab -->
+            <button class="tab-btn" onclick="switchTab('fas-cure', event)">FAS Cure QML Opt</button>
+                        <div id="fas-cure-sidebar" class="tab-content">
+                            <div class="glass-panel">
+                                <h2>FAS Cure: Quantum Machine Learning Optimization</h2>
+                                <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                                    Quantum Machine Learning-driven optimization for Fetal Alcohol Syndrome (FAS) cure protocols.<br>
+                                    Simulate optimal neurodevelopmental recovery, executive function, and adaptive care using QML algorithms.<br><br>
+                                    <b>Key Features:</b><br>
+                                    &bull; QML-optimized stimulation parameters<br>
+                                    &bull; Executive function and adaptive behavior projections<br>
+                                    &bull; Closed-loop neuroplasticity and cortical modulation
+                                </p>
+                                <button class="btn-primary" id="btn-generate-fas-cure" onclick="simulateFASCure()" style="margin-top: 10px;">Run QML FAS Cure</button>
+                            </div>
+                        </div>
             <button class="tab-btn" onclick="switchTab('fas', event)">FAS Neurosymbolic</button>
             <button class="tab-btn" onclick="switchTab('hd-cure', event)">HD Stage-Gated Cure</button>
-            <button class="tab-btn" onclick="switchTab('fasd-cure', event)">FASD QML Cure</button>
-            <button class="tab-btn" onclick="switchTab('fasd-statopt', event)">FASD StatOpt Cure</button>
+            <!-- <button class="tab-btn" onclick="switchTab('fasd-cure', event)">FASD QML Cure</button> -->
+            <!-- <button class="tab-btn" onclick="switchTab('fasd-statopt', event)">FASD StatOpt Cure</button> -->
             <button class="tab-btn" onclick="switchTab('veteran-ptsd-dbs', event)">DBS for Veteran Care PTSD</button>
             <button class="tab-btn" onclick="switchTab('canada-veteran', event)">Canadian Veteran PTSD</button>
         </nav>
@@ -82,54 +97,8 @@
         <!-- Veteran Care PTSD DBS tab removed -->
                             <!-- Veteran Care PTSD DBS sidebar removed -->
                             <!-- Veteran Care PTSD DBS main content removed -->
-                    <div id="fasd-statopt-sidebar" class="tab-content">
-                        <div class="glass-panel">
-                            <h2>FASD DBS StatOpt Protocol</h2>
-                            <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
-                                Statistical Parametric Optimization for Deep Brain Stimulation in Fetal Alcohol Syndrome repair.<br>
-                                Simulate optimal DBS parameters using statistical models for neurodevelopmental recovery and adaptive care.
-                                <br><br>
-                                <b>Key Features:</b><br>
-                                &bull; Statistical optimization of DBS parameters<br>
-                                &bull; Recovery and efficacy projections<br>
-                                &bull; Protocol stage gating and parameteric plots
-                            </p>
-                            <button class="btn-primary" id="btn-generate-fasd-statopt" onclick="simulateFASDStatOpt()" style="margin-top: 10px;">Run StatOpt Simulation</button>
-                        </div>
-                    </div>
-                <div id="fasd-statopt" class="tab-content main-content" style="display:none;">
-                    <div class="glass-panel" style="margin-bottom: 10px;">
-                        <h2>FASD Cure: Statistical Parametric Optimization</h2>
-                        <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
-                            <div>
-                                <div style="font-size: 13px; color: #a0e7ff;">Current Stage</div>
-                                <div id="fasd-statopt-stage" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
-                            </div>
-                            <div>
-                                <div style="font-size: 13px; color: #a0e7ff;">Efficacy</div>
-                                <div id="fasd-statopt-efficacy" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
-                            </div>
-                            <div>
-                                <div style="font-size: 13px; color: #a0e7ff;">Timeline</div>
-                                <div id="fasd-statopt-timeline" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="glass-panel" style="margin-bottom: 10px; max-height: 220px; overflow-y: auto;">
-                        <h3 style="margin-bottom: 8px;">Protocol Stages</h3>
-                        <div style="max-height: 160px; overflow-y: auto;">
-                            <ul id="fasd-statopt-stages-list" style="font-size: 13px; color: #fff; padding-left: 18px; margin: 0;"></ul>
-                        </div>
-                    </div>
-                    <div class="glass-panel" style="margin-bottom: 10px;">
-                        <h3>Statistical Parameteric Optimization Plot</h3>
-                        <canvas id="fasdStatOptChart" height="180"></canvas>
-                    </div>
-                    <div class="glass-panel">
-                        <h3>DBS Parameter Distribution</h3>
-                        <canvas id="fasdStatOptParamChart" height="120"></canvas>
-                    </div>
-                </div
+                    <!-- FASD StatOpt tab removed -->
+                <!-- FASD StatOpt main content removed -->
         </nav>
 
         <aside class="sidebar-left">
@@ -144,21 +113,7 @@
                 </div>
             </div>
 
-            <div id="fasd-cure-sidebar" class="tab-content">
-                <div class="glass-panel">
-                    <h2>FASD QML DBS Protocol</h2>
-                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
-                        Quantum Machine Learning-driven Deep Brain Stimulation for Fetal Alcohol Syndrome repair.<br>
-                        Simulate optimal neurodevelopmental recovery, fronto-striatal circuit modulation, and adaptive interventional care.
-                        <br><br>
-                        <b>Key Features:</b><br>
-                        &bull; QML-optimized stimulation parameters<br>
-                        &bull; Executive function and adaptive behavior projections<br>
-                        &bull; Closed-loop neuroplasticity and cortical modulation
-                    </p>
-                    <button class="btn-primary" id="btn-generate-fasd-cure" onclick="simulateFASDCure()" style="margin-top: 10px;">Run QML FASD Simulation</button>
-                </div>
-            </div>
+            <!-- FASD QML Cure tab removed -->
 
             <div id="protocols-sidebar" class="tab-content">
                 <div class="glass-panel">
