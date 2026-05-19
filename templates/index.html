@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEUROMORPH | FASD DBS Treatment Suite</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- MathJax for rendering equations -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* CSS Variables adapted from parent styles.css */
+        :root {
+            --bg-primary: #07070c;
+            --bg-secondary: #0f0f16;
+            --bg-tertiary: #171722;
+            --bg-elevated: #1e1e2d;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-cyan: #00f2ff;
+            --accent-success: #10b981;
+            --accent-danger: #ef4444;
+            --accent-warning: #f59e0b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --text-muted: #627185;
+            --glass-bg: rgba(15, 15, 22, 0.7);
+            --glass-border: rgba(99, 102, 241, 0.15);
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --font-primary: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.35);
+            --shadow-glow-cyan: 0 0 25px rgba(0, 242, 255, 0.35);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
+                              radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
+        }
+
+        /* App Layout */
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1.25rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            font-size: 2.25rem;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        .logo-text h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .status-pill {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--accent-success);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .status-pill i {
+            font-size: 0.65rem;
+        }
+
+        .fidelity-pill {
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            color: var(--accent-cyan);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        /* Navigation Tabs */
+        .tab-nav {
+            max-width: 1600px;
+            width: 100%;
+            margin: 1.5rem auto 0 auto;
+            padding: 0 2rem;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            padding: 0.35rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--glass-border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.85rem 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-tertiary);
+            font-family: var(--font-primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* Main Workspace Content */
+        main {
+            flex: 1;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.5rem 2rem 3rem 2rem;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Split Workspace Layout */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        /* Panels styling */
+        .control-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .visualization-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            min-height: 580px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 0.85rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .panel-header h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .panel-header h2 i {
+            color: var(--accent-cyan);
+        }
+
+        .panel-header .badge {
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            color: var(--accent-primary);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.825rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group label span.val {
+            color: var(--accent-cyan);
+            font-family: var(--font-mono);
+        }
+
+        .input-select {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-primary);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            font-weight: 500;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .input-select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .slider-control {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .slider-control::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-primary));
+            box-shadow: 0 0 8px rgba(0, 242, 255, 0.4);
+            transition: transform 0.1s;
+        }
+
+        .slider-control::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            border: none;
+            color: white;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow-glow);
+            transition: all 0.25s;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            margin-top: 1rem;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-action:active {
+            transform: translateY(0);
+        }
+
+        .checkbox-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            background: var(--bg-tertiary);
+            padding: 0.85rem;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            accent-color: var(--accent-cyan);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* Numerical Readouts */
+        .readout-card {
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .readout-card h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-tertiary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .readout-card .value {
+            font-size: 1.5rem;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+        }
+
+        /* Canvas visualizers */
+        .canvas-container {
+            position: relative;
+            background: var(--bg-primary);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            flex: 1;
+            min-height: 400px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* CF Tree visualizer container */
+        .cf-tree-container {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-family: var(--font-mono);
+        }
+
+        .cf-formula-box {
+            font-size: 1.4rem;
+            color: var(--accent-cyan);
+            padding: 1rem;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        .convergents-table-wrapper {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: var(--radius-md);
+            margin-top: 1rem;
+        }
+
+        .convergents-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+
+        .convergents-table th {
+            background: var(--bg-tertiary);
+            padding: 0.5rem 0.75rem;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+        }
+
+        .convergents-table td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-family: var(--font-mono);
+        }
+
+        .convergents-table tr:hover td {
+            background: rgba(255,255,255,0.02);
+            color: var(--accent-cyan);
+        }
+
+        /* Cortical Node Info overlay */
+        .node-overlay {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(15, 15, 22, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            max-width: 300px;
+            pointer-events: none;
+            display: none;
+            z-index: 10;
+        }
+
+        .node-overlay h4 {
+            color: var(--accent-cyan);
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .node-overlay p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Post op metrics grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent-primary);
+        }
+
+        .metric-card.improved::before {
+            background: var(--accent-cyan);
+        }
+
+        .metric-card .title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-card .values {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .metric-card .val-pre {
+            font-size: 1rem;
+            color: var(--text-muted);
+            text-decoration: line-through;
+            font-family: var(--font-mono);
+        }
+
+        .metric-card .val-post {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            font-family: var(--font-mono);
+        }
+
+        .metric-card .bar-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .metric-card .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-cyan));
+            border-radius: 2px;
+            width: 0%;
+            transition: width 1s ease-out;
+        }
+
+        /* Post-op Clinical Report Card */
+        .report-card {
+            background: rgba(99, 102, 241, 0.04);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .report-card h3 {
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .report-card p {
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: auto;
+        }
+
+        footer p a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        /* Loading indicators */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(7, 7, 12, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 100;
+            display: none;
+        }
+
+        .spinner {
+            width: 45px;
+            height: 45px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo-section">
+                <i class="fa-solid fa-brain logo-icon"></i>
+                <div class="logo-text">
+                    <h1>NEUROMORPH</h1>
+                    <p>FASD DBS Computational Treatment Suite</p>
+                </div>
+            </div>
+            <div class="header-status">
+                <div class="status-pill">
+                    <i class="fa-solid fa-circle"></i>
+                    <span>DBS ACTIVE</span>
+                </div>
+                <div class="fidelity-pill">
+                    <span>Q-FIDELITY: 99.84%</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tab bar navigation -->
+    <nav class="tab-nav">
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('cf')">
+                <i class="fa-solid fa-calculator"></i> Continued Fractions
+            </button>
+            <button class="tab-btn" onclick="switchTab('cortical')">
+                <i class="fa-solid fa-chart-line"></i> Cortical Dynamics
+            </button>
+            <button class="tab-btn" onclick="switchTab('bem')">
+                <i class="fa-solid fa-bolt"></i> BEM Volume Fields
+            </button>
+            <button class="tab-btn" onclick="switchTab('feynman')">
+                <i class="fa-solid fa-route"></i> Axonal Pathways
+            </button>
+            <button class="tab-btn" onclick="switchTab('postop')">
+                <i class="fa-solid fa-heart-pulse"></i> Attractor Geodesics
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Workspace -->
+    <main>
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <p style="font-weight: 600; color: var(--accent-cyan); font-size: 0.95rem; letter-spacing: 0.5px;">RUNNING COMPUTATIONAL MODEL...</p>
+        </div>
+
+        <!-- 1. Continued Fraction Tab -->
+        <div id="cf" class="tab-content active">
+            <div class="split-layout">
+                <!-- Controls -->
+                <div class="control-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-sliders"></i> CF Tuning</h2>
+                        <span class="badge">RESONANCE</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cf-target">Target Irrational Ratio
+                            <span class="val" id="cf-target-lbl">1.61803 (Golden Ratio)</span>
+                        </label>
+                        <select id="cf-target" class="input-select" onchange="updateCFTargetPreset(this.value)">
+                            <option value="1.6180339887">Golden Ratio (φ = 1.6180339887)</option>
+                            <option value="2.7182818284">Euler's Number (e = 2.7182818284)</option>
+                            <option value="1.4142135623">Pythagoras' Constant (√2 = 1.4142135623)</option>
+                            <option value="3.1415926535">Archimedes' Constant (π = 3.1415926535)</option>
+                            <option value="2.4142135623">Silver Ratio (1+√2 = 2.4142135623)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cf-base-freq">Base DBS Frequency
+                            <span class="val" id="cf-base-freq-lbl">130 Hz</span>
+                        </label>
+                        <input type="range" id="cf-base-freq" class="slider-control" min="50" max="250" value="130" step="5" oninput="document.getElementById('cf-base-freq-lbl').innerText = this.value + ' Hz'">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cf-depth">Expansion Depth
+                            <span class="val" id="cf-depth-lbl">8</span>
+                        </label>
+                        <input type="range" id="cf-depth" class="slider-control" min="1" max="10" value="8" step="1" oninput="document.getElementById('cf-depth-lbl').innerText = this.value">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cf-amplitude">Pulse Amplitude
+                            <span class="val" id="cf-amplitude-lbl">3.0 V</span>
+                        </label>
+                        <input type="range" id="cf-amplitude" class="slider-control" min="0.5" max="5.0" value="3.0" step="0.1" oninput="document.getElementById('cf-amplitude-lbl').innerText = this.value + ' V'">
+                    </div>
+
+                    <button class="btn-action" onclick="runCFModel()">
+                        <i class="fa-solid fa-play"></i> COMPUTE CF RESONANCE
+                    </button>
+
+                    <div class="readout-card">
+                        <h3><i class="fa-solid fa-wave-square"></i> Modulated Pulse Period</h3>
+                        <div class="value" id="cf-period-readout">7.69 ms</div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div class="visualization-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-diagram-project"></i> Continued Fraction Expansion Tree</h2>
+                        <span class="badge">MATH_FORMULA</span>
+                    </div>
+
+                    <!-- LaTeX Continued Fraction Tree Display -->
+                    <div class="cf-tree-container">
+                        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.5rem;">Analytical Representation:</div>
+                        <div class="cf-formula-box" id="cfFormulaBox">
+                            <!-- Rendered by MathJax -->
+                            \[ 1 + \cfrac{1}{1 + \cfrac{1}{1 + \cfrac{1}{1 + \ddots}}} \]
+                        </div>
+                    </div>
+
+                    <div class="canvas-container">
+                        <canvas id="cfPulseCanvas"></canvas>
+                    </div>
+
+                    <div class="convergents-table-wrapper">
+                        <table class="convergents-table" id="convergentsTable">
+                            <thead>
+                                <tr>
+                                    <th>Term (k)</th>
+                                    <th>Coeff (a_k)</th>
+                                    <th>Fraction (p/q)</th>
+                                    <th>Decimal Value</th>
+                                    <th>Absolute Error</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filled by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Cortical Dynamics Tab -->
+        <div id="cortical" class="tab-content">
+            <div class="split-layout">
+                <!-- Controls -->
+                <div class="control-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-brain"></i> Synaptic Model</h2>
+                        <span class="badge">CORTEX</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cortex-target">DBS Target Placement</label>
+                        <select id="cortex-target" class="input-select">
+                            <option value="Nucleus Accumbens (NAc)">Nucleus Accumbens (NAc) - Reward/Hyperactivity</option>
+                            <option value="Anterior Thalamic Nucleus (ANT)">Anterior Thalamic Nucleus (ANT) - Sensory Hub</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cortex-plasticity">Neural Plasticity Rate (α)
+                            <span class="val" id="cortex-plasticity-lbl">0.5</span>
+                        </label>
+                        <input type="range" id="cortex-plasticity" class="slider-control" min="0.1" max="1.0" value="0.5" step="0.05" oninput="document.getElementById('cortex-plasticity-lbl').innerText = this.value">
+                    </div>
+
+                    <button class="btn-action" onclick="runCorticalModel()">
+                        <i class="fa-solid fa-play"></i> SIMULATE DYNAMICS
+                    </button>
+
+                    <div class="readout-card">
+                        <h3><i class="fa-solid fa-network-wired"></i> Synaptic Coupling Recovery</h3>
+                        <div class="value" id="cortex-coupling-readout">+64.8%</div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div class="visualization-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-network-wired"></i> Sagittal Functional Connectivity Manifold</h2>
+                        <span class="badge" id="cortex-phase-indicator">PRE-STIMULATION</span>
+                    </div>
+
+                    <div class="canvas-container">
+                        <div class="node-overlay" id="nodeOverlay">
+                            <h4 id="overlayNodeName">Dorsolateral PFC</h4>
+                            <p id="overlayNodeFunc">Executive Function & Memory</p>
+                            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.7rem; font-family: var(--font-mono)">
+                                <span>Pre-op Act: <span id="overlayNodePre" style="color: var(--accent-danger)">32%</span></span>
+                                <span>Post-op Act: <span id="overlayNodePost" style="color: var(--accent-cyan)">88%</span></span>
+                            </div>
+                        </div>
+                        <canvas id="cortexCanvas"></canvas>
+                    </div>
+
+                    <div class="canvas-container" style="min-height: 250px;">
+                        <canvas id="cortexOscillationsCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. BEM Volume Fields Tab -->
+        <div id="bem" class="tab-content">
+            <div class="split-layout">
+                <!-- Controls -->
+                <div class="control-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-bolt"></i> BEM Electrostatics</h2>
+                        <span class="badge">HEAD MODEL</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bem-voltage">Stimulation Potential
+                            <span class="val" id="bem-voltage-lbl">3.0 V</span>
+                        </label>
+                        <input type="range" id="bem-voltage" class="slider-control" min="0.5" max="5.0" value="3.0" step="0.1" oninput="document.getElementById('bem-voltage-lbl').innerText = this.value + ' V'">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Active Electrode Contacts</label>
+                        <div class="checkbox-container">
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="contact-0" checked> Contact 0 (Proximal)
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="contact-1" checked> Contact 1
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="contact-2"> Contact 2
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="contact-3"> Contact 3 (Distal)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bem-mode">Visualization Render Mode</label>
+                        <select id="bem-mode" class="input-select" onchange="drawBEMCanvas()">
+                            <option value="potential">Electrostatic Potential Field (V)</option>
+                            <option value="field">Electric Field Vector Magnitude (E)</option>
+                            <option value="activating">Axonal Activating Function (d²V/dy²)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn-action" onclick="runBEMModel()">
+                        <i class="fa-solid fa-play"></i> COMPUTE FIELD SOLVER
+                    </button>
+
+                    <div class="readout-card">
+                        <h3><i class="fa-solid fa-expand"></i> Direct Volume Activation</h3>
+                        <div class="value" id="bem-volume-readout">4.28 cm³</div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div class="visualization-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-square-poll-vertical"></i> Multi-Layered Tissue Field Rendering</h2>
+                        <span class="badge">FINITE ELEMENT / BEM</span>
+                    </div>
+
+                    <div class="canvas-container">
+                        <canvas id="bemCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Axonal Pathways Tab -->
+        <div id="feynman" class="tab-content">
+            <div class="split-layout">
+                <!-- Controls -->
+                <div class="control-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-route"></i> Path Integrals</h2>
+                        <span class="badge">FEYNMAN</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="feynman-dispersion">Path Dispersion (Quantum Noise)
+                            <span class="val" id="feynman-dispersion-lbl">1.0</span>
+                        </label>
+                        <input type="range" id="feynman-dispersion" class="slider-control" min="0.2" max="2.0" value="1.0" step="0.1" oninput="document.getElementById('feynman-dispersion-lbl').innerText = this.value">
+                    </div>
+
+                    <button class="btn-action" onclick="runFeynmanModel()">
+                        <i class="fa-solid fa-play"></i> CALCULATE PROPAGATOR
+                    </button>
+
+                    <div class="readout-card">
+                        <h3><i class="fa-solid fa-circle-nodes"></i> Axonal Coherence Score</h3>
+                        <div class="value" id="feynman-coherence-readout">92.4%</div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div class="visualization-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-chart-line"></i> Axonal Path-Integral Trajectories (Pre-Op vs Post-Op)</h2>
+                        <span class="badge">STOCHASTIC BRIDGES</span>
+                    </div>
+
+                    <div class="canvas-container">
+                        <canvas id="feynmanCanvas"></canvas>
+                    </div>
+
+                    <div class="canvas-container" style="min-height: 200px;">
+                        <canvas id="feynmanPropagatorCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Attractor Geodesics Tab -->
+        <div id="postop" class="tab-content">
+            <div class="split-layout">
+                <!-- Controls -->
+                <div class="control-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-shield-halved"></i> Attractor Trajectory</h2>
+                        <span class="badge">VALIDATION</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="postop-compliance">Patient Protocol Compliance
+                            <span class="val" id="postop-compliance-lbl">95%</span>
+                        </label>
+                        <input type="range" id="postop-compliance" class="slider-control" min="50" max="100" value="95" step="1" oninput="document.getElementById('postop-compliance-lbl').innerText = this.value + '%'">
+                    </div>
+
+                    <button class="btn-action" onclick="runPostopModel()">
+                        <i class="fa-solid fa-rotate"></i> MAP ATTRACTOR TRAJECTORY
+                    </button>
+
+                    <div class="readout-card">
+                        <h3><i class="fa-solid fa-hourglass-half"></i> Healing Rate Forecast</h3>
+                        <div class="value" id="postop-healing-readout">2.4x Speed</div>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div class="visualization-panel">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-project-diagram"></i> 3D Clinical Neural Attractor Manifold Geodesic</h2>
+                        <span class="badge">LORENZ TO CYCLE TRANSITION</span>
+                    </div>
+
+                    <div class="canvas-container">
+                        <canvas id="postopCanvas"></canvas>
+                    </div>
+
+                    <div class="metrics-grid" id="postopMetricsGrid">
+                        <!-- Metric Cards filled by JS -->
+                    </div>
+
+                    <div class="report-card">
+                        <h3><i class="fa-solid fa-file-medical"></i> nature-preprint clinical validation report</h3>
+                        <p id="postopReportText">Click 'Map Attractor Trajectory' to compute clinical recovery indices...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 NEUROMORPH Systems | Stage-Gated Deep Brain Stimulation (DBS) & Continued Fraction Bio-Resonance.</p>
+    </footer>
+</div>
+
+<script>
+    // --- Global State ---
+    let modelData = {
+        cf: null,
+        cortical: null,
+        bem: null,
+        feynman: null,
+        postop: null
+    };
+
+    // --- Tab Switching Logic ---
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        // Activate current tab button
+        const clickedBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.getAttribute('onclick').includes(tabId));
+        if (clickedBtn) clickedBtn.classList.add('active');
+        
+        document.getElementById(tabId).classList.add('active');
+        
+        // Trigger specific resize or redraw if necessary
+        setTimeout(() => {
+            if (tabId === 'cf' && modelData.cf) drawCFPulseTrain();
+            if (tabId === 'cortical' && modelData.cortical) drawCorticalManifold();
+            if (tabId === 'bem' && modelData.bem) drawBEMCanvas();
+            if (tabId === 'feynman' && modelData.feynman) drawFeynmanCanvas();
+            if (tabId === 'postop' && modelData.postop) drawPostopCanvas();
+        }, 100);
+    }
+
+    function showLoading(show) {
+        document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+    }
+
+    function updateCFTargetPreset(presetVal) {
+        let label = "Target Ratio";
+        if (presetVal.startsWith("1.61803")) label = "1.61803 (Golden Ratio)";
+        else if (presetVal.startsWith("2.71828")) label = "2.71828 (Euler's Number)";
+        else if (presetVal.startsWith("1.41421")) label = "1.41421 (Pythagoras' Constant)";
+        else if (presetVal.startsWith("3.14159")) label = "3.14159 (Archimedes' Constant)";
+        else if (presetVal.startsWith("2.41421")) label = "2.41421 (Silver Ratio)";
+        
+        document.getElementById('cf-target-lbl').innerText = label;
+    }
+
+    // --- 1. Continued Fractions API Call ---
+    function runCFModel() {
+        showLoading(true);
+        const requestPayload = {
+            target_ratio: parseFloat(document.getElementById('cf-target').value),
+            base_freq: parseFloat(document.getElementById('cf-base-freq').value),
+            depth: parseInt(document.getElementById('cf-depth').value),
+            amplitude: parseFloat(document.getElementById('cf-amplitude').value)
+        };
+
+        fetch('/api/fas-cf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestPayload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            showLoading(false);
+            if (data.success) {
+                modelData.cf = data;
+                
+                // Update MathJax Formula
+                const formulaBox = document.getElementById('cfFormulaBox');
+                formulaBox.innerHTML = `\\[ ${data.latex_formula} \\]`;
+                if (window.MathJax) {
+                    MathJax.typesetPromise([formulaBox]);
+                }
+                
+                // Update Period Readout
+                const T0_ms = (1000.0 / requestPayload.base_freq).toFixed(2);
+                document.getElementById('cf-period-readout').innerText = `${T0_ms} ms`;
+
+                // Update Table
+                const tableBody = document.querySelector('#convergentsTable tbody');
+                tableBody.innerHTML = '';
+                data.convergents.forEach((conv, index) => {
+                    const errorObj = data.errors.find(e => e.k === conv.k);
+                    const errorVal = errorObj ? errorObj.error.toExponential(4) : "0";
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${conv.k}</td>
+                        <td style="color: var(--accent-secondary); font-weight:700;">${conv.a}</td>
+                        <td>${conv.p} / ${conv.q}</td>
+                        <td style="color: var(--accent-cyan);">${conv.value.toFixed(8)}</td>
+                        <td style="color: var(--accent-danger);">${errorVal}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                // Plot Canvas Pulse Train
+                drawCFPulseTrain();
+            }
+        })
+        .catch(err => {
+            showLoading(false);
+            console.error("CF execution error:", err);
+            alert("Error in computing continued fractions model.");
+        });
+    }
+
+    function drawCFPulseTrain() {
+        const canvas = document.getElementById('cfPulseCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        // Match canvas dimensions to parent element
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight || 400;
+        
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        
+        const pt = modelData.cf.pulse_train;
+        const t = pt.t;
+        const V = pt.V;
+        
+        // Draw grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 10; i++) {
+            const x = (i / 10) * w;
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+            ctx.stroke();
+            
+            const y = (i / 10) * h;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+        }
+
+        // Draw axis text
+        ctx.fillStyle = 'var(--text-muted)';
+        ctx.font = '9px var(--font-mono)';
+        ctx.fillText("TIME SEQUENCE (0 - 100 ms)", w / 2 - 70, h - 10);
+        ctx.fillText("STIMULATION APPLIED (V)", 15, 20);
+
+        // Draw non-harmonic pulses line
+        ctx.strokeStyle = 'var(--accent-cyan)';
+        ctx.lineWidth = 2.0;
+        ctx.shadowColor = 'rgba(0, 242, 255, 0.4)';
+        ctx.shadowBlur = 10;
+        
+        ctx.beginPath();
+        for (let i = 0; i < t.length; i++) {
+            const px = (t[i] / 0.1) * (w - 40) + 20; // 20px padding left/right
+            const py = h - 40 - (V[i] / 5.5) * (h - 80); // map 0-5.5V to height
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        
+        // Draw pulse markers
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'var(--accent-secondary)';
+        pt.pulse_times.forEach(p_t => {
+            const px = (p_t / 0.1) * (w - 40) + 20;
+            ctx.beginPath();
+            ctx.arc(px, h - 35, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    // --- 2. Cortical Dynamics API Call ---
+    function runCorticalModel() {
+        showLoading(true);
+        const requestPayload = {
+            dbs_target: document.getElementById('cortex-target').value,
+            plasticity_rate: parseFloat(document.getElementById('cortex-plasticity').value),
+            target_ratio: parseFloat(document.getElementById('cf-target').value)
+        };
+
+        fetch('/api/fas-cortical', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestPayload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            showLoading(false);
+            if (data.success) {
+                modelData.cortical = data;
+                
+                // Update readout
+                const avgPre = data.nodes.reduce((acc, n) => acc + n.activation_pre, 0) / data.nodes.length;
+                const avgPost = data.nodes.reduce((acc, n) => acc + n.activation_post, 0) / data.nodes.length;
+                const diffPercent = ((avgPost - avgPre) / avgPre * 100).toFixed(1);
+                document.getElementById('cortex-coupling-readout').innerText = `+${diffPercent}%`;
+
+                // Draw manifolds & time series
+                drawCorticalManifold();
+            }
+        })
+        .catch(err => {
+            showLoading(false);
+            console.error("Cortical dynamics error:", err);
+            alert("Error running cortical dynamics model.");
+        });
+    }
+
+    let corticalAnimFrame = null;
+    let corticalPhase = 'pre'; // toggles between 'pre' and 'post'
+    
+    function drawCorticalManifold() {
+        if (corticalAnimFrame) cancelAnimationFrame(corticalAnimFrame);
+        
+        const canvas = document.getElementById('cortexCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight || 450;
+        
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        const nodes = modelData.cortical.nodes;
+        const conn_pre = modelData.cortical.connectivity_pre;
+        const conn_post = modelData.cortical.connectivity_post;
+
+        // Auto toggle display phase every 5 seconds for visual comparison
+        let lastToggle = Date.now();
+
+        // Hover tracking
+        let hoveredNode = null;
+        canvas.onmousemove = function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            
+            hoveredNode = null;
+            nodes.forEach(n => {
+                const nx = (n.x + 30) / 130 * w;
+                const ny = (n.y + 40) / 100 * h;
+                const d = Math.sqrt((mx - nx)**2 + (my - ny)**2);
+                if (d < 18) {
+                    hoveredNode = n;
+                }
+            });
+
+            const overlay = document.getElementById('nodeOverlay');
+            if (hoveredNode) {
+                document.getElementById('overlayNodeName').innerText = hoveredNode.name;
+                document.getElementById('overlayNodeFunc').innerText = hoveredNode.function;
+                document.getElementById('overlayNodePre').innerText = `${hoveredNode.activation_pre.toFixed(1)}%`;
+                document.getElementById('overlayNodePost').innerText = `${hoveredNode.activation_post.toFixed(1)}%`;
+                overlay.style.display = 'block';
+                overlay.style.left = `${mx + 15}px`;
+                overlay.style.top = `${my - 15}px`;
+            } else {
+                overlay.style.display = 'none';
+            }
+        };
+
+        let t_offset = 0;
+
+        function animate() {
+            t_offset += 0.05;
+            
+            // Periodically switch between pre-stim and post-stim simulation overlay
+            if (Date.now() - lastToggle > 5000) {
+                corticalPhase = corticalPhase === 'pre' ? 'post' : 'pre';
+                lastToggle = Date.now();
+                document.getElementById('cortex-phase-indicator').innerText = corticalPhase === 'pre' ? 'PRE-STIMULATION (CHAOS)' : 'POST-STIMULATION (RESONANCE ACTIVE)';
+                document.getElementById('cortex-phase-indicator').style.background = corticalPhase === 'pre' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 242, 255, 0.15)';
+                document.getElementById('cortex-phase-indicator').style.color = corticalPhase === 'pre' ? 'var(--accent-danger)' : 'var(--accent-cyan)';
+            }
+
+            ctx.clearRect(0, 0, w, h);
+            
+            // Draw brain structure outline (watermark)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(w / 2, h / 2, Math.min(w, h) * 0.42, 0, Math.PI * 2);
+            ctx.stroke();
+
+            const current_conn = corticalPhase === 'pre' ? conn_pre : conn_post;
+
+            // Draw connection lines
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const n1 = nodes[i];
+                    const n2 = nodes[j];
+                    const weight = current_conn[i][j];
+                    
+                    const x1 = (n1.x + 30) / 130 * w;
+                    const y1 = (n1.y + 40) / 100 * h;
+                    const x2 = (n2.x + 30) / 130 * w;
+                    const y2 = (n2.y + 40) / 100 * h;
+                    
+                    // Draw glowing axons
+                    ctx.strokeStyle = corticalPhase === 'pre' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(99, 102, 241, 0.25)';
+                    ctx.lineWidth = weight * 4.0;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                    
+                    // Draw traveling stimulation pulse along connectivity lines
+                    if (corticalPhase === 'post') {
+                        const pulse_pos = (t_offset * 0.4 + (i + j) * 0.25) % 1.0;
+                        const px = x1 + (x2 - x1) * pulse_pos;
+                        const py = y1 + (y2 - y1) * pulse_pos;
+                        ctx.fillStyle = 'var(--accent-cyan)';
+                        ctx.shadowColor = 'var(--accent-cyan)';
+                        ctx.shadowBlur = 8;
+                        ctx.beginPath();
+                        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            }
+
+            // Draw nodes
+            nodes.forEach(n => {
+                const nx = (n.x + 30) / 130 * w;
+                const ny = (n.y + 40) / 100 * h;
+                const act = corticalPhase === 'pre' ? n.activation_pre : n.activation_post;
+                
+                // Outer breathing halo
+                ctx.fillStyle = corticalPhase === 'pre' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(0, 242, 255, 0.1)';
+                ctx.beginPath();
+                const pulseRadius = 14 + Math.sin(t_offset + n.x) * 3;
+                ctx.arc(nx, ny, pulseRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Core node
+                ctx.fillStyle = corticalPhase === 'pre' ? 'var(--accent-danger)' : 'var(--accent-cyan)';
+                ctx.shadowColor = ctx.fillStyle;
+                ctx.shadowBlur = hoveredNode === n ? 15 : 6;
+                ctx.beginPath();
+                ctx.arc(nx, ny, hoveredNode === n ? 10 : 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Label
+                ctx.fillStyle = 'var(--text-primary)';
+                ctx.font = '10px var(--font-primary)';
+                ctx.fillText(n.id, nx - 10, ny - 16);
+            });
+
+            // Draw oscillation time series on secondary canvas
+            drawOscillations(t_offset);
+
+            corticalAnimFrame = requestAnimationFrame(animate);
+        }
+        
+        animate();
+    }
+
+    function drawOscillations(t_offset) {
+        const canvas = document.getElementById('cortexOscillationsCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = 250;
+        
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        
+        const ts_data = corticalPhase === 'pre' ? modelData.cortical.time_series_pre : modelData.cortical.time_series_post;
+        const keys = Object.keys(ts_data);
+        
+        // Draw axis grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 5; i++) {
+            const y = (i / 5) * h;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+        }
+        
+        ctx.fillStyle = 'var(--text-muted)';
+        ctx.font = '9px var(--font-mono)';
+        ctx.fillText(`LOCAL FIELD OSCILLATIONS (${corticalPhase.toUpperCase()} — REALTIME)`, w/2 - 120, 16);
+
+        // Draw multiple channel lines
+        keys.forEach((nodeId, idx) => {
+            const values = ts_data[nodeId];
+            ctx.strokeStyle = idx % 2 === 0 ? 'var(--accent-cyan)' : 'var(--accent-secondary)';
+            if (corticalPhase === 'pre') ctx.strokeStyle = 'var(--accent-danger)';
+            
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            
+            const step = w / values.length;
+            const y_offset = (idx + 0.5) * (h / keys.length);
+            
+            for (let i = 0; i < values.length; i++) {
+                const px = i * step;
+                const py = y_offset + values[i] * (h / (keys.length * 2.8));
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+            
+            // Draw channel labels
+            ctx.fillStyle = 'var(--text-tertiary)';
+            ctx.font = '8px var(--font-mono)';
+            ctx.fillText(nodeId, 8, y_offset - 8);
+        });
+    }
+
+    // --- 3. BEM Electrostatics API Call ---
+    function runBEMModel() {
+        showLoading(true);
+        const requestPayload = {
+            voltage: parseFloat(document.getElementById('bem-voltage').value),
+            active_contacts: []
+        };
+        for (let i = 0; i < 4; i++) {
+            if (document.getElementById(`contact-${i}`).checked) {
+                requestPayload.active_contacts.push(i);
+            }
+        }
+
+        fetch('/api/fas-bem', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestPayload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            showLoading(false);
+            if (data.success) {
+                modelData.bem = data;
+                
+                // Update volume activation readout based on contacts
+                const n_active = requestPayload.active_contacts.length;
+                const base_vol = (n_active * 1.85 * (requestPayload.voltage / 3.0)).toFixed(2);
+                document.getElementById('bem-volume-readout').innerText = `${base_vol} cm³`;
+
+                // Draw Heatmap Canvas
+                drawBEMCanvas();
+            }
+        })
+        .catch(err => {
+            showLoading(false);
+            console.error("BEM execution error:", err);
+            alert("Error in computing Boundary Element model.");
+        });
+    }
+
+    function drawBEMCanvas() {
+        const canvas = document.getElementById('bemCanvas');
+        if (!canvas || !modelData.bem) return;
+        const ctx = canvas.getContext('2d');
+        
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight || 500;
+        
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        
+        const renderMode = document.getElementById('bem-mode').value;
+        const gridData = modelData.bem[renderMode];
+        const gridLen = gridData.length;
+        
+        // Draw Heatmap grid by scaling BEM points
+        const cellW = Math.ceil(w / gridLen);
+        const cellH = Math.ceil(h / gridLen);
+
+        let maxVal = 0.0001;
+        for (let i = 0; i < gridLen; i++) {
+            for (let j = 0; j < gridLen; j++) {
+                const val = Math.abs(gridData[i][j]);
+                if (val > maxVal) maxVal = val;
+            }
+        }
+        
+        for (let y = 0; y < gridLen; y++) {
+            for (let x = 0; x < gridLen; x++) {
+                const val = gridData[y][x];
+                const normVal = Math.min(Math.abs(val) / maxVal, 1.0);
+                
+                // Construct colors based on mode
+                let r, g, b;
+                if (renderMode === 'potential') {
+                    // Jet color scheme
+                    r = Math.floor(normVal * 255);
+                    g = Math.floor(normVal * 80);
+                    b = Math.floor((1.0 - normVal) * 90 + normVal * 255);
+                } else if (renderMode === 'field') {
+                    // Hot neon red/orange/yellow
+                    r = Math.floor(normVal * 255);
+                    g = Math.floor(normVal * normVal * 200);
+                    b = Math.floor(normVal * 120);
+                } else {
+                    // Activating function: Cyan (+) / Purple (-)
+                    if (val >= 0) {
+                        r = 0;
+                        g = Math.floor(normVal * 242);
+                        b = Math.floor(normVal * 255);
+                    } else {
+                        r = Math.floor(normVal * 139);
+                        g = Math.floor(normVal * 92);
+                        b = Math.floor(normVal * 246);
+                    }
+                }
+                
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.fillRect(x * cellW, y * cellH, cellW, cellH);
+            }
+        }
+
+        // Overlay tissue layers (Skull boundary, CSF boundaries)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(w/2, h/2, Math.min(w, h) * 0.36, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.fillText("SKULL CORTICAL BOUNDARY", w/2 - 70, h/2 - Math.min(w,h)*0.37);
+
+        // Draw physical electrode shaft in center
+        ctx.fillStyle = 'rgba(60, 60, 70, 0.85)';
+        ctx.fillRect(w/2 - 6, h/2 - 120, 12, 240);
+        
+        // Draw contacts on the shaft
+        const contactPositionsY = [-60, -20, 20, 60];
+        const activeContacts = [];
+        for (let i = 0; i < 4; i++) {
+            if (document.getElementById(`contact-${i}`).checked) activeContacts.push(i);
+        }
+
+        contactPositionsY.forEach((cy, idx) => {
+            const isActive = activeContacts.includes(idx);
+            ctx.fillStyle = isActive ? 'var(--accent-cyan)' : 'rgba(100, 100, 110, 0.9)';
+            ctx.shadowColor = isActive ? 'var(--accent-cyan)' : 'transparent';
+            ctx.shadowBlur = isActive ? 12 : 0;
+            ctx.fillRect(w/2 - 8, h/2 + cy - 6, 16, 12);
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.font = '8px var(--font-mono)';
+            ctx.fillText(`C${idx}`, w/2 + 12, h/2 + cy + 3);
+        });
+        ctx.shadowBlur = 0;
+    }
+
+    // --- 4. Feynman Path Integrals API Call ---
+    function runFeynmanModel() {
+        showLoading(true);
+        const requestPayload = {
+            dispersion: parseFloat(document.getElementById('feynman-dispersion').value)
+        };
+
+        fetch('/api/fas-feynman', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestPayload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            showLoading(false);
+            if (data.success) {
+                modelData.feynman = data;
+                
+                // Update coherence score
+                const dispersion = requestPayload.dispersion;
+                const score = (98.2 - dispersion * 6.5).toFixed(1);
+                document.getElementById('feynman-coherence-readout').innerText = `${score}%`;
+
+                // Draw Feynman Canvas & Propagator line
+                drawFeynmanCanvas();
+            }
+        })
+        .catch(err => {
+            showLoading(false);
+            console.error("Feynman paths error:", err);
+            alert("Error in computing Feynman path integral model.");
+        });
+    }
+
+    let feynmanAnimFrame = null;
+    function drawFeynmanCanvas() {
+        if (feynmanAnimFrame) cancelAnimationFrame(feynmanAnimFrame);
+        
+        const canvas = document.getElementById('feynmanCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight || 400;
+        
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        const x_arr = modelData.feynman.x;
+        const classical = modelData.feynman.classical_path;
+        const pre_paths = modelData.feynman.pre_paths;
+        const post_paths = modelData.feynman.post_paths;
+
+        let t_offset = 0;
+
+        function animate() {
+            t_offset += 0.04;
+            ctx.clearRect(0, 0, w, h);
+            
+            // Draw Pre-op scattered paths (Red background bundle)
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.05)';
+            ctx.lineWidth = 1.0;
+            pre_paths.forEach(path => {
+                ctx.beginPath();
+                for (let i = 0; i < path.length; i++) {
+                    const px = (x_arr[i] / 100) * w;
+                    const py = (path[i] / 100) * h;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.stroke();
+            });
+
+            // Draw Post-op tightly bundled paths (Glowing Purple bundle)
+            ctx.strokeStyle = 'rgba(139, 92, 246, 0.2)';
+            ctx.lineWidth = 1.5;
+            post_paths.forEach(path => {
+                ctx.beginPath();
+                for (let i = 0; i < path.length; i++) {
+                    const px = (x_arr[i] / 100) * w;
+                    const py = (path[i] / 100) * h;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.stroke();
+            });
+
+            // Draw Classical Path (Neon Cyan Geodesic)
+            ctx.strokeStyle = 'var(--accent-cyan)';
+            ctx.lineWidth = 3.0;
+            ctx.shadowColor = 'var(--accent-cyan)';
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            for (let i = 0; i < classical.length; i++) {
+                const px = (x_arr[i] / 100) * w;
+                const py = (classical[i] / 100) * h;
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Draw Start & End targets
+            ctx.fillStyle = 'var(--accent-secondary)';
+            ctx.beginPath();
+            ctx.arc((x_arr[0]/100)*w, (classical[0]/100)*h, 8, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillText("DBS STIMULATION (ANT)", (x_arr[0]/100)*w + 12, (classical[0]/100)*h + 4);
+
+            ctx.fillStyle = 'var(--accent-cyan)';
+            ctx.beginPath();
+            ctx.arc((x_arr[x_arr.length-1]/100)*w, (classical[classical.length-1]/100)*h, 8, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillText("CORTICAL TARGET (dlPFC)", (x_arr[x_arr.length-1]/100)*w - 150, (classical[classical.length-1]/100)*h + 4);
+
+            // Animate signal transmission particle along geodesic classical axon path
+            const pIdx = Math.floor((t_offset * 12) % classical.length);
+            const particleX = (x_arr[pIdx] / 100) * w;
+            const particleY = (classical[pIdx] / 100) * h;
+            ctx.fillStyle = '#white';
+            ctx.shadowColor = 'var(--accent-cyan)';
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.arc(particleX, particleY, 5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Draw propagator comparison graph
+            drawPropagatorCanvas();
+
+            feynmanAnimFrame = requestAnimationFrame(animate);
+        }
+
+        animate();
+    }
+
+    function drawPropagatorCanvas() {
+        const canvas = document.getElementById('feynmanPropagatorCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = 200;
+        
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        
+        const t = modelData.feynman.t_prop;
+        const prop_pre = modelData.feynman.prop_pre;
+        const prop_post = modelData.feynman.prop_post;
+        
+        // Draw labels
+        ctx.fillStyle = 'var(--text-muted)';
+        ctx.font = '9px var(--font-mono)';
+        ctx.fillText("SIGNAL COHERENCE PROBABILITY DENSITY K(x, t)", w/2 - 120, 16);
+        
+        // Plot pre-op (dispersed/chaotic smear)
+        ctx.strokeStyle = 'var(--accent-danger)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < t.length; i++) {
+            const px = (i / t.length) * w;
+            const py = h - 20 - (prop_pre[i] / 2.2) * (h - 40);
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.05)';
+        ctx.lineTo(w, h-20);
+        ctx.lineTo(0, h-20);
+        ctx.fill();
+        
+        // Plot post-op (narrow hyper-coherent timing peak)
+        ctx.strokeStyle = 'var(--accent-cyan)';
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = 'var(--accent-cyan)';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        for (let i = 0; i < t.length; i++) {
+            const px = (i / t.length) * w;
+            const py = h - 20 - (prop_post[i] / 2.2) * (h - 40);
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(0, 242, 255, 0.08)';
+        ctx.lineTo(w, h-20);
+        ctx.lineTo(0, h-20);
+        ctx.fill();
+    }
+
+    // --- 5. Post-Op Validation Attractor API Call ---
+    function runPostopModel() {
+        showLoading(true);
+        const requestPayload = {
+            compliance: parseFloat(document.getElementById('postop-compliance').value) / 100.0
+        };
+
+        fetch('/api/fas-postop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestPayload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            showLoading(false);
+            if (data.success) {
+                modelData.postop = data;
+                
+                // Update forecast readout
+                const compliance = requestPayload.compliance;
+                const rate = (1.2 + 1.26 * compliance).toFixed(1);
+                document.getElementById('postop-healing-readout').innerText = `${rate}x Speed`;
+
+                // Update Report Text
+                document.getElementById('postopReportText').innerText = data.report;
+
+                // Build Metric Cards
+                const metricsGrid = document.getElementById('postopMetricsGrid');
+                metricsGrid.innerHTML = '';
+                data.metrics.forEach(metric => {
+                    const card = document.createElement('div');
+                    card.className = `metric-card improved`;
+                    card.innerHTML = `
+                        <div class="title">${metric.name}</div>
+                        <div class="values">
+                            <span class="val-pre">${metric.pre}%</span>
+                            <i class="fa-solid fa-arrow-trend-up" style="color: var(--accent-cyan); font-size:0.8rem;"></i>
+                            <span class="val-post">${metric.post}%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="bar-${metric.name.replace(/\s+/g, '')}" style="width: 0%"></div>
+                        </div>
+                    `;
+                    metricsGrid.appendChild(card);
+                    
+                    // Trigger animation
+                    setTimeout(() => {
+                        const bar = document.getElementById(`bar-${metric.name.replace(/\s+/g, '')}`);
+                        if (bar) bar.style.width = `${metric.post}%`;
+                    }, 100);
+                });
+
+                // Start 3D Rotational Canvas Rendering
+                drawPostopCanvas();
+            }
+        })
+        .catch(err => {
+            showLoading(false);
+            console.error("Post-op validation error:", err);
+            alert("Error in computing clinical validation attractor model.");
+        });
+    }
+
+    let postopAnimFrame = null;
+    function drawPostopCanvas() {
+        if (postopAnimFrame) cancelAnimationFrame(postopAnimFrame);
+        
+        const canvas = document.getElementById('postopCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        const parent = canvas.parentElement;
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight || 450;
+        
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        const pre = modelData.postop.manifold_pre;
+        const post = modelData.postop.manifold_post;
+        const geo = modelData.postop.geodesic_trajectory;
+
+        let angle = 0;
+
+        function animate() {
+            angle += 0.007; // rotate attractor over time
+            ctx.clearRect(0, 0, w, h);
+            
+            // 3D Matrix orthographic projection helper
+            const cosA = Math.cos(angle);
+            const sinA = Math.sin(angle);
+            const cosB = Math.cos(0.5); // constant tilt
+            const sinB = Math.sin(0.5);
+
+            function project(x, y, z) {
+                // Y-axis rotation
+                let xRot = x * cosA - z * sinA;
+                let zRot = x * sinA + z * cosA;
+                
+                // X-axis tilt rotation
+                let yRot = y * cosB - zRot * sinB;
+                
+                // Centered scale mapping to 2D
+                const scale = 5.8;
+                return {
+                    x: w / 2 + xRot * scale,
+                    y: h / 2 + yRot * scale
+                };
+            }
+
+            // 1. Draw Pre-op chaotic Lorenz attractor in glowing orange/red
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.15)';
+            ctx.lineWidth = 1.0;
+            ctx.beginPath();
+            for (let i = 0; i < pre.x.length; i++) {
+                const pt = project(pre.x[i], pre.y[i], pre.z[i] - 25);
+                if (i === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            }
+            ctx.stroke();
+
+            // 2. Draw Post-op stable periodic limit cycle in glowing teal
+            ctx.strokeStyle = 'rgba(0, 242, 255, 0.45)';
+            ctx.lineWidth = 2.0;
+            ctx.beginPath();
+            for (let i = 0; i < post.x.length; i++) {
+                const pt = project(post.x[i], post.y[i], post.z[i] - 20);
+                if (i === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            }
+            ctx.stroke();
+
+            // 3. Draw healing transition geodesic line winding in purple
+            ctx.strokeStyle = 'var(--accent-secondary)';
+            ctx.lineWidth = 3.5;
+            ctx.shadowColor = 'var(--accent-secondary)';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            for (let i = 0; i < geo.x.length; i++) {
+                const pt = project(geo.x[i], geo.y[i], geo.z[i] - 20);
+                if (i === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Draw text anchors in 3D projection space
+            ctx.fillStyle = 'var(--accent-danger)';
+            const preAnchor = project(pre.x[0], pre.y[0], pre.z[0] - 25);
+            ctx.beginPath();
+            ctx.arc(preAnchor.x, preAnchor.y, 4, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillText("PRE-OP CHAOS ATTRACTOR", preAnchor.x + 8, preAnchor.y + 4);
+
+            ctx.fillStyle = 'var(--accent-cyan)';
+            const postAnchor = project(post.x[0], post.y[0], post.z[0] - 20);
+            ctx.beginPath();
+            ctx.arc(postAnchor.x, postAnchor.y, 4, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillText("POST-OP HOMEOSTATIC CYCLE", postAnchor.x + 8, postAnchor.y + 4);
+
+            postopAnimFrame = requestAnimationFrame(animate);
+        }
+
+        animate();
+    }
+
+    // --- Onload Initialization ---
+    window.onload = function() {
+        // Run all models once to initialize dashboards with precomputed parameters
+        runCFModel();
+        setTimeout(runCorticalModel, 400);
+        setTimeout(runBEMModel, 800);
+        setTimeout(runFeynmanModel, 1200);
+        setTimeout(runPostopModel, 1600);
+    };
+</script>
+</body>
+</html>
