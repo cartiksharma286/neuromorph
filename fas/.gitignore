@@ -1,0 +1,8 @@
+# .gitignore for Python/Streamlit app
+__pycache__/
+*.pyc
+.env
+.DS_Store
+.vscode/
+*.sqlite3
+*.db

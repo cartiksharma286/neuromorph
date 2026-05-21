@@ -1,3 +1,56 @@
+            <button class="tab-btn" onclick="switchTab('fasd-statopt', event)">FASD StatOpt Cure</button>
+                <button class="tab-btn" onclick="switchTab('fas-cortical', event)">FAS Cortical Simulation</button>
+                <button class="tab-btn" onclick="switchTab('fas-bem', event)">FAS Boundary Element</button>
+                <button class="tab-btn" onclick="switchTab('fas-cf', event)">FAS Continued Fractions</button>
+                <button class="tab-btn" onclick="switchTab('fas-feynman', event)">FAS Feynman Pathways</button>
+                <button class="tab-btn" onclick="switchTab('fas-postop', event)">FAS Post-Op Validation</button>
+            <div id="fasd-statopt-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>FASD StatOpt Cure</h2>
+                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
+                        Statistical Parametric Optimization for Deep Brain Stimulation in Fetal Alcohol Spectrum Disorder.<br>
+                        Obtain statistical parametric estimates, Bode characteristics, and visualize curves and manifolds for cortical geodesics with DBS current simulation.
+                    </p>
+                    <button class="btn-primary" id="btn-generate-fasd-statopt" onclick="simulateFASDStatOpt()" style="margin-top: 10px;">Run StatOpt Simulation</button>
+                </div>
+            </div>
+            <div id="fasd-statopt" class="tab-content main-content" style="display:none;">
+                <div class="glass-panel" style="margin-bottom: 10px;">
+                    <h2>Statistical Parametric Estimates</h2>
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
+                        <div>
+                            <div style="font-size: 13px; color: #a0e7ff;">Current Stage</div>
+                            <div id="fasd-statopt-stage" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 13px; color: #a0e7ff;">Efficacy</div>
+                            <div id="fasd-statopt-efficacy" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 13px; color: #a0e7ff;">Timeline</div>
+                            <div id="fasd-statopt-timeline" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-panel" style="margin-bottom: 10px; max-height: 220px; overflow-y: auto;">
+                    <h3 style="margin-bottom: 8px;">Protocol Stages</h3>
+                    <div style="max-height: 160px; overflow-y: auto;">
+                        <ul id="fasd-statopt-stages-list" style="font-size: 13px; color: #fff; padding-left: 18px; margin: 0;"></ul>
+                    </div>
+                </div>
+                <div class="glass-panel" style="margin-bottom: 10px;">
+                    <h3>Bode Characteristics & Frequency Response</h3>
+                    <canvas id="fasdStatOptBodeChart" height="180"></canvas>
+                </div>
+                <div class="glass-panel" style="margin-bottom: 10px;">
+                    <h3>Statistical Parameteric Optimization Plot</h3>
+                    <canvas id="fasdStatOptChart" height="180"></canvas>
+                </div>
+                <div class="glass-panel">
+                    <h3>Cortical Geodesic Manifolds (DBS Current)</h3>
+                    <canvas id="fasdStatOptGeodesicChart" height="180"></canvas>
+                </div>
+            </div>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -47,19 +100,21 @@
             <button class="tab-btn" onclick="switchTab('india-valuation', event)">India Projections (10 YR)</button>
             <button class="tab-btn" onclick="switchTab('america-valuation', event)">America Projections (10 YR)</button>
             <!-- Removed Staging Protocol Tab -->
-            <button class="tab-btn" onclick="switchTab('fas-cure', event)">FAS Cure QML Opt</button>
-                        <div id="fas-cure-sidebar" class="tab-content">
+            <!-- <button class="tab-btn" onclick="switchTab('fas-cure', event)">FAS Cure QML Opt</button> -->
+            <button class="tab-btn" onclick="switchTab('fas-dist', event)">FAS Statistical Distribution Learning</button>
+                        <!-- FAS QML Cure tab removed -->
+                        <div id="fas-dist-sidebar" class="tab-content">
                             <div class="glass-panel">
-                                <h2>FAS Cure: Quantum Machine Learning Optimization</h2>
+                                <h2>FAS Statistical Distribution-wise Learning</h2>
                                 <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
-                                    Quantum Machine Learning-driven optimization for Fetal Alcohol Syndrome (FAS) cure protocols.<br>
-                                    Simulate optimal neurodevelopmental recovery, executive function, and adaptive care using QML algorithms.<br><br>
+                                    Deep Brain Stimulation protocol simulation for Fetal Alcohol Syndrome using statistical distribution-wise learning.<br>
+                                    Analyze and visualize the impact of different statistical distributions on neurodevelopmental recovery and DBS efficacy.<br><br>
                                     <b>Key Features:</b><br>
-                                    &bull; QML-optimized stimulation parameters<br>
-                                    &bull; Executive function and adaptive behavior projections<br>
-                                    &bull; Closed-loop neuroplasticity and cortical modulation
+                                    &bull; Distribution-based learning and simulation<br>
+                                    &bull; Efficacy and recovery projections<br>
+                                    &bull; Interactive plots for distribution effects on DBS
                                 </p>
-                                <button class="btn-primary" id="btn-generate-fas-cure" onclick="simulateFASCure()" style="margin-top: 10px;">Run QML FAS Cure</button>
+                                <button class="btn-primary" id="btn-generate-fas-dist" onclick="simulateFASDist()" style="margin-top: 10px;">Run Distribution Learning</button>
                             </div>
                         </div>
             <button class="tab-btn" onclick="switchTab('fas', event)">FAS Neurosymbolic</button>
@@ -102,6 +157,46 @@
         </nav>
 
         <aside class="sidebar-left">
+
+                <div id="fas-cortical-sidebar" class="tab-content">
+                    <div class="glass-panel">
+                        <h2>FAS Cortical Simulation</h2>
+                        <p>Quantum-theoretic simulation of cortical activity for FAS treatment. Visualize and interact with cortical manifolds.</p>
+                        <button class="btn-primary" id="btn-fas-cortical" onclick="simulateFASCortical()">Run Cortical Simulation</button>
+                    </div>
+                </div>
+
+                <div id="fas-bem-sidebar" class="tab-content">
+                    <div class="glass-panel">
+                        <h2>FAS Boundary Element Simulation</h2>
+                        <p>Boundary element modeling for FAS treatment. Analyze cortical surface potentials and field distributions.</p>
+                        <button class="btn-primary" id="btn-fas-bem" onclick="simulateFASBEM()">Run BEM Simulation</button>
+                    </div>
+                </div>
+
+                <div id="fas-cf-sidebar" class="tab-content">
+                    <div class="glass-panel">
+                        <h2>FAS Continued Fractions</h2>
+                        <p>Explore continued fraction-based paradigms for FAS treatment optimization.</p>
+                        <button class="btn-primary" id="btn-fas-cf" onclick="simulateFASCF()">Run Continued Fraction Model</button>
+                    </div>
+                </div>
+
+                <div id="fas-feynman-sidebar" class="tab-content">
+                    <div class="glass-panel">
+                        <h2>FAS Feynman Path Integrals</h2>
+                        <p>Simulate cortical trajectory pathways using Feynman path integrals for advanced FAS protocol design.</p>
+                        <button class="btn-primary" id="btn-fas-feynman" onclick="simulateFASFeynman()">Run Feynman Pathways</button>
+                    </div>
+                </div>
+
+                <div id="fas-postop-sidebar" class="tab-content">
+                    <div class="glass-panel">
+                        <h2>FAS Post-Op Validation</h2>
+                        <p>Compare pre-treatment cortical manifolds and post-treatment geodesic visualizations for FAS protocol validation.</p>
+                        <button class="btn-primary" id="btn-fas-postop" onclick="simulateFASPostOp()">Run Post-Op Validation</button>
+                    </div>
+                </div>
             <div id="hd-cure-sidebar" class="tab-content">
                 <div class="glass-panel">
                     <h2>HD Cure Protocol</h2>

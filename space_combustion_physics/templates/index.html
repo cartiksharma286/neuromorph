@@ -40,6 +40,7 @@
   <button class="tab-btn active" data-tab="tab-cfd">🌊 CFD Solver</button>
   <button class="tab-btn" data-tab="tab-combustion">💥 Combustion</button>
   <button class="tab-btn" data-tab="tab-throttle">⚡ Throttle</button>
+  <button class="tab-btn" data-tab="tab-uptake">📈 Throttle Uptake</button>
   <button class="tab-btn" data-tab="tab-traj">🛸 Trajectory</button>
   <button class="tab-btn" data-tab="tab-payload">📦 Payload</button>
   <button class="tab-btn" data-tab="tab-finite">𝚽 Finite Math</button>
@@ -49,10 +50,10 @@
 
 <!-- 1. CFD TAB -->
 <div class="panel active" id="tab-cfd">
-  <div class="section-header"><h2>Advanced CFD Nozzle Solver</h2><p>Lax-Friedrichs NS integration with Bartz Heat Transfer Modeling</p></div>
+  <div class="section-header"><h2>Advanced CFD &amp; Solid FEA Solver</h2><p>Lax-Friedrichs NS gas-dynamics coupled with Radial FEA Wall Conduction &amp; Continued Fractions</p></div>
   <div class="grid-2">
     <div class="math-block"><strong>GAS DYNAMICS</strong><br>∂(ρA)/∂t + ∂(ρuA)/∂x = 0<br>∂(ρuA)/∂t + ∂(ρu²A + PA)/∂x = P·dA/dx</div>
-    <div class="math-block"><strong>THERMAL</strong><br>h_g = [0.026/D^0.2]·[μ^0.2·Cp/Pr^0.6]·[Pc/C*]^0.8<br>q_wall = h_g·(T_gas - T_wall)</div>
+    <div class="math-block"><strong>SOLID FEA WALL &amp; PROPULSION PHYSICS</strong><br>k(T) = k₀ / (1 + CF_k(T)), Cp(T) = Cp₀ * (1 + CF_cp(T))<br>Transient Radial Conduct: M·Ṫ_radial + K·T_radial = F_boundary<br>Hoop Thermal Stress: σ_θ = [E·α / (1-ν)] * (T_avg - T(r))</div>
   </div>
   <div class="controls">
     <div class="control-group"><label>Throttle %</label><input id="inp-cfd-throttle" type="number" step="0.1" value="0.8"/></div>
@@ -65,14 +66,19 @@
     <div class="kpi green"><div class="kpi-value" id="kpi-mach">—</div><div class="kpi-label">Exit Mach</div></div>
     <div class="kpi orange"><div class="kpi-value" id="kpi-chamb-t">—</div><div class="kpi-label">Max Gas T (K)</div></div>
     <div class="kpi red"><div class="kpi-value" id="kpi-peak-q">—</div><div class="kpi-label">Peak q (MW/m²)</div></div>
+    <div class="kpi purple"><div class="kpi-value" id="kpi-peak-stress">—</div><div class="kpi-label">Peak Stress (MPa)</div></div>
+    <div class="kpi gold"><div class="kpi-value" id="kpi-min-sf">—</div><div class="kpi-label">Min Safety Factor</div></div>
   </div>
   <div class="scroll-v">
     <div class="grid-2">
       <div class="card"><div class="card-title">Pressure &amp; Mach</div><div class="chart-wrap"><canvas id="chart-cfd-press"></canvas></div></div>
-      <div class="card"><div class="card-title">Gas vs Wall Temp</div><div class="chart-wrap"><canvas id="chart-cfd-temp-gas-wall"></canvas></div></div>
+      <div class="card"><div class="card-title">Radial Gas &amp; Wall Temp</div><div class="chart-wrap"><canvas id="chart-cfd-temp-gas-wall"></canvas></div></div>
     </div>
     <div class="grid-2" style="margin-top:20px">
+      <div class="card"><div class="card-title">Thermal Stress &amp; Safety Factor</div><div class="chart-wrap"><canvas id="chart-cfd-stress-sf"></canvas></div></div>
       <div class="card"><div class="card-title">Heat Flux (q_wall)</div><div class="chart-wrap"><canvas id="chart-cfd-q"></canvas></div></div>
+    </div>
+    <div class="grid-2" style="margin-top:20px">
       <div class="card"><div class="card-title">Fuel Fraction</div><div class="chart-wrap"><canvas id="chart-cfd-fuel"></canvas></div></div>
     </div>
   </div>
@@ -145,13 +151,27 @@
   </div>
   <div class="kpi-grid">
     <div class="kpi blue"><div class="kpi-value" id="kpi-alt-traj">—</div><div class="kpi-label">Apogee (km)</div></div>
-    <div class="kpi orange"><div class="kpi-value" id="kpi-dvach">—</div><div class="kpi-label">Δv Achieved (m/s)</div></div>
+    <div class="kpi orange"><div class="kpi-value" id="kpi-qml-score">—</div><div class="kpi-label">QML Fidelity</div></div>
     <div class="kpi red"><div class="kpi-value" id="kpi-maxq">—</div><div class="kpi-label">Max Q (kPa)</div></div>
     <div class="kpi" id="orbit-status">WAITING...</div>
   </div>
+  
+  <div class="math-block" id="q-math">
+    <strong>QUANTUM GAUSSIAN QUADRATURE</strong><br>
+    Integral[ f(x) w(x) dx ] approx Sum[ w_i f(x_i) ]<br>
+    Nodes {x_i} derived via Continued Fraction convergents of Legendre recursion.
+  </div>
+
   <div class="grid-2">
-    <div class="card"><div class="card-title">Flight Path (X vs Z)</div><div class="chart-wrap"><canvas id="chart-traj"></canvas></div></div>
-    <div class="card"><div class="card-title">Orbital Velocity</div><div class="chart-wrap"><canvas id="chart-speed"></canvas></div></div>
+    <div class="card"><div class="card-title">Quantum-Enhanced Flight Path</div><div class="chart-wrap"><canvas id="chart-traj"></canvas></div></div>
+    <div class="card"><div class="card-title">Quantum Probability Signature (|ψ|²)</div><div class="chart-wrap"><canvas id="chart-q-sig"></canvas></div></div>
+  </div>
+  <div class="grid-2" style="margin-top:20px">
+    <div class="card"><div class="card-title">Orbital Velocity &amp; Max Q</div><div class="chart-wrap"><canvas id="chart-speed"></canvas></div></div>
+    <div class="card">
+      <div class="card-title">VQE Convergence Log</div>
+      <div class="matrix" id="qml-log">Awaiting Quantum Oracle initialization...</div>
+    </div>
   </div>
 </div>
 
@@ -190,6 +210,37 @@
     </div>
   </div>
   <div id="phi-matrices" style="margin-top:20px"></div>
+</div>
+
+<!-- 7. THROTTLE UPTAKE TAB -->
+<div class="panel" id="tab-uptake">
+  <div class="section-header"><h2>Throttle Velocity Uptake Dynamics</h2><p>Fuel manifold transient spool-up modeled via Continued Fraction Transfer Functions</p></div>
+  <div class="grid-2">
+    <div class="math-block"><strong>CONTINUED FRACTION EXPANSION OF RESPONSE</strong><br>Manifold Actuation: G(s) = e^(-τ_d·s) / (1 + τ_p·s)<br>Transient Response 1 - e^(-z) modeled via Continued Fraction:<br>1 - e^(-z) ≈ z / [1 + z / [2 - z / [3 + z / [2 - z]]]]</div>
+    <div class="math-block"><strong>VELOCITY UPTAKE PHYSICS</strong><br>dv/dt = [T_max·u_actual(t) - Drag(v)] / m(t)<br>Fuel Pump Spool Rate: ω_pump(t) = ω_max·u_actual(t)</div>
+  </div>
+  <div class="controls">
+    <div class="control-group"><label>Actuation Profile</label><select id="sel-uptake-profile"><option value="step">Step-Up (20% to 100%)</option><option value="ramp">Linear Ramp (20% to 100%)</option><option value="sine">Sinusoidal Modulation</option></select></div>
+    <div class="control-group"><label>Pump Time Constant τ_p (s)</label><input id="inp-uptake-tp" type="number" step="0.05" value="0.4"/></div>
+    <div class="control-group"><label>Manifold Delay τ_d (s)</label><input id="inp-uptake-td" type="number" step="0.05" value="0.15"/></div>
+    <button class="btn-run" id="btn-uptake">Simulate Actuator Uptake</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi blue"><div class="kpi-value" id="kpi-uptake-delay">—</div><div class="kpi-label">Uptake Lag (s)</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-uptake-maxv">—</div><div class="kpi-label">Max Velocity (m/s)</div></div>
+    <div class="kpi orange"><div class="kpi-value" id="kpi-uptake-maxt">—</div><div class="kpi-label">Peak Thrust (kN)</div></div>
+    <div class="kpi red"><div class="kpi-value" id="kpi-uptake-error">—</div><div class="kpi-label">CF Approx Error</div></div>
+  </div>
+  <div class="scroll-v">
+    <div class="grid-2">
+      <div class="card"><div class="card-title">Throttle Command vs Actual</div><div class="chart-wrap"><canvas id="chart-uptake-throttle"></canvas></div></div>
+      <div class="card"><div class="card-title">Transient Velocity Uptake</div><div class="chart-wrap"><canvas id="chart-uptake-vel"></canvas></div></div>
+    </div>
+    <div class="grid-2" style="margin-top:20px">
+      <div class="card"><div class="card-title">Dynamic Thrust Uptake (kN)</div><div class="chart-wrap"><canvas id="chart-uptake-thrust"></canvas></div></div>
+      <div class="card"><div class="card-title">Fuel Pump Spool Rate (RPM)</div><div class="chart-wrap"><canvas id="chart-uptake-pump"></canvas></div></div>
+    </div>
+  </div>
 </div>
 
 </div>

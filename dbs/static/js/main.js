@@ -1,4 +1,64 @@
 // --- Veteran Care PTSD DBS Protocol Simulation ---
+// --- FAS Cortical Simulation ---
+function simulateFASCortical() {
+    const out = document.getElementById('fas-cortical-sidebar');
+    if (out) out.innerHTML += '<div style="color:#00f2ff;">Running quantum-theoretic cortical simulation...</div>';
+    fetch('/api/fas-cortical', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+        .then(res => res.json())
+        .then(data => {
+            // Render cortical simulation results (placeholder)
+            if (out) out.innerHTML += `<div style='color:#fff;'>${data.result || 'Simulation complete.'}</div>`;
+        })
+        .catch(e => { if (out) out.innerHTML += '<div style="color:red;">Error running simulation.</div>'; });
+}
+
+// --- FAS Boundary Element Simulation ---
+function simulateFASBEM() {
+    const out = document.getElementById('fas-bem-sidebar');
+    if (out) out.innerHTML += '<div style="color:#00f2ff;">Running boundary element simulation...</div>';
+    fetch('/api/fas-bem', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+        .then(res => res.json())
+        .then(data => {
+            if (out) out.innerHTML += `<div style='color:#fff;'>${data.result || 'BEM simulation complete.'}</div>`;
+        })
+        .catch(e => { if (out) out.innerHTML += '<div style="color:red;">Error running BEM simulation.</div>'; });
+}
+
+// --- FAS Continued Fractions ---
+function simulateFASCF() {
+    const out = document.getElementById('fas-cf-sidebar');
+    if (out) out.innerHTML += '<div style="color:#00f2ff;">Running continued fraction model...</div>';
+    fetch('/api/fas-cf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+        .then(res => res.json())
+        .then(data => {
+            if (out) out.innerHTML += `<div style='color:#fff;'>${data.result || 'Continued fraction model complete.'}</div>`;
+        })
+        .catch(e => { if (out) out.innerHTML += '<div style="color:red;">Error running continued fraction model.</div>'; });
+}
+
+// --- FAS Feynman Path Integrals ---
+function simulateFASFeynman() {
+    const out = document.getElementById('fas-feynman-sidebar');
+    if (out) out.innerHTML += '<div style="color:#00f2ff;">Running Feynman path integral simulation...</div>';
+    fetch('/api/fas-feynman', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+        .then(res => res.json())
+        .then(data => {
+            if (out) out.innerHTML += `<div style='color:#fff;'>${data.result || 'Feynman path integral simulation complete.'}</div>`;
+        })
+        .catch(e => { if (out) out.innerHTML += '<div style="color:red;">Error running Feynman simulation.</div>'; });
+}
+
+// --- FAS Post-Op Validation ---
+function simulateFASPostOp() {
+    const out = document.getElementById('fas-postop-sidebar');
+    if (out) out.innerHTML += '<div style="color:#00f2ff;">Running post-op validation...</div>';
+    fetch('/api/fas-postop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+        .then(res => res.json())
+        .then(data => {
+            if (out) out.innerHTML += `<div style='color:#fff;'>${data.result || 'Post-op validation complete.'}</div>`;
+        })
+        .catch(e => { if (out) out.innerHTML += '<div style="color:red;">Error running post-op validation.</div>'; });
+}
 function runVeteranPTSDDBS() {
     const resultsDiv = document.getElementById('veteran-ptsd-dbs-results');
     if (resultsDiv) resultsDiv.innerHTML = '<p style="color: #00f2ff;">Generating optimal DBS clinical paradigms...</p>';

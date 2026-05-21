@@ -78,11 +78,26 @@ async function runCFD(){
   try{
     const r=await fetch('/api/cfd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({throttle:parseFloat(document.getElementById('inp-cfd-throttle').value),fuel:document.getElementById('sel-cfd-fuel').value})});
     const d=await r.json();
-    setKPI('kpi-thrust',d.thrust_kN+' kN'); setKPI('kpi-mach',d.exit_mach); setKPI('kpi-chamb-t',d.chamber_temp+' K'); setKPI('kpi-peak-q',d.peak_q+' MW/m²');
+    setKPI('kpi-thrust',d.thrust_kN+' kN'); 
+    setKPI('kpi-mach',d.exit_mach); 
+    setKPI('kpi-chamb-t',d.chamber_temp+' K'); 
+    setKPI('kpi-peak-q',d.peak_q+' MW/m²');
+    setKPI('kpi-peak-stress',d.peak_wall_stress+' MPa');
+    setKPI('kpi-min-sf',d.min_safety_factor);
+    
     const xL=d.x.map(v=>v.toFixed(2));
-    mkChart('chart-cfd-press',xL,[{label:'Pressure',data:d.pressure,borderColor:COLORS.orange,yAxisID:'y'},{label:'Mach',data:d.mach,borderColor:COLORS.blue,yAxisID:'y1'}],{scales:{y:{position:'left'},y1:{position:'right',grid:{drawOnChartArea:false}}}});
-    mkChart('chart-cfd-temp-gas-wall',xL,[{label:'Gas T',data:d.temperature,borderColor:COLORS.red},{label:'Wall T',data:d.wall_temp,borderColor:COLORS.purple}]);
-    mkChart('chart-cfd-q',xL,[{label:'Heat Flux',data:d.heat_flux,borderColor:COLORS.gold,fill:true,backgroundColor:'rgba(255,199,64,0.1)'}]);
+    mkChart('chart-cfd-press',xL,[{label:'Pressure (bar)',data:d.pressure,borderColor:COLORS.orange,yAxisID:'y'},{label:'Mach',data:d.mach,borderColor:COLORS.blue,yAxisID:'y1'}],{scales:{y:{position:'left'},y1:{position:'right',grid:{drawOnChartArea:false}}}});
+    mkChart('chart-cfd-temp-gas-wall',xL,[
+      {label:'Gas T (K)',data:d.temperature,borderColor:COLORS.red},
+      {label:'Inner Wall T (K)',data:d.wall_temp,borderColor:COLORS.purple},
+      {label:'Outer Wall T (K)',data:d.outer_wall_temp,borderColor:COLORS.blue}
+    ]);
+    mkChart('chart-cfd-stress-sf',xL,[
+      {label:'Thermal Stress (MPa)',data:d.thermal_stress,borderColor:COLORS.purple,yAxisID:'y'},
+      {label:'Safety Factor',data:d.safety_factor,borderColor:COLORS.gold,yAxisID:'y1'}
+    ],{scales:{y:{position:'left',title:{display:true,text:'Stress (MPa)'}},y1:{position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'Safety Factor'}}}});
+    
+    mkChart('chart-cfd-q',xL,[{label:'Heat Flux (MW/m²)',data:d.heat_flux,borderColor:COLORS.gold,fill:true,backgroundColor:'rgba(255,199,64,0.1)'}]);
     mkChart('chart-cfd-fuel',xL,[{label:'Fuel %',data:d.fuel_fraction,borderColor:COLORS.green}]);
   }catch(e){console.error(e)}
   btn.disabled=false; ld.classList.remove('visible');
@@ -126,7 +141,7 @@ async function runThrottle(){
 }
 
 // ═══════════════════════════════════════════════
-// 4. TRAJECTORY (HPC UPGRADE)
+// 4. TRAJECTORY (QUANTUM HPC UPGRADE)
 // ═══════════════════════════════════════════════
 document.getElementById('btn-traj')?.addEventListener('click', runTraj);
 async function runTraj(){
@@ -142,26 +157,37 @@ async function runTraj(){
     const d=await r.json();
     
     setKPI('kpi-alt-traj',d.max_altitude_km+' km'); 
-    setKPI('kpi-dvach',d.delta_v_achieved+' m/s');
+    setKPI('kpi-qml-score',(d.qml_optimization_score*100).toFixed(2)+'%');
     setKPI('kpi-maxq',d.max_q_kpa+' kPa');
-    
     setHTML('orbit-status',d.orbit_achieved?'<span class="tag tag-green">Orbit Achieved</span>':'<span class="tag tag-red">Suborbital</span>');
     
-    // Trajectory Path
+    const tL=d.time.map(v=>v.toFixed(0));
+
+    // 1. Quantum Flight Path
     mkChart('chart-traj',null,[{
-      label:'Flight Path (HPC)',
+      label:'Quantum-Corrected Path',
       data:d.x_km.map((x,i)=>({x,y:d.z_km[i]})),
       borderColor:COLORS.blue,
-      showLine:true,
-      pointRadius:1
+      backgroundColor:'rgba(0,200,255,0.05)',
+      fill:true,showLine:true,pointRadius:0,borderWidth:2
     }],{type:'scatter',scales:{x:{title:{display:true,text:'Downrange (km)'}},y:{title:{display:true,text:'Altitude (km)'}}}});
 
-    // Speed & Dynamic Pressure
-    const tL=d.time.map(v=>v.toFixed(0));
+    // 2. Quantum Signature
+    mkChart('chart-q-sig',tL,[{
+      label:'Quantum Signature |ψ|²',
+      data:d.quantum_signature,
+      borderColor:COLORS.purple,
+      backgroundColor:'rgba(155,95,255,0.1)',
+      fill:true,pointRadius:0,borderWidth:1.5
+    }]);
+
+    // 3. Velocity & Q
     mkChart('chart-speed',tL,[
-      {label:'Speed (m/s)',data:d.speed_ms,borderColor:COLORS.purple,yAxisID:'y'},
-      {label:'Dynamic Pressure (kPa)',data:d.dynamic_pressure,borderColor:COLORS.gold,yAxisID:'y1'}
+      {label:'Velocity (m/s)',data:d.speed_ms,borderColor:COLORS.green,yAxisID:'y'},
+      {label:'Max Q (kPa)',data:d.dynamic_pressure,borderColor:COLORS.orange,yAxisID:'y1'}
     ], {scales:{y:{position:'left'},y1:{position:'right',grid:{drawOnChartArea:false}}}});
+
+    setHTML('qml-log', `[VQE] STATE INITIALIZED\n[CF] QUADRATURE NODES CONVERGED\n[QML] FIDELITY: ${d.qml_optimization_score}\n[OPT] TRAJECTORY CORRECTED VIA Q-SIGMA`);
     
   }catch(e){console.error(e)}
   btn.disabled=false;
@@ -201,4 +227,45 @@ async function runFinite(){
   btn.disabled=false;
 }
 
-window.addEventListener('load',()=>{ setTimeout(runCFD,500); });
+// ═══════════════════════════════════════════════
+// 7. THROTTLE UPTAKE
+// ═══════════════════════════════════════════════
+document.getElementById('btn-uptake')?.addEventListener('click', runUptake);
+async function runUptake(){
+  const btn=document.getElementById('btn-uptake');
+  btn.disabled=true;
+  try{
+    const r=await fetch('/api/throttle_uptake',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        profile: document.getElementById('sel-uptake-profile').value,
+        tp: parseFloat(document.getElementById('inp-uptake-tp').value),
+        td: parseFloat(document.getElementById('inp-uptake-td').value)
+      })
+    });
+    const d=await r.json();
+    setKPI('kpi-uptake-delay', d.lag_s + ' s');
+    setKPI('kpi-uptake-maxv', d.max_velocity + ' m/s');
+    setKPI('kpi-uptake-maxt', d.peak_thrust + ' kN');
+    setKPI('kpi-uptake-error', d.cf_error);
+    
+    const tL=d.time.map(v=>v.toFixed(1));
+    mkChart('chart-uptake-throttle',tL,[
+      {label:'Throttle Cmd',data:d.command,borderColor:COLORS.orange,stepped:true},
+      {label:'Actual Uptake (CF)',data:d.actual,borderColor:COLORS.blue}
+    ]);
+    mkChart('chart-uptake-vel',tL,[
+      {label:'Velocity (m/s)',data:d.velocity_ms,borderColor:COLORS.green}
+    ]);
+    mkChart('chart-uptake-thrust',tL,[
+      {label:'Thrust (kN)',data:d.thrust_kN,borderColor:COLORS.red,fill:true,backgroundColor:'rgba(255,51,102,0.05)'}
+    ]);
+    mkChart('chart-uptake-pump',tL,[
+      {label:'Pump Speed (RPM)',data:d.pump_rpm,borderColor:COLORS.purple}
+    ]);
+  }catch(e){console.error(e)}
+  btn.disabled=false;
+}
+
+window.addEventListener('load',()=>{ setTimeout(runCFD,500); setTimeout(runUptake,1000); });
