@@ -4,18 +4,35 @@ import socketserver
 import os
 import json
 import glob
+from nvqlink import NVQLink
 
-PORT = 8080
+PORT = 8081  # Changed port to 8081
 # Assuming this script is in backend/
 MATCH_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(MATCH_DIR) # Go up one level to project root
 
 class IGSRequestHandler(http.server.SimpleHTTPRequestHandler):
+    nvqlink = NVQLink()  # Initialize NVQLink once for the handler
     def do_GET(self):
+        # Test endpoint for NVQLink connection
+        if self.path == '/api/nvqlink-test':
+            try:
+                # Simple test: return a dummy geometry
+                test_params = {"implant_type": "molar"}
+                geometry = self.nvqlink.generate_implant_geometry(test_params)
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "connected", "geometry_sample": geometry}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+            return
         # API: Latest Session
         if self.path == '/api/latest-session':
             try:
-                sessions_dir = os.path.join(PROJECT_ROOT, 'backend', 'data', 'sessions')
+                sessions_dir = os.path.join(PROJECT_ROOT, 'backend', 'sessions')
                 # Find all session files (exclude igs_plan if they are mixed, but they are named session_*)
                 list_of_files = glob.glob(os.path.join(sessions_dir, 'session_*.json'))
                 

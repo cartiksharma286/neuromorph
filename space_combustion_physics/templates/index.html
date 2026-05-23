@@ -44,6 +44,9 @@
   <button class="tab-btn" data-tab="tab-traj">🛸 Trajectory</button>
   <button class="tab-btn" data-tab="tab-payload">📦 Payload</button>
   <button class="tab-btn" data-tab="tab-finite">𝚽 Finite Math</button>
+  <button class="tab-btn" data-tab="tab-canadarm">🤖 Canada Arm 3 Kinematics</button>
+  <button class="tab-btn" data-tab="tab-elec">🔌 Electrical Specs</button>
+  <button class="tab-btn" data-tab="tab-dbs">🧠 Dementia Cure (DBS)</button>
 </nav>
 
 <div class="panels">
@@ -82,6 +85,80 @@
       <div class="card"><div class="card-title">Fuel Fraction</div><div class="chart-wrap"><canvas id="chart-cfd-fuel"></canvas></div></div>
     </div>
   </div>
+</div>
+
+
+<!-- 8. CANADA ARM 3 KINEMATICS TAB -->
+<div class="panel" id="tab-canadarm">
+  <div class="section-header"><h2>Canada Arm 3 Kinematic Simulations</h2>
+    <p>Realistic 6-DOF kinematics with prefilled parameters and workspace visualization. Joint limits and a sample pose are provided below.</p>
+    <ul style="font-size:0.95em;line-height:1.5;margin-bottom:10px">
+      <li>Joint 1 (Base): <b>-170° to +170°</b></li>
+      <li>Joint 2 (Shoulder): <b>-90° to +135°</b></li>
+      <li>Joint 3 (Elbow): <b>-135° to +135°</b></li>
+      <li>Joint 4 (Wrist 1): <b>-180° to +180°</b></li>
+      <li>Joint 5 (Wrist 2): <b>-120° to +120°</b></li>
+      <li>Joint 6 (Wrist 3): <b>-360° to +360°</b></li>
+    </ul>
+    <div style="font-size:0.95em;margin-bottom:10px">Sample Pose: <b>[30, 45, -20, 90, 0, 180]</b> | Target: <b>[1.2, 0.5, 2.0]</b> (meters)</div>
+  </div>
+  <div class="controls">
+    <div class="control-group"><label>Joint Angles (deg)</label><input id="inp-canadarm-joints" type="text" value="30,45,-20,90,0,180"/></div>
+    <div class="control-group"><label>End Effector Target (x,y,z)</label><input id="inp-canadarm-ee" type="text" value="1.2,0.5,2.0"/></div>
+    <button class="btn-run" id="btn-canadarm-fk">Run Forward Kinematics</button>
+    <button class="btn-run" id="btn-canadarm-ik">Run Inverse Kinematics</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi blue"><div class="kpi-value" id="kpi-canadarm-x">—</div><div class="kpi-label">End Effector X (m)</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-canadarm-y">—</div><div class="kpi-label">End Effector Y (m)</div></div>
+    <div class="kpi orange"><div class="kpi-value" id="kpi-canadarm-z">—</div><div class="kpi-label">End Effector Z (m)</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Workspace Visualization</div><div class="chart-wrap"><canvas id="chart-canadarm-workspace"></canvas></div></div>
+    <div class="card"><div class="card-title">Kinematic Log &amp; Solution</div><div class="matrix" id="canadarm-log">Awaiting simulation...</div></div>
+  </div>
+  <div class="card" style="margin-top:20px">
+    <div class="card-title">Inverse Kinematics Solution (for Target)</div>
+    <div class="matrix" id="canadarm-ik-solution">—</div>
+  </div>
+</div>
+
+<!-- 9. ELECTRICAL SPECIFICATIONS TAB -->
+<!-- 10. DEMENTIA CURE WITH DEEP BRAIN STIMULATION TAB -->
+<div class="panel" id="tab-dbs">
+  <div class="section-header"><h2>Dementia Cure: Deep Brain Stimulation</h2>
+    <p>Asymptote reasoning beyond continued fractions for continuable interventional repair of cortical sulcii and gyrii. Deep encoding for repair from dementia using advanced DBS simulation.</p>
+  </div>
+  <div class="controls">
+    <div class="control-group"><label>Stimulation Amplitude (V)</label><input id="inp-dbs-amp" type="number" value="3.0" step="0.1"/></div>
+    <div class="control-group"><label>Pulse Width (μs)</label><input id="inp-dbs-width" type="number" value="60" step="1"/></div>
+    <div class="control-group"><label>Frequency (Hz)</label><input id="inp-dbs-freq" type="number" value="130" step="1"/></div>
+    <div class="control-group"><label>Target Region</label><input id="inp-dbs-region" type="text" value="Subthalamic Nucleus"/></div>
+    <button class="btn-run" id="btn-dbs-run">Run DBS Simulation</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi blue"><div class="kpi-value" id="kpi-dbs-efficacy">—</div><div class="kpi-label">Efficacy (%)</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-dbs-repair">—</div><div class="kpi-label">Cortical Repair Score</div></div>
+    <div class="kpi orange"><div class="kpi-value" id="kpi-dbs-asymptote">—</div><div class="kpi-label">Asymptote Reasoning</div></div>
+  </div>
+  <div class="card"><div class="card-title">DBS Simulation Log</div><div class="matrix" id="dbs-log">Awaiting simulation...</div></div>
+</div>
+<div class="panel" id="tab-elec">
+  <div class="section-header"><h2>Electrical Specifications for Payload</h2><p>Power, voltage, current, and connector specs for mission payloads.</p></div>
+  <div class="controls">
+    <div class="control-group"><label>Payload Power (W)</label><input id="inp-elec-power" type="number" value="100"/></div>
+    <div class="control-group"><label>Voltage (V)</label><input id="inp-elec-voltage" type="number" value="28"/></div>
+    <div class="control-group"><label>Current (A)</label><input id="inp-elec-current" type="number" value="3.6"/></div>
+    <div class="control-group"><label>Connector Type</label><input id="inp-elec-connector" type="text" value="MIL-DTL-38999"/></div>
+    <button class="btn-run" id="btn-elec-calc">Calculate Specs</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi blue"><div class="kpi-value" id="kpi-elec-power">—</div><div class="kpi-label">Total Power (W)</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-elec-voltage">—</div><div class="kpi-label">Voltage (V)</div></div>
+    <div class="kpi orange"><div class="kpi-value" id="kpi-elec-current">—</div><div class="kpi-label">Current (A)</div></div>
+    <div class="kpi gold"><div class="kpi-value" id="kpi-elec-connector">—</div><div class="kpi-label">Connector</div></div>
+  </div>
+  <div class="card"><div class="card-title">Payload Electrical Log</div><div class="matrix" id="elec-log">Awaiting calculation...</div></div>
 </div>
 
 <!-- 2. COMBUSTION TAB -->

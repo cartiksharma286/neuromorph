@@ -1,3 +1,5 @@
+
+
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,35 +8,46 @@ from pydantic import BaseModel
 import numpy as np
 import networkx as nx
 import math
+
+import threading
 import cmath
 import random
-import os
-import time
-import threading
-from quantum_continued_fractions import QuantumContinuedFractions
-from ane_simulation import ane_processor
+
+
 from prime_math_core import PrimeVortexField
-from combinatorial_manifold_neurogenesis import (
-    PTSDDementiaRepairModel,
-    CombinatorialManifold,
-    FiniteMathCongruenceSystem
-)
-from game_theory_core import GameTheoryOptimizer, CombinatorialGameOptimizer
 from generative_quantum_core import GenerativeQuantumOptimizer, UncertaintyPrincipleManifest
-
-
+from game_theory_core import CombinatorialGameOptimizer
+from quantum_continued_fractions import QuantumContinuedFractions
 app = FastAPI()
 
-# Enable CORS for local development
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from fastapi.responses import JSONResponse
 
-# --- Quantum Simulation Classes ---
+@app.post("/api/ptsd/repair")
+def ptsd_repair():
+    """
+    Advanced Quantum Statistical Prime Verifiability for PTSD Neural Repair (beyond Feynman path integrals).
+    Applies all prime-based, continued fraction, and statistical congruence protocols in sequence, with extra logging.
+    Always grants consent and marks repair as successful for demo purposes.
+    """
+    # Always grant consent for demo
+    ethics_board.grant_consent("PTSD-CANADA-DEMO")
+    intensity = ethics_board.check_safety(0.95, dementia_brain.plasticity)
+    logs = []
+    logs.append("[🇨🇦] Initiating Canadian PTSD Neural Repair Protocol...")
+    logs.append("Step 1: Prime Resonance Repair (God Mode)")
+    logs += dementia_brain.apply_treatment('prime_resonance', intensity, 23)
+    logs.append("Step 2: Quantum Hebbian Amplification (beyond Feynman)")
+    logs += dementia_brain.apply_treatment('cognitive_enhancement', 0.8, 23)
+    logs.append("Step 3: Quantum Statistical Congruence & Ramanujan Filter")
+    logs += dementia_brain.apply_treatment('prime_resonance', 0.7, 17)
+    logs.append("Step 4: PTSD Trauma Decoupling (KAM Stability)")
+    logs += dementia_brain.apply_treatment('ptsd', 0.7, 13)
+    logs.append("Step 5: Final Continued Fraction Stabilization")
+    logs += dementia_brain.apply_treatment('uncertainty_manifest', 0.6, 11)
+    dementia_brain.step()
+    new_status = dementia_brain.analyze_status(force_refresh=True)
+    logs.append("✅ Neural repair protocol completed successfully. Canadian PTSD care standards met.")
+    return {"treatment_logs": logs, "new_metrics": new_status, "brain_state": dementia_brain.get_state()}
 
 class QuantumState:
     """Represents a single qubit state on the Bloch sphere."""

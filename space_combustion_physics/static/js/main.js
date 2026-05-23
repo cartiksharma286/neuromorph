@@ -1,3 +1,22 @@
+// ═══════════════════════════════════════════════
+// 10. DEMENTIA CURE WITH DEEP BRAIN STIMULATION (DBS)
+// ═══════════════════════════════════════════════
+document.getElementById('btn-dbs-run')?.addEventListener('click', runDBS);
+async function runDBS() {
+  const amp = parseFloat(document.getElementById('inp-dbs-amp').value);
+  const width = parseFloat(document.getElementById('inp-dbs-width').value);
+  const freq = parseFloat(document.getElementById('inp-dbs-freq').value);
+  const region = document.getElementById('inp-dbs-region').value;
+  const r = await fetch('/api/dbs', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({amplitude:amp, width, freq, region})
+  });
+  const d = await r.json();
+  setKPI('kpi-dbs-efficacy', d.efficacy.toFixed(1));
+  setKPI('kpi-dbs-repair', d.repair_score);
+  setKPI('kpi-dbs-asymptote', d.asymptote);
+  setHTML('dbs-log', d.log);
+}
 // ── Global Error Handling & Starfield ─────────────────
 window.onerror=(msg,url,ln)=>console.error('JS Error:',msg,'at',url,':',ln);
 
@@ -269,3 +288,71 @@ async function runUptake(){
 }
 
 window.addEventListener('load',()=>{ setTimeout(runCFD,500); setTimeout(runUptake,1000); });
+
+// ═══════════════════════════════════════════════
+// 8. CANADA ARM 3 KINEMATICS TAB
+// ═══════════════════════════════════════════════
+
+async function runCanadaArmFK() {
+  const joints = document.getElementById('inp-canadarm-joints').value.split(',').map(Number);
+  const r = await fetch('/api/canadarm_kinematics', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({mode:'fk', joints})
+  });
+  const d = await r.json();
+  setKPI('kpi-canadarm-x', d.x.toFixed(2));
+  setKPI('kpi-canadarm-y', d.y.toFixed(2));
+  setKPI('kpi-canadarm-z', d.z.toFixed(2));
+  setHTML('canadarm-log', d.log);
+  mkChart('chart-canadarm-workspace', null, [{
+    label:'Workspace',
+    data: d.workspace.map(pt=>({x:pt[0],y:pt[1]})),
+    borderColor: COLORS.blue, showLine:true, pointRadius:2, fill:true, backgroundColor:'rgba(0,200,255,0.08)'
+  }], {type:'scatter',scales:{x:{title:{display:true,text:'X (m)'}},y:{title:{display:true,text:'Y (m)'}}}});
+}
+
+async function runCanadaArmIK() {
+  const ee_target = document.getElementById('inp-canadarm-ee').value.split(',').map(Number);
+  const r = await fetch('/api/canadarm_kinematics', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({mode:'ik', ee_target})
+  });
+  const d = await r.json();
+  setHTML('canadarm-ik-solution', d.joints ? d.joints.map((j,i)=>`Joint ${i+1}: ${j.toFixed(2)}°`).join('<br>') : 'No solution');
+  setHTML('canadarm-log', d.log);
+  document.getElementById('inp-canadarm-joints').value = d.joints.map(j=>j.toFixed(1)).join(',');
+  mkChart('chart-canadarm-workspace', null, [{
+    label:'Workspace',
+    data: d.workspace.map(pt=>({x:pt[0],y:pt[1]})),
+    borderColor: COLORS.blue, showLine:true, pointRadius:2, fill:true, backgroundColor:'rgba(0,200,255,0.08)'
+  }], {type:'scatter',scales:{x:{title:{display:true,text:'X (m)'}},y:{title:{display:true,text:'Y (m)'}}}});
+}
+
+document.getElementById('btn-canadarm-fk')?.addEventListener('click', runCanadaArmFK);
+document.getElementById('btn-canadarm-ik')?.addEventListener('click', runCanadaArmIK);
+
+// Auto-run both FK and IK on tab load with prefilled params
+document.querySelector('.tab-btn[data-tab="tab-canadarm"]')?.addEventListener('click', ()=>{
+  setTimeout(runCanadaArmFK, 200);
+  setTimeout(runCanadaArmIK, 600);
+});
+
+// ═══════════════════════════════════════════════
+// 9. ELECTRICAL SPECS TAB
+// ═══════════════════════════════════════════════
+document.getElementById('btn-elec-calc')?.addEventListener('click', async()=>{
+  const power = parseFloat(document.getElementById('inp-elec-power').value);
+  const voltage = parseFloat(document.getElementById('inp-elec-voltage').value);
+  const current = parseFloat(document.getElementById('inp-elec-current').value);
+  const connector = document.getElementById('inp-elec-connector').value;
+  const r = await fetch('/api/electrical_specs', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({power, voltage, current, connector})
+  });
+  const d = await r.json();
+  setKPI('kpi-elec-power', d.power.toFixed(1));
+  setKPI('kpi-elec-voltage', d.voltage.toFixed(1));
+  setKPI('kpi-elec-current', d.current.toFixed(2));
+  setKPI('kpi-elec-connector', d.connector);
+  setHTML('elec-log', d.log);
+});

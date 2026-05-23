@@ -1,0 +1,92 @@
+# Finite Math & DBS Protocols: Equations, Plots, and Clinical Details
+
+## 1. Trajectory Pathways with Quantum Elliptic Integrals
+
+Let $x(t)$ be the neural pathway position at time $t$:
+
+$$
+x(t) = A \cdot \text{sn}(\omega t + \phi, k) + B \cdot \text{cn}(\omega t + \phi, k)
+$$
+
+- $\text{sn}$, $\text{cn}$: Jacobi elliptic functions
+- $A, B$: amplitudes
+- $\omega$: frequency
+- $\phi$: phase
+- $k$: elliptic modulus
+
+### Characteristic Equation (Quantum Trajectory)
+
+The characteristic equation for the quantum neural pathway:
+$$
+\frac{d^2x}{dt^2} + \omega^2 x = 0 \implies x(t) = C_1 \text{sn}(\omega t, k) + C_2 \text{cn}(\omega t, k)
+$$
+
+## 2. DBS Efficacy & Response Models
+
+### Continued Fraction Model for DBS Efficacy
+
+$$
+E(t) = \cfrac{a_0}{1 + \cfrac{a_1 t}{1 + \cfrac{a_2 t^2}{1 + \cdots}}}
+$$
+
+### Elliptic Integral Model for DBS Response
+
+$$
+R(t) = F(\omega t, k) = \int_0^t \frac{1}{\sqrt{1 - k^2 \sin^2(\omega \tau)}} d\tau
+$$
+
+### Combined Protocol Equation
+
+$$
+P(t) = \alpha E(t) + \beta R(t)
+$$
+
+## 3. Clinical Protocol Details
+
+- **Target Regions:** Amygdala, vmPFC, Hippocampus
+- **Stimulation Parameters:**
+    - Frequency: 20–130 Hz
+    - Pulse Width: 60–120 μs
+    - Voltage: 1.5–5.0 V
+- **Stages:**
+    1. Baseline Assessment (imaging, neuropsychiatric eval)
+    2. Target Localization (MRI-guided)
+    3. Initial DBS Titration (low-frequency safety)
+    4. Efficacy Optimization (high-frequency)
+    5. Maintenance & Monitoring (adaptive closed-loop)
+
+## 4. Clinical Plots (Described)
+
+- **Efficacy vs. Time:**
+    - S-shaped (sigmoid) curve, rapid rise, plateau
+- **Response vs. Time:**
+    - Elliptic integral curve, smooth, non-linear growth
+- **Combined Protocol:**
+    - Weighted sum, showing optimal clinical window
+
+## 5. Derivations
+
+### Continued Fraction Expansion
+
+Given $E(t)$ as above, the expansion is:
+$$
+E(t) = a_0 \left[1 - a_1 t + (a_1^2 - a_2) t^2 + \cdots \right]
+$$
+
+### Elliptic Integral Derivation
+
+For $R(t)$:
+$$
+R(t) = \int_0^t \frac{1}{\sqrt{1 - k^2 \sin^2(\omega \tau)}} d\tau
+$$
+This is the incomplete elliptic integral of the first kind, $F(\omega t, k)$.
+
+## 6. References
+- Jacobi Elliptic Functions
+- Elliptic Integrals (First Kind)
+- Continued Fractions in Control Theory
+- DBS Clinical Protocols
+
+---
+
+*This document was generated automatically and describes the mathematical and clinical framework for optimal DBS protocols using finite math, continued fractions, and elliptic integrals.*

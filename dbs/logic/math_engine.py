@@ -273,3 +273,121 @@ def simulate_treatment_plan(nodes):
             "optimized_yield": congruence_optimization({"voltage": field * 100, "pulse_width": 0.2})
         })
     return results
+
+def simulate_quantum_elliptic_dementia(decline_rate=0.05, dbs_amplitude=30.0, singularity_factor=0.15, frequency=6.0):
+    """
+    Simulates advanced dementia progress and DBS treatment paradigms using quantum elliptic integrals.
+    Legendre's complete elliptic integrals are computed using scipy.special.ellipk and ellipe
+    to model singular attractor fields in deep brain structures and their regularization.
+    """
+    from scipy.special import ellipk, ellipe
+    import numpy as np
+
+    # Generate 60 months
+    months = np.linspace(0, 60, 60)
+    
+    # 1. Simulate Cognitive Trajectories (MMSE: 30 is perfect, 0 is severe)
+    # The standard trajectory is prone to a pole singularity at t = 30
+    standard_scores = []
+    elliptic_scores = []
+    
+    for t in months:
+        # Standard care decay: standard exponential decay + attractor pole effect near t = 30
+        base_decay = 30.0 * np.exp(-decline_rate * (t / 12.0))
+        
+        # Near t = 30, standard care hits a severe neural breakdown pole
+        # We model this singularity with a pole: 1.0 / abs(t - 30)
+        singularity_proximity = 1.0 / (abs(t - 30.0) + 1.0)
+        pole_impact = 10.0 * singularity_proximity
+        
+        std_score = base_decay - pole_impact + np.random.normal(0, 0.5)
+        std_score = max(2.0, min(30.0, std_score))
+        standard_scores.append(round(float(std_score), 2))
+        
+        # Elliptic DBS care: DBS amplitude couples into elliptic modulus k
+        # k(t) represents the topological loop modulus. 
+        # Modulating parameter k must be < 1.0 to avoid singularity.
+        # We regularize using the singularity_factor (epsilon)
+        k_base = np.sin(0.1 * t + (frequency / 10.0))
+        # Ensure modulus k is between 0 and 1-epsilon
+        k = abs(k_base) * (1.0 - singularity_factor)
+        
+        # Elliptic integrals K(k) and E(k)
+        K_val = ellipk(k**2)
+        E_val = ellipe(k**2)
+        
+        # DBS contribution: E(k) regularizes the space, K(k) models logarithmic potential
+        # E(k) stays bounded (1 to pi/2), K(k) grows logarithmically near singularity.
+        # Elliptic optimization yields a smooth bypass
+        dbs_effect = (dbs_amplitude / 10.0) * (3.0 * E_val - 0.5 * K_val)
+        
+        ell_score = base_decay + dbs_effect + np.random.normal(0, 0.4)
+        ell_score = max(5.0, min(30.0, ell_score))
+        elliptic_scores.append(round(float(ell_score), 2))
+        
+    # 2. Simulate Trajectory Tracing Coordinate Paths in Cortical Space
+    # Standard: spirals inward toward the attractor singular pole at (0, 0, 0) and collapses
+    # Elliptic: spirals inward, but when it approaches the pole, the regularized field
+    # (governed by elliptic integrals) pushes it out into a stable, healthy orbit
+    std_path = []
+    ell_path = []
+    
+    # 200 high-resolution points for smooth canvas rendering
+    t_points = np.linspace(0, 4 * np.pi, 200)
+    
+    for tp in t_points:
+        # Radius decreases (spiraling inward)
+        r_std = 5.0 * np.exp(-0.25 * tp)
+        
+        # Standard path falls directly into the singularity
+        x_std = r_std * np.cos(tp * 3.0)
+        y_std = r_std * np.sin(tp * 3.0)
+        z_std = 3.0 - (tp * 0.5)
+        
+        # Add high-velocity collapse near singularity
+        if tp > 2 * np.pi:
+            collapse_scale = (tp - 2 * np.pi) / (2 * np.pi)
+            x_std *= (1.0 - collapse_scale)
+            y_std *= (1.0 - collapse_scale)
+            z_std -= collapse_scale * 2.0
+            
+        std_path.append({
+            "x": round(float(x_std), 4),
+            "y": round(float(y_std), 4),
+            "z": round(float(z_std), 4)
+        })
+        
+        # Elliptic regularized path:
+        # Utilizes Jacobi/elliptic coordinate mapping
+        # As it spirals in, the boundary limit acts as an elliptic shield
+        k_t = (frequency / 25.0) * (1.0 - singularity_factor)
+        K_k = ellipk(k_t**2)
+        
+        # Regularized radius stays bounded away from 0
+        r_ell = 5.0 * np.exp(-0.15 * tp) + 0.8 * K_k
+        
+        x_ell = r_ell * np.cos(tp * 3.0)
+        y_ell = r_ell * np.sin(tp * 3.0)
+        z_ell = 3.0 - (tp * 0.3) + 0.5 * ellipe(k_t**2)
+        
+        ell_path.append({
+            "x": round(float(x_ell), 4),
+            "y": round(float(y_ell), 4),
+            "z": round(float(z_ell), 4)
+        })
+        
+    # Calculate KPIs
+    kpi_rest = round(float(dbs_amplitude * 1.35 + frequency * 1.5), 1)
+    kpi_coh = round(float(100.0 - decline_rate * 120.0 * (1.0 - singularity_factor)), 1)
+    
+    return {
+        "time_months": months.tolist(),
+        "cognitive_trajectory_standard": standard_scores,
+        "cognitive_trajectory_elliptic": elliptic_scores,
+        "tracing_path": {
+            "standard": std_path,
+            "elliptic": ell_path
+        },
+        "kpi_restoration": kpi_rest,
+        "kpi_coherence": kpi_coh
+    }

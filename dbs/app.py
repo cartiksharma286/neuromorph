@@ -2,7 +2,7 @@ import random
 import os
 from flask import Flask, render_template, jsonify, request
 from flask_cors import CORS
-from logic.math_engine import simulate_treatment_plan, continued_fraction_signal, get_system_specs, simulate_fornix_conductivity, get_fornix_protocol, analyze_fornix_biosignals, get_ptsd_staging_protocol, optimize_ptsd_tbi_protocol_generative
+from logic.math_engine import simulate_treatment_plan, continued_fraction_signal, get_system_specs, simulate_fornix_conductivity, get_fornix_protocol, analyze_fornix_biosignals, get_ptsd_staging_protocol, optimize_ptsd_tbi_protocol_generative, simulate_quantum_elliptic_dementia
 
 app = Flask(__name__)
 CORS(app)
@@ -486,6 +486,17 @@ def hd_cure_simulation():
             {"time": 36, "label": "Stage IV: Cortical Restitution"}
         ]
     })
+
+@app.route('/api/quantum-dementia-simulation', methods=['POST'])
+def quantum_dementia_simulation():
+    data = request.json or {}
+    decline_rate = float(data.get('decline_rate', 0.05))
+    dbs_amplitude = float(data.get('dbs_amplitude', 30.0))
+    singularity_factor = float(data.get('singularity_factor', 0.15))
+    frequency = float(data.get('frequency', 6.0))
+    
+    results = simulate_quantum_elliptic_dementia(decline_rate, dbs_amplitude, singularity_factor, frequency)
+    return jsonify(results)
 
 
 if __name__ == '__main__':

@@ -1,56 +1,6 @@
-            <button class="tab-btn" onclick="switchTab('fasd-statopt', event)">FASD StatOpt Cure</button>
-                <button class="tab-btn" onclick="switchTab('fas-cortical', event)">FAS Cortical Simulation</button>
-                <button class="tab-btn" onclick="switchTab('fas-bem', event)">FAS Boundary Element</button>
-                <button class="tab-btn" onclick="switchTab('fas-cf', event)">FAS Continued Fractions</button>
-                <button class="tab-btn" onclick="switchTab('fas-feynman', event)">FAS Feynman Pathways</button>
-                <button class="tab-btn" onclick="switchTab('fas-postop', event)">FAS Post-Op Validation</button>
-            <div id="fasd-statopt-sidebar" class="tab-content">
-                <div class="glass-panel">
-                    <h2>FASD StatOpt Cure</h2>
-                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
-                        Statistical Parametric Optimization for Deep Brain Stimulation in Fetal Alcohol Spectrum Disorder.<br>
-                        Obtain statistical parametric estimates, Bode characteristics, and visualize curves and manifolds for cortical geodesics with DBS current simulation.
-                    </p>
-                    <button class="btn-primary" id="btn-generate-fasd-statopt" onclick="simulateFASDStatOpt()" style="margin-top: 10px;">Run StatOpt Simulation</button>
-                </div>
-            </div>
-            <div id="fasd-statopt" class="tab-content main-content" style="display:none;">
-                <div class="glass-panel" style="margin-bottom: 10px;">
-                    <h2>Statistical Parametric Estimates</h2>
-                    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
-                        <div>
-                            <div style="font-size: 13px; color: #a0e7ff;">Current Stage</div>
-                            <div id="fasd-statopt-stage" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 13px; color: #a0e7ff;">Efficacy</div>
-                            <div id="fasd-statopt-efficacy" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 13px; color: #a0e7ff;">Timeline</div>
-                            <div id="fasd-statopt-timeline" style="font-size: 18px; font-weight: 600; color: #fff;">-</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="glass-panel" style="margin-bottom: 10px; max-height: 220px; overflow-y: auto;">
-                    <h3 style="margin-bottom: 8px;">Protocol Stages</h3>
-                    <div style="max-height: 160px; overflow-y: auto;">
-                        <ul id="fasd-statopt-stages-list" style="font-size: 13px; color: #fff; padding-left: 18px; margin: 0;"></ul>
-                    </div>
-                </div>
-                <div class="glass-panel" style="margin-bottom: 10px;">
-                    <h3>Bode Characteristics & Frequency Response</h3>
-                    <canvas id="fasdStatOptBodeChart" height="180"></canvas>
-                </div>
-                <div class="glass-panel" style="margin-bottom: 10px;">
-                    <h3>Statistical Parameteric Optimization Plot</h3>
-                    <canvas id="fasdStatOptChart" height="180"></canvas>
-                </div>
-                <div class="glass-panel">
-                    <h3>Cortical Geodesic Manifolds (DBS Current)</h3>
-                    <canvas id="fasdStatOptGeodesicChart" height="180"></canvas>
-                </div>
-            </div>
+            <!-- FASD and FAS tab buttons removed for advanced quantum elliptic cure layout -->
+            <!-- FASD StatOpt sidebar removed -->
+            <!-- FASD StatOpt main content removed -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -78,52 +28,40 @@
             </div>
         </header>
 
-                <nav class="tab-bar">
-            <button class="tab-btn" onclick="switchTab('planner', event)">Treatment Planner</button>
-            <button class="tab-btn" onclick="switchTab('conductivity', event)">Conductivity Analysis</button>
-            <button class="tab-btn" onclick="switchTab('dementia', event)">Dementia Opt. Protocol</button>
-            <button class="tab-btn" onclick="switchTab('electrical', event)">Electrical Specs</button>
-            <button class="tab-btn" onclick="switchTab('fea', event)">Cortical FEA Manifolds</button>
-            <button class="tab-btn" onclick="switchTab('smartaging', event)">Smart Aging Sim</button>
-            <button class="tab-btn" onclick="switchTab('protocols', event)">Clinical Protocols</button>
-            <button class="tab-btn" onclick="switchTab('pareto', event)">Pareto Optimization</button>
-            <button class="tab-btn" onclick="switchTab('ms', event)">MS Ablation</button>
-            <button class="tab-btn" onclick="switchTab('alexander', event)">Alexander's Disease</button>
-            <button class="tab-btn" onclick="switchTab('alexander-cf', event)">Alexander CF Addendum</button>
-            <button class="tab-btn" onclick="switchTab('huntington', event)">Huntington's Disease</button>
-            <button class="tab-btn" onclick="switchTab('he-ms', event)">HE: MS</button>
-            <button class="tab-btn" onclick="switchTab('he-huntington', event)">HE: Huntington's</button>
-            <button class="tab-btn" onclick="switchTab('he-alexander', event)">HE: Alexander's</button>
-            <button class="tab-btn" onclick="switchTab('cortical-sim', event)">Cortical Simulation</button>
-            <button class="tab-btn" onclick="switchTab('market-valuation', event)">Net Market Valuation (2026-2036)</button>
-            <button class="tab-btn" onclick="switchTab('sea-valuation', event)">South Asia/SEA Market (10 YR)</button>
-            <button class="tab-btn" onclick="switchTab('india-valuation', event)">India Projections (10 YR)</button>
-            <button class="tab-btn" onclick="switchTab('america-valuation', event)">America Projections (10 YR)</button>
-            <!-- Removed Staging Protocol Tab -->
-            <!-- <button class="tab-btn" onclick="switchTab('fas-cure', event)">FAS Cure QML Opt</button> -->
-            <button class="tab-btn" onclick="switchTab('fas-dist', event)">FAS Statistical Distribution Learning</button>
-                        <!-- FAS QML Cure tab removed -->
-                        <div id="fas-dist-sidebar" class="tab-content">
-                            <div class="glass-panel">
-                                <h2>FAS Statistical Distribution-wise Learning</h2>
-                                <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);">
-                                    Deep Brain Stimulation protocol simulation for Fetal Alcohol Syndrome using statistical distribution-wise learning.<br>
-                                    Analyze and visualize the impact of different statistical distributions on neurodevelopmental recovery and DBS efficacy.<br><br>
-                                    <b>Key Features:</b><br>
-                                    &bull; Distribution-based learning and simulation<br>
-                                    &bull; Efficacy and recovery projections<br>
-                                    &bull; Interactive plots for distribution effects on DBS
-                                </p>
-                                <button class="btn-primary" id="btn-generate-fas-dist" onclick="simulateFASDist()" style="margin-top: 10px;">Run Distribution Learning</button>
-                            </div>
-                        </div>
-            <button class="tab-btn" onclick="switchTab('fas', event)">FAS Neurosymbolic</button>
-            <button class="tab-btn" onclick="switchTab('hd-cure', event)">HD Stage-Gated Cure</button>
-            <!-- <button class="tab-btn" onclick="switchTab('fasd-cure', event)">FASD QML Cure</button> -->
-            <!-- <button class="tab-btn" onclick="switchTab('fasd-statopt', event)">FASD StatOpt Cure</button> -->
-            <button class="tab-btn" onclick="switchTab('veteran-ptsd-dbs', event)">DBS for Veteran Care PTSD</button>
-            <button class="tab-btn" onclick="switchTab('canada-veteran', event)">Canadian Veteran PTSD</button>
-        </nav>
+                <nav class="tab-bar-horizontal">
+                    <button class="tab-btn" onclick="switchTab('planner', event)">Treatment Planner</button>
+                    <button class="tab-btn" onclick="switchTab('conductivity', event)">Conductivity Analysis</button>
+                    <button class="tab-btn" onclick="switchTab('dementia', event)">Dementia Opt. Protocol</button>
+                    <button class="tab-btn" onclick="switchTab('quantum-dementia', event)">Quantum Elliptic Dementia</button>
+                    <button class="tab-btn" onclick="switchTab('electrical', event)">Electrical Specs</button>
+                    <button class="tab-btn" onclick="switchTab('fea', event)">Cortical FEA Manifolds</button>
+                    <button class="tab-btn" onclick="switchTab('smartaging', event)">Smart Aging Sim</button>
+                    <button class="tab-btn" onclick="switchTab('protocols', event)">Clinical Protocols</button>
+                    <button class="tab-btn" onclick="switchTab('pareto', event)">Pareto Optimization</button>
+                    <button class="tab-btn" onclick="switchTab('ms', event)">MS Ablation</button>
+                    <button class="tab-btn" onclick="switchTab('alexander', event)">Alexander's Disease</button>
+                    <button class="tab-btn" onclick="switchTab('alexander-cf', event)">Alexander CF Addendum</button>
+                    <button class="tab-btn" onclick="switchTab('huntington', event)">Huntington's Disease</button>
+                    <button class="tab-btn" onclick="switchTab('he-ms', event)">HE: MS</button>
+                    <button class="tab-btn" onclick="switchTab('he-huntington', event)">HE: Huntington's</button>
+                    <button class="tab-btn" onclick="switchTab('he-alexander', event)">HE: Alexander's</button>
+                    <button class="tab-btn" onclick="switchTab('cortical-sim', event)">Cortical Simulation</button>
+                    <button class="tab-btn" onclick="switchTab('market-valuation', event)">Net Market Valuation (2026-2036)</button>
+                    <button class="tab-btn" onclick="switchTab('sea-valuation', event)">South Asia/SEA Market (10 YR)</button>
+                    <button class="tab-btn" onclick="switchTab('india-valuation', event)">India Projections (10 YR)</button>
+                    <button class="tab-btn" onclick="switchTab('america-valuation', event)">America Projections (10 YR)</button>
+                    <button class="tab-btn" onclick="switchTab('hd-cure', event)">HD Stage-Gated Cure</button>
+                    <button class="tab-btn" onclick="switchTab('veteran-ptsd-dbs', event)">DBS for Veteran Care PTSD</button>
+                    <button class="tab-btn" onclick="switchTab('canada-veteran', event)">Canadian Veteran PTSD</button>
+                </nav>
+                <!-- Quantum Elliptic Dementia Main Content -->
+                <div id="quantum-dementia-main" class="tab-content main-content" style="display:none;">
+                    <div class="glass-panel" style="margin-bottom: 10px;">
+                        <h2>Quantum Elliptic Dementia: Trajectory Pathways</h2>
+                        <canvas id="quantumDementiaTrajectoryChart" height="320"></canvas>
+                        <div id="quantum-dementia-insight" style="margin-top: 12px; color: #a0e7ff; font-size: 13px;"></div>
+                    </div>
+                </div>
         <div id="veteran-ptsd-dbs-sidebar" class="tab-content">
             <div class="glass-panel">
                 <h2>DBS for Veteran Care PTSD</h2>
@@ -288,6 +226,29 @@
                         </select>
                     </div>
                     <button class="btn-primary" id="btn-generate-dementia" onclick="updateDementiaChart()" style="margin-top: 10px;">Run Optimization</button>
+                </div>
+            </div>
+
+            <div id="quantum-dementia-sidebar" class="tab-content">
+                <div class="glass-panel">
+                    <h2>Quantum Elliptic Integral Config</h2>
+                    <div class="control-group">
+                        <label for="qdem-decline">Dementia Decline Rate (&eta;): <span id="qdem-decline-disp" style="color:var(--accent-cyan);">0.05</span></label>
+                        <input type="range" id="qdem-decline" min="0.01" max="0.10" step="0.01" value="0.05" oninput="document.getElementById('qdem-decline-disp').innerText = this.value">
+                    </div>
+                    <div class="control-group">
+                        <label for="qdem-amp">DBS Amplitude (V): <span id="qdem-amp-disp" style="color:var(--accent-pink);">30</span></label>
+                        <input type="range" id="qdem-amp" min="10" max="100" step="5" value="30" oninput="document.getElementById('qdem-amp-disp').innerText = this.value">
+                    </div>
+                    <div class="control-group">
+                        <label for="qdem-eps">Regularization (&epsilon;): <span id="qdem-eps-disp" style="color:var(--accent-cyan);">0.15</span></label>
+                        <input type="range" id="qdem-eps" min="0.05" max="0.50" step="0.05" value="0.15" oninput="document.getElementById('qdem-eps-disp').innerText = this.value">
+                    </div>
+                    <div class="control-group">
+                        <label for="qdem-freq">Modulation Freq (Hz): <span id="qdem-freq-disp" style="color:var(--accent-pink);">6.0</span></label>
+                        <input type="range" id="qdem-freq" min="1.0" max="20.0" step="0.5" value="6.0" oninput="document.getElementById('qdem-freq-disp').innerText = this.value">
+                    </div>
+                    <button class="btn-primary" id="btn-run-qdem" onclick="renderQuantumDementiaTrajectory()" style="margin-top: 10px; width: 100%;">Run Quantum Elliptic Simulation</button>
                 </div>
             </div>
 
@@ -458,14 +419,7 @@
                 </div>
             </div>
 
-            <div id="fas-sidebar" class="tab-content">
-                <div class="glass-panel">
-                    <h2>FAS Neurosymbolic DBS</h2>
-                    <p style="font-size: 11px; margin-bottom: 10px; color: var(--text-dim);"
-                    >Fetal Alcohol Syndrome neurodevelopmental inflection point analysis via Bayesian symbolic priors and Feynman path integral trajectory mapping.</p>
-                    <button class="btn-primary" id="btn-simulate-fas" onclick="simulateFAS()" style="margin-top: 10px;">Run Neurosymbolic Sim</button>
-                </div>
-            </div>
+            <!-- FAS sidebar removed for advanced quantum elliptic cure layout -->
 
             <div id="pareto-sidebar" class="tab-content">
                 <div class="glass-panel">
@@ -640,6 +594,95 @@
                                 <li>Insight and variance metrics update dynamically with protocol optimization.</li>
                                 <li>Plots are interactive and scrollable for detailed review.</li>
                             </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="quantum-dementia-main" class="tab-content" style="height: 100%; overflow-y: auto;">
+                <div class="proj-scroll-outer" style="padding: 20px; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Hero Section -->
+                    <div class="proj-hero" style="background: linear-gradient(135deg, rgba(0,255,204,0.12) 0%, rgba(255,0,200,0.06) 100%); border: 1px solid rgba(0,255,204,0.25); padding: 24px; border-radius: 12px;">
+                        <div class="proj-hero-flag" style="display: inline-block; padding: 4px 10px; background: rgba(0,255,204,0.15); border: 1px solid rgba(0,255,204,0.3); border-radius: 20px; font-size: 10px; font-weight: 600; color: #00ffcc; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">🇨🇦 Advanced Quantum DBS</div>
+                        <div class="proj-hero-title" style="font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px; line-height: 1.2;">Dementia Singularity-Free Cortical Tracing</div>
+                        <p class="proj-hero-desc" style="font-size: 13px; color: var(--text-dim); line-height: 1.5; margin: 0 0 20px 0;">
+                            Overcoming action-potential path-integral coordinate singularities in deep hippocampal loops using Legendre complete elliptic integrals of the first and second kind.
+                        </p>
+                        <div class="proj-hero-kpis" style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 10px;">
+                            <div class="proj-kpi" style="flex: 1; min-width: 140px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="proj-kpi-val" style="font-size: 18px; font-weight: 700; color:#00ffcc;" id="kpi-qdem-singularity">Bypassed</div>
+                                <div class="proj-kpi-lbl" style="font-size: 9px; text-transform: uppercase; color: var(--text-dim); margin-top: 4px;">Singularity Status</div>
+                            </div>
+                            <div class="proj-kpi" style="flex: 1; min-width: 140px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="proj-kpi-val" style="font-size: 18px; font-weight: 700; color:#ff00c8;" id="kpi-qdem-coherence">98.7%</div>
+                                <div class="proj-kpi-lbl" style="font-size: 9px; text-transform: uppercase; color: var(--text-dim); margin-top: 4px;">Trajectory Coherence</div>
+                            </div>
+                            <div class="proj-kpi" style="flex: 1; min-width: 140px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="proj-kpi-val" style="font-size: 18px; font-weight: 700; color:#00f2ff;" id="kpi-qdem-restoration">+42.5%</div>
+                                <div class="proj-kpi-lbl" style="font-size: 9px; text-transform: uppercase; color: var(--text-dim); margin-top: 4px;">Hippocampal Restoration</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cortical Tracing Visualization Canvas -->
+                    <div class="proj-card" style="background: rgba(20,20,35,0.4); border: 1px solid rgba(255,255,255,0.08); padding: 20px; border-radius: 12px;">
+                        <h3 style="font-size: 16px; color:#fff; margin:0 0 6px 0;">Real-Time Cortical Trajectory Tracing (Legendre Projection)</h3>
+                        <p style="font-size: 11px; color: var(--text-dim); margin: 0 0 16px 0;">
+                            Visualizing the deep brain tractography coordinates. The singular pathway collapses directly into the localized synaptic pole singularity, whereas the quantum elliptic path regularizes the field boundary to safely bridge the structural gap. Use the vertical scroller bar to scrub through the trajectory pathways.
+                        </p>
+                        <div style="display: flex; gap: 15px; align-items: stretch; height: 320px;">
+                            <!-- Canvas Wrapper -->
+                            <div style="position: relative; flex: 1; background: rgba(0,0,0,0.55); border-radius: 8px; border: 1px solid rgba(0,255,204,0.15); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                <canvas id="qdem-tracing-canvas" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></canvas>
+                                <div style="position: absolute; bottom: 10px; right: 15px; display: flex; gap: 15px; font-size: 10px; background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); z-index: 10;">
+                                    <span style="color: #ff3366; display: flex; align-items: center; gap: 6px;"><span style="display:inline-block; width:8px; height:8px; background:#ff3366; border-radius:50%;"></span>Standard Path (Singular Collapse)</span>
+                                    <span style="color: #00ffcc; display: flex; align-items: center; gap: 6px;"><span style="display:inline-block; width:8px; height:8px; background:#00ffcc; border-radius:50%;"></span>Quantum Elliptic Path (Smooth Bypass)</span>
+                                </div>
+                                <!-- HUD Overlay for Scrub Details -->
+                                <div id="qdem-scrub-hud" style="position: absolute; top: 15px; left: 15px; background: rgba(10,10,20,0.85); border: 1px solid rgba(0,255,204,0.3); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 9px; color: rgba(255,255,255,0.9); line-height: 1.4; pointer-events: none; z-index: 10; min-width: 170px;">
+                                    <div style="font-weight: bold; color: #00ffcc; border-bottom: 1px solid rgba(0,255,204,0.2); padding-bottom: 4px; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                                        <span>PATHWAY ANALYZER</span>
+                                        <span id="qdem-hud-step" style="color: #ffaa00;">T=0.00</span>
+                                    </div>
+                                    <div>Std (x,y,z): <span id="qdem-hud-std" style="color: #ff3366;">(0.00, 0.00, 0.00)</span></div>
+                                    <div>Ell (x,y,z): <span id="qdem-hud-ell" style="color: #00ffcc;">(0.00, 0.00, 0.00)</span></div>
+                                    <div style="margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 4px; display: flex; justify-content: space-between;">
+                                        <span>Bypass Vector:</span>
+                                        <span id="qdem-hud-bypass" style="color: #ffff00; font-weight: bold;">0.0000 mm</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Vertical Scroller Bar Panel -->
+                            <div style="width: 55px; background: rgba(20,20,35,0.5); border: 1px solid rgba(0,255,204,0.15); border-radius: 8px; padding: 12px 4px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box;">
+                                <span style="font-size: 7px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; text-align: center; line-height: 1.1; letter-spacing: 0.5px;">Scrub<br>Path</span>
+                                <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px 0;">
+                                    <input type="range" id="qdem-path-scrubber" min="0" max="199" value="100" style="-webkit-appearance: slider-vertical; width: 8px; height: 100%; background: rgba(0,255,204,0.1); border-radius: 4px; cursor: pointer; outline: none;">
+                                </div>
+                                <span style="font-size: 9px; font-weight: 800; color: #00ffcc; font-family: monospace;" id="qdem-scrubber-val">50%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Efficacy Charts -->
+                    <div class="proj-card" style="background: rgba(20,20,35,0.4); border: 1px solid rgba(255,255,255,0.08); padding: 20px; border-radius: 12px;">
+                        <h3 style="font-size: 16px; color:#fff; margin:0 0 16px 0;">Cognitive Performance Comparison (60-Month Trajectory)</h3>
+                        <div style="height: 320px; position: relative;">
+                            <canvas id="qdem-trajectory-chart" style="width: 100%; height: 100%;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Mathematical Explanation Card -->
+                    <div class="proj-card" style="background: rgba(20,20,35,0.4); border: 1px solid rgba(255,255,255,0.08); padding: 20px; border-radius: 12px; margin-bottom: 10px;">
+                        <h3 style="font-size: 16px; color:#fff; margin:0 0 10px 0;">Quantum Elliptic Physics Formulation</h3>
+                        <div style="font-size: 12px; line-height: 1.6; color: var(--text-dim); display: flex; flex-direction: column; gap: 10px;">
+                            <p style="margin:0;">In standard DBS modeling, deep hippocampal tracts approach attractor poles or mathematical singularities as structural tissue degrades (modeled as $1/(r^2 - \delta)$). These singularities represent critical points of immediate synapse block and signal reflection.</p>
+                            <p style="margin:0;">By shunting the stimulation vector using Legendre elliptic bounds, we represent the electrical action potential length on the warped cortical manifold as a complete elliptic integral:</p>
+                            <div style="background: rgba(0,0,0,0.4); padding: 12px; border-radius: 6px; font-family: monospace; border: 1px solid rgba(0,255,204,0.15); color: #00ffcc; font-size: 11px; line-height: 1.4;">
+                                E(k) = &int;<sub>0</sub><sup>&pi;/2</sup> &radic;(1 - k<sup>2</sup> sin<sup>2</sup> &theta;) d&theta;  <br>
+                                K(k) = &int;<sub>0</sub><sup>&pi;/2</sup> d&theta; / &radic;(1 - k<sup>2</sup> sin<sup>2</sup> &theta;)
+                            </div>
+                            <p style="margin:0;">By bounding the modulus $k < 1.0$ through quantum regularization $\varepsilon$, the trajectory avoids the singular pole ($k = 1.0$), establishing a smooth, continuous path for action potential propagation and driving long-term synaptic recovery.</p>
                         </div>
                     </div>
                 </div>
@@ -1152,44 +1195,7 @@
                             </div>
                         </div>
 
-                                    <div id="fasd-cure-main" class="tab-content" style="height: 100%;">
-                                        <div class="proj-scroll-outer" style="height: 100%; overflow-y: auto; max-height: 100vh; padding-right: 8px;">
-                                            <div class="proj-hero">
-                                                <h1>FASD QML DBS Recovery</h1>
-                                                <p class="proj-hero-desc">Quantum Machine Learning-optimized Deep Brain Stimulation for Fetal Alcohol Syndrome: maximizing neurodevelopmental repair and adaptive function.</p>
-                                                <div class="proj-hero-kpis">
-                                                    <div class="proj-kpi">
-                                                        <span class="proj-kpi-val" id="fasd-cure-stage">Stage I</span>
-                                                        <span class="proj-kpi-label">Current QML Phase</span>
-                                                    </div>
-                                                    <div class="proj-kpi">
-                                                        <span class="proj-kpi-val" id="fasd-cure-efficacy">--%</span>
-                                                        <span class="proj-kpi-label">Optimal Recovery Index</span>
-                                                    </div>
-                                                    <div class="proj-kpi">
-                                                        <span class="proj-kpi-val" id="fasd-cure-timeline">--</span>
-                                                        <span class="proj-kpi-label">Simulation Timeline</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="proj-card">
-                                                <div class="proj-card-title">QML-Driven Recovery &amp; Executive Function</div>
-                                                <div class="chart-wrapper" style="height: 320px; max-width: 100%; position: relative;">
-                                                    <canvas id="fasdCureChart"></canvas>
-                                                </div>
-                                            </div>
-                                            <div class="proj-card">
-                                                <div class="proj-card-title">Cortical Modulation &amp; Adaptive Behavior</div>
-                                                <div class="chart-wrapper" style="height: 260px; max-width: 100%; position: relative;">
-                                                    <canvas id="fasdCureCorticalChart"></canvas>
-                                                </div>
-                                            </div>
-                                            <div class="proj-card" style="margin-top: 10px;">
-                                                <div class="proj-card-title">QML Protocol Stages</div>
-                                                <ul id="fasd-cure-stages-list" style="font-size: 12px; color: #a0e7ff; margin: 0 0 0 18px; list-style-type: square; line-height: 1.7;"></ul>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <!-- FASD QML Cure main content removed for advanced quantum elliptic cure layout -->
 
                         <!-- Chart -->
                         <div class="proj-card">

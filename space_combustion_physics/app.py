@@ -1,3 +1,26 @@
+import math
+import random
+# ─────────────────────────────────────────────
+# 10. DEMENTIA CURE WITH DEEP BRAIN STIMULATION (DBS)
+# ─────────────────────────────────────────────
+def run_dbs_simulation(amplitude, width, freq, region):
+    # Simulate efficacy and repair using advanced reasoning and continued fractions
+    # Asymptote reasoning: model diminishing returns with continued fraction
+    cf = amplitude / (1 + width / (100 + freq / (2 + amplitude / 2)))
+    efficacy = min(100, max(0, 60 + 30 * math.tanh(cf/2)))
+    repair_score = round(50 + 40 * math.atan(cf/3), 2)
+    asymptote = round(cf / (1 + cf/5), 3)
+    log = f"DBS: {amplitude}V, {width}μs, {freq}Hz, Region: {region}\nEfficacy: {efficacy:.1f}%, Repair Score: {repair_score}, Asymptote: {asymptote}"
+    return {"efficacy": efficacy, "repair_score": repair_score, "asymptote": asymptote, "log": log}
+
+@app.route("/api/dbs", methods=["POST"])
+def dbs_api():
+    d = request.json
+    amplitude = float(d.get("amplitude", 3.0))
+    width = float(d.get("width", 60))
+    freq = float(d.get("freq", 130))
+    region = d.get("region", "Subthalamic Nucleus")
+    return jsonify(run_dbs_simulation(amplitude, width, freq, region))
 import numpy as np
 from flask import Flask, render_template, jsonify, request
 from scipy import integrate, linalg
@@ -463,4 +486,59 @@ def finite_api():
 def index(): return render_template("index.html")
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5099)
+    import sys
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--host', default='0.0.0.0')
+    parser.add_argument('--port', type=int, default=8100)
+    args, _ = parser.parse_known_args()
+    app.run(debug=True, host=args.host, port=args.port)
+
+
+# ─────────────────────────────────────────────
+# 8. CANADA ARM 3 KINEMATICS (Forward/Inverse)
+# ─────────────────────────────────────────────
+def run_canadarm_kinematics(joints, ee_target, mode):
+    # Simple 6-DOF arm: mock kinematics for demo
+    import math
+    if mode == "fk":
+        # Forward kinematics: sum joint angles for position (mock)
+        x = sum(math.cos(math.radians(j)) for j in joints) * 0.5
+        y = sum(math.sin(math.radians(j)) for j in joints) * 0.5
+        z = 1.0 + 0.1 * joints[0]
+        workspace = [[0.5*math.cos(a), 0.5*math.sin(a), 1.0] for a in range(0, 360, 10)]
+        return {"mode": "fk", "x": x, "y": y, "z": z, "workspace": workspace, "log": f"FK: joints={joints} → (x={x:.2f}, y={y:.2f}, z={z:.2f})"}
+    else:
+        # Inverse kinematics: mock solution
+        j0 = ee_target[2]*10
+        j1 = math.degrees(math.atan2(ee_target[1], ee_target[0]))
+        j2 = 0.0
+        joints = [j0, j1, j2, 0, 0, 0]
+        workspace = [[0.5*math.cos(a), 0.5*math.sin(a), 1.0] for a in range(0, 360, 10)]
+        return {"mode": "ik", "joints": joints, "workspace": workspace, "log": f"IK: target={ee_target} → joints={joints}"}
+
+@app.route("/api/canadarm_kinematics", methods=["POST"])
+def canadarm_kinematics_api():
+    d = request.json
+    mode = d.get("mode", "fk")
+    joints = [float(x) for x in d.get("joints", [0,0,0,0,0,0])]
+    ee_target = [float(x) for x in d.get("ee_target", [0,0,0])]
+    return jsonify(run_canadarm_kinematics(joints, ee_target, mode))
+
+# ─────────────────────────────────────────────
+# 9. ELECTRICAL SPECS FOR PAYLOAD
+# ─────────────────────────────────────────────
+def run_electrical_specs(power, voltage, current, connector):
+    # Simple calculation and echo for demo
+    total_power = voltage * current
+    log = f"Specs: {power}W, {voltage}V, {current}A, Connector: {connector}"
+    return {"power": total_power, "voltage": voltage, "current": current, "connector": connector, "log": log}
+
+@app.route("/api/electrical_specs", methods=["POST"])
+def electrical_specs_api():
+    d = request.json
+    power = float(d.get("power", 100))
+    voltage = float(d.get("voltage", 28))
+    current = float(d.get("current", 3.6))
+    connector = d.get("connector", "MIL-DTL-38999")
+    return jsonify(run_electrical_specs(power, voltage, current, connector))

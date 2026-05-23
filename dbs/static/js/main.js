@@ -915,6 +915,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const pulseRange = document.getElementById('pulse-range');
     if (pulseRange) pulseRange.addEventListener('input', (e) => { pulseWidth = parseFloat(e.target.value); });
+
+    // Quantum Elliptic Dementia range sliders
+    const qdemDecline = document.getElementById('qdem-decline');
+    if (qdemDecline) qdemDecline.addEventListener('input', () => { runQuantumDementiaSim(); });
+    const qdemAmp = document.getElementById('qdem-amp');
+    if (qdemAmp) qdemAmp.addEventListener('input', () => { runQuantumDementiaSim(); });
+    const qdemEps = document.getElementById('qdem-eps');
+    if (qdemEps) qdemEps.addEventListener('input', () => { runQuantumDementiaSim(); });
+    const qdemFreq = document.getElementById('qdem-freq');
+    if (qdemFreq) qdemFreq.addEventListener('input', () => { runQuantumDementiaSim(); });
 });
 
 // Tab Switching Logic
@@ -949,6 +959,9 @@ function switchTab(tabId, event) {
         simulateCanadianPTSDStatOpt();
         fetchCanadianPTSDQMLCare();
         fetchPTSDTBIPlans();
+    }
+    if (tabId === 'quantum-dementia') {
+        runQuantumDementiaSim();
     }
 }
 
@@ -2434,4 +2447,414 @@ function renderHDCureCorticalChart(data) {
             }
         }
     });
+}
+
+// ==========================================
+// --- Advanced Quantum Elliptic Dementia ---
+// ==========================================
+
+window.qdemTrajectoryChartInstance = null;
+window.qdemAnimationId = null;
+
+async function runQuantumDementiaSim() {
+    const declineEl = document.getElementById('qdem-decline');
+    const ampEl = document.getElementById('qdem-amp');
+    const epsEl = document.getElementById('qdem-eps');
+    const freqEl = document.getElementById('qdem-freq');
+    
+    if (!declineEl || !ampEl || !epsEl || !freqEl) return;
+    
+    const decline = parseFloat(declineEl.value);
+    const amp = parseFloat(ampEl.value);
+    const eps = parseFloat(epsEl.value);
+    const freq = parseFloat(freqEl.value);
+    
+    // Update badge values
+    document.getElementById('qdem-decline-disp').innerText = decline.toFixed(2);
+    document.getElementById('qdem-amp-disp').innerText = amp;
+    document.getElementById('qdem-eps-disp').innerText = eps.toFixed(2);
+    document.getElementById('qdem-freq-disp').innerText = freq.toFixed(1);
+    
+    try {
+        const response = await fetch('/api/quantum-dementia-simulation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                decline_rate: decline,
+                dbs_amplitude: amp,
+                singularity_factor: eps,
+                frequency: freq
+            })
+        });
+        const data = await response.json();
+        
+        // Update KPI Badges
+        document.getElementById('kpi-qdem-singularity').innerText = eps > 0.0 ? "Bypassed" : "COLLAPSED";
+        document.getElementById('kpi-qdem-singularity').style.color = eps > 0.0 ? "#00ffcc" : "#ff3366";
+        document.getElementById('kpi-qdem-coherence').innerText = data.kpi_coherence.toFixed(1) + "%";
+        document.getElementById('kpi-qdem-restoration').innerText = "+" + data.kpi_restoration.toFixed(1) + "%";
+        
+        // Render 60-Month Trajectory Comparison Chart
+        renderQDemTrajectoryChart(data);
+        
+        // Start Canvas Animated Cortical Tracing
+        startQDemCorticalTracing(data.tracing_path);
+        
+    } catch (err) {
+        console.error("Error in quantum dementia simulation fetch:", err);
+    }
+}
+
+function renderQDemTrajectoryChart(data) {
+    const ctx = document.getElementById('qdem-trajectory-chart')?.getContext('2d');
+    if (!ctx) return;
+    
+    if (window.qdemTrajectoryChartInstance) {
+        window.qdemTrajectoryChartInstance.destroy();
+    }
+    
+    window.qdemTrajectoryChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.time_months,
+            datasets: [
+                {
+                    label: 'Standard Care (Singular Collapse)',
+                    data: data.cognitive_trajectory_standard,
+                    borderColor: '#ff3366',
+                    backgroundColor: 'rgba(255, 51, 102, 0.05)',
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 2,
+                    pointHoverRadius: 5
+                },
+                {
+                    label: 'Quantum Elliptic DBS Bypass',
+                    data: data.cognitive_trajectory_elliptic,
+                    borderColor: '#00ffcc',
+                    backgroundColor: 'rgba(0, 255, 204, 0.08)',
+                    borderWidth: 3,
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        font: { size: 11, family: 'Inter, sans-serif' }
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(15, 15, 25, 0.95)',
+                    titleColor: '#00ffcc',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(0, 255, 204, 0.2)',
+                    borderWidth: 1,
+                    titleFont: { family: 'Inter, sans-serif' },
+                    bodyFont: { family: 'Inter, sans-serif' }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        borderColor: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        font: { size: 10, family: 'Inter, sans-serif' }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Timeline (Months)',
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        font: { size: 11, family: 'Inter, sans-serif', weight: 600 }
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        borderColor: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        font: { size: 10, family: 'Inter, sans-serif' }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Cognitive Score (MMSE)',
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        font: { size: 11, family: 'Inter, sans-serif', weight: 600 }
+                    },
+                    min: 0,
+                    max: 30
+                }
+            }
+        }
+    });
+}
+
+function startQDemCorticalTracing(paths) {
+    const canvas = document.getElementById('qdem-tracing-canvas');
+    if (!canvas) return;
+    
+    if (window.qdemAnimationId) {
+        cancelAnimationFrame(window.qdemAnimationId);
+    }
+    
+    const ctx = canvas.getContext('2d');
+    const scrubber = document.getElementById('qdem-path-scrubber');
+    const scrubberVal = document.getElementById('qdem-scrubber-val');
+    const hudStep = document.getElementById('qdem-hud-step');
+    const hudStd = document.getElementById('qdem-hud-std');
+    const hudEll = document.getElementById('qdem-hud-ell');
+    const hudBypass = document.getElementById('qdem-hud-bypass');
+    
+    const maxIdx = Math.max((paths.standard || []).length, (paths.elliptic || []).length) - 1;
+    if (scrubber) scrubber.max = maxIdx > 0 ? maxIdx : 199;
+    
+    // Update HUD on scrubber input
+    if (scrubber) {
+        scrubber.addEventListener('input', function() {
+            const idx = parseInt(this.value);
+            const pct = Math.round((idx / (maxIdx || 1)) * 100);
+            if (scrubberVal) scrubberVal.innerText = pct + '%';
+            updateScrubHUD(idx);
+        });
+    }
+    
+    function updateScrubHUD(idx) {
+        const tVal = (idx / (maxIdx || 1) * 4 * Math.PI).toFixed(2);
+        if (hudStep) hudStep.innerText = 'T=' + tVal;
+        
+        if (paths.standard && paths.standard[idx]) {
+            const s = paths.standard[idx];
+            if (hudStd) hudStd.innerText = '(' + s.x.toFixed(2) + ', ' + s.y.toFixed(2) + ', ' + s.z.toFixed(2) + ')';
+        }
+        if (paths.elliptic && paths.elliptic[idx]) {
+            const e = paths.elliptic[idx];
+            if (hudEll) hudEll.innerText = '(' + e.x.toFixed(2) + ', ' + e.y.toFixed(2) + ', ' + e.z.toFixed(2) + ')';
+        }
+        if (paths.standard && paths.elliptic && paths.standard[idx] && paths.elliptic[idx]) {
+            const s = paths.standard[idx];
+            const e = paths.elliptic[idx];
+            const dist = Math.sqrt((e.x - s.x) ** 2 + (e.y - s.y) ** 2 + (e.z - s.z) ** 2);
+            if (hudBypass) hudBypass.innerText = dist.toFixed(4) + ' mm';
+        }
+    }
+    
+    function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+    }
+    
+    resizeCanvas();
+    
+    let angle = 0;
+    
+    function draw() {
+        const width = canvas.width / (window.devicePixelRatio || 1);
+        const height = canvas.height / (window.devicePixelRatio || 1);
+        if (width === 0 || height === 0) {
+            window.qdemAnimationId = requestAnimationFrame(draw);
+            return;
+        }
+        
+        // Scrubber controls how far along the path we render
+        const scrubIdx = scrubber ? parseInt(scrubber.value) : maxIdx;
+        const renderLen = Math.min(scrubIdx + 1, maxIdx + 1);
+        
+        ctx.fillStyle = 'rgba(10, 10, 15, 0.25)';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Background Grid
+        ctx.strokeStyle = 'rgba(0, 255, 204, 0.04)';
+        ctx.lineWidth = 1;
+        const gridSize = 30;
+        for (let gx = 0; gx < width; gx += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(gx, 0);
+            ctx.lineTo(gx, height);
+            ctx.stroke();
+        }
+        for (let gy = 0; gy < height; gy += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, gy);
+            ctx.lineTo(width, gy);
+            ctx.stroke();
+        }
+        
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const pulse = 6 + 3 * Math.sin(Date.now() / 150);
+        
+        // Singularity core
+        const grad = ctx.createRadialGradient(centerX, centerY, 1, centerX, centerY, pulse * 2.5);
+        grad.addColorStop(0, '#ffcc00');
+        grad.addColorStop(0.3, 'rgba(255, 102, 0, 0.8)');
+        grad.addColorStop(1, 'rgba(255, 51, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, pulse * 2.5, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.fillStyle = 'rgba(255, 204, 0, 0.8)';
+        ctx.font = '8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText("SINGULARITY ATTRACTOR POLE", centerX, centerY - pulse - 8);
+        
+        // Projection matrices
+        const cosYa = Math.cos(angle);
+        const sinYa = Math.sin(angle);
+        const cosXa = Math.cos(angle * 0.5);
+        const sinXa = Math.sin(angle * 0.5);
+        
+        function project(pt) {
+            let x1 = pt.x * cosYa - pt.z * sinYa;
+            let z1 = pt.x * sinYa + pt.z * cosYa;
+            let y2 = pt.y * cosXa - z1 * sinXa;
+            let z2 = pt.y * sinXa + z1 * cosXa;
+            
+            const distance = 8;
+            const scale = 25 * (distance / (distance + z2));
+            return {
+                x: centerX + x1 * scale,
+                y: centerY + y2 * scale
+            };
+        }
+        
+        // Standard path collapse (rendered up to scrub index)
+        if (paths.standard && paths.standard.length > 0) {
+            const stdLen = Math.min(renderLen, paths.standard.length);
+            ctx.beginPath();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#ff3366';
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = '#ff3366';
+            
+            const p0 = project(paths.standard[0]);
+            ctx.moveTo(p0.x, p0.y);
+            for (let i = 1; i < stdLen; i++) {
+                const p = project(paths.standard[i]);
+                ctx.lineTo(p.x, p.y);
+            }
+            ctx.stroke();
+            
+            // Animated traveling node
+            const progress = (Date.now() / 20) % stdLen;
+            const idx = Math.floor(progress);
+            if (paths.standard[idx]) {
+                const nodePt = project(paths.standard[idx]);
+                ctx.fillStyle = '#ff3366';
+                ctx.beginPath();
+                ctx.arc(nodePt.x, nodePt.y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+            
+            // Scrub position diamond marker on standard path
+            const scrubPtIdx = Math.min(scrubIdx, paths.standard.length - 1);
+            if (paths.standard[scrubPtIdx]) {
+                const sp = project(paths.standard[scrubPtIdx]);
+                ctx.save();
+                ctx.translate(sp.x, sp.y);
+                ctx.rotate(Math.PI / 4);
+                ctx.fillStyle = '#ff3366';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff3366';
+                ctx.fillRect(-5, -5, 10, 10);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(-5, -5, 10, 10);
+                ctx.restore();
+            }
+        }
+        
+        // Quantum Elliptic regularized path shunting (rendered up to scrub index)
+        if (paths.elliptic && paths.elliptic.length > 0) {
+            const ellLen = Math.min(renderLen, paths.elliptic.length);
+            ctx.beginPath();
+            ctx.lineWidth = 2.2;
+            ctx.strokeStyle = '#00ffcc';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#00ffcc';
+            
+            const p0 = project(paths.elliptic[0]);
+            ctx.moveTo(p0.x, p0.y);
+            for (let i = 1; i < ellLen; i++) {
+                const p = project(paths.elliptic[i]);
+                ctx.lineTo(p.x, p.y);
+            }
+            ctx.stroke();
+            
+            // Animated traveling node
+            const progress = (Date.now() / 15) % ellLen;
+            const idx = Math.floor(progress);
+            if (paths.elliptic[idx]) {
+                const nodePt = project(paths.elliptic[idx]);
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#00ffcc';
+                ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.arc(nodePt.x, nodePt.y, 5, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+            
+            // Scrub position diamond marker on elliptic path
+            const scrubPtIdx = Math.min(scrubIdx, paths.elliptic.length - 1);
+            if (paths.elliptic[scrubPtIdx]) {
+                const ep = project(paths.elliptic[scrubPtIdx]);
+                ctx.save();
+                ctx.translate(ep.x, ep.y);
+                ctx.rotate(Math.PI / 4);
+                ctx.fillStyle = '#00ffcc';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00ffcc';
+                ctx.fillRect(-5, -5, 10, 10);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(-5, -5, 10, 10);
+                ctx.restore();
+            }
+            
+            // Draw dashed bypass vector line between the two scrub points
+            if (paths.standard && paths.standard[scrubPtIdx]) {
+                const sp = project(paths.standard[Math.min(scrubIdx, paths.standard.length - 1)]);
+                const ep = project(paths.elliptic[scrubPtIdx]);
+                ctx.save();
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.moveTo(sp.x, sp.y);
+                ctx.lineTo(ep.x, ep.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.restore();
+            }
+        }
+        
+        ctx.shadowBlur = 0;
+        angle += 0.007;
+        
+        // Auto-update HUD each frame at current scrub position
+        updateScrubHUD(scrubIdx);
+        
+        window.qdemAnimationId = requestAnimationFrame(draw);
+    }
+    
+    window.qdemAnimationId = requestAnimationFrame(draw);
 }

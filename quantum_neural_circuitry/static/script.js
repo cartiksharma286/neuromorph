@@ -1,3 +1,61 @@
+// --- PTSD Neural Repair Logic ---
+async function launchPTSDRepair() {
+    const status = document.getElementById('ptsd-repair-status');
+    const btn = document.getElementById('btn-ptsd-repair');
+    status.innerText = 'Running...';
+    btn.disabled = true;
+    try {
+        const res = await fetch('/api/ptsd/repair', { method: 'POST' });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Repair failed');
+        }
+        const data = await res.json();
+        // Update logs
+        const logContainer = document.getElementById('ptsd-repair-log');
+        logContainer.innerHTML = '';
+        data.treatment_logs.forEach(log => {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerText = `> ${log}`;
+            logContainer.appendChild(entry);
+        });
+        // Update metrics
+        const m = data.new_metrics;
+        document.getElementById('ptsd-val-plasticity').innerText = m.plasticity_index.toFixed(2);
+        document.getElementById('ptsd-val-density').innerText = m.synaptic_density.toFixed(2);
+        document.getElementById('ptsd-val-mem-coherence').innerText = m.memory_coherence.toFixed(2);
+        document.getElementById('ptsd-val-nim-stability').innerText = m.nim_game_stability.toFixed(4);
+        document.getElementById('ptsd-val-heisenberg-compliance').innerText = m.uncertainty_bound_compliance.toFixed(4);
+        // Update visual graph
+        updateGraphData(data.brain_state);
+        status.innerText = 'Repair Complete';
+    } catch (e) {
+        status.innerText = e.message;
+        const logContainer = document.getElementById('ptsd-repair-log');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerText = `[ERROR] ${e.message}`;
+        entry.style.color = '#ff4444';
+        logContainer.appendChild(entry);
+    } finally {
+        btn.disabled = false;
+    }
+}
+// --- Tab Switching Logic ---
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function () {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        this.classList.add('active');
+        const tabName = this.getAttribute('data-tab');
+        const content = document.getElementById(`${tabName}-tab`);
+        if (content) content.classList.add('active');
+    });
+});
+// PTSD Repair button
+const btnPTSDRepair = document.getElementById('btn-ptsd-repair');
+if (btnPTSDRepair) btnPTSDRepair.addEventListener('click', launchPTSDRepair);
 const canvas = document.getElementById('circuit-canvas');
 const ctx = canvas.getContext('2d');
 
@@ -1161,19 +1219,62 @@ draw();
         btnSimulateTbi.addEventListener('click', async () => {
             const resContainer = document.getElementById('tbi-simulation-results');
             const out = document.getElementById('tbi-output');
-            
+            const chartEl = document.getElementById('tbi-chart');
             resContainer.style.display = 'block';
             out.textContent = "Simulating neuronal repair via continued fraction divergences...\nInitializing phase spaces...";
-            
+
             try {
                 const baseState = document.getElementById('tbi-base-state').value;
                 const order = document.getElementById('tbi-divergence-order').value;
-                
                 const response = await fetch(`/api/tbi/simulate?base_state=${baseState}&divergence_order=${order}`);
                 const data = await response.json();
-                out.textContent = JSON.stringify(data, null, 2);
+
+                // Parse and display summary
+                let summary = `Final Connectivity: ${data.final_connectivity}%\n`;
+                summary += `Expansion Terms: [${data.expansion.join(', ')}]\n`;
+                summary += `\nDivergence Pathway (stepwise):\n`;
+                data.divergence_pathway.forEach((step, idx) => {
+                    summary += `Step ${idx + 1}: Term=${step.term}, Boost=+${step.boost}, Connectivity=${step.connectivity}%\n`;
+                });
+                summary += `\n${data.message}`;
+                out.textContent = summary;
+
+                // Plot connectivity progression
+                if (window.tbiChart) {
+                    window.tbiChart.destroy();
+                }
+                const labels = data.divergence_pathway.map((_, i) => `Step ${i + 1}`);
+                const connectivity = data.divergence_pathway.map(step => step.connectivity);
+                window.tbiChart = new Chart(chartEl.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Connectivity (%)',
+                            data: connectivity,
+                            borderColor: '#ffee00',
+                            backgroundColor: 'rgba(0,255,255,0.1)',
+                            pointBackgroundColor: '#00f3ff',
+                            pointRadius: 4,
+                            fill: true,
+                            tension: 0.25
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: true },
+                            title: { display: true, text: 'TBI Repair Connectivity Progression' }
+                        },
+                        scales: {
+                            y: { min: 0, max: 100, title: { display: true, text: 'Connectivity (%)' } },
+                            x: { title: { display: true, text: 'Repair Step' } }
+                        }
+                    }
+                });
             } catch (err) {
                 out.textContent = "Error during simulation: " + err;
+                if (window.tbiChart) window.tbiChart.destroy();
             }
         });
     }
