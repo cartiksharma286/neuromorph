@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cortical Connectivity</title>
+</head>
+<body>
+    <h2>Cortical Connectivity (Generative AI)</h2>
+    <form method="post" enctype="multipart/form-data">
+        <label>Upload EEG CSV (40 sensors):</label>
+        <input type="file" name="eeg_csv" required><br><br>
+        <input type="submit" value="Run">
+    </form>
+    {% if result %}
+        <h3>Result:</h3>
+        <pre>{{ result }}</pre>
+    {% endif %}
+    <a href="/">Back to Home</a>
+</body>
+</html>

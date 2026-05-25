@@ -5,7 +5,7 @@ import random
 # ─────────────────────────────────────────────
 def run_dbs_simulation(amplitude, width, freq, region):
     # Simulate efficacy and repair using advanced reasoning and continued fractions
-    # Asymptote reasoning: model diminishing returns with continued fraction
+    # Asymptote     python3 quantum_neural_circuitry/launcher_qnc.pyreasoning: model diminishing returns with continued fraction
     cf = amplitude / (1 + width / (100 + freq / (2 + amplitude / 2)))
     efficacy = min(100, max(0, 60 + 30 * math.tanh(cf/2)))
     repair_score = round(50 + 40 * math.atan(cf/3), 2)

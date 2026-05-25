@@ -16,6 +16,10 @@ import uvicorn
 from server import app
 
 if __name__ == "__main__":
-    port = int(os.environ.get('FLASK_RUN_PORT', 8090))  # Default to 8090 for new launch
+    port = int(os.environ.get('FLASK_RUN_PORT', 8091))  # Default to 8091 for new launch
     print(f"Starting Quantum Neural Circuitry App on http://0.0.0.0:{port}")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    try:
+        uvicorn.run(app, host="0.0.0.0", port=port)
+    except Exception as e:
+        print(f"Failed to launch app: {e}")
+        print("If the port is in use, try a different port or kill the process using it.")

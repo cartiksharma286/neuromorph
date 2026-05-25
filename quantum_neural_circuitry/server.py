@@ -1,5 +1,3 @@
-
-
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,17 +6,29 @@ from pydantic import BaseModel
 import numpy as np
 import networkx as nx
 import math
+import os
 
 import threading
 import cmath
 import random
+import time
 
 
 from prime_math_core import PrimeVortexField
 from generative_quantum_core import GenerativeQuantumOptimizer, UncertaintyPrincipleManifest
 from game_theory_core import CombinatorialGameOptimizer
 from quantum_continued_fractions import QuantumContinuedFractions
+
+from combinatorial_manifold_neurogenesis import PTSDDementiaRepairModel
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 from fastapi.responses import JSONResponse
 
@@ -673,305 +683,15 @@ def generate_3d_projection(input: TreatmentInput):
 import threading
 import time
 
-# --- ANE Background Thread ---
-def run_ane_simulation_loop():
-    """ Runs the ANE simulation in a separate thread, linked to quantum coherence. """
-    print("[SYSTEM] Starting Apple Neural Engine (ANE) Background Thread (Coherence Linked)...")
-    while True:
-        try:
-            # Observational Interop: ANE power scales with network coherence
-            # We access the global dementia_brain status.
-            # Use cached status to avoid heavy re-computation on every 50ms tick.
-            status = dementia_brain.analyze_status()
-            coherence = status.memory_coherence
-            
-            # Update ANE processor with derived metrics
-            # High Performance: Scaling ANE capabilities based on neural health
-            ane_processor.total_tops = 128 + (coherence * 672) # Up to 800 TOPS
-            ane_processor.bandwidth = 100 + (coherence * 300)   # Up to 400 GB/s
-            
-            # Thermal efficiency increases with lower frustration (higher stability)
-            stability = status.nim_game_stability
-            ane_processor.efficiency = min(100, 50 + stability * 50)
-            
-            # Physics update
-            ane_processor.update()
-        except Exception as e:
-            # print(f"[ANE DEBUG] {e}") # Suppress for production
-            pass
-        time.sleep(0.05) # 50ms tick rate
 
-@app.on_event("startup")
-def startup_event():
-    # Start the ANE simulation thread
-    t = threading.Thread(target=run_ane_simulation_loop, daemon=True)
-    t.start()
 
-# --- Apple Neural Engine API ---
 
-@app.get("/api/ane/stats")
-def get_ane_stats():
-    # Now this is a pure "Memory Read" operation with O(1) latency
-    # The complex physics update happens in the background thread (IPC via shared memory)
-    return ane_processor.get_stats()
-
-class BenchmarkRequest(BaseModel):
-    model_name: str
-    complexity_tflops: float
-
-@app.post("/api/ane/benchmark")
-def run_ane_benchmark(req: BenchmarkRequest):
-    # Convert TFLOPS to FLOPS
-    floppy = req.complexity_tflops * 1e12
-    ane_processor.submit_job(req.model_name, floppy)
-    return {"status": "Job Submitted", "job": req.model_name}
 
 @app.get("/api/quantum/uncertainty_stats")
 def get_uncertainty_stats():
     """Returns the phase-space density manifest."""
     density = dementia_brain.uncertainty_man.get_phase_space_density(dementia_brain.qubits)
     return {"phase_space_density": density}
-
-
-# Serve static files for frontend
-# Static files mount moved to end of file to avoid masking API routes
-
-# --- Combinatorial Manifold Neurogenesis API ---
-
-class ManifoldInitRequest(BaseModel):
-    pathology_type: str  # 'dementia' or 'ptsd'
-    num_neurons: int = 100
-
-class ManifoldRepairRequest(BaseModel):
-    pathology_type: str
-    num_cycles: int = 5
-    treatment_type: str = "geometric"
-    intensity: float = 0.5
-
-@app.post("/api/manifold/initialize")
-def initialize_manifold(req: ManifoldInitRequest):
-    """Initialize a combinatorial manifold model for specified pathology."""
-    global manifold_dementia, manifold_ptsd
-    
-    try:
-        if req.pathology_type == 'dementia':
-            manifold_dementia = PTSDDementiaRepairModel(
-                num_neurons=24, 
-                pathology_type='dementia'
-            )
-            baseline = manifold_dementia.analyze_topology()
-            baseline_image = manifold_dementia.generate_projection_image("manifold_dementia_baseline.png")
-            return {
-                "status": "initialized",
-                "pathology": "dementia",
-                "baseline_topology": baseline,
-                "baseline_image": baseline_image
-            }
-        elif req.pathology_type == 'ptsd':
-            manifold_ptsd = PTSDDementiaRepairModel(
-                num_neurons=req.num_neurons, 
-                pathology_type='ptsd'
-            )
-            baseline = manifold_ptsd.analyze_topology()
-            baseline_image = manifold_ptsd.generate_projection_image("manifold_ptsd_baseline.png")
-            return {
-                "status": "initialized",
-                "pathology": "ptsd",
-                "baseline_topology": baseline,
-                "baseline_image": baseline_image
-            }
-        else:
-            raise HTTPException(status_code=400, detail="Invalid pathology type")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/manifold/topology/{pathology_type}")
-def get_manifold_topology(pathology_type: str):
-    """Get current topological analysis of the manifold."""
-    global manifold_dementia, manifold_ptsd
-    
-    if pathology_type == 'dementia':
-        if manifold_dementia is None:
-            raise HTTPException(status_code=404, detail="Dementia manifold not initialized")
-        return manifold_dementia.analyze_topology()
-    elif pathology_type == 'ptsd':
-        if manifold_ptsd is None:
-            raise HTTPException(status_code=404, detail="PTSD manifold not initialized")
-        return manifold_ptsd.analyze_topology()
-    else:
-        raise HTTPException(status_code=400, detail="Invalid pathology type")
-
-@app.post("/api/manifold/repair")
-def apply_manifold_repair(req: ManifoldRepairRequest):
-    """Apply neurogenesis-based repair cycles."""
-    global manifold_dementia, manifold_ptsd
-    
-    try:
-        if req.pathology_type == 'dementia':
-            if manifold_dementia is None:
-                # Auto-initialize if not done
-                manifold_dementia = PTSDDementiaRepairModel(
-                    num_neurons=24, 
-                    pathology_type='dementia'
-                )
-            
-            if req.treatment_type != "geometric":
-                functional_log = manifold_dementia.apply_functional_treatment(req.treatment_type, req.intensity)
-                
-                # Propagate to Clinical/Quantum model for parity
-                dementia_brain.apply_treatment(req.treatment_type, req.intensity)
-
-                stats = manifold_dementia.generate_repair_statistics()
-                projection_file = manifold_dementia.generate_projection_image(f"manifold_dementia_repaired.png")
-                
-                return {
-                    "pathology": "dementia",
-                    "functional_logs": functional_log,
-                    "final_statistics": stats,
-                    "repaired_image": projection_file,
-                    "baseline_image": f"manifold_dementia_baseline.png"
-                }
-            
-            repair_history = manifold_dementia.apply_repair_cycle(num_cycles=req.num_cycles)
-            stats = manifold_dementia.generate_repair_statistics()
-            projection_file = manifold_dementia.generate_projection_image(f"manifold_dementia_repaired.png")
-            
-            return {
-                "pathology": "dementia",
-                "repair_history": repair_history,
-                "final_statistics": stats,
-                "repaired_image": projection_file,
-                "baseline_image": f"manifold_dementia_baseline.png"
-            }
-            
-        elif req.pathology_type == 'ptsd':
-            if manifold_ptsd is None:
-                # Auto-initialize if not done
-                manifold_ptsd = PTSDDementiaRepairModel(
-                    num_neurons=100, 
-                    pathology_type='ptsd'
-                )
-            
-            repair_history = manifold_ptsd.apply_repair_cycle(num_cycles=req.num_cycles)
-            stats = manifold_ptsd.generate_repair_statistics()
-            projection_file = manifold_ptsd.generate_projection_image(f"manifold_ptsd_repaired.png")
-            
-            return {
-                "pathology": "ptsd",
-                "repair_history": repair_history,
-                "final_statistics": stats,
-                "repaired_image": projection_file,
-                "baseline_image": f"manifold_ptsd_baseline.png"
-            }
-        else:
-            raise HTTPException(status_code=400, detail="Invalid pathology type")
-            
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/manifold/visualize")
-def visualize_manifold(req: ManifoldInitRequest):
-    """Generate 3D projection of the current manifold state."""
-    global manifold_dementia, manifold_ptsd
-    
-    pathology = req.pathology_type
-    model = None
-    
-    if pathology == 'dementia':
-        model = manifold_dementia
-    elif pathology == 'ptsd':
-        model = manifold_ptsd
-        
-    if model is None:
-        raise HTTPException(status_code=404, detail=f"{pathology} manifold not initialized")
-        
-    # Generate real-time projection from the initialized model
-    try:
-        filename = f"manifold_{pathology}_baseline.png"
-        projection_path = model.generate_projection_image(filename)
-        
-        return {
-            "baseline_image": projection_path,
-            # We don't generate repaired image yet, it will be generated during repair
-            "repaired_image": None 
-        }
-    except Exception as e:
-        print(f"Viz Error: {e}")
-        raise HTTPException(status_code=500, detail="Visualization generation failed")
-
-@app.get("/api/manifold/statistics/{pathology_type}")
-def get_manifold_statistics(pathology_type: str):
-    """Get comprehensive repair statistics."""
-    global manifold_dementia, manifold_ptsd
-    
-    if pathology_type == 'dementia':
-        if manifold_dementia is None:
-            raise HTTPException(status_code=404, detail="Dementia manifold not initialized")
-        stats = manifold_dementia.generate_repair_statistics()
-        if stats is None:
-            raise HTTPException(status_code=400, detail="No repair cycles applied yet")
-        return stats
-        
-    elif pathology_type == 'ptsd':
-        if manifold_ptsd is None:
-            raise HTTPException(status_code=404, detail="PTSD manifold not initialized")
-        stats = manifold_ptsd.generate_repair_statistics()
-        if stats is None:
-            raise HTTPException(status_code=400, detail="No repair cycles applied yet")
-        return stats
-    else:
-        raise HTTPException(status_code=400, detail="Invalid pathology type")
-
-@app.get("/api/manifold/current_stats/{pathology_type}")
-def get_current_manifold_stats(pathology_type: str):
-    """Get current topology metrics without requiring a repair cycle."""
-    global manifold_dementia, manifold_ptsd
-    
-    model = manifold_dementia if pathology_type == 'dementia' else manifold_ptsd
-    
-    if model is None:
-        raise HTTPException(status_code=404, detail=f"{pathology_type} manifold not initialized")
-        
-    return model.analyze_topology()
-
-@app.get("/api/manifold/comparison")
-def get_manifold_comparison():
-    """Compare dementia and PTSD repair outcomes."""
-    global manifold_dementia, manifold_ptsd
-    
-    results = {
-        'dementia': None,
-        'ptsd': None
-    }
-    
-    if manifold_dementia is not None:
-        try:
-            results['dementia'] = manifold_dementia.generate_repair_statistics()
-        except:
-            pass
-    
-    if manifold_ptsd is not None:
-        try:
-            results['ptsd'] = manifold_ptsd.generate_repair_statistics()
-        except:
-            pass
-    
-    return results
-
-@app.post("/api/manifold/reset/{pathology_type}")
-def reset_manifold(pathology_type: str):
-    """Reset a manifold model."""
-    global manifold_dementia, manifold_ptsd
-    
-    if pathology_type == 'dementia':
-        manifold_dementia = None
-        return {"status": "reset", "pathology": "dementia"}
-    elif pathology_type == 'ptsd':
-        manifold_ptsd = None
-        return {"status": "reset", "pathology": "ptsd"}
-    else:
-        raise HTTPException(status_code=400, detail="Invalid pathology type")
-
 
 
 qcf_model = QuantumContinuedFractions(num_qubits=24)
@@ -984,57 +704,96 @@ def apply_quantum_cf():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/tbi/simulate")
-def simulate_tbi_repair(base_state: float = 40.0, divergence_order: int = 10):
-    try:
-        import math
-        # Simulate neural repair via continued fractions
-        val = (3 + math.sqrt(13)) / 2 # Example bronze ratio topological marker
-        
-        divergence_sequence = []
-        current_connectivity = base_state
-        
-        a0 = int(val)
-        rem = val - a0
-        fraction_expansion = [a0]
-        
-        for _ in range(divergence_order):
-            if rem < 1e-10:
-                break
-            inv = 1.0 / rem
-            ak = int(inv)
-            fraction_expansion.append(ak)
-            rem = inv - ak
-            
-            # Neural repair heuristic based on continued fraction term
-            boost = (math.log(ak + 1) * 2.5) + (10.0 / (ak + 1))
-            current_connectivity += boost
-            if current_connectivity > 100.0:
-                current_connectivity = 100.0
-                
-            divergence_sequence.append({
-                "term": ak,
-                "boost": round(boost, 3),
-                "connectivity": round(current_connectivity, 2)
-            })
-            
-            if current_connectivity >= 100.0:
-                break
+class ManifoldInitRequest(BaseModel):
+    pathology_type: str
+    num_neurons: int = 100
 
-        return {
-            "status": "success",
-            "base_state": base_state,
-            "final_connectivity": round(current_connectivity, 2),
-            "expansion": fraction_expansion,
-            "divergence_pathway": divergence_sequence,
-            "message": f"TBI neural network successfully repaired up to {round(current_connectivity, 2)}% via continued fraction divergences."
+class ManifoldRepairRequest(BaseModel):
+    pathology_type: str
+    num_cycles: int = 5
+    treatment_type: str = "geometric"
+    intensity: float = 0.5
+
+@app.post("/api/manifold/initialize")
+def manifold_init(req: ManifoldInitRequest):
+    global manifold_dementia, manifold_ptsd
+    if req.pathology_type == "dementia":
+        manifold_dementia = PTSDDementiaRepairModel(num_neurons=req.num_neurons, pathology_type="dementia")
+    else:
+        manifold_ptsd = PTSDDementiaRepairModel(num_neurons=req.num_neurons, pathology_type="ptsd")
+    return {"status": "success"}
+
+@app.post("/api/manifold/repair")
+def manifold_repair(req: ManifoldRepairRequest):
+    global manifold_dementia, manifold_ptsd
+    model = manifold_dementia if req.pathology_type == "dementia" else manifold_ptsd
+    if not model:
+        raise HTTPException(status_code=400, detail="Model not initialized")
+    
+    logs = model.apply_functional_treatment(req.treatment_type, req.intensity)
+    stats = model.generate_repair_statistics()
+    if not stats:
+        stats = {
+            "final_topology": model.analyze_topology(), 
+            "total_neurons_added": 0, 
+            "repair_cycles": 0, 
+            "pathology_reduction_percent": 0.0
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        
+    return {
+        "functional_logs": logs, 
+        "final_statistics": stats, 
+        "repair_history": model.repair_history,
+        "repaired_image": f"/static/{req.pathology_type}_viz.png"
+    }
 
-# Mount static files at the end to ensure API routes take precedence
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+@app.get("/api/manifold/current_stats/{type}")
+def manifold_stats(type: str):
+    global manifold_dementia, manifold_ptsd
+    model = manifold_dementia if type == "dementia" else manifold_ptsd
+    if not model:
+        raise HTTPException(status_code=400, detail="Model not initialized")
+    return model.analyze_topology()
+
+@app.get("/api/manifold/comparison")
+def manifold_comp():
+    global manifold_dementia, manifold_ptsd
+    return {
+        "dementia": manifold_dementia.analyze_topology() if manifold_dementia else None,
+        "ptsd": manifold_ptsd.analyze_topology() if manifold_ptsd else None
+    }
+
+class ManifoldVizRequest(BaseModel):
+    pathology_type: str
+
+@app.post("/api/manifold/visualize")
+def manifold_viz(req: ManifoldVizRequest):
+    global manifold_dementia, manifold_ptsd
+    model = manifold_dementia if req.pathology_type == "dementia" else manifold_ptsd
+    if not model:
+        raise HTTPException(status_code=400, detail="Model not initialized")
+    
+    filename = f"{req.pathology_type}_viz.png"
+    filepath = f"static/{filename}"
+    model.generate_projection_image(filename=filepath)
+    return {"image_path": f"/static/{filename}"}
+
+# Serve static files for frontend
+# Static files mount moved to end of file to avoid masking API routes
+
+# Explicit root endpoint to serve index.html
+from fastapi.responses import FileResponse
+import os as _os
+
+@app.get("/")
+async def root():
+    index_path = _os.path.join(_os.path.dirname(__file__), "static", "index.html")
+    if _os.path.exists(index_path):
+        return FileResponse(index_path, media_type="text/html")
+    return {"error": "index.html not found"}
+
+app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
 if __name__ == "__main__":
-    port = int(os.environ.get('FLASK_RUN_PORT', 8082))
+    port = int(os.environ.get('FLASK_RUN_PORT', 8091))
     uvicorn.run(app, host="0.0.0.0", port=port)

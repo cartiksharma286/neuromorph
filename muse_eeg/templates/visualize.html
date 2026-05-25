@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visualization</title>
+</head>
+<body>
+    <h2>Visualization (Cortical Flow & Neural Associativity)</h2>
+    <form method="post" enctype="multipart/form-data">
+        <label>Upload Connectivity CSV (40 values):</label>
+        <input type="file" name="conn_csv" required><br><br>
+        <label>Upload FEA CSV (40 values):</label>
+        <input type="file" name="fea_csv" required><br><br>
+        <input type="submit" value="Visualize">
+    </form>
+    {% if message %}
+        <h3>{{ message }}</h3>
+    {% endif %}
+    <a href="/">Back to Home</a>
+</body>
+</html>

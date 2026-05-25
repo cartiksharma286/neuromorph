@@ -28,6 +28,7 @@ Theory:
 
 import numpy as np
 import networkx as nx
+import random
 import time
 import math
 from scipy.special import comb, ellipk, ellipe
@@ -691,6 +692,17 @@ class PTSDDementiaRepairModel:
                 self.manifold.node_states[i] += nudge
             log.append("Sensory Integration: Harmonic phase coupling applied to manifold nodes.")
             
+        elif treatment_type == 'ptsd_desensitization':
+            # Decoupling trauma links
+            weights = nx.get_edge_attributes(self.manifold.graph, 'weight')
+            decoupled = 0
+            for (u, v), w in weights.items():
+                if w > 1.2:  # trauma edges
+                    new_w = max(0.1, w - 0.5 * intensity)
+                    self.manifold.graph.add_edge(u, v, weight=new_w)
+                    decoupled += 1
+            log.append(f"Trauma Decoupling: Desensitized {decoupled} hyperconnected edge(s).")
+            
         elif treatment_type == 'prime_resonance' or treatment_type == 'geometric':
             # Full geometric repair
             history_before = len(self.repair_history)
@@ -698,7 +710,7 @@ class PTSDDementiaRepairModel:
             log.append("Geometric Fix: Applied Prime Congruence Neurogenesis sequence.")
 
         # Record this as a "cycle" in history for stats engine
-        if treatment_type in ['cognitive', 'memory_tags', 'sensory']:
+        if treatment_type in ['cognitive', 'memory_tags', 'sensory', 'ptsd_desensitization']:
             post_analysis = self.analyze_topology()
             self.repair_history.append({
                 'cycle': len(self.repair_history),

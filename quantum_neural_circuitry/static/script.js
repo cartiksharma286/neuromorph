@@ -22,11 +22,11 @@ async function launchPTSDRepair() {
         });
         // Update metrics
         const m = data.new_metrics;
-        document.getElementById('ptsd-val-plasticity').innerText = m.plasticity_index.toFixed(2);
-        document.getElementById('ptsd-val-density').innerText = m.synaptic_density.toFixed(2);
-        document.getElementById('ptsd-val-mem-coherence').innerText = m.memory_coherence.toFixed(2);
-        document.getElementById('ptsd-val-nim-stability').innerText = m.nim_game_stability.toFixed(4);
-        document.getElementById('ptsd-val-heisenberg-compliance').innerText = m.uncertainty_bound_compliance.toFixed(4);
+        document.getElementById('ptsd-val-plasticity').innerText = sf(m.plasticity_index, 2);
+        document.getElementById('ptsd-val-density').innerText = sf(m.synaptic_density, 2);
+        document.getElementById('ptsd-val-mem-coherence').innerText = sf(m.memory_coherence, 2);
+        document.getElementById('ptsd-val-nim-stability').innerText = sf(m.nim_game_stability);
+        document.getElementById('ptsd-val-heisenberg-compliance').innerText = sf(m.uncertainty_bound_compliance);
         // Update visual graph
         updateGraphData(data.brain_state);
         status.innerText = 'Repair Complete';
@@ -612,12 +612,12 @@ document.getElementById('btn-prime-repair').addEventListener('click', async () =
         const stats = await statsRes.json();
 
         // Update metrics
-        document.getElementById('val-surface-flux').innerText = stats.surface_integral_flux.toFixed(4);
-        document.getElementById('val-kam-stability').innerText = stats.kam_stability_index.toFixed(4);
-        document.getElementById('val-ramanujan').innerText = stats.ramanujan_congruence_ratio.toFixed(4);
-        document.getElementById('prime-plasticity').innerText = stats.plasticity_index.toFixed(2);
-        document.getElementById('prime-density').innerText = stats.synaptic_density.toFixed(2);
-        document.getElementById('prime-coherence').innerText = stats.global_coherence.toFixed(4);
+        document.getElementById('val-surface-flux').innerText = sf(stats.surface_integral_flux);
+        document.getElementById('val-kam-stability').innerText = sf(stats.kam_stability_index);
+        document.getElementById('val-ramanujan').innerText = sf(stats.ramanujan_congruence_ratio);
+        document.getElementById('prime-plasticity').innerText = sf(stats.plasticity_index, 2);
+        document.getElementById('prime-density').innerText = sf(stats.synaptic_density, 2);
+        document.getElementById('prime-coherence').innerText = sf(stats.global_coherence);
         document.getElementById('prime-connections').innerText = stats.prime_harmonic_connections || 0;
 
         // Sync with Clinical Tab metrics if visible
@@ -866,6 +866,11 @@ async function applyManifoldRepair(pathologyType) {
         const intEl = document.getElementById('man-dementia-intensity');
         if (typeEl) treatmentType = typeEl.value;
         if (intEl) intensity = parseFloat(intEl.value);
+    } else if (pathologyType === 'ptsd') {
+        const typeEl = document.getElementById('ptsd-treatment-type');
+        const intEl = document.getElementById('man-ptsd-intensity');
+        if (typeEl) treatmentType = typeEl.value;
+        if (intEl) intensity = parseFloat(intEl.value);
     }
 
     try {
@@ -948,6 +953,12 @@ function updateManifoldLog(pathologyType, history, functionalLogs) {
     logEl.scrollTop = logEl.scrollHeight;
 }
 
+// Safe format helper - returns '—' if value is not a finite number
+function sf(val, decimals = 4) {
+    const n = parseFloat(val);
+    return (isFinite(n)) ? n.toFixed(decimals) : '—';
+}
+
 function updateManifoldUI(pathologyType, topology) {
     const prefix = pathologyType;
 
@@ -989,13 +1000,13 @@ function updateManifoldUI(pathologyType, topology) {
     if (topology.geometry) {
         const curvEl = document.getElementById(`${prefix}-curvature`);
         const specEl = document.getElementById(`${prefix}-spectral`);
-        if (curvEl) curvEl.innerText = (pathologyType === 'ptsd' ? topology.geometry.curvature_variance : topology.geometry.curvature_homogeneity).toFixed(4);
-        if (specEl) specEl.innerText = topology.geometry.spectral_gap.toFixed(4);
+        if (curvEl) curvEl.innerText = sf(pathologyType === 'ptsd' ? topology.geometry.curvature_variance : topology.geometry.curvature_homogeneity);
+        if (specEl) specEl.innerText = sf(topology.geometry.spectral_gap);
     }
 
     if (topology.nash_stability_index !== undefined) {
         const el = document.getElementById(`${prefix}-nash`);
-        if (el) el.innerText = topology.nash_stability_index.toFixed(4);
+        if (el) el.innerText = sf(topology.nash_stability_index);
     }
 
     if (topology.nim_game_stability !== undefined) {
@@ -1004,13 +1015,13 @@ function updateManifoldUI(pathologyType, topology) {
             // Hot-patching: If the element doesn't exist in HTML yet, we could add it or just ignore
             // For now, let's assume it was added or we should add a stat row dynamically if needed
         } else {
-            el.innerText = topology.nim_game_stability.toFixed(4);
+            el.innerText = sf(topology.nim_game_stability);
         }
     }
 
     if (topology.uncertainty_bound_compliance !== undefined) {
         const el = document.getElementById(`${prefix}-uncertainty-compliance`);
-        if (el) el.innerText = topology.uncertainty_bound_compliance.toFixed(4);
+        if (el) el.innerText = sf(topology.uncertainty_bound_compliance);
     }
 
     if (pathologyType === 'dementia') {
@@ -1018,17 +1029,16 @@ function updateManifoldUI(pathologyType, topology) {
         const kamEl = document.getElementById('dementia-kam');
         const ramanujanEl = document.getElementById('dementia-ramanujan');
         
-        if (fluxEl && topology.surface_integral_flux !== undefined) fluxEl.innerText = topology.surface_integral_flux.toFixed(4);
+        if (fluxEl && topology.surface_integral_flux !== undefined) fluxEl.innerText = sf(topology.surface_integral_flux);
         if (kamEl && topology.kam_stability_index !== undefined) {
-            kamEl.innerText = topology.kam_stability_index.toFixed(4);
-            // Also sync the prime-resonance KAM if it exists
+            kamEl.innerText = sf(topology.kam_stability_index);
             const prKam = document.getElementById('val-kam-stability');
-            if (prKam) prKam.innerText = topology.kam_stability_index.toFixed(4);
+            if (prKam) prKam.innerText = sf(topology.kam_stability_index);
         }
         if (ramanujanEl && topology.ramanujan_congruence_ratio !== undefined) {
-            ramanujanEl.innerText = topology.ramanujan_congruence_ratio.toFixed(4);
+            ramanujanEl.innerText = sf(topology.ramanujan_congruence_ratio);
             const prRam = document.getElementById('val-ramanujan');
-            if (prRam) prRam.innerText = topology.ramanujan_congruence_ratio.toFixed(4);
+            if (prRam) prRam.innerText = sf(topology.ramanujan_congruence_ratio);
         }
     }
 }
@@ -1041,9 +1051,9 @@ function updateManifoldRepairUI(pathologyType, stats) {
     const cycleEl = document.getElementById(`${prefix}-cycles`);
     const redEl = document.getElementById(`${prefix}-reduction-val`);
 
-    if (addEl) addEl.innerText = stats.total_neurons_added;
-    if (cycleEl) cycleEl.innerText = stats.repair_cycles;
-    if (redEl) redEl.innerText = stats.pathology_reduction_percent.toFixed(1);
+    if (addEl) addEl.innerText = stats.total_neurons_added ?? 0;
+    if (cycleEl) cycleEl.innerText = stats.repair_cycles ?? 0;
+    if (redEl) redEl.innerText = sf(stats.pathology_reduction_percent, 1);
 
     // Update final topology
     if (stats.final_topology) {

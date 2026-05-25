@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FEA Simulation</title>
+</head>
+<body>
+    <h2>FEA Simulation</h2>
+    <form method="post">
+        <input type="submit" value="Run FEA Simulation">
+    </form>
+    {% if result %}
+        <h3>Result:</h3>
+        <pre>{{ result }}</pre>
+    {% endif %}
+    <a href="/">Back to Home</a>
+</body>
+</html>

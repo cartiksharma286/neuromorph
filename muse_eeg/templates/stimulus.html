@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EEG Stimulus-Response</title>
+</head>
+<body>
+    <h2>EEG Stimulus-Response Experiment</h2>
+    <form method="post" enctype="multipart/form-data">
+        <label>Upload EEG CSV (40 sensors):</label>
+        <input type="file" name="eeg_csv" required><br><br>
+        <label>Stimulus (comma-separated, 40 values):</label>
+        <input type="text" name="stimulus" required size="80"><br><br>
+        <input type="submit" value="Run">
+    </form>
+    {% if result %}
+        <h3>Result:</h3>
+        <pre>{{ result }}</pre>
+    {% endif %}
+    <a href="/">Back to Home</a>
+</body>
+</html>
