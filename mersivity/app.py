@@ -118,15 +118,26 @@ def register_cortical_surface():
         mesh1 = dict(x=verts_smooth_ds[:,0].tolist(), y=verts_smooth_ds[:,1].tolist(), z=verts_smooth_ds[:,2].tolist())
         mesh2 = dict(x=stl_verts_ds[:,0].tolist(), y=stl_verts_ds[:,1].tolist(), z=stl_verts_ds[:,2].tolist())
         mesh1_reg = dict(x=reg_verts[:,0].tolist(), y=reg_verts[:,1].tolist(), z=reg_verts[:,2].tolist())
-        
+
+        # Save registered mesh as .ply and .stl
+        ply_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface.ply')
+        stl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface.stl')
+        # Use faces from marching cubes (downsampled to match reg_verts)
+        faces_ds = faces[:reg_verts.shape[0]] if faces.shape[0] >= reg_verts.shape[0] else faces
+        reg_mesh = trimesh.Trimesh(vertices=reg_verts, faces=faces_ds, process=False)
+        reg_mesh.export(ply_path)
+        reg_mesh.export(stl_path)
+
         reg_transform_list = reg_transform['rotation'] if isinstance(reg_transform, dict) and 'rotation' in reg_transform else reg_transform.tolist() if hasattr(reg_transform, 'tolist') else reg_transform
-        
+
         return jsonify({
             'mesh1': mesh1,
             'mesh2': mesh2,
             'mesh1_reg': mesh1_reg,
             'registration_error': float(reg_error),
-            'registration_transform': reg_transform_list
+            'registration_transform': reg_transform_list,
+            'ply_file': ply_path,
+            'stl_file': stl_path
         })
     except Exception as e:
         import traceback
@@ -187,19 +198,29 @@ def register_cortical_surface_cf():
         mesh1 = dict(x=verts_smooth_ds[:,0].tolist(), y=verts_smooth_ds[:,1].tolist(), z=verts_smooth_ds[:,2].tolist())
         mesh2 = dict(x=stl_verts_ds[:,0].tolist(), y=stl_verts_ds[:,1].tolist(), z=stl_verts_ds[:,2].tolist())
         mesh1_reg = dict(x=reg_verts[:,0].tolist(), y=reg_verts[:,1].tolist(), z=reg_verts[:,2].tolist())
-        
+
+        # Save registered mesh as .ply and .stl
+        ply_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface_cf.ply')
+        stl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface_cf.stl')
+        faces_ds = faces[:reg_verts.shape[0]] if faces.shape[0] >= reg_verts.shape[0] else faces
+        reg_mesh = trimesh.Trimesh(vertices=reg_verts, faces=faces_ds, process=False)
+        reg_mesh.export(ply_path)
+        reg_mesh.export(stl_path)
+
         reg_transform_list = reg_transform['scale'] if isinstance(reg_transform, dict) and 'scale' in reg_transform else reg_transform
-        
+
         # Enforce TRE < 5 mm (highly optimized CF registers < 0.2 mm)
         if reg_error > 5.0:
             return jsonify({'error': f'Registration error too high: {reg_error:.3f} mm'}), 400
-            
+
         return jsonify({
             'mesh1': mesh1,
             'mesh2': mesh2,
             'mesh1_reg': mesh1_reg,
             'registration_error': float(reg_error),
-            'registration_transform': reg_transform_list
+            'registration_transform': reg_transform_list,
+            'ply_file': ply_path,
+            'stl_file': stl_path
         })
     except Exception as e:
         import traceback
@@ -330,5 +351,4 @@ def stack_3d():
     return jsonify({'plot_html': html})
 
 if __name__ == '__main__':
-    port = int(os.environ.get('FLASK_RUN_PORT', 8000))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=8082)
