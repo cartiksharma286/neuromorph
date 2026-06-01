@@ -190,7 +190,7 @@ def feynman_path_integral_registration(source, target, n_steps=12, sigma=0.15, m
         feynman_history.append(action)
         
         mean_error = float(np.mean(dists))
-        if mean_error < 0.2:
+        if step >= 6 and mean_error < 0.05:
             break
             
         # Path integral gradient currents (force fields pushing coordinates towards target surface)
@@ -392,12 +392,10 @@ def register_cortical_surface():
         mesh2 = dict(x=stl_verts[display_stl_idx, 0].tolist(), y=stl_verts[display_stl_idx, 1].tolist(), z=stl_verts[display_stl_idx, 2].tolist())
         mesh1_reg = dict(x=reg_verts_original[display_idx, 0].tolist(), y=reg_verts_original[display_idx, 1].tolist(), z=reg_verts_original[display_idx, 2].tolist())
 
-        # Save registered mesh as .ply and .stl
+        # Save registered mesh as .ply and .stl (Full-Fidelity!)
         ply_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface.ply')
         stl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface.stl')
-        # Use faces from marching cubes (downsampled to match reg_verts)
-        faces_ds = faces[:reg_verts.shape[0]] if faces.shape[0] >= reg_verts.shape[0] else faces
-        reg_mesh = trimesh.Trimesh(vertices=reg_verts, faces=faces_ds, process=False)
+        reg_mesh = trimesh.Trimesh(vertices=reg_verts_original, faces=faces, process=False)
         reg_mesh.export(ply_path)
         reg_mesh.export(stl_path)
 
@@ -506,11 +504,10 @@ def register_cortical_surface_cf():
         mesh2 = dict(x=stl_verts[display_stl_idx, 0].tolist(), y=stl_verts[display_stl_idx, 1].tolist(), z=stl_verts[display_stl_idx, 2].tolist())
         mesh1_reg = dict(x=reg_verts_original[display_idx, 0].tolist(), y=reg_verts_original[display_idx, 1].tolist(), z=reg_verts_original[display_idx, 2].tolist())
 
-        # Save registered mesh as .ply and .stl
+        # Save registered mesh as .ply and .stl (Full-Fidelity!)
         ply_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface_cf.ply')
         stl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface_cf.stl')
-        faces_ds = faces[:reg_verts.shape[0]] if faces.shape[0] >= reg_verts.shape[0] else faces
-        reg_mesh = trimesh.Trimesh(vertices=reg_verts, faces=faces_ds, process=False)
+        reg_mesh = trimesh.Trimesh(vertices=reg_verts_original, faces=faces, process=False)
         reg_mesh.export(ply_path)
         reg_mesh.export(stl_path)
 
@@ -601,6 +598,13 @@ def cortical_surface_legendre_sh():
     verts_smooth = xyz_smooth + center
     colors = verts_smooth[:,2]
     
+    # Save Spherical Harmonics smooth mesh as .ply and .stl (Full-Fidelity!)
+    ply_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cortical_surface_legendre_sh.ply')
+    stl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cortical_surface_legendre_sh.stl')
+    sh_mesh = trimesh.Trimesh(vertices=verts_smooth, faces=faces, process=False)
+    sh_mesh.export(ply_path)
+    sh_mesh.export(stl_path)
+
     mesh = dict(
         x=verts_smooth[:,0].tolist(),
         y=verts_smooth[:,1].tolist(),
@@ -610,7 +614,11 @@ def cortical_surface_legendre_sh():
         k=faces[:,2].tolist(),
         colors=colors.tolist()
     )
-    return jsonify({'mesh': mesh})
+    return jsonify({
+        'mesh': mesh,
+        'ply_file': ply_path,
+        'stl_file': stl_path
+    })
 
 # 3D mesh endpoint for DICOM surface reconstruction
 @app.route('/api/cortical-surface-volume')
@@ -663,11 +671,20 @@ def cortical_surface_volume():
         colors=colors.tolist()
     )
     
+    # Save surface mesh as .ply and .stl (Full-Fidelity!)
+    ply_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'marching_cubes_interpolated.ply')
+    stl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'marching_cubes_interpolated.stl')
+    mc_mesh = trimesh.Trimesh(vertices=verts_centered, faces=faces, process=False)
+    mc_mesh.export(ply_path)
+    mc_mesh.export(stl_path)
+
     return jsonify({
         'surface_mesh': surface_mesh,
         'delaunay_mesh': delaunay_mesh,
         'level': level,
-        'num_vertices': len(verts)
+        'num_vertices': len(verts),
+        'ply_file': ply_path,
+        'stl_file': stl_path
     })
 
 @app.route('/api/dicom-stack')
@@ -1327,11 +1344,10 @@ def register_cortical_surface_qml():
         mesh2 = dict(x=stl_verts[display_stl_idx, 0].tolist(), y=stl_verts[display_stl_idx, 1].tolist(), z=stl_verts[display_stl_idx, 2].tolist())
         mesh1_reg = dict(x=reg_verts_original[display_idx, 0].tolist(), y=reg_verts_original[display_idx, 1].tolist(), z=reg_verts_original[display_idx, 2].tolist())
 
-        # Save registered mesh
+        # Save registered mesh (Full-Fidelity!)
         ply_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface_qml.ply')
         stl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface_qml.stl')
-        faces_ds = faces[:reg_verts.shape[0]] if faces.shape[0] >= reg_verts.shape[0] else faces
-        reg_mesh = trimesh.Trimesh(vertices=reg_verts, faces=faces_ds, process=False)
+        reg_mesh = trimesh.Trimesh(vertices=reg_verts_original, faces=faces, process=False)
         reg_mesh.export(ply_path)
         reg_mesh.export(stl_path)
 
@@ -1444,12 +1460,21 @@ def geodesic_superposition():
             'k': faces[display_idx[:len(faces)], 2].tolist() if len(faces) >= len(display_idx) else []
         }
 
+        # Save registered mesh (Full-Fidelity!)
+        ply_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_superimposed.ply')
+        stl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_superimposed.stl')
+        reg_mesh = trimesh.Trimesh(vertices=reg_verts_original, faces=faces, process=False)
+        reg_mesh.export(ply_path)
+        reg_mesh.export(stl_path)
+
         return jsonify({
             'stl_mesh': stl_mesh,
             'superimposed_mesh': superimposed_mesh,
             'scale_deformations': scale_deformations,
             'shear_deformations': shear_deformations,
-            'source_idx': source_idx
+            'source_idx': source_idx,
+            'ply_file': ply_path,
+            'stl_file': stl_path
         })
     except Exception as e:
         import traceback
@@ -1549,11 +1574,10 @@ def register_cortical_surface_qlora():
         mesh2 = dict(x=stl_verts[display_stl_idx, 0].tolist(), y=stl_verts[display_stl_idx, 1].tolist(), z=stl_verts[display_stl_idx, 2].tolist())
         mesh1_reg = dict(x=reg_verts_original[display_idx, 0].tolist(), y=reg_verts_original[display_idx, 1].tolist(), z=reg_verts_original[display_idx, 2].tolist())
 
-        # Save registered mesh
+        # Save registered mesh (Full-Fidelity!)
         ply_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface_qlora.ply')
         stl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface_qlora.stl')
-        faces_ds = faces[:reg_verts.shape[0]] if faces.shape[0] >= reg_verts.shape[0] else faces
-        reg_mesh = trimesh.Trimesh(vertices=reg_verts, faces=faces_ds, process=False)
+        reg_mesh = trimesh.Trimesh(vertices=reg_verts_original, faces=faces, process=False)
         reg_mesh.export(ply_path)
         reg_mesh.export(stl_path)
 
@@ -1674,11 +1698,10 @@ def register_cortical_surface_feynman():
         mesh2 = dict(x=stl_verts[display_stl_idx, 0].tolist(), y=stl_verts[display_stl_idx, 1].tolist(), z=stl_verts[display_stl_idx, 2].tolist())
         mesh1_reg = dict(x=reg_verts_original[display_idx, 0].tolist(), y=reg_verts_original[display_idx, 1].tolist(), z=reg_verts_original[display_idx, 2].tolist())
 
-        # Save registered mesh
+        # Save registered mesh (Full-Fidelity!)
         ply_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface_feynman.ply')
         stl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_surface_feynman.stl')
-        faces_ds = faces[:reg_verts.shape[0]] if faces.shape[0] >= reg_verts.shape[0] else faces
-        reg_mesh = trimesh.Trimesh(vertices=reg_verts, faces=faces_ds, process=False)
+        reg_mesh = trimesh.Trimesh(vertices=reg_verts_original, faces=faces, process=False)
         reg_mesh.export(ply_path)
         reg_mesh.export(stl_path)
 
