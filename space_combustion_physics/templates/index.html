@@ -47,6 +47,10 @@
   <button class="tab-btn" data-tab="tab-canadarm">🤖 Canada Arm 3 Kinematics</button>
   <button class="tab-btn" data-tab="tab-elec">🔌 Electrical Specs</button>
   <button class="tab-btn" data-tab="tab-dbs">🧠 Dementia Cure (DBS)</button>
+  <button class="tab-btn" data-tab="tab-lunar">🌙 Lunar Medical</button>
+  <button class="tab-btn" data-tab="tab-muse">🎧 Muse EEG</button>
+  <button class="tab-btn" data-tab="tab-excavation">⛏️ Mars Excavation</button>
+  <button class="tab-btn" data-tab="tab-cardio">❤️ Zero-G Cardiac MR</button>
 </nav>
 
 <div class="panels">
@@ -317,6 +321,117 @@
       <div class="card"><div class="card-title">Dynamic Thrust Uptake (kN)</div><div class="chart-wrap"><canvas id="chart-uptake-thrust"></canvas></div></div>
       <div class="card"><div class="card-title">Fuel Pump Spool Rate (RPM)</div><div class="chart-wrap"><canvas id="chart-uptake-pump"></canvas></div></div>
     </div>
+  </div>
+</div>
+
+<!-- 11. LUNAR MEDICAL SPACE-HEALTH TAB -->
+<div class="panel" id="tab-lunar">
+  <div class="section-header"><h2>Lunar Medical: Space-Health &amp; Zero-G Fracture Repair</h2>
+    <p>Zero-gravity neuroimaging signatures and minimally invasive surgery (MIS) trajectory mapping using Feynman Path Integrals.</p>
+  </div>
+  <div class="math-block">
+    <strong>FEYNMAN PATH INTEGRAL TRAJECTORY PROPAGATOR FOR SURGICAL ROBOTICS</strong><br>
+    Euclidean Action: S_E = Sum[ 1/2 m ||x_s - x_s-1||² + V(x_s) ] &nbsp; where V(x) is obstacle potential and surgical path guidance.<br>
+    Propagator Kernels: K(x_T, x_0) = Integral exp(-S_E/hbar) D[x] optimizes collision-free bone fracture repair trajectories in 1/6 G lunar environments.
+  </div>
+  <div class="controls">
+    <div class="control-group"><label>Zero-G Gravity Field (G)</label><input id="inp-lunar-gravity" type="number" step="0.01" value="0.166"/></div>
+    <div class="control-group"><label>Fracture Depth (mm)</label><input id="inp-lunar-depth" type="number" step="0.5" value="12.0"/></div>
+    <div class="control-group"><label>Surgical Target Node</label><input id="inp-lunar-target" type="text" value="Cranial Skull Fracture F3"/></div>
+    <button class="btn-run" id="btn-lunar-run">Calculate Space-Health Trajectory</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi blue"><div class="kpi-value" id="kpi-lunar-neuro">—</div><div class="kpi-label">Intracranial Voxel Drift (mm)</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-lunar-repair">—</div><div class="kpi-label">Zero-G Fracture Repair Score</div></div>
+    <div class="kpi orange"><div class="kpi-value" id="kpi-lunar-action">—</div><div class="kpi-label">Feynman Path Action (S_E)</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Feynman Trajectory Optimization Plot</div><div class="chart-wrap"><canvas id="chart-lunar-trajectory"></canvas></div></div>
+    <div class="card"><div class="card-title">Lunar Medical Diagnostic Log</div><div class="matrix" id="lunar-log">Awaiting space-health simulation...</div></div>
+  </div>
+</div>
+
+<!-- 12. MUSE EEG OBSERVATIONS TAB -->
+<div class="panel" id="tab-muse">
+  <div class="section-header"><h2>Muse EEG: Dynamic Chaos &amp; Interventional DBS</h2>
+    <p>Nonlinear dynamical chaos tracking, Shannon entropy, and Lyapunov stability exponent monitoring beyond standard statistical distributions.</p>
+  </div>
+  <div class="math-block">
+    <strong>NONLINEAR NEUROLOGICAL DYNAMICAL MODEL</strong><br>
+    Shannon Entropy: H = - &Sigma; p<sub>i</sub> log<sub>2</sub>(p<sub>i</sub>) &nbsp;&nbsp;&nbsp;
+    Lyapunov Dynamic Stability: &lambda; = lim<sub>t&rarr;&infin;</sub> [ 1/t ln ||&delta;x(t)||/||&delta;x(0)|| ]<br>
+    DBS Intervention shifts &lambda; from chaotic/positive regime (cognitive decay) into a stable limit cycle (&lambda; &lt; 0).
+  </div>
+  <div class="controls">
+    <div class="control-group"><label>EEG Sensor Node</label><input id="inp-muse-node" type="text" value="Electrode AF7"/></div>
+    <div class="control-group"><label>Intervention Freq (Hz)</label><input id="inp-muse-freq" type="number" step="1.0" value="130.0"/></div>
+    <div class="control-group"><label>Closed-loop Gain</label><input id="inp-muse-gain" type="number" step="0.1" value="1.5"/></div>
+    <button class="btn-run" id="btn-muse-run">Analyze EEG Chaos Dynamics</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi blue"><div class="kpi-value" id="kpi-muse-entropy">—</div><div class="kpi-label">Shannon Neuro-Entropy (bits)</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-muse-lyapunov">—</div><div class="kpi-label">Lyapunov Exponent (&lambda;)</div></div>
+    <div class="kpi orange"><div class="kpi-value" id="kpi-muse-efficacy">—</div><div class="kpi-label">DBS Efficacy Index</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Power Spectral Density (PSD) Spectral Shift</div><div class="chart-wrap"><canvas id="chart-muse-psd"></canvas></div></div>
+    <div class="card"><div class="card-title">EEG Chaotic Analysis Log</div><div class="matrix" id="muse-log">Awaiting EEG signal feed...</div></div>
+  </div>
+</div>
+
+<!-- 13. MARS EXCAVATION VS LUNAR MEDICAL TAB -->
+<div class="panel" id="tab-excavation">
+  <div class="section-header"><h2>Mars Excavation vs. Lunar Medical Intercomparison</h2>
+    <p>Unified space mechanics comparing geological ore cutter forces in 0.38 G Martian gravity vs. surgical manipulator precision in 0.166 G Lunar microgravity.</p>
+  </div>
+  <div class="math-block">
+    <strong>UNIFIED SPACE MECHANICS FORMULATIONS</strong><br>
+    Martian Soil Shear Strength: &tau; = cohesion + &sigma;<sub>n</sub> tan(&phi;) &nbsp;&nbsp; where normal load &sigma;<sub>n</sub> is directly scaled by Martian gravity G.<br>
+    Feynman Path Propagator comparison: Drilling excavation cuts avoiding high-resistance bedrock boundaries vs. Surgical probes avoiding delicate cranial fracture margins.
+  </div>
+  <div class="controls">
+    <div class="control-group"><label>Mars Gravity Field (G)</label><input id="inp-ex-gravity" type="number" step="0.01" value="0.380"/></div>
+    <div class="control-group"><label>Excavation Cutter (RPM)</label><input id="inp-ex-rpm" type="number" step="10" value="450"/></div>
+    <div class="control-group"><label>Soil Friction Angle (&deg;)</label><input id="inp-ex-friction" type="number" step="1" value="35"/></div>
+    <div class="control-group"><label>Surgical Probe Feed (mm/s)</label><input id="inp-ex-surgical" type="number" step="0.1" value="0.5"/></div>
+    <button class="btn-run" id="btn-ex-run">Compare Space Operations</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi blue"><div class="kpi-value" id="kpi-ex-shear">—</div><div class="kpi-label">Martian Soil Shear Force (kPa)</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-ex-action">—</div><div class="kpi-label">Mars Drilling Action (S_E)</div></div>
+    <div class="kpi orange"><div class="kpi-value" id="kpi-ex-ratio">—</div><div class="kpi-label">Excavation vs. Surgical Action Ratio</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Martian Drilling Cutter Torque &amp; Precision Profile</div><div class="chart-wrap"><canvas id="chart-excavation-profile"></canvas></div></div>
+    <div class="card"><div class="card-title">Intercomparison Diagnostics Log</div><div class="matrix" id="excavation-log">Awaiting unified planetary trial run...</div></div>
+  </div>
+</div>
+
+<!-- 14. CARDIOVASCULAR MR SURGERY TAB -->
+<div class="panel" id="tab-cardio">
+  <div class="section-header"><h2>Cardiovascular MR Surgery in Zero Gravity</h2>
+    <p>Magnetic shimming field correction using Feynman Path Integrals and loop coil complete Elliptic Integrals on discretized Finite Element mesh nodes.</p>
+  </div>
+  <div class="math-block">
+    <strong>COIL FIELD &amp; FEYNMAN SHIMMING MATH</strong><br>
+    Off-axis coil field: B_loop(z) = [ mu_0 * I / (2 * pi * sqrt((a+r)² + z²)) ] * [ K(m) + (a² - r² - z²)/((a-r)² + z²) * E(m) ] &nbsp; where K(m) and E(m) are complete elliptic integrals.<br>
+    Feynman shimming action: S_E = Sum [ 1/2 * alpha * (B_shimmed - B0)² + 1/2 * beta * (B_shimmed_j - B_shimmed_j-1)² ] optimizes field homogeneity (ppm) under zero-G cardiovascular shift.
+  </div>
+  <div class="controls">
+    <div class="control-group"><label>Main Field B0 (Tesla)</label><input id="inp-cardio-b0" type="number" step="0.5" value="3.0"/></div>
+    <div class="control-group"><label>Shim Current (Amps)</label><input id="inp-cardio-current" type="number" step="0.1" value="4.5"/></div>
+    <div class="control-group"><label>Loop Coil Radius (mm)</label><input id="inp-cardio-radius" type="number" step="1.0" value="25.0"/></div>
+    <div class="control-group"><label>Cardiac Displ. (mm)</label><input id="inp-cardio-displacement" type="number" step="0.5" value="8.0"/></div>
+    <button class="btn-run" id="btn-cardio-run">Run Feynman Cardiac Shimming</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi blue"><div class="kpi-value" id="kpi-cardio-unshimmed">—</div><div class="kpi-label">Unshimmed Inhomogeneity (ppm)</div></div>
+    <div class="kpi green"><div class="kpi-value" id="kpi-cardio-shimmed">—</div><div class="kpi-label">Feynman Shimmed Homogeneity (ppm)</div></div>
+    <div class="kpi orange"><div class="kpi-value" id="kpi-cardio-efficacy">—</div><div class="kpi-label">Excitation Resonance Efficacy</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Discretized Finite Element Field Homogeneity Mapping</div><div class="chart-wrap"><canvas id="chart-cardio-homogeneity"></canvas></div></div>
+    <div class="card"><div class="card-title">Feynman Shimming &amp; Elliptic Diagnostics Log</div><div class="matrix" id="cardio-log">Awaiting shimming simulation feed...</div></div>
   </div>
 </div>
 

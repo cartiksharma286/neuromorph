@@ -287,7 +287,7 @@ async function runUptake(){
   btn.disabled=false;
 }
 
-window.addEventListener('load',()=>{ setTimeout(runCFD,500); setTimeout(runUptake,1000); });
+window.addEventListener('load',()=>{ setTimeout(runCFD,500); setTimeout(runUptake,1000); setTimeout(runLunarMedical,1500); setTimeout(runMuseEEG,2000); setTimeout(runMarsExcavation,2500); setTimeout(runCardioMR,3000); });
 
 // ═══════════════════════════════════════════════
 // 8. CANADA ARM 3 KINEMATICS TAB
@@ -355,4 +355,202 @@ document.getElementById('btn-elec-calc')?.addEventListener('click', async()=>{
   setKPI('kpi-elec-current', d.current.toFixed(2));
   setKPI('kpi-elec-connector', d.connector);
   setHTML('elec-log', d.log);
+});
+
+// ═══════════════════════════════════════════════
+// 11. LUNAR MEDICAL SPACE-HEALTH TAB
+// ═══════════════════════════════════════════════
+document.getElementById('btn-lunar-run')?.addEventListener('click', runLunarMedical);
+async function runLunarMedical() {
+  const gravity = parseFloat(document.getElementById('inp-lunar-gravity').value);
+  const depth = parseFloat(document.getElementById('inp-lunar-depth').value);
+  const target = document.getElementById('inp-lunar-target').value;
+  const r = await fetch('/api/lunar_medical', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({gravity, depth, target})
+  });
+  const d = await r.json();
+  setKPI('kpi-lunar-neuro', d.neuro_drift.toFixed(2) + ' mm');
+  setKPI('kpi-lunar-repair', d.repair_score.toFixed(1) + '%');
+  setKPI('kpi-lunar-action', d.action.toFixed(4));
+  setHTML('lunar-log', d.log.replace(/\n/g, '<br>'));
+  
+  // Plot the trajectory in 2D
+  const pathData = d.trajectory.map(pt => ({x: pt[0], y: pt[1]}));
+  mkChart('chart-lunar-trajectory', null, [
+    {
+      label: 'Surgical Path Guidance (Feynman)',
+      data: pathData,
+      borderColor: COLORS.green,
+      backgroundColor: 'rgba(0, 255, 170, 0.05)',
+      showLine: true,
+      fill: false,
+      pointRadius: 4,
+      borderWidth: 2
+    },
+    {
+      label: 'Obstacle / Bone Boundary',
+      data: d.obstacles.map(pt => ({x: pt[0], y: pt[1]})),
+      borderColor: COLORS.red,
+      backgroundColor: 'rgba(255, 51, 102, 0.1)',
+      showLine: true,
+      fill: false,
+      pointRadius: 0,
+      borderWidth: 1.5,
+      borderDash: [5, 5]
+    }
+  ], {
+    type: 'scatter',
+    scales: {
+      x: {title: {display: true, text: 'Horizontal Axis (mm)', color: COLORS.muted}},
+      y: {title: {display: true, text: 'Insertion Depth (mm)', color: COLORS.muted}}
+    }
+  });
+}
+
+// Auto-run on tab load
+document.querySelector('.tab-btn[data-tab="tab-lunar"]')?.addEventListener('click', ()=>{
+  setTimeout(runLunarMedical, 200);
+});
+
+// ═══════════════════════════════════════════════
+// 12. MUSE EEG OBSERVATIONS TAB
+// ═══════════════════════════════════════════════
+document.getElementById('btn-muse-run')?.addEventListener('click', runMuseEEG);
+async function runMuseEEG() {
+  const electrode = document.getElementById('inp-muse-node').value;
+  const dbs_freq = parseFloat(document.getElementById('inp-muse-freq').value);
+  const feedback_gain = parseFloat(document.getElementById('inp-muse-gain').value);
+  
+  const r = await fetch('/api/muse_eeg', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({electrode, dbs_freq, feedback_gain})
+  });
+  const d = await r.json();
+  setKPI('kpi-muse-entropy', d.post_entropy.toFixed(4));
+  setKPI('kpi-muse-lyapunov', d.post_lyapunov.toFixed(4));
+  setKPI('kpi-muse-efficacy', d.efficacy.toFixed(1) + '%');
+  setHTML('muse-log', d.log.replace(/\n/g, '<br>'));
+  
+  // Plot pre-stim and post-stim power spectral densities
+  mkChart('chart-muse-psd', d.freqs.map(f => parseFloat(f).toFixed(1) + 'Hz'), [
+    {
+      label: 'Pre-DBS Spectral State',
+      data: d.pre_psd,
+      borderColor: COLORS.red,
+      backgroundColor: 'rgba(255, 51, 102, 0.1)',
+      fill: true,
+      borderWidth: 1.5
+    },
+    {
+      label: 'Post-DBS Spectral State',
+      data: d.post_psd,
+      borderColor: COLORS.green,
+      backgroundColor: 'rgba(0, 255, 170, 0.1)',
+      fill: true,
+      borderWidth: 2
+    }
+  ], {
+    type: 'line',
+    scales: {
+      x: {title: {display: true, text: 'Frequency (Hz)', color: COLORS.muted}},
+      y: {title: {display: true, text: 'Power Spectral Density (uV²/Hz)', color: COLORS.muted}}
+    }
+  });
+}
+document.querySelector('.tab-btn[data-tab="tab-muse"]')?.addEventListener('click', ()=>{
+  setTimeout(runMuseEEG, 200);
+});
+
+// ═══════════════════════════════════════════════
+// 13. MARS EXCAVATION VS LUNAR MEDICAL TAB
+// ═══════════════════════════════════════════════
+document.getElementById('btn-ex-run')?.addEventListener('click', runMarsExcavation);
+async function runMarsExcavation() {
+  const mars_gravity = parseFloat(document.getElementById('inp-ex-gravity').value);
+  const cutter_rpm = parseFloat(document.getElementById('inp-ex-rpm').value);
+  const soil_friction = parseFloat(document.getElementById('inp-ex-friction').value);
+  const surgical_feed = parseFloat(document.getElementById('inp-ex-surgical').value);
+  
+  const r = await fetch('/api/mars_excavation', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({mars_gravity, cutter_rpm, soil_friction, surgical_feed})
+  });
+  const d = await r.json();
+  setKPI('kpi-ex-shear', d.shear_strength.toFixed(2));
+  setKPI('kpi-ex-action', d.excavation_action.toFixed(4));
+  setKPI('kpi-ex-ratio', d.comparative_ratio.toFixed(4));
+  setHTML('excavation-log', d.log.replace(/\n/g, '<br>'));
+  
+  // Plot Comparative profiles
+  mkChart('chart-excavation-profile', ['Martian Ore Excavation', 'Lunar Medical Intervention'], [
+    {
+      label: 'Kinematic Action S_E (G-units)',
+      data: [d.excavation_action, 73.2945],
+      backgroundColor: [COLORS.orange, COLORS.blue],
+      borderColor: [COLORS.orange, COLORS.blue],
+      borderWidth: 1
+    }
+  ], {
+    type: 'bar',
+    scales: {
+      y: {title: {display: true, text: 'Action Value (Higher means more work/energy)', color: COLORS.muted}}
+    }
+  });
+}
+document.querySelector('.tab-btn[data-tab="tab-excavation"]')?.addEventListener('click', ()=>{
+  setTimeout(runMarsExcavation, 200);
+});
+
+// ═══════════════════════════════════════════════
+// 14. CARDIOVASCULAR MR SURGERY TAB
+// ═══════════════════════════════════════════════
+document.getElementById('btn-cardio-run')?.addEventListener('click', runCardioMR);
+async function runCardioMR() {
+  const b0 = parseFloat(document.getElementById('inp-cardio-b0').value);
+  const current = parseFloat(document.getElementById('inp-cardio-current').value);
+  const radius = parseFloat(document.getElementById('inp-cardio-radius').value);
+  const displacement = parseFloat(document.getElementById('inp-cardio-displacement').value);
+  
+  const r = await fetch('/api/cardio_mr', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({b0, current, radius, displacement})
+  });
+  const d = await r.json();
+  setKPI('kpi-cardio-unshimmed', d.unshimmed_homo.toFixed(2) + ' ppm');
+  setKPI('kpi-cardio-shimmed', d.shimmed_homo.toFixed(2) + ' ppm');
+  setKPI('kpi-cardio-efficacy', d.excitation_efficacy.toFixed(1) + '%');
+  setHTML('cardio-log', d.log.replace(/\n/g, '<br>'));
+  
+  // Plot unshimmed vs shimmed field profiles
+  mkChart('chart-cardio-homogeneity', d.z_nodes.map(z => parseFloat(z).toFixed(1) + 'mm'), [
+    {
+      label: 'Unshimmed Field Gradient (Displaced)',
+      data: d.unshimmed,
+      borderColor: COLORS.red,
+      backgroundColor: 'rgba(255, 51, 102, 0.05)',
+      showLine: true,
+      fill: false,
+      borderWidth: 1.5,
+      borderDash: [5, 5]
+    },
+    {
+      label: 'Feynman Shimmed Field (Homogeneous)',
+      data: d.shimmed,
+      borderColor: COLORS.green,
+      backgroundColor: 'rgba(0, 255, 170, 0.05)',
+      showLine: true,
+      fill: false,
+      borderWidth: 2
+    }
+  ], {
+    type: 'line',
+    scales: {
+      x: {title: {display: true, text: 'Finite Element Voxel Position (mm)', color: COLORS.muted}},
+      y: {title: {display: true, text: 'Magnetic Field B(z) (Tesla)', color: COLORS.muted}}
+    }
+  });
+}
+document.querySelector('.tab-btn[data-tab="tab-cardio"]')?.addEventListener('click', ()=>{
+  setTimeout(runCardioMR, 200);
 });
