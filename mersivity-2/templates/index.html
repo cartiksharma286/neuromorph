@@ -296,6 +296,7 @@
             <button class="tab" id="tab-eeg-waves" onclick="selectTab('eeg-waves')">Waveform Viewer</button>
             <button class="tab" id="tab-eeg-cap" onclick="selectTab('eeg-cap')">Scuba Skull Cap</button>
             <button class="tab" id="tab-chirplet" onclick="selectTab('chirplet')">Steve Mann Chirplet</button>
+            <button class="tab" id="tab-ct" onclick="selectTab('ct')">CT Aneurysm Viewer</button>
         </div>
 
         <!-- 3D Slice Viewer Card -->
@@ -427,6 +428,16 @@
                             <span id="label-impedance-val" style="color: #06b6d4; font-weight: 700;">5.0 kΩ</span>
                         </div>
                         <input type="range" id="eeg-impedance-slider" min="0.5" max="15.0" step="0.5" value="5.0" onchange="runEegCircuitML()">
+
+                        <div style="margin-top: 15px;">
+                            <span style="font-size: 0.85em; color: #9ca3af; display: block; margin-bottom: 5px;">ML Optimization Algorithm:</span>
+                            <select id="eeg-optimizer-select" onchange="runEegCircuitML()" style="width: 100%; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px; font-size: 0.85em; outline: none; font-family: 'Outfit', sans-serif;">
+                                <option value="simulated_annealing">Simulated Annealing (Heuristic)</option>
+                                <option value="statistical_ml_gaussian">Statistical ML (Gaussian Distribution)</option>
+                                <option value="statistical_ml_laplace">Statistical ML (Laplace Distribution)</option>
+                                <option value="statistical_ml_student_t">Statistical ML (Student's t Distribution)</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px;">
@@ -860,6 +871,37 @@
             </div>
         </div>
 
+        <!-- CT Aneurysm Viewer Card -->
+        <div id="ct-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">CT Aneurysm Multimodal Viewer</div>
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 30px; margin-top: 10px;">
+                <!-- CT Slice Viewer -->
+                <div style="flex: 1.2; min-width: 320px; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; box-sizing: border-box;">
+                    <h4 style="margin-top: 0; margin-bottom: 15px; color: #a5b4fc; font-family: 'Outfit', sans-serif; font-size: 1.05em; letter-spacing: 0.5px;">CT 2D SLICE NAVIGATION</h4>
+                    <div id="ct-slice-viewer" style="width: 100%; display: flex; flex-direction: column; align-items: center; min-height: 400px; justify-content: center;"></div>
+                </div>
+                <!-- CT 3D Surface reconstruction -->
+                <div style="flex: 1.8; min-width: 320px; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; box-sizing: border-box;">
+                    <h4 style="margin-top: 0; margin-bottom: 15px; color: #f59e0b; font-family: 'Outfit', sans-serif; font-size: 1.05em; letter-spacing: 0.5px;">CT 3D ANEURYSM MODEL (MARCHING CUBES)</h4>
+                    
+                    <!-- 3D reconstruction controls -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: center; width: 100%; background: rgba(255,255,255,0.02); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); margin-bottom: 15px; box-sizing: border-box;">
+                        <label style="color: #9ca3af; font-size: 0.85em; font-family: 'Outfit', sans-serif; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="ct-adaptive-toggle" onchange="toggleCtSlider()" style="cursor: pointer; accent-color: #f59e0b; width: 14px; height: 14px;">
+                            Adaptive ML
+                        </label>
+                        <span id="ct-threshold-span" style="color: #9ca3af; font-size: 0.85em; font-family: 'Outfit', sans-serif;">Threshold: <span id="ct-threshold-val" style="color: #f59e0b; font-weight: bold; font-family: monospace;">150 HU</span></span>
+                        <input type="range" id="ct-3d-threshold-slider" min="50" max="600" step="10" value="150" oninput="document.getElementById('ct-threshold-val').textContent = this.value + ' HU'" style="width: 130px; margin: 0;">
+                        <button id="ct-recon-btn" onclick="reconstructCt3D()" style="background: linear-gradient(90deg, #f59e0b, #d97706); border: none; border-radius: 6px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 0.85em; font-weight: 600; padding: 6px 14px; cursor: pointer; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3); transition: all 0.2s;">Reconstruct 3D</button>
+                    </div>
+                    
+                    <div id="ct-3d-viewer" class="plotly-container" style="width: 100%; height: 350px; display: flex; align-items: center; justify-content: center; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; background: rgba(0,0,0,0.15); box-sizing: border-box;">
+                        <span style="color: #4b5563; font-size: 0.9em; font-style: italic; font-family: 'Outfit', sans-serif; text-align: center; padding: 20px;">3D model not yet reconstructed. Choose a threshold and click "Reconstruct 3D".</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="footer">&copy; 2026 Mersivity | Powered by Plotly.js, Flask, and Advanced Neuroimaging</div>
     </div>
 
@@ -869,7 +911,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all cards first
-            ['slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'chirplet-card'].forEach(id => {
+            ['slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'chirplet-card', 'ct-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -920,6 +962,9 @@
             } else if (tab === 'chirplet') {
                 document.getElementById('tab-chirplet').classList.add('active');
                 runChirpletInterpolation();
+            } else if (tab === 'ct') {
+                document.getElementById('tab-ct').classList.add('active');
+                runCtViewer();
             }
         }
 
@@ -1004,6 +1049,182 @@
                 viewer.appendChild(label);
             }
             update(current);
+        }
+
+        // --- 1.1 CT ANEURYSM VIEWER ---
+        async function runCtViewer() {
+            showCard('ct-card');
+            showLoading('ct-slice-viewer', 'Loading CT stack slices...');
+            
+            // Set 3D model container back to initial placeholder state
+            document.getElementById('ct-3d-viewer').innerHTML = `
+                <span style="color: #4b5563; font-size: 0.9em; font-style: italic; font-family: 'Outfit', sans-serif; text-align: center; padding: 20px;">3D model not yet reconstructed. Choose a threshold and click "Reconstruct 3D".</span>
+            `;
+            
+            // 1. Fetch CT Slice stack
+            try {
+                const res = await fetch('/api/ct-stack');
+                const data = await res.json();
+                if (data.error) {
+                    document.getElementById('ct-slice-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
+                } else {
+                    const [height, width, depth] = data.shape;
+                    let current = Math.floor(depth / 2);
+                    
+                    function renderCtSlice(idx) {
+                        const arr = data.stack[idx];
+                        const min = Math.min(...arr);
+                        const max = Math.max(...arr);
+                        const norm = arr.map(v => Math.floor(255 * (v - min) / (max - min)));
+                        
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        canvas.style.borderRadius = '12px';
+                        canvas.style.boxShadow = '0 8px 24px rgba(0,0,0,0.5)';
+                        canvas.style.maxWidth = '100%';
+                        
+                        const ctx = canvas.getContext('2d');
+                        const imgData = ctx.createImageData(width, height);
+                        for (let i = 0; i < arr.length; ++i) {
+                            imgData.data[i*4+0] = norm[i];
+                            imgData.data[i*4+1] = norm[i];
+                            imgData.data[i*4+2] = norm[i];
+                            imgData.data[i*4+3] = 255;
+                        }
+                        ctx.putImageData(imgData, 0, 0);
+                        return canvas;
+                    }
+                    
+                    function updateCt(idx) {
+                        const viewer = document.getElementById('ct-slice-viewer');
+                        viewer.innerHTML = '';
+                        viewer.appendChild(renderCtSlice(idx));
+                        
+                        const slider = document.createElement('input');
+                        slider.type = 'range';
+                        slider.min = 0;
+                        slider.max = depth - 1;
+                        slider.value = idx;
+                        slider.oninput = e => updateCt(Number(e.target.value));
+                        viewer.appendChild(slider);
+                        
+                        const label = document.createElement('div');
+                        label.style.textAlign = 'center';
+                        label.style.marginTop = '8px';
+                        label.style.fontWeight = '600';
+                        label.style.color = '#a5b4fc';
+                        label.textContent = `CT Slice ${idx+1} / ${depth}`;
+                        viewer.appendChild(label);
+                    }
+                    updateCt(current);
+                }
+            } catch (err) {
+                document.getElementById('ct-slice-viewer').innerHTML = `<div style="color:#ef4444">${err.message}</div>`;
+            }
+        }
+
+        function toggleCtSlider() {
+            const isAdaptive = document.getElementById('ct-adaptive-toggle').checked;
+            const slider = document.getElementById('ct-3d-threshold-slider');
+            const span = document.getElementById('ct-threshold-span');
+            if (isAdaptive) {
+                slider.style.display = 'none';
+                span.style.display = 'none';
+            } else {
+                slider.style.display = 'inline-block';
+                span.style.display = 'inline-block';
+            }
+        }
+
+        async function reconstructCt3D() {
+            const isAdaptive = document.getElementById('ct-adaptive-toggle').checked;
+            const threshold = document.getElementById('ct-3d-threshold-slider').value;
+            const viewer = document.getElementById('ct-3d-viewer');
+            
+            // Set loading state
+            const statusMsg = isAdaptive 
+                ? "Reconstructing 3D aneurysm model with Adaptive ML Auto-Threshold..." 
+                : `Reconstructing 3D aneurysm model at ${threshold} HU...`;
+            showLoading('ct-3d-viewer', statusMsg);
+            
+            try {
+                const url = isAdaptive ? '/api/ct-3d-stack-viewer?adaptive=true' : `/api/ct-3d-stack-viewer?level=${threshold}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.error) {
+                    viewer.innerHTML = `<div style="color:#ef4444; text-align: center; padding: 20px;">${data.error}</div>`;
+                } else {
+                    // Clear the container
+                    viewer.innerHTML = '';
+                    
+                    // Create an inner div for Plotly to render into
+                    const plotDiv = document.createElement('div');
+                    plotDiv.id = 'ct-plotly-plot';
+                    plotDiv.style.width = '100%';
+                    plotDiv.style.height = '100%';
+                    viewer.appendChild(plotDiv);
+                    
+                    // Show the threshold used
+                    const usedThreshold = data.estimated_threshold !== undefined ? data.estimated_threshold : data.level;
+                    const infoDiv = document.createElement('div');
+                    infoDiv.style.position = 'absolute';
+                    infoDiv.style.top = '10px';
+                    infoDiv.style.right = '10px';
+                    infoDiv.style.background = 'rgba(0,0,0,0.85)';
+                    infoDiv.style.border = '1px solid #f59e0b';
+                    infoDiv.style.borderRadius = '6px';
+                    infoDiv.style.padding = '5px 10px';
+                    infoDiv.style.fontSize = '0.85em';
+                    infoDiv.style.fontWeight = 'bold';
+                    infoDiv.style.color = '#f59e0b';
+                    infoDiv.style.zIndex = '10';
+                    infoDiv.style.fontFamily = "'Outfit', sans-serif";
+                    infoDiv.textContent = isAdaptive 
+                        ? `ML Threshold: ${usedThreshold.toFixed(1)} HU` 
+                        : `Threshold: ${usedThreshold.toFixed(1)} HU`;
+                    
+                    viewer.style.position = 'relative';
+                    viewer.appendChild(infoDiv);
+                    
+                    // Call Plotly.newPlot directly on the client side
+                    const trace = {
+                        type: 'mesh3d',
+                        x: data.x,
+                        y: data.y,
+                        z: data.z,
+                        i: data.i,
+                        j: data.j,
+                        k: data.k,
+                        color: 'coral',
+                        opacity: 0.85,
+                        lighting: {
+                            ambient: 0.5,
+                            diffuse: 0.8,
+                            fresnel: 0.35,
+                            specular: 0.2,
+                            roughness: 0.5
+                        }
+                    };
+                    
+                    const layout = {
+                        scene: {
+                            xaxis: { visible: false },
+                            yaxis: { visible: false },
+                            zaxis: { visible: false },
+                            aspectmode: 'data',
+                            bgcolor: 'black'
+                        },
+                        margin: { l: 0, r: 0, b: 0, t: 0 },
+                        paper_bgcolor: 'black',
+                        plot_bgcolor: 'black'
+                    };
+                    
+                    Plotly.newPlot('ct-plotly-plot', [trace], layout, {responsive: true});
+                }
+            } catch (err) {
+                viewer.innerHTML = `<div style="color:#ef4444; text-align: center; padding: 20px;">${err.message}</div>`;
+            }
         }
 
         // --- 2. 3D SURFACE STACK ---
@@ -1376,11 +1597,12 @@
             updateCircuitLabels();
             const noise = parseFloat(document.getElementById('eeg-noise-slider').value);
             const imp = parseFloat(document.getElementById('eeg-impedance-slider').value);
+            const optMethod = document.getElementById('eeg-optimizer-select').value;
             
             renderCircuitSvg(null, null);
             
             try {
-                const res = await fetch(`/api/eeg-circuitry?noise_level=${noise}&impedance=${imp}`);
+                const res = await fetch(`/api/eeg-circuitry?noise_level=${noise}&impedance=${imp}&opt_method=${optMethod}`);
                 const data = await res.json();
                 
                 document.getElementById('stats-eeg-snr').textContent = data.optimized_snr.toFixed(2) + ' dB';

@@ -15,6 +15,9 @@ from registration_utils import (
     compute_registration_error
 )
 
+from snr_optimizer import SNROptimizer, AdaptiveSNRLearner
+
+
 
 app = Flask(__name__)
 CORS(app)
@@ -255,6 +258,42 @@ def load_dicom_stack():
     
     _cached_mri_data = img3d
     return _cached_mri_data.copy()
+
+CT_DICOM_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '1', 'files', 'aneurysm', 'DICOM')
+_cached_ct_data = None
+
+# Utility: Load CT DICOM stack
+def load_ct_dicom_stack():
+    global _cached_ct_data
+    if _cached_ct_data is not None:
+        print(">>> Hitting CT DICOM Cache! <<<", flush=True)
+        return _cached_ct_data.copy()
+    print(">>> Reading CT DICOM from disk! <<<", flush=True)
+        
+    files = []
+    for root, dirs, filenames in os.walk(CT_DICOM_DIR):
+        for f in filenames:
+            if f.endswith('.dcm') and not f.startswith('.'):
+                files.append(os.path.join(root, f))
+    if not files:
+        raise RuntimeError('No CT DICOM files found in the selected directory.')
+    def get_file_num(f):
+        try:
+            return int(os.path.basename(f).split('.')[0])
+        except Exception:
+            return 0
+    files.sort(key=get_file_num)
+    first = pydicom.dcmread(files[0])
+    img_shape = list(first.pixel_array.shape)
+    img_shape.append(len(files))
+    img3d = np.zeros(img_shape, dtype=first.pixel_array.dtype)
+    img3d[:, :, 0] = first.pixel_array
+    for i, f in enumerate(files[1:], 1):
+        img3d[:, :, i] = pydicom.dcmread(f).pixel_array
+    
+    _cached_ct_data = img3d
+    return _cached_ct_data.copy()
+
 
 # Helper: Load target surgical mesh vertices optimally
 def load_surgical_mesh_vertices():
@@ -769,6 +808,119 @@ def stack_3d():
     html = pio.to_html(fig, full_html=False)
     return jsonify({'plot_html': html})
 
+@app.route('/api/ct-stack')
+def ct_stack():
+    try:
+        ct_data = load_ct_dicom_stack()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e), 'stack': [], 'shape': [0,0,0]}), 400
+    max_dim = 128
+    max_slices = 128
+    shape = ct_data.shape
+    factors = [max(1, s // max_dim) for s in shape[:2]] + [max(1, shape[2] // max_slices)]
+    ct_data_ds = ct_data[::factors[0], ::factors[1], ::factors[2]]
+    
+    # Contrast enhancement (Windowing & Leveling):
+    # Window Center = 40, Window Width = 120 -> low = -20, high = 100
+    low = -20.0
+    high = 100.0
+    ct_data_ds = np.clip(ct_data_ds, low, high)
+    ct_data_ds = ((ct_data_ds - low) / (high - low) * 255.0)
+    
+    stack = [ct_data_ds[:,:,i].flatten().tolist() for i in range(ct_data_ds.shape[2])]
+    return jsonify({'stack': stack, 'shape': list(ct_data_ds.shape)})
+
+@app.route('/api/ct-3d-stack-viewer')
+def ct_stack_3d():
+    try:
+        ct_data = load_ct_dicom_stack()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e), 'plot_html': ''}), 400
+        
+    adaptive = request.args.get('adaptive', 'false').lower() == 'true'
+    
+    # Downsample volume to prevent rendering delays or memory issues
+    max_dim = 96
+    max_slices = 64
+    shape = ct_data.shape
+    factors = [max(1, s // max_dim) for s in shape[:2]] + [max(1, shape[2] // max_slices)]
+    ct_data_ds = ct_data[::factors[0], ::factors[1], ::factors[2]]
+    
+    # Apply a cylindrical mask to exclude the outer skull and focus on the central aneurysm/cerebral vessels
+    ct_data_ds = ct_data_ds.copy()
+    ny, nx, nz = ct_data_ds.shape
+    cy, cx = ny / 2.0, nx / 2.0
+    Y, X = np.ogrid[:ny, :nx]
+    dist_from_center = np.sqrt((X - cx)**2 + (Y - cy)**2)
+    # Mask out everything beyond 37.5% of slice size to isolate the internal brain structures
+    mask = dist_from_center > (0.375 * nx)
+    for z in range(nz):
+        ct_data_ds[:, :, z][mask] = -2000
+        
+    estimated_threshold = None
+    if adaptive:
+        try:
+            from sklearn.mixture import GaussianMixture
+            # Filter voxel intensities in the range [50, 1200]
+            voxels = ct_data_ds[(ct_data_ds >= 50) & (ct_data_ds <= 1200)]
+            if len(voxels) > 10000:
+                np.random.seed(42)
+                voxels_sample = np.random.choice(voxels, size=10000, replace=False).reshape(-1, 1)
+            else:
+                voxels_sample = voxels.reshape(-1, 1)
+                
+            if len(voxels_sample) >= 10:
+                gmm = GaussianMixture(n_components=3, random_state=42)
+                gmm.fit(voxels_sample)
+                means = gmm.means_.flatten()
+                sorted_idx = np.argsort(means)
+                # m1: soft tissue, m2: contrast agent / aneurysm, m3: dense bone
+                m1 = means[sorted_idx[0]]
+                m2 = means[sorted_idx[1]]
+                # Optimal isolevel threshold is the midpoint between low density soft-tissue/contrast boundary
+                # and contrast-enhanced blood vessel cluster
+                level = float((m1 + m2) / 2)
+                estimated_threshold = level
+                print(f">>> GMM Adaptive Threshold calculated: {level:.2f} HU <<<", flush=True)
+            else:
+                level = 150.0
+                estimated_threshold = level
+                print(">>> Insufficient voxels for GMM. Using default 150.0 HU <<<", flush=True)
+        except Exception as gmm_err:
+            import traceback
+            traceback.print_exc()
+            level = 150.0
+            estimated_threshold = level
+            print(f">>> GMM fitting failed: {gmm_err}. Falling back to default 150.0 HU <<<", flush=True)
+    else:
+        try:
+            level = float(request.args.get('level', 150.0))
+        except ValueError:
+            level = 150.0
+            
+    from skimage import measure
+    try:
+        verts, faces, _, _ = measure.marching_cubes(ct_data_ds, level=level)
+        response_data = {
+            'x': verts[:, 0].tolist(),
+            'y': verts[:, 1].tolist(),
+            'z': verts[:, 2].tolist(),
+            'i': faces[:, 0].tolist(),
+            'j': faces[:, 1].tolist(),
+            'k': faces[:, 2].tolist(),
+            'level': float(level)
+        }
+        if estimated_threshold is not None:
+            response_data['estimated_threshold'] = float(estimated_threshold)
+        return jsonify(response_data)
+    except Exception as ex:
+        return jsonify({'error': f'Reconstruction failed at level {level}: {str(ex)}'}), 400
+
+
 
 # --- HELPER: Triangulate Mesh for 3D Viewers ---
 def triangulate_mesh(verts):
@@ -970,6 +1122,7 @@ def eeg_circuitry():
     try:
         noise_level = float(request.args.get('noise_level', 2.0))
         imp_level = float(request.args.get('impedance', 5.0))
+        opt_method = request.args.get('opt_method', 'simulated_annealing')
         
         # All standard 10-20 electrodes
         electrodes = ['Fp1', 'F3', 'C3', 'P3', 'O1', 'Fz', 'Cz', 'Pz', 'Fp2', 'F4', 'C4', 'P4', 'O2', 'F7', 'F8', 'T3', 'T4', 'T5', 'T6']
@@ -996,84 +1149,129 @@ def eeg_circuitry():
                 'filter_lpf': 45.0,
                 'filter_hpf': 0.5
             }
-            
-        # 10-20 electrode selection constraints
-        # Max active channels = 6
-        # Let's run a simulated annealing loop to find the optimal active subset
-        # that maximizes average SNR and Shannon Capacity while minimizing saturation risk
-        current_selected = ['Fp1', 'C3', 'Cz', 'Fz'] # initial state
-        
-        best_selected = list(current_selected)
-        best_fitness = -9999.0
+
+        selected = []
+        gains = {}
         history = []
-        
+        loss_history = []
         n_epochs = 40
-        for epoch in range(n_epochs):
-            # Candidate perturbation
-            candidate = list(current_selected)
-            if np.random.random() < 0.4 and len(candidate) > 2:
-                # remove a channel
-                candidate.remove(np.random.choice(candidate))
-            elif np.random.random() < 0.6 and len(candidate) < 6:
-                # add a channel
-                rem = [el for el in electrodes if el not in candidate]
-                candidate.append(np.random.choice(rem))
-            else:
-                # swap a channel
-                if len(candidate) > 0:
-                    candidate.remove(np.random.choice(candidate))
-                rem = [el for el in electrodes if el not in candidate]
-                candidate.append(np.random.choice(rem))
-                
-            # Evaluate fitness of candidate
-            power_mW = len(candidate) * 1.5
+
+        dist_type = None
+        if opt_method == 'statistical_ml_gaussian':
+            dist_type = 'gaussian'
+        elif opt_method == 'statistical_ml_laplace':
+            dist_type = 'laplace'
+        elif opt_method == 'statistical_ml_student_t':
+            dist_type = 'student_t'
+
+        if dist_type:
+            # Run statistical machine learning optimization for all electrodes
+            electrode_snrs = {}
+            electrode_loss_histories = []
             
-            snr_sum = 0.0
-            saturation_penalty = 0.0
+            # Generate reference signal
+            t = np.linspace(0, 1.0, 200)
+            ref_signal = 10.0 * np.sin(2 * np.pi * 10 * t) + 4.0 * np.sin(2 * np.pi * 22 * t)
             
-            for el in candidate:
+            for el in electrodes:
                 prof = electrode_profiles[el]
-                # Thermal noise (Johnson-Nyquist): V = sqrt(4 * k_B * T * R * df)
                 bandwidth = 45.0
                 thermal_noise = 0.026 * np.sqrt(prof['impedance'] * 1000.0 * (bandwidth / 45.0))
                 total_noise = np.sqrt(thermal_noise**2 + noise_level**2)
                 
-                # Signal power
-                snr = 10 * np.log10(prof['signal_power']**2 / total_noise**2)
-                snr_sum += snr
+                # Generate simulated noise component
+                noise_samples = np.random.normal(0, total_noise, len(t))
                 
-                # Gain saturation risk: noisy electrodes shouldn't have high gain
-                if total_noise > 4.0:
-                    saturation_penalty += (total_noise - 4.0) * 1.8
+                # Use statistical learning optimizer
+                opt = SNROptimizer(distribution_type=dist_type)
+                # Fit/learn optimal distribution to denoise signal and optimize SNR
+                params = opt.learn_optimal_distribution(ref_signal, noise_samples, iterations=20)
+                
+                # Denoise the signal using the learned parameters
+                denoised_signal = opt._denoise_signal(ref_signal + noise_samples, params)
+                
+                # Compute the denoised SNR
+                denoised_noise = (ref_signal + noise_samples) - denoised_signal
+                denoised_snr = opt.compute_snr(ref_signal, denoised_noise)
+                
+                if np.isinf(denoised_snr) or np.isnan(denoised_snr):
+                    denoised_snr = 2.0
                     
-            capacity_score = snr_sum - 1.2 * power_mW - saturation_penalty
+                electrode_snrs[el] = float(denoised_snr)
+                electrode_loss_histories.append(opt.snr_history)
             
-            # Simulated Annealing acceptance
-            temp = 10.0 / (epoch + 1)
-            if capacity_score > best_fitness or np.random.random() < np.exp((capacity_score - best_fitness) / temp):
-                current_selected = candidate
-                if capacity_score > best_fitness:
-                    best_selected = list(candidate)
-                    best_fitness = capacity_score
+            # Select top 6 electrodes with highest denoised SNR
+            sorted_els = sorted(electrode_snrs.items(), key=lambda x: x[1], reverse=True)
+            selected = [el for el, snr in sorted_els[:6]]
+            
+            # Calculate average training loss history (scaled for presentation)
+            n_epochs = 20
+            for step in range(n_epochs):
+                step_snrs = []
+                for hist in electrode_loss_histories:
+                    if step < len(hist):
+                        step_snrs.append(hist[step])
+                avg_step_snr = np.mean(step_snrs) if step_snrs else 0.0
+                loss_val = float(max(0.01, 35.0 - avg_step_snr))
+                loss_history.append(loss_val)
+        else:
+            # Heuristic simulated annealing loop
+            current_selected = ['Fp1', 'C3', 'Cz', 'Fz']
+            best_selected = list(current_selected)
+            best_fitness = -9999.0
+            
+            for epoch in range(n_epochs):
+                candidate = list(current_selected)
+                if np.random.random() < 0.4 and len(candidate) > 2:
+                    candidate.remove(np.random.choice(candidate))
+                elif np.random.random() < 0.6 and len(candidate) < 6:
+                    rem = [el for el in electrodes if el not in candidate]
+                    candidate.append(np.random.choice(rem))
+                else:
+                    if len(candidate) > 0:
+                        candidate.remove(np.random.choice(candidate))
+                    rem = [el for el in electrodes if el not in candidate]
+                    candidate.append(np.random.choice(rem))
                     
-            history.append(float(best_fitness))
+                power_mW = len(candidate) * 1.5
+                snr_sum = 0.0
+                saturation_penalty = 0.0
+                
+                for el in candidate:
+                    prof = electrode_profiles[el]
+                    bandwidth = 45.0
+                    thermal_noise = 0.026 * np.sqrt(prof['impedance'] * 1000.0 * (bandwidth / 45.0))
+                    total_noise = np.sqrt(thermal_noise**2 + noise_level**2)
+                    snr = 10 * np.log10(prof['signal_power']**2 / total_noise**2)
+                    snr_sum += snr
+                    if total_noise > 4.0:
+                        saturation_penalty += (total_noise - 4.0) * 1.8
+                        
+                capacity_score = snr_sum - 1.2 * power_mW - saturation_penalty
+                
+                temp = 10.0 / (epoch + 1)
+                if capacity_score > best_fitness or np.random.random() < np.exp((capacity_score - best_fitness) / temp):
+                    current_selected = candidate
+                    if capacity_score > best_fitness:
+                        best_selected = list(candidate)
+                        best_fitness = capacity_score
+                        
+                history.append(float(best_fitness))
+                
+            selected = best_selected
+            max_fit = max(history)
+            loss_history = [float(max_fit - f + 0.05 + np.random.normal(0, 0.01)) for f in history]
+            loss_history = [float(max(0.01, l * (1.0 - i/n_epochs))) for i, l in enumerate(loss_history)]
             
-        # 2. Extract optimal state and calculate final components
-        selected = best_selected
-        
         # Calculate dynamic gain, cutoffs, and components
-        gains = {}
         for el in electrodes:
             isActive = el in selected
             prof = electrode_profiles[el]
             prof['active'] = isActive
             
             if isActive:
-                # Dynamic LPF/HPF based on noise and impedance
                 lpf = float(max(20.0, 45.0 - 1.5 * prof['impedance'] - 1.2 * noise_level))
                 hpf = float(min(4.0, 0.5 + 0.1 * prof['impedance'] + 0.08 * noise_level))
-                
-                # Dynamic gain: lower impedance/noise allows higher gain
                 raw_gain = 180.0 - 3.5 * prof['impedance'] - 8.0 * noise_level
                 gain = float(max(20.0, min(200.0, raw_gain)))
                 
@@ -1081,27 +1279,22 @@ def eeg_circuitry():
                 prof['filter_lpf'] = lpf
                 prof['filter_hpf'] = hpf
                 
-                # Calculate active filter R/C values
-                # HPF cutoff f1 = 1 / (2 * pi * R * C) -> fix C_hpf = 0.1 uF
                 r_hpf = float(1.0 / (2 * np.pi * 1e-7 * hpf))
+                c_lpf = float(1e9 / (2 * np.pi * 1e4 * lpf))
+                r_match = prof['impedance']
+                c_match = prof['capacitance_pf']
                 
-                # LPF cutoff f2 = 1 / (2 * pi * R * C) -> fix R_lpf = 10 kOhm
-                c_lpf = float(1e9 / (2 * np.pi * 1e4 * lpf)) # in nF
-                
-                # Impedance matching components
-                r_match = prof['impedance'] # kOhm
-                c_match = prof['capacitance_pf'] # pF
-                
-                # Calculate actual SNR
-                bandwidth = lpf - hpf
-                thermal_noise = 0.026 * np.sqrt(prof['impedance'] * 1000.0 * (bandwidth / 45.0))
-                total_noise = np.sqrt(thermal_noise**2 + noise_level**2)
-                actual_snr = float(max(2.0, 10 * np.log10(prof['signal_power']**2 / total_noise**2)))
+                if dist_type:
+                    actual_snr = electrode_snrs[el]
+                else:
+                    bandwidth = lpf - hpf
+                    thermal_noise = 0.026 * np.sqrt(prof['impedance'] * 1000.0 * (bandwidth / 45.0))
+                    total_noise = np.sqrt(thermal_noise**2 + noise_level**2)
+                    actual_snr = float(max(2.0, 10 * np.log10(prof['signal_power']**2 / total_noise**2)))
                 
                 prof['snr'] = actual_snr
                 gains[el] = gain
                 
-                # Add components telemetry
                 prof['components'] = {
                     'impedance_matching': {
                         'R_match_kOhm': float(r_match),
@@ -1124,14 +1317,8 @@ def eeg_circuitry():
                 gains[el] = 0.0
                 prof['components'] = {}
                 
-        # Calculate overall optimized SNR
         active_snrs = [electrode_profiles[el]['snr'] for el in selected]
         avg_snr = float(np.mean(active_snrs)) if selected else 0.0
-        
-        # Format convergence trace to be positive / descending loss curve
-        max_fit = max(history)
-        loss_history = [float(max_fit - f + 0.05 + np.random.normal(0, 0.01)) for f in history]
-        loss_history = [float(max(0.01, l * (1.0 - i/n_epochs))) for i, l in enumerate(loss_history)]
         
         return jsonify({
             'electrodes': electrode_profiles,
@@ -1141,7 +1328,7 @@ def eeg_circuitry():
             'filter_cutoff_high': 45.0,
             'impedance_matched': True,
             'optimized_snr': avg_snr,
-            'ml_convergence_steps': n_epochs,
+            'ml_convergence_steps': len(loss_history),
             'training_loss_history': loss_history
         })
     except Exception as e:
@@ -1173,8 +1360,19 @@ def eeg_waveforms():
         raw_signal = base_signal + drift + hf_noise
         
         if ml_filter_active:
-            filtered_signal = base_signal + 0.1 * drift + 0.15 * hf_noise
-            snr_val = 20.0 * np.log10(np.std(base_signal) / np.std(0.1 * drift + 0.15 * hf_noise))
+            # Fit the AdaptiveSNRLearner from snr_optimizer to find the best distribution model
+            # and denoise the signal
+            learner = AdaptiveSNRLearner()
+            # Fit using base_signal as clean reference and drift+hf_noise as noise component
+            learner.fit(base_signal, drift + hf_noise)
+            # Denoise the raw signal
+            filtered_signal = learner.denoise(raw_signal)
+            
+            # Compute actual denoised SNR
+            noise_est = raw_signal - filtered_signal
+            snr_val = float(learner.optimizers[learner.best_distribution].compute_snr(base_signal, noise_est))
+            if np.isinf(snr_val) or np.isnan(snr_val):
+                snr_val = 15.0
         else:
             filtered_signal = raw_signal
             snr_val = 20.0 * np.log10(np.std(base_signal) / np.std(drift + hf_noise))
@@ -1195,6 +1393,8 @@ def eeg_waveforms():
             'snr_db': float(snr_val)
         })
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 400
 
 # --- ENDPOINT: EEG 3D Scuba Cap Model ---
@@ -1758,4 +1958,5 @@ def register_cortical_surface_feynman():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5055)
+    port = int(os.environ.get('PORT', 5056))
+    app.run(debug=True, host='0.0.0.0', port=port)
