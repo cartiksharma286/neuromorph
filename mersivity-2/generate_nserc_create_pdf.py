@@ -114,9 +114,10 @@ def generate_nserc_create_pdf():
     elements.append(Spacer(1, 0.15*inch))
     
     elements.append(Paragraph(
-        "<b>Host Institution:</b> University of Manitoba<br/>"
-        "<b>Principal Investigator:</b> Dr. Cartik Sharma, Department of Biomedical Engineering<br/>"
-        "<b>Collaborating Institutions:</b> McGill University, Sunnybrook Research Institute, University of Toronto<br/>"
+        "<b>Host Institution:</b> University of Toronto, Mann Lab<br/>"
+        "<b>Principal Investigator:</b> Dr. Steve Mann, Department of Electrical & Computer Engineering<br/>"
+        "<b>Lead Author:</b> Cartik Sharma, University of Toronto, Mann Lab<br/>"
+        "<b>Collaborating Institutions:</b> McGill University, Sunnybrook Research Institute, University of Manitoba<br/>"
         "<b>Industrial Partners:</b> Neuromorph Technologies Inc., PacsEhr Solutions, NeopreneBiosense Corp.<br/>"
         "<b>Requested Funding:</b> $1,650,000 CAD over 6 Years (NSERC CREATE Tier-1 Grant)",
         ParagraphStyle('Affiliation', parent=styles['Normal'], fontSize=9.5, leading=15, alignment=TA_LEFT)
@@ -280,6 +281,21 @@ def generate_nserc_create_pdf():
     elements.append(Paragraph(tab8_text, body_style))
     elements.append(Paragraph(
         "( x / r<sub>x</sub> )<sup>2</sup> + ( y / r<sub>y</sub> )<sup>2</sup> + ( z / r<sub>z</sub> )<sup>2</sup> = 1", 
+        math_style
+    ))
+
+    # Tab 9: Hybrid QML & Feynman Path Integral Fusion
+    elements.append(Paragraph("2.9. Hybrid QML & Feynman Path Integral Cross-Modality Fusion", subsection_heading))
+    tab9_text = (
+        "To achieve submillimetric fusion between MRI voxel stacks and structural surgical targets, trainees "
+        "implement a hybrid quantum-classical pipeline. Coarse 3D alignment is performed via continuous fraction "
+        "VQE simulation, and coordinates are subsequently refined by propagating configuration paths that minimize "
+        "the Euclidean action S_E. By using target-distance potential fields, the system converges to a submillimetric error:"
+    )
+    elements.append(Paragraph(tab9_text, body_style))
+    elements.append(Paragraph(
+        "S<sub>E</sub>[q(t)] = &int;<sub>0</sub><sup>T</sup> [ (1/2) * m * (dq/dt)<sup>2</sup> + V(q(t)) ] dt<br/>"
+        "where V(q) = (1/2) * || q - Target ||<sup>2</sup>",
         math_style
     ))
 
