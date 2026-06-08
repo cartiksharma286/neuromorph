@@ -1,0 +1,48 @@
+* EEG Acquisition Channel SPICE Netlist
+* Active Biosensing Circuity Schematics for NeuroMorph
+* Designed for submillimetric cortex registration validation
+
+.SUBCKT EEG_CHANNEL VIN VOUT VCC VEE GND
+* Node VIN  : Scalp Electrode Input Potential
+* Node VOUT : Denoised & Amplified Analog Output
+* Node VCC  : Positive Power Supply (+5V)
+* Node VEE  : Negative Power Supply (-5V)
+* Node GND  : Analog System Ground
+
+* 1. Impedance Matching Stage (Scalp-Electrode Interface)
+* Matches electrode contact impedance to the front-end amplifier input
+R_match VIN GND 5.0k
+C_match VIN GND 14.0pF
+
+* 2. Active High-Pass Filter (HPF) Stage
+* Blocks DC offset and polarization potentials. Cutoff frequency ~0.5 Hz
+C_hpf VIN N_hpf 0.1uF
+R_hpf N_hpf GND 3.18MEG
+
+* 3. Active Low-Pass Filter (LPF) Stage
+* Attenuates high frequency noise and prevents aliasing. Cutoff frequency ~450 Hz
+R_lpf N_hpf N_lpf 10.0k
+C_lpf N_lpf GND 35.4nF
+
+* 4. Instrumentation Amplifier Stage (AD8221 Macro-model)
+* Amplifies the microvolt-level EEG signals. Target Gain = 150
+* Subcircuit call to AD8221 pre-amplifier
+X_amp N_lpf GND VCC VEE VOUT AD8221_INAMP
+
+.ENDS EEG_CHANNEL
+
+
+* --- AD8221 Instrumentation Amplifier Subcircuit Model ---
+.SUBCKT AD8221_INAMP IN+ IN- V+ V- OUT
+* High input impedance differential amplifier model with gain = 150
+* Input impedance: 10 GOhm differential, 10 TOhm common-mode
+R_in_diff IN+ IN- 10G
+R_in_cm1 IN+ 0 10T
+R_in_cm2 IN- 0 10T
+
+* Gain stage (VCVS) with gain of 150
+E_gain OUT_INT 0 IN+ IN- 150
+
+* Output impedance model
+R_out OUT_INT OUT 10
+.ENDS AD8221_INAMP
