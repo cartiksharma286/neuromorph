@@ -485,6 +485,11 @@
             </div>
 
             <div class="control-group">
+                <label>Number of Averages (NSA)</label>
+                <input type="number" id="nsa" min="1" max="16" value="1" step="1" onchange="debouncedRun()" style="width: 100%;">
+            </div>
+
+            <div class="control-group">
                 <label>Noise Management</label>
                 <select id="noise_filter" onchange="debouncedRun()">
                     <option value="None">No Denoising</option>
@@ -1781,6 +1786,7 @@
                 flip_angle: document.getElementById('flip_angle').value,
                 resolution: 128,
                 noise: document.getElementById('noise').value,
+                nsa: document.getElementById('nsa') ? parseInt(document.getElementById('nsa').value) || 1 : 1,
                 noise_filter: document.getElementById('noise_filter').value,
                 morphological_cleanup: document.getElementById('morphological_cleanup').checked,
                 ellipsoidal_mask: document.getElementById('ellipsoidal_mask').checked,

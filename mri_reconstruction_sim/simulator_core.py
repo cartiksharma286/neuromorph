@@ -1908,13 +1908,16 @@ class MRIReconstructionSimulator:
              sensitivity = np.exp(-r**2 / (2 * (N)**2)) 
              self.coils.append(sensitivity)
 
-    def acquire_signal(self, sequence_type='SE', TR=2000, TE=100, TI=500, flip_angle=30, noise_level=0.01):
+    def acquire_signal(self, sequence_type='SE', TR=2000, TE=100, TI=500, flip_angle=30, noise_level=0.01, nsa=1):
         """
         Simulates Pulse Sequence acquisition.
         Returns k-space data per coil.
         """
         # Cache active sequence for plotting
         self.latest_sequence_type = sequence_type
+        
+        # Scale noise level by Number of Signal Averages (NSA)
+        noise_level = noise_level / np.sqrt(max(1, nsa))
         
         # Quantum Noise Reduction Factor
         q_factor = 1.0
@@ -3186,14 +3189,14 @@ class MRIReconstructionSimulator:
             # Re-apply mask to suppress small specks
             final_img = np.where(~mask | cleaned_mask, final_img, 0)
 
-        # 4b. Always run a robust speckle-suppression pass to remove
-        # small isolated bright pixels (white speckle) across all sequences
-        # and coil combinations. This keeps appearance consistent and
-        # avoids requiring the frontend to toggle cleanup options.
-        try:
-            final_img = self._suppress_speckle(final_img)
-        except Exception as e:
-            print(f"Speckle suppression failed: {e}")
+        # 4b. Run a robust speckle-suppression pass if denoising is requested
+        # (keeps appearance consistent for denoised image while maintaining
+        # raw grayscale reconstruction when No Denoising is selected)
+        if noise_filter != 'None':
+            try:
+                final_img = self._suppress_speckle(final_img)
+            except Exception as e:
+                print(f"Speckle suppression failed: {e}")
 
         self.latest_reconstructed_image = final_img
         

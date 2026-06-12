@@ -71,8 +71,12 @@ def simulate():
         coil_mode = data.get('coils', 'standard')
         num_coils = int(data.get('num_coils', 8))
         noise = float(data.get('noise', 0.0)) # Allow noise from UI
+        nsa = int(data.get('nsa', 1))
         recon_method = data.get('recon_method', 'SoS')
         use_shimming = data.get('shimming', False)
+        noise_filter = data.get('noise_filter', 'None')
+        morphological_cleanup = data.get('morphological_cleanup', False)
+        ellipsoidal_mask = data.get('ellipsoidal_mask', False)
         
         slice_orientation = data.get('slice_orientation', 'axial')
         slice_pos = float(data.get('slice_pos', 0.5))
@@ -129,12 +133,18 @@ def simulate():
         sim.set_view(slice_orientation, slice_pos)
         
         # 4. Acquire Signal & Reconstruct (Sequence Dependent)
-        kspace, M_ref = sim.acquire_signal(sequence_type=seq_type, TR=tr, TE=te, TI=ti, flip_angle=flip_angle, noise_level=noise)
+        kspace, M_ref = sim.acquire_signal(sequence_type=seq_type, TR=tr, TE=te, TI=ti, flip_angle=flip_angle, noise_level=noise, nsa=nsa)
         
         if recon_method == 'DeepLearning':
-            recon_img = sim.deep_learning_reconstruct(kspace)
+            recon_img = sim.deep_learning_reconstruct(kspace, ellipsoidal_mask=ellipsoidal_mask)
         else:
-            recon_img, coil_imgs = sim.reconstruct_image(kspace, method=recon_method)
+            recon_img, coil_imgs = sim.reconstruct_image(
+                kspace,
+                method=recon_method,
+                noise_filter=noise_filter,
+                morphological_cleanup=morphological_cleanup,
+                ellipsoidal_mask=ellipsoidal_mask
+            )
         
         metrics = sim.compute_metrics(recon_img, M_ref)
         # Statistical Classifier might be fast enough, or we can cache?
@@ -142,7 +152,7 @@ def simulate():
         stat_metrics = sim.classifier.analyze_image(recon_img)
         metrics.update(stat_metrics)
         
-        plots = sim.generate_plots(kspace, recon_img, M_ref)
+        plots = sim.generate_plots(kspace, recon_img, M_ref, ellipsoidal_mask=ellipsoidal_mask)
         signal_study = sim.generate_signal_study(seq_type)
         
         # Save plots to disk (Optional for persistence, but slow? Let's keep it for report generation)
@@ -619,6 +629,7 @@ def ellipsoidal_artifact_removal():
         coil_mode = data.get('coils', 'standard')
         num_coils = int(data.get('num_coils', 8))
         noise = float(data.get('noise', 0.02))
+        nsa = int(data.get('nsa', 1))
         recon_method = data.get('recon_method', 'SoS')
         phantom_type = data.get('phantom_type', 'brain')
         speckle_threshold = float(data.get('speckle_threshold', 0.75))
@@ -645,7 +656,8 @@ def ellipsoidal_artifact_removal():
             TE=te, 
             TI=ti, 
             flip_angle=flip_angle, 
-            noise_level=noise
+            noise_level=noise,
+            nsa=nsa
         )
         
         # ─────────────────────────────────────────────────────────────
