@@ -308,7 +308,8 @@
 
         <!-- Glassmorphic Tab Bar Navigation -->
         <div class="tab-bar">
-            <button class="tab active" id="tab-slice" onclick="selectTab('slice')">3D Slice Viewer</button>
+            <button class="tab active" id="tab-slice" onclick="selectTab('slice')">CT Slice Viewer</button>
+            <button class="tab" id="tab-mri-slice" onclick="selectTab('mri-slice')">🧠 MRI Slice Viewer</button>
             <button class="tab" id="tab-surface" onclick="selectTab('surface')">3D Surface Stack</button>
             <button class="tab" id="tab-tetra" onclick="selectTab('tetra')">Delaunay Volumetric Surface</button>
             <button class="tab" id="tab-legendre" onclick="selectTab('legendre')">Legendre+SH</button>
@@ -333,6 +334,53 @@
         <div id="slice-card" class="viewer-card">
             <div class="viewer-title">DICOM 3D Slice Viewer</div>
             <div id="dicom-stack-viewer" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+        </div>
+
+        <!-- MRI Slice Viewer Card (mri/DICOM/00000001/00000005) -->
+        <div id="mri-slice-card" class="viewer-card" style="display: none;">
+            <div class="viewer-title">🧠 MRI T1 Brain Slice Viewer — Series 00000005</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%;">
+                <!-- Slice canvas + slider -->
+                <div style="flex: 2; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                    <div id="mri-slice-viewer" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+                </div>
+                <!-- Info & Registration sidebar -->
+                <div style="flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 14px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #c084fc; font-size: 1em; letter-spacing: 0.5px;">DICOM SERIES INFO</h4>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">Source Path:</span>
+                            <span style="color: #cbd5e1; font-family: 'JetBrains Mono', monospace; font-size: 0.85em;">mri/DICOM/00000001/00000005</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">Modality:</span>
+                            <span id="mri-info-series" style="color: #10b981; font-weight: 700;">Loading…</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">Original Slices:</span>
+                            <span id="mri-info-slices" style="color: #a5b4fc; font-weight: 700;">—</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">Viewer Slices (ds):</span>
+                            <span id="mri-info-ds-slices" style="color: #a5b4fc; font-weight: 700;">—</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88em;">
+                            <span style="color: #9ca3af;">Grid (H×W):</span>
+                            <span id="mri-info-shape" style="color: #a5b4fc; font-weight: 700;">—</span>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #06b6d4; font-size: 1em;">LAUNCH REGISTRATION</h4>
+                        <p style="color: #9ca3af; font-size: 0.85em; line-height: 1.5; margin: 0;">Use this MRI series as the source volume for multi-modal registration against the surgical STL mesh.</p>
+                        <button onclick="selectTab('mri-to-stl-qml-feynman')" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; border: none; padding: 12px 18px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(99,102,241,0.3); transition: all 0.2s ease;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">
+                            ⚛️ MRI-to-STL QML + Feynman Registration
+                        </button>
+                        <button onclick="selectTab('mri-to-ct-qml')" style="background: linear-gradient(135deg, #06b6d4, #0891b2); color: #fff; border: none; padding: 12px 18px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(6,182,212,0.25); transition: all 0.2s ease;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">
+                            🔬 MRI-to-CT Cross-Modality QML
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 3D Surface Stack Card -->
@@ -1161,7 +1209,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all cards first
-            ['slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'chirplet-card', 'reg-stats-card'].forEach(id => {
+            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'chirplet-card', 'reg-stats-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -1173,6 +1221,9 @@
             if (tab === 'slice') {
                 document.getElementById('tab-slice').classList.add('active');
                 loadDicomStack();
+            } else if (tab === 'mri-slice') {
+                document.getElementById('tab-mri-slice').classList.add('active');
+                loadMriStack();
             } else if (tab === 'surface') {
                 document.getElementById('tab-surface').classList.add('active');
                 load3DStackViewer();
@@ -1252,7 +1303,7 @@
             `;
         }
 
-        // --- 1. DICOM 3D SLICE VIEWER ---
+        // --- 1. CT DICOM 3D SLICE VIEWER ---
         async function loadDicomStack() {
             showCard('slice-card');
             showLoading('dicom-stack-viewer', 'Loading 3D DICOM stack from disk...');
@@ -1312,6 +1363,89 @@
                 viewer.appendChild(label);
             }
             update(current);
+        }
+
+        // --- 1.5 MRI SLICE VIEWER (mri/DICOM/00000001/00000005) ---
+        let _mriStackData = null;
+        async function loadMriStack() {
+            showCard('mri-slice-card');
+            if (_mriStackData) {
+                _renderMriStack(_mriStackData);
+                return;
+            }
+            showLoading('mri-slice-viewer', 'Loading MRI T1 series (00000005) from disk…');
+            try {
+                const res = await fetch('/api/mri-stack');
+                const data = await res.json();
+                if (data.error) {
+                    document.getElementById('mri-slice-viewer').innerHTML = `<div style="color:#ef4444">Error: ${data.error}</div>`;
+                    return;
+                }
+                _mriStackData = data;
+                _renderMriStack(data);
+            } catch (err) {
+                document.getElementById('mri-slice-viewer').innerHTML = `<div style="color:#ef4444">Network error: ${err.message}</div>`;
+            }
+        }
+
+        function _renderMriStack(data) {
+            const [height, width, depth] = data.shape;
+            // Update info sidebar
+            document.getElementById('mri-info-series').textContent = data.series || 'MRI T1';
+            document.getElementById('mri-info-slices').textContent = data.slices_original + ' slices';
+            document.getElementById('mri-info-ds-slices').textContent = depth + ' slices (downsampled)';
+            document.getElementById('mri-info-shape').textContent = `${height} × ${width}`;
+
+            let current = Math.floor(depth / 2);
+
+            function renderMriSlice(idx) {
+                const arr = data.stack[idx];
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                canvas.style.borderRadius = '12px';
+                canvas.style.boxShadow = '0 8px 24px rgba(0,0,0,0.6)';
+                canvas.style.maxWidth = '100%';
+                canvas.style.maxHeight = '480px';
+                canvas.style.border = '1px solid rgba(192, 132, 252, 0.2)';
+
+                const ctx = canvas.getContext('2d');
+                const imgData = ctx.createImageData(width, height);
+                // Apply a warm purple-tinted colormap for MRI
+                for (let i = 0; i < arr.length; ++i) {
+                    const v = arr[i];  // already 0-255
+                    imgData.data[i*4+0] = Math.min(255, Math.floor(v * 1.05));   // R
+                    imgData.data[i*4+1] = Math.min(255, Math.floor(v * 0.92));   // G
+                    imgData.data[i*4+2] = Math.min(255, Math.floor(v * 1.10));   // B (slight purple)
+                    imgData.data[i*4+3] = 255;
+                }
+                ctx.putImageData(imgData, 0, 0);
+                return canvas;
+            }
+
+            function updateMri(idx) {
+                const viewer = document.getElementById('mri-slice-viewer');
+                viewer.innerHTML = '';
+                viewer.appendChild(renderMriSlice(idx));
+
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.min = 0;
+                slider.max = depth - 1;
+                slider.value = idx;
+                slider.oninput = e => updateMri(Number(e.target.value));
+                slider.style.marginTop = '12px';
+                viewer.appendChild(slider);
+
+                const label = document.createElement('div');
+                label.style.textAlign = 'center';
+                label.style.marginTop = '8px';
+                label.style.fontWeight = '600';
+                label.style.color = '#c084fc';
+                label.textContent = `Axial Slice ${idx + 1} / ${depth}  ·  Source: mri/DICOM/00000001/00000005`;
+                viewer.appendChild(label);
+            }
+            updateMri(current);
         }
 
         // --- 1.1 CT ANEURYSM VIEWER ---

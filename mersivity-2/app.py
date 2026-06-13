@@ -229,7 +229,7 @@ def feynman_path_integral_registration(source, target, n_steps=12, sigma=0.15, m
     return final_verts, final_error, transform, feynman_history
 
 # Set this to the absolute path of your DICOM images directory
-DICOM_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mri', 'DICOM', '00000001', '00000006')
+DICOM_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mri', 'DICOM', '00000001', '00000005')
 
 _cached_mri_data = None
 _cached_surgical_mesh_vertices = None
@@ -906,6 +906,39 @@ def dicom_stack():
     
     stack = [ct_data_ds[:,:,i].flatten().tolist() for i in range(ct_data_ds.shape[2])]
     return jsonify({'stack': stack, 'shape': list(ct_data_ds.shape)})
+
+@app.route('/api/mri-stack')
+def mri_stack():
+    """Serve MRI 00000005 DICOM series as a 2D slice stack for the viewer."""
+    try:
+        mri_data = load_mri_005_stack()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e), 'stack': [], 'shape': [0, 0, 0]}), 400
+
+    max_dim = 128
+    max_slices = 128
+    shape = mri_data.shape
+    factors = [max(1, s // max_dim) for s in shape[:2]] + [max(1, shape[2] // max_slices)]
+    mri_ds = mri_data[::factors[0], ::factors[1], ::factors[2]]
+
+    # Soft-tissue MRI windowing: stretch to [0, 255] per-volume
+    lo = float(np.percentile(mri_ds[mri_ds > 0], 2)) if np.any(mri_ds > 0) else 0.0
+    hi = float(np.percentile(mri_ds, 99))
+    if hi - lo < 1e-6:
+        hi = lo + 1.0
+    mri_ds = np.clip(mri_ds, lo, hi)
+    mri_ds = ((mri_ds - lo) / (hi - lo) * 255.0)
+
+    stack = [mri_ds[:, :, i].flatten().tolist() for i in range(mri_ds.shape[2])]
+    return jsonify({
+        'stack': stack,
+        'shape': list(mri_ds.shape),
+        'series': 'MRI 00000005 — T1 Brain Volume',
+        'slices_original': mri_data.shape[2]
+    })
+
 
 @app.route('/api/3d-stack-viewer')
 def stack_3d():
