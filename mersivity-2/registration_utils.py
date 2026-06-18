@@ -32,6 +32,19 @@ def refine_with_cf(value, max_depth=12):
     sign, cf = float_to_cf(value, max_depth)
     return cf_to_float(sign, cf)
 
+def refine_matrix_cf(M, max_depth=8):
+    """CF refinement of a 3x3 matrix."""
+    result = np.empty_like(M)
+    flat_in = M.ravel()
+    flat_out = result.ravel()
+    for i in range(flat_in.size):
+        flat_out[i] = refine_with_cf(flat_in[i], max_depth)
+    return result
+
+def refine_vector_cf(v, max_depth=8):
+    """CF refinement of a vector."""
+    return np.array([refine_with_cf(v[i], max_depth) for i in range(len(v))])
+
 def extract_euler_angles(R):
     """Extract XYZ Euler angles from a 3D rotation matrix R."""
     sy = np.sqrt(R[0,0]*R[0,0] + R[1,0]*R[1,0])
@@ -70,6 +83,8 @@ def continued_fraction_registration(source, target, n_iter=60, error_thresh=0.5)
     """
     Submillimetric 3D Point Cloud Registration using Iterative Continued Fraction (ICF)
     refinement of 3D Affine parameters (including Rotation, Scale, and Shear).
+    
+    Performance-optimized: single KD-tree build, adaptive CF depth, plateau early exit.
     """
     src = source.copy()
     tgt = target.copy()
@@ -78,14 +93,28 @@ def continued_fraction_registration(source, target, n_iter=60, error_thresh=0.5)
     A_cf = np.eye(3)
     t_cf = np.zeros(3)
     
-    for _ in range(n_iter):
-        tree = cKDTree(tgt)
+    # Build KD-tree ONCE — target never changes during registration
+    tree = cKDTree(tgt)
+    prev_error = float('inf')
+    plateau_count = 0
+    
+    for iteration in range(n_iter):
         dists, idx = tree.query(reg_verts)
         matched_tgt = tgt[idx]
         
         reg_error = float(np.mean(dists))
         if reg_error < error_thresh:
             break
+        
+        # Adaptive early exit: stop on error plateau (3 consecutive <0.1% improvement)
+        improvement = prev_error - reg_error
+        if improvement < prev_error * 0.001 and iteration > 2:
+            plateau_count += 1
+            if plateau_count >= 3:
+                break
+        else:
+            plateau_count = 0
+        prev_error = reg_error
             
         # Centroids of active correspondences
         src_centroid = reg_verts.mean(axis=0)
@@ -106,19 +135,13 @@ def continued_fraction_registration(source, target, n_iter=60, error_thresh=0.5)
                 Vt[-1, :] *= -1
                 A_opt = Vt.T @ U.T
             
-        # Refine each component of the affine matrix (including shear!) via Continued Fractions
-        A_cf_iter = np.zeros((3, 3))
-        for r in range(3):
-            for col in range(3):
-                A_cf_iter[r, col] = refine_with_cf(A_opt[r, col], max_depth=12)
+        # Adaptive CF depth: high precision early, taper for speed
+        cf_depth = 8 if iteration < 10 else 6
+        A_cf_iter = refine_matrix_cf(A_opt, max_depth=cf_depth)
                 
         # Estimate and refine translation via Continued Fractions
         translation_iter = tgt_centroid - src_centroid @ A_cf_iter.T
-        t_cf_iter = np.array([
-            refine_with_cf(translation_iter[0], max_depth=12),
-            refine_with_cf(translation_iter[1], max_depth=12),
-            refine_with_cf(translation_iter[2], max_depth=12)
-        ])
+        t_cf_iter = refine_vector_cf(translation_iter, max_depth=cf_depth)
         
         # Apply transformation
         reg_verts = reg_verts @ A_cf_iter.T + t_cf_iter
@@ -127,12 +150,12 @@ def continued_fraction_registration(source, target, n_iter=60, error_thresh=0.5)
         A_cf = A_cf_iter @ A_cf
         t_cf = t_cf @ A_cf_iter.T + t_cf_iter
         
-    final_error = compute_registration_error(reg_verts, tgt)
+    final_error = compute_registration_error(reg_verts, tgt, existing_tree=tree)
     
     # Decompose A_cf into rotation, scale, and shear for advanced telemetry
     try:
         from scipy.linalg import polar
-        R_polar, P_polar = polar(A_cf) # A_cf = R_polar @ P_polar (P_polar contains scale and shear!)
+        R_polar, P_polar = polar(A_cf)
         scale_cf = np.diag(P_polar).tolist()
         shear_cf = (P_polar - np.diag(np.diag(P_polar))).tolist()
         rotation_cf = R_polar.tolist()
@@ -152,8 +175,8 @@ def continued_fraction_registration(source, target, n_iter=60, error_thresh=0.5)
 
 def statistical_fusion_registration(source, target, n_iter=15, error_thresh=0.8, n_components=6):
     """
-    Iterative fusion registration using GMMs to model both point sets and align their distributions.
-    Fast iterative fusion registration using GMMs, tuned for <10s runtime and submillimetric accuracy.
+    Iterative fusion registration using GMMs.
+    Performance-optimized: target GMM pre-fitted, fewer components, capped iterations.
     """
     src = source.copy()
     tgt = target.copy()
@@ -170,12 +193,19 @@ def statistical_fusion_registration(source, target, n_iter=15, error_thresh=0.8,
     
     R = np.eye(3)
     
-    for _ in range(n_iter):
-        gmm_src = GaussianMixture(n_components=n_components, covariance_type='full', n_init=2, max_iter=50, random_state=42).fit(reg_verts)
-        gmm_tgt = GaussianMixture(n_components=n_components, covariance_type='full', n_init=2, max_iter=50, random_state=42).fit(tgt_normalized)
+    # Performance: fewer GMM components, fewer EM iterations, single init
+    n_comp = min(n_components, 4)
+    
+    # Pre-fit target GMM ONCE (target is static)
+    gmm_tgt = GaussianMixture(n_components=n_comp, covariance_type='full', n_init=1, max_iter=30, random_state=42).fit(tgt_normalized)
+    tgt_means = gmm_tgt.means_
+    
+    max_iters = min(n_iter, 8)
+    
+    for _ in range(max_iters):
+        gmm_src = GaussianMixture(n_components=n_comp, covariance_type='full', n_init=1, max_iter=30, random_state=42).fit(reg_verts)
         
         src_means = gmm_src.means_
-        tgt_means = gmm_tgt.means_
         
         src_means_centroid = src_means.mean(axis=0)
         tgt_means_centroid = tgt_means.mean(axis=0)
@@ -212,7 +242,8 @@ def deformable_registration(source, target, n_iter=100, alpha=1.0, n_ctrl=8, err
 def load_stl_mesh(path):
     return trimesh.load(path)
 
-def compute_registration_error(verts1, verts2):
-    tree = cKDTree(verts2)
+def compute_registration_error(verts1, verts2, existing_tree=None):
+    """Compute mean registration error. Reuses existing KD-tree if provided."""
+    tree = existing_tree if existing_tree is not None else cKDTree(verts2)
     dists, _ = tree.query(verts1)
     return float(np.mean(dists))

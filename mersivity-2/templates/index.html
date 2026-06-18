@@ -355,6 +355,139 @@
             <button class="tab" id="tab-dbs-intervention" onclick="selectTab('dbs-intervention')">⚡ DBS & Closed-Loop</button>
             <button class="tab" id="tab-chirplet" onclick="selectTab('chirplet')">Steve Mann Chirplet</button>
             <button class="tab" id="tab-reg-stats" onclick="selectTab('reg-stats')">Registration Characteristics</button>
+            <button class="tab" id="tab-qml-volumetric" onclick="selectTab('qml-volumetric')">🔮 QML Volumetric Surface</button>
+            <button class="tab" id="tab-acoustic-sim" onclick="selectTab('acoustic-sim')">🔊 Acoustic Simulation</button>
+            <button class="tab" id="tab-neuroacoustic-char" onclick="selectTab('neuroacoustic-char')">⚡ Neuroacoustic Characteristics</button>
+        </div>
+
+        <!-- QML Volumetric Surface Reconstruction Card -->
+        <div id="qml-volumetric-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title" id="qml-volumetric-title-text">Quantum Machine Learning Interpolated Volumetric Surface</div>
+            
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px;">
+                <!-- 3D Plotly Viewport -->
+                <div style="flex: 2; min-width: 600px; display: flex; flex-direction: column; gap: 12px;">
+                    <div id="qml-volumetric-viewer" class="plotly-container" style="height: 500px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);"></div>
+                    
+                    <!-- File Download Buttons -->
+                    <div style="display: flex; gap: 15px; margin-top: 5px;">
+                        <button onclick="downloadQmlVolumetric('stl')" style="background: linear-gradient(135deg, #0d9488, #0f766e); color: #fff; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(13,148,136,0.3); transition: all 0.2s ease;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">
+                            <span>📥 Download STL Mesh File</span>
+                        </button>
+                        <button onclick="downloadQmlVolumetric('ply')" style="background: linear-gradient(135deg, #4f46e5, #4338ca); color: #fff; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(79,70,229,0.3); transition: all 0.2s ease;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">
+                            <span>📥 Download PLY Mesh File</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- QML Controls & Telemetry Sidebar -->
+                <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    
+                    <!-- Controls Panel -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 14px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em; display: flex; align-items: center; gap: 8px;">
+                            <span>QML Hyperparameters</span>
+                        </h4>
+                        
+                        <!-- Blending alpha Slider -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                <span style="color: #9ca3af;">CT vs. MRI Blend (α):</span>
+                                <span id="qml-vol-alpha-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">0.50</span>
+                            </div>
+                            <input type="range" id="qml-vol-alpha" min="0.0" max="1.0" step="0.05" value="0.50" oninput="document.getElementById('qml-vol-alpha-val').textContent = parseFloat(this.value).toFixed(2)" style="width: 100%; cursor: pointer;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75em; color: #6b7280; padding: 0 2px;">
+                                <span>100% MR (0.0)</span>
+                                <span>100% CT (1.0)</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Grid Resolution -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="color: #9ca3af; font-size: 0.85em;">Grid Voxel Resolution (N³):</span>
+                            <select id="qml-vol-resolution" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 8px; padding: 6px 10px; font-size: 0.85em; font-family: sans-serif; cursor: pointer; outline: none;">
+                                <option value="16">16 x 16 x 16 (Fastest)</option>
+                                <option value="24" selected>24 x 24 x 24 (Balanced)</option>
+                                <option value="32">32 x 32 x 32 (High Fidelity)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Qubits Count -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="color: #9ca3af; font-size: 0.85em;">Hilbert Qubits Manifold:</span>
+                            <select id="qml-vol-qubits" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 8px; padding: 6px 10px; font-size: 0.85em; font-family: sans-serif; cursor: pointer; outline: none;">
+                                <option value="4">4 Qubits (Dim 16)</option>
+                                <option value="6" selected>6 Qubits (Dim 64)</option>
+                                <option value="8">8 Qubits (Dim 256)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Optimization Method -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="color: #9ca3af; font-size: 0.85em;">QML Optimizer Solver:</span>
+                            <select id="qml-vol-opt" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 8px; padding: 6px 10px; font-size: 0.85em; font-family: sans-serif; cursor: pointer; outline: none;">
+                                <option value="vqe" selected>Variational Quantum Eigensolver (VQE)</option>
+                                <option value="qaoa">Combinatorial Ising QAOA Solver</option>
+                                <option value="hnn">Hamiltonian Quantum Neural Network (QNN)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Contour Level Percentile -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                <span style="color: #9ca3af;">Mesh Contour Percentile:</span>
+                                <span id="qml-vol-level-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">80%</span>
+                            </div>
+                            <input type="range" id="qml-vol-level" min="50" max="95" step="5" value="80" oninput="document.getElementById('qml-vol-level-val').textContent = this.value + '%'" style="width: 100%; cursor: pointer;">
+                        </div>
+                        
+                        <button onclick="runQmlVolumetricSurface()" style="background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 12px rgba(168,85,247,0.3); transition: all 0.2s ease; margin-top: 5px;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">
+                            Run Quantum Interpolation
+                        </button>
+                    </div>
+                    
+                    <!-- Telemetry Dashboard -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em; display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #a855f7; box-shadow: 0 0 6px 1px #a855f7;"></span>
+                            <span>Quantum Volumetric Telemetry</span>
+                        </h4>
+                        
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Expectation value ⟨H⟩:</span>
+                            <span id="stats-vol-energy" style="color: #10b981; font-weight: 700;">—</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Ansätz State Fidelity:</span>
+                            <span id="stats-vol-fidelity" style="color: #06b6d4; font-weight: 700;">—</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Marching Cubes Vertices:</span>
+                            <span id="stats-vol-vertices" style="color: #cbd5e1; font-weight: 700;">—</span>
+                        </div>
+                        
+                        <!-- Cost convergence history -->
+                        <div style="margin-top: 5px;">
+                            <div style="font-size: 0.8em; color: #9ca3af; margin-bottom: 5px;">QML Interpolator Convergence Cost:</div>
+                            <div class="sparkline-container" id="vol-cost-sparkline"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- SVG Gate Ansatz Circuit -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; height: 160px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.9em; letter-spacing: 0.5px;">QML COORDINATE EMBEDDING CIRCUITS</h4>
+                        <div id="vol-gate-map-svg" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;"></div>
+                    </div>
+                    
+                    <!-- State Probabilities -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.9em; letter-spacing: 0.5px;">QUBIT HILBERT STATE VECTOR</h4>
+                        <div class="state-vector-container" id="vol-state-vector-bars">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 3D Slice Viewer Card -->
@@ -1934,6 +2067,213 @@
             </div>
         </div>
 
+        <!-- Acoustic Simulation (EEG-fMRI guided) Card -->
+        <div id="acoustic-sim-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">Acoustic Simulation guided by EEG-fMRI Fusion</div>
+            
+            <!-- Top Controls -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-bottom: 25px; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                <!-- Region Selection -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 200px;">
+                    <span style="color: #9ca3af; font-size: 0.85em; font-weight: 600;">Target Brain Region:</span>
+                    <select id="acoustic-target-select" onchange="triggerAcousticSimulation(true)" style="background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.9em; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer;">
+                        <option value="thalamus">Thalamus (Centromedial)</option>
+                        <option value="motor_cortex">Motor Cortex (Precentral Gyrus)</option>
+                        <option value="amygdala">Amygdala (Lateral Nucleus)</option>
+                        <option value="hippocampus">Hippocampus (CA1 / Subiculum)</option>
+                        <option value="prefrontal_cortex">Prefrontal Cortex (DLPFC)</option>
+                    </select>
+                </div>
+
+                <!-- Parameters -->
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                    <!-- Transducer Type -->
+                    <div style="display: flex; flex-direction: column; gap: 6px; min-width: 180px;">
+                        <span style="color: #9ca3af; font-size: 0.85em; font-weight: 600;">Transducer Geometry:</span>
+                        <select id="acoustic-transducer-select" onchange="triggerAcousticSimulation(true)" style="background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.9em; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer;">
+                            <option value="single_element">Concave Single-Element (Fixed Focus)</option>
+                            <option value="phased_array">Multi-Channel Phased Array (Electronic Steering)</option>
+                        </select>
+                    </div>
+
+                    <!-- Frequency Slider -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                            <span style="color: #9ca3af;">Frequency:</span>
+                            <span id="label-acoustic-freq" style="color: #38bdf8; font-weight: 700;">500 kHz</span>
+                        </div>
+                        <input type="range" id="acoustic-freq-slider" min="250" max="1000" step="50" value="500" oninput="triggerAcousticSimulation(false)" style="width: 100%;">
+                    </div>
+
+                    <!-- Intensity Slider -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                            <span style="color: #9ca3af;">Intensity (I_sppa):</span>
+                            <span id="label-acoustic-intensity" style="color: #f43f5e; font-weight: 700;">5.0 W/cm²</span>
+                        </div>
+                        <input type="range" id="acoustic-intensity-slider" min="0.5" max="30.0" step="0.5" value="5.0" oninput="triggerAcousticSimulation(false)" style="width: 100%;">
+                    </div>
+
+                    <!-- Depth Slider -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                            <span style="color: #9ca3af;">Focal Depth:</span>
+                            <span id="label-acoustic-depth" style="color: #f59e0b; font-weight: 700;">30 mm</span>
+                        </div>
+                        <input type="range" id="acoustic-depth-slider" min="10" max="60" step="2" value="30" oninput="triggerAcousticSimulation(false)" style="width: 100%;">
+                    </div>
+
+                    <!-- EEG-fMRI Weight Slider -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                            <span style="color: #9ca3af;">EEG-fMRI Weight (α):</span>
+                            <span id="label-acoustic-weight" style="color: #10b981; font-weight: 700;">0.50</span>
+                        </div>
+                        <input type="range" id="acoustic-weight-slider" min="0.0" max="1.0" step="0.05" value="0.50" oninput="triggerAcousticSimulation(false)" style="width: 100%;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plots & Telemetry Grid -->
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px; box-sizing: border-box;">
+                <!-- 3D Beam Visualization -->
+                <div style="flex: 2; min-width: 450px; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="background: rgba(0,0,0,0.25); border-radius: 12px; padding: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span style="color: #a5b4fc; font-weight: 600; font-size: 0.9em;">3D Acoustic Field Wave Propagation</span>
+                    </div>
+                    <div id="acoustic-3d-viewer" class="plotly-container" style="height: 450px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);"></div>
+                </div>
+
+                <!-- 2D Slice Visualization -->
+                <div style="flex: 1.5; min-width: 350px; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="background: rgba(0,0,0,0.25); border-radius: 12px; padding: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span style="color: #06b6d4; font-weight: 600; font-size: 0.9em;">Focused Pressure Field Heatmap (Focal Zone Plane)</span>
+                    </div>
+                    <div id="acoustic-2d-viewer" class="plotly-container" style="height: 300px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);"></div>
+                    
+                    <!-- Quick Telemetry Dashboard -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 0.9em; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.0em; display: flex; align-items: center; gap: 5px;">
+                            <span>Acoustic Wavefront Telemetry</span>
+                        </h4>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">Peak Focal Pressure:</span>
+                            <span id="acoustic-telemetry-pressure" style="color: #cbd5e1; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">Mechanical Index (MI):</span>
+                            <span id="acoustic-telemetry-mi" style="color: #cbd5e1; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">Thermal Index (TI):</span>
+                            <span id="acoustic-telemetry-ti" style="color: #cbd5e1; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">Acoustic Absorption (SAR):</span>
+                            <span id="acoustic-telemetry-sar" style="color: #cbd5e1; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">MNI Focus Target Point:</span>
+                            <span id="acoustic-telemetry-target" style="color: #cbd5e1; font-family: monospace; font-size: 0.9em;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #9ca3af;">Target Coverage:</span>
+                            <span id="acoustic-telemetry-coverage" style="color: #10b981; font-weight: 700;">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Neuroacoustic Characteristics Card -->
+        <div id="neuroacoustic-char-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">Neuroacoustic Electrical Simulation Characteristics</div>
+
+            <!-- Top Parameters Panel -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-bottom: 25px; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 200px;">
+                    <span style="color: #9ca3af; font-size: 0.85em; font-weight: 600;">Simulation Brain Target:</span>
+                    <select id="char-target-select" onchange="triggerCharSimulation(true)" style="background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.9em; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer;">
+                        <option value="thalamus">Thalamus (Centromedial)</option>
+                        <option value="motor_cortex">Motor Cortex (Precentral Gyrus)</option>
+                        <option value="amygdala">Amygdala (Lateral Nucleus)</option>
+                        <option value="hippocampus">Hippocampus (CA1 / Subiculum)</option>
+                        <option value="prefrontal_cortex">Prefrontal Cortex (DLPFC)</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                    <!-- Coupling Slider -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; min-width: 160px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                            <span style="color: #9ca3af;">Coupling Coeff (γ):</span>
+                            <span id="label-char-coupling" style="color: #cbd5e1; font-weight: 700;">1.00</span>
+                        </div>
+                        <input type="range" id="char-coupling-slider" min="0.1" max="2.0" step="0.05" value="1.0" oninput="triggerCharSimulation(false)" style="width: 100%;">
+                    </div>
+
+                    <!-- Tension Slider -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; min-width: 160px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                            <span style="color: #9ca3af;">Base Tension:</span>
+                            <span id="label-char-tension" style="color: #cbd5e1; font-weight: 700;">0.50 mN/m</span>
+                        </div>
+                        <input type="range" id="char-tension-slider" min="0.1" max="1.5" step="0.05" value="0.5" oninput="triggerCharSimulation(false)" style="width: 100%;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics & Plots Grid -->
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px; box-sizing: border-box;">
+                <!-- Telemetry Dashboard -->
+                <div style="flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em; display: flex; align-items: center; gap: 8px;">
+                            <span>Neuroacoustic Telemetry</span>
+                        </h4>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; font-size: 0.9em;">
+                            <span style="color: #9ca3af;">Membrane Tension:</span>
+                            <span id="char-telemetry-tension" style="color: #cbd5e1; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; font-size: 0.9em;">
+                            <span style="color: #9ca3af;">Capacitance Shift:</span>
+                            <span id="char-telemetry-capacitance" style="color: #cbd5e1; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; font-size: 0.9em;">
+                            <span style="color: #9ca3af;">Channel Open Prob:</span>
+                            <span id="char-telemetry-probability" style="color: #38bdf8; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; font-size: 0.9em;">
+                            <span style="color: #9ca3af;">Mean Firing Rate:</span>
+                            <span id="char-telemetry-firing" style="color: #10b981; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9em;">
+                            <span style="color: #9ca3af;">Phase-Amplitude PAC:</span>
+                            <span id="char-telemetry-pac" style="color: #f59e0b; font-weight: 700;">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plots Panel -->
+                <div style="flex: 3; min-width: 500px; display: flex; flex-direction: column; gap: 20px; box-sizing: border-box;">
+                    <!-- LFP plot -->
+                    <div style="background: rgba(0,0,0,0.15); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden;">
+                        <div id="char-lfp-viewer" style="height: 250px; width: 100%;"></div>
+                    </div>
+                    
+                    <!-- Dual columns for Single-Neuron Membrane Potential and PSD -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%;">
+                        <div style="flex: 1; min-width: 240px; background: rgba(0,0,0,0.15); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden;">
+                            <div id="char-membrane-viewer" style="height: 220px; width: 100%;"></div>
+                        </div>
+                        <div style="flex: 1; min-width: 240px; background: rgba(0,0,0,0.15); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden;">
+                            <div id="char-psd-viewer" style="height: 220px; width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="footer">&copy; 2026 Mersivity | Powered by Plotly.js, Flask, and Advanced Neuroimaging</div>
     </div>
 
@@ -1943,7 +2283,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all cards first
-            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card'].forEach(id => {
+            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -2016,6 +2356,15 @@
                 document.getElementById('tab-reg-stats').classList.add('active');
                 showCard('reg-stats-card');
                 runRegistrationStats();
+            } else if (tab === 'qml-volumetric') {
+                document.getElementById('tab-qml-volumetric').classList.add('active');
+                runQmlVolumetricSurface();
+            } else if (tab === 'acoustic-sim') {
+                document.getElementById('tab-acoustic-sim').classList.add('active');
+                triggerAcousticSimulation(true);
+            } else if (tab === 'neuroacoustic-char') {
+                document.getElementById('tab-neuroacoustic-char').classList.add('active');
+                triggerCharSimulation(true);
             }
         }
 
@@ -2534,27 +2883,35 @@
 
         async function runRegistrationGMM() {
             showCard('reg-card');
-            showLoading('registration-viewer', 'Registering cortical surface using GMM-based fusion matching...');
-            const res = await fetch('/api/register-cortical-surface', {method: 'POST'});
+            showLoading('registration-viewer', '🔮 Loading QML interpolated surface → Registering via GMM fusion matching...');
+            const res = await fetch('/api/register-cortical-surface', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({use_qml_surface: true})
+            });
             const data = await res.json();
             if (data.error) {
                 document.getElementById('registration-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
                 return;
             }
-            plotRegistration(data, 'Gaussian Mixture Model Registration');
+            plotRegistration(data, 'GMM Registration [QML Interpolated Surface]');
         }
 
         // --- 6. REGISTRATION WITH RESNET & ELLIPTIC INTEGRALS (TRE < 0.5mm) ---
         async function runRegistrationCF() {
             showCard('reg-card');
-            showLoading('registration-viewer', 'Performing submillimetric Continued Fractions registration...');
-            const res = await fetch('/api/register-cortical-surface-cf', {method: 'POST'});
+            showLoading('registration-viewer', '🔮 Loading QML interpolated surface → Performing submillimetric Continued Fractions registration...');
+            const res = await fetch('/api/register-cortical-surface-cf', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({use_qml_surface: true})
+            });
             const data = await res.json();
             if (data.error) {
                 document.getElementById('registration-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
                 return;
             }
-            plotRegistration(data, 'ResNet + Elliptic Continued Fractions Registration');
+            plotRegistration(data, 'ResNet + Elliptic Continued Fractions [QML Interpolated Surface]');
             
             // Populate convergents table
             const tableBody = document.getElementById('cf-table-body');
@@ -2579,10 +2936,14 @@
         // --- 7. REGISTRATION WITH QUANTUM ML (VQE) (TRE < 0.5mm) ---
         async function runRegistrationQML() {
             showCard('qml-card');
-            showLoading('qml-registration-viewer', 'Optimizing VQE registration ansätz state parameters...');
+            showLoading('qml-registration-viewer', '🔮 Loading QML interpolated surface → Optimizing VQE registration ansätz state parameters...');
             showLoading('qml-gate-map-svg', 'Constructing entanglement circuits...');
             
-            const res = await fetch('/api/register-cortical-surface-qml', {method: 'POST'});
+            const res = await fetch('/api/register-cortical-surface-qml', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({use_qml_surface: true})
+            });
             const data = await res.json();
             if (data.error) {
                 document.getElementById('qml-registration-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
@@ -2717,14 +3078,177 @@
             });
         }
 
+        // --- QML VOLUMETRIC SURFACE INTERPOLATION ---
+        async function runQmlVolumetricSurface() {
+            showCard('qml-volumetric-card');
+            showLoading('qml-volumetric-viewer', 'Initializing VQE Coordinate Regressor for Volume Interpolation...');
+            showLoading('vol-gate-map-svg', 'Constructing coordinate-embedding ansatz...');
+            
+            const alpha = parseFloat(document.getElementById('qml-vol-alpha').value);
+            const resolution = parseInt(document.getElementById('qml-vol-resolution').value);
+            const qubits = parseInt(document.getElementById('qml-vol-qubits').value);
+            const opt_method = document.getElementById('qml-vol-opt').value;
+            const level_pct = parseFloat(document.getElementById('qml-vol-level').value);
+            
+            try {
+                const res = await fetch('/api/qml-volumetric-surface', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        alpha: alpha,
+                        resolution: resolution,
+                        qubits: qubits,
+                        opt_method: opt_method,
+                        level_pct: level_pct
+                    })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    document.getElementById('qml-volumetric-viewer').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">${data.error}</div>`;
+                    return;
+                }
+                
+                // 1. Render 3D Plotly Mesh
+                const trace = {
+                    type: 'mesh3d',
+                    x: data.mesh.x,
+                    y: data.mesh.y,
+                    z: data.mesh.z,
+                    i: data.mesh.i,
+                    j: data.mesh.j,
+                    k: data.mesh.k,
+                    intensity: data.mesh.colors,
+                    colorscale: 'Portland',
+                    opacity: 0.95,
+                    name: 'QML Volumetric Surface'
+                };
+                
+                const layout = {
+                    scene: {
+                        bgcolor: 'rgba(0,0,0,0)',
+                        xaxis: { visible: false },
+                        yaxis: { visible: false },
+                        zaxis: { visible: false },
+                        camera: { eye: {x: 1.5, y: 1.5, z: 1.2} }
+                    },
+                    margin: { t: 0, l: 0, r: 0, b: 0 },
+                    width: 800, height: 500,
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)'
+                };
+                
+                Plotly.newPlot('qml-volumetric-viewer', [trace], layout, {responsive: true});
+                
+                // Update Telemetry Panel
+                document.getElementById('stats-vol-energy').textContent = data.qml_telemetry.min_eigenvalue.toFixed(4) + ' Ha';
+                document.getElementById('stats-vol-fidelity').textContent = (data.qml_telemetry.fidelity * 100).toFixed(2) + '%';
+                document.getElementById('stats-vol-vertices').textContent = data.num_vertices + ' Verts';
+                
+                // 2. Draw Convergence Sparkline
+                drawVolCostSparkline(data.loss_history);
+                
+                // 3. Draw Quantum Circuit SVG Map
+                drawVolGateMap(data.qml_telemetry.gate_parameters, qubits, opt_method);
+                
+                // 4. Draw Hilbert State probabilities
+                drawVolStateProbabilities(data.qml_telemetry.qubit_states);
+                
+            } catch (err) {
+                console.error(err);
+                document.getElementById('qml-volumetric-viewer').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">Failed to run interpolation. Server error.</div>`;
+            }
+        }
+
+        function drawVolCostSparkline(history) {
+            const container = document.getElementById('vol-cost-sparkline');
+            container.innerHTML = '';
+            const minVal = Math.min(...history);
+            const maxVal = Math.max(...history);
+            const range = maxVal - minVal || 1.0;
+            history.forEach(v => {
+                const heightPct = ((v - minVal) / range) * 100;
+                const bar = document.createElement('div');
+                bar.className = 'sparkbar';
+                bar.style.height = `${Math.max(5, heightPct)}%`;
+                bar.style.background = '#a855f7';
+                bar.style.boxShadow = '0 0 4px #a855f7';
+                container.appendChild(bar);
+            });
+        }
+
+        function drawVolGateMap(params, qubits, method) {
+            const container = document.getElementById('vol-gate-map-svg');
+            let wiresHtml = '';
+            for (let q = 0; q < Math.min(4, qubits); q++) {
+                wiresHtml += `<line x1="15" y1="${20 + q*20}" x2="265" y2="${20 + q*20}" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>`;
+                wiresHtml += `<text x="5" y="${24 + q*20}" fill="#a5b4fc" font-size="10" font-family="monospace">q${q}</text>`;
+            }
+            
+            let gateType = method === 'qaoa' ? 'Ising' : (method === 'hnn' ? 'HNN' : 'VQE');
+            
+            const svg = `
+                <svg width="100%" height="90" viewBox="0 0 280 90" xmlns="http://www.w3.org/2000/svg" style="background:transparent; overflow:visible;">
+                    ${wiresHtml}
+                    
+                    <!-- Coordinate Embedding Rotation Gates -->
+                    <rect x="25" y="10" width="22" height="18" rx="3" fill="#a855f7" stroke="rgba(255,255,255,0.2)"/>
+                    <text x="36" y="22" fill="#fff" font-size="8" font-weight="bold" text-anchor="middle">Rx</text>
+                    
+                    <rect x="55" y="30" width="22" height="18" rx="3" fill="#a855f7" stroke="rgba(255,255,255,0.2)"/>
+                    <text x="66" y="42" fill="#fff" font-size="8" font-weight="bold" text-anchor="middle">Ry</text>
+                    
+                    <rect x="85" y="50" width="22" height="18" rx="3" fill="#a855f7" stroke="rgba(255,255,255,0.2)"/>
+                    <text x="96" y="62" fill="#fff" font-size="8" font-weight="bold" text-anchor="middle">Rz</text>
+                    
+                    <!-- Entangler Block -->
+                    <rect x="120" y="8" width="60" height="64" rx="4" fill="rgba(99,102,241,0.2)" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="3 2"/>
+                    <text x="150" y="44" fill="#a5b4fc" font-size="9" font-weight="bold" text-anchor="middle">${gateType} Unitary</text>
+                    
+                    <!-- Parameterized rotations -->
+                    <rect x="195" y="10" width="30" height="18" rx="3" fill="#06b6d4" stroke="rgba(255,255,255,0.2)"/>
+                    <text x="210" y="21" fill="#fff" font-size="7" text-anchor="middle">Ry(θ₀)</text>
+                    
+                    <rect x="230" y="30" width="30" height="18" rx="3" fill="#06b6d4" stroke="rgba(255,255,255,0.2)"/>
+                    <text x="245" y="41" fill="#fff" font-size="7" text-anchor="middle">Rz(θ₁)</text>
+                </svg>
+            `;
+            container.innerHTML = svg;
+        }
+
+        function drawVolStateProbabilities(statesList) {
+            const container = document.getElementById('vol-state-vector-bars');
+            container.innerHTML = '';
+            
+            statesList.forEach(item => {
+                const pct = (item.probability * 100).toFixed(1);
+                container.innerHTML += `
+                    <div class="state-row">
+                        <span class="state-label">${item.state}</span>
+                        <div class="state-bar-bg">
+                            <div class="state-bar-fill" style="width: ${pct}%; background: linear-gradient(90deg, #a855f7, #6366f1);"></div>
+                        </div>
+                        <span class="state-val">${pct}%</span>
+                    </div>
+                `;
+            });
+        }
+
+        function downloadQmlVolumetric(format) {
+            window.location.href = `/api/download-qml-volumetric?format=${format}`;
+        }
+
         // --- 7.1 CROSS-MODALITY REGISTRATION (MRI-to-CT) WITH QUANTUM ML ---
         async function runRegistrationMriToCtQml() {
             showCard('mri-to-ct-qml-card');
-            showLoading('mri-to-ct-qml-registration-viewer', 'Reconstructing MRI & CT volumes and performing VQE optimization...');
+            showLoading('mri-to-ct-qml-registration-viewer', '🔮 Loading QML interpolated surface → Reconstructing cross-modality VQE optimization...');
             showLoading('mri-to-ct-qml-gate-map-svg', 'Entangling cross-modality qubits...');
             
             try {
-                const res = await fetch('/api/register-mri-to-ct-qml', {method: 'POST'});
+                const res = await fetch('/api/register-mri-to-ct-qml', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({use_qml_surface: true})
+                });
                 const data = await res.json();
                 if (data.error) {
                     document.getElementById('mri-to-ct-qml-registration-viewer').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">${data.error}</div>`;
@@ -2792,11 +3316,15 @@
         // --- 7.3 CROSS-MODALITY REGISTRATION (CT-to-STL) WITH PETER WITTEK QML ---
         async function runRegistrationCtToStlQmlWittek() {
             showCard('ct-to-stl-qml-wittek-card');
-            showLoading('ct-to-stl-qml-wittek-registration-viewer', 'Reconstructing CT & STL volumes and performing WQE manifold alignment...');
+            showLoading('ct-to-stl-qml-wittek-registration-viewer', '🔮 Loading QML interpolated surface → Performing WQE manifold alignment...');
             showLoading('ct-to-stl-gate-map-svg', 'Entangling Wittek manifold qubits...');
             
             try {
-                const res = await fetch('/api/register-ct-to-stl-qml-wittek', {method: 'POST'});
+                const res = await fetch('/api/register-ct-to-stl-qml-wittek', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({use_qml_surface: true})
+                });
                 const data = await res.json();
                 if (data.error) {
                     document.getElementById('ct-to-stl-qml-wittek-registration-viewer').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">${data.error}</div>`;
@@ -2986,11 +3514,15 @@
         // --- 7.2 CROSS-MODALITY FUSION (MRI-to-STL) WITH QML + FEYNMAN PATH INTEGRALS ---
         async function runRegistrationMriToStlQmlFeynman() {
             showCard('mri-to-stl-qml-feynman-card');
-            showLoading('mri-to-stl-qml-feynman-registration-viewer', 'Reconstructing MRI volume & fitting target STL via Hybrid VQE-Feynman propagation...');
+            showLoading('mri-to-stl-qml-feynman-registration-viewer', '🔮 Loading QML interpolated surface → Hybrid VQE-Feynman propagation...');
             showLoading('mri-to-stl-gate-map-svg', 'Evaluating action minimization state paths...');
             
             try {
-                const res = await fetch('/api/register-mri-to-stl-qml-feynman', {method: 'POST'});
+                const res = await fetch('/api/register-mri-to-stl-qml-feynman', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({use_qml_surface: true})
+                });
                 const data = await res.json();
                 if (data.error) {
                     document.getElementById('mri-to-stl-qml-feynman-registration-viewer').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">${data.error}</div>`;
@@ -3105,11 +3637,15 @@
         // --- 7.3 STATISTICAL & COMBINATORIAL RISK REGISTRATION ---
         async function runRegistrationStatRisk() {
             showCard('stat-risk-card');
-            showLoading('stat-risk-registration-viewer', 'Performing statistical distribution projection mapping & bipartite matching...');
+            showLoading('stat-risk-registration-viewer', '🔮 Loading QML interpolated surface → Statistical distribution projection mapping & bipartite matching...');
             showLoading('stat-risk-distribution-viewer', 'Estimating error probability density function (PDF)...');
             
             try {
-                const res = await fetch('/api/register-statistical-combinatorics', {method: 'POST'});
+                const res = await fetch('/api/register-statistical-combinatorics', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({use_qml_surface: true})
+                });
                 const data = await res.json();
                 if (data.error) {
                     document.getElementById('stat-risk-registration-viewer').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">${data.error}</div>`;
@@ -4517,10 +5053,14 @@
         async function runGeodesicSuperposition() {
             showCard('geodesic-card');
             showLoading('stl-geodesic-viewer', 'Resolving target STL mesh and propagating Dijkstra geodesic distance field...');
-            showLoading('geodesic-superposition-viewer', 'Executing least squares affine solver with shear and scale deformations...');
+            showLoading('geodesic-superposition-viewer', '🔮 Loading QML interpolated surface → Executing least squares affine solver with shear and scale deformations...');
             
             try {
-                const res = await fetch('/api/geodesic-superposition', { method: 'POST' });
+                const res = await fetch('/api/geodesic-superposition', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({use_qml_surface: true})
+                });
                 if (!res.ok) throw new Error('API error: ' + res.status);
                 const data = await res.json();
                 
@@ -4624,11 +5164,15 @@
         // --- 9. QLORA REGISTRATION AND VRAM ANALYSIS ---
         async function runRegistrationQLoRA() {
             showCard('qlora-card');
-            showLoading('qlora-registration-viewer', 'Loading 4-bit quantized base projection matrix (W0)...');
+            showLoading('qlora-registration-viewer', '🔮 Loading QML interpolated surface → Loading 4-bit quantized base projection matrix (W0)...');
             showLoading('qlora-convergence-viewer', 'Initializing low-rank adapter parameter gradients...');
             
             try {
-                const res = await fetch('/api/register-cortical-surface-qlora', { method: 'POST' });
+                const res = await fetch('/api/register-cortical-surface-qlora', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({use_qml_surface: true})
+                });
                 if (!res.ok) throw new Error('API error: ' + res.status);
                 const data = await res.json();
                 
@@ -4725,11 +5269,15 @@
         // --- 10. FEYNMAN PATH INTEGRAL REGISTRATION AND PROJECTIONS ---
         async function runRegistrationFeynman() {
             showCard('feynman-card');
-            showLoading('feynman-registration-viewer', 'Loading transition kernel amplitude matrices...');
+            showLoading('feynman-registration-viewer', '🔮 Loading QML interpolated surface → Loading transition kernel amplitude matrices...');
             showLoading('feynman-convergence-viewer', 'Integrating coordinate path action currents...');
             
             try {
-                const res = await fetch('/api/register-cortical-surface-feynman', { method: 'POST' });
+                const res = await fetch('/api/register-cortical-surface-feynman', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({use_qml_surface: true})
+                });
                 if (!res.ok) throw new Error('API error: ' + res.status);
                 const data = await res.json();
                 
@@ -4814,6 +5362,583 @@
                 showlegend: false
             };
             Plotly.newPlot('feynman-convergence-viewer', [trace], layout, {responsive: true});
+        }
+
+        // --- Seeded Random Number Generator for reproducible/stable simulations ---
+        class SeededRandom {
+            constructor(seed) {
+                this.seed = seed;
+            }
+            next() {
+                this.seed = (this.seed * 9301 + 49297) % 233280;
+                return this.seed / 233280;
+            }
+        }
+
+        // --- Client-side response cache ---
+        const _simCache = new Map();
+        const _SIM_CACHE_MAX = 32;
+        function _cacheGet(key) { return _simCache.has(key) ? _simCache.get(key) : null; }
+        function _cacheSet(key, val) {
+            if (_simCache.size >= _SIM_CACHE_MAX) {
+                const oldest = _simCache.keys().next().value;
+                _simCache.delete(oldest);
+            }
+            _simCache.set(key, val);
+        }
+
+        // --- Instant label updaters (no network, zero-latency) ---
+        function _updateAcousticLabels() {
+            const freq = parseFloat(document.getElementById('acoustic-freq-slider').value);
+            const intensity = parseFloat(document.getElementById('acoustic-intensity-slider').value);
+            const depth = parseFloat(document.getElementById('acoustic-depth-slider').value);
+            const weight = parseFloat(document.getElementById('acoustic-weight-slider').value);
+            document.getElementById('label-acoustic-freq').textContent = freq + " kHz";
+            document.getElementById('label-acoustic-intensity').textContent = intensity.toFixed(1) + " W/cm²";
+            document.getElementById('label-acoustic-depth').textContent = depth + " mm";
+            document.getElementById('label-acoustic-weight').textContent = weight.toFixed(2);
+        }
+        function _updateCharLabels() {
+            const coupling = parseFloat(document.getElementById('char-coupling-slider').value);
+            const tension = parseFloat(document.getElementById('char-tension-slider').value);
+            document.getElementById('label-char-coupling').textContent = coupling.toFixed(2);
+            document.getElementById('label-char-tension').textContent = tension.toFixed(2) + " mN/m";
+        }
+
+        // --- Central trigger controllers (manages debounces, immediate requests) ---
+        let _acousticDebounceTimer = null;
+
+        function triggerAcousticSimulation(immediate = false) {
+            if (_acousticDebounceTimer) {
+                clearTimeout(_acousticDebounceTimer);
+                _acousticDebounceTimer = null;
+            }
+            _updateAcousticLabels();
+            if (immediate) {
+                runAcousticSimulation();
+            } else {
+                _acousticDebounceTimer = setTimeout(() => {
+                    runAcousticSimulation();
+                }, 30); // 30ms debounce for high-framerate real-time updates
+            }
+        }
+
+        let _charDebounceTimer = null;
+
+        function triggerCharSimulation(immediate = false) {
+            if (_charDebounceTimer) {
+                clearTimeout(_charDebounceTimer);
+                _charDebounceTimer = null;
+            }
+            _updateCharLabels();
+            if (immediate) {
+                runNeuroacousticCharacteristics();
+            } else {
+                _charDebounceTimer = setTimeout(() => {
+                    runNeuroacousticCharacteristics();
+                }, 30);
+            }
+        }
+
+        // Acoustic Simulation Guided by EEG-fMRI Fusion (Microsecond Client-Side Solver)
+        function runAcousticSimulation() {
+            showCard('acoustic-sim-card');
+            
+            // Read inputs
+            const target = document.getElementById('acoustic-target-select').value;
+            const transducer = document.getElementById('acoustic-transducer-select').value;
+            const freq = parseFloat(document.getElementById('acoustic-freq-slider').value);
+            const intensity = parseFloat(document.getElementById('acoustic-intensity-slider').value);
+            const depth = parseFloat(document.getElementById('acoustic-depth-slider').value);
+            const weight = parseFloat(document.getElementById('acoustic-weight-slider').value);
+            
+            // MNI coordinate mapping
+            const mniBases = {
+                thalamus: [0.0, -15.0, 5.0],
+                motor_cortex: [-35.0, -20.0, 55.0],
+                amygdala: [-20.0, -2.0, -15.0],
+                hippocampus: [-25.0, -20.0, -15.0],
+                prefrontal_cortex: [0.0, 45.0, 30.0]
+            };
+            
+            const baseCoord = mniBases[target] || [0.0, 0.0, 0.0];
+            const eegOffset = [2.5 * (1.0 - weight), -3.0 * (1.0 - weight), 1.5 * (1.0 - weight)];
+            const fmriOffset = [-0.8 * weight, 1.2 * weight, -0.4 * weight];
+            const adjustedTarget = [
+                baseCoord[0] + eegOffset[0] + fmriOffset[0],
+                baseCoord[1] + eegOffset[1] + fmriOffset[1],
+                baseCoord[2] + eegOffset[2] + fmriOffset[2]
+            ];
+            
+            const transducerPlacements = {
+                thalamus: [0.0, 0.0, 80.0],
+                motor_cortex: [-45.0, -20.0, 75.0],
+                amygdala: [-35.0, -2.0, 40.0],
+                hippocampus: [-40.0, -20.0, 40.0],
+                prefrontal_cortex: [0.0, 65.0, 50.0]
+            };
+            const sourceCoord = transducerPlacements[target] || [0.0, 0.0, 100.0];
+            
+            // Physics calculations
+            const zTissue = 1.5e6;
+            const intensityWm2 = intensity * 10000.0;
+            const p0Pa = Math.sqrt(2 * zTissue * intensityWm2);
+            const p0Mpa = p0Pa / 1e6;
+            const focusGain = transducer === 'phased_array' ? 7.5 : 5.2;
+            const freqMhz = freq / 1000.0;
+            const depthCm = depth / 10.0;
+            const attenuationFactor = Math.exp(-0.05 * freqMhz * depthCm);
+            
+            const peakPressure = p0Mpa * focusGain * attenuationFactor;
+            const mechanicalIndex = peakPressure / Math.sqrt(Math.max(0.1, freqMhz));
+            const thermalIndex = 0.04 * intensity * freqMhz * (transducer === 'phased_array' ? 1.2 : 0.8);
+            
+            // Stable randomness for the simulation coverage
+            const rng = new SeededRandom(987);
+            const targetCoverage = 92.0 + 6.0 * weight + (rng.next() - 0.5);
+            const absorptionRate = 0.12 * intensity * freqMhz * 100.0;
+            
+            let offsetDist = 0;
+            for (let i = 0; i < 3; i++) {
+                offsetDist += (baseCoord[i] - adjustedTarget[i]) ** 2;
+            }
+            offsetDist = Math.sqrt(offsetDist);
+            
+            // Generate 3D beam propagation path
+            const beam_points_x = [];
+            const beam_points_y = [];
+            const beam_points_z = [];
+            const beam_intensities = [];
+            
+            const source = sourceCoord;
+            const focus = adjustedTarget;
+            const direction = [focus[0] - source[0], focus[1] - source[1], focus[2] - source[2]];
+            let length = Math.sqrt(direction[0]**2 + direction[1]**2 + direction[2]**2);
+            
+            let dirUnit = [0, 0, -1];
+            if (length > 0) {
+                dirUnit = [direction[0]/length, direction[1]/length, direction[2]/length];
+            } else {
+                length = 50.0;
+            }
+            
+            const steps = 40;
+            for (let step = 0; step <= steps; step++) {
+                const fraction = step / steps;
+                const centerPt = [
+                    source[0] + dirUnit[0] * fraction * length,
+                    source[1] + dirUnit[1] * fraction * length,
+                    source[2] + dirUnit[2] * fraction * length
+                ];
+                
+                const z_r = 15.0;
+                const z_dist = (fraction - 1.0) * length;
+                const w_0 = transducer === 'phased_array' ? 3.0 : 5.0;
+                const w_z = w_0 * Math.sqrt(1.0 + (z_dist / z_r)**2);
+                
+                const n_radial = step % 2 === 0 ? 4 : 6;
+                for (let r_step = 0; r_step < n_radial; r_step++) {
+                    const theta_angle = (2 * Math.PI * r_step) / n_radial;
+                    const r_dist = w_z * (0.1 + rng.next() * 0.85);
+                    
+                    let ortho_1 = [];
+                    if (Math.abs(dirUnit[2]) < 0.9) {
+                        ortho_1 = [dirUnit[1], -dirUnit[0], 0];
+                    } else {
+                        ortho_1 = [0, dirUnit[2], -dirUnit[1]];
+                    }
+                    const ortho_1_len = Math.sqrt(ortho_1[0]**2 + ortho_1[1]**2 + ortho_1[2]**2);
+                    ortho_1 = [ortho_1[0]/ortho_1_len, ortho_1[1]/ortho_1_len, ortho_1[2]/ortho_1_len];
+                    
+                    const ortho_2 = [
+                        dirUnit[1]*ortho_1[2] - dirUnit[2]*ortho_1[1],
+                        dirUnit[2]*ortho_1[0] - dirUnit[0]*ortho_1[2],
+                        dirUnit[0]*ortho_1[1] - dirUnit[1]*ortho_1[0]
+                    ];
+                    
+                    const pt = [
+                        centerPt[0] + r_dist * (Math.cos(theta_angle)*ortho_1[0] + Math.sin(theta_angle)*ortho_2[0]),
+                        centerPt[1] + r_dist * (Math.cos(theta_angle)*ortho_1[1] + Math.sin(theta_angle)*ortho_2[1]),
+                        centerPt[2] + r_dist * (Math.cos(theta_angle)*ortho_1[2] + Math.sin(theta_angle)*ortho_2[2])
+                    ];
+                    
+                    const r_norm = r_dist / w_z;
+                    let axial_p = 0;
+                    if (z_dist > -30) {
+                        axial_p = peakPressure * Math.exp(-2.0 * (z_dist / z_r)**2);
+                    } else {
+                        axial_p = peakPressure * (fraction * 0.8 + 0.2);
+                    }
+                    const pt_pressure = axial_p * Math.exp(-2.0 * r_norm**2);
+                    
+                    beam_points_x.push(pt[0]);
+                    beam_points_y.push(pt[1]);
+                    beam_points_z.push(pt[2]);
+                    beam_intensities.push(pt_pressure);
+                }
+            }
+            
+            // Generate 2D Heatmap Slice
+            const grid_size = 40;
+            const grid_range = [];
+            for (let i = 0; i < grid_size; i++) {
+                grid_range.push(-15 + (30 * i) / (grid_size - 1));
+            }
+            
+            const heatmap_values = [];
+            for (let i = 0; i < grid_size; i++) {
+                const row = [];
+                for (let j = 0; j < grid_size; j++) {
+                    const rx = grid_range[i];
+                    const ry = grid_range[j];
+                    const r_dist = Math.sqrt(rx**2 + ry**2);
+                    const w_0 = transducer === 'phased_array' ? 3.0 : 5.0;
+                    const intensity_val = peakPressure * Math.exp(-2.0 * (r_dist / w_0)**2);
+                    row.push(intensity_val);
+                }
+                heatmap_values.push(row);
+            }
+            
+            // Update Telemetry instantly
+            document.getElementById('acoustic-telemetry-pressure').textContent = peakPressure.toFixed(3) + " MPa";
+            document.getElementById('acoustic-telemetry-mi').textContent = mechanicalIndex.toFixed(3);
+            document.getElementById('acoustic-telemetry-ti').textContent = thermalIndex.toFixed(2) + " °C";
+            document.getElementById('acoustic-telemetry-sar').textContent = absorptionRate.toFixed(1) + " W/kg";
+            document.getElementById('acoustic-telemetry-coverage').textContent = targetCoverage.toFixed(1) + " %";
+            
+            const focusCoordsStr = `[${adjustedTarget[0].toFixed(1)}, ${adjustedTarget[1].toFixed(1)}, ${adjustedTarget[2].toFixed(1)}]`;
+            document.getElementById('acoustic-telemetry-target').textContent = focusCoordsStr + ` (Offset: ${offsetDist.toFixed(2)} mm)`;
+            
+            // Plot 3D Beam
+            const trace3d = {
+                x: beam_points_x,
+                y: beam_points_y,
+                z: beam_points_z,
+                mode: 'markers',
+                marker: {
+                    size: 3,
+                    color: beam_intensities,
+                    colorscale: 'Portland',
+                    opacity: 0.7,
+                    colorbar: {
+                        title: 'Pressure (MPa)',
+                        tickfont: {color: '#cbd5e1', size: 8},
+                        titlefont: {color: '#cbd5e1', size: 9}
+                    }
+                },
+                type: 'scatter3d'
+            };
+            
+            const traceTarget = {
+                x: [adjustedTarget[0]],
+                y: [adjustedTarget[1]],
+                z: [adjustedTarget[2]],
+                mode: 'markers',
+                marker: { size: 8, color: '#10b981', symbol: 'diamond' },
+                name: 'Adjusted Target',
+                type: 'scatter3d'
+            };
+            
+            const traceTransducer = {
+                x: [sourceCoord[0]],
+                y: [sourceCoord[1]],
+                z: [sourceCoord[2]],
+                mode: 'markers',
+                marker: { size: 10, color: '#f43f5e', symbol: 'circle' },
+                name: 'Transducer Head',
+                type: 'scatter3d'
+            };
+            
+            const layout3d = {
+                margin: {t: 0, l: 0, r: 0, b: 0},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                scene: {
+                    xaxis: {title: 'X (mm)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#9ca3af', size: 9}},
+                    yaxis: {title: 'Y (mm)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#9ca3af', size: 9}},
+                    zaxis: {title: 'Z (mm)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#9ca3af', size: 9}}
+                },
+                showlegend: false
+            };
+            Plotly.react('acoustic-3d-viewer', [trace3d, traceTarget, traceTransducer], layout3d, {responsive: true});
+            
+            // Plot 2D Heatmap
+            const trace2d = {
+                x: grid_range,
+                y: grid_range,
+                z: heatmap_values,
+                type: 'heatmap',
+                colorscale: 'Jet',
+                colorbar: { tickfont: {color: '#cbd5e1', size: 8} }
+            };
+            
+            const layout2d = {
+                margin: {t: 10, l: 30, r: 10, b: 30},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                xaxis: {tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)'},
+                yaxis: {tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', scaleanchor: 'x'}
+            };
+            Plotly.react('acoustic-2d-viewer', [trace2d], layout2d, {responsive: true});
+        }
+        
+        // Neuroacoustic Electrical Characteristics Simulation (Microsecond Client-Side Solver)
+        function runNeuroacousticCharacteristics() {
+            showCard('neuroacoustic-char-card');
+            
+            // Read inputs
+            const target = document.getElementById('char-target-select').value;
+            const coupling = parseFloat(document.getElementById('char-coupling-slider').value);
+            const tension = parseFloat(document.getElementById('char-tension-slider').value);
+            
+            // Sync with current acoustic simulation values
+            const intensitySlider = document.getElementById('acoustic-intensity-slider');
+            const freqSlider = document.getElementById('acoustic-freq-slider');
+            const intensity = intensitySlider ? parseFloat(intensitySlider.value) : 5.0;
+            const freq = freqSlider ? parseFloat(freqSlider.value) : 500.0;
+            
+            // Update labels
+            _updateCharLabels();
+            
+            // Derived physical characteristics
+            const radiationPressure = (intensity * 10000.0) / 1500.0;
+            const tensionMns = tension + 0.1 * radiationPressure * coupling;
+            
+            const freqMhz = freq / 1000.0;
+            const p0Pa = Math.sqrt(2 * 1.5e6 * intensity * 10000.0);
+            const p0Mpa = p0Pa / 1e6;
+            const capacitanceShift = 0.05 * p0Mpa * coupling;
+            
+            const tHalf = 0.8;
+            const k_boltz = 0.15;
+            const openProbability = 1.0 / (1.0 + Math.exp(-(tensionMns - tHalf) / k_boltz));
+            
+            const baseFirings = {
+                thalamus: 8.0,
+                motor_cortex: 15.0,
+                amygdala: 6.0,
+                hippocampus: 5.0,
+                prefrontal_cortex: 12.0
+            };
+            const baseRate = baseFirings[target] || 10.0;
+            const meanFiringRate = baseRate + 95.0 * openProbability * coupling;
+            const pacIndex = 0.12 + 0.65 * openProbability * (target === 'hippocampus' ? 1.0 : 0.7);
+            
+            // Generate time axis (500 samples at 1000 Hz)
+            const nSamples = 500;
+            const t_axis = [];
+            const time_axis_ms = [];
+            const stim_mask = [];
+            for (let i = 0; i < nSamples; i++) {
+                const sec = (0.5 * i) / (nSamples - 1);
+                t_axis.push(sec);
+                time_axis_ms.push(sec * 1000.0);
+                stim_mask.push((sec >= 0.15 && sec <= 0.35) ? 1.0 : 0.0);
+            }
+            
+            const lfp_signal = [];
+            const rng = new SeededRandom(987);
+            
+            for (let i = 0; i < nSamples; i++) {
+                const sec = t_axis[i];
+                let wave = 0;
+                if (target === 'thalamus') {
+                    const envelope = 1.0 + 0.8 * Math.sin(2 * Math.PI * 1.5 * sec);
+                    wave = 20.0 * envelope * Math.sin(2 * Math.PI * 10.0 * sec);
+                } else if (target === 'motor_cortex') {
+                    wave = 12.0 * Math.sin(2 * Math.PI * 20.0 * sec) + 8.0 * Math.sin(2 * Math.PI * 9.0 * sec);
+                } else if (target === 'amygdala') {
+                    wave = 5.0 * Math.sin(2 * Math.PI * 24.0 * sec) + 15.0 * Math.sin(2 * Math.PI * 2.5 * sec);
+                } else if (target === 'hippocampus') {
+                    wave = 25.0 * Math.sin(2 * Math.PI * 6.0 * sec);
+                } else {
+                    wave = 15.0 * Math.sin(2 * Math.PI * 7.0 * sec) + 10.0 * Math.sin(2 * Math.PI * 11.0 * sec);
+                }
+                
+                // Box-Muller transform for normal noise
+                const u1 = rng.next() || 0.0001;
+                const u2 = rng.next() || 0.0001;
+                const noise = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2) * 5.0;
+                
+                const before_during = wave + noise;
+                const depol = 35.0 * openProbability * stim_mask[i];
+                const gamma = 30.0 * openProbability * Math.sin(2 * Math.PI * 48.0 * sec) * stim_mask[i];
+                
+                const modulated = before_during * (1.0 - 0.4 * stim_mask[i]) + depol + gamma;
+                lfp_signal.push(modulated);
+            }
+            
+            // Single Neuron Membrane Potential
+            const vRest = -70.0;
+            const vThreshold = -50.0;
+            const vReset = -78.0;
+            const vSpike = 30.0;
+            
+            const vMem = [];
+            let vCurr = vRest;
+            const spikeTimes = [];
+            let refractorySteps = 0;
+            
+            for (let idx = 0; idx < nSamples; idx++) {
+                if (refractorySteps > 0) {
+                    vMem.push(vReset);
+                    refractorySteps--;
+                    vCurr = vReset;
+                    continue;
+                }
+                
+                const u1 = rng.next() || 0.0001;
+                const u2 = rng.next() || 0.0001;
+                const noise = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2) * 0.5;
+                
+                let iInj = 2.0 + noise;
+                iInj += 15.0 * openProbability * stim_mask[idx];
+                
+                const tau = 15.0;
+                const dt = 1.0;
+                const dv = ((vRest - vCurr) + iInj * 10.0) / tau * dt;
+                vCurr += dv;
+                
+                if (vCurr >= vThreshold) {
+                    vMem.push(vSpike);
+                    refractorySteps = 3;
+                    spikeTimes.push(idx);
+                } else {
+                    vMem.push(vCurr);
+                }
+            }
+            
+            // Calculate PSD (Discrete Fourier Transform on windows)
+            const lfp_pre_win = lfp_signal.slice(0, 150);
+            const lfp_dur_win = lfp_signal.slice(160, 340);
+            
+            // DFT helper
+            function computeDFT(signal, N) {
+                const out = new Array(N / 2 + 1).fill(0);
+                for (let k = 0; k <= N / 2; k++) {
+                    let real = 0;
+                    let imag = 0;
+                    for (let n = 0; n < Math.min(signal.length, N); n++) {
+                        const angle = (2 * Math.PI * k * n) / N;
+                        real += signal[n] * Math.cos(angle);
+                        imag -= signal[n] * Math.sin(angle);
+                    }
+                    out[k] = Math.sqrt(real * real + imag * imag);
+                }
+                return out;
+            }
+            
+            const fft_pre = computeDFT(lfp_pre_win, 180);
+            const fft_dur = computeDFT(lfp_dur_win, 180);
+            
+            const freqs_out = [];
+            const psd_before_out = [];
+            const psd_during_out = [];
+            
+            for (let k = 0; k <= 90; k++) {
+                const freq_hz = (k * 1000.0) / 180.0;
+                if (freq_hz <= 80.0) {
+                    freqs_out.push(freq_hz);
+                    psd_before_out.push(20.0 * Math.log10((fft_pre[k] || 0) + 1e-3));
+                    psd_during_out.push(20.0 * Math.log10((fft_dur[k] || 0) + 1e-3));
+                }
+            }
+            
+            // Calculate firing rate trace
+            const firing_rates = new Array(nSamples).fill(0);
+            for (let idx = 0; idx < nSamples; idx++) {
+                const start_w = Math.max(0, idx - 25);
+                const end_w = Math.min(nSamples, idx + 25);
+                let count = 0;
+                for (let s = 0; s < spikeTimes.length; s++) {
+                    if (spikeTimes[s] >= start_w && spikeTimes[s] < end_w) {
+                        count++;
+                    }
+                }
+                firing_rates[idx] = count / 0.05;
+            }
+            
+            // Update Telemetry
+            document.getElementById('char-telemetry-tension').textContent = tensionMns.toFixed(3) + " mN/m";
+            document.getElementById('char-telemetry-capacitance').textContent = capacitanceShift.toFixed(3) + " %";
+            document.getElementById('char-telemetry-probability').textContent = (openProbability * 100.0).toFixed(1) + " %";
+            document.getElementById('char-telemetry-firing').textContent = meanFiringRate.toFixed(1) + " Hz";
+            document.getElementById('char-telemetry-pac').textContent = pacIndex.toFixed(3);
+            
+            // Plot LFP Waveform
+            const traceLfp = {
+                x: time_axis_ms,
+                y: lfp_signal,
+                type: 'scatter',
+                mode: 'lines',
+                line: {color: '#38bdf8', width: 1.5}
+            };
+            
+            const shapes = [{
+                type: 'rect', xref: 'x', yref: 'paper',
+                x0: 150, y0: 0, x1: 350, y1: 1,
+                fillcolor: 'rgba(244, 63, 94, 0.1)', line: {width: 0}
+            }];
+            
+            const layoutLfp = {
+                title: {text: 'Induced Local Field Potential (LFP) Waveform', font: {color: '#cbd5e1', size: 11}, y: 0.95},
+                xaxis: {title: 'Time (ms)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9}},
+                yaxis: {title: 'Amplitude (μV)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9}},
+                margin: {t: 35, l: 40, r: 15, b: 30},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                shapes: shapes
+            };
+            Plotly.react('char-lfp-viewer', [traceLfp], layoutLfp, {responsive: true});
+            
+            // Plot Single-Neuron Membrane Potential
+            const traceMembrane = {
+                x: time_axis_ms,
+                y: vMem,
+                type: 'scatter',
+                mode: 'lines',
+                line: {color: '#f43f5e', width: 1.5}
+            };
+            
+            const layoutMembrane = {
+                title: {text: 'Single-Neuron Membrane Potential', font: {color: '#cbd5e1', size: 10}, y: 0.95},
+                xaxis: {title: 'Time (ms)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9}},
+                yaxis: {title: 'Potential (mV)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9}},
+                margin: {t: 35, l: 40, r: 15, b: 30},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                shapes: shapes
+            };
+            Plotly.react('char-membrane-viewer', [traceMembrane], layoutMembrane, {responsive: true});
+            
+            // Plot PSD Before vs During
+            const tracePsdBefore = {
+                x: freqs_out, y: psd_before_out,
+                name: 'Pre-Stimulation', type: 'scatter', mode: 'lines',
+                line: {color: '#9ca3af', width: 1.5, dash: 'dash'}
+            };
+            const tracePsdDuring = {
+                x: freqs_out, y: psd_during_out,
+                name: 'During-Stimulation', type: 'scatter', mode: 'lines',
+                line: {color: '#a855f7', width: 2}
+            };
+            
+            const layoutPsd = {
+                title: {text: 'LFP Power Spectral Density (PSD) Shift', font: {color: '#cbd5e1', size: 10}, y: 0.95},
+                xaxis: {title: 'Frequency (Hz)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9}},
+                yaxis: {title: 'Power (dB)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9}},
+                margin: {t: 35, l: 40, r: 15, b: 30},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: {
+                    x: 0.6, y: 0.95,
+                    font: {color: '#cbd5e1', size: 8},
+                    bgcolor: 'rgba(0,0,0,0.5)',
+                    bordercolor: 'rgba(255,255,255,0.1)',
+                    borderwidth: 1
+                }
+            };
+            Plotly.react('char-psd-viewer', [tracePsdBefore, tracePsdDuring], layoutPsd, {responsive: true});
         }
 
         // Auto-select the first tab on load
