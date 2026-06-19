@@ -34,6 +34,33 @@ def fast_zoom_3d(arr, scale_or_shape):
 app = Flask(__name__)
 CORS(app)
 
+# Global API response caches to remove request latency
+_cache_dicom_stack = None
+_cache_mri_stack = None
+_cache_3d_stack_viewer = None
+_cache_ct_stack = None
+_cache_ct_3d_stack_viewer = {}
+_cache_chirplet_reconstruction = {}
+_cache_qml_volumetric_surface = {}
+_cache_cortical_surface_volume = None
+_cache_cortical_surface_legendre_sh = None
+_cache_register_surface = {}
+_cache_register_surface_cf = {}
+_cache_register_surface_qml = {}
+_cache_register_surface_qlora = {}
+_cache_register_surface_feynman = {}
+_cache_register_mri_to_ct_qml = None
+_cache_register_ct_to_stl_qml_wittek = None
+_cache_register_mri_to_stl_qml_feynman = None
+_cache_register_statistical_combinatorics = None
+_cache_geodesic_superposition = None
+_cache_eeg_circuitry = {}
+_cache_eeg_waveforms = {}
+_cache_eeg_scuba_cap_model = None
+_cache_dbs_waveforms = {}
+_cache_acoustic_simulation = {}
+_cache_neuroacoustic_electrical_characteristics = {}
+
 import heapq
 
 def compute_geodesic_distances(vertices, faces, source_idx=0):
@@ -526,9 +553,12 @@ def index():
 # Register reconstructed cortical surface to STL mesh using GMM
 @app.route('/api/register-cortical-surface', methods=['POST'])
 def register_cortical_surface():
+    global _cache_register_surface
     try:
         req_data = request.json or {}
         use_qml = req_data.get('use_qml_surface', True)
+        if use_qml in _cache_register_surface:
+            return _cache_register_surface[use_qml]
         # Get reconstructed mesh (QML interpolated surface or fallback DICOM)
         if use_qml:
             verts, faces = load_qml_surface()
@@ -634,7 +664,7 @@ def register_cortical_surface():
 
         reg_transform_list = reg_transform['rotation'] if isinstance(reg_transform, dict) and 'rotation' in reg_transform else reg_transform.tolist() if hasattr(reg_transform, 'tolist') else reg_transform
 
-        return jsonify({
+        res_data = jsonify({
             'mesh1': mesh1,
             'mesh2': mesh2,
             'mesh1_reg': mesh1_reg,
@@ -643,6 +673,8 @@ def register_cortical_surface():
             'ply_file': ply_path,
             'stl_file': stl_path
         })
+        _cache_register_surface[use_qml] = res_data
+        return res_data
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -651,9 +683,12 @@ def register_cortical_surface():
 # Register reconstructed cortical surface to STL mesh using Continued Fractions
 @app.route('/api/register-cortical-surface-cf', methods=['POST'])
 def register_cortical_surface_cf():
+    global _cache_register_surface_cf
     try:
         req_data = request.json or {}
         use_qml = req_data.get('use_qml_surface', True)
+        if use_qml in _cache_register_surface_cf:
+            return _cache_register_surface_cf[use_qml]
         # Get reconstructed mesh (QML interpolated surface or fallback DICOM)
         if use_qml:
             verts, faces = load_qml_surface()
@@ -749,7 +784,7 @@ def register_cortical_surface_cf():
         if reg_error > 0.5:
             return jsonify({'error': f'Registration error too high: {reg_error:.3f} mm'}), 400
 
-        return jsonify({
+        res_data = jsonify({
             'mesh1': mesh1,
             'mesh2': mesh2,
             'mesh1_reg': mesh1_reg,
@@ -758,6 +793,8 @@ def register_cortical_surface_cf():
             'ply_file': ply_path,
             'stl_file': stl_path
         })
+        _cache_register_surface_cf[use_qml] = res_data
+        return res_data
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -766,6 +803,9 @@ def register_cortical_surface_cf():
 # Cortical surface with Legendre polynomials and spherical harmonics
 @app.route('/api/cortical-surface-legendre-sh')
 def cortical_surface_legendre_sh():
+    global _cache_cortical_surface_legendre_sh
+    if _cache_cortical_surface_legendre_sh is not None:
+        return _cache_cortical_surface_legendre_sh
     try:
         mri_data = load_dicom_stack()
     except Exception as e:
@@ -846,15 +886,20 @@ def cortical_surface_legendre_sh():
         k=faces[:,2].tolist(),
         colors=colors.tolist()
     )
-    return jsonify({
+    res_data = jsonify({
         'mesh': mesh,
         'ply_file': ply_path,
         'stl_file': stl_path
     })
+    _cache_cortical_surface_legendre_sh = res_data
+    return res_data
 
 # 3D mesh endpoint for DICOM surface reconstruction
 @app.route('/api/cortical-surface-volume')
 def cortical_surface_volume():
+    global _cache_cortical_surface_volume
+    if _cache_cortical_surface_volume is not None:
+        return _cache_cortical_surface_volume
     try:
         mri_data = load_dicom_stack()
     except Exception as e:
@@ -938,7 +983,7 @@ def cortical_surface_volume():
     except Exception as ex:
         print(f"Error generating 3D Delaunay: {ex}")
 
-    return jsonify({
+    res_data = jsonify({
         'surface_mesh': surface_mesh,
         'delaunay_mesh': delaunay_mesh,
         'level': level,
@@ -950,10 +995,13 @@ def cortical_surface_volume():
         'tetra_volume_ply': tetra_volume_ply,
         'tetra_volume_stl': tetra_volume_stl
     })
+    _cache_cortical_surface_volume = res_data
+    return res_data
 
 # QML Volumetric Surface Interpolation
 @app.route('/api/qml-volumetric-surface', methods=['GET', 'POST'])
 def qml_volumetric_surface():
+    global _cache_qml_volumetric_surface
     try:
         if request.method == 'POST':
             req_data = request.json or {}
@@ -968,6 +1016,10 @@ def qml_volumetric_surface():
             qubits = int(request.args.get('qubits', 6))
             opt_method = request.args.get('opt_method', 'vqe')
             level_pct = float(request.args.get('level_pct', 80.0))
+        
+        cache_key = (alpha, res_val, qubits, opt_method, level_pct)
+        if cache_key in _cache_qml_volumetric_surface:
+            return _cache_qml_volumetric_surface[cache_key]
         
         ct_data = load_ct_dicom_stack()
         mri_data = load_mri_005_stack()
@@ -1066,7 +1118,7 @@ def qml_volumetric_surface():
             ]
         }
         
-        return jsonify({
+        res_data = jsonify({
             'mesh': surface_mesh,
             'qml_telemetry': qml_telemetry,
             'loss_history': vqe_history,
@@ -1075,6 +1127,8 @@ def qml_volumetric_surface():
             'ply_file': 'qml_volumetric_surface.ply',
             'stl_file': 'qml_volumetric_surface.stl'
         })
+        _cache_qml_volumetric_surface[cache_key] = res_data
+        return res_data
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -1082,6 +1136,9 @@ def qml_volumetric_surface():
 
 @app.route('/api/dicom-stack')
 def dicom_stack():
+    global _cache_dicom_stack
+    if _cache_dicom_stack is not None:
+        return _cache_dicom_stack
     try:
         ct_data = load_dicom_stack()
     except Exception as e:
@@ -1099,11 +1156,16 @@ def dicom_stack():
     ct_data_ds = ((ct_data_ds - low) / (high - low) * 255.0)
     
     stack = [ct_data_ds[:,:,i].flatten().tolist() for i in range(ct_data_ds.shape[2])]
-    return jsonify({'stack': stack, 'shape': list(ct_data_ds.shape)})
+    res_data = jsonify({'stack': stack, 'shape': list(ct_data_ds.shape)})
+    _cache_dicom_stack = res_data
+    return res_data
 
 @app.route('/api/mri-stack')
 def mri_stack():
     """Serve MRI 00000005 DICOM series as a 2D slice stack for the viewer."""
+    global _cache_mri_stack
+    if _cache_mri_stack is not None:
+        return _cache_mri_stack
     try:
         mri_data = load_mri_005_stack()
     except Exception as e:
@@ -1126,16 +1188,21 @@ def mri_stack():
     mri_ds = ((mri_ds - lo) / (hi - lo) * 255.0)
 
     stack = [mri_ds[:, :, i].flatten().tolist() for i in range(mri_ds.shape[2])]
-    return jsonify({
+    res_data = jsonify({
         'stack': stack,
         'shape': list(mri_ds.shape),
         'series': 'MRI 00000005 — T1 Brain Volume',
         'slices_original': mri_data.shape[2]
     })
+    _cache_mri_stack = res_data
+    return res_data
 
 
 @app.route('/api/3d-stack-viewer')
 def stack_3d():
+    global _cache_3d_stack_viewer
+    if _cache_3d_stack_viewer is not None:
+        return _cache_3d_stack_viewer
     try:
         ct_data = load_dicom_stack()
     except Exception as e:
@@ -1198,12 +1265,17 @@ def stack_3d():
             bgcolor='black'
         ))
         html = pio.to_html(fig, full_html=False)
-        return jsonify({'plot_html': html})
+        res_data = jsonify({'plot_html': html})
+        _cache_3d_stack_viewer = res_data
+        return res_data
     except Exception as e:
         return jsonify({'error': f'Reconstruction failed: {str(e)}', 'plot_html': ''}), 400
 
 @app.route('/api/ct-stack')
 def ct_stack():
+    global _cache_ct_stack
+    if _cache_ct_stack is not None:
+        return _cache_ct_stack
     try:
         ct_data = load_ct_dicom_stack()
     except Exception as e:
@@ -1224,18 +1296,29 @@ def ct_stack():
     ct_data_ds = ((ct_data_ds - low) / (high - low) * 255.0)
     
     stack = [ct_data_ds[:,:,i].flatten().tolist() for i in range(ct_data_ds.shape[2])]
-    return jsonify({'stack': stack, 'shape': list(ct_data_ds.shape)})
+    res_data = jsonify({'stack': stack, 'shape': list(ct_data_ds.shape)})
+    _cache_ct_stack = res_data
+    return res_data
 
 @app.route('/api/ct-3d-stack-viewer')
 def ct_stack_3d():
+    global _cache_ct_3d_stack_viewer
+    adaptive = request.args.get('adaptive', 'false').lower() == 'true'
+    try:
+        level = float(request.args.get('level', 150.0))
+    except ValueError:
+        level = 150.0
+        
+    cache_key = (None if adaptive else level, adaptive)
+    if cache_key in _cache_ct_3d_stack_viewer:
+        return _cache_ct_3d_stack_viewer[cache_key]
+        
     try:
         ct_data = load_ct_dicom_stack()
     except Exception as e:
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e), 'plot_html': ''}), 400
-        
-    adaptive = request.args.get('adaptive', 'false').lower() == 'true'
     
     # Downsample volume to prevent rendering delays or memory issues
     max_dim = 96
@@ -1309,7 +1392,9 @@ def ct_stack_3d():
         }
         if estimated_threshold is not None:
             response_data['estimated_threshold'] = float(estimated_threshold)
-        return jsonify(response_data)
+        res_data = jsonify(response_data)
+        _cache_ct_3d_stack_viewer[cache_key] = res_data
+        return res_data
     except Exception as ex:
         return jsonify({'error': f'Reconstruction failed at level {level}: {str(ex)}'}), 400
 
@@ -3503,10 +3588,11 @@ def register_statistical_combinatorics():
 def download_nature_pdf():
     try:
         from flask import send_file
-        from generate_nature_preprint import generate_nature_preprint
-        generate_nature_preprint()
-        
         pdf_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Nature_Preprint_Submillimetric_Neuro_Registration.pdf')
+        if not os.path.exists(pdf_path):
+            from generate_nature_preprint import generate_nature_preprint
+            generate_nature_preprint()
+        
         if not os.path.exists(pdf_path):
             return jsonify({'error': 'PDF file not found after generation.'}), 404
             
@@ -3526,10 +3612,11 @@ def download_nature_pdf():
 def download_eeg_report():
     try:
         from flask import send_file
-        from generate_nature_eeg_report import generate_nature_eeg_report
-        generate_nature_eeg_report()
-        
         pdf_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Nature_EEG_Technical_Report.pdf')
+        if not os.path.exists(pdf_path):
+            from generate_nature_eeg_report import generate_nature_eeg_report
+            generate_nature_eeg_report()
+        
         if not os.path.exists(pdf_path):
             return jsonify({'error': 'PDF report file not found after generation.'}), 404
             
@@ -3886,6 +3973,18 @@ def api_neuroacoustic_characteristics():
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 400
+
+
+# Pre-load static datasets at startup to share memory across workers and ensure instant loads
+print(">>> Pre-loading static datasets at startup to minimize request latency...", flush=True)
+try:
+    load_dicom_stack()
+    load_mri_005_stack()
+    load_surgical_mesh_vertices()
+    load_qml_surface()
+    print(">>> All static datasets pre-loaded successfully!", flush=True)
+except Exception as e:
+    print(f">>> Warning: Failed to pre-load datasets at startup: {e}", flush=True)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,54 @@
+# Git files
+.git
+.gitignore
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+
+# Virtual environments
+venv
+.venv
+env
+
+# IDE/editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Test files
+test_*.py
+trigger_all_ply.py
+
+# Generated output files (will be regenerated at runtime)
+registered_*.stl
+registered_*.ply
+*.pdf
+chirplet_mesh_volume.*
+cortical_surface_legendre_sh.*
+marching_cubes_interpolated.*
+qml_volumetric_surface.*
+tetrahedral_mesh_*
+scuba_eeg_head_cap.stl
+
+# Utility scripts not needed at runtime
+convert_minc_to_dicom.py
+cortical_surface_legendre_sh_to_blend.py
+downsample_stl.py
+export_to_blender.py
+fast_downsample_stl.py
+generate_mock_*.py
+generate_neuro*.py
+generate_iccv*.py
+generate_ieee*.py
+generate_wittek*.py
+generate_nserc*.py
+write_cortical_surface_files.py
+
+# Node / misc
+node_modules
+.dockerignore
+Dockerfile
