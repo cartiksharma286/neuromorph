@@ -2279,6 +2279,212 @@ def eeg_scuba_cap_model():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+# --- ENDPOINT: BCI + rTMS Closed-Loop Optimization Paradigm ---
+_cache_bci_rtms_simulate = {}
+
+@app.route('/api/bci-rtms/simulate', methods=['GET', 'POST'])
+def bci_rtms_simulate():
+    global _cache_bci_rtms_simulate
+    try:
+        # Support both GET and POST requests
+        if request.method == 'POST':
+            req_data = request.json or {}
+        else:
+            req_data = request.args
+            
+        diagnosis = req_data.get('diagnosis', 'comorbid').lower() # 'apnea', 'dementia', 'comorbid'
+        bci_filter = req_data.get('bci_filter', 'neural_network').lower() # 'adaptive', 'bayesian', 'neural_network'
+        rtms_protocol = req_data.get('rtms_protocol', 'itbs').lower() # 'itbs', 'ctbs', 'hf_10hz', 'lf_1hz'
+        rtms_intensity = float(req_data.get('rtms_intensity', 90.0))
+        rtms_freq = float(req_data.get('rtms_freq', 10.0))
+        dbs_active = str(req_data.get('dbs_active', 'true')).lower() == 'true'
+        dbs_freq = float(req_data.get('dbs_freq', 130.0))
+        dbs_amp = float(req_data.get('dbs_amp', 3.0))
+        feedback_latency = float(req_data.get('feedback_latency', 5.0)) # ms
+
+        # Caching check
+        cache_key = (diagnosis, bci_filter, rtms_protocol, rtms_intensity, rtms_freq, dbs_active, dbs_freq, dbs_amp, feedback_latency)
+        if cache_key in _cache_bci_rtms_simulate:
+            return _cache_bci_rtms_simulate[cache_key]
+
+        # 1. Simulate Closed-Loop Paradigm Logic
+        fs = 250.0
+        n_samples = 750
+        t = np.linspace(0, 3.0, n_samples) # 3 seconds
+        
+        # Calculate closed-loop interventional efficacy
+        bci_efficiency = 1.15 if bci_filter == 'neural_network' else (1.0 if bci_filter == 'bayesian' else 0.8)
+        rtms_efficiency = (rtms_intensity / 100.0) * (1.2 if rtms_protocol == 'itbs' else (0.8 if rtms_protocol == 'ctbs' else (1.0 if rtms_protocol == 'hf_10hz' else 0.6)))
+        dbs_efficiency = (dbs_amp / 5.0) * (dbs_freq / 130.0) if dbs_active else 0.0
+        
+        # Total therapeutic efficiency (bounded between 0 and 1)
+        total_efficacy = min(1.0, 0.4 * bci_efficiency + 0.45 * rtms_efficiency + 0.3 * dbs_efficiency)
+
+        # Baseline noise and seed
+        np.random.seed(10101)
+        noise = np.random.normal(0, 1.0, n_samples)
+
+        # Generate signals based on diagnosis
+        respiration_pre = np.zeros(n_samples)
+        respiration_post = np.zeros(n_samples)
+        spo2_pre = np.zeros(n_samples)
+        spo2_post = np.zeros(n_samples)
+        lfp_pre = np.zeros(n_samples)
+        lfp_post = np.zeros(n_samples)
+        pac_index_pre = np.zeros(n_samples)
+        pac_index_post = np.zeros(n_samples)
+        bci_trigger_events = []
+
+        # Target coordinates based on region
+        target_coords = {
+            'dlpfc': 'x: -38, y: 44, z: 32 (Left DLPFC - MNI)',
+            'entorhinal': 'x: 22, y: -8, z: -28 (Right Entorhinal Cortex - MNI)',
+            'sma': 'x: -4, y: -6, z: 58 (Supplementary Motor Area - MNI)',
+            'hypoglossal': 'x: 8, y: -38, z: -48 (Hypoglossal nucleus - MNI)'
+        }
+
+        # Arousal threshold for closed-loop BCI detection
+        # If latency is smaller, response is faster and alignment is better
+        bci_detection_threshold = 0.45
+        sample_delay = int(np.clip(feedback_latency * (fs / 1000.0), 1, 30))
+
+        # Model Sleep Apnea
+        if diagnosis in ('apnea', 'comorbid'):
+            # Pathological: 2 airway collapse cycles in 3 seconds (breathing rate ~0.67 Hz)
+            base_flow = np.sin(2 * np.pi * 0.67 * t)
+            # collapse mask: drops flow to near zero around t = 0.5s to 1.2s and t = 1.8s to 2.5s
+            collapse_mask = ((t >= 0.4) & (t <= 1.1)) | ((t >= 1.7) & (t <= 2.4))
+            
+            respiration_pre = base_flow.copy()
+            respiration_pre[collapse_mask] *= 0.15
+            respiration_pre += 0.08 * noise
+            
+            # Post intervention: airway obstruction is opened up proportional to total_efficacy
+            respiration_post = base_flow.copy()
+            respiration_post[collapse_mask] *= (0.15 + 0.85 * total_efficacy)
+            respiration_post += 0.05 * noise
+            
+            # SpO2 desaturation curve
+            spo2_pre = 98.0 - 15.0 * collapse_mask.astype(float) * (1.0 - np.exp(-(t % 1.3) / 0.5))
+            spo2_pre += 0.2 * noise
+            
+            spo2_post = 98.0 - (15.0 * (1.0 - total_efficacy)) * collapse_mask.astype(float) * (1.0 - np.exp(-(t % 1.3) / 0.5))
+            spo2_post += 0.15 * noise
+            
+            # Trigger events: BCI detects airway collapse (flow drop) and triggers pulses
+            for idx in range(sample_delay, n_samples):
+                if collapse_mask[idx - sample_delay] and np.random.rand() > 0.3:
+                    # closed loop stimulation triggers active hypoglossal nerve stimulation
+                    bci_trigger_events.append(idx)
+        else:
+            # Healthy respiration
+            respiration_pre = np.sin(2 * np.pi * 0.35 * t) + 0.05 * noise
+            respiration_post = respiration_pre.copy()
+            spo2_pre = 98.5 + 0.1 * noise
+            spo2_post = spo2_pre.copy()
+
+        # Model Dementia
+        if diagnosis in ('dementia', 'comorbid'):
+            # Pathological: Severe slowing (high theta, low gamma, loss of PAC)
+            # Theta wave (6 Hz)
+            theta_wave = np.sin(2 * np.pi * 6.0 * t)
+            # Gamma wave modulated by theta phase (highly uncoupled in pathological)
+            gamma_mod_pre = 0.15 * np.sin(2 * np.pi * 40.0 * t) * (1.0 + 0.2 * theta_wave)
+            lfp_pre = 18.0 * theta_wave + 2.0 * gamma_mod_pre + 1.2 * noise
+            
+            # Phase Amplitude Coupling index (pre-intervention has low PAC)
+            pac_index_pre = 0.18 + 0.05 * np.cos(2 * np.pi * 0.5 * t) + 0.02 * noise
+            
+            # Post intervention: Excitatory rTMS restores gamma power & theta-gamma PAC coupling
+            gamma_mod_post = (0.15 + 0.8 * total_efficacy) * np.sin(2 * np.pi * 40.0 * t) * (1.0 + (0.2 + 0.65 * total_efficacy) * theta_wave)
+            lfp_post = 10.0 * theta_wave + 12.0 * gamma_mod_post + 0.8 * noise
+            
+            pac_index_post = pac_index_pre + 0.68 * total_efficacy * (1.0 + 0.1 * np.sin(2 * np.pi * 1.5 * t))
+            pac_index_post = np.clip(pac_index_post, 0.0, 1.0)
+            
+            # BCI triggers rTMS burst when PAC drops below threshold
+            for idx in range(sample_delay, n_samples):
+                if pac_index_pre[idx - sample_delay] < 0.22 and np.random.rand() > 0.4:
+                    bci_trigger_events.append(idx)
+        else:
+            # Healthy cognitive profile: strong gamma, strong PAC
+            theta_wave = np.sin(2 * np.pi * 6.0 * t)
+            gamma_mod = 1.0 * np.sin(2 * np.pi * 40.0 * t) * (1.0 + 0.8 * theta_wave)
+            lfp_pre = 8.0 * theta_wave + 15.0 * gamma_mod + 0.5 * noise
+            lfp_post = lfp_pre.copy()
+            pac_index_pre = 0.82 + 0.04 * np.sin(2 * np.pi * 1.2 * t) + 0.01 * noise
+            pac_index_post = pac_index_pre.copy()
+
+        # Deduplicate trigger events and convert to list of times
+        bci_trigger_events = sorted(list(set(bci_trigger_events)))
+        bci_trigger_times = t[bci_trigger_events].tolist()
+
+        # Clinical metrics computations
+        ahi_pre = 34.2 if diagnosis in ('apnea', 'comorbid') else 4.5
+        ahi_post = max(3.5, ahi_pre - (ahi_pre - 4.5) * total_efficacy)
+        
+        spo2_min_pre = float(np.min(spo2_pre))
+        spo2_min_post = float(np.min(spo2_post))
+        
+        pac_restoration = float(np.mean(pac_index_post) / np.mean(pac_index_pre)) if np.mean(pac_index_pre) > 0 else 1.0
+        pac_restoration_pct = float(min(100.0, max(0.0, (pac_restoration - 1.0) * 100.0))) if diagnosis in ('dementia', 'comorbid') else 0.0
+        
+        mmse_pre = 18.5 if diagnosis in ('dementia', 'comorbid') else 29.0
+        mmse_post = min(30.0, mmse_pre + (30.0 - mmse_pre) * 0.7 * total_efficacy)
+        
+        synaptic_gain = float(total_efficacy * 32.5) # representing % increase in LTP (Long-Term Potentiation)
+        latency_multiplier = 0.8 if bci_filter == 'neural_network' else (1.0 if bci_filter == 'bayesian' else 1.3)
+        loop_latency = feedback_latency * latency_multiplier
+
+        # Protocol coordinates & description
+        selected_coords = target_coords['dlpfc'] if diagnosis == 'dementia' else (target_coords['hypoglossal'] if diagnosis == 'apnea' else f"{target_coords['dlpfc']} + {target_coords['hypoglossal']}")
+        selected_protocol = "Theta Burst Stimulation (iTBS) + Hypoglossal Gated Stim" if rtms_protocol == 'itbs' else "Continuous Inhibitory TBS + Phrenic Nerve Stim"
+        
+        # Safe parameters limit
+        shannon_index = float(0.12 * dbs_amp * dbs_freq / 100.0) if dbs_active else 0.0
+        is_safe = shannon_index <= 1.5
+
+        res_data = jsonify({
+            'time': t.tolist(),
+            'respiration_pre': respiration_pre.tolist(),
+            'respiration_post': respiration_post.tolist(),
+            'spo2_pre': spo2_pre.tolist(),
+            'spo2_post': spo2_post.tolist(),
+            'lfp_pre': lfp_pre.tolist(),
+            'lfp_post': lfp_post.tolist(),
+            'pac_index_pre': pac_index_pre.tolist(),
+            'pac_index_post': pac_index_post.tolist(),
+            'bci_trigger_times': bci_trigger_times,
+            'metrics': {
+                'ahi_pre': float(ahi_pre),
+                'ahi_post': float(ahi_post),
+                'spo2_min_pre': float(spo2_min_pre),
+                'spo2_min_post': float(spo2_min_post),
+                'pac_restoration_pct': float(pac_restoration_pct),
+                'mmse_pre': float(mmse_pre),
+                'mmse_post': float(mmse_post),
+                'synaptic_gain_pct': float(synaptic_gain),
+                'loop_latency_ms': float(loop_latency),
+                'shannon_index': shannon_index,
+                'is_safe': is_safe,
+                'total_efficacy_pct': float(total_efficacy * 100.0)
+            },
+            'ai_recommendation': {
+                'target_region': "Closed-Loop DLPFC & Hypoglossal Nerve",
+                'coordinates': selected_coords,
+                'protocol': selected_protocol,
+                'bci_filter_mode': bci_filter.upper(),
+                'loop_efficiency_pct': float(total_efficacy * 100.0)
+            }
+        })
+
+        _cache_bci_rtms_simulate[cache_key] = res_data
+        return res_data
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
 # --- ENDPOINT: DBS Waveforms and Closed-Loop Interventional Telemetry ---
 @app.route('/api/dbs-waveforms', methods=['GET'])
 def dbs_waveforms():

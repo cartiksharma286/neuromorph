@@ -358,6 +358,7 @@
             <button class="tab" id="tab-qml-volumetric" onclick="selectTab('qml-volumetric')">🔮 QML Volumetric Surface</button>
             <button class="tab" id="tab-acoustic-sim" onclick="selectTab('acoustic-sim')">🔊 Acoustic Simulation</button>
             <button class="tab" id="tab-neuroacoustic-char" onclick="selectTab('neuroacoustic-char')">⚡ Neuroacoustic Characteristics</button>
+            <button class="tab" id="tab-bci-rtms" onclick="selectTab('bci-rtms')">🧠 BCI + rTMS Closed-Loop</button>
         </div>
 
         <!-- QML Volumetric Surface Reconstruction Card -->
@@ -2274,6 +2275,197 @@
             </div>
         </div>
 
+        <!-- BCI + rTMS Closed-Loop Interventional Care Card -->
+        <div id="bci-rtms-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">Optimal BCI + rTMS Closed-Loop Treatment Paradigm</div>
+            
+            <!-- Top Controls Panel -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-bottom: 25px; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                
+                <!-- Target Selection -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 1;">
+                    <span style="color: #9ca3af; font-size: 0.85em; font-weight: 600;">Interventional Target:</span>
+                    <select id="bci-target-select" onchange="runBciRtmsSimulation()" style="background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.9em; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer;">
+                        <option value="comorbid">Sleep Apnea &amp; Dementia Comorbidity</option>
+                        <option value="apnea">Sleep Apnea (Hypoglossal Gating)</option>
+                        <option value="dementia">Dementia (DLPFC / Synaptic Repair)</option>
+                    </select>
+                </div>
+
+                <!-- BCI Processing Mode -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 1;">
+                    <span style="color: #9ca3af; font-size: 0.85em; font-weight: 600;">BCI Signal Classifier:</span>
+                    <select id="bci-filter-select" onchange="runBciRtmsSimulation()" style="background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.9em; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer;">
+                        <option value="neural_network">Deep Neural Network (Real-time CNN)</option>
+                        <option value="bayesian">Stochastic Bayesian Estimator</option>
+                        <option value="adaptive">Linear Adaptive Filter (Least-Mean-Squares)</option>
+                    </select>
+                </div>
+
+                <!-- rTMS Pulse Protocol -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 1;">
+                    <span style="color: #9ca3af; font-size: 0.85em; font-weight: 600;">rTMS Protocol:</span>
+                    <select id="bci-rtms-select" onchange="runBciRtmsSimulation()" style="background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.9em; outline: none; font-family: 'Outfit', sans-serif; cursor: pointer;">
+                        <option value="itbs">Intermittent Theta Burst (iTBS - Excitatory)</option>
+                        <option value="ctbs">Continuous Theta Burst (cTBS - Inhibitory)</option>
+                        <option value="hf_10hz">High-Frequency (10 Hz Excitatory)</option>
+                        <option value="lf_1hz">Low-Frequency (1 Hz Inhibitory)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Parameters Sliders Box -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; margin-bottom: 25px; width: 100%; box-sizing: border-box; justify-content: space-between;">
+                <!-- rTMS Intensity -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 180px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">rTMS Magnetic Intensity:</span>
+                        <span id="label-bci-intensity" style="color: #f43f5e; font-weight: 700;">90% MT</span>
+                    </div>
+                    <input type="range" id="bci-rtms-intensity" min="50" max="120" step="5" value="90" oninput="runBciRtmsSimulation()" style="width: 100%;">
+                </div>
+
+                <!-- BCI-to-Stim Loop Latency -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 180px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Loop Feedback Latency:</span>
+                        <span id="label-bci-latency" style="color: #38bdf8; font-weight: 700;">5 ms</span>
+                    </div>
+                    <input type="range" id="bci-feedback-latency" min="2" max="30" step="1" value="5" oninput="runBciRtmsSimulation()" style="width: 100%;">
+                </div>
+
+                <!-- DBS Co-Stimulation Toggle -->
+                <div style="display: flex; align-items: center; gap: 10px; min-width: 160px;">
+                    <input type="checkbox" id="bci-dbs-active" checked onchange="runBciRtmsSimulation()" style="width: auto; cursor: pointer;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: #cbd5e1; font-size: 0.88em; font-weight: 700;">DBS Co-Stimulation</span>
+                        <span style="color: #9ca3af; font-size: 0.75em;">Active closed-loop DBS</span>
+                    </div>
+                </div>
+
+                <!-- DBS Amplitude -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 180px; flex: 1;" id="bci-dbs-amp-container">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">DBS Co-Amp:</span>
+                        <span id="label-bci-dbs-amp" style="color: #f59e0b; font-weight: 700;">3.0 mA</span>
+                    </div>
+                    <input type="range" id="bci-dbs-amp" min="0.5" max="5.0" step="0.5" value="3.0" oninput="runBciRtmsSimulation()" style="width: 100%;">
+                </div>
+            </div>
+
+            <!-- Warning and Safety Limits Banner -->
+            <div id="bci-safety-banner" style="width:100%; border-radius:12px; padding:12px 20px; box-sizing:border-box; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; transition: 0.3s; font-size:0.9em; font-weight:600; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981;">
+                <span id="bci-safety-text">Closed-loop thermal dissipation and Charge/phase values are within safe neurostimulation limits.</span>
+                <span id="bci-safety-status-badge" style="padding: 4px 10px; border-radius:6px; font-size:0.8em; font-weight:700; background: #10b981; color: #020617;">SAFE</span>
+            </div>
+
+            <!-- Content Grid: Left Metrics, Right plots, and Targeting -->
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px; margin-bottom: 25px; box-sizing: border-box;">
+                
+                <!-- Col 1: Telemetry and Clinical Metrics -->
+                <div style="flex: 1.1; min-width: 290px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <!-- Telemetry Data -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em; display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            <span>Optimal Closed-Loop Telemetry</span>
+                        </h4>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">
+                            <span style="color: #9ca3af;">Closed-Loop Latency:</span>
+                            <span id="bci-telemetry-latency" style="color: #cbd5e1; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">
+                            <span style="color: #9ca3af;">Synaptic LTP Gain:</span>
+                            <span id="bci-telemetry-gain" style="color: #cbd5e1; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88em; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">
+                            <span style="color: #9ca3af;">Shannon Safety Index:</span>
+                            <span id="bci-telemetry-shannon" style="color: #cbd5e1; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88em;">
+                            <span style="color: #9ca3af;">Overall Loop Efficacy:</span>
+                            <span id="bci-telemetry-efficacy" style="color: #38bdf8; font-weight: 700;">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Outcomes -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #10b981; font-size: 1.05em; display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px 1px #10b981;"></span>
+                            <span>Optimal Recovery Index</span>
+                        </h4>
+                        <!-- Apnea Outcomes -->
+                        <div id="bci-outcome-apnea-box" style="display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                            <span style="color: #a5b4fc; font-size: 0.82em; font-weight: 700; text-transform: uppercase;">Sleep Apnea Indicators</span>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.88em;">
+                                <span style="color: #9ca3af;">AHI Index (Pre → Post):</span>
+                                <span style="font-weight: 700;"><span id="bci-pre-ahi" style="color:#ef4444;">--</span> → <span id="bci-post-ahi" style="color:#10b981;">--</span></span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.88em;">
+                                <span style="color: #9ca3af;">Oxygen Min (Pre → Post):</span>
+                                <span style="font-weight: 700;"><span id="bci-pre-spo2" style="color:#ef4444;">--</span> → <span id="bci-post-spo2" style="color:#10b981;">--</span></span>
+                            </div>
+                        </div>
+                        <!-- Dementia Outcomes -->
+                        <div id="bci-outcome-dementia-box" style="display: flex; flex-direction: column; gap: 8px;">
+                            <span style="color: #a5b4fc; font-size: 0.82em; font-weight: 700; text-transform: uppercase;">Dementia Cure Indicators</span>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.88em;">
+                                <span style="color: #9ca3af;">Est. MMSE (Pre → Post):</span>
+                                <span style="font-weight: 700;"><span id="bci-pre-mmse" style="color:#ef4444;">--</span> → <span id="bci-post-mmse" style="color:#10b981;">--</span></span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.88em;">
+                                <span style="color: #9ca3af;">Theta-Gamma Restoration:</span>
+                                <span id="bci-telemetry-pac-gain" style="font-weight: 700; color: #10b981;">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Col 2: Signal Charts Viewport -->
+                <div style="flex: 2.5; min-width: 320px; display: flex; flex-direction: column; gap: 20px; box-sizing: border-box;">
+                    <!-- Real-Time Chart Viewports -->
+                    <div style="background: rgba(0,0,0,0.15); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; padding: 10px;">
+                        <div id="bci-signals-viewer" style="height: 480px; width: 100%;"></div>
+                    </div>
+                </div>
+
+                <!-- Col 3: Coordinates Targeting -->
+                <div style="flex: 1.1; min-width: 290px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.1em; display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                            <span>Closed-Loop Targeting</span>
+                        </h4>
+                        <p style="font-size:0.8em; color:#9ca3af; margin:0; line-height:1.4;">MNI Spatial coordinates and custom target optimization profiles generated by BCI closed-loop diagnostics.</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size:0.85em; margin-top: 5px;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">
+                                <span style="color: #9ca3af;">rTMS Target:</span>
+                                <span id="bci-ai-target" style="color: #38bdf8; font-weight: 700; text-align:right;">--</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">
+                                <span style="color: #9ca3af;">Coordinates (MNI):</span>
+                                <span id="bci-ai-coords" style="color: #f3f4f6; font-family: monospace; text-align:right;">--</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">
+                                <span style="color: #9ca3af;">Applied Protocol:</span>
+                                <span id="bci-ai-protocol" style="color: #cbd5e1; font-weight: 600; text-align:right;">--</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;">
+                                <span style="color: #9ca3af;">BCI Filter Mode:</span>
+                                <span id="bci-ai-filter" style="color: #f59e0b; font-weight: 700; text-align:right;">--</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #9ca3af;">Estimated Efficacy:</span>
+                                <span id="bci-ai-efficacy" style="color: #10b981; font-weight: 700; text-align:right;">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
         <div class="footer">&copy; 2026 Mersivity | Powered by Plotly.js, Flask, and Advanced Neuroimaging</div>
     </div>
 
@@ -2283,7 +2475,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all cards first
-            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card'].forEach(id => {
+            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -2365,6 +2557,9 @@
             } else if (tab === 'neuroacoustic-char') {
                 document.getElementById('tab-neuroacoustic-char').classList.add('active');
                 triggerCharSimulation(true);
+            } else if (tab === 'bci-rtms') {
+                document.getElementById('tab-bci-rtms').classList.add('active');
+                runBciRtmsSimulation();
             }
         }
 
@@ -5961,6 +6156,223 @@
                 }
             };
             Plotly.react('char-psd-viewer', [tracePsdBefore, tracePsdDuring], layoutPsd, {responsive: true, modeBarButtonsToRemove: ['toImage'], displaylogo: false});
+        }
+
+        // BCI + rTMS Closed-Loop Simulation
+        function runBciRtmsSimulation() {
+            showCard('bci-rtms-card');
+            
+            // Get inputs
+            const diagnosis = document.getElementById('bci-target-select').value;
+            const bci_filter = document.getElementById('bci-filter-select').value;
+            const rtms_protocol = document.getElementById('bci-rtms-select').value;
+            const rtms_intensity = parseFloat(document.getElementById('bci-rtms-intensity').value);
+            const feedback_latency = parseFloat(document.getElementById('bci-feedback-latency').value);
+            const dbs_active = document.getElementById('bci-dbs-active').checked;
+            const dbs_amp = parseFloat(document.getElementById('bci-dbs-amp').value);
+            
+            // Toggle DBS container visibility
+            document.getElementById('bci-dbs-amp-container').style.display = dbs_active ? 'block' : 'none';
+            
+            // Update slider labels
+            document.getElementById('label-bci-intensity').textContent = rtms_intensity + "% MT";
+            document.getElementById('label-bci-latency').textContent = feedback_latency + " ms";
+            document.getElementById('label-bci-dbs-amp').textContent = dbs_amp.toFixed(1) + " mA";
+            
+            // Call API
+            fetch(`/api/bci-rtms/simulate?diagnosis=${diagnosis}&bci_filter=${bci_filter}&rtms_protocol=${rtms_protocol}&rtms_intensity=${rtms_intensity}&feedback_latency=${feedback_latency}&dbs_active=${dbs_active}&dbs_amp=${dbs_amp}&dbs_freq=130`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error("BCI Simulation error:", data.error);
+                        return;
+                    }
+                    
+                    // Update Telemetry
+                    document.getElementById('bci-telemetry-latency').textContent = data.metrics.loop_latency_ms.toFixed(1) + " ms";
+                    document.getElementById('bci-telemetry-gain').textContent = "+" + data.metrics.synaptic_gain_pct.toFixed(1) + "%";
+                    document.getElementById('bci-telemetry-shannon').textContent = data.metrics.shannon_index.toFixed(3) + " (Max 1.5)";
+                    document.getElementById('bci-telemetry-efficacy').textContent = data.metrics.total_efficacy_pct.toFixed(1) + "%";
+                    
+                    // Update Safety Banner
+                    const banner = document.getElementById('bci-safety-banner');
+                    const safetyText = document.getElementById('bci-safety-text');
+                    const safetyBadge = document.getElementById('bci-safety-status-badge');
+                    
+                    if (data.metrics.is_safe) {
+                        banner.style.background = 'rgba(16, 185, 129, 0.1)';
+                        banner.style.border = '1px solid rgba(16, 185, 129, 0.2)';
+                        banner.style.color = '#10b981';
+                        safetyText.textContent = "Closed-loop thermal dissipation and Charge/phase values are within safe neurostimulation limits.";
+                        safetyBadge.textContent = "SAFE";
+                        safetyBadge.style.background = '#10b981';
+                        safetyBadge.style.color = '#020617';
+                    } else {
+                        banner.style.background = 'rgba(239, 68, 68, 0.1)';
+                        banner.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+                        banner.style.color = '#ef4444';
+                        safetyText.textContent = "WARNING: Shannon Safety Index limit exceeded (> 1.5). Risk of tissue damage!";
+                        safetyBadge.textContent = "DANGER";
+                        safetyBadge.style.background = '#ef4444';
+                        safetyBadge.style.color = '#ffffff';
+                    }
+                    
+                    // Update Clinical Outcomes UI
+                    document.getElementById('bci-outcome-apnea-box').style.display = (diagnosis === 'apnea' || diagnosis === 'comorbid') ? 'flex' : 'none';
+                    document.getElementById('bci-outcome-dementia-box').style.display = (diagnosis === 'dementia' || diagnosis === 'comorbid') ? 'flex' : 'none';
+                    
+                    if (diagnosis === 'apnea' || diagnosis === 'comorbid') {
+                        document.getElementById('bci-pre-ahi').textContent = data.metrics.ahi_pre.toFixed(1);
+                        document.getElementById('bci-post-ahi').textContent = data.metrics.ahi_post.toFixed(1);
+                        document.getElementById('bci-pre-spo2').textContent = data.metrics.spo2_min_pre.toFixed(1) + "%";
+                        document.getElementById('bci-post-spo2').textContent = data.metrics.spo2_min_post.toFixed(1) + "%";
+                    }
+                    if (diagnosis === 'dementia' || diagnosis === 'comorbid') {
+                        document.getElementById('bci-pre-mmse').textContent = data.metrics.mmse_pre.toFixed(1);
+                        document.getElementById('bci-post-mmse').textContent = data.metrics.mmse_post.toFixed(1);
+                        document.getElementById('bci-telemetry-pac-gain').textContent = "+" + data.metrics.pac_restoration_pct.toFixed(1) + "%";
+                    }
+                    
+                    // Update Targeting metadata
+                    document.getElementById('bci-ai-target').textContent = data.ai_recommendation.target_region;
+                    document.getElementById('bci-ai-coords').textContent = data.ai_recommendation.coordinates;
+                    document.getElementById('bci-ai-protocol').textContent = data.ai_recommendation.protocol;
+                    document.getElementById('bci-ai-filter').textContent = data.ai_recommendation.bci_filter_mode;
+                    document.getElementById('bci-ai-efficacy').textContent = data.metrics.total_efficacy_pct.toFixed(1) + "%";
+                    
+                    // Plot signals
+                    const traces = [];
+                    const time = data.time;
+                    
+                    // Add respiration signals if active
+                    if (diagnosis === 'apnea' || diagnosis === 'comorbid') {
+                        traces.push({
+                            x: time,
+                            y: data.respiration_pre,
+                            name: 'Airflow (Pre-Stim)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#ef4444', width: 1.5, dash: 'dash'}
+                        });
+                        traces.push({
+                            x: time,
+                            y: data.respiration_post,
+                            name: 'Airflow (Post-Stim)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#10b981', width: 2}
+                        });
+                        // Scale SpO2 to fit on same axis nicely
+                        const spo2ScaledPre = data.spo2_pre.map(v => (v - 80.0) / 20.0);
+                        const spo2ScaledPost = data.spo2_post.map(v => (v - 80.0) / 20.0);
+                        traces.push({
+                            x: time,
+                            y: spo2ScaledPre,
+                            name: 'SpO2 (Pre-Stim, Scaled)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#f59e0b', width: 1.2, dash: 'dot'}
+                        });
+                        traces.push({
+                            x: time,
+                            y: spo2ScaledPost,
+                            name: 'SpO2 (Post-Stim, Scaled)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#3b82f6', width: 1.8}
+                        });
+                    }
+                    
+                    // Add LFP signals if active
+                    if (diagnosis === 'dementia' || diagnosis === 'comorbid') {
+                        // Normalize LFP amplitude to fit on chart
+                        const lfpScaledPre = data.lfp_pre.map(v => v / 30.0);
+                        const lfpScaledPost = data.lfp_post.map(v => v / 30.0);
+                        
+                        traces.push({
+                            x: time,
+                            y: lfpScaledPre,
+                            name: 'Hippocampal LFP (Pre-Stim)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#9ca3af', width: 1.2, dash: 'dash'}
+                        });
+                        traces.push({
+                            x: time,
+                            y: lfpScaledPost,
+                            name: 'Hippocampal LFP (Post-Stim)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#a855f7', width: 2}
+                        });
+                        traces.push({
+                            x: time,
+                            y: data.pac_index_pre,
+                            name: 'PAC Index (Pre-Stim)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#ec4899', width: 1.2, dash: 'dot'}
+                        });
+                        traces.push({
+                            x: time,
+                            y: data.pac_index_post,
+                            name: 'PAC Index (Post-Stim)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#06b6d4', width: 1.8}
+                        });
+                    }
+                    
+                    // Add closed loop stimulation triggers
+                    if (data.bci_trigger_times.length > 0) {
+                        traces.push({
+                            x: data.bci_trigger_times,
+                            y: new Array(data.bci_trigger_times.length).fill(1.15),
+                            name: 'BCI Closed-Loop Pulses',
+                            type: 'scatter',
+                            mode: 'markers',
+                            marker: {symbol: 'triangle-down', size: 10, color: '#f43f5e'}
+                        });
+                    }
+                    
+                    const layout = {
+                        title: {
+                            text: 'Optimal Closed-Loop BCI & rTMS Real-Time Tracking',
+                            font: {color: '#cbd5e1', size: 12}
+                        },
+                        xaxis: {
+                            title: 'Time (seconds)',
+                            tickfont: {color: '#cbd5e1', size: 9},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 10}
+                        },
+                        yaxis: {
+                            title: 'Normalized Amplitude / Index',
+                            tickfont: {color: '#cbd5e1', size: 9},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 10},
+                            range: [-1.2, 1.4]
+                        },
+                        margin: {t: 40, l: 45, r: 20, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            bordercolor: 'rgba(255,255,255,0.1)',
+                            borderwidth: 1,
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.15
+                        }
+                    };
+                    
+                    Plotly.react('bci-signals-viewer', traces, layout, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
         }
 
         // Auto-select the first tab on load
