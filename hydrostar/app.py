@@ -404,6 +404,16 @@ def api_qml_recovery():
             {'state': '|111111>', 'probability': 0.002 if is_optimal else 0.022},
             {'state': '|101010>', 'probability': 0.001 if is_optimal else 0.011}
         ]
+
+        # Cost and benefit calculations for plots
+        shading_cost = 12000 if shading_active else 0
+        aeration_cost = 8000 if aeration_active else 0
+        filtration_cost = 15000 if filtration_active else 0
+        total_cost = shading_cost + aeration_cost + filtration_cost
+        
+        shading_benefit = 30 if shading_active else 0
+        aeration_benefit = 25 if aeration_active else 0
+        filtration_benefit = 40 if filtration_active else 0
         
         # Generative AI Restoration Prescription based on optimal values
         genai_advices = [
@@ -425,7 +435,18 @@ def api_qml_recovery():
                 'fidelity_pct': float(fidelity * 100.0),
                 'restoration_index_pct': float(restoration_pct),
                 'qubits': qubits,
-                'ansatz_depth': depth
+                'ansatz_depth': depth,
+                'total_cost': total_cost
+            },
+            'cost_breakdown': {
+                'Riparian Canopy': shading_cost,
+                'Solar Aerators': aeration_cost,
+                'Inlet Bioswales': filtration_cost
+            },
+            'benefit_breakdown': {
+                'Riparian Canopy': shading_benefit,
+                'Solar Aerators': aeration_benefit,
+                'Inlet Bioswales': filtration_benefit
             },
             'genai_prescription': genai_prescription
         })
