@@ -132,6 +132,8 @@ _cache_fusion = {}
 _cache_qml_recovery = {}
 _cache_cool_pool = {}
 _cache_conservation_2045 = {}
+_cache_lidar_hardware = {}
+
 
 @app.route('/')
 def index():
@@ -757,6 +759,115 @@ def api_conservation_2045():
         _cache_conservation_2045[scenario] = res_data
         return res_data
         
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
+# --- ENDPOINT: LiDAR Data & Hardware ---
+@app.route('/api/lidar-hardware', methods=['GET'])
+def api_lidar_hardware():
+    global _cache_lidar_hardware
+    try:
+        site = request.args.get('site', 'creek').lower()
+        if site not in ('creek', 'ontario'):
+            site = 'creek'
+        frequency = float(request.args.get('frequency', 905))
+        scan_rate = float(request.args.get('scan_rate', 200))
+        sensitivity = float(request.args.get('sensitivity', -20))
+        height = float(request.args.get('height', 100))
+
+        cache_key = (site, frequency, scan_rate, sensitivity, height)
+        if cache_key in _cache_lidar_hardware:
+            return _cache_lidar_hardware[cache_key]
+
+        x = np.linspace(0, 100, 50)
+        
+        # Ground noise profile (deterministic to prevent jumpy plots)
+        np.random.seed(42)
+        ground_noise = 0.3 * np.sin(x * 0.8) + 0.15 * np.cos(x * 2.2) + np.random.normal(0, 0.1, 50)
+        
+        if site == 'creek':
+            # V-shaped depression centered at x=50
+            z_ground = 100.0 - 25.0 * np.exp(-0.5 * ((x - 50.0) / 15.0)**2) + ground_noise
+            # Vegetation canopy layers (trees on slopes, less in bed)
+            h_canopy = 14.0 * np.exp(-0.5 * ((x - 25.0) / 10.0)**2) + 16.0 * np.exp(-0.5 * ((x - 75.0) / 12.0)**2) + 1.5
+            
+            # Sensitivity and height attenuation factors
+            resolved_h = h_canopy * (1.0 - 0.15 * ((sensitivity + 30) / 20.0)) * (1.0 - 0.08 * ((height - 50) / 100.0))
+            z_canopy = z_ground + np.maximum(0.2, resolved_h)
+            
+            avg_h = float(np.mean(h_canopy))
+            canopy_density = float(min(1.0, avg_h / 12.0))
+        else:
+            # Lake Ontario: flat shore (x < 45) steps down to lake bed (z = 75)
+            z_ground = np.zeros(50)
+            for idx, xi in enumerate(x):
+                if xi < 40:
+                    z_ground[idx] = 82.0
+                elif xi < 45:
+                    z_ground[idx] = 80.0
+                elif xi < 50:
+                    z_ground[idx] = 78.0
+                elif xi < 55:
+                    z_ground[idx] = 76.0
+                else:
+                    z_ground[idx] = 75.0
+            z_ground += ground_noise
+            
+            # Shoreline trees/vegetation (x < 45), water surface (x >= 45) flat at z=76.5
+            h_canopy = np.where(x < 45, 8.0 * np.exp(-0.5 * ((x - 20.0) / 8.0)**2) + 1.0, 0.0)
+            
+            # Water wave noise (deterministic)
+            wave_noise = 0.06 * np.sin(x * 1.8)
+            z_canopy = np.where(x < 45, z_ground + h_canopy, 76.5 + wave_noise)
+            
+            # For shore canopy density
+            avg_h = float(np.mean(h_canopy[:22]))
+            canopy_density = float(min(1.0, avg_h / 6.0))
+
+        # Scan rate and height uncertainty noise added to returns
+        uncertainty = 0.05 + 0.001 * height + 0.03 * ((500.0 - scan_rate) / 400.0)
+        np.random.seed(int(frequency) + int(scan_rate))
+        z_ground_measured = (z_ground + np.random.normal(0, uncertainty, 50)).tolist()
+        z_canopy_measured = (z_canopy + np.random.normal(0, uncertainty, 50)).tolist()
+
+        # Shading Index
+        shading_idx = float(min(95.0, max(10.0, canopy_density * 85.0 * (1.0 - 0.12 * ((height - 50.0) / 100.0)) * (1.0 - 0.1 * ((sensitivity + 30.0) / 20.0)))))
+        
+        # Local Humidity Trapping
+        humidity_idx = float(min(95.0, max(50.0, 65.0 + 15.0 * canopy_density * (1.0 - 0.08 * ((height - 50.0) / 100.0)))))
+        
+        # Ecological Wildlife Index
+        var_factor = float(np.var(np.array(z_canopy_measured) - np.array(z_ground_measured)))
+        wildlife_idx = float(min(98.0, max(20.0, (40.0 * canopy_density + 35.0 * (var_factor / 20.0) + 15.0 * (1.0 - abs(frequency - 1064.0) / 600.0)) * (1.0 - 0.15 * ((height - 50.0) / 100.0)) * (1.0 - 0.1 * ((sensitivity + 30.0) / 20.0)))))
+
+        # Dynamic report
+        site_name = "Yellow Creek Ravine" if site == 'creek' else "Lake Ontario Shoreline"
+        canopy_desc = "riparian vegetation structure" if site == 'creek' else "coastal tree canopy and water surface interface"
+        
+        genai_advices = [
+            f"**Generative AI LiDAR & Hardware Observation Verdict ({site_name}):**",
+            f"1. **Sensor Resolution & Canopy Penetration**: At **{frequency:.0f} nm** and **{scan_rate:.0f} kHz**, the sensor resolves the {canopy_desc} with a structural density of **{canopy_density*100:.1f}%**. Ground return signal registration is optimized at **{sensitivity:.1f} dB** threshold, ensuring penetration through leaf clutter to map the creek bed.",
+            f"2. **Microclimate Modulation**: Riparian canopy cover achieves a **{shading_idx:.1f}% shading index**, reducing thermal loading on the water surface. Local relative humidity is stabilized at **{humidity_idx:.1f}%** due to moisture trapping in the understory.",
+            f"3. **Wildlife Nesting Suitability**: Calculated structural complexity yields a **{wildlife_idx:.1f}% Ecological Wildlife Index**. The drone height of **{height:.0f} m** provides the optimal balance between spatial footprint and point density, minimizing return signal uncertainty.",
+            "**Advisory Recommendation**: For high-density mapping of Yellow Creek, utilize 1064 nm or 1550 nm at low drone altitude (50m) and high sensitivity (-30 dB) to maximize ground return returns and capture benthic-nesting habitat features."
+        ]
+        genai_prescription = "\n\n".join(genai_advices)
+
+        res_data = jsonify({
+            'x': x.tolist(),
+            'ground_z': z_ground_measured,
+            'canopy_z': z_canopy_measured,
+            'shading_idx': shading_idx,
+            'humidity_idx': humidity_idx,
+            'wildlife_idx': wildlife_idx,
+            'canopy_density': canopy_density,
+            'genai_prescription': genai_prescription
+        })
+        
+        _cache_lidar_hardware[cache_key] = res_data
+        return res_data
     except Exception as e:
         import traceback
         traceback.print_exc()

@@ -228,6 +228,7 @@
                 <button class="tab" id="tab-qml" onclick="selectTab('qml')">🌱 QML Recovery Plan</button>
                 <button class="tab" id="tab-coolpool" onclick="selectTab('coolpool')">📊 Cool Pool Stats</button>
                 <button class="tab" id="tab-conservation2045" onclick="selectTab('conservation2045')">🔮 2045 Conservation</button>
+                <button class="tab" id="tab-lidar" onclick="selectTab('lidar')">📡 LiDAR & Hardware</button>
             </div>
         </header>
 
@@ -596,6 +597,87 @@
             </div>
         </div>
 
+        <!-- Tab 7: LiDAR & Hardware Sensors -->
+        <div id="lidar-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>📡 LiDAR Sensor Modeling & Microclimate Hardware Configurations</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Model: Return Signal Echo Analysis & Environmental Indexing</span>
+            </div>
+            
+            <!-- LiDAR Parameter Controls -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; align-items: center; width: 100%; box-sizing: border-box;">
+                <!-- Site selection dropdown -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 1;">
+                    <span style="color:#9ca3af; font-size: 0.85rem; font-weight:600;">LiDAR Scan Target Site:</span>
+                    <select id="lidar-site" onchange="runLidarHardware()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
+                        <option value="creek" selected>Yellow Creek Ravine (Lat 43.6866, Lng -79.3853)</option>
+                        <option value="ontario">Lake Ontario Shoreline (Flat bed & Breakwater)</option>
+                    </select>
+                </div>
+                
+                <!-- Laser Wavelength slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Laser Wavelength:</span>
+                        <span id="label-lidar-frequency" style="color: var(--accent); font-weight:700;">905 nm</span>
+                    </div>
+                    <input type="range" id="lidar-frequency" min="905" max="1550" step="5" value="905" oninput="document.getElementById('label-lidar-frequency').textContent = this.value + ' nm'; runLidarHardware();" style="width:100%;">
+                </div>
+
+                <!-- Scan Rate slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Scan Pulse Rate:</span>
+                        <span id="label-lidar-scanrate" style="color: var(--accent); font-weight:700;">200 kHz</span>
+                    </div>
+                    <input type="range" id="lidar-scanrate" min="100" max="500" step="10" value="200" oninput="document.getElementById('label-lidar-scanrate').textContent = this.value + ' kHz'; runLidarHardware();" style="width:100%;">
+                </div>
+
+                <!-- Sensitivity slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Threshold Sensitivity:</span>
+                        <span id="label-lidar-sensitivity" style="color: var(--accent); font-weight:700;">-20 dB</span>
+                    </div>
+                    <input type="range" id="lidar-sensitivity" min="-30" max="-10" step="1" value="-20" oninput="document.getElementById('label-lidar-sensitivity').textContent = this.value + ' dB'; runLidarHardware();" style="width:100%;">
+                </div>
+
+                <!-- Drone height slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Drone Sensor Height:</span>
+                        <span id="label-lidar-height" style="color: var(--accent); font-weight:700;">100 m</span>
+                    </div>
+                    <input type="range" id="lidar-height" min="50" max="150" step="5" value="100" oninput="document.getElementById('label-lidar-height').textContent = this.value + ' m'; runLidarHardware();" style="width:100%;">
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Left: Elevation Profile Plot -->
+                <div style="flex: 1.3; min-width: 480px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-lidar-profile" style="width: 100%; height: 350px;"></div>
+                    </div>
+                </div>
+
+                <!-- Right: Indices Plot & Advisory Text -->
+                <div style="flex: 1.5; min-width: 500px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-lidar-indices" style="width: 100%; height: 210px;"></div>
+                    </div>
+                    
+                    <!-- Generative AI Prescription Card -->
+                    <div style="background: rgba(56, 189, 248, 0.04); border: 1px solid rgba(56, 189, 248, 0.15); padding: 16px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="lidar-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
+                            <!-- Advisory details go here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="footer">&copy; 2026 Hydrostar Ecological Suite | Powered by Flask, Plotly.js & QML Optimizers</div>
     </div>
 
@@ -605,7 +687,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all viewer cards
-            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card'].forEach(id => {
+            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -635,6 +717,10 @@
                 document.getElementById('tab-conservation2045').classList.add('active');
                 document.getElementById('conservation2045-card').style.display = 'flex';
                 runConservation2045();
+            } else if (tabId === 'lidar') {
+                document.getElementById('tab-lidar').classList.add('active');
+                document.getElementById('lidar-card').style.display = 'flex';
+                runLidarHardware();
             }
         }
 
@@ -1349,6 +1435,125 @@
                     };
 
                     Plotly.react('plot-conservation-projections', [traceFlora, traceFauna], layoutProjections, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // --- TAB 7: LIDAR HARDWARE SENSORS ---
+        function runLidarHardware() {
+            const site = document.getElementById('lidar-site').value;
+            const frequency = document.getElementById('lidar-frequency').value;
+            const scan_rate = document.getElementById('lidar-scanrate').value;
+            const sensitivity = document.getElementById('lidar-sensitivity').value;
+            const height = document.getElementById('lidar-height').value;
+
+            fetch(`/api/lidar-hardware?site=${site}&frequency=${frequency}&scan_rate=${scan_rate}&sensitivity=${sensitivity}&height=${height}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Render GenAI advisor text
+                    document.getElementById('lidar-genai-text').innerHTML = data.genai_prescription
+                        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent); font-weight:700;">$1</strong>')
+                        .replace(/Verdict/g, 'Verdict<br/>')
+                        .replace(/1\./g, '<br/>1.')
+                        .replace(/2\./g, '<br/>2.')
+                        .replace(/3\./g, '<br/>3.')
+                        .replace(/Advisory/g, '<br/>Advisory');
+
+                    // Plot 1: Elevation Profile Plot (canopy vs ground)
+                    const traceGround = {
+                        x: data.x,
+                        y: data.ground_z,
+                        name: 'Ground Level (Last Return)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#854d0e', width: 2}, // Brownish
+                        marker: {size: 3, color: '#854d0e'},
+                        fill: 'tozeroy',
+                        fillcolor: 'rgba(133, 77, 14, 0.15)'
+                    };
+
+                    const traceCanopy = {
+                        x: data.x,
+                        y: data.canopy_z,
+                        name: site === 'creek' ? 'Canopy Level (First Return)' : 'Water Surface / Canopy (First Return)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: site === 'creek' ? '#10b981' : '#38bdf8', width: 2}, // Green or Sky Blue
+                        marker: {size: 3, color: site === 'creek' ? '#10b981' : '#38bdf8'},
+                        fill: 'tonexty',
+                        fillcolor: site === 'creek' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(56, 189, 248, 0.15)'
+                    };
+
+                    const layoutProfile = {
+                        title: {
+                            text: site === 'creek' ? 'Yellow Creek Ravine LiDAR Elevation Profile' : 'Lake Ontario Shoreline LiDAR Elevation Profile',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Cross-Section Distance (m)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Elevation (m)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 7},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.15
+                        }
+                    };
+
+                    Plotly.react('plot-lidar-profile', [traceGround, traceCanopy], layoutProfile, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+
+                    // Plot 2: Microclimate & Wildlife Indices Bar Chart
+                    const traceIndices = {
+                        x: ['Water Shading Index', 'Relative Humidity Trapping', 'Ecological Wildlife Index'],
+                        y: [data.shading_idx, data.humidity_idx, data.wildlife_idx],
+                        type: 'bar',
+                        marker: {
+                            color: ['#10b981', '#38bdf8', '#c084fc'] // emerald, sky blue, lavender
+                        }
+                    };
+
+                    const layoutIndices = {
+                        title: {
+                            text: 'LiDAR-Derived Microclimate & Ecological Indices',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)'
+                        },
+                        yaxis: {
+                            title: 'Index (%)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9},
+                            range: [0, 105]
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 30},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)'
+                    };
+
+                    Plotly.react('plot-lidar-indices', [traceIndices], layoutIndices, {
                         responsive: true,
                         modeBarButtonsToRemove: ['toImage'],
                         displaylogo: false
