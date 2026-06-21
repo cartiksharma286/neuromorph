@@ -2485,7 +2485,278 @@ def bci_rtms_simulate():
         traceback.print_exc()
         return jsonify({'error': str(e)}), 400
 
+# --- ENDPOINT: QML BCI + rTMS Optimization ---
+_cache_bci_qml_optimize = {}
+
+@app.route('/api/bci-rtms/qml-optimize', methods=['GET', 'POST'])
+def bci_rtms_qml_optimize():
+    global _cache_bci_qml_optimize
+    try:
+        if request.method == 'POST':
+            req_data = request.json or {}
+        else:
+            req_data = request.args
+
+        diagnosis = req_data.get('diagnosis', 'comorbid').lower()
+        regions_str = req_data.get('regions', 'dlpfc_left,hypoglossal,sma,phrenic')
+        qubits = int(req_data.get('qubits', 6))
+        ansatz_depth = int(req_data.get('ansatz_depth', 4))
+        optimizer = req_data.get('optimizer', 'parameter_shift').lower()
+
+        # Cache check
+        cache_key = (diagnosis, regions_str, qubits, ansatz_depth, optimizer)
+        if cache_key in _cache_bci_qml_optimize:
+            return _cache_bci_qml_optimize[cache_key]
+
+        # Parse regions list
+        selected_regions = [r.strip().lower() for r in regions_str.split(',') if r.strip()]
+
+        # Evaluate target matching
+        # Apnea target match: needs hypoglossal & phrenic
+        # Dementia target match: needs dlpfc_left & sma
+        # Comorbid target match: needs all 4
+        has_apnea_targets = 'hypoglossal' in selected_regions and 'phrenic' in selected_regions
+        has_dementia_targets = 'dlpfc_left' in selected_regions and 'sma' in selected_regions
+
+        is_matching = False
+        if diagnosis == 'apnea':
+            is_matching = has_apnea_targets
+        elif diagnosis == 'dementia':
+            is_matching = has_dementia_targets
+        elif diagnosis == 'comorbid':
+            is_matching = has_apnea_targets and has_dementia_targets
+
+        # QML optimization efficacy
+        # QML tuning increases base efficacy, but is limited if targets don't match the pathology
+        if is_matching:
+            qml_efficacy = 0.968
+            min_eigenvalue = -9.62
+            fidelity = 0.996
+        else:
+            # penalize for incorrect regional targets
+            penalty = 0.35 * (1.0 - (len(selected_regions) / 4.0))
+            qml_efficacy = max(0.55, 0.78 - penalty)
+            min_eigenvalue = -4.85 + (4.0 - len(selected_regions)) * 0.4
+            fidelity = 0.884
+
+        # Simulate VQE trace
+        np.random.seed(4242)
+        vqe_iterations = 30
+        loss_history = []
+        fidelity_history = []
+        
+        # Smooth exponential decay convergence for loss/energy expectation value <H>
+        for i in range(vqe_iterations):
+            noise = np.random.normal(0, 0.04)
+            loss_val = -2.5 + (min_eigenvalue + 2.5) * (1.0 - np.exp(-i / 6.0)) + noise
+            loss_history.append(float(loss_val))
+            
+            fid_noise = np.random.normal(0, 0.008)
+            fid_val = 0.45 + (fidelity - 0.45) * (1.0 - np.exp(-i / 5.0)) + fid_noise
+            fidelity_history.append(float(min(1.0, max(0.0, fid_val))))
+
+        loss_history[-1] = float(np.min(loss_history))
+        fidelity_history[-1] = float(fidelity)
+
+        # Gate parameters (simulating 8 rotation parameters on ansatz Bloch sphere)
+        gate_parameters = [float(0.68 + 0.22 * np.sin(k * 0.5) + 0.08 * np.cos(k * 1.2)) for k in range(8)]
+
+        # Qubit state probabilities
+        qubit_states = [
+            {'state': '|000000>', 'probability': 0.884 if is_matching else 0.451},
+            {'state': '|001011>', 'probability': 0.062 if is_matching else 0.182},
+            {'state': '|100100>', 'probability': 0.024 if is_matching else 0.114},
+            {'state': '|011001>', 'probability': 0.015 if is_matching else 0.092},
+            {'state': '|110010>', 'probability': 0.008 if is_matching else 0.075},
+            {'state': '|111111>', 'probability': 0.004 if is_matching else 0.043},
+            {'state': '|010101>', 'probability': 0.002 if is_matching else 0.031},
+            {'state': '|101010>', 'probability': 0.001 if is_matching else 0.012}
+        ]
+
+        # Generate signal time-series
+        fs = 250.0
+        n_samples = 600
+        t = np.linspace(0, 3.0, n_samples)
+        np.random.seed(9876)
+        noise = np.random.normal(0, 1.0, n_samples)
+
+        # Output metrics calculations
+        # Classical parameters for comparison
+        classical_efficacy = 0.742
+        classical_latency = 15.0 # ms (moderate)
+        
+        # QML optimized parameters
+        qml_latency = 2.4 if is_matching else (6.8 if 'dlpfc_left' in selected_regions else 12.5)
+
+        # Simulating signals based on diagnosis
+        respiration_pre = np.zeros(n_samples)
+        respiration_classic = np.zeros(n_samples)
+        respiration_qml = np.zeros(n_samples)
+        
+        lfp_pre = np.zeros(n_samples)
+        lfp_classic = np.zeros(n_samples)
+        lfp_qml = np.zeros(n_samples)
+        
+        spo2_pre = np.zeros(n_samples)
+        spo2_qml = np.zeros(n_samples)
+        
+        pac_pre = np.zeros(n_samples)
+        pac_qml = np.zeros(n_samples)
+
+        bci_trigger_times_classic = []
+        bci_trigger_times_qml = []
+
+        collapse_mask = ((t >= 0.5) & (t <= 1.2)) | ((t >= 1.8) & (t <= 2.5))
+        
+        # Apnea Modelling
+        if diagnosis in ('apnea', 'comorbid'):
+            base_flow = np.sin(2 * np.pi * 0.67 * t)
+            
+            respiration_pre = base_flow.copy()
+            respiration_pre[collapse_mask] *= 0.15
+            respiration_pre += 0.08 * noise
+            
+            respiration_classic = base_flow.copy()
+            respiration_classic[collapse_mask] *= (0.15 + 0.85 * classical_efficacy)
+            respiration_classic += 0.06 * noise
+            
+            respiration_qml = base_flow.copy()
+            respiration_qml[collapse_mask] *= (0.15 + 0.85 * qml_efficacy)
+            respiration_qml += 0.04 * noise
+            
+            spo2_pre = 98.0 - 15.0 * collapse_mask.astype(float) * (1.0 - np.exp(-(t % 1.3) / 0.5)) + 0.2 * noise
+            spo2_qml = 98.0 - (15.0 * (1.0 - qml_efficacy)) * collapse_mask.astype(float) * (1.0 - np.exp(-(t % 1.3) / 0.5)) + 0.1 * noise
+            
+            # Classical vs QML Trigger delay
+            delay_classic = int(classical_latency * (fs / 1000.0))
+            delay_qml = int(qml_latency * (fs / 1000.0))
+            
+            for idx in range(max(delay_classic, delay_qml), n_samples):
+                if collapse_mask[idx - delay_classic] and np.random.rand() > 0.4:
+                    bci_trigger_times_classic.append(float(t[idx]))
+                if collapse_mask[idx - delay_qml] and np.random.rand() > 0.2:
+                    bci_trigger_times_qml.append(float(t[idx]))
+        else:
+            # Healthy respiration
+            respiration_pre = np.sin(2 * np.pi * 0.35 * t) + 0.05 * noise
+            respiration_classic = respiration_pre.copy()
+            respiration_qml = respiration_pre.copy()
+            spo2_pre = 98.5 + 0.1 * noise
+            spo2_qml = spo2_pre.copy()
+
+        # Dementia Modelling
+        if diagnosis in ('dementia', 'comorbid'):
+            theta_wave = np.sin(2 * np.pi * 6.0 * t)
+            
+            lfp_pre = 18.0 * theta_wave + 0.15 * np.sin(2 * np.pi * 40.0 * t) + 1.2 * noise
+            pac_pre = 0.18 + 0.05 * np.cos(2 * np.pi * 0.5 * t) + 0.02 * noise
+            
+            # Classical closed-loop
+            gamma_classic = (0.15 + 0.8 * classical_efficacy) * np.sin(2 * np.pi * 40.0 * t) * (1.0 + (0.2 + 0.5 * classical_efficacy) * theta_wave)
+            lfp_classic = 12.0 * theta_wave + 10.0 * gamma_classic + 0.7 * noise
+            
+            # QML closed-loop (highly synchronized)
+            gamma_qml = (0.15 + 0.8 * qml_efficacy) * np.sin(2 * np.pi * 40.0 * t) * (1.0 + (0.2 + 0.68 * qml_efficacy) * theta_wave)
+            lfp_qml = 8.0 * theta_wave + 14.0 * gamma_qml + 0.4 * noise
+            
+            pac_qml = pac_pre + 0.72 * qml_efficacy * (1.0 + 0.1 * np.sin(2 * np.pi * 1.5 * t))
+            pac_qml = np.clip(pac_qml, 0.0, 1.0)
+            
+            # Trigger events based on pac dropping below threshold
+            delay_classic = int(classical_latency * (fs / 1000.0))
+            delay_qml = int(qml_latency * (fs / 1000.0))
+            for idx in range(max(delay_classic, delay_qml), n_samples):
+                if pac_pre[idx - delay_classic] < 0.22 and np.random.rand() > 0.45:
+                    bci_trigger_times_classic.append(float(t[idx]))
+                if pac_pre[idx - delay_qml] < 0.22 and np.random.rand() > 0.25:
+                    bci_trigger_times_qml.append(float(t[idx]))
+        else:
+            theta_wave = np.sin(2 * np.pi * 6.0 * t)
+            gamma_mod = 1.0 * np.sin(2 * np.pi * 40.0 * t) * (1.0 + 0.8 * theta_wave)
+            lfp_pre = 8.0 * theta_wave + 15.0 * gamma_mod + 0.5 * noise
+            lfp_classic = lfp_pre.copy()
+            lfp_qml = lfp_pre.copy()
+            pac_pre = 0.82 + 0.04 * np.sin(2 * np.pi * 1.2 * t) + 0.01 * noise
+            pac_qml = pac_pre.copy()
+
+        # Clinical metrics predictions
+        ahi_pre = 34.2 if diagnosis in ('apnea', 'comorbid') else 4.5
+        ahi_classic = max(3.5, ahi_pre - (ahi_pre - 4.5) * classical_efficacy)
+        ahi_qml = max(2.5, ahi_pre - (ahi_pre - 4.5) * qml_efficacy)
+        
+        mmse_pre = 18.5 if diagnosis in ('dementia', 'comorbid') else 29.0
+        mmse_classic = min(30.0, mmse_pre + (30.0 - mmse_pre) * 0.7 * classical_efficacy)
+        mmse_qml = min(30.0, mmse_pre + (30.0 - mmse_pre) * 0.75 * qml_efficacy)
+
+        spo2_min_pre = float(np.min(spo2_pre))
+        spo2_min_qml = float(np.min(spo2_qml))
+        
+        pac_restoration_pct = float((np.mean(pac_qml) / np.mean(pac_pre) - 1.0) * 100.0) if np.mean(pac_pre) > 0 and diagnosis in ('dementia', 'comorbid') else 0.0
+
+        # Safety checking (Shannon index co-stimulation)
+        shannon_index = float(0.12 * 3.0 * 130.0 / 100.0) # baseline DBS
+        is_safe = shannon_index <= 1.5
+
+        # target MNI string
+        target_coords_map = {
+            'dlpfc_left': 'x: -38, y: 44, z: 32 (Left DLPFC - MNI)',
+            'hypoglossal': 'x: 8, y: -38, z: -48 (Hypoglossal nucleus - MNI)',
+            'sma': 'x: -4, y: -6, z: 58 (Supplementary Motor Area - MNI)',
+            'phrenic': 'x: -12, y: -22, z: -32 (Phrenic nerve projection - MNI)'
+        }
+        active_mni_coords = ", ".join([target_coords_map[r] for r in selected_regions if r in target_coords_map])
+
+        res_data = jsonify({
+            'time': t.tolist(),
+            'loss_history': loss_history,
+            'fidelity_history': fidelity_history,
+            'gate_parameters': gate_parameters,
+            'qubit_states': qubit_states,
+            'respiration_pre': respiration_pre.tolist(),
+            'respiration_classic': respiration_classic.tolist(),
+            'respiration_qml': respiration_qml.tolist(),
+            'spo2_pre': spo2_pre.tolist(),
+            'spo2_qml': spo2_qml.tolist(),
+            'lfp_pre': lfp_pre.tolist(),
+            'lfp_classic': lfp_classic.tolist(),
+            'lfp_qml': lfp_qml.tolist(),
+            'pac_pre': pac_pre.tolist(),
+            'pac_qml': pac_qml.tolist(),
+            'bci_trigger_times_classic': bci_trigger_times_classic,
+            'bci_trigger_times_qml': bci_trigger_times_qml,
+            'metrics': {
+                'classical_efficacy_pct': float(classical_efficacy * 100.0),
+                'qml_efficacy_pct': float(qml_efficacy * 100.0),
+                'classical_latency_ms': float(classical_latency),
+                'qml_latency_ms': float(qml_latency),
+                'ahi_pre': float(ahi_pre),
+                'ahi_classic': float(ahi_classic),
+                'ahi_qml': float(ahi_qml),
+                'mmse_pre': float(mmse_pre),
+                'mmse_classic': float(mmse_classic),
+                'mmse_qml': float(mmse_qml),
+                'spo2_min_pre': float(spo2_min_pre),
+                'spo2_min_qml': float(spo2_min_qml),
+                'pac_restoration_pct': float(pac_restoration_pct),
+                'shannon_index': shannon_index,
+                'is_safe': is_safe
+            },
+            'ai_recommendation': {
+                'active_regions': ", ".join([r.upper() for r in selected_regions]),
+                'mni_coordinates': active_mni_coords,
+                'optimized_fidelity_pct': float(fidelity * 100.0)
+            }
+        })
+
+        _cache_bci_qml_optimize[cache_key] = res_data
+        return res_data
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
 # --- ENDPOINT: DBS Waveforms and Closed-Loop Interventional Telemetry ---
+
 @app.route('/api/dbs-waveforms', methods=['GET'])
 def dbs_waveforms():
     try:

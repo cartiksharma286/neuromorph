@@ -359,6 +359,7 @@
             <button class="tab" id="tab-acoustic-sim" onclick="selectTab('acoustic-sim')">🔊 Acoustic Simulation</button>
             <button class="tab" id="tab-neuroacoustic-char" onclick="selectTab('neuroacoustic-char')">⚡ Neuroacoustic Characteristics</button>
             <button class="tab" id="tab-bci-rtms" onclick="selectTab('bci-rtms')">🧠 BCI + rTMS Closed-Loop</button>
+            <button class="tab" id="tab-bci-qml" onclick="selectTab('bci-qml')">🧠 QML BCI Optimization</button>
         </div>
 
         <!-- QML Volumetric Surface Reconstruction Card -->
@@ -2466,6 +2467,169 @@
             </div>
         </div>
 
+        <!-- BCI QML Optimization Card -->
+        <div id="bci-qml-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">🧠 Quantum Machine Learning BCI + rTMS Optimization Suite</div>
+            
+            <!-- Controls Panel -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-bottom: 20px; width: 100%; box-sizing: border-box; align-items: center; justify-content: space-between;">
+                <!-- Target Pathology -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 1;">
+                    <span style="color: #9ca3af; font-size: 0.85em; font-weight: 600;">Pathology Target:</span>
+                    <select id="qml-bci-target" onchange="runBciQmlSimulation()" style="background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.9em; outline: none; font-family: 'Outfit', sans-serif;">
+                        <option value="comorbid">Sleep Apnea &amp; Dementia Comorbidity</option>
+                        <option value="apnea">Sleep Apnea (Hypoglossal Gating)</option>
+                        <option value="dementia">Dementia (DLPFC / Synaptic Repair)</option>
+                    </select>
+                </div>
+
+                <!-- Active Cortical Target Checkboxes -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 250px; flex: 1.5;">
+                    <span style="color: #9ca3af; font-size: 0.85em; font-weight: 600;">Active Stim Target Areas:</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 4px; color: #cbd5e1; font-size: 0.85em; cursor: pointer;">
+                            <input type="checkbox" id="qml-region-dlpfc" checked onchange="runBciQmlSimulation()" style="width:auto; margin:0;"> Left DLPFC
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; color: #cbd5e1; font-size: 0.85em; cursor: pointer;">
+                            <input type="checkbox" id="qml-region-hypoglossal" checked onchange="runBciQmlSimulation()" style="width:auto; margin:0;"> Hypoglossal Nucl.
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; color: #cbd5e1; font-size: 0.85em; cursor: pointer;">
+                            <input type="checkbox" id="qml-region-sma" checked onchange="runBciQmlSimulation()" style="width:auto; margin:0;"> SMA / Motor
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; color: #cbd5e1; font-size: 0.85em; cursor: pointer;">
+                            <input type="checkbox" id="qml-region-phrenic" checked onchange="runBciQmlSimulation()" style="width:auto; margin:0;"> Phrenic Nerve
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Quantum Parameters -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px; flex: 0.8;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Qubits:</span>
+                        <span id="label-qml-qubits" style="color: #a855f7; font-weight:700;">6</span>
+                    </div>
+                    <input type="range" id="qml-qubits-val" min="2" max="8" step="2" value="6" oninput="document.getElementById('label-qml-qubits').textContent = this.value; runBciQmlSimulation();" style="width:100%;">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px; flex: 0.8;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Ansatz Depth:</span>
+                        <span id="label-qml-depth" style="color: #ec4899; font-weight:700;">4</span>
+                    </div>
+                    <input type="range" id="qml-depth-val" min="1" max="6" step="1" value="4" oninput="document.getElementById('label-qml-depth').textContent = this.value; runBciQmlSimulation();" style="width:100%;">
+                </div>
+
+                <!-- Optimizer -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 150px; flex: 0.8;">
+                    <span style="color: #9ca3af; font-size: 0.85em; font-weight: 600;">Optimizer Type:</span>
+                    <select id="qml-optimizer" onchange="runBciQmlSimulation()" style="background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.9em; outline: none; font-family: 'Outfit', sans-serif;">
+                        <option value="parameter_shift">Parameter Shift SPSA</option>
+                        <option value="spsa">Gradient SPSA</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Big Run Button -->
+            <div style="width: 100%; display: flex; justify-content: center; margin-bottom: 20px;">
+                <button onclick="runBciQmlSimulation()" style="background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(168,85,247,0.35); transition: all 0.2s ease;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    <span>Execute Quantum VQE Optimization</span>
+                </button>
+            </div>
+
+            <!-- Content Grid: Outlines/Metrics on left, Live Plots on right -->
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px; box-sizing: border-box;">
+                <!-- Column 1: Outlines, State Probabilities, Outcomes -->
+                <div style="flex: 1.1; min-width: 320px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    
+                    <!-- Quantum State Telemetry -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <h4 style="margin: 0; color: #c084fc; font-size: 1.02em; display: flex; align-items: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            <span>VQE Quantum State Eigenspace</span>
+                        </h4>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">Min Eigenvalue ⟨H⟩:</span>
+                            <span id="qml-min-eigen" style="color: #ec4899; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">State Fidelity:</span>
+                            <span id="qml-fidelity" style="color: #10b981; font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">Active Cortical Focus:</span>
+                            <span id="qml-active-focus" style="color: #38bdf8; font-weight: 700; font-size: 0.9em; text-align:right;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                            <span style="color: #9ca3af;">MNI Stereotactic:</span>
+                            <span id="qml-mni-coords" style="color: #f59e0b; font-size: 0.82em; text-align:right; font-family: 'Courier New', monospace; max-width: 180px; word-wrap: break-word;">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Qubit State Probability List -->
+                    <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); padding: 16px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <h4 style="margin: 0; color: #38bdf8; font-size: 1.02em;">Qubit Ground State Probabilities</h4>
+                        <div id="qml-qubit-states-container" style="display: flex; flex-direction: column; gap: 6px; max-height: 120px; overflow-y: auto; padding-right: 5px;">
+                            <!-- Dynamically loaded probability bars -->
+                        </div>
+                    </div>
+
+                    <!-- Comparative outcomes table -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <h4 style="margin: 0; color: #10b981; font-size: 1.02em;">Classical vs. QML-Optimized Recovery</h4>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.82em; text-align: left; color: #cbd5e1;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #9ca3af;">
+                                    <th style="padding: 4px;">Metric</th>
+                                    <th style="padding: 4px;">Classical BCI</th>
+                                    <th style="padding: 4px; color: #a855f7;">QML BCI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td style="padding: 6px 4px; color:#9ca3af;">Therapeutic Efficacy</td>
+                                    <td style="padding: 6px 4px;" id="comp-classic-eff">--</td>
+                                    <td style="padding: 6px 4px; color:#10b981; font-weight:700;" id="comp-qml-eff">--</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td style="padding: 6px 4px; color:#9ca3af;">Feedback Loop Latency</td>
+                                    <td style="padding: 6px 4px;" id="comp-classic-lat">--</td>
+                                    <td style="padding: 6px 4px; color:#38bdf8; font-weight:700;" id="comp-qml-lat">--</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td style="padding: 6px 4px; color:#9ca3af;">Apnea AHI (Pre→Post)</td>
+                                    <td style="padding: 6px 4px;" id="comp-classic-ahi">--</td>
+                                    <td style="padding: 6px 4px; color:#10b981; font-weight:700;" id="comp-qml-ahi">--</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td style="padding: 6px 4px; color:#9ca3af;">Oxygen Min (Pre→Post)</td>
+                                    <td style="padding: 6px 4px;" id="comp-classic-spo2">--</td>
+                                    <td style="padding: 6px 4px; color:#10b981; font-weight:700;" id="comp-qml-spo2">--</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 6px 4px; color:#9ca3af;">Cognitive MMSE (Pre→Post)</td>
+                                    <td style="padding: 6px 4px;" id="comp-classic-mmse">--</td>
+                                    <td style="padding: 6px 4px; color:#10b981; font-weight:700;" id="comp-qml-mmse">--</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Column 2: Plotly charts -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <!-- Plot 1: Convergence trace -->
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="bci-qml-convergence-plot" style="width: 100%; height: 250px;"></div>
+                    </div>
+                    <!-- Plot 2: Live signals compare -->
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="bci-qml-signals-plot" style="width: 100%; height: 350px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="footer">&copy; 2026 Mersivity | Powered by Plotly.js, Flask, and Advanced Neuroimaging</div>
     </div>
 
@@ -2475,7 +2639,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all cards first
-            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card'].forEach(id => {
+            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -2560,6 +2724,9 @@
             } else if (tab === 'bci-rtms') {
                 document.getElementById('tab-bci-rtms').classList.add('active');
                 runBciRtmsSimulation();
+            } else if (tab === 'bci-qml') {
+                document.getElementById('tab-bci-qml').classList.add('active');
+                runBciQmlSimulation();
             }
         }
 
@@ -6368,6 +6535,272 @@
                     };
                     
                     Plotly.react('bci-signals-viewer', traces, layout, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // QML BCI + rTMS Simulation & Convergence Plotting
+        function runBciQmlSimulation() {
+            showCard('bci-qml-card');
+            
+            // Get inputs
+            const diagnosis = document.getElementById('qml-bci-target').value;
+            const qubits = document.getElementById('qml-qubits-val').value;
+            const ansatz_depth = document.getElementById('qml-depth-val').value;
+            const optimizer = document.getElementById('qml-optimizer').value;
+            
+            let regions = [];
+            if (document.getElementById('qml-region-dlpfc').checked) regions.push('dlpfc_left');
+            if (document.getElementById('qml-region-hypoglossal').checked) regions.push('hypoglossal');
+            if (document.getElementById('qml-region-sma').checked) regions.push('sma');
+            if (document.getElementById('qml-region-phrenic').checked) regions.push('phrenic');
+            
+            const regions_str = regions.join(',');
+            
+            // Call API
+            fetch(`/api/bci-rtms/qml-optimize?diagnosis=${diagnosis}&regions=${regions_str}&qubits=${qubits}&ansatz_depth=${ansatz_depth}&optimizer=${optimizer}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error("QML BCI Simulation error:", data.error);
+                        return;
+                    }
+                    
+                    // Update Telemetry
+                    const lastEnergy = data.loss_history[data.loss_history.length - 1];
+                    document.getElementById('qml-min-eigen').textContent = lastEnergy.toFixed(4);
+                    document.getElementById('qml-fidelity').textContent = (data.ai_recommendation.optimized_fidelity_pct).toFixed(1) + "%";
+                    document.getElementById('qml-active-focus').textContent = data.ai_recommendation.active_regions || 'NONE';
+                    document.getElementById('qml-mni-coords').textContent = data.ai_recommendation.mni_coordinates || 'N/A';
+                    
+                    // Populate ground state probability list
+                    const container = document.getElementById('qml-qubit-states-container');
+                    container.innerHTML = '';
+                    data.qubit_states.forEach(st => {
+                        container.innerHTML += `
+                            <div style="font-size: 0.8em; margin-bottom: 6px; box-sizing: border-box;">
+                                <div style="display:flex; justify-content:space-between; color:#a5b4fc; font-family:monospace;">
+                                    <span>${st.state}</span>
+                                    <span>${(st.probability * 100).toFixed(1)}%</span>
+                                </div>
+                                <div style="width:100%; height:4px; background:rgba(255,255,255,0.05); border-radius:2px; margin-top:2px;">
+                                    <div style="width:${st.probability * 100}%; height:100%; background:linear-gradient(to right, #a855f7, #6366f1); border-radius:2px;"></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    // Update comparative outcomes table
+                    document.getElementById('comp-classic-eff').textContent = data.metrics.classical_efficacy_pct.toFixed(1) + "%";
+                    document.getElementById('comp-qml-eff').textContent = data.metrics.qml_efficacy_pct.toFixed(1) + "%";
+                    document.getElementById('comp-classic-lat').textContent = data.metrics.classical_latency_ms.toFixed(1) + " ms";
+                    document.getElementById('comp-qml-lat').textContent = data.metrics.qml_latency_ms.toFixed(1) + " ms";
+                    
+                    document.getElementById('comp-classic-ahi').textContent = data.metrics.ahi_pre.toFixed(1) + " → " + data.metrics.ahi_classic.toFixed(1);
+                    document.getElementById('comp-qml-ahi').textContent = data.metrics.ahi_pre.toFixed(1) + " → " + data.metrics.ahi_qml.toFixed(1);
+                    
+                    const classicSpO2_post = data.metrics.spo2_min_pre + (98.0 - data.metrics.spo2_min_pre) * (data.metrics.classical_efficacy_pct / 100.0);
+                    document.getElementById('comp-classic-spo2').textContent = data.metrics.spo2_min_pre.toFixed(1) + "% → " + classicSpO2_post.toFixed(1) + "%";
+                    document.getElementById('comp-qml-spo2').textContent = data.metrics.spo2_min_pre.toFixed(1) + "% → " + data.metrics.spo2_min_qml.toFixed(1) + "%";
+                    
+                    document.getElementById('comp-classic-mmse').textContent = data.metrics.mmse_pre.toFixed(1) + " → " + data.metrics.mmse_classic.toFixed(1);
+                    document.getElementById('comp-qml-mmse').textContent = data.metrics.mmse_pre.toFixed(1) + " → " + data.metrics.mmse_qml.toFixed(1);
+                    
+                    // Plot 1: VQE Convergence Plot (Loss and Fidelity)
+                    const iterations = Array.from({length: data.loss_history.length}, (_, i) => i + 1);
+                    const traceLoss = {
+                        x: iterations,
+                        y: data.loss_history,
+                        name: 'Energy expectation ⟨H⟩',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#ec4899', width: 2},
+                        marker: {size: 5}
+                    };
+                    const traceFidelity = {
+                        x: iterations,
+                        y: data.fidelity_history,
+                        name: 'State Fidelity',
+                        yaxis: 'y2',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#10b981', width: 1.8, dash: 'dash'}
+                    };
+                    
+                    const layoutConv = {
+                        title: {
+                            text: 'VQE Ansatz Energy & Fidelity Optimization Convergence',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'VQE Iterations',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Energy Expectation ⟨H⟩',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis2: {
+                            title: 'Fidelity',
+                            overlaying: 'y',
+                            side: 'right',
+                            range: [0, 1.05],
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 45, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.2
+                        }
+                    };
+                    
+                    Plotly.react('bci-qml-convergence-plot', [traceLoss, traceFidelity], layoutConv, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                    
+                    // Plot 2: Live signals comparison
+                    const tracesSig = [];
+                    const time = data.time;
+                    
+                    if (diagnosis === 'apnea' || diagnosis === 'comorbid') {
+                        tracesSig.push({
+                            x: time,
+                            y: data.respiration_pre,
+                            name: 'Airflow (Pre-Stim)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#ef4444', width: 1.2, dash: 'dash'}
+                        });
+                        tracesSig.push({
+                            x: time,
+                            y: data.respiration_classic,
+                            name: 'Airflow (Classical Closed-Loop)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#f59e0b', width: 1.5}
+                        });
+                        tracesSig.push({
+                            x: time,
+                            y: data.respiration_qml,
+                            name: 'Airflow (QML-Optimized BCI)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#10b981', width: 2}
+                        });
+                        
+                        // Add trigger times markers
+                        if (data.bci_trigger_times_classic.length > 0) {
+                            tracesSig.push({
+                                x: data.bci_trigger_times_classic,
+                                y: new Array(data.bci_trigger_times_classic.length).fill(1.15),
+                                name: 'Classical Stimulation Pulses',
+                                type: 'scatter',
+                                mode: 'markers',
+                                marker: {symbol: 'x', size: 6, color: '#f59e0b'}
+                            });
+                        }
+                        if (data.bci_trigger_times_qml.length > 0) {
+                            tracesSig.push({
+                                x: data.bci_trigger_times_qml,
+                                y: new Array(data.bci_trigger_times_qml.length).fill(1.25),
+                                name: 'QML Trough-Aligned Pulses',
+                                type: 'scatter',
+                                mode: 'markers',
+                                marker: {symbol: 'triangle-down', size: 9, color: '#10b981'}
+                            });
+                        }
+                    }
+                    
+                    if (diagnosis === 'dementia' || diagnosis === 'comorbid') {
+                        // Scale LFP to display nicely
+                        const scale = 25.0;
+                        const lfpPreScaled = data.lfp_pre.map(v => v / scale);
+                        const lfpClassicScaled = data.lfp_classic.map(v => v / scale);
+                        const lfpQmlScaled = data.lfp_qml.map(v => v / scale);
+                        
+                        tracesSig.push({
+                            x: time,
+                            y: lfpPreScaled,
+                            name: 'Hippocampal LFP (Pre-Stim)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#9ca3af', width: 1.2, dash: 'dash'}
+                        });
+                        tracesSig.push({
+                            x: time,
+                            y: lfpClassicScaled,
+                            name: 'LFP (Classical Closed-Loop)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#f59e0b', width: 1.5}
+                        });
+                        tracesSig.push({
+                            x: time,
+                            y: lfpQmlScaled,
+                            name: 'LFP (QML-Optimized BCI)',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#a855f7', width: 2}
+                        });
+                        
+                        if (data.bci_trigger_times_qml.length > 0) {
+                            tracesSig.push({
+                                x: data.bci_trigger_times_qml,
+                                y: new Array(data.bci_trigger_times_qml.length).fill(1.2),
+                                name: 'QML Trough-Aligned Pulses',
+                                type: 'scatter',
+                                mode: 'markers',
+                                marker: {symbol: 'triangle-down', size: 8, color: '#a855f7'}
+                            });
+                        }
+                    }
+                    
+                    const layoutSig = {
+                        title: {
+                            text: 'Optimal Signal Alignment & Phase Stabilization Comparison',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Time (seconds)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Normalized Signal Amplitude',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9},
+                            range: [-1.4, 1.45]
+                        },
+                        margin: {t: 35, l: 45, r: 20, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.15
+                        }
+                    };
+                    
+                    Plotly.react('bci-qml-signals-plot', tracesSig, layoutSig, {
                         responsive: true,
                         modeBarButtonsToRemove: ['toImage'],
                         displaylogo: false
