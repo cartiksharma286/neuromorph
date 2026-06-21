@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydrostar - Ecological Sensor Fusion & QML Restoration Suite</title>
+    
+    <!-- Premium Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=Courier+Prime&display=swap" rel="stylesheet">
+    
+    <!-- Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --primary: #10b981; /* Emerald Green */
+            --accent: #38bdf8; /* Ocean Sky Blue */
+            --quantum: #c084fc; /* Lavender QML */
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-glow: rgba(16, 185, 129, 0.15);
+            --card-bg: rgba(15, 23, 42, 0.45);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at top right, rgba(16, 185, 129, 0.08), transparent 800px),
+                              radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.05), transparent 800px);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1300px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* Glassmorphic Header */
+        header {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-left h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #fff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-left h1 span.highlight {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-left .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Navigation Tab Bar */
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            align-self: flex-start;
+        }
+
+        .tab {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            outline: none;
+        }
+
+        .tab:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Main Dashboard Workspace Cards */
+        .viewer-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            width: 100%;
+        }
+
+        .viewer-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Form Inputs elements */
+        select, input[type="range"] {
+            cursor: pointer;
+        }
+
+        /* Styled scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 15px;
+        }
+
+        /* Image Display layout */
+        .creek-image-box {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .creek-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .creek-image-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: #fff;
+            padding: 15px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <h1>HYDRO<span class="highlight">STAR</span></h1>
+                <div class="subtitle">Pedestrian Bridge Ecological Observation & QML Watershed Restoration Dashboard</div>
+            </div>
+            
+            <div class="tab-bar">
+                <button class="tab active" id="tab-telemetry" onclick="selectTab('telemetry')">📊 Telemetry</button>
+                <button class="tab" id="tab-fusion" onclick="selectTab('fusion')">🌀 Kalman Fusion</button>
+                <button class="tab" id="tab-ecological" onclick="selectTab('ecological')">🐟 Ecological Bed</button>
+                <button class="tab" id="tab-qml" onclick="selectTab('qml')">🌱 QML Recovery Plan</button>
+                <button class="tab" id="tab-coolpool" onclick="selectTab('coolpool')">📊 Cool Pool Stats</button>
+                <button class="tab" id="tab-conservation2045" onclick="selectTab('conservation2045')">🔮 2045 Conservation</button>
+            </div>
+        </header>
+
+        <!-- Tab 1: Telemetry -->
+        <div id="telemetry-card" class="viewer-card" style="box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>Real-Time Sensor Telemetry & Atmospheric Metrics</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Dataset: lakedata.json</span>
+            </div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Left: Site Info & Generated Image -->
+                <div style="flex: 1.1; min-width: 320px; display: flex; flex-direction: column; gap: 20px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px;">
+                        <h3 style="color: var(--primary); font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 12px;">Yellow Creek Station Coordinates</h3>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem; margin-bottom: 8px;">
+                            <span style="color:var(--text-muted);">Yellow Creek Start:</span>
+                            <span style="font-weight: 600;">Lat 43.69099, Lng -79.39058</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem;">
+                            <span style="color:var(--text-muted);">Pedestrian Bridge:</span>
+                            <span style="font-weight: 600;">Lat 43.68664, Lng -79.38529</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Real-Time Dataset Statistics -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px;">
+                        <h3 style="color: var(--accent); font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 12px;">Dataset Statistics (lakedata.json)</h3>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem; margin-bottom: 8px;">
+                            <span style="color:var(--text-muted);">Mean Water Temp:</span>
+                            <span id="stat-mean-temp" style="font-weight: 600;">-- °C</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem; margin-bottom: 8px;">
+                            <span style="color:var(--text-muted);">Water Temp Std Dev:</span>
+                            <span id="stat-std-temp" style="font-weight: 600;">-- °C</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem;">
+                            <span style="color:var(--text-muted);">Thermal Stress Ratio (T > 15°C):</span>
+                            <span id="stat-stress-pct" style="font-weight: 600; color: #ef4444;">-- %</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Beautiful Creek Image Gallery -->
+                    <div class="creek-image-box" style="height: 280px; position: relative; cursor: pointer;" onclick="toggleCreekImage()">
+                        <img id="creek-img" src="/static/yellow_creek.png" alt="Yellow Creek Landscape" style="width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s ease-in-out;">
+                        <div class="creek-image-label" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 15px 20px; bottom: 0; left: 0; right: 0; position: absolute;">
+                            <span id="creek-img-desc"><span style="color: var(--primary);">●</span> Yellow Creek Conservation Corridor, Toronto</span>
+                            <span style="font-size: 0.75rem; background: rgba(255,255,255,0.15); padding: 2px 8px; border-radius: 10px; font-weight: 500; backdrop-filter: blur(5px);">Click to Swap</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Live telemetry Plots -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-raw-temp" style="width: 100%; height: 350px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Kalman Data Fusion -->
+        <div id="fusion-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">🌀 Spatial Kalman Sensor Fusion Engine</div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Left: Fusion Parameters -->
+                <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 20px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 15px;">
+                        <h4 style="color: var(--accent); margin:0;">Fusion Controls</h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Kalman Process Noise (Q):</span>
+                            <span style="font-size: 0.9rem; color: #fff; font-weight:700;">0.05 (m/s²)</span>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Sensor Variance (R):</span>
+                            <span style="font-size: 0.9rem; color: #fff; font-weight:700;">0.40 (°C)</span>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                                <span>Sliding Covariance Width:</span>
+                                <span id="label-cov-window" style="color: var(--accent); font-weight: 700;">20 points</span>
+                            </div>
+                            <input type="range" id="cov-window" min="5" max="50" step="5" value="20" oninput="document.getElementById('label-cov-window').textContent = this.value + ' points'; runKalmanFusion();" style="width:100%;">
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 16px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                        <span style="color:#fff; font-weight:600; display:block; margin-bottom:8px;">Data Fusion Logic:</span>
+                        We apply a temporal 1D Kalman filter to reject high-frequency ambient thermal noise and anomalous spikes. 
+                        A spatial interpolation map combines upstream Yellow Creek Start ($x=0$) and downstream Pedestrian Bridge ($x=1$) data to profile creek bed gradients.
+                    </div>
+                </div>
+
+                <!-- Right: Fusion Plots -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-fusion-temp" style="width: 100%; height: 380px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Ecological Distribution -->
+        <div id="ecological-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">🐟 Creek Bed Ecological Distribution suitability</div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Left Details -->
+                <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 20px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; display:flex; flex-direction:column; gap:12px;">
+                        <h4 style="color: var(--primary); margin:0;">Thermal Thresholds</h4>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 6px;">
+                            <span style="color:var(--text-muted);">Fish Optimum (Trout):</span>
+                            <span style="font-weight: 600; color: #34d399;">14.5 °C (Cool Pool)</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem;">
+                            <span style="color:var(--text-muted);">Plankton Optimum:</span>
+                            <span style="font-weight: 600; color: #fbbf24;">18.0 °C (Warm Shallows)</span>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 16px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                        The suitability metrics model the thermal footprint along the creek bed from $x=0$ (upstream) to $x=1$ (downstream). 
+                        Salmonid species prefer the cool downstream bridge shadow, whereas plankton biomass surges in the warmer, shallow upstream zones.
+                    </div>
+                </div>
+
+                <!-- Right: 2D Suitability maps -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-ecological-heatmap" style="width: 100%; height: 380px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: QML Recovery Plan -->
+        <div id="qml-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">🌱 QML Ecological Recovery & Generative AI Prescription</div>
+            
+            <!-- Parameters Row -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                
+                <!-- Interventions switches -->
+                <div style="display:flex; flex-direction:column; gap:6px; min-width: 250px; flex:1.2;">
+                    <span style="color:#9ca3af; font-size: 0.85rem; font-weight:600;">Active Restoration Controls:</span>
+                    <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                        <label style="display:flex; align-items:center; gap:4px; font-size:0.85rem; cursor:pointer;">
+                            <input type="checkbox" id="qml-shading" checked onchange="runQmlRecovery()" style="width:auto; margin:0;"> Riparian Canopy
+                        </label>
+                        <label style="display:flex; align-items:center; gap:4px; font-size:0.85rem; cursor:pointer;">
+                            <input type="checkbox" id="qml-aeration" checked onchange="runQmlRecovery()" style="width:auto; margin:0;"> Solar Aerators
+                        </label>
+                        <label style="display:flex; align-items:center; gap:4px; font-size:0.85rem; cursor:pointer;">
+                            <input type="checkbox" id="qml-filtration" checked onchange="runQmlRecovery()" style="width:auto; margin:0;"> Inlet Bioswales
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Qubits & Depth -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px; flex: 0.8;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Qubits:</span>
+                        <span id="label-rec-qubits" style="color: var(--quantum); font-weight:700;">6</span>
+                    </div>
+                    <input type="range" id="rec-qubits" min="4" max="10" step="2" value="6" oninput="document.getElementById('label-rec-qubits').textContent = this.value; runQmlRecovery();" style="width:100%;">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 140px; flex: 0.8;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Circuit Ansatz Depth:</span>
+                        <span id="label-rec-depth" style="color: var(--quantum); font-weight:700;">4</span>
+                    </div>
+                    <input type="range" id="rec-depth" min="1" max="6" step="1" value="4" oninput="document.getElementById('label-rec-depth').textContent = this.value; runQmlRecovery();" style="width:100%;">
+                </div>
+
+                <!-- Exec Button -->
+                <button onclick="runQmlRecovery()" style="background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 14px rgba(16,185,129,0.3); outline:none;">
+                    Optimize Watershed
+                </button>
+            </div>
+
+            <!-- Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Left: VQE details & GenAI text -->
+                <div style="flex: 1.1; min-width: 320px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <!-- QML parameters -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <h4 style="color: var(--quantum); margin: 0; display:flex; align-items:center; gap:6px;">
+                            <span>QAOA Energy expectation values</span>
+                        </h4>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">Hamiltonian Eigenvalue ⟨H⟩:</span>
+                            <span id="qml-rec-eigen" style="color: var(--quantum); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+                            <span style="color: #9ca3af;">QAOA Ground state overlaps:</span>
+                            <span id="qml-rec-fidelity" style="color: var(--primary); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                            <span style="color: #9ca3af;">Target Restoration Level:</span>
+                            <span id="qml-rec-index" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Generative AI Prescription -->
+                    <div style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); padding: 18px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
+                            <!-- Generative AI report text -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Plots (Convergence and Qubit state probs) -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-qml-convergence" style="width: 100%; height: 230px;"></div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: 16px; padding: 18px; display:flex; flex-direction:column; gap:10px;">
+                        <h4 style="color:#fff; font-size:0.95rem; margin:0;">Ising Spin Ground State Configurations (QAOA Probabilities)</h4>
+                        <div id="qml-states-container" style="display:flex; flex-direction:column; gap:6px;">
+                            <!-- State probability bars -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 5: Cool Pool Stats & Combinatorics -->
+        <div id="coolpool-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>📊 Cool Pool Statistical Modeling & Combinatorial Optimization</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Model: Beta Distribution & Power Set Synergy Analysis</span>
+            </div>
+            
+            <!-- Budget Control Area -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; align-items: center; width: 100%; box-sizing: border-box;">
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 300px; flex: 1.5;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af; font-weight: 600;">Restoration Budget Limit ($):</span>
+                        <span id="label-pool-budget" style="color: var(--primary); font-weight:700;">$25,000</span>
+                    </div>
+                    <input type="range" id="pool-budget" min="0" max="64000" step="1000" value="25000" oninput="document.getElementById('label-pool-budget').textContent = '$' + Number(this.value).toLocaleString(); runCoolPoolStats();" style="width:100%;">
+                </div>
+                <div style="flex: 2; font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">
+                    Adjust the budget slider to evaluate which of the $2^6 = 64$ combinations of ecological interventions are financially feasible, which lie on the optimal **Pareto frontier**, and which single set maximizes recovery.
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Left: Statistical curves -->
+                <div style="flex: 1.2; min-width: 480px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-pool-pdf" style="width: 100%; height: 280px;"></div>
+                    </div>
+                    
+                    <!-- Stats summary indicators -->
+                    <div style="display: flex; gap: 12px;">
+                        <div style="flex: 1; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px;">Expected Mean</div>
+                            <div id="pool-expected-mean" style="font-size: 1.1rem; font-weight: 700; color: var(--accent);">-- °C</div>
+                        </div>
+                        <div style="flex: 1; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px;">Std Deviation</div>
+                            <div id="pool-std-dev" style="font-size: 1.1rem; font-weight: 700; color: var(--accent);">-- °C</div>
+                        </div>
+                        <div style="flex: 1.2; background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px;">Trout Compliance P(T≤14.5)</div>
+                            <div id="pool-compliance" style="font-size: 1.1rem; font-weight: 700; color: var(--primary);">-- %</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Combinatorial Scatter Plot and GenAI summary -->
+                <div style="flex: 1.5; min-width: 500px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-combinatorial-scatter" style="width: 100%; height: 280px;"></div>
+                    </div>
+                    
+                    <!-- Generative AI Prescription Card -->
+                    <div style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); padding: 16px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="pool-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
+                            <!-- Advisory details go here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 6: 2045 Conservation (Continued Fractions) -->
+        <div id="conservation2045-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>🔮 2045 Ecological Health & Continued Fraction Restorative Strategy</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Scenario Projection: Year 2045 Underwater Conservation</span>
+            </div>
+            
+            <!-- Climate Scenario Control Area -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; align-items: center; width: 100%; box-sizing: border-box;">
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 250px; flex: 1.2;">
+                    <span style="color:#9ca3af; font-size: 0.85rem; font-weight:600;">2045 Climate Warning Scenario:</span>
+                    <select id="con2045-scenario" onchange="runConservation2045()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
+                        <option value="optimistic">Optimistic (+1.2°C Temperature Shift)</option>
+                        <option value="moderate" selected>Moderate (+1.8°C Temperature Shift)</option>
+                        <option value="pessimistic">Severe (+2.8°C Temperature Shift)</option>
+                    </select>
+                </div>
+                <div style="flex: 2; font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">
+                    Continued fractions approximate the **optimal balance ratio ($\rho^*$)** between primary producers (flora) and restocked indicator species (fauna) in 2045. Resources allocated matching these convergents avoid nutrient deficits.
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Left: Continued Fraction convergence table and chart -->
+                <div style="flex: 1.3; min-width: 480px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-cf-convergence" style="width: 100%; height: 260px;"></div>
+                    </div>
+                    
+                    <!-- Table showing convergence of CF quotients -->
+                    <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="color:var(--quantum); font-size: 0.9rem; margin-bottom: 8px;">Rational Convergents table (Approximations of Optimal Ratio)</h4>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem; text-align: left;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-muted);">
+                                        <th style="padding: 6px 4px;">k</th>
+                                        <th style="padding: 6px 4px;">a_k</th>
+                                        <th style="padding: 6px 4px;">p_k / q_k</th>
+                                        <th style="padding: 6px 4px;">Decimal</th>
+                                        <th style="padding: 6px 4px; text-align: right;">Error</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cf-table-body">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Projections bar chart and Advisory text -->
+                <div style="flex: 1.5; min-width: 500px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-conservation-projections" style="width: 100%; height: 260px;"></div>
+                    </div>
+                    
+                    <!-- Advisory Prescription -->
+                    <div style="background: rgba(192, 132, 252, 0.04); border: 1px solid rgba(192, 132, 252, 0.15); padding: 16px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="con2045-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
+                            <!-- Advisory details go here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">&copy; 2026 Hydrostar Ecological Suite | Powered by Flask, Plotly.js & QML Optimizers</div>
+    </div>
+
+    <script>
+        // Tab switching routing
+        function selectTab(tabId) {
+            // Remove active from all tabs
+            document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
+            // Hide all viewer cards
+            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+
+            // Show selected card and run calculations
+            if (tabId === 'telemetry') {
+                document.getElementById('tab-telemetry').classList.add('active');
+                document.getElementById('telemetry-card').style.display = 'flex';
+                loadTelemetry();
+            } else if (tabId === 'fusion') {
+                document.getElementById('tab-fusion').classList.add('active');
+                document.getElementById('fusion-card').style.display = 'flex';
+                runKalmanFusion();
+            } else if (tabId === 'ecological') {
+                document.getElementById('tab-ecological').classList.add('active');
+                document.getElementById('ecological-card').style.display = 'flex';
+                runEcologicalMapping();
+            } else if (tabId === 'qml') {
+                document.getElementById('tab-qml').classList.add('active');
+                document.getElementById('qml-card').style.display = 'flex';
+                runQmlRecovery();
+            } else if (tabId === 'coolpool') {
+                document.getElementById('tab-coolpool').classList.add('active');
+                document.getElementById('coolpool-card').style.display = 'flex';
+                runCoolPoolStats();
+            } else if (tabId === 'conservation2045') {
+                document.getElementById('tab-conservation2045').classList.add('active');
+                document.getElementById('conservation2045-card').style.display = 'flex';
+                runConservation2045();
+            }
+        }
+
+        // --- TAB 1: TELEMETRY LOAD ---
+        function loadTelemetry() {
+            fetch('/api/telemetry')
+                .then(res => res.json())
+                .then(data => {
+                    // Update stats summary panel
+                    document.getElementById('stat-mean-temp').textContent = data.stats.global_mean.toFixed(2) + " °C";
+                    document.getElementById('stat-std-temp').textContent = data.stats.global_std.toFixed(2) + " °C";
+                    document.getElementById('stat-stress-pct').textContent = data.stats.global_stress_pct.toFixed(1) + "%";
+
+                    const times = data.bridge.map(r => r.time);
+                    
+                    const traceBridgeAir = {
+                        x: times,
+                        y: data.bridge.map(r => r.air_temp),
+                        name: 'Bridge Air Temp (°C)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#ef4444', width: 1.5}
+                    };
+                    const traceBridgeWater = {
+                        x: times,
+                        y: data.bridge.map(r => r.water_temp),
+                        name: 'Bridge Water Temp (°C)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#3b82f6', width: 2}
+                    };
+                    const traceCreekAir = {
+                        x: times,
+                        y: data.creek_start.map(r => r.air_temp),
+                        name: 'Creek Start Air Temp (°C)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#f59e0b', width: 1.2, dash: 'dot'}
+                    };
+                    const traceCreekWater = {
+                        x: times,
+                        y: data.creek_start.map(r => r.water_temp),
+                        name: 'Creek Start Water Temp (°C)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#10b981', width: 1.5, dash: 'dash'}
+                    };
+
+                    const layout = {
+                        title: {
+                            text: 'Yellow Creek Raw Temperature Telemetry',
+                            font: {color: '#cbd5e1', size: 12}
+                        },
+                        xaxis: {
+                            title: 'Observation Time',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Temperature (°C)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 40, l: 45, r: 20, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.15
+                        }
+                    };
+
+                    Plotly.react('plot-raw-temp', [traceBridgeAir, traceBridgeWater, traceCreekAir, traceCreekWater], layout, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // --- TAB 2: KALMAN FUSION ---
+        function runKalmanFusion() {
+            const windowVal = document.getElementById('cov-window').value;
+            fetch(`/api/fusion?window=${windowVal}`)
+                .then(res => res.json())
+                .then(data => {
+                    const times = data.time;
+                    
+                    const traceUpstreamRaw = {
+                        x: times,
+                        y: data.upstream_raw,
+                        name: 'Upstream Water Raw',
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: {size: 3, color: 'rgba(245, 158, 11, 0.4)'}
+                    };
+                    const traceUpstreamFused = {
+                        x: times,
+                        y: data.upstream_fused,
+                        name: 'Upstream Kalman Fused',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#f59e0b', width: 2}
+                    };
+                    const traceDownstreamRaw = {
+                        x: times,
+                        y: data.downstream_raw,
+                        name: 'Downstream Water Raw',
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: {size: 3, color: 'rgba(56, 189, 248, 0.4)'}
+                    };
+                    const traceDownstreamFused = {
+                        x: times,
+                        y: data.downstream_fused,
+                        name: 'Downstream Kalman Fused',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#38bdf8', width: 2}
+                    };
+
+                    const layout = {
+                        title: {
+                            text: 'Temporal Kalman Sensor Fusion & Water Temp Estimation',
+                            font: {color: '#cbd5e1', size: 12}
+                        },
+                        xaxis: {
+                            title: 'Observation Time',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Temperature (°C)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 40, l: 45, r: 20, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.15
+                        }
+                    };
+
+                    Plotly.react('plot-fusion-temp', [traceUpstreamRaw, traceUpstreamFused, traceDownstreamRaw, traceDownstreamFused], layout, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // --- TAB 3: ECOLOGICAL MAPPING ---
+        function runEcologicalMapping() {
+            fetch('/api/ecological-indices')
+                .then(res => res.json())
+                .then(data => {
+                    // Create 2D contour map or stacked suitabilities along bridge bed coordinates
+                    const fishSuit = data.fish_suitability;
+                    const planktonSuit = data.plankton_suitability;
+                    const x_coords = data.x_coords; // length 11
+                    
+                    // We sum them for a combined bed ecological quality index
+                    const combinedQuality = [];
+                    for(let i=0; i<x_coords.length; i++) {
+                        let sum = 0;
+                        for(let j=0; j<fishSuit[i].length; j++) {
+                            sum += fishSuit[i][j];
+                        }
+                        combinedQuality.push(sum / fishSuit[i].length);
+                    }
+                    
+                    // Plotly trace showing suitability over spatial coordinates
+                    const traceFish = {
+                        x: x_coords,
+                        y: fishSuit.map(row => row.reduce((a,b)=>a+b, 0) / row.length),
+                        name: 'Salmonids Habitat Index (Trout)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#10b981', width: 2.5},
+                        fill: 'tozeroy',
+                        fillcolor: 'rgba(16, 185, 129, 0.08)'
+                    };
+                    
+                    const tracePlankton = {
+                        x: x_coords,
+                        y: planktonSuit.map(row => row.reduce((a,b)=>a+b, 0) / row.length),
+                        name: 'Zooplankton Biomass Index',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#f59e0b', width: 2, dash: 'dash'},
+                        fill: 'tozeroy',
+                        fillcolor: 'rgba(245, 158, 11, 0.05)'
+                    };
+
+                    const layout = {
+                        title: {
+                            text: 'Ecological Habitat Suitability profile along Creek Coordinates',
+                            font: {color: '#cbd5e1', size: 12}
+                        },
+                        xaxis: {
+                            title: 'Creek Coordinates (0 = Upstream Start, 1 = Downstream Pedestrian Bridge)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Index Value (0 to 1.0)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9},
+                            range: [0, 1.05]
+                        },
+                        margin: {t: 40, l: 45, r: 20, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.15
+                        }
+                    };
+
+                    Plotly.react('plot-ecological-heatmap', [traceFish, tracePlankton], layout, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // --- TAB 4: QML RECOVERY OPTIMIZATION ---
+        function runQmlRecovery() {
+            const shading = document.getElementById('qml-shading').checked;
+            const aeration = document.getElementById('qml-aeration').checked;
+            const filtration = document.getElementById('qml-filtration').checked;
+            const qubits = document.getElementById('rec-qubits').value;
+            const depth = document.getElementById('rec-depth').value;
+            const optimizer = 'parameter_shift';
+            
+            fetch(`/api/qml-recovery?shading=${shading}&aeration=${aeration}&filtration=${filtration}&qubits=${qubits}&depth=${depth}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Update telemetry
+                    document.getElementById('qml-rec-eigen').textContent = data.metrics.min_eigenvalue.toFixed(4);
+                    document.getElementById('qml-rec-fidelity').textContent = data.metrics.fidelity_pct.toFixed(1) + "%";
+                    document.getElementById('qml-rec-index').textContent = data.metrics.restoration_index_pct.toFixed(1) + "%";
+                    
+                    // Render Generative AI Prescription
+                    document.getElementById('genai-text').innerHTML = data.genai_prescription
+                        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--primary); font-weight:700;">$1</strong>')
+                        .replace(/1\./g, '<br/>1.')
+                        .replace(/2\./g, '<br/>2.')
+                        .replace(/3\./g, '<br/>3.')
+                        .replace(/4\./g, '<br/>4.');
+                    
+                    // Populate Ising states probability list
+                    const container = document.getElementById('qml-states-container');
+                    container.innerHTML = '';
+                    data.qubit_states.slice(0, 5).forEach(st => {
+                        container.innerHTML += `
+                            <div style="font-size: 0.8rem; margin-bottom: 6px; box-sizing: border-box;">
+                                <div style="display:flex; justify-content:space-between; color:#a5b4fc; font-family:monospace;">
+                                    <span>${st.state}</span>
+                                    <span>${(st.probability * 100).toFixed(1)}%</span>
+                                </div>
+                                <div style="width:100%; height:4px; background:rgba(255,255,255,0.05); border-radius:2px; margin-top:2px;">
+                                    <div style="width:${st.probability * 100}%; height:100%; background:linear-gradient(to right, var(--quantum), var(--accent)); border-radius:2px;"></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    // Plot: Convergence
+                    const iterations = Array.from({length: data.loss_history.length}, (_, i) => i + 1);
+                    const traceLoss = {
+                        x: iterations,
+                        y: data.loss_history,
+                        name: 'Ecological Deficit Expectation ⟨H⟩',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#ec4899', width: 2},
+                        marker: {size: 4}
+                    };
+                    const traceFidelity = {
+                        x: iterations,
+                        y: data.fidelity_history,
+                        name: 'Ansatz Overlap Fidelity',
+                        yaxis: 'y2',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#10b981', width: 1.5, dash: 'dash'}
+                    };
+
+                    const layout = {
+                        title: {
+                            text: 'QAOA Cost Expectation & Ansatz Convergence Trace',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Optimization Iterations',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Energy expectation ⟨H⟩',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis2: {
+                            title: 'Fidelity',
+                            overlaying: 'y',
+                            side: 'right',
+                            range: [0, 1.05],
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 45, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.22
+                        }
+                    };
+
+                    Plotly.react('plot-qml-convergence', [traceLoss, traceFidelity], layout, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        let currentCreekImg = 0;
+        function toggleCreekImage() {
+            const img = document.getElementById('creek-img');
+            const desc = document.getElementById('creek-img-desc');
+            img.style.opacity = 0;
+            setTimeout(() => {
+                if (currentCreekImg === 0) {
+                    img.src = '/static/yellow_creek_bridge.png';
+                    desc.innerHTML = '<span style="color: var(--accent);">●</span> Pedestrian Bridge Overpass, Yellow Creek';
+                    currentCreekImg = 1;
+                } else {
+                    img.src = '/static/yellow_creek.png';
+                    desc.innerHTML = '<span style="color: var(--primary);">●</span> Yellow Creek Conservation Corridor, Toronto';
+                    currentCreekImg = 0;
+                }
+                img.style.opacity = 1;
+            }, 300);
+        }
+
+        // --- TAB 5: COOL POOL STATS & COMBINATORICS ---
+        function runCoolPoolStats() {
+            const budgetVal = document.getElementById('pool-budget').value;
+            fetch(`/api/cool-pool-stats?budget=${budgetVal}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Update stats text
+                    document.getElementById('pool-expected-mean').textContent = data.optimal.mean_temp.toFixed(1) + " °C";
+                    document.getElementById('pool-std-dev').textContent = data.optimal.std_dev.toFixed(2) + " °C";
+                    document.getElementById('pool-compliance').textContent = data.optimal.compliance_pct.toFixed(1) + "%";
+                    
+                    // Render GenAI advisor text
+                    document.getElementById('pool-genai-text').innerHTML = data.genai_prescription
+                        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--primary); font-weight:700;">$1</strong>')
+                        .replace(/Verdict:/g, 'Verdict:<br/>')
+                        .replace(/Advisory/g, '<br/>Advisory');
+                        
+                    // Plot 1: PDF Curve
+                    const tracePdf = {
+                        x: data.pdf_x,
+                        y: data.pdf_y,
+                        name: 'Probability Density',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#10b981', width: 2.5},
+                        fill: 'tozeroy',
+                        fillcolor: 'rgba(16, 185, 129, 0.08)'
+                    };
+                    
+                    // Vertical line at 14.5
+                    const shapes = [{
+                        type: 'line',
+                        x0: 14.5,
+                        y0: 0,
+                        x1: 14.5,
+                        y1: Math.max(...data.pdf_y) * 1.05,
+                        line: {
+                            color: '#ef4444',
+                            width: 1.5,
+                            dash: 'dash'
+                        }
+                    }];
+                    
+                    const layoutPdf = {
+                        title: {
+                            text: 'Cool Pool Temperature Probability Density (Beta Distribution)',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Temperature (°C)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Density',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        shapes: shapes,
+                        annotations: [{
+                            x: 14.5,
+                            y: Math.max(...data.pdf_y) * 0.9,
+                            xref: 'x',
+                            yref: 'y',
+                            text: 'Salmonids Limit (14.5°C)',
+                            showarrow: true,
+                            arrowhead: 2,
+                            ax: 60,
+                            ay: -20,
+                            font: {color: '#ef4444', size: 8},
+                            arrowcolor: '#ef4444'
+                        }],
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)'
+                    };
+                    
+                    Plotly.react('plot-pool-pdf', [tracePdf], layoutPdf, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                    
+                    // Plot 2: Combinatorial Scatter Plot
+                    const optX = [], optY = [], optLabels = [];
+                    const feasX = [], feasY = [], feasLabels = [];
+                    const infX = [], infY = [], infLabels = [];
+                    
+                    data.combinations.forEach(c => {
+                        if (c.class === 'optimal') {
+                            optX.push(c.cost);
+                            optY.push(c.probability * 100);
+                            optLabels.push(`${c.label}<br>Cost: $${c.cost.toLocaleString()}<br>Probability: ${(c.probability*100).toFixed(1)}% (Pareto Optimal)`);
+                        } else if (c.class === 'feasible') {
+                            feasX.push(c.cost);
+                            feasY.push(c.probability * 100);
+                            feasLabels.push(`${c.label}<br>Cost: $${c.cost.toLocaleString()}<br>Probability: ${(c.probability*100).toFixed(1)}% (Feasible)`);
+                        } else {
+                            infX.push(c.cost);
+                            infY.push(c.probability * 100);
+                            infLabels.push(`${c.label}<br>Cost: $${c.cost.toLocaleString()}<br>Probability: ${(c.probability*100).toFixed(1)}% (Exceeds Budget)`);
+                        }
+                    });
+                    
+                    const currentOptX = [data.optimal.cost];
+                    const currentOptY = [data.optimal.probability * 100];
+                    const currentOptLabel = [`CURRENT OPTIMAL:<br>${data.optimal.label}<br>Cost: $${data.optimal.cost.toLocaleString()}<br>Probability: ${(data.optimal.probability*100).toFixed(1)}%`];
+                    
+                    const traceOpt = {
+                        x: optX,
+                        y: optY,
+                        text: optLabels,
+                        hoverinfo: 'text',
+                        name: 'Pareto-Optimal (Within Budget)',
+                        mode: 'markers',
+                        type: 'scatter',
+                        marker: {color: '#10b981', size: 6, symbol: 'circle'}
+                    };
+                    
+                    const traceFeas = {
+                        x: feasX,
+                        y: feasY,
+                        text: feasLabels,
+                        hoverinfo: 'text',
+                        name: 'Sub-Optimal (Within Budget)',
+                        mode: 'markers',
+                        type: 'scatter',
+                        marker: {color: '#3b82f6', size: 5, symbol: 'circle-open'}
+                    };
+                    
+                    const traceInf = {
+                        x: infX,
+                        y: infY,
+                        text: infLabels,
+                        hoverinfo: 'text',
+                        name: 'Exceeds Budget',
+                        mode: 'markers',
+                        type: 'scatter',
+                        marker: {color: '#ef4444', size: 5, symbol: 'x'}
+                    };
+                    
+                    const traceCurrentHighlight = {
+                        x: currentOptX,
+                        y: currentOptY,
+                        text: currentOptLabel,
+                        hoverinfo: 'text',
+                        name: 'Selected Optimal Solution',
+                        mode: 'markers',
+                        type: 'scatter',
+                        marker: {color: '#c084fc', size: 12, symbol: 'star', line: {color: '#fff', width: 1.5}}
+                    };
+                    
+                    const scatterShapes = [{
+                        type: 'line',
+                        x0: budgetVal,
+                        y0: 0,
+                        x1: budgetVal,
+                        y1: 100,
+                        line: {
+                            color: 'rgba(255, 255, 255, 0.25)',
+                            width: 1,
+                            dash: 'dot'
+                        }
+                    }];
+                    
+                    const layoutScatter = {
+                        title: {
+                            text: 'Combinatorial Intervention Space (Cost vs. Recovery Rate)',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Intervention Cost ($)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Expected Recovery Rate (%)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9},
+                            range: [0, 105]
+                        },
+                        shapes: scatterShapes,
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 7},
+                            bgcolor: 'rgba(0,0,0,0.6)',
+                            x: 0.65,
+                            y: 0.15
+                        }
+                    };
+                    
+                    Plotly.react('plot-combinatorial-scatter', [traceFeas, traceInf, traceOpt, traceCurrentHighlight], layoutScatter, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // --- TAB 6: 2045 CONSERVATION (CONTINUED FRACTIONS) ---
+        function runConservation2045() {
+            const scenarioVal = document.getElementById('con2045-scenario').value;
+            fetch(`/api/conservation-2045?scenario=${scenarioVal}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Update GenAI advisor text
+                    document.getElementById('con2045-genai-text').innerHTML = data.genai_prescription
+                        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--quantum); font-weight:700;">$1</strong>')
+                        .replace(/Forecast/g, 'Forecast<br/>')
+                        .replace(/Advisory/g, '<br/>Advisory');
+                        
+                    // Populate CF table
+                    const tbody = document.getElementById('cf-table-body');
+                    tbody.innerHTML = '';
+                    data.convergents.forEach(c => {
+                        tbody.innerHTML += `
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                <td style="padding: 5px 4px; color:#c084fc; font-weight:600;">${c.k}</td>
+                                <td style="padding: 5px 4px; font-family:monospace;">${c.a}</td>
+                                <td style="padding: 5px 4px; color:#cbd5e1; font-weight:500;">${c.p} / ${c.q}</td>
+                                <td style="padding: 5px 4px; font-family:monospace;">${c.value.toFixed(6)}</td>
+                                <td style="padding: 5px 4px; text-align: right; color:#ef4444; font-family:monospace;">${c.error.toExponential(3)}</td>
+                            </tr>
+                        `;
+                    });
+
+                    // Plot 1: CF Convergence Curve
+                    const iterations = data.convergents.map(c => c.k);
+                    const traceValue = {
+                        x: iterations,
+                        y: data.convergents.map(c => c.value),
+                        name: 'Convergent Value (p_k / q_k)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#c084fc', width: 2.5},
+                        marker: {size: 5}
+                    };
+                    const traceTarget = {
+                        x: [1, iterations.length],
+                        y: [data.optimal_ratio, data.optimal_ratio],
+                        name: 'Optimal Target (rho*)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#34d399', width: 1.5, dash: 'dash'}
+                    };
+
+                    const layoutCf = {
+                        title: {
+                            text: 'Convergence of Continued Fraction Approximations',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Convergent Index (k)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Approx. Ratio Value',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 7},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            x: 0.55,
+                            y: 0.85
+                        }
+                    };
+
+                    Plotly.react('plot-cf-convergence', [traceValue, traceTarget], layoutCf, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+
+                    // Plot 2: Flora vs. Fauna Projections grouped bar chart
+                    const categories = ['No Mitigation', 'Standard Restorative', 'CF-Guided Restorative'];
+                    
+                    const traceFlora = {
+                        x: categories,
+                        y: [
+                            data.projections.no_mitigation.flora * 100,
+                            data.projections.standard.flora * 100,
+                            data.projections.optimal_cf.flora * 100
+                        ],
+                        name: 'Flora Health (Underwater Macrophytes)',
+                        type: 'bar',
+                        marker: {color: '#10b981'}
+                    };
+
+                    const traceFauna = {
+                        x: categories,
+                        y: [
+                            data.projections.no_mitigation.fauna * 100,
+                            data.projections.standard.fauna * 100,
+                            data.projections.optimal_cf.fauna * 100
+                        ],
+                        name: 'Fauna Health (Salmonids/Zooplankton)',
+                        type: 'bar',
+                        marker: {color: '#38bdf8'}
+                    };
+
+                    const layoutProjections = {
+                        title: {
+                            text: '2045 Flora & Fauna Ecosystem Projections',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)'
+                        },
+                        yaxis: {
+                            title: 'Health Index (%)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9},
+                            range: [0, 105]
+                        },
+                        barmode: 'group',
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 7},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.2
+                        }
+                    };
+
+                    Plotly.react('plot-conservation-projections', [traceFlora, traceFauna], layoutProjections, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // Select first tab on document load
+        window.addEventListener('DOMContentLoaded', () => selectTab('telemetry'));
+    </script>
+</body>
+</html>

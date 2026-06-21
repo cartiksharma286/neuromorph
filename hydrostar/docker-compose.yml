@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  hydrostar:
+    build: .
+    container_name: hydrostar_app
+    ports:
+      - "5059:5059"
+    environment:
+      - PORT=5059
+    restart: always
