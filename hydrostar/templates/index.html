@@ -229,6 +229,7 @@
                 <button class="tab" id="tab-coolpool" onclick="selectTab('coolpool')">📊 Cool Pool Stats</button>
                 <button class="tab" id="tab-conservation2045" onclick="selectTab('conservation2045')">🔮 2045 Conservation</button>
                 <button class="tab" id="tab-lidar" onclick="selectTab('lidar')">📡 LiDAR & Hardware</button>
+                <button class="tab" id="tab-grenadier" onclick="selectTab('grenadier')">🏞️ Grenadier Pond</button>
             </div>
         </header>
 
@@ -687,6 +688,99 @@
             </div>
         </div>
 
+        <!-- Tab 8: Grenadier Pond Lightwater Restoration -->
+        <div id="grenadier-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>🏞️ Grenadier Pond Lightwater Restoration & Closed-Loop ML Resurrection</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Model: Radiative Transfer & Deep Q-Learning Optimization</span>
+            </div>
+            
+            <!-- Controls Area -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; align-items: center; width: 100%; box-sizing: border-box;">
+                <!-- ML Model selection -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 1;">
+                    <span style="color:#9ca3af; font-size: 0.85rem; font-weight:600;">Control Algorithm:</span>
+                    <select id="grenadier-ml-model" onchange="runGrenadierPond()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
+                        <option value="gaussian_process" selected>Gaussian Process Regression</option>
+                        <option value="random_forest">Random Forest Regressor</option>
+                        <option value="deep_q_learning">Deep Q-Learning BCI-Estuary</option>
+                    </select>
+                </div>
+                
+                <!-- Laser Wavelength selection -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 150px; flex: 1;">
+                    <span style="color:#9ca3af; font-size: 0.85rem; font-weight:600;">Laser Wavelength:</span>
+                    <select id="grenadier-wavelength" onchange="runGrenadierPond()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
+                        <option value="450">Blue Light (450 nm)</option>
+                        <option value="532" selected>Green Light (532 nm)</option>
+                        <option value="850">NIR Light (850 nm)</option>
+                    </select>
+                </div>
+
+                <!-- Turbidity Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 180px; flex: 1.2;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Estuary Turbidity:</span>
+                        <span id="label-grenadier-turbidity" style="color: var(--accent); font-weight:700;">10.0 NTU</span>
+                    </div>
+                    <input type="range" id="grenadier-turbidity" min="1.0" max="40.0" step="0.5" value="10.0" oninput="document.getElementById('label-grenadier-turbidity').textContent = this.value + ' NTU'; runGrenadierPond();" style="width:100%;">
+                </div>
+
+                <!-- Drone height slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 180px; flex: 1.2;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Drone VLEO Height:</span>
+                        <span id="label-grenadier-height" style="color: var(--accent); font-weight:700;">50 m</span>
+                    </div>
+                    <input type="range" id="grenadier-height" min="10" max="100" step="5" value="50" oninput="document.getElementById('label-grenadier-height').textContent = this.value + ' m'; runGrenadierPond();" style="width:100%;">
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Left: Metrics Indicators and GenAI Prescription -->
+                <div style="flex: 1.1; min-width: 320px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <!-- Metrics Dashboard -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 12px;">
+                        <h4 style="color: var(--accent); margin: 0; font-family: 'Outfit', sans-serif;">Model Convergence & Health</h4>
+                        
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 6px;">
+                            <span style="color: #9ca3af;">Restoration Index (Mean):</span>
+                            <span id="grenadier-metric-idx" style="color: var(--primary); font-weight: 700;">-- %</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 6px;">
+                            <span style="color: #9ca3af;">Prediction Fidelity:</span>
+                            <span id="grenadier-metric-fidelity" style="color: var(--accent); font-weight: 700;">-- %</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                            <span style="color: #9ca3af;">Estuary Status:</span>
+                            <span id="grenadier-metric-status" style="color: var(--quantum); font-weight: 700;">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Generative AI Prescription Card -->
+                    <div style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); padding: 18px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="grenadier-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
+                            <!-- GenAI Prescription text goes here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Plots -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px;">
+                    <!-- Lightwater Attenuation Plot -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-grenadier-attenuation" style="width: 100%; height: 220px;"></div>
+                    </div>
+                    <!-- Restoration Trajectory Plot -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-grenadier-trajectory" style="width: 100%; height: 220px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="footer">&copy; 2026 Hydrostar Ecological Suite | Powered by Flask, Plotly.js & QML Optimizers</div>
     </div>
 
@@ -696,7 +790,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all viewer cards
-            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card'].forEach(id => {
+            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'grenadier-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -730,6 +824,10 @@
                 document.getElementById('tab-lidar').classList.add('active');
                 document.getElementById('lidar-card').style.display = 'flex';
                 runLidarHardware();
+            } else if (tabId === 'grenadier') {
+                document.getElementById('tab-grenadier').classList.add('active');
+                document.getElementById('grenadier-card').style.display = 'flex';
+                runGrenadierPond();
             }
         }
 
@@ -1630,6 +1728,152 @@
                     };
 
                     Plotly.react('plot-lidar-indices', [traceIndices], layoutIndices, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // --- TAB 8: GRENADIER POND LIGHTWATER RESTORATION ---
+        function runGrenadierPond() {
+            const ml_model = document.getElementById('grenadier-ml-model').value;
+            const wavelength = document.getElementById('grenadier-wavelength').value;
+            const turbidity = document.getElementById('grenadier-turbidity').value;
+            const vleo_height = document.getElementById('grenadier-height').value;
+
+            fetch(`/api/grenadier-pond?ml_model=${ml_model}&wavelength=${wavelength}&turbidity=${turbidity}&vleo_height=${vleo_height}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Update metric indicators
+                    document.getElementById('grenadier-metric-idx').textContent = data.restoration_idx.toFixed(1) + "%";
+                    document.getElementById('grenadier-metric-fidelity').textContent = data.fidelity_pct.toFixed(1) + "%";
+                    document.getElementById('grenadier-metric-status').textContent = data.status;
+
+                    // Render Generative AI Restoration Prescription
+                    document.getElementById('grenadier-genai-text').innerHTML = data.genai_prescription
+                        .replace(/\*\*(.*?)\*\$/g, '<strong style="color:var(--accent); font-weight:700;">$1</strong>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent); font-weight:700;">$1</strong>')
+                        .replace(/Verdict:/g, 'Verdict:<br/>')
+                        .replace(/1\./g, '<br/>1.')
+                        .replace(/2\./g, '<br/>2.')
+                        .replace(/3\./g, '<br/>3.')
+                        .replace(/4\./g, '<br/>4.')
+                        .replace(/Advisory/g, '<br/>Advisory');
+
+                    // Plot 1: Lightwater Attenuation Plot (depth vs intensity)
+                    const traceAttenuation = {
+                        x: data.depth,
+                        y: data.light_intensity,
+                        name: 'Light Intensity (%)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#10b981', width: 2.5}, // Emerald
+                        fill: 'tozeroy',
+                        fillcolor: 'rgba(16, 185, 129, 0.08)'
+                    };
+
+                    const layoutAttenuation = {
+                        title: {
+                            text: 'Lightwater Attenuation Profile (Intensity vs. Estuary Depth)',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Depth (m)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Intensity (%)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)'
+                    };
+
+                    Plotly.react('plot-grenadier-attenuation', [traceAttenuation], layoutAttenuation, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+
+                    // Plot 2: Restoration Trajectory Plot (months vs recovery with confidence interval)
+                    const traceBaseline = {
+                        x: data.months,
+                        y: data.baseline_recovery,
+                        name: 'Baseline (No Action)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#ef4444', width: 1.5, dash: 'dash'} // Red dashed
+                    };
+
+                    const traceMersivity = {
+                        x: data.months,
+                        y: data.mersivity_recovery,
+                        name: 'BCI Estuary Recovery (ML-Guided)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#38bdf8', width: 2}, // Sky blue
+                        marker: {size: 4, color: '#38bdf8'}
+                    };
+
+                    const traceLower = {
+                        x: data.months,
+                        y: data.q_lower,
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {width: 0},
+                        showlegend: false,
+                        hoverinfo: 'none'
+                    };
+
+                    const traceUpper = {
+                        x: data.months,
+                        y: data.q_upper,
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {width: 0},
+                        fill: 'tonexty',
+                        fillcolor: 'rgba(56, 189, 248, 0.12)', // Light Sky Blue fill
+                        name: '95% Confidence Interval',
+                        hoverinfo: 'none'
+                    };
+
+                    const layoutTrajectory = {
+                        title: {
+                            text: '24-Month Estuary Resurgence & Restoration Forecast',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Time (Months)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Estuary Health Index (%)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9},
+                            range: [0, 105]
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 7},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.22
+                        }
+                    };
+
+                    Plotly.react('plot-grenadier-trajectory', [traceBaseline, traceLower, traceUpper, traceMersivity], layoutTrajectory, {
                         responsive: true,
                         modeBarButtonsToRemove: ['toImage'],
                         displaylogo: false

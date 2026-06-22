@@ -133,6 +133,8 @@ _cache_qml_recovery = {}
 _cache_cool_pool = {}
 _cache_conservation_2045 = {}
 _cache_lidar_hardware = {}
+_cache_grenadier_pond = {}
+
 
 
 @app.route('/')
@@ -893,6 +895,117 @@ def api_lidar_hardware():
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 400
+
+# --- ENDPOINT: Grenadier Pond Lightwater Restoration ---
+@app.route('/api/grenadier-pond', methods=['GET'])
+def api_grenadier_pond():
+    global _cache_grenadier_pond
+    try:
+        ml_model = request.args.get('ml_model', 'gaussian_process').lower()
+        if ml_model not in ('random_forest', 'gaussian_process', 'deep_q_learning'):
+            ml_model = 'gaussian_process'
+        wavelength = int(request.args.get('wavelength', 532))
+        turbidity = float(request.args.get('turbidity', 10.0))
+        vleo_height = float(request.args.get('vleo_height', 50.0))
+
+        cache_key = (ml_model, wavelength, turbidity, vleo_height)
+        if cache_key in _cache_grenadier_pond:
+            return _cache_grenadier_pond[cache_key]
+
+        # 1. Lightwater Attenuation Simulation (depth 0m to 10m)
+        depth = np.linspace(0, 10.0, 50)
+        
+        # Attenuation coefficient Kd
+        if wavelength < 500:
+            kd_base = 0.06
+        elif wavelength < 600:
+            kd_base = 0.09
+        else:
+            kd_base = 0.40
+            
+        # Turbidity escalates light attenuation
+        kd = kd_base + 0.045 * turbidity
+        light_intensity = 100.0 * np.exp(-kd * depth)
+
+        # 2. Mersivity Ecological Resurrection trajectory over 24 months
+        months = np.linspace(0, 24, 25)
+        
+        # Baseline (No Action)
+        np.random.seed(42)
+        baseline = (15.0 + 0.6 * months + np.random.normal(0, 0.4, 25)).tolist()
+        
+        # Mersivity ML-Guided (Sigmoid curve)
+        # Asymptote A decays as drone height introduces measurement uncertainty
+        asymptote = 95.0 - 0.12 * (vleo_height - 10.0)
+        
+        # Growth rate k is dependent on ML model efficiency
+        if ml_model == 'deep_q_learning':
+            k = 0.32
+            model_name = "Deep Q-Learning BCI-Estuary"
+        elif ml_model == 'gaussian_process':
+            k = 0.25
+            model_name = "Gaussian Process Regression"
+        else:
+            k = 0.18
+            model_name = "Random Forest Regressor"
+            
+        mersivity_raw = asymptote / (1.0 + np.exp(-k * (months - 10.0)))
+        
+        # Uncertainty variance scales with height
+        variance = 1.0 + 0.12 * months + 0.06 * (vleo_height - 10.0)
+        
+        np.random.seed(int(vleo_height) + int(wavelength))
+        mersivity_noise = np.random.normal(0, 0.4, 25)
+        mersivity_recovery = (mersivity_raw + mersivity_noise).tolist()
+        
+        # Confidence bands
+        lower_band = [max(0.0, float(r - 1.96 * np.sqrt(variance[idx]))) for idx, r in enumerate(mersivity_recovery)]
+        upper_band = [min(100.0, float(r + 1.96 * np.sqrt(variance[idx]))) for idx, r in enumerate(mersivity_recovery)]
+
+        # 3. Compute metrics
+        restoration_idx = float(np.mean(mersivity_recovery[-6:]))
+        fidelity_pct = float(max(60.0, min(99.0, 98.8 - 0.1 * vleo_height + np.random.normal(0, 0.2))))
+        
+        if restoration_idx >= 80.0:
+            status = "Ecological Resurgence Active"
+        elif restoration_idx >= 50.0:
+            status = "Moderate Estuary Health"
+        else:
+            status = "Turbid Eutropic Estuary"
+
+        # AI Prescription text
+        filter_name = "Blue Light (450nm)" if wavelength < 500 else ("Green Light (532nm)" if wavelength < 600 else "NIR Light (850nm)")
+        
+        genai_advices = [
+            f"**Generative AI Grenadier Pond Lightwater Restoration Verdict:**",
+            f"1. **Lightwater Attenuation & Estuary Clarity**: Utilizing **{filter_name}** at a turbidity of **{turbidity:.1f} NTU** resolves lightwater schematics with an attenuation coefficient $K_d = {kd:.3f}$ m⁻¹. Light penetration decreases to 10% intensity by **{depth[np.argmin(np.abs(light_intensity - 10.0))]:.1f} meters** depth, limiting benthic photosynthesis.",
+            f"2. **Mersivity Machine Learning Control Loop**: The **{model_name}** controller optimizes biological resurrection parameters. Active telemetry feedback enables closed-loop stabilization, projecting a restoration index of **{restoration_idx:.1f}%** with **{fidelity_pct:.1f}% prediction fidelity**.",
+            f"3. **Sensor Height Uncertainty**: VLEO Sensor height at **{vleo_height:.0f} meters** yields a spatial footprint width of **{vleo_height*0.8:.1f} meters**, introducing structural noise that expands the 95% confidence boundary width at month 24 to **{upper_band[-1] - lower_band[-1]:.1f}%**.",
+            "**Advisory Recommendation**: Deploy green band 532 nm or blue 450 nm VLEO sensors at low heights (20-30m) coupled with Deep Q-Learning algorithms. This minimizes turbidity reflection bias and stabilizes benthic weed regrowth to rescue the indicator species."
+        ]
+        genai_prescription = "\n\n".join(genai_advices)
+
+        res_data = jsonify({
+            'depth': depth.tolist(),
+            'light_intensity': light_intensity.tolist(),
+            'months': months.tolist(),
+            'baseline_recovery': baseline,
+            'mersivity_recovery': mersivity_recovery,
+            'q_lower': lower_band,
+            'q_upper': upper_band,
+            'restoration_idx': restoration_idx,
+            'fidelity_pct': fidelity_pct,
+            'status': status,
+            'genai_prescription': genai_prescription
+        })
+
+        _cache_grenadier_pond[cache_key] = res_data
+        return res_data
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5059))
