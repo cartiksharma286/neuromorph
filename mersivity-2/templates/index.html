@@ -360,6 +360,7 @@
             <button class="tab" id="tab-neuroacoustic-char" onclick="selectTab('neuroacoustic-char')">⚡ Neuroacoustic Characteristics</button>
             <button class="tab" id="tab-bci-rtms" onclick="selectTab('bci-rtms')">🧠 BCI + rTMS Closed-Loop</button>
             <button class="tab" id="tab-bci-qml" onclick="selectTab('bci-qml')">🧠 QML BCI Optimization</button>
+            <button class="tab" id="tab-vqe-shading" onclick="selectTab('vqe-shading')">🌌 Quantum VQE Shading</button>
         </div>
 
         <!-- QML Volumetric Surface Reconstruction Card -->
@@ -485,6 +486,139 @@
                     <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; box-sizing: border-box;">
                         <h4 style="margin: 0; color: #a5b4fc; font-size: 0.9em; letter-spacing: 0.5px;">QUBIT HILBERT STATE VECTOR</h4>
                         <div class="state-vector-container" id="vol-state-vector-bars">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantum VQE Anatomic Shading Card -->
+        <div id="vqe-shading-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title" id="vqe-shading-title-text">Quantum Variational Eigensolver Anatomic Surface Shading</div>
+            
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px;">
+                <!-- 3D Plotly Viewport & Convergence Chart -->
+                <div style="flex: 2; min-width: 600px; display: flex; flex-direction: column; gap: 15px;">
+                    <div id="vqe-shading-viewer" class="plotly-container" style="height: 500px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);"></div>
+                    
+                    <!-- VQE Energy Convergence Chart -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
+                        <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">VQE Energy Minimization Convergence (Probe Region)</h4>
+                        <div id="vqe-shading-convergence" class="plotly-container" style="height: 200px; background: rgba(0,0,0,0.2); border-radius: 10px;"></div>
+                    </div>
+                    
+                    <!-- File Download Buttons -->
+                    <div style="display: flex; gap: 15px; margin-top: 5px;">
+                        <button onclick="downloadVqeShaded('stl')" style="background: linear-gradient(135deg, #0d9488, #0f766e); color: #fff; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(13,148,136,0.3); transition: all 0.2s ease;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">
+                            <span>📥 Download STL Mesh File</span>
+                        </button>
+                        <button onclick="downloadVqeShaded('ply')" style="background: linear-gradient(135deg, #4f46e5, #4338ca); color: #fff; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(79,70,229,0.3); transition: all 0.2s ease;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">
+                            <span>📥 Download PLY Mesh File</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Controls & Telemetry Sidebar -->
+                <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <!-- Controls Panel -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 14px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em; display: flex; align-items: center; gap: 8px;">
+                            <span>VQE Hyperparameters</span>
+                        </h4>
+                        
+                        <!-- Hilbert Qubits -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="color: #9ca3af; font-size: 0.85em;">Hilbert Qubits Manifold:</span>
+                            <select id="vqe-shading-qubits" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 8px; padding: 6px 10px; font-size: 0.85em; font-family: sans-serif; cursor: pointer; outline: none;">
+                                <option value="3" selected>3 Qubits (Dim 8)</option>
+                                <option value="4">4 Qubits (Dim 16)</option>
+                                <option value="5">5 Qubits (Dim 32)</option>
+                                <option value="6">6 Qubits (Dim 64)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Shader Mode -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="color: #9ca3af; font-size: 0.85em;">Shader Shading Mode:</span>
+                            <select id="vqe-shading-mode" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 8px; padding: 6px 10px; font-size: 0.85em; font-family: sans-serif; cursor: pointer; outline: none;">
+                                <option value="energy" selected>Ground State Energy ⟨H⟩</option>
+                                <option value="entanglement">Quantum Entanglement Entropy (Von Neumann)</option>
+                                <option value="eigenstate">Eigenstate Probabilities (R-G-B Channels)</option>
+                                <option value="bloch">Bloch Sphere Projection (Q0 State Vector)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Feature Mapping -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="color: #9ca3af; font-size: 0.85em;">Anatomic Feature Mapping:</span>
+                            <select id="vqe-shading-feature" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 8px; padding: 6px 10px; font-size: 0.85em; font-family: sans-serif; cursor: pointer; outline: none;">
+                                <option value="intensity" selected>Tissue MRI Intensity</option>
+                                <option value="curvature">Estimated Local Curvature</option>
+                                <option value="depth">Cortical Depth (Centroid Distance)</option>
+                                <option value="gradient">Coordinate Gradient (Z-Axis)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Color Palette -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="color: #9ca3af; font-size: 0.85em;">Shader Color Palette:</span>
+                            <select id="vqe-shading-palette" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 8px; padding: 6px 10px; font-size: 0.85em; font-family: sans-serif; cursor: pointer; outline: none;">
+                                <option value="quantum_plasma" selected>Quantum Plasma Glow</option>
+                                <option value="spectral">Spectral Density (Rainbow)</option>
+                                <option value="eigen_heatmap">Eigenvalue Heatmap (Fire)</option>
+                                <option value="diffeomorphic">Diffeomorphic Neon (Blue-Green)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Resolution Selector -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="color: #9ca3af; font-size: 0.85em;">Mesh Resolution:</span>
+                            <select id="vqe-shading-resolution" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; border-radius: 8px; padding: 6px 10px; font-size: 0.85em; font-family: sans-serif; cursor: pointer; outline: none;">
+                                <option value="16">16 x 16 x 16 (Fastest)</option>
+                                <option value="24" selected>24 x 24 x 24 (Balanced)</option>
+                                <option value="32">32 x 32 x 32 (High Resolution)</option>
+                            </select>
+                        </div>
+                        
+                        <button onclick="runVqeShading()" style="background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 12px rgba(168,85,247,0.3); transition: all 0.2s ease; margin-top: 5px;" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">
+                            Apply Quantum Shader
+                        </button>
+                    </div>
+                    
+                    <!-- Telemetry Dashboard -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em; display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #a855f7; box-shadow: 0 0 6px 1px #a855f7;"></span>
+                            <span>Quantum Shader Telemetry</span>
+                        </h4>
+                        
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Hilbert Dimension:</span>
+                            <span id="stats-vqe-dim" style="color: #cbd5e1; font-weight: 700;">—</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Optimized Expectation ⟨H⟩:</span>
+                            <span id="stats-vqe-energy" style="color: #10b981; font-weight: 700;">—</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Optimized State Fidelity:</span>
+                            <span id="stats-vqe-fidelity" style="color: #06b6d4; font-weight: 700;">—</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Total Mesh Vertices:</span>
+                            <span id="stats-vqe-vertices" style="color: #cbd5e1; font-weight: 700;">—</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Ansatz Circuit Depth:</span>
+                            <span id="stats-vqe-depth" style="color: #cbd5e1; font-weight: 700;">—</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Qubit Hilbert State Vector -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.9em; letter-spacing: 0.5px;">PROBE MANIFOLD STATE VECTOR</h4>
+                        <div class="state-vector-container" id="vqe-state-vector-bars">
                             <!-- Filled by JS -->
                         </div>
                     </div>
@@ -2639,7 +2773,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all cards first
-            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card'].forEach(id => {
+            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card', 'vqe-shading-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -2727,6 +2861,9 @@
             } else if (tab === 'bci-qml') {
                 document.getElementById('tab-bci-qml').classList.add('active');
                 runBciQmlSimulation();
+            } else if (tab === 'vqe-shading') {
+                document.getElementById('tab-vqe-shading').classList.add('active');
+                runVqeShading();
             }
         }
 
@@ -3619,6 +3756,136 @@
 
         function downloadQmlVolumetric(format) {
             window.location.href = `/api/download-qml-volumetric?format=${format}`;
+        }
+
+        // --- QUANTUM VQE ANATOMIC SHADING FUNCTIONS ---
+        async function runVqeShading() {
+            showCard('vqe-shading-card');
+            showLoading('vqe-shading-viewer', 'Initializing VQE Anatomic Shader solver...');
+            showLoading('vqe-shading-convergence', 'Simulating expectation energy minimization...');
+            
+            const qubits = parseInt(document.getElementById('vqe-shading-qubits').value);
+            const shader_mode = document.getElementById('vqe-shading-mode').value;
+            const feature_map = document.getElementById('vqe-shading-feature').value;
+            const palette = document.getElementById('vqe-shading-palette').value;
+            const resolution = parseInt(document.getElementById('vqe-shading-resolution').value);
+            
+            try {
+                const res = await fetch('/api/mri-vqe-shading', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        qubits: qubits,
+                        shader_mode: shader_mode,
+                        feature_map: feature_map,
+                        palette: palette,
+                        resolution: resolution
+                    })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    document.getElementById('vqe-shading-viewer').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">${data.error}</div>`;
+                    return;
+                }
+                
+                // 1. Render 3D Plotly Mesh with custom vertex color
+                const vertexColors = data.mesh.colors.map(c => `rgb(${Math.round(c[0]*255)}, ${Math.round(c[1]*255)}, ${Math.round(c[2]*255)})`);
+                const trace = {
+                    type: 'mesh3d',
+                    x: data.mesh.x,
+                    y: data.mesh.y,
+                    z: data.mesh.z,
+                    i: data.mesh.i,
+                    j: data.mesh.j,
+                    k: data.mesh.k,
+                    vertexcolor: vertexColors,
+                    opacity: 0.95,
+                    name: 'VQE Shaded MRI Surface'
+                };
+                
+                const layout = {
+                    scene: {
+                        bgcolor: 'rgba(0,0,0,0)',
+                        xaxis: { visible: false },
+                        yaxis: { visible: false },
+                        zaxis: { visible: false },
+                        camera: { eye: {x: 1.6, y: 1.6, z: 1.3} }
+                    },
+                    margin: { t: 0, l: 0, r: 0, b: 0 },
+                    width: 800, height: 500,
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)'
+                };
+                
+                Plotly.newPlot('vqe-shading-viewer', [trace], layout, {responsive: true, modeBarButtonsToRemove: ['toImage'], displaylogo: false});
+                
+                // 2. Render VQE Energy Convergence Chart
+                const stepsX = Array.from({length: data.loss_history.length}, (_, i) => i);
+                const traceLoss = {
+                    x: stepsX,
+                    y: data.loss_history,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    line: { color: '#a855f7', width: 2.5 },
+                    marker: { color: '#ec4899', size: 6 },
+                    name: 'Expectation value ⟨H⟩'
+                };
+                
+                const layoutLoss = {
+                    xaxis: {
+                        title: { text: 'Optimization Step', font: { color: '#9ca3af', size: 10 } },
+                        tickfont: { color: '#9ca3af', size: 9 },
+                        gridcolor: 'rgba(255,255,255,0.03)'
+                    },
+                    yaxis: {
+                        title: { text: 'Energy ⟨H⟩ (Ha)', font: { color: '#9ca3af', size: 10 } },
+                        tickfont: { color: '#9ca3af', size: 9 },
+                        gridcolor: 'rgba(255,255,255,0.03)'
+                    },
+                    margin: { t: 10, l: 45, r: 15, b: 35 },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    showlegend: false
+                };
+                
+                Plotly.newPlot('vqe-shading-convergence', [traceLoss], layoutLoss, {responsive: true, displayModeBar: false});
+                
+                // 3. Update Telemetry Panel
+                document.getElementById('stats-vqe-dim').textContent = '2^' + qubits + ' = ' + data.qml_telemetry.eigenspace_dim;
+                document.getElementById('stats-vqe-energy').textContent = data.qml_telemetry.min_eigenvalue.toFixed(4) + ' Ha';
+                document.getElementById('stats-vqe-fidelity').textContent = (data.qml_telemetry.fidelity * 100).toFixed(2) + '%';
+                document.getElementById('stats-vqe-vertices').textContent = data.num_vertices + ' Vertices';
+                document.getElementById('stats-vqe-depth').textContent = data.qml_telemetry.ansatz_depth + ' Gates';
+                
+                // 4. Draw Qubit Hilbert State probabilities
+                drawVqeStateProbabilities(data.qml_telemetry.qubit_states);
+                
+            } catch (err) {
+                console.error(err);
+                document.getElementById('vqe-shading-viewer').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">Failed to run VQE Shaper. Server error.</div>`;
+            }
+        }
+
+        function drawVqeStateProbabilities(statesList) {
+            const container = document.getElementById('vqe-state-vector-bars');
+            container.innerHTML = '';
+            
+            statesList.forEach(item => {
+                const pct = (item.probability * 100).toFixed(1);
+                container.innerHTML += `
+                    <div class="state-row">
+                        <span class="state-label">${item.state}</span>
+                        <div class="state-bar-bg">
+                            <div class="state-bar-fill" style="width: ${pct}%; background: linear-gradient(90deg, #a855f7, #6366f1);"></div>
+                        </div>
+                        <span class="state-val">${pct}%</span>
+                    </div>
+                `;
+            });
+        }
+
+        function downloadVqeShaded(format) {
+            window.location.href = `/api/download-vqe-shaded?format=${format}`;
         }
 
         // --- 7.1 CROSS-MODALITY REGISTRATION (MRI-to-CT) WITH QUANTUM ML ---
