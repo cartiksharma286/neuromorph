@@ -1365,6 +1365,8 @@ def api_grenadier_pond():
         return jsonify({'error': str(e)}), 400
 
 
+_cache_restoration_forecast = {}
+
 # --- ENDPOINT: 24-Month Restoration Forecast & 10-Year Decadal Turbidity Prediction ---
 @app.route('/api/restoration-forecast', methods=['GET'])
 def api_restoration_forecast():
@@ -1527,6 +1529,8 @@ def api_restoration_forecast():
         _cache_restoration_forecast[cache_key] = res_data
         return res_data
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 400
 
 
