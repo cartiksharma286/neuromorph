@@ -95,6 +95,7 @@
         /* Navigation Tab Bar */
         .tab-bar {
             display: flex;
+            flex-wrap: wrap;
             gap: 8px;
             background: rgba(0, 0, 0, 0.3);
             padding: 6px;
@@ -230,6 +231,9 @@
                 <button class="tab" id="tab-conservation2045" onclick="selectTab('conservation2045')">🔮 2045 Conservation</button>
                 <button class="tab" id="tab-lidar" onclick="selectTab('lidar')">📡 LiDAR & Hardware</button>
                 <button class="tab" id="tab-grenadier" onclick="selectTab('grenadier')">🏞️ Grenadier Pond</button>
+                <button class="tab" id="tab-qke" onclick="selectTab('qke')">🔮 Quantum Kalman</button>
+                <button class="tab" id="tab-sensornet" onclick="selectTab('sensornet')">🌐 Sensor Network</button>
+                <button class="tab" id="tab-restoration" onclick="selectTab('restoration')">🌱 Restoration</button>
             </div>
         </header>
 
@@ -781,6 +785,317 @@
             </div>
         </div>
 
+        <!-- Tab 9: Quantum Kalman Estimation -->
+        <div id="qke-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>🔮 Quantum Kalman Estimation & Sub-Shot-Noise Fusion</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Model: Quantum Covariance Squeezing & Aux Mode Sensing</span>
+            </div>
+            
+            <!-- Controls Area -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; align-items: center; width: 100%; box-sizing: border-box;">
+                
+                <!-- Qubit Coupling slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Qubit Coupling (g):</span>
+                        <span id="label-qke-coupling" style="color: var(--quantum); font-weight:700;">0.05</span>
+                    </div>
+                    <input type="range" id="qke-coupling" min="0.00" max="0.10" step="0.01" value="0.05" oninput="document.getElementById('label-qke-coupling').textContent = this.value; runQuantumKalman();" style="width:100%;">
+                </div>
+
+                <!-- Shot Noise slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Shot-Noise Limit:</span>
+                        <span id="label-qke-shotnoise" style="color: var(--quantum); font-weight:700;">0.20</span>
+                    </div>
+                    <input type="range" id="qke-shotnoise" min="0.00" max="0.50" step="0.05" value="0.20" oninput="document.getElementById('label-qke-shotnoise').textContent = this.value; runQuantumKalman();" style="width:100%;">
+                </div>
+
+                <!-- Aux Sensors slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Auxiliary Sensors (modes):</span>
+                        <span id="label-qke-aux" style="color: var(--quantum); font-weight:700;">3</span>
+                    </div>
+                    <input type="range" id="qke-aux" min="1" max="10" step="1" value="3" oninput="document.getElementById('label-qke-aux').textContent = this.value; runQuantumKalman();" style="width:100%;">
+                </div>
+                
+                <div style="flex: 1.5; font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">
+                    Adjust the quantum parameters to observe squeezing of the sensor measurement covariance. Squeezed auxiliary modes decrease the noise floor below classical boundaries.
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Left: Stats & GenAI text -->
+                <div style="flex: 1.2; min-width: 380px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    
+                    <!-- Stats panel -->
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 110px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 2px;">Classical Noise Floor (Rc)</div>
+                            <div style="font-size: 1.1rem; font-weight: 700; color: #ef4444;">0.400</div>
+                        </div>
+                        <div style="flex: 1; min-width: 110px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 2px;">Quantum Noise Floor (Rq)</div>
+                            <div id="qke-noise-floor" style="font-size: 1.1rem; font-weight: 700; color: var(--primary);">--</div>
+                        </div>
+                        <div style="flex: 1.2; min-width: 140px; background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 2px;">Uncertainty Reduction</div>
+                            <div id="qke-reduction-pct" style="font-size: 1.1rem; font-weight: 700; color: var(--accent);">-- %</div>
+                        </div>
+                    </div>
+
+                    <!-- Density Matrix Panel -->
+                    <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.04); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="color:var(--quantum); font-size: 0.88rem; margin-bottom: 8px; font-weight: 600;">Squeezed Mode Density Matrix State ρ</h4>
+                        <div style="display:flex; justify-content:center; gap:20px; align-items:center; font-family:'Courier Prime', monospace; font-size:0.85rem; padding: 10px; background:rgba(0,0,0,0.2); border-radius:8px;">
+                            <span>[ <span id="rho-00">--</span> , <span id="rho-01">--</span> ]</span>
+                            <br>
+                            <span>[ <span id="rho-10">--</span> , <span id="rho-11">--</span> ]</span>
+                        </div>
+                    </div>
+
+                    <!-- Generative AI Prescription Card -->
+                    <div style="background: rgba(192, 132, 252, 0.04); border: 1px solid rgba(192, 132, 252, 0.15); padding: 16px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="qke-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
+                            <!-- Advisory details go here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Plots -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <!-- Filter Comparisons Plot -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-qke-comparison" style="width: 100%; height: 230px;"></div>
+                    </div>
+                    <!-- Covariance Decays Plot -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-qke-covariance" style="width: 100%; height: 200px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 10: Sensor Network & Ecological Resurrection -->
+        <div id="sensornet-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>🌐 Sensor Network Delaunay Triangulation & Ecological Resurrection</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Model: Delaunay Meshing & Lotka-Volterra Trophic Dynamics</span>
+            </div>
+            
+            <!-- Controls Area -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; align-items: center; width: 100%; box-sizing: border-box;">
+                
+                <!-- Average Connection slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 200px; flex: 1.2;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af; font-weight: 600;">Average Node Connectivity (degree):</span>
+                        <span id="label-sensornet-connectivity" style="color: var(--quantum); font-weight:700;">4.0</span>
+                    </div>
+                    <input type="range" id="sensornet-connectivity" min="2.0" max="6.0" step="0.5" value="4.0" oninput="document.getElementById('label-sensornet-connectivity').textContent = this.value; runSensorNetwork();" style="width:100%;">
+                </div>
+
+                <!-- Active Restoration Controls -->
+                <div style="display:flex; flex-direction:column; gap:6px; min-width: 250px; flex:1.5;">
+                    <span style="color:#9ca3af; font-size: 0.85rem; font-weight:600;">Active Restoration Controls:</span>
+                    <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                        <label style="display:flex; align-items:center; gap:4px; font-size:0.85rem; cursor:pointer;">
+                            <input type="checkbox" id="sensornet-shading" checked onchange="runSensorNetwork()" style="width:auto; margin:0;"> Riparian Canopy Shading
+                        </label>
+                        <label style="display:flex; align-items:center; gap:4px; font-size:0.85rem; cursor:pointer;">
+                            <input type="checkbox" id="sensornet-aeration" checked onchange="runSensorNetwork()" style="width:auto; margin:0;"> Solar Aerators
+                        </label>
+                        <label style="display:flex; align-items:center; gap:4px; font-size:0.85rem; cursor:pointer;">
+                            <input type="checkbox" id="sensornet-filtration" checked onchange="runSensorNetwork()" style="width:auto; margin:0;"> Inlet Bioswales
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Left: Stats & Indicators -->
+                <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <!-- Stats panel -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 12px;">
+                        <h4 style="color: var(--primary); margin:0;">Sensor Network Parameters</h4>
+                        
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 6px;">
+                            <span style="color:var(--text-muted);">Estimation Error Var:</span>
+                            <span id="sensornet-error" style="font-weight: 600; color: #ef4444;">--</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 6px;">
+                            <span style="color:var(--text-muted);">Intervention Efficacy:</span>
+                            <span id="sensornet-efficacy" style="font-weight: 600; color: #10b981;">-- %</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem;">
+                            <span style="color:var(--text-muted);">Avg Node Degree (Mesh):</span>
+                            <span id="sensornet-degree" style="font-weight: 600; color: var(--quantum);">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Trophic Explanation Panel -->
+                    <div style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); padding: 18px; border-radius: 16px; font-size: 0.82rem; color: #cbd5e1; line-height: 1.45; box-sizing: border-box;">
+                        <strong>Lotka-Volterra Trophic Dynamics Model:</strong>
+                        <br><br>
+                        This simulation projects the populations of **Algae (bloom index)**, **Plankton (grazers)**, and **Fish (indicator species)** over a 24-month horizon.
+                        <br><br>
+                        Higher sensor connectivity reduces signal estimation uncertainty, enabling the restoration system to apply interventions (oxygenation, canopy shadow, and run-off filtering) at **maximum feedback control efficacy**, thereby accelerating the resurrection of the lake from a degraded state.
+                    </div>
+                </div>
+
+                <!-- Right: Visualizations Grid -->
+                <div style="flex: 2.2; min-width: 500px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <!-- Row 1: Triangulation and Contour Field -->
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 250px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="plot-sensornet-triangulation" style="width: 100%; height: 260px;"></div>
+                        </div>
+                        <div style="flex: 1; min-width: 250px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="plot-sensornet-reconstruction" style="width: 100%; height: 260px;"></div>
+                        </div>
+                    </div>
+                    <!-- Row 2: Lotka-Volterra Chart -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-sensornet-trophic" style="width: 100%; height: 260px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 11: Ecological Restoration -->
+        <div id="restoration-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>🌱 Ecological Restoration & Statistical Optimization</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Model: Node Triangulation & Gradient Descent / Simulated Annealing</span>
+            </div>
+
+            <!-- Controls Area -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                
+                <!-- Optimizer choice -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 200px; flex: 1;">
+                    <span style="color:#9ca3af; font-size: 0.85rem; font-weight:600;">Statistical Optimization Algorithm:</span>
+                    <select id="opt-algo" onchange="runEcologicalOptimization()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
+                        <option value="gradient_descent" selected>Gradient Descent</option>
+                        <option value="simulated_annealing">Simulated Annealing</option>
+                    </select>
+                </div>
+
+                <!-- Learning Rate slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 0.8;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Learning Rate (η):</span>
+                        <span id="label-opt-lr" style="color: var(--primary); font-weight:700;">0.02</span>
+                    </div>
+                    <input type="range" id="opt-lr" min="0.005" max="0.10" step="0.005" value="0.02" oninput="document.getElementById('label-opt-lr').textContent = this.value; runEcologicalOptimization();" style="width:100%;">
+                </div>
+
+                <!-- Iterations slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 0.8;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Iterations:</span>
+                        <span id="label-opt-iter" style="color: var(--quantum); font-weight:700;">30</span>
+                    </div>
+                    <input type="range" id="opt-iter" min="10" max="100" step="5" value="30" oninput="document.getElementById('label-opt-iter').textContent = this.value; runEcologicalOptimization();" style="width:100%;">
+                </div>
+
+                <!-- Optimize Button -->
+                <button onclick="runEcologicalOptimization()" style="background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 14px rgba(16,185,129,0.3); outline:none;">
+                    Optimize System
+                </button>
+            </div>
+
+            <!-- Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                
+                <!-- Left Column: Image, Metrics, GenAI Prescription -->
+                <div style="flex: 1.1; min-width: 320px; display: flex; flex-direction: column; gap: 20px; box-sizing: border-box;">
+                    
+                    <!-- Archived Picture of Yellow Creek Ravine -->
+                    <div class="creek-image-box" style="height: 240px; position: relative;">
+                        <img src="/static/yellow_creek_bridge.png" alt="Archived Yellow Creek Ravine" style="width: 100%; height: 100%; object-fit: cover;">
+                        <div class="creek-image-label" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 15px 20px; bottom: 0; left: 0; right: 0; position: absolute;">
+                            <span><span style="color: var(--primary);">●</span> Archived: Yellow Creek Ravine (Toronto)</span>
+                            <span style="font-size: 0.75rem; background: rgba(255,255,255,0.15); padding: 2px 8px; border-radius: 10px; font-weight: 500; backdrop-filter: blur(5px);">Historical Picture</span>
+                        </div>
+                    </div>
+
+                    <!-- Recovery Characteristics / Sensor Metrics -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 12px;">
+                        <h4 style="color: var(--accent); margin:0;">Recovery Characteristics</h4>
+                        
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 6px;">
+                            <span style="color:var(--text-muted);">Dissolved Oxygen (DO):</span>
+                            <span id="opt-metric-do" style="font-weight: 600; color: #10b981;">-- mg/L</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 6px;">
+                            <span style="color:var(--text-muted);">Species Richness Index:</span>
+                            <span id="opt-metric-species" style="font-weight: 600; color: var(--accent);">--</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 6px;">
+                            <span style="color:var(--text-muted);">Thermal Stability Ratio:</span>
+                            <span id="opt-metric-stability" style="font-weight: 600; color: var(--quantum);">--</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 6px;">
+                            <span style="color:var(--text-muted);">pH Level:</span>
+                            <span id="opt-metric-ph" style="font-weight: 600; color: #fbbf24;">--</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size: 0.85rem;">
+                            <span style="color:var(--text-muted);">Turbidity:</span>
+                            <span id="opt-metric-turbidity" style="font-weight: 600; color: #f43f5e;">-- NTU</span>
+                        </div>
+                    </div>
+
+                    <!-- GenAI Advisory Prescription -->
+                    <div style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); padding: 18px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="opt-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
+                            <!-- Advisory prescription output -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Plots -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <!-- Convergence plot -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-opt-convergence" style="width: 100%; height: 280px;"></div>
+                    </div>
+                    <!-- Triangulation plot -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-opt-triangulation" style="width: 100%; height: 280px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forecasting Section (12-Month & 10-Year Predictions) -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 20px; margin-top: 10px;">
+                
+                <!-- Left: 12-Month Expected Recovery Statistical distributions -->
+                <div style="flex: 1; min-width: 450px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px; box-sizing: border-box;">
+                    <div id="plot-restoration-recovery" style="width: 100%; height: 280px;"></div>
+                </div>
+
+                <!-- Right: 10-Year Turbidity Prediction -->
+                <div style="flex: 1; min-width: 450px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px; box-sizing: border-box;">
+                    <div id="plot-restoration-turbidity" style="width: 100%; height: 280px;"></div>
+                </div>
+            </div>
+
+            <!-- LLM Forecast Verdict Display -->
+            <div style="background: rgba(192, 132, 252, 0.04); border: 1px solid rgba(192, 132, 252, 0.15); padding: 18px; border-radius: 16px; width: 100%; box-sizing: border-box; margin-top: 10px;">
+                <div id="opt-llm-verdict" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
+                    <!-- LLM forecast output -->
+                </div>
+            </div>
+        </div>
+
         <div class="footer">&copy; 2026 Hydrostar Ecological Suite | Powered by Flask, Plotly.js & QML Optimizers</div>
     </div>
 
@@ -790,7 +1105,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all viewer cards
-            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'grenadier-card'].forEach(id => {
+            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'grenadier-card', 'qke-card', 'sensornet-card', 'restoration-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -828,6 +1143,18 @@
                 document.getElementById('tab-grenadier').classList.add('active');
                 document.getElementById('grenadier-card').style.display = 'flex';
                 runGrenadierPond();
+            } else if (tabId === 'qke') {
+                document.getElementById('tab-qke').classList.add('active');
+                document.getElementById('qke-card').style.display = 'flex';
+                runQuantumKalman();
+            } else if (tabId === 'sensornet') {
+                document.getElementById('tab-sensornet').classList.add('active');
+                document.getElementById('sensornet-card').style.display = 'flex';
+                runSensorNetwork();
+            } else if (tabId === 'restoration') {
+                document.getElementById('tab-restoration').classList.add('active');
+                document.getElementById('restoration-card').style.display = 'flex';
+                runEcologicalOptimization();
             }
         }
 
@@ -1874,6 +2201,672 @@
                     };
 
                     Plotly.react('plot-grenadier-trajectory', [traceBaseline, traceLower, traceUpper, traceMersivity], layoutTrajectory, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // --- TAB 9: QUANTUM KALMAN ---
+        function runQuantumKalman() {
+            const coupling = document.getElementById('qke-coupling').value;
+            const shotnoise = document.getElementById('qke-shotnoise').value;
+            const aux = document.getElementById('qke-aux').value;
+
+            fetch(`/api/quantum-kalman?qubit_coupling=${coupling}&shot_noise=${shotnoise}&aux_sensors=${aux}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    const R_c = 0.40;
+                    const R_q = R_c * (1.0 - 0.75 * parseFloat(coupling) - 0.2 * (1.0 - parseFloat(shotnoise)));
+                    document.getElementById('qke-noise-floor').textContent = R_q.toFixed(3);
+                    
+                    const final_c_cov = data.classical_cov[data.classical_cov.length - 1];
+                    const final_q_cov = data.quantum_cov[data.quantum_cov.length - 1];
+                    const reduction = (1.0 - final_q_cov / final_c_cov) * 100.0;
+                    document.getElementById('qke-reduction-pct').textContent = reduction.toFixed(1) + "%";
+
+                    document.getElementById('rho-00').textContent = data.density_matrix[0][0].toFixed(3);
+                    document.getElementById('rho-01').textContent = data.density_matrix[0][1].toFixed(3);
+                    document.getElementById('rho-10').textContent = data.density_matrix[1][0].toFixed(3);
+                    document.getElementById('rho-11').textContent = data.density_matrix[1][1].toFixed(3);
+
+                    document.getElementById('qke-genai-text').innerHTML = data.genai_prescription
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/1\./g, '<br/>1.')
+                        .replace(/2\./g, '<br/>2.')
+                        .replace(/3\./g, '<br/>3.');
+
+                    const traceRaw = {
+                        x: data.time,
+                        y: data.raw,
+                        name: 'Raw Sensor Temp',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: 'rgba(255,255,255,0.2)', width: 1}
+                    };
+                    const traceClassical = {
+                        x: data.time,
+                        y: data.classical,
+                        name: 'Classical Kalman',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#ef4444', width: 1.5}
+                    };
+                    const traceQuantum = {
+                        x: data.time,
+                        y: data.quantum,
+                        name: 'Quantum Kalman (QKE)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#c084fc', width: 2}
+                    };
+
+                    const layoutComp = {
+                        title: {
+                            text: 'Thermal Estimation Profile: Classical vs. Quantum Kalman',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                        },
+                        yaxis: {
+                            title: 'Water Temp (°C)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 7},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.22
+                        }
+                    };
+
+                    Plotly.react('plot-qke-comparison', [traceRaw, traceClassical, traceQuantum], layoutComp, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+
+                    const traceCovC = {
+                        x: Array.from({length: data.classical_cov.length}, (_, i) => i),
+                        y: data.classical_cov,
+                        name: 'Classical Cov (Pc)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#ef4444', width: 1.5}
+                    };
+                    const traceCovQ = {
+                        x: Array.from({length: data.quantum_cov.length}, (_, i) => i),
+                        y: data.quantum_cov,
+                        name: 'Quantum Cov (Pq)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#c084fc', width: 2}
+                    };
+
+                    const layoutCov = {
+                        title: {
+                            text: 'Error Covariance Convergence Profile',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Estimation Step',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Uncertainty (Covariance)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 7},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.22
+                        }
+                    };
+
+                    Plotly.react('plot-qke-covariance', [traceCovC, traceCovQ], layoutCov, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // --- TAB 10: SENSOR NETWORK & ECOLOGICAL RESURRECTION ---
+        function runSensorNetwork() {
+            const connectivity = document.getElementById('sensornet-connectivity').value;
+            const shading = document.getElementById('sensornet-shading').checked;
+            const aeration = document.getElementById('sensornet-aeration').checked;
+            const filtration = document.getElementById('sensornet-filtration').checked;
+
+            fetch(`/api/sensor-network?connectivity=${connectivity}&shading=${shading}&aeration=${aeration}&filtration=${filtration}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    document.getElementById('sensornet-error').textContent = data.metrics.estimation_error.toFixed(4) + " °C²";
+                    document.getElementById('sensornet-efficacy').textContent = data.metrics.efficacy_pct.toFixed(1) + "%";
+                    document.getElementById('sensornet-degree').textContent = data.metrics.average_degree.toFixed(2);
+
+                    const nodeX = data.nodes.map(n => n.x);
+                    const nodeY = data.nodes.map(n => n.y);
+                    
+                    const traceNodes = {
+                        x: nodeX,
+                        y: nodeY,
+                        mode: 'markers+text',
+                        type: 'scatter',
+                        name: 'Sensor Nodes',
+                        text: data.nodes.map(n => `S${n.id}`),
+                        textposition: 'top center',
+                        marker: { size: 10, color: '#38bdf8', line: { color: '#090d16', width: 2 } },
+                        font: { color: '#cbd5e1', size: 9 }
+                    };
+
+                    const edgeX = [];
+                    const edgeY = [];
+                    data.edges.forEach(e => {
+                        const u_node = data.nodes[e.u];
+                        const v_node = data.nodes[e.v];
+                        edgeX.push(u_node.x, v_node.x, null);
+                        edgeY.push(u_node.y, v_node.y, null);
+                    });
+
+                    const traceEdges = {
+                        x: edgeX,
+                        y: edgeY,
+                        mode: 'lines',
+                        type: 'scatter',
+                        name: 'Triangulation Edges',
+                        line: { color: 'rgba(56, 189, 248, 0.45)', width: 1.5 },
+                        hoverinfo: 'none',
+                        showlegend: true
+                    };
+
+                    const layoutTri = {
+                        title: {
+                            text: 'Optimal Delaunay Triangulation Sensor Network',
+                            font: { color: '#cbd5e1', size: 11 }
+                        },
+                        xaxis: { range: [0, 110], showgrid: false, zeroline: false, tickfont: { color: '#cbd5e1', size: 8 } },
+                        yaxis: { range: [0, 95], showgrid: false, zeroline: false, tickfont: { color: '#cbd5e1', size: 8 } },
+                        margin: { t: 35, l: 30, r: 20, b: 30 },
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        showlegend: false
+                    };
+
+                    Plotly.react('plot-sensornet-triangulation', [traceEdges, traceNodes], layoutTri, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+
+                    const traceContour = {
+                        z: data.reconstructed_field,
+                        x: data.grid_x,
+                        y: data.grid_y,
+                        type: 'contour',
+                        colorscale: 'Viridis',
+                        colorbar: {
+                            tickfont: { color: '#cbd5e1', size: 8 },
+                            thickness: 10,
+                            title: { text: 'Temp (°C)', font: { color: '#cbd5e1', size: 8 } }
+                        },
+                        showscale: true
+                    };
+
+                    const layoutRecon = {
+                        title: {
+                            text: 'Reconstructed Thermal Spatial Field Profile',
+                            font: { color: '#cbd5e1', size: 11 }
+                        },
+                        xaxis: { tickfont: { color: '#cbd5e1', size: 8 } },
+                        yaxis: { tickfont: { color: '#cbd5e1', size: 8 } },
+                        margin: { t: 35, l: 30, r: 20, b: 30 },
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)'
+                    };
+
+                    Plotly.react('plot-sensornet-reconstruction', [traceContour], layoutRecon, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+
+                    const t_months = data.months;
+                    
+                    const traceBaseA = {
+                        x: t_months, y: data.baseline.algae,
+                        name: 'Algae (No Action)',
+                        type: 'scatter', mode: 'lines',
+                        line: { color: '#10b981', width: 1.5, dash: 'dot' }
+                    };
+                    const traceClassA = {
+                        x: t_months, y: data.classical.algae,
+                        name: 'Algae (Classical)',
+                        type: 'scatter', mode: 'lines',
+                        line: { color: '#10b981', width: 1.5, dash: 'dash' }
+                    };
+                    const traceQkeA = {
+                        x: t_months, y: data.qke.algae,
+                        name: 'Algae (QKE Net-Guided)',
+                        type: 'scatter', mode: 'lines',
+                        line: { color: '#10b981', width: 3 }
+                    };
+
+                    const traceBaseP = {
+                        x: t_months, y: data.baseline.plankton,
+                        name: 'Plankton (No Action)',
+                        type: 'scatter', mode: 'lines',
+                        line: { color: '#f59e0b', width: 1.5, dash: 'dot' }
+                    };
+                    const traceClassP = {
+                        x: t_months, y: data.classical.plankton,
+                        name: 'Plankton (Classical)',
+                        type: 'scatter', mode: 'lines',
+                        line: { color: '#f59e0b', width: 1.5, dash: 'dash' }
+                    };
+                    const traceQkeP = {
+                        x: t_months, y: data.qke.plankton,
+                        name: 'Plankton (QKE Net-Guided)',
+                        type: 'scatter', mode: 'lines',
+                        line: { color: '#f59e0b', width: 3 }
+                    };
+
+                    const traceBaseF = {
+                        x: t_months, y: data.baseline.fish,
+                        name: 'Fish (No Action)',
+                        type: 'scatter', mode: 'lines',
+                        line: { color: '#38bdf8', width: 1.5, dash: 'dot' }
+                    };
+                    const traceClassF = {
+                        x: t_months, y: data.classical.fish,
+                        name: 'Fish (Classical)',
+                        type: 'scatter', mode: 'lines',
+                        line: { color: '#38bdf8', width: 1.5, dash: 'dash' }
+                    };
+                    const traceQkeF = {
+                        x: t_months, y: data.qke.fish,
+                        name: 'Fish (QKE Net-Guided)',
+                        type: 'scatter', mode: 'lines',
+                        line: { color: '#38bdf8', width: 3 }
+                    };
+
+                    const layoutTrophic = {
+                        title: {
+                            text: '24-Month Lotka-Volterra Trophic Resurrection Trajectory',
+                            font: { color: '#cbd5e1', size: 11 }
+                        },
+                        xaxis: {
+                            title: 'Timeline (Months)',
+                            tickfont: { color: '#cbd5e1', size: 8 },
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: { color: '#cbd5e1', size: 9 }
+                        },
+                        yaxis: {
+                            title: 'Population Health Index (%)',
+                            tickfont: { color: '#cbd5e1', size: 8 },
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: { color: '#cbd5e1', size: 9 }
+                        },
+                        margin: { t: 35, l: 45, r: 25, b: 35 },
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: { color: '#cbd5e1', size: 7 },
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.22
+                        }
+                    };
+
+                    Plotly.react('plot-sensornet-trophic', [
+                        traceBaseA, traceClassA, traceQkeA,
+                        traceBaseP, traceClassP, traceQkeP,
+                        traceBaseF, traceClassF, traceQkeF
+                    ], layoutTrophic, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // --- TAB 11: ECOLOGICAL RESTORATION OPTIMIZATION ---
+        function runEcologicalOptimization() {
+            const optimizer = document.getElementById('opt-algo').value;
+            const learningRate = document.getElementById('opt-lr').value;
+            const iterations = document.getElementById('opt-iter').value;
+
+            // Fetch from optimization api
+            fetch(`/api/ecological-optimization?optimizer=${optimizer}&learning_rate=${learningRate}&iterations=${iterations}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    // Update Metrics
+                    document.getElementById('opt-metric-do').textContent = data.metrics.dissolved_oxygen.toFixed(1) + " mg/L";
+                    document.getElementById('opt-metric-species').textContent = (data.metrics.species_richness * 100).toFixed(0) + "%";
+                    document.getElementById('opt-metric-stability').textContent = (data.metrics.thermal_stability * 100).toFixed(0) + "%";
+                    document.getElementById('opt-metric-ph').textContent = data.metrics.ph_level.toFixed(1);
+                    document.getElementById('opt-metric-turbidity').textContent = data.metrics.turbidity.toFixed(1) + " NTU";
+
+                    // Update Advisory with basic conversion of markdown to simple HTML block styling
+                    let presText = data.genai_prescription;
+                    presText = presText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    presText = presText.replace(/\$(.*?)\$/g, '<em>$1</em>');
+                    document.getElementById('opt-genai-text').innerHTML = presText;
+
+                    // Plot Convergence
+                    const iterationsArr = Array.from({length: data.cost_history.length}, (_, i) => i + 1);
+                    
+                    const traceCost = {
+                        x: iterationsArr,
+                        y: data.cost_history,
+                        name: 'Ecological Deficit Cost',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#ef4444', width: 2.5},
+                        marker: {size: 5}
+                    };
+
+                    const traceFitness = {
+                        x: iterationsArr,
+                        y: data.fitness_history,
+                        name: 'Restoration Fitness Index (%)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        yaxis: 'y2',
+                        line: {color: '#10b981', width: 2.5},
+                        marker: {size: 5}
+                    };
+
+                    const layoutConvergence = {
+                        title: {
+                            text: 'Optimizer Convergence Characteristics',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Iterations',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Cost Hamiltonian',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis2: {
+                            title: 'Restoration Fitness (%)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            titlefont: {color: '#cbd5e1', size: 9},
+                            overlaying: 'y',
+                            side: 'right',
+                            showgrid: false
+                        },
+                        margin: {t: 35, l: 45, r: 45, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.22
+                        }
+                    };
+
+                    Plotly.react('plot-opt-convergence', [traceCost, traceFitness], layoutConvergence, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+
+            // Also load the Triangulation Sensor Network node coords to draw the triangulation plot
+            fetch('/api/sensor-network')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    const nodeX = data.nodes.map(n => n.x);
+                    const nodeY = data.nodes.map(n => n.y);
+                    
+                    const traceNodes = {
+                        x: nodeX,
+                        y: nodeY,
+                        mode: 'markers+text',
+                        type: 'scatter',
+                        name: 'Sensor Nodes',
+                        text: data.nodes.map(n => `S${n.id}`),
+                        textposition: 'top center',
+                        marker: { size: 9, color: '#c084fc', line: { color: '#090d16', width: 2 } },
+                        font: { color: '#cbd5e1', size: 8 }
+                    };
+
+                    const edgeX = [];
+                    const edgeY = [];
+                    data.edges.forEach(e => {
+                        const u_node = data.nodes[e.u];
+                        const v_node = data.nodes[e.v];
+                        edgeX.push(u_node.x, v_node.x, null);
+                        edgeY.push(u_node.y, v_node.y, null);
+                    });
+
+                    const traceEdges = {
+                        x: edgeX,
+                        y: edgeY,
+                        mode: 'lines',
+                        type: 'scatter',
+                        name: 'Triangulation Edges',
+                        line: { color: 'rgba(192, 132, 252, 0.4)', width: 1.2 },
+                        hoverinfo: 'none',
+                        showlegend: true
+                    };
+
+                    const layoutTri = {
+                        title: {
+                            text: 'Delaunay Triangulation Network (Restoration Grid)',
+                            font: { color: '#cbd5e1', size: 11 }
+                        },
+                        xaxis: { range: [0, 110], showgrid: false, zeroline: false, tickfont: { color: '#cbd5e1', size: 8 } },
+                        yaxis: { range: [0, 95], showgrid: false, zeroline: false, tickfont: { color: '#cbd5e1', size: 8 } },
+                        margin: { t: 35, l: 30, r: 20, b: 30 },
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        showlegend: false
+                    };
+
+                    Plotly.react('plot-opt-triangulation', [traceEdges, traceNodes], layoutTri, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+
+            // Fetch from forecasting api
+            fetch(`/api/restoration-forecast?optimizer=${optimizer}&learning_rate=${learningRate}&iterations=${iterations}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    // Update LLM Forecast Verdict
+                    document.getElementById('opt-llm-verdict').innerHTML = data.llm_verdict;
+
+                    // Plot 12-Month Restoration Recovery Forecast (with statistical distributions/confidence bands)
+                    const traceLower95 = {
+                        x: data.months, y: data.lower_95,
+                        type: 'scatter', mode: 'lines',
+                        line: {width: 0}, showlegend: false, hoverinfo: 'skip'
+                    };
+                    const traceUpper95 = {
+                        x: data.months, y: data.upper_95,
+                        type: 'scatter', mode: 'lines',
+                        line: {width: 0}, fill: 'tonexty',
+                        fillcolor: 'rgba(16, 185, 129, 0.08)',
+                        name: '95% Confidence Band', hoverinfo: 'skip'
+                    };
+                    const traceLower50 = {
+                        x: data.months, y: data.lower_50,
+                        type: 'scatter', mode: 'lines',
+                        line: {width: 0}, showlegend: false, hoverinfo: 'skip'
+                    };
+                    const traceUpper50 = {
+                        x: data.months, y: data.upper_50,
+                        type: 'scatter', mode: 'lines',
+                        line: {width: 0}, fill: 'tonexty',
+                        fillcolor: 'rgba(16, 185, 129, 0.18)',
+                        name: '50% Confidence Band', hoverinfo: 'skip'
+                    };
+                    const traceMean = {
+                        x: data.months, y: data.expected_recovery,
+                        type: 'scatter', mode: 'lines+markers',
+                        name: 'Expected Recovery Index (%)',
+                        line: {color: '#10b981', width: 3},
+                        marker: {size: 6}
+                    };
+
+                    const layoutRecovery = {
+                        title: {
+                            text: '12-Month Ecological Recovery Forecast (Statistical Distribution)',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Timeline (Months)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Recovery Index (%)',
+                            range: [0, 105],
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.22
+                        }
+                    };
+
+                    Plotly.react('plot-restoration-recovery', [
+                        traceLower95, traceUpper95,
+                        traceLower50, traceUpper50,
+                        traceMean
+                    ], layoutRecovery, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+
+                    // Plot 10-Year Decadal Turbidity Prediction
+                    const traceTurbLower = {
+                        x: data.years, y: data.turbidity_opt_lower,
+                        type: 'scatter', mode: 'lines',
+                        line: {width: 0}, showlegend: false, hoverinfo: 'skip'
+                    };
+                    const traceTurbUpper = {
+                        x: data.years, y: data.turbidity_opt_upper,
+                        type: 'scatter', mode: 'lines',
+                        line: {width: 0}, fill: 'tonexty',
+                        fillcolor: 'rgba(56, 189, 248, 0.15)',
+                        name: 'Restoration 95% Confidence Band', hoverinfo: 'skip'
+                    };
+                    const traceTurbBase = {
+                        x: data.years, y: data.turbidity_baseline,
+                        type: 'scatter', mode: 'lines+markers',
+                        name: 'Baseline (No Action)',
+                        line: {color: '#ef4444', width: 2, dash: 'dash'},
+                        marker: {size: 5}
+                    };
+                    const traceTurbOpt = {
+                        x: data.years, y: data.turbidity_optimal,
+                        type: 'scatter', mode: 'lines+markers',
+                        name: 'Optimal Restoration Plan',
+                        line: {color: '#38bdf8', width: 3},
+                        marker: {size: 6}
+                    };
+
+                    const layoutTurbidity = {
+                        title: {
+                            text: '10-Year Decadal Turbidity Prediction Profile',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Timeline (Years)',
+                            tickvals: data.years,
+                            ticktext: data.years.map(y => `Yr ${y}`),
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Turbidity (NTU)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.22
+                        }
+                    };
+
+                    Plotly.react('plot-restoration-turbidity', [
+                        traceTurbLower, traceTurbUpper,
+                        traceTurbBase, traceTurbOpt
+                    ], layoutTurbidity, {
                         responsive: true,
                         modeBarButtonsToRemove: ['toImage'],
                         displaylogo: false
