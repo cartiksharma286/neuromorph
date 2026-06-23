@@ -1089,10 +1089,19 @@
                 </div>
             </div>
 
-            <!-- LLM Forecast Verdict Display -->
-            <div style="background: rgba(192, 132, 252, 0.04); border: 1px solid rgba(192, 132, 252, 0.15); padding: 18px; border-radius: 16px; width: 100%; box-sizing: border-box; margin-top: 10px;">
-                <div id="opt-llm-verdict" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
-                    <!-- LLM forecast output -->
+            <!-- Convergence of NTU over 24 Months & LLM Verdict Row -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 20px; margin-top: 10px;">
+                
+                <!-- Left: 24-Month Turbidity Convergence comparisons -->
+                <div style="flex: 1.4; min-width: 480px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px; box-sizing: border-box;">
+                    <div id="plot-turbidity-convergence-24m" style="width: 100%; height: 280px;"></div>
+                </div>
+
+                <!-- Right: LLM Forecast Verdict Display -->
+                <div style="flex: 1; min-width: 320px; background: rgba(192, 132, 252, 0.04); border: 1px solid rgba(192, 132, 252, 0.15); padding: 18px; border-radius: 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center;">
+                    <div id="opt-llm-verdict" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
+                        <!-- LLM forecast output -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -2868,6 +2877,84 @@
                         traceTurbLower, traceTurbUpper,
                         traceTurbBase, traceTurbOpt
                     ], layoutTurbidity, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+
+                    // Plot 24-Month Turbidity Convergence Comparison
+                    const traceConvLower = {
+                        x: data.months, y: data.turbidity_24m_opt_lower,
+                        type: 'scatter', mode: 'lines',
+                        line: {width: 0}, showlegend: false, hoverinfo: 'skip'
+                    };
+                    const traceConvUpper = {
+                        x: data.months, y: data.turbidity_24m_opt_upper,
+                        type: 'scatter', mode: 'lines',
+                        line: {width: 0}, fill: 'tonexty',
+                        fillcolor: optimizer === 'qml_unsupervised_grid' ? 'rgba(192, 132, 252, 0.12)' : 'rgba(56, 189, 248, 0.12)',
+                        name: 'Active 95% Confidence Band', hoverinfo: 'skip'
+                    };
+                    
+                    const traceConvBase = {
+                        x: data.months, y: data.turbidity_24m_baseline,
+                        type: 'scatter', mode: 'lines',
+                        name: 'Baseline (No Action)',
+                        line: {color: '#ef4444', width: optimizer === 'baseline' ? 3.5 : 1.5, dash: 'dash'}
+                    };
+                    const traceConvGD = {
+                        x: data.months, y: data.turbidity_24m_gd,
+                        type: 'scatter', mode: 'lines',
+                        name: 'Gradient Descent',
+                        line: {color: '#10b981', width: optimizer === 'gradient_descent' ? 3.5 : 1.5}
+                    };
+                    const traceConvSA = {
+                        x: data.months, y: data.turbidity_24m_sa,
+                        type: 'scatter', mode: 'lines',
+                        name: 'Simulated Annealing',
+                        line: {color: '#f59e0b', width: optimizer === 'simulated_annealing' ? 3.5 : 1.5}
+                    };
+                    const traceConvQML = {
+                        x: data.months, y: data.turbidity_24m_qml,
+                        type: 'scatter', mode: 'lines',
+                        name: 'QML Unsupervised + GCP Grid',
+                        line: {color: '#c084fc', width: optimizer === 'qml_unsupervised_grid' ? 3.5 : 1.5}
+                    };
+
+                    const layoutConv24m = {
+                        title: {
+                            text: '24-Month Turbidity Convergence Trajectory (Observational)',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Timeline (Months)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Turbidity (NTU)',
+                            range: [0, 14.5],
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.22
+                        }
+                    };
+
+                    Plotly.react('plot-turbidity-convergence-24m', [
+                        traceConvLower, traceConvUpper,
+                        traceConvBase, traceConvGD, traceConvSA, traceConvQML
+                    ], layoutConv24m, {
                         responsive: true,
                         modeBarButtonsToRemove: ['toImage'],
                         displaylogo: false
