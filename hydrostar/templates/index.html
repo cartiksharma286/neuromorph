@@ -985,6 +985,7 @@
                     <select id="opt-algo" onchange="runEcologicalOptimization()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
                         <option value="gradient_descent" selected>Gradient Descent</option>
                         <option value="simulated_annealing">Simulated Annealing</option>
+                        <option value="qml_unsupervised_grid">QML Unsupervised + GCP Grid Partitioning</option>
                     </select>
                 </div>
 
@@ -2766,7 +2767,7 @@
 
                     const layoutRecovery = {
                         title: {
-                            text: '12-Month Ecological Recovery Forecast (Statistical Distribution)',
+                            text: '24-Month Ecological Recovery Forecast (Statistical Distribution)',
                             font: {color: '#cbd5e1', size: 11}
                         },
                         xaxis: {
