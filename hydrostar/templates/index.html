@@ -234,6 +234,7 @@
                 <button class="tab" id="tab-qke" onclick="selectTab('qke')">🔮 Quantum Kalman</button>
                 <button class="tab" id="tab-sensornet" onclick="selectTab('sensornet')">🌐 Sensor Network</button>
                 <button class="tab" id="tab-restoration" onclick="selectTab('restoration')">🌱 Restoration</button>
+                <button class="tab" id="tab-tahoe" onclick="selectTab('tahoe')">🌲 Lake Tahoe</button>
             </div>
         </header>
 
@@ -1106,6 +1107,91 @@
             </div>
         </div>
 
+        <!-- Tab 12: Lake Tahoe Ecological Restoration -->
+        <div id="tahoe-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>🌲 Lake Tahoe Ecological Restoration & Decadal Clarification</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Model: Decadal Predictive Modeling (ML vs. QML) & Aquatic Recovery</span>
+            </div>
+
+            <!-- Controls Area -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                <!-- ML Model selector -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 250px; flex: 1.5;">
+                    <span style="color:#9ca3af; font-size: 0.85rem; font-weight:600;">Optimization & Predictive Model:</span>
+                    <select id="tahoe-optimizer" onchange="runLakeTahoe()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
+                        <option value="quantum_kernel" selected>Quantum Kernel Support Vector Regressor (QML)</option>
+                        <option value="topological_nn">Topological Deep Neural Network</option>
+                        <option value="gradient_boosted">Gradient Boosted Forest Regressor</option>
+                    </select>
+                </div>
+
+                <!-- Target NTU Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 200px; flex: 1.2;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Target Water Clarity:</span>
+                        <span id="label-tahoe-target-ntu" style="color: var(--accent); font-weight:700;">2.0 NTU</span>
+                    </div>
+                    <input type="range" id="tahoe-target-ntu" min="1.0" max="5.0" step="0.1" value="2.0" oninput="document.getElementById('label-tahoe-target-ntu').textContent = this.value + ' NTU'; runLakeTahoe();" style="width:100%;">
+                </div>
+
+                <!-- Telemetry Indicators -->
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; flex: 2; justify-content: flex-end;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 10px 18px; border-radius: 12px; min-width: 140px; text-align: center;">
+                        <div style="font-size: 0.75rem; color:#9ca3af; font-weight:600; text-transform: uppercase;">Prediction Fidelity</div>
+                        <div id="tahoe-metric-fidelity" style="font-size: 1.15rem; color: var(--accent); font-weight:700; margin-top:2px;">-- %</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 10px 18px; border-radius: 12px; min-width: 140px; text-align: center;">
+                        <div style="font-size: 0.75rem; color:#9ca3af; font-weight:600; text-transform: uppercase;">Restoration Prob.</div>
+                        <div id="tahoe-metric-prob" style="font-size: 1.15rem; color: var(--primary); font-weight:700; margin-top:2px;">-- %</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box; margin-top: 15px;">
+                <!-- Left Column: Image and Fish Info -->
+                <div style="flex: 1; min-width: 400px; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Lake Tahoe Conceptual Snapshot -->
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; text-align: center;">
+                        <div style="font-size: 0.85rem; color: #cbd5e1; font-weight: 600; margin-bottom: 10px; text-align: left;">🏞️ Lake Tahoe Conceptual Satellite Snapshot</div>
+                        <img src="/static/lake_tahoe.png" style="width: 100%; max-height: 290px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);" alt="Lake Tahoe Snapshot">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 8px; font-style: italic;">Conceptual overview showing target restoration zones and clarity depths.</div>
+                    </div>
+
+                    <!-- Fish Species Characteristics Card -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 12px;">
+                        <h4 style="color: var(--primary); margin: 0; font-family: 'Outfit', sans-serif; font-size: 0.95rem;">Aquatic Species Key Characteristics</h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; line-height: 1.4;">
+                            <div style="border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 8px;">
+                                <strong style="color: var(--accent);">🐟 Lahontan Cutthroat Trout</strong>: Tahoe's native apex predator. Highly sensitive to water turbidity. Requires a target below 3.0 NTU to support natural spawning and feeding efficiency.
+                            </div>
+                            <div style="border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 8px;">
+                                <strong style="color: var(--quantum);">🐟 Tahoe Sucker</strong>: Adaptive benthic feeder. Feeds on detritus and algae. Benefits from stabilized near-shore clarity but remains resilient at higher turbidity levels.
+                            </div>
+                            <div>
+                                <strong style="color: #10b981;">🐟 Mountain Whitefish</strong>: Bottom-dwelling insectivore. Relies on cold temperatures and high water clarity (under 5.0 NTU) to detect macroinvertebrates on the substrate.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Charts -->
+                <div style="flex: 1.5; min-width: 500px; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Chart 1: 10-Year Decadal NTU Forecast -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-tahoe-ntu-forecast" style="width: 100%; height: 260px;"></div>
+                    </div>
+
+                    <!-- Chart 2: Fish Population Recovery -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-tahoe-fish-recovery" style="width: 100%; height: 260px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="footer">&copy; 2026 Hydrostar Ecological Suite | Powered by Flask, Plotly.js & QML Optimizers</div>
     </div>
 
@@ -1115,7 +1201,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all viewer cards
-            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'grenadier-card', 'qke-card', 'sensornet-card', 'restoration-card'].forEach(id => {
+            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'grenadier-card', 'qke-card', 'sensornet-card', 'restoration-card', 'tahoe-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -1165,6 +1251,10 @@
                 document.getElementById('tab-restoration').classList.add('active');
                 document.getElementById('restoration-card').style.display = 'flex';
                 runEcologicalOptimization();
+            } else if (tabId === 'tahoe') {
+                document.getElementById('tab-tahoe').classList.add('active');
+                document.getElementById('tahoe-card').style.display = 'flex';
+                runLakeTahoe();
             }
         }
 
@@ -2955,6 +3045,164 @@
                         traceConvLower, traceConvUpper,
                         traceConvBase, traceConvGD, traceConvSA, traceConvQML
                     ], layoutConv24m, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // --- TAB 12: LAKE TAHOE RESTORATION ---
+        function runLakeTahoe() {
+            const optimizer = document.getElementById('tahoe-optimizer').value;
+            const targetNtu = document.getElementById('tahoe-target-ntu').value;
+
+            fetch(`/api/lake-tahoe?optimizer=${optimizer}&target_ntu=${targetNtu}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error("Lake Tahoe API Error:", data.error);
+                        return;
+                    }
+
+                    // Update metrics
+                    document.getElementById('tahoe-metric-fidelity').textContent = data.prediction_fidelity.toFixed(1) + " %";
+                    document.getElementById('tahoe-metric-prob').textContent = data.recovery_probability.toFixed(1) + " %";
+
+                    const years = data.years;
+
+                    // Plot 1: 10-Year Decadal NTU Forecast
+                    const traceLower = {
+                        x: years, y: data.ntu_predictions.qml_lower,
+                        type: 'scatter', mode: 'lines',
+                        line: {width: 0}, showlegend: false, hoverinfo: 'skip'
+                    };
+                    const traceUpper = {
+                        x: years, y: data.ntu_predictions.qml_upper,
+                        type: 'scatter', mode: 'lines',
+                        line: {width: 0}, fill: 'tonexty',
+                        fillcolor: 'rgba(56, 189, 248, 0.15)',
+                        name: 'QML 95% Confidence Band', hoverinfo: 'skip'
+                    };
+                    const traceBase = {
+                        x: years, y: data.ntu_predictions.no_action,
+                        type: 'scatter', mode: 'lines+markers',
+                        name: 'Baseline (No Action)',
+                        line: {color: '#ef4444', width: 2, dash: 'dash'},
+                        marker: {size: 5}
+                    };
+                    const traceStdML = {
+                        x: years, y: data.ntu_predictions.ml_optimal,
+                        type: 'scatter', mode: 'lines+markers',
+                        name: 'Optimal Standard ML Plan',
+                        line: {color: '#10b981', width: 2},
+                        marker: {size: 5}
+                    };
+                    const traceQML = {
+                        x: years, y: data.ntu_predictions.qml_optimal,
+                        type: 'scatter', mode: 'lines+markers',
+                        name: 'QML Restoration Plan',
+                        line: {color: '#38bdf8', width: 3},
+                        marker: {size: 6}
+                    };
+
+                    const layoutForecast = {
+                        title: {
+                            text: '10-Year Decadal Turbidity Prediction (NTU)',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Timeline (Years)',
+                            tickvals: years,
+                            ticktext: years.map(y => `Yr ${y}`),
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Turbidity (NTU)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.25
+                        }
+                    };
+
+                    Plotly.react('plot-tahoe-ntu-forecast', [
+                        traceLower, traceUpper,
+                        traceBase, traceStdML, traceQML
+                    ], layoutForecast, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+
+                    // Plot 2: Fish Population Recovery
+                    const traceTrout = {
+                        x: years, y: data.fish_population.lahontan_cutthroat,
+                        type: 'scatter', mode: 'lines+markers',
+                        name: 'Lahontan Cutthroat Trout',
+                        line: {color: '#ef4444', width: 2.5},
+                        marker: {size: 5}
+                    };
+                    const traceSucker = {
+                        x: years, y: data.fish_population.tahoe_sucker,
+                        type: 'scatter', mode: 'lines+markers',
+                        name: 'Tahoe Sucker',
+                        line: {color: '#c084fc', width: 2},
+                        marker: {size: 5}
+                    };
+                    const traceWhitefish = {
+                        x: years, y: data.fish_population.mountain_whitefish,
+                        type: 'scatter', mode: 'lines+markers',
+                        name: 'Mountain Whitefish',
+                        line: {color: '#10b981', width: 2},
+                        marker: {size: 5}
+                    };
+
+                    const layoutFish = {
+                        title: {
+                            text: '10-Year Decadal Aquatic Population Recovery Projections',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Timeline (Years)',
+                            tickvals: years,
+                            ticktext: years.map(y => `Yr ${y}`),
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Estimated Population Count',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.25
+                        }
+                    };
+
+                    Plotly.react('plot-tahoe-fish-recovery', [
+                        traceTrout, traceSucker, traceWhitefish
+                    ], layoutFish, {
                         responsive: true,
                         modeBarButtonsToRemove: ['toImage'],
                         displaylogo: false
