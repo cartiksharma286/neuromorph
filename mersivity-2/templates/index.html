@@ -358,10 +358,9 @@
             <button class="tab" id="tab-qml-volumetric" onclick="selectTab('qml-volumetric')">🔮 QML Volumetric Surface</button>
             <button class="tab" id="tab-acoustic-sim" onclick="selectTab('acoustic-sim')">🔊 Acoustic Simulation</button>
             <button class="tab" id="tab-neuroacoustic-char" onclick="selectTab('neuroacoustic-char')">⚡ Neuroacoustic Characteristics</button>
-            <button class="tab" id="tab-bci-rtms" onclick="selectTab('bci-rtms')">🧠 BCI + rTMS Closed-Loop</button>
-            <button class="tab" id="tab-bci-qml" onclick="selectTab('bci-qml')">🧠 QML BCI Optimization</button>
-            <button class="tab" id="tab-vqe-shading" onclick="selectTab('vqe-shading')">🌌 Quantum VQE Shading</button>
-            <button class="tab" id="tab-eeg-rtms-qml" onclick="selectTab('eeg-rtms-qml')">⚡ EEG rTMS Repair</button>
+            <button class="tab" id="tab-eeg-rtms-qml" onclick="selectTab('eeg-rtms-qml')">🧠 EEG rTMS BCI QAOA</button>
+            <button class="tab" id="tab-vqe-neuromodulation" onclick="selectTab('vqe-neuromodulation')">⚛️ VQE Neuromodulation</button>
+            <button class="tab" id="tab-quantum-cf-seizure" onclick="selectTab('quantum-cf-seizure')">🔮 Quantum CF Seizure Recovery</button>
         </div>
 
         <!-- QML Volumetric Surface Reconstruction Card -->
@@ -629,50 +628,95 @@
 
         <!-- Tab 28: EEG rTMS QML Seizure Repair Card -->
         <div id="eeg-rtms-qml-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
-            <div class="viewer-title">⚡ Closed-Loop EEG + rTMS Quantum Seizure Suppression Suite</div>
+            <div class="viewer-title">🧠 Closed-Loop EEG + rTMS BCI QAOA Suite</div>
             
             <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
                 <!-- Optimizer Selector -->
                 <div style="display: flex; flex-direction: column; gap: 6px; min-width: 240px; flex: 1.2;">
                     <span style="color:#9ca3af; font-size: 0.85rem; font-weight:600;">Neuromodulation Optimizer:</span>
-                    <select id="eeg-rtms-optimizer" onchange="runEegRtmsRepair()" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%; cursor:pointer; outline:none;">
-                        <option value="quantum_vqe_neuromodulation" selected>Quantum VQE Neuromodulation Ansatz</option>
-                        <option value="quantum_qaoa_feedback">Quantum QAOA Feedback Loop</option>
+                    <select id="eeg-rtms-optimizer" onchange="updateRtmsOptimizerInputs(); runEegRtmsRepairDebounced();" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%; cursor:pointer; outline:none;">
+                        <option value="quantum_vqe_neuromodulation">Quantum VQE Neuromodulation Ansatz</option>
+                        <option value="quantum_qaoa_feedback" selected>Quantum QAOA Feedback Loop</option>
                         <option value="classical_fixed">Classical Fixed Protocol (SVD)</option>
                     </select>
                 </div>
 
                 <!-- Target Reduction Slider -->
-                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                <div id="container-rtms-target" style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
                     <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
                         <span style="color: #9ca3af;">Target Suppression:</span>
                         <span id="label-eeg-rtms-target" style="color: var(--accent-secondary); font-weight:700;">98.0%</span>
                     </div>
-                    <input type="range" id="eeg-rtms-target" min="50.0" max="99.9" step="0.5" value="98.0" oninput="document.getElementById('label-eeg-rtms-target').textContent = this.value + '%'; runEegRtmsRepair();" style="width:100%;">
+                    <input type="range" id="eeg-rtms-target" min="50.0" max="99.9" step="0.5" value="98.0" oninput="document.getElementById('label-eeg-rtms-target').textContent = this.value + '%'; runEegRtmsRepairDebounced();" style="width:100%;">
                 </div>
 
                 <!-- Frequency Slider -->
-                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                <div id="container-rtms-frequency" style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
                     <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
                         <span style="color: #9ca3af;">rTMS Frequency:</span>
                         <span id="label-eeg-rtms-frequency" style="color: var(--accent-primary); font-weight:700;">10 Hz</span>
                     </div>
-                    <input type="range" id="eeg-rtms-frequency" min="1" max="20" step="1" value="10" oninput="document.getElementById('label-eeg-rtms-frequency').textContent = this.value + ' Hz'; runEegRtmsRepair();" style="width:100%;">
+                    <input type="range" id="eeg-rtms-frequency" min="1" max="20" step="1" value="10" oninput="document.getElementById('label-eeg-rtms-frequency').textContent = this.value + ' Hz'; runEegRtmsRepairDebounced();" style="width:100%;">
                 </div>
 
                 <!-- Intensity Slider -->
-                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                <div id="container-rtms-intensity" style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
                     <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
                         <span style="color: #9ca3af;">Coil Intensity:</span>
                         <span id="label-eeg-rtms-intensity" style="color: var(--accent-success); font-weight:700;">80% MT</span>
                     </div>
-                    <input type="range" id="eeg-rtms-intensity" min="10" max="120" step="5" value="80" oninput="document.getElementById('label-eeg-rtms-intensity').textContent = this.value + '% MT'; runEegRtmsRepair();" style="width:100%;">
+                    <input type="range" id="eeg-rtms-intensity" min="10" max="120" step="5" value="80" oninput="document.getElementById('label-eeg-rtms-intensity').textContent = this.value + '% MT'; runEegRtmsRepairDebounced();" style="width:100%;">
+                </div>
+
+                <!-- VQE Qubits Slider -->
+                <div id="container-rtms-vqe-qubits" style="display: none; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">VQE Qubits (N):</span>
+                        <span id="label-eeg-rtms-vqe-qubits" style="color: #ec4899; font-weight:700;">6</span>
+                    </div>
+                    <input type="range" id="eeg-rtms-vqe-qubits" min="4" max="8" step="2" value="6" oninput="document.getElementById('label-eeg-rtms-vqe-qubits').textContent = this.value; runEegRtmsRepairDebounced();" style="width:100%;">
+                </div>
+
+                <!-- QAOA Depth Slider -->
+                <div id="container-rtms-qaoa-depth" style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">QAOA Depth (p):</span>
+                        <span id="label-eeg-rtms-qaoa-depth" style="color: #c084fc; font-weight:700;">3</span>
+                    </div>
+                    <input type="range" id="eeg-rtms-qaoa-depth" min="1" max="5" step="1" value="3" oninput="document.getElementById('label-eeg-rtms-qaoa-depth').textContent = this.value; runEegRtmsRepairDebounced();" style="width:100%;">
+                </div>
+
+                <!-- Classical Rank Slider -->
+                <div id="container-rtms-classical-rank" style="display: none; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Classical Rank (r):</span>
+                        <span id="label-eeg-rtms-classical-rank" style="color: #06b6d4; font-weight:700;">4</span>
+                    </div>
+                    <input type="range" id="eeg-rtms-classical-rank" min="1" max="6" step="1" value="4" oninput="document.getElementById('label-eeg-rtms-classical-rank').textContent = this.value; runEegRtmsRepairDebounced();" style="width:100%;">
+                </div>
+
+                <!-- BCI Coupling Slider -->
+                <div id="container-rtms-bci-coupling" style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">BCI Coupling (J):</span>
+                        <span id="label-eeg-rtms-bci-coupling" style="color: #f59e0b; font-weight:700;">1.0</span>
+                    </div>
+                    <input type="range" id="eeg-rtms-bci-coupling" min="0.1" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('label-eeg-rtms-bci-coupling').textContent = this.value; runEegRtmsRepairDebounced();" style="width:100%;">
+                </div>
+
+                <!-- EEG Channels Slider -->
+                <div id="container-rtms-channels" style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">EEG Channels (Parallel):</span>
+                        <span id="label-eeg-rtms-channels" style="color: #10b981; font-weight:700;">4</span>
+                    </div>
+                    <input type="range" id="eeg-rtms-channels" min="1" max="8" step="1" value="4" oninput="document.getElementById('label-eeg-rtms-channels').textContent = this.value; runEegRtmsRepairDebounced();" style="width:100%;">
                 </div>
 
                 <!-- Feedback Loop -->
-                <div style="display: flex; align-items: center; gap: 8px; min-width: 140px; flex: 0.8;">
+                <div id="container-rtms-feedback" style="display: flex; align-items: center; gap: 8px; min-width: 140px; flex: 0.8;">
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color:#9ca3af; cursor:pointer; font-weight: 600;">
-                        <input type="checkbox" id="eeg-rtms-feedback" checked onchange="runEegRtmsRepair()" style="width:auto; margin:0;"> Active Feedback
+                        <input type="checkbox" id="eeg-rtms-feedback" checked onchange="runEegRtmsRepairDebounced()" style="width:auto; margin:0;"> Active Feedback
                     </label>
                 </div>
             </div>
@@ -699,8 +743,12 @@
                             <span id="eeg-rtms-metric-prob" style="color: var(--accent-success); font-weight: 700;">-- %</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
-                            <span style="color: #9ca3af;">VQE Ansätze Fidelity:</span>
+                            <span id="label-eeg-rtms-fidelity-header" style="color: #9ca3af;">QAOA State Fidelity:</span>
                             <span id="eeg-rtms-metric-fidelity" style="color: var(--accent-secondary); font-weight: 700;">-- %</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Thread Execution Time:</span>
+                            <span id="eeg-rtms-metric-exec-time" style="color: var(--accent-primary); font-weight: 700;">-- ms</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
                             <span style="color: #9ca3af;">Computed Duration:</span>
@@ -724,6 +772,242 @@
                     <!-- Generative AI Prescription Card -->
                     <div style="background: rgba(99, 102, 241, 0.04); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; box-sizing: border-box;">
                         <div id="eeg-rtms-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Variational Quantum Neuromodulation Card -->
+        <div id="vqe-neuromodulation-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">⚛️ Variational Quantum Neuromodulation Suite</div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                
+                <!-- Target Suppression Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Target Suppression:</span>
+                        <span id="label-vqe-neuro-target" style="color: var(--accent-secondary); font-weight:700;">98.0%</span>
+                    </div>
+                    <input type="range" id="vqe-neuro-target" min="50.0" max="99.9" step="0.5" value="98.0" oninput="document.getElementById('label-vqe-neuro-target').textContent = this.value + '%'; runVqeNeuromodulationDebounced();" style="width:100%;">
+                </div>
+
+                <!-- Frequency Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">rTMS Frequency:</span>
+                        <span id="label-vqe-neuro-frequency" style="color: var(--accent-primary); font-weight:700;">10 Hz</span>
+                    </div>
+                    <input type="range" id="vqe-neuro-frequency" min="1" max="20" step="1" value="10" oninput="document.getElementById('label-vqe-neuro-frequency').textContent = this.value + ' Hz'; runVqeNeuromodulationDebounced();" style="width:100%;">
+                </div>
+
+                <!-- Intensity Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Coil Intensity:</span>
+                        <span id="label-vqe-neuro-intensity" style="color: var(--accent-success); font-weight:700;">80% MT</span>
+                    </div>
+                    <input type="range" id="vqe-neuro-intensity" min="10" max="120" step="5" value="80" oninput="document.getElementById('label-vqe-neuro-intensity').textContent = this.value + '% MT'; runVqeNeuromodulationDebounced();" style="width:100%;">
+                </div>
+
+                <!-- Qubits (N) Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">VQE Qubits (N):</span>
+                        <span id="label-vqe-neuro-qubits" style="color: #ec4899; font-weight:700;">6</span>
+                    </div>
+                    <input type="range" id="vqe-neuro-qubits" min="4" max="8" step="2" value="6" oninput="document.getElementById('label-vqe-neuro-qubits').textContent = this.value; runVqeNeuromodulationDebounced();" style="width:100%;">
+                </div>
+
+                <!-- BCI Coupling Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">BCI Coupling (J):</span>
+                        <span id="label-vqe-neuro-bci-coupling" style="color: #f59e0b; font-weight:700;">1.0</span>
+                    </div>
+                    <input type="range" id="vqe-neuro-bci-coupling" min="0.1" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('label-vqe-neuro-bci-coupling').textContent = this.value; runVqeNeuromodulationDebounced();" style="width:100%;">
+                </div>
+
+                <!-- EEG Channels Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">EEG Channels (Parallel):</span>
+                        <span id="label-vqe-neuro-channels" style="color: #10b981; font-weight:700;">4</span>
+                    </div>
+                    <input type="range" id="vqe-neuro-channels" min="1" max="8" step="1" value="4" oninput="document.getElementById('label-vqe-neuro-channels').textContent = this.value; runVqeNeuromodulationDebounced();" style="width:100%;">
+                </div>
+
+                <!-- Feedback Loop -->
+                <div style="display: flex; align-items: center; gap: 8px; min-width: 140px; flex: 0.8;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color:#9ca3af; cursor:pointer; font-weight: 600;">
+                        <input type="checkbox" id="vqe-neuro-feedback" checked onchange="runVqeNeuromodulationDebounced()" style="width:auto; margin:0;"> Active Feedback
+                    </label>
+                </div>
+            </div>
+
+            <!-- Dashboard Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box; margin-top: 20px;">
+                <!-- Left Column: Key Telemetry Specs -->
+                <div style="flex: 1.1; min-width: 400px; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- EEG Placement Info Box -->
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 15px; text-align: center;">
+                        <div style="font-size: 0.85rem; color: #cbd5e1; font-weight: 600; margin-bottom: 10px; text-align: left;">⚛️ Variational Quantum Ansatz Neuromodulation</div>
+                        <img src="/static/eeg_rtms_repair.png" style="width: 100%; max-height: 290px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);" alt="Variational Neuromodulation">
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 8px; font-style: italic;">Qubit rotations drive expectations of the Hamiltonian targeting seizure zone elimination.</div>
+                    </div>
+
+                    <!-- Telemetry Metrics -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em; display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #a855f7; box-shadow: 0 0 6px 1px #a855f7;"></span>
+                            <span>Ansatz Telemetry Dashboard</span>
+                        </h4>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Actual Seizure Suppression:</span>
+                            <span id="vqe-neuro-metric-prob" style="color: var(--accent-success); font-weight: 700;">-- %</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">VQE Ansätze Fidelity:</span>
+                            <span id="vqe-neuro-metric-fidelity" style="color: var(--accent-secondary); font-weight: 700;">-- %</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Thread Execution Time:</span>
+                            <span id="vqe-neuro-metric-exec-time" style="color: var(--accent-primary); font-weight: 700;">-- ms</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Computed Duration:</span>
+                            <span id="vqe-neuro-metric-duration" style="color: #cbd5e1; font-weight: 700;">-- s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Charts & Prescriptions -->
+                <div style="flex: 1.5; min-width: 500px; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- EEG Waveform Comparison Chart -->
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px;">
+                        <div id="plot-vqe-neuro-comparison" style="width: 100%; height: 260px;"></div>
+                    </div>
+
+                    <!-- VQE Expectation Convergence Chart -->
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px;">
+                        <div id="plot-vqe-neuro-convergence" style="width: 100%; height: 200px;"></div>
+                    </div>
+
+                    <!-- Generative AI Prescription Card -->
+                    <div style="background: rgba(168, 85, 247, 0.04); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="vqe-neuro-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Quantum Statistical Continued Fraction Seizure Recovery Card -->
+        <div id="quantum-cf-seizure-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">🔮 Quantum Statistical Continued Fraction Seizure Recovery Suite</div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                <!-- Frequency Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">rTMS Frequency:</span>
+                        <span id="label-cf-frequency" style="color: var(--accent-primary); font-weight:700;">10 Hz</span>
+                    </div>
+                    <input type="range" id="cf-frequency" min="1" max="20" step="1" value="10" oninput="document.getElementById('label-cf-frequency').textContent = this.value + ' Hz'; runQuantumCfSeizureDebounced();" style="width:100%;">
+                </div>
+
+                <!-- Intensity Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Coil Intensity:</span>
+                        <span id="label-cf-intensity" style="color: var(--accent-success); font-weight:700;">80% MT</span>
+                    </div>
+                    <input type="range" id="cf-intensity" min="10" max="120" step="5" value="80" oninput="document.getElementById('label-cf-intensity').textContent = this.value + '% MT'; runQuantumCfSeizureDebounced();" style="width:100%;">
+                </div>
+
+                <!-- Statistical Coupling Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Statistical Coupling (g):</span>
+                        <span id="label-cf-coupling" style="color: #cbd5e1; font-weight:700;">1.0</span>
+                    </div>
+                    <input type="range" id="cf-coupling" min="0.1" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('label-cf-coupling').textContent = this.value; runQuantumCfSeizureDebounced();" style="width:100%;">
+                </div>
+
+                <!-- Continued Fraction Depth Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">CF Depth:</span>
+                        <span id="label-cf-depth" style="color: var(--accent-secondary); font-weight:700;">8</span>
+                    </div>
+                    <input type="range" id="cf-depth" min="2" max="12" step="1" value="8" oninput="document.getElementById('label-cf-depth').textContent = this.value; runQuantumCfSeizureDebounced();" style="width:100%;">
+                </div>
+
+                <!-- EEG Channels Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">EEG Channels (Parallel):</span>
+                        <span id="label-cf-channels" style="color: #10b981; font-weight:700;">4</span>
+                    </div>
+                    <input type="range" id="cf-channels" min="1" max="8" step="1" value="4" oninput="document.getElementById('label-cf-channels').textContent = this.value; runQuantumCfSeizureDebounced();" style="width:100%;">
+                </div>
+            </div>
+
+            <!-- Dashboard Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box; margin-top: 20px;">
+                <!-- Left Column: Key Stats & Mathematical Schematic -->
+                <div style="flex: 1.1; min-width: 400px; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Math Schematic / Theoretical Info -->
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+                        <div style="font-size: 0.9rem; color: #cbd5e1; font-weight: 600; text-align: left; display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #38bdf8;">⚙️</span> Mori-Zwanzig Liouvillian Projection
+                        </div>
+                        <div style="font-size: 0.8rem; color: #9ca3af; line-height: 1.5; text-align: justify;">
+                            Neural mass assemblies undergo dissipative transitions during epileptic discharges. The spectral density response $G(z)$ is projected onto a Hilbert-space Krylov subspace, yielding a high-dimensional continued fraction signature representation:
+                        </div>
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 0.8em; color: #a5b4fc; text-align: center; line-height: 1.3;">
+                            G(z) = b₀ / [ z - a₀ - b₁ / [ z - a₁ - b₂ / [ z - a₂ - ... ] ] ]
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">
+                            Here, diagonal elements $a_n$ capture coupling bias, while $b_n$ represent power-spectral moments.
+                        </div>
+                    </div>
+
+                    <!-- Restoration Indicators -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em; display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #6366f1; box-shadow: 0 0 6px 1px #6366f1;"></span>
+                            <span>Statistical Recovery Telemetry</span>
+                        </h4>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Statistical Recovery Index:</span>
+                            <span id="cf-metric-recovery" style="color: var(--accent-success); font-weight: 700;">-- %</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Thread Execution Time:</span>
+                            <span id="cf-metric-exec-time" style="color: var(--accent-secondary); font-weight: 700;">-- ms</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">CF Convergent Magnitude |G(z)|:</span>
+                            <span id="cf-metric-magnitude" style="color: #cbd5e1; font-weight: 700;">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Charts & Prescriptions -->
+                <div style="flex: 1.5; min-width: 500px; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- EEG Waveform Comparison Chart -->
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px;">
+                        <div id="plot-cf-comparison" style="width: 100%; height: 260px;"></div>
+                    </div>
+
+                    <!-- CF Convergence Chart -->
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px;">
+                        <div id="plot-cf-convergence" style="width: 100%; height: 200px;"></div>
+                    </div>
+
+                    <!-- Generative AI Prescription Card -->
+                    <div style="background: rgba(99, 102, 241, 0.04); border: 1px solid var(--glass-border); padding: 18px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="cf-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;"></div>
                     </div>
                 </div>
             </div>
@@ -2876,7 +3160,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all cards first
-            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card', 'vqe-shading-card', 'eeg-rtms-qml-card'].forEach(id => {
+            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card', 'vqe-shading-card', 'eeg-rtms-qml-card', 'vqe-neuromodulation-card', 'quantum-cf-seizure-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -2969,7 +3253,14 @@
                 runVqeShading();
             } else if (tab === 'eeg-rtms-qml') {
                 document.getElementById('tab-eeg-rtms-qml').classList.add('active');
+                updateRtmsOptimizerInputs();
                 runEegRtmsRepair();
+            } else if (tab === 'vqe-neuromodulation') {
+                document.getElementById('tab-vqe-neuromodulation').classList.add('active');
+                runVqeNeuromodulation();
+            } else if (tab === 'quantum-cf-seizure') {
+                document.getElementById('tab-quantum-cf-seizure').classList.add('active');
+                runQuantumCfSeizure();
             }
         }
 
@@ -7182,18 +7473,92 @@
         }
 
         // --- TAB 28: CLOSED-LOOP EEG + rTMS REPAIR ---
+        let eegRtmsTimeout = null;
+        const eegRtmsCache = new Map();
+
+        function updateRtmsOptimizerInputs() {
+            const optimizer = document.getElementById('eeg-rtms-optimizer').value;
+            
+            // Hide all optimizer-specific sliders first
+            document.getElementById('container-rtms-vqe-qubits').style.display = 'none';
+            document.getElementById('container-rtms-qaoa-depth').style.display = 'none';
+            document.getElementById('container-rtms-classical-rank').style.display = 'none';
+            document.getElementById('container-rtms-bci-coupling').style.display = 'none';
+            
+            // Show dynamic inputs & update telemetry labels based on active optimizer
+            if (optimizer === 'quantum_vqe_neuromodulation') {
+                document.getElementById('container-rtms-vqe-qubits').style.display = 'flex';
+                document.getElementById('container-rtms-bci-coupling').style.display = 'flex';
+                document.getElementById('label-eeg-rtms-fidelity-header').textContent = 'VQE Ansätze Fidelity:';
+            } else if (optimizer === 'quantum_qaoa_feedback') {
+                document.getElementById('container-rtms-qaoa-depth').style.display = 'flex';
+                document.getElementById('container-rtms-bci-coupling').style.display = 'flex';
+                document.getElementById('label-eeg-rtms-fidelity-header').textContent = 'QAOA State Fidelity:';
+            } else if (optimizer === 'classical_fixed') {
+                document.getElementById('container-rtms-classical-rank').style.display = 'flex';
+                document.getElementById('label-eeg-rtms-fidelity-header').textContent = 'SVD Projection Fidelity:';
+            }
+        }
+
+        function runEegRtmsRepairDebounced() {
+            const optimizer = document.getElementById('eeg-rtms-optimizer').value;
+            const target = document.getElementById('eeg-rtms-target').value;
+            const frequency = document.getElementById('eeg-rtms-frequency').value;
+            const intensity = document.getElementById('eeg-rtms-intensity').value;
+            const feedback = document.getElementById('eeg-rtms-feedback').checked;
+            const qaoaDepth = document.getElementById('eeg-rtms-qaoa-depth').value;
+            const vqeQubits = document.getElementById('eeg-rtms-vqe-qubits').value;
+            const classicalRank = document.getElementById('eeg-rtms-classical-rank').value;
+            const bciCoupling = document.getElementById('eeg-rtms-bci-coupling').value;
+            const channels = document.getElementById('eeg-rtms-channels').value;
+            
+            const cacheKey = `${optimizer}_${target}_${frequency}_${intensity}_${feedback}_${qaoaDepth}_${vqeQubits}_${classicalRank}_${bciCoupling}_${channels}`;
+            if (eegRtmsCache.has(cacheKey)) {
+                if (eegRtmsTimeout) {
+                    clearTimeout(eegRtmsTimeout);
+                    eegRtmsTimeout = null;
+                }
+                renderEegRtmsRepairData(eegRtmsCache.get(cacheKey));
+                return;
+            }
+            
+            // Show loading placeholder on charts immediately so the user knows it is computing
+            showLoading('plot-eeg-rtms-comparison', 'Calculating BCI Real-Time EEG signals...');
+            showLoading('plot-eeg-rtms-convergence', 'Running expectation minimization...');
+            
+            if (eegRtmsTimeout) {
+                clearTimeout(eegRtmsTimeout);
+            }
+            
+            eegRtmsTimeout = setTimeout(() => {
+                runEegRtmsRepair();
+            }, 150);
+        }
+
         function runEegRtmsRepair() {
             showCard('eeg-rtms-qml-card');
-            showLoading('plot-eeg-rtms-comparison', 'Initializing BCI Real-Time EEG signals...');
-            showLoading('plot-eeg-rtms-convergence', 'Running QML expectation minimization...');
             
             const optimizer = document.getElementById('eeg-rtms-optimizer').value;
             const target = document.getElementById('eeg-rtms-target').value;
             const frequency = document.getElementById('eeg-rtms-frequency').value;
             const intensity = document.getElementById('eeg-rtms-intensity').value;
             const feedback = document.getElementById('eeg-rtms-feedback').checked;
+            const qaoaDepth = document.getElementById('eeg-rtms-qaoa-depth').value;
+            const vqeQubits = document.getElementById('eeg-rtms-vqe-qubits').value;
+            const classicalRank = document.getElementById('eeg-rtms-classical-rank').value;
+            const bciCoupling = document.getElementById('eeg-rtms-bci-coupling').value;
+            const channels = document.getElementById('eeg-rtms-channels').value;
             
-            fetch(`/api/eeg-rtms-repair?optimizer=${optimizer}&target_reduction=${target}&frequency=${frequency}&intensity=${intensity}&feedback_loop=${feedback}`)
+            const cacheKey = `${optimizer}_${target}_${frequency}_${intensity}_${feedback}_${qaoaDepth}_${vqeQubits}_${classicalRank}_${bciCoupling}_${channels}`;
+            if (eegRtmsCache.has(cacheKey)) {
+                renderEegRtmsRepairData(eegRtmsCache.get(cacheKey));
+                return;
+            }
+            
+            showLoading('plot-eeg-rtms-comparison', 'Initializing BCI Real-Time EEG signals...');
+            showLoading('plot-eeg-rtms-convergence', 'Running QML expectation minimization...');
+            
+            fetch(`/api/eeg-rtms-repair?optimizer=${optimizer}&target_reduction=${target}&frequency=${frequency}&intensity=${intensity}&feedback_loop=${feedback}&qaoa_depth=${qaoaDepth}&vqe_qubits=${vqeQubits}&classical_rank=${classicalRank}&bci_coupling=${bciCoupling}&channels=${channels}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {
@@ -7201,112 +7566,473 @@
                         return;
                     }
                     
-                    // Update indicators
-                    document.getElementById('eeg-rtms-metric-prob').textContent = data.seizure_reduction_pct.toFixed(2) + " %";
-                    document.getElementById('eeg-rtms-metric-fidelity').textContent = data.prediction_fidelity.toFixed(1) + " %";
-                    document.getElementById('eeg-rtms-metric-duration').textContent = data.duration_sec.toFixed(0) + " s";
-                    
-                    // Update GenAI report
-                    document.getElementById('eeg-rtms-genai-text').innerHTML = data.genai_prescription
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\n\n/g, '<br><br>');
-                        
-                    const time = data.time;
-                    
-                    // Plot 1: Pre- vs Post- Stimulation EEG Waveforms
-                    const tracePre = {
-                        x: time, y: data.pre_eeg,
-                        type: 'scatter', mode: 'lines',
-                        name: 'Pre-Stimulation (Epileptic Seizure Activity)',
-                        line: {color: '#ef4444', width: 1.5}
-                    };
-                    const tracePost = {
-                        x: time, y: data.post_eeg,
-                        type: 'scatter', mode: 'lines',
-                        name: 'Post-Stimulation (Restored Physiological Waves)',
-                        line: {color: '#10b981', width: 1.5}
-                    };
-                    
-                    const layoutEEG = {
-                        title: {
-                            text: 'Real-Time EEG Seizure Suppression Waveforms',
-                            font: {color: '#cbd5e1', size: 11}
-                        },
-                        xaxis: {
-                            title: 'Timeline (Seconds)',
-                            tickfont: {color: '#cbd5e1', size: 8},
-                            gridcolor: 'rgba(255,255,255,0.03)',
-                            titlefont: {color: '#cbd5e1', size: 9}
-                        },
-                        yaxis: {
-                            title: 'EEG Amplitude (μV)',
-                            tickfont: {color: '#cbd5e1', size: 8},
-                            gridcolor: 'rgba(255,255,255,0.03)',
-                            titlefont: {color: '#cbd5e1', size: 9}
-                        },
-                        margin: {t: 35, l: 45, r: 25, b: 35},
-                        paper_bgcolor: 'rgba(0,0,0,0)',
-                        plot_bgcolor: 'rgba(0,0,0,0)',
-                        legend: {
-                            font: {color: '#cbd5e1', size: 8},
-                            bgcolor: 'rgba(0,0,0,0.5)',
-                            orientation: 'h',
-                            x: 0,
-                            y: -0.25
-                        }
-                    };
-                    
-                    Plotly.react('plot-eeg-rtms-comparison', [tracePre, tracePost], layoutEEG, {
-                        responsive: true,
-                        modeBarButtonsToRemove: ['toImage'],
-                        displaylogo: false
-                    });
-                    
-                    // Plot 2: QML Loss Convergence
-                    const traceLoss = {
-                        x: Array.from({length: data.loss_history.length}, (_, idx) => idx + 1),
-                        y: data.loss_history,
-                        type: 'scatter', mode: 'lines+markers',
-                        name: 'Energy Expectation ⟨H⟩',
-                        line: {color: '#a855f7', width: 2},
-                        marker: {size: 4}
-                    };
-                    
-                    const layoutConvergence = {
-                        title: {
-                            text: 'QML Optimizer Hamiltonian Energy Convergence',
-                            font: {color: '#cbd5e1', size: 10}
-                        },
-                        xaxis: {
-                            title: 'Iterations',
-                            tickfont: {color: '#cbd5e1', size: 8},
-                            gridcolor: 'rgba(255,255,255,0.03)',
-                            titlefont: {color: '#cbd5e1', size: 9}
-                        },
-                        yaxis: {
-                            title: 'Energy Expectation Value',
-                            tickfont: {color: '#cbd5e1', size: 8},
-                            gridcolor: 'rgba(255,255,255,0.03)',
-                            titlefont: {color: '#cbd5e1', size: 9}
-                        },
-                        margin: {t: 30, l: 45, r: 25, b: 35},
-                        paper_bgcolor: 'rgba(0,0,0,0)',
-                        plot_bgcolor: 'rgba(0,0,0,0)',
-                        legend: {
-                            font: {color: '#cbd5e1', size: 8},
-                            bgcolor: 'rgba(0,0,0,0.5)',
-                            orientation: 'h',
-                            x: 0,
-                            y: -0.25
-                        }
-                    };
-                    
-                    Plotly.react('plot-eeg-rtms-convergence', [traceLoss], layoutConvergence, {
-                        responsive: true,
-                        modeBarButtonsToRemove: ['toImage'],
-                        displaylogo: false
-                    });
+                    eegRtmsCache.set(cacheKey, data);
+                    renderEegRtmsRepairData(data);
                 });
+        }
+
+        function renderEegRtmsRepairData(data) {
+            // Update indicators
+            document.getElementById('eeg-rtms-metric-prob').textContent = data.seizure_reduction_pct.toFixed(2) + " %";
+            document.getElementById('eeg-rtms-metric-fidelity').textContent = data.prediction_fidelity.toFixed(1) + " %";
+            document.getElementById('eeg-rtms-metric-exec-time').textContent = data.exec_time_ms.toFixed(2) + " ms";
+            document.getElementById('eeg-rtms-metric-duration').textContent = data.duration_sec.toFixed(0) + " s";
+            
+            // Update GenAI report
+            document.getElementById('eeg-rtms-genai-text').innerHTML = data.genai_prescription
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '<br><br>');
+                
+            const time = data.time;
+            
+            // Plot 1: Pre- vs Post- Stimulation EEG Waveforms
+            const tracePre = {
+                x: time, y: data.pre_eeg,
+                type: 'scatter', mode: 'lines',
+                name: 'Pre-Stimulation (Epileptic Seizure Activity)',
+                line: {color: '#ef4444', width: 1.5}
+            };
+            const tracePost = {
+                x: time, y: data.post_eeg,
+                type: 'scatter', mode: 'lines',
+                name: 'Post-Stimulation (Restored Physiological Waves)',
+                line: {color: '#10b981', width: 1.5}
+            };
+            
+            const layoutEEG = {
+                title: {
+                    text: 'Real-Time EEG Seizure Suppression Waveforms',
+                    font: {color: '#cbd5e1', size: 11}
+                },
+                xaxis: {
+                    title: 'Timeline (Seconds)',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                yaxis: {
+                    title: 'EEG Amplitude (μV)',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                margin: {t: 35, l: 45, r: 25, b: 35},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: {
+                    font: {color: '#cbd5e1', size: 8},
+                    bgcolor: 'rgba(0,0,0,0.5)',
+                    orientation: 'h',
+                    x: 0,
+                    y: -0.25
+                }
+            };
+            
+            Plotly.react('plot-eeg-rtms-comparison', [tracePre, tracePost], layoutEEG, {
+                responsive: true,
+                modeBarButtonsToRemove: ['toImage'],
+                displaylogo: false
+            });
+            
+            // Plot 2: QML Loss Convergence
+            const traceLoss = {
+                x: Array.from({length: data.loss_history.length}, (_, idx) => idx + 1),
+                y: data.loss_history,
+                type: 'scatter', mode: 'lines+markers',
+                name: 'Energy Expectation ⟨H⟩',
+                line: {color: '#a855f7', width: 2},
+                marker: {size: 4}
+            };
+            
+            const layoutConvergence = {
+                title: {
+                    text: 'QML Optimizer Hamiltonian Energy Convergence',
+                    font: {color: '#cbd5e1', size: 10}
+                },
+                xaxis: {
+                    title: 'Iterations',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                yaxis: {
+                    title: 'Energy Expectation Value',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                margin: {t: 30, l: 45, r: 25, b: 35},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: {
+                    font: {color: '#cbd5e1', size: 8},
+                    bgcolor: 'rgba(0,0,0,0.5)',
+                    orientation: 'h',
+                    x: 0,
+                    y: -0.25
+                }
+            };
+            
+            Plotly.react('plot-eeg-rtms-convergence', [traceLoss], layoutConvergence, {
+                responsive: true,
+                modeBarButtonsToRemove: ['toImage'],
+                displaylogo: false
+            });
+        }
+
+        // --- TAB 29: QUANTUM STATISTICAL CONTINUED FRACTION SEIZURE RECOVERY ---
+        let quantumCfTimeout = null;
+        const quantumCfCache = new Map();
+
+        function runQuantumCfSeizureDebounced() {
+            const frequency = document.getElementById('cf-frequency').value;
+            const intensity = document.getElementById('cf-intensity').value;
+            const coupling = document.getElementById('cf-coupling').value;
+            const depth = document.getElementById('cf-depth').value;
+            const channels = document.getElementById('cf-channels').value;
+            
+            const cacheKey = `${frequency}_${intensity}_${coupling}_${depth}_${channels}`;
+            if (quantumCfCache.has(cacheKey)) {
+                if (quantumCfTimeout) {
+                    clearTimeout(quantumCfTimeout);
+                    quantumCfTimeout = null;
+                }
+                renderQuantumCfSeizureData(quantumCfCache.get(cacheKey));
+                return;
+            }
+            
+            showLoading('plot-cf-comparison', 'Evaluating multi-channel Continued Fraction waveforms...');
+            showLoading('plot-cf-convergence', 'Computing Mori-Zwanzig convergents...');
+            
+            if (quantumCfTimeout) {
+                clearTimeout(quantumCfTimeout);
+            }
+            
+            quantumCfTimeout = setTimeout(() => {
+                runQuantumCfSeizure();
+            }, 150);
+        }
+
+        function runQuantumCfSeizure() {
+            showCard('quantum-cf-seizure-card');
+            
+            const frequency = document.getElementById('cf-frequency').value;
+            const intensity = document.getElementById('cf-intensity').value;
+            const coupling = document.getElementById('cf-coupling').value;
+            const depth = document.getElementById('cf-depth').value;
+            const channels = document.getElementById('cf-channels').value;
+            
+            const cacheKey = `${frequency}_${intensity}_${coupling}_${depth}_${channels}`;
+            if (quantumCfCache.has(cacheKey)) {
+                renderQuantumCfSeizureData(quantumCfCache.get(cacheKey));
+                return;
+            }
+            
+            showLoading('plot-cf-comparison', 'Evaluating multi-channel Continued Fraction waveforms...');
+            showLoading('plot-cf-convergence', 'Computing Mori-Zwanzig convergents...');
+            
+            fetch(`/api/quantum-cf-seizure?frequency=${frequency}&intensity=${intensity}&coupling=${coupling}&depth=${depth}&channels=${channels}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error("Quantum CF Seizure API Error:", data.error);
+                        return;
+                    }
+                    
+                    quantumCfCache.set(cacheKey, data);
+                    renderQuantumCfSeizureData(data);
+                });
+        }
+
+        function renderQuantumCfSeizureData(data) {
+            // Update indicators
+            document.getElementById('cf-metric-recovery').textContent = (data.recovery_index * 100.0).toFixed(2) + " %";
+            document.getElementById('cf-metric-exec-time').textContent = data.exec_time_ms.toFixed(2) + " ms";
+            
+            // Get final convergent magnitude |G(z)|
+            const lastCh = data.channel_results[0];
+            const realVal = lastCh.convergents_real[lastCh.convergents_real.length - 1];
+            const imagVal = lastCh.convergents_imag[lastCh.convergents_imag.length - 1];
+            const magnitude = Math.sqrt(realVal * realVal + imagVal * imagVal);
+            document.getElementById('cf-metric-magnitude').textContent = magnitude.toFixed(4);
+            
+            // Update GenAI report
+            document.getElementById('cf-genai-text').innerHTML = data.genai_prescription
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '<br><br>');
+                
+            const time = data.time;
+            
+            // Plot 1: Pre- vs Post- Stimulation EEG Waveforms
+            const tracePre = {
+                x: time, y: data.pre_eeg,
+                type: 'scatter', mode: 'lines',
+                name: 'Pre-Stimulation (Spike & Wave Seizure)',
+                line: {color: '#ef4444', width: 1.5}
+            };
+            const tracePost = {
+                x: time, y: data.post_eeg,
+                type: 'scatter', mode: 'lines',
+                name: 'Post-Stimulation (Damped Seizure + Restored alpha/beta)',
+                line: {color: '#10b981', width: 1.5}
+            };
+            
+            const layoutEEG = {
+                title: {
+                    text: 'EEG Seizure Recovery Waveforms (ms scale)',
+                    font: {color: '#cbd5e1', size: 11}
+                },
+                xaxis: {
+                    title: 'Timeline (Milliseconds)',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                yaxis: {
+                    title: 'Amplitude (μV)',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                margin: {t: 35, l: 45, r: 25, b: 35},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: {
+                    font: {color: '#cbd5e1', size: 8},
+                    bgcolor: 'rgba(0,0,0,0.5)',
+                    orientation: 'h',
+                    x: 0,
+                    y: -0.25
+                }
+            };
+
+            Plotly.react('plot-cf-comparison', [tracePre, tracePost], layoutEEG, {
+                responsive: true,
+                modeBarButtonsToRemove: ['toImage'],
+                displaylogo: false
+            });
+
+            // Plot 2: Continued Fraction Convergence
+            const traceCfConvergence = {
+                x: Array.from({length: data.convergence_history.length}, (_, idx) => idx + 1),
+                y: data.convergence_history,
+                type: 'scatter', mode: 'lines+markers',
+                name: 'Convergence Error',
+                line: {color: '#a855f7', width: 2},
+                marker: {size: 4}
+            };
+            
+            const layoutConvergence = {
+                title: {
+                    text: 'Mori-Zwanzig Continued Fraction Convergence Error',
+                    font: {color: '#cbd5e1', size: 10}
+                },
+                xaxis: {
+                    title: 'Convergent Depth (Order)',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                yaxis: {
+                    title: 'Convergence Error',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                margin: {t: 30, l: 45, r: 25, b: 35},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: {
+                    font: {color: '#cbd5e1', size: 8},
+                    bgcolor: 'rgba(0,0,0,0.5)',
+                    orientation: 'h',
+                    x: 0,
+                    y: -0.25
+                }
+            };
+            
+            Plotly.react('plot-cf-convergence', [traceCfConvergence], layoutConvergence, {
+                responsive: true,
+                modeBarButtonsToRemove: ['toImage'],
+                displaylogo: false
+            });
+        }
+
+        // --- TAB 30: VARIATIONAL QUANTUM NEUROMODULATION ---
+        let vqeNeuroTimeout = null;
+        const vqeNeuroCache = new Map();
+
+        function runVqeNeuromodulationDebounced() {
+            const target = document.getElementById('vqe-neuro-target').value;
+            const frequency = document.getElementById('vqe-neuro-frequency').value;
+            const intensity = document.getElementById('vqe-neuro-intensity').value;
+            const feedback = document.getElementById('vqe-neuro-feedback').checked;
+            const vqeQubits = document.getElementById('vqe-neuro-qubits').value;
+            const bciCoupling = document.getElementById('vqe-neuro-bci-coupling').value;
+            const channels = document.getElementById('vqe-neuro-channels').value;
+            
+            const cacheKey = `${target}_${frequency}_${intensity}_${feedback}_${vqeQubits}_${bciCoupling}_${channels}`;
+            if (vqeNeuroCache.has(cacheKey)) {
+                if (vqeNeuroTimeout) {
+                    clearTimeout(vqeNeuroTimeout);
+                    vqeNeuroTimeout = null;
+                }
+                renderVqeNeuromodulationData(vqeNeuroCache.get(cacheKey));
+                return;
+            }
+            
+            showLoading('plot-vqe-neuro-comparison', 'Calculating Variational EEG signals...');
+            showLoading('plot-vqe-neuro-convergence', 'Running expectation minimization...');
+            
+            if (vqeNeuroTimeout) {
+                clearTimeout(vqeNeuroTimeout);
+            }
+            
+            vqeNeuroTimeout = setTimeout(() => {
+                runVqeNeuromodulation();
+            }, 150);
+        }
+
+        function runVqeNeuromodulation() {
+            showCard('vqe-neuromodulation-card');
+            
+            const target = document.getElementById('vqe-neuro-target').value;
+            const frequency = document.getElementById('vqe-neuro-frequency').value;
+            const intensity = document.getElementById('vqe-neuro-intensity').value;
+            const feedback = document.getElementById('vqe-neuro-feedback').checked;
+            const vqeQubits = document.getElementById('vqe-neuro-qubits').value;
+            const bciCoupling = document.getElementById('vqe-neuro-bci-coupling').value;
+            const channels = document.getElementById('vqe-neuro-channels').value;
+            
+            const cacheKey = `${target}_${frequency}_${intensity}_${feedback}_${vqeQubits}_${bciCoupling}_${channels}`;
+            if (vqeNeuroCache.has(cacheKey)) {
+                renderVqeNeuromodulationData(vqeNeuroCache.get(cacheKey));
+                return;
+            }
+            
+            showLoading('plot-vqe-neuro-comparison', 'Initializing Variational EEG signals...');
+            showLoading('plot-vqe-neuro-convergence', 'Running Hamiltonian expectation minimization...');
+            
+            fetch(`/api/vqe-neuromodulation?target_reduction=${target}&frequency=${frequency}&intensity=${intensity}&feedback_loop=${feedback}&vqe_qubits=${vqeQubits}&bci_coupling=${bciCoupling}&channels=${channels}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error("VQE Neuromodulation API Error:", data.error);
+                        return;
+                    }
+                    
+                    vqeNeuroCache.set(cacheKey, data);
+                    renderVqeNeuromodulationData(data);
+                });
+        }
+
+        function renderVqeNeuromodulationData(data) {
+            // Update indicators
+            document.getElementById('vqe-neuro-metric-prob').textContent = data.seizure_reduction_pct.toFixed(2) + " %";
+            document.getElementById('vqe-neuro-metric-fidelity').textContent = data.prediction_fidelity.toFixed(1) + " %";
+            document.getElementById('vqe-neuro-metric-exec-time').textContent = data.exec_time_ms.toFixed(2) + " ms";
+            document.getElementById('vqe-neuro-metric-duration').textContent = data.duration_sec.toFixed(0) + " s";
+            
+            // Update GenAI report
+            document.getElementById('vqe-neuro-genai-text').innerHTML = data.genai_prescription
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '<br><br>');
+                
+            const time = data.time;
+            
+            // Plot 1: Pre- vs Post- Stimulation EEG Waveforms
+            const tracePre = {
+                x: time, y: data.pre_eeg,
+                type: 'scatter', mode: 'lines',
+                name: 'Pre-Stimulation (Epileptic Seizure Activity)',
+                line: {color: '#ef4444', width: 1.5}
+            };
+            const tracePost = {
+                x: time, y: data.post_eeg,
+                type: 'scatter', mode: 'lines',
+                name: 'Post-Stimulation (Restored Physiological Waves)',
+                line: {color: '#10b981', width: 1.5}
+            };
+            
+            const layoutEEG = {
+                title: {
+                    text: 'Real-Time EEG Seizure Suppression Waveforms (VQE)',
+                    font: {color: '#cbd5e1', size: 11}
+                },
+                xaxis: {
+                    title: 'Timeline (Seconds)',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                yaxis: {
+                    title: 'EEG Amplitude (μV)',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                margin: {t: 35, l: 45, r: 25, b: 35},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: {
+                    font: {color: '#cbd5e1', size: 8},
+                    bgcolor: 'rgba(0,0,0,0.5)',
+                    orientation: 'h',
+                    x: 0,
+                    y: -0.25
+                }
+            };
+            
+            Plotly.react('plot-vqe-neuro-comparison', [tracePre, tracePost], layoutEEG, {
+                responsive: true,
+                modeBarButtonsToRemove: ['toImage'],
+                displaylogo: false
+            });
+            
+            // Plot 2: VQE Expectation Convergence
+            const traceLoss = {
+                x: Array.from({length: data.loss_history.length}, (_, idx) => idx + 1),
+                y: data.loss_history,
+                type: 'scatter', mode: 'lines+markers',
+                name: 'Energy Expectation ⟨H⟩',
+                line: {color: '#ec4899', width: 2},
+                marker: {size: 4}
+            };
+            
+            const layoutConvergence = {
+                title: {
+                    text: 'Variational Quantum Ansatz Energy Convergence',
+                    font: {color: '#cbd5e1', size: 10}
+                },
+                xaxis: {
+                    title: 'Iterations',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                yaxis: {
+                    title: 'Energy Expectation Value',
+                    tickfont: {color: '#cbd5e1', size: 8},
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: {color: '#cbd5e1', size: 9}
+                },
+                margin: {t: 30, l: 45, r: 25, b: 35},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: {
+                    font: {color: '#cbd5e1', size: 8},
+                    bgcolor: 'rgba(0,0,0,0.5)',
+                    orientation: 'h',
+                    x: 0,
+                    y: -0.25
+                }
+            };
+            
+            Plotly.react('plot-vqe-neuro-convergence', [traceLoss], layoutConvergence, {
+                responsive: true,
+                modeBarButtonsToRemove: ['toImage'],
+                displaylogo: false
+            });
         }
 
         // Auto-select the first tab on load

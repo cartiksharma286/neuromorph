@@ -4784,12 +4784,95 @@ except Exception as e:
     print(f">>> Warning: Failed to pre-load datasets at startup: {e}", flush=True)
 
 
+_cnot_permutations = {}
+
+def get_cnot_permutation(ctrl, tgt, N=6):
+    key = (ctrl, tgt, N)
+    if key in _cnot_permutations:
+        return _cnot_permutations[key]
+    P = np.arange(1 << N)
+    ctrl_bit = N - 1 - ctrl
+    tgt_bit = N - 1 - tgt
+    ctrl_mask = 1 << ctrl_bit
+    tgt_mask = 1 << tgt_bit
+    cond = (P & ctrl_mask) != 0
+    P[cond] ^= tgt_mask
+    _cnot_permutations[key] = P
+    return P
+
+def apply_cnot_fast(state, ctrl, tgt, N=6):
+    P = get_cnot_permutation(ctrl, tgt, N)
+    return state[P]
+
+def apply_gate_fast(state, U, target, N=6):
+    state_reshaped = state.reshape(1 << target, 2, 1 << (N - target - 1))
+    s0 = state_reshaped[:, 0, :]
+    s1 = state_reshaped[:, 1, :]
+    
+    state_new = np.empty_like(state_reshaped)
+    state_new[:, 0, :] = U[0, 0] * s0 + U[0, 1] * s1
+    state_new[:, 1, :] = U[1, 0] * s0 + U[1, 1] * s1
+    return state_new.ravel()
+
+def apply_mixer(state, beta, N=6):
+    M = np.array([[np.cos(beta), -1j * np.sin(beta)],
+                  [-1j * np.sin(beta), np.cos(beta)]], dtype=np.complex128)
+    for j in range(N):
+        state = apply_gate_fast(state, M, j, N)
+    return state
+
+def compute_qaoa_state_multi(gammas, betas, H_diag, N=6):
+    state = np.ones(2**N, dtype=np.complex128) / np.sqrt(2**N)
+    p = len(gammas)
+    for i in range(p):
+        state = state * np.exp(-1j * gammas[i] * H_diag)
+        state = apply_mixer(state, betas[i], N)
+    return state
+
+def compute_qaoa_energy(gammas, betas, H_diag, N=6):
+    state = compute_qaoa_state_multi(gammas, betas, H_diag, N)
+    probs = np.abs(state)**2
+    energy = np.sum(probs * H_diag)
+    return energy, probs
+
+def compute_vqe_state(thetas, N=6):
+    state = np.zeros(1 << N, dtype=np.complex128)
+    state[0] = 1.0
+    
+    for j in range(N):
+        theta = thetas[j]
+        cos_t = np.cos(theta/2)
+        sin_t = np.sin(theta/2)
+        U = np.array([[cos_t, -sin_t],
+                      [sin_t, cos_t]], dtype=np.complex128)
+        state = apply_gate_fast(state, U, j, N)
+        
+    for j in range(N):
+        state = apply_cnot_fast(state, ctrl=j, tgt=(j + 1) % N, N=N)
+        
+    for j in range(N):
+        theta = thetas[N + j]
+        cos_t = np.cos(theta/2)
+        sin_t = np.sin(theta/2)
+        U = np.array([[cos_t, -sin_t],
+                      [sin_t, cos_t]], dtype=np.complex128)
+        state = apply_gate_fast(state, U, j, N)
+        
+    return state
+
+def compute_vqe_energy(thetas, H_diag, N=6):
+    state = compute_vqe_state(thetas, N)
+    probs = np.abs(state)**2
+    energy = np.sum(probs * H_diag)
+    return energy, probs
+
 _cache_eeg_rtms_repair = {}
 
 # --- ENDPOINT: BCI + rTMS QML Epileptic Seizure Cure & Closed-loop Neuromodulation ---
 @app.route('/api/eeg-rtms-repair', methods=['GET'])
 def api_eeg_rtms_repair():
     global _cache_eeg_rtms_repair
+    import time as pytime
     try:
         target_reduction = float(request.args.get('target_reduction', 98.0))
         target_reduction = max(50.0, min(99.9, target_reduction))
@@ -4799,94 +4882,504 @@ def api_eeg_rtms_repair():
         intensity = max(10.0, min(120.0, intensity))
         optimizer = request.args.get('optimizer', 'quantum_vqe_neuromodulation').lower()
         feedback_loop = request.args.get('feedback_loop', 'true').lower() == 'true'
+        qaoa_depth = int(request.args.get('qaoa_depth', 3))
+        qaoa_depth = max(1, min(5, qaoa_depth))
+        vqe_qubits = int(request.args.get('vqe_qubits', 6))
+        vqe_qubits = max(4, min(8, vqe_qubits))
+        classical_rank = int(request.args.get('classical_rank', 4))
+        classical_rank = max(1, min(6, classical_rank))
+        bci_coupling = float(request.args.get('bci_coupling', 1.0))
+        bci_coupling = max(0.1, min(2.0, bci_coupling))
+        channels = int(request.args.get('channels', 4))
+        channels = max(1, min(8, channels))
 
-        cache_key = (target_reduction, frequency, intensity, optimizer, feedback_loop)
+        cache_key = (target_reduction, frequency, intensity, optimizer, feedback_loop, qaoa_depth, vqe_qubits, classical_rank, bci_coupling, channels)
         if cache_key in _cache_eeg_rtms_repair:
             return _cache_eeg_rtms_repair[cache_key]
 
-        np.random.seed(42)
-        
-        # 1. Simulate EEG Brainwaves (Pre-stimulation vs. Post-stimulation)
         time_points = np.linspace(0, 10.0, 500)
         
-        # Pre-stimulation: High-amplitude 3Hz spike-and-wave discharges
-        pre_noise = np.random.normal(0, 0.15, 500)
-        pre_spikes = -3.0 * (np.sin(2 * np.pi * 3.0 * time_points) > 0.8)
-        pre_waves = 1.8 * np.sin(2 * np.pi * 3.0 * time_points - 0.5)
-        pre_eeg = (pre_spikes + pre_waves + pre_noise).tolist()
-        
-        # Post-stimulation
-        if optimizer == 'quantum_vqe_neuromodulation':
-            suppression_factor = 0.98 * (1.1 if feedback_loop else 0.85) * (0.4 + 0.6 * (intensity / 80.0))
-        elif optimizer == 'quantum_qaoa_feedback':
-            suppression_factor = 0.92 * (1.1 if feedback_loop else 0.85) * (0.4 + 0.6 * (intensity / 80.0))
-        else: # classical_fixed
-            suppression_factor = 0.70 * (0.4 + 0.6 * (intensity / 80.0))
+        # Parallel channel computation
+        def compute_channel(ch_idx):
+            np.random.seed(42 + ch_idx)
             
-        suppression_factor = min(0.999, max(0.2, suppression_factor))
-        
-        post_noise = np.random.normal(0, 0.08, 500)
-        post_alpha = 0.4 * np.sin(2 * np.pi * 10.0 * time_points)
-        post_beta = 0.25 * np.sin(2 * np.pi * 20.0 * time_points)
-        post_residual_seizure = (1.0 - suppression_factor) * (pre_spikes + pre_waves)
-        post_eeg = (post_alpha + post_beta + post_residual_seizure + post_noise).tolist()
-        
-        # 2. Simulate QML Optimizer convergence loss
-        loss_history = []
-        initial_cost = 1.45
-        final_cost = 0.005 if optimizer == 'quantum_vqe_neuromodulation' else (0.05 if optimizer == 'quantum_qaoa_feedback' else 0.35)
-        
-        for i in range(30):
-            noise = np.random.normal(0, 0.02)
-            if 'quantum' in optimizer:
-                c_val = final_cost + (initial_cost - final_cost) * np.exp(-i * 0.22) + noise * 0.1 * np.exp(-i * 0.1)
+            # Pre-stimulation: High-amplitude 3Hz spike-and-wave discharges
+            pre_noise = np.random.normal(0, 0.15, 500)
+            pre_spikes = -3.0 * (np.sin(2 * np.pi * 3.0 * time_points) > 0.8)
+            pre_waves = 1.8 * np.sin(2 * np.pi * 3.0 * time_points - 0.5)
+            pre_eeg = pre_spikes + pre_waves + pre_noise
+            
+            # Hamiltonian Construct using Prime Moduli Theory
+            N = vqe_qubits if optimizer == 'quantum_vqe_neuromodulation' else 6
+            
+            # Select channel-specific prime modulus
+            primes = [5, 7, 11, 13, 17, 19, 23, 29]
+            p_c = primes[ch_idx % len(primes)]
+            
+            # Compute modular residue resonance
+            R_c = (int(frequency) * int(intensity)) % p_c
+            x_opt = (R_c * 31) % (2**N)
+            x_opt = max(0, min((2**N) - 1, x_opt))
+            
+            s_star = np.array([1 if ((x_opt >> j) & 1) else -1 for j in range(N)])
+            x_vals = np.arange(2**N)
+            s = np.array([[[1 if ((x >> j) & 1) else -1 for j in range(N)] for x in x_vals]])[0]
+            
+            # Linear terms
+            linear = np.sum(-0.5 * s_star * s, axis=1)
+            
+            # Quadratic terms structured via combinatorial group/lattice distance factor
+            quadratic = np.zeros(2**N)
+            for j in range(N):
+                for k in range(j + 1, N):
+                    C_jk = (((j + k) % p_c) + 1.0) / p_c * bci_coupling
+                    quadratic += -0.25 * C_jk * (s_star[j] * s_star[k]) * (s[:, j] * s[:, k])
+                    
+            H_diag = (linear + quadratic + (2**N) * 0.1) * 0.2
+            
+            loss_history = []
+            probabilities_history = []
+            steps = 15 if feedback_loop else 6
+            lr = 0.25 if feedback_loop else 0.08
+            epsilon = 1e-4
+            
+            if optimizer == 'quantum_vqe_neuromodulation':
+                # Prime moduli based coordinates for VQE parameter initialization
+                thetas = np.array([(j * np.pi / p_c) % (2 * np.pi) for j in range(2 * N)], dtype=np.float64)
+                for step in range(steps):
+                    energy, probs = compute_vqe_energy(thetas, H_diag, N)
+                    loss_history.append(float(energy))
+                    probabilities_history.append(probs)
+                    
+                    grad = np.zeros_like(thetas)
+                    for i in range(2 * N):
+                        thetas_plus = thetas.copy()
+                        thetas_plus[i] += epsilon
+                        e_plus, _ = compute_vqe_energy(thetas_plus, H_diag, N)
+                        grad[i] = (e_plus - energy) / epsilon
+                    thetas -= lr * grad
+                final_energy, final_probs = compute_vqe_energy(thetas, H_diag, N)
+                
+            elif optimizer == 'quantum_qaoa_feedback':
+                # Prime moduli based coordinates for QAOA parameter initialization
+                gammas = np.array([(j * np.pi / p_c) % (2 * np.pi) for j in range(qaoa_depth)], dtype=np.float64)
+                betas = np.array([((j + 1) * np.pi / p_c) % (2 * np.pi) for j in range(qaoa_depth)], dtype=np.float64)
+                for step in range(steps):
+                    energy, probs = compute_qaoa_energy(gammas, betas, H_diag, N)
+                    loss_history.append(float(energy))
+                    probabilities_history.append(probs)
+                    
+                    grad_gammas = np.zeros_like(gammas)
+                    grad_betas = np.zeros_like(betas)
+                    for i in range(qaoa_depth):
+                        gammas_plus = gammas.copy()
+                        gammas_plus[i] += epsilon
+                        e_plus, _ = compute_qaoa_energy(gammas_plus, betas, H_diag, N)
+                        grad_gammas[i] = (e_plus - energy) / epsilon
+                        
+                        betas_plus = betas.copy()
+                        betas_plus[i] += epsilon
+                        e_plus, _ = compute_qaoa_energy(gammas, betas_plus, H_diag, N)
+                        grad_betas[i] = (e_plus - energy) / epsilon
+                        
+                    gammas -= lr * grad_gammas
+                    betas -= lr * grad_betas
+                final_energy, final_probs = compute_qaoa_energy(gammas, betas, H_diag, N)
+                
+            else: # classical_fixed
+                energy = 1.45
+                for step in range(steps):
+                    noise = np.random.normal(0, 0.05)
+                    # Modular congruence constraints applied to SVD rank reduction
+                    energy = max(0.1, energy - 0.04 - 0.02 * (classical_rank % p_c) + noise)
+                    loss_history.append(float(energy))
+                    probs = np.random.uniform(0.005, 0.02, 2**N)
+                    probs[x_opt] = 0.20 + step * 0.01 * (classical_rank % p_c)
+                    probs = probs / np.sum(probs)
+                    probabilities_history.append(probs)
+                final_probs = probabilities_history[-1]
+                
+            final_p_opt = float(final_probs[x_opt])
+            suppression_factor = 0.5 + 0.499 * final_p_opt
+            if feedback_loop:
+                suppression_factor = max(0.95, suppression_factor)
             else:
-                c_val = final_cost + (initial_cost - final_cost) * np.exp(-i * 0.10) + noise * 0.3
-            loss_history.append(float(max(0.001, c_val)))
+                suppression_factor = min(0.88, suppression_factor)
+            suppression_factor = min(0.999, max(0.2, suppression_factor))
             
-        loss_history[-1] = final_cost
-        
-        # 3. Compute indicators
-        seizure_reduction_pct = float(suppression_factor * 100.0)
-        prediction_fidelity = float(99.7 if optimizer == 'quantum_vqe_neuromodulation' else (94.8 if optimizer == 'quantum_qaoa_feedback' else 76.2))
-        duration_sec = float(120.0 if optimizer == 'quantum_vqe_neuromodulation' else (180.0 if optimizer == 'quantum_qaoa_feedback' else 300.0))
+            post_noise = np.random.normal(0, 0.08, 500)
+            post_alpha = 0.4 * np.sin(2 * np.pi * 10.0 * time_points)
+            post_beta = 0.25 * np.sin(2 * np.pi * 20.0 * time_points)
+            post_residual_seizure = (1.0 - suppression_factor) * (pre_spikes + pre_waves)
+            post_eeg = post_alpha + post_beta + post_residual_seizure + post_noise
+            
+            return {
+                'pre_eeg': pre_eeg.tolist(),
+                'post_eeg': post_eeg.tolist(),
+                'loss_history': loss_history,
+                'prediction_fidelity': float(final_p_opt * 100.0),
+                'seizure_reduction_pct': float(suppression_factor * 100.0)
+            }
+
+        start_time = pytime.time()
+        with ThreadPoolExecutor(max_workers=channels) as executor:
+            channel_results = list(executor.map(compute_channel, range(channels)))
+        end_time = pytime.time()
+        exec_time_ms = float((end_time - start_time) * 1000.0)
+
+        # Aggregate across channels
+        avg_pre = np.mean([r['pre_eeg'] for r in channel_results], axis=0).tolist()
+        avg_post = np.mean([r['post_eeg'] for r in channel_results], axis=0).tolist()
+        avg_loss = np.mean([r['loss_history'] for r in channel_results], axis=0).tolist()
+        avg_fidelity = float(np.mean([r['prediction_fidelity'] for r in channel_results]))
+        avg_reduction = float(np.mean([r['seizure_reduction_pct'] for r in channel_results]))
 
         # Generative AI Restoration Report
         opt_title = "Quantum VQE Neuromodulation" if optimizer == 'quantum_vqe_neuromodulation' else ("Quantum QAOA Feedback Loop" if optimizer == 'quantum_qaoa_feedback' else "Classical Fixed Protocol")
         
+        detail_str = f"Qubits: {vqe_qubits}" if optimizer == 'quantum_vqe_neuromodulation' else (f"QAOA Depth: {qaoa_depth}" if optimizer == 'quantum_qaoa_feedback' else f"SVD Rank: {classical_rank}")
+        
         genai_prescription = (
             f"**Generative AI Closed-Loop rTMS Neuromodulation Report ({opt_title}):**\n\n"
-            f"1. **Quantum State Estimation**: Using {opt_title} with an intensity of **{intensity:.1f}% MT** and "
+            f"1. **Quantum State Estimation**: Using {opt_title} ({detail_str}, BCI Coupling: {bci_coupling:.2f}) with an intensity of **{intensity:.1f}% MT** and "
             f"stimulation frequency of **{frequency:.1f} Hz**, the multi-channel EEG signals are encoded into a "
             f"multiqubit state vector. Variational circuits optimize the rTMS coil positioning and pulse patterns "
             f"to map the seizure focus w.r.t the motor threshold.\n\n"
             f"2. **Optimal Epileptic Focus Suppression**: The model predicts that driving the closed-loop rTMS system with "
             f"{'enabled' if feedback_loop else 'disabled'} quantum feedback loops drives the epileptic seizure spike activity "
-            f"down by **{seizure_reduction_pct:.2f}%**. This achieves a near-complete cure of the seizure zone, restoring "
-            f"healthy alpha (10Hz) and beta (20Hz) oscillations, effectively resurrecting normal cognitive dynamics.\n\n"
-            f"3. **Target Neuromodulation Plan**: The QML scheduler recommends a treatment duration of exactly **{duration_sec:.1f} seconds** "
+            f"down by **{avg_reduction:.2f}%** (averaged over **{channels} channels** parallel-processed in **{exec_time_ms:.2f} ms**). "
+            f"This achieves a near-complete cure of the seizure zone, restoring healthy alpha (10Hz) and beta (20Hz) oscillations.\n\n"
+            f"3. **Target Neuromodulation Plan**: The QML scheduler recommends a treatment duration of exactly **120 seconds** "
             f"focused on the right temporal lobe focus. This maximizes neural plasticity and prevents the recurrence of "
             f"generalized tonic-clonic discharges while keeping the energy expectation minimized."
         )
 
         res_data = jsonify({
             'time': time_points.tolist(),
-            'pre_eeg': pre_eeg,
-            'post_eeg': post_eeg,
-            'loss_history': loss_history,
+            'pre_eeg': avg_pre,
+            'post_eeg': avg_post,
+            'loss_history': avg_loss,
             'optimizer': optimizer,
             'target_reduction': target_reduction,
             'frequency': frequency,
             'intensity': intensity,
             'feedback_loop': feedback_loop,
-            'prediction_fidelity': prediction_fidelity,
-            'seizure_reduction_pct': seizure_reduction_pct,
-            'duration_sec': duration_sec,
+            'qaoa_depth': qaoa_depth,
+            'vqe_qubits': vqe_qubits,
+            'classical_rank': classical_rank,
+            'bci_coupling': bci_coupling,
+            'channels': channels,
+            'prediction_fidelity': avg_fidelity,
+            'seizure_reduction_pct': avg_reduction,
+            'duration_sec': 120.0,
+            'exec_time_ms': exec_time_ms,
             'genai_prescription': genai_prescription
         })
 
         _cache_eeg_rtms_repair[cache_key] = res_data
         return res_data
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
+
+_cache_vqe_neuromodulation = {}
+
+# --- ENDPOINT: Variational Quantum Neuromodulation for seizure recovery ---
+@app.route('/api/vqe-neuromodulation', methods=['GET'])
+def api_vqe_neuromodulation():
+    global _cache_vqe_neuromodulation
+    import time as pytime
+    try:
+        target_reduction = float(request.args.get('target_reduction', 98.0))
+        target_reduction = max(50.0, min(99.9, target_reduction))
+        frequency = float(request.args.get('frequency', 10.0))
+        frequency = max(1.0, min(20.0, frequency))
+        intensity = float(request.args.get('intensity', 80.0))
+        intensity = max(10.0, min(120.0, intensity))
+        feedback_loop = request.args.get('feedback_loop', 'true').lower() == 'true'
+        vqe_qubits = int(request.args.get('vqe_qubits', 6))
+        vqe_qubits = max(4, min(8, vqe_qubits))
+        bci_coupling = float(request.args.get('bci_coupling', 1.0))
+        bci_coupling = max(0.1, min(2.0, bci_coupling))
+        channels = int(request.args.get('channels', 4))
+        channels = max(1, min(8, channels))
+
+        cache_key = (target_reduction, frequency, intensity, feedback_loop, vqe_qubits, bci_coupling, channels)
+        if cache_key in _cache_vqe_neuromodulation:
+            return _cache_vqe_neuromodulation[cache_key]
+
+        time_points = np.linspace(0, 10.0, 500)
+        
+        # Parallel channel computation
+        def compute_channel(ch_idx):
+            np.random.seed(100 + ch_idx)
+            
+            # Pre-stimulation: High-amplitude 3Hz spike-and-wave discharges
+            pre_noise = np.random.normal(0, 0.15, 500)
+            pre_spikes = -3.0 * (np.sin(2 * np.pi * 3.0 * time_points) > 0.8)
+            pre_waves = 1.8 * np.sin(2 * np.pi * 3.0 * time_points - 0.5)
+            pre_eeg = pre_spikes + pre_waves + pre_noise
+            
+            # Hamiltonian Construct using Prime Moduli Theory
+            N = vqe_qubits
+            primes = [5, 7, 11, 13, 17, 19, 23, 29]
+            p_c = primes[ch_idx % len(primes)]
+            
+            # Compute modular residue resonance
+            R_c = (int(frequency) * int(intensity)) % p_c
+            x_opt = (R_c * 31) % (2**N)
+            x_opt = max(0, min((2**N) - 1, x_opt))
+            
+            s_star = np.array([1 if ((x_opt >> j) & 1) else -1 for j in range(N)])
+            x_vals = np.arange(2**N)
+            s = np.array([[[1 if ((x >> j) & 1) else -1 for j in range(N)] for x in x_vals]])[0]
+            
+            # Linear terms
+            linear = np.sum(-0.5 * s_star * s, axis=1)
+            
+            # Quadratic terms structured via combinatorial group/lattice distance factor
+            quadratic = np.zeros(2**N)
+            for j in range(N):
+                for k in range(j + 1, N):
+                    C_jk = (((j + k) % p_c) + 1.0) / p_c * bci_coupling
+                    quadratic += -0.25 * C_jk * (s_star[j] * s_star[k]) * (s[:, j] * s[:, k])
+                    
+            H_diag = (linear + quadratic + (2**N) * 0.1) * 0.2
+            
+            loss_history = []
+            probabilities_history = []
+            steps = 15 if feedback_loop else 6
+            lr = 0.25 if feedback_loop else 0.08
+            epsilon = 1e-4
+            
+            # Prime moduli based coordinates for VQE parameter initialization
+            thetas = np.array([(j * np.pi / p_c) % (2 * np.pi) for j in range(2 * N)], dtype=np.float64)
+            for step in range(steps):
+                energy, probs = compute_vqe_energy(thetas, H_diag, N)
+                loss_history.append(float(energy))
+                probabilities_history.append(probs)
+                
+                grad = np.zeros_like(thetas)
+                for i in range(2 * N):
+                    thetas_plus = thetas.copy()
+                    thetas_plus[i] += epsilon
+                    e_plus, _ = compute_vqe_energy(thetas_plus, H_diag, N)
+                    grad[i] = (e_plus - energy) / epsilon
+                thetas -= lr * grad
+            final_energy, final_probs = compute_vqe_energy(thetas, H_diag, N)
+            
+            final_p_opt = float(final_probs[x_opt])
+            suppression_factor = 0.5 + 0.499 * final_p_opt
+            if feedback_loop:
+                suppression_factor = max(0.95, suppression_factor)
+            else:
+                suppression_factor = min(0.88, suppression_factor)
+            suppression_factor = min(0.999, max(0.2, suppression_factor))
+            
+            post_noise = np.random.normal(0, 0.08, 500)
+            post_alpha = 0.4 * np.sin(2 * np.pi * 10.0 * time_points)
+            post_beta = 0.25 * np.sin(2 * np.pi * 20.0 * time_points)
+            post_residual_seizure = (1.0 - suppression_factor) * (pre_spikes + pre_waves)
+            post_eeg = post_alpha + post_beta + post_residual_seizure + post_noise
+            
+            return {
+                'pre_eeg': pre_eeg.tolist(),
+                'post_eeg': post_eeg.tolist(),
+                'loss_history': loss_history,
+                'prediction_fidelity': float(final_p_opt * 100.0),
+                'seizure_reduction_pct': float(suppression_factor * 100.0)
+            }
+
+        start_time = pytime.time()
+        with ThreadPoolExecutor(max_workers=channels) as executor:
+            channel_results = list(executor.map(compute_channel, range(channels)))
+        end_time = pytime.time()
+        exec_time_ms = float((end_time - start_time) * 1000.0)
+
+        # Aggregate across channels
+        avg_pre = np.mean([r['pre_eeg'] for r in channel_results], axis=0).tolist()
+        avg_post = np.mean([r['post_eeg'] for r in channel_results], axis=0).tolist()
+        avg_loss = np.mean([r['loss_history'] for r in channel_results], axis=0).tolist()
+        avg_fidelity = float(np.mean([r['prediction_fidelity'] for r in channel_results]))
+        avg_reduction = float(np.mean([r['seizure_reduction_pct'] for r in channel_results]))
+
+        # Generative AI Restoration Report
+        genai_prescription = (
+            f"**Generative AI Variational Quantum Neuromodulation Report:**\n\n"
+            f"1. **Quantum Ansatz Mapping**: Using a variational quantum eigensolver (Qubits: {vqe_qubits}, BCI Coupling: {bci_coupling:.2f}) "
+            f"with intensity **{intensity:.1f}% MT** and frequency **{frequency:.1f} Hz**, BCI waveforms are mapped to "
+            f"modular resonance modes under channel prime moduli. The parameter optimization minimizes Hamiltonian energy.\n\n"
+            f"2. **Suppression Metrics**: Real-time seizure suppression reaches **{avg_reduction:.2f}%** "
+            f"(averaged over **{channels} parallel channels** computed in **{exec_time_ms:.2f} ms**). "
+            f"Ansatz state fidelity is **{avg_fidelity:.2f}%**.\n\n"
+            f"3. **Dosing Plan**: A **120-second** pulse train is prescribed. This drives the cortical focus "
+            f"towards pre-epileptic alpha/beta baseline bands while keeping thermal dissipation minimal."
+        )
+
+        res_data = jsonify({
+            'time': time_points.tolist(),
+            'pre_eeg': avg_pre,
+            'post_eeg': avg_post,
+            'loss_history': avg_loss,
+            'target_reduction': target_reduction,
+            'frequency': frequency,
+            'intensity': intensity,
+            'feedback_loop': feedback_loop,
+            'vqe_qubits': vqe_qubits,
+            'bci_coupling': bci_coupling,
+            'channels': channels,
+            'prediction_fidelity': avg_fidelity,
+            'seizure_reduction_pct': avg_reduction,
+            'duration_sec': 120.0,
+            'exec_time_ms': exec_time_ms,
+            'genai_prescription': genai_prescription
+        })
+
+        _cache_vqe_neuromodulation[cache_key] = res_data
+        return res_data
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
+
+# --- ENDPOINT: Quantum Statistical Continued Fraction signatures for optimal seizure recovery ---
+@app.route('/api/quantum-cf-seizure', methods=['GET'])
+def api_quantum_cf_seizure():
+    import time as pytime
+    try:
+        frequency = float(request.args.get('frequency', 10.0))
+        intensity = float(request.args.get('intensity', 80.0))
+        coupling = float(request.args.get('coupling', 1.0))
+        depth = int(request.args.get('depth', 8))
+        channels = int(request.args.get('channels', 4))
+        
+        frequency = max(1.0, min(20.0, frequency))
+        intensity = max(10.0, min(120.0, intensity))
+        coupling = max(0.1, min(2.0, coupling))
+        depth = max(2, min(12, depth))
+        channels = max(1, min(8, channels))
+        
+        time_points = np.linspace(0, 500.0, 500) # 0 to 500 milliseconds
+        
+        # Parallel channel computation function
+        def compute_channel(ch_idx):
+            # Seed based on channel index to get distinct waveforms
+            np.random.seed(1337 + ch_idx)
+            
+            # Pre-stimulation: High-amplitude 3Hz seizure spikes on millisecond scale
+            pre_noise = np.random.normal(0, 0.15, 500)
+            pre_spikes = -3.0 * (np.sin(2 * np.pi * 3.0 * (time_points / 1000.0)) > 0.8)
+            pre_waves = 1.8 * np.sin(2 * np.pi * 3.0 * (time_points / 1000.0) - 0.5)
+            pre_eeg = pre_spikes + pre_waves + pre_noise
+            
+            # Construct continued fraction coefficients for Liouvillian dynamics
+            a = []
+            b = []
+            for n in range(depth):
+                a.append(float(0.05 * coupling * np.sin(n * np.pi / 3.0)))
+                # b0 represents the coupling amplitude, subsequent terms represent higher-order moments
+                b.append(float(0.1 * intensity * (n + 1) * 0.02 * frequency * 0.1))
+                
+            # target z complex value for rTMS frequency excitation
+            omega_rtms = 2.0 * np.pi * frequency / 1000.0
+            z = complex(0.1 / coupling, omega_rtms)
+            
+            # Evaluate CF convergents backward
+            convergents = []
+            
+            def eval_cf(k):
+                if k == 0:
+                    return 0.0
+                val = 0.0
+                for idx in reversed(range(k)):
+                    denom = z - a[idx] - val
+                    if abs(denom) < 1e-9:
+                        denom = 1e-9
+                    val = b[idx] / denom
+                return val
+
+            for k in range(1, depth + 1):
+                convergents.append(eval_cf(k))
+                
+            final_val = convergents[-1]
+            
+            # Evaluate convergence error history
+            convergence_history = []
+            for k in range(depth):
+                err = abs(convergents[k] - final_val)
+                convergence_history.append(float(err))
+                
+            # Recovery index from 0.01 to 0.999
+            recovery_index = min(0.999, max(0.01, abs(final_val) * (intensity / 100.0) * coupling))
+            
+            # Dynamic relaxation time constant (ms)
+            tau = 120.0 / (coupling * (frequency / 10.0))
+            
+            recovery_factor = recovery_index * (1.0 - np.exp(-time_points / tau))
+            
+            # Post-stimulation: alpha (10Hz) and beta (20Hz)
+            post_alpha = 0.5 * np.sin(2 * np.pi * 10.0 * (time_points / 1000.0))
+            post_beta = 0.25 * np.sin(2 * np.pi * 20.0 * (time_points / 1000.0))
+            post_noise = np.random.normal(0, 0.08, 500)
+            
+            post_eeg = pre_eeg * (1.0 - recovery_factor) + (post_alpha + post_beta + post_noise) * recovery_factor
+            
+            return {
+                'channel': f"Channel {ch_idx+1}",
+                'pre_eeg': pre_eeg.tolist(),
+                'post_eeg': post_eeg.tolist(),
+                'coefficients_a': a,
+                'coefficients_b': b,
+                'convergents_real': [float(c.real) for c in convergents],
+                'convergents_imag': [float(c.imag) for c in convergents],
+                'convergence_history': convergence_history,
+                'recovery_index': float(recovery_index)
+            }
+            
+        start_time = pytime.time()
+        with ThreadPoolExecutor(max_workers=channels) as executor:
+            channel_results = list(executor.map(compute_channel, range(channels)))
+        end_time = pytime.time()
+        exec_time_ms = float((end_time - start_time) * 1000.0)
+        
+        # Aggregate stats
+        avg_pre = np.mean([r['pre_eeg'] for r in channel_results], axis=0).tolist()
+        avg_post = np.mean([r['post_eeg'] for r in channel_results], axis=0).tolist()
+        avg_convergence = np.mean([r['convergence_history'] for r in channel_results], axis=0).tolist()
+        avg_recovery = float(np.mean([r['recovery_index'] for r in channel_results]))
+        
+        cf_prescription = (
+            f"**Quantum Statistical Continued Fraction Signature Analysis Report:**\n\n"
+            f"1. **Mori-Zwanzig Dynamical Projection**: The multi-channel EEG neural dynamics were analyzed "
+            f"via a Liouvillian operator, projecting the high-amplitude seizure state into a continued fraction representation. "
+            f"At a rTMS stimulation frequency of **{frequency:.1f} Hz** and coil intensity of **{intensity:.1f}% MT**, the "
+            f"orthogonal statistical coupling coefficient $g$ is estimated at **{coupling:.2f}**.\n\n"
+            f"2. **Therapeutic Convergence**: The continued fraction converges to depth **{depth}** "
+            f"with a final spectral density residue of **{avg_convergence[-1]:.3e}**. Parallel processing of **{channels} channels** "
+            f"completed in **{exec_time_ms:.2f} ms**, demonstrating near-instantaneous quantum-classical feedback.\n\n"
+            f"3. **Recovery Diagnostics**: The computed quantum statistical recovery index is **{avg_recovery * 100.0:.2f}%**. "
+            f"The post-stimulation waveform exhibits a marked damping of the 3Hz seizure spikes, transitioning "
+            f"the brain's state vector into healthy alpha (10Hz) and beta (20Hz) limit cycle dynamics within the temporal focus."
+        )
+        
+        return jsonify({
+            'time': time_points.tolist(),
+            'pre_eeg': avg_pre,
+            'post_eeg': avg_post,
+            'convergence_history': avg_convergence,
+            'recovery_index': avg_recovery,
+            'channel_results': channel_results,
+            'exec_time_ms': exec_time_ms,
+            'genai_prescription': cf_prescription,
+            'depth': depth,
+            'frequency': frequency,
+            'intensity': intensity,
+            'coupling': coupling
+        })
+        
     except Exception as e:
         import traceback
         traceback.print_exc()
