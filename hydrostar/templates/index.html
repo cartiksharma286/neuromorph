@@ -988,6 +988,7 @@
                         <option value="gradient_descent" selected>Gradient Descent</option>
                         <option value="simulated_annealing">Simulated Annealing</option>
                         <option value="qml_unsupervised_grid">QML Unsupervised + GCP Grid Partitioning</option>
+                        <option value="quantum_natural_gradient">Quantum Natural Gradient Descent</option>
                     </select>
                 </div>
 
@@ -3093,7 +3094,7 @@
                         x: data.months, y: data.turbidity_24m_opt_upper,
                         type: 'scatter', mode: 'lines',
                         line: {width: 0}, fill: 'tonexty',
-                        fillcolor: optimizer === 'qml_unsupervised_grid' ? 'rgba(192, 132, 252, 0.12)' : 'rgba(56, 189, 248, 0.12)',
+                        fillcolor: (optimizer === 'qml_unsupervised_grid' || optimizer === 'quantum_natural_gradient') ? 'rgba(192, 132, 252, 0.12)' : 'rgba(56, 189, 248, 0.12)',
                         name: 'Active 95% Confidence Band', hoverinfo: 'skip'
                     };
                     
@@ -3120,6 +3121,12 @@
                         type: 'scatter', mode: 'lines',
                         name: 'QML Unsupervised + GCP Grid',
                         line: {color: '#c084fc', width: optimizer === 'qml_unsupervised_grid' ? 3.5 : 1.5}
+                    };
+                    const traceConvQNGD = {
+                        x: data.months, y: data.turbidity_24m_qngd,
+                        type: 'scatter', mode: 'lines',
+                        name: 'Quantum Natural Gradient',
+                        line: {color: '#ec4899', width: optimizer === 'quantum_natural_gradient' ? 3.5 : 1.5}
                     };
 
                     const layoutConv24m = {
@@ -3154,7 +3161,7 @@
 
                     Plotly.react('plot-turbidity-convergence-24m', [
                         traceConvLower, traceConvUpper,
-                        traceConvBase, traceConvGD, traceConvSA, traceConvQML
+                        traceConvBase, traceConvGD, traceConvSA, traceConvQML, traceConvQNGD
                     ], layoutConv24m, {
                         responsive: true,
                         modeBarButtonsToRemove: ['toImage'],
