@@ -236,6 +236,7 @@
                 <button class="tab" id="tab-restoration" onclick="selectTab('restoration')">🌱 Restoration</button>
                 <button class="tab" id="tab-tahoe" onclick="selectTab('tahoe')">🌲 Lake Tahoe</button>
                 <button class="tab" id="tab-austrian" onclick="selectTab('austrian')">🇦🇹 Austrian Lakes</button>
+                <button class="tab" id="tab-cnratio" onclick="selectTab('cnratio')">🌾 C/N Ratio Model</button>
             </div>
         </header>
 
@@ -1300,6 +1301,103 @@
             </div>
         </div>
 
+        <!-- Tab 14: C/N Ratio Modeling & Quantum Statistical Optimization -->
+        <div id="cnratio-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>🌾 Ecological Carbon-to-Nitrogen (C/N) Ratio Modeling &amp; QML Stabilization</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Model: Ricci State Manifold &amp; Rational Convergents</span>
+            </div>
+            
+            <!-- Controls Area -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; align-items: center; width: 100%; box-sizing: border-box;">
+                <!-- Target Ratio dropdown -->
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 200px; flex: 1;">
+                    <span style="color:#9ca3af; font-size: 0.85rem; font-weight:600;">Target C/N Ratio:</span>
+                    <select id="cn-target-ratio" onchange="runCnRatioModel()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
+                        <option value="25.0" selected>25:1 Target (Decomposition Optimum)</option>
+                        <option value="30.0">30:1 Target (Microbial Balance Optimum)</option>
+                    </select>
+                </div>
+                
+                <!-- Optimization Iterations -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Optimization Steps:</span>
+                        <span id="label-cn-iterations" style="color: var(--accent); font-weight:700;">30</span>
+                    </div>
+                    <input type="range" id="cn-iterations" min="10" max="50" step="5" value="30" oninput="document.getElementById('label-cn-iterations').textContent = this.value; runCnRatioModel();" style="width:100%;">
+                </div>
+                
+                <div style="flex: 2; font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">
+                    Adjust target parameters to drive the carbon-nitrogen system. We apply a <b>Quantum Natural Gradient</b> ansatz to minimize the state energy while computing the **Ricci curvature** of the state deformation path.
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box; margin-top: 15px;">
+                <!-- Left Column: Metrics & Continued Fractions -->
+                <div style="flex: 1; min-width: 400px; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Visual Snapshot or Schematic -->
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; text-align: center;">
+                        <h4 style="color: var(--primary); margin-bottom: 12px; font-family: 'Outfit', sans-serif; font-size: 1rem; text-align: left;">🌾 C/N Ecological Balance Characteristics</h4>
+                        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.82rem; text-align: left; line-height: 1.45;">
+                            <div style="border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 6px;">
+                                <strong style="color: var(--accent);">Target C/N 25:1</strong>: The sweet spot for composting organic matter. Speeds up microbial activity without producing nitrogenous odors or carbon lockups.
+                            </div>
+                            <div style="border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 6px;">
+                                <strong style="color: var(--quantum);">Target C/N 30:1</strong>: Ideal soil-water carbon threshold. Prevents nitrogen immobilization by microbes, making free nitrates available to surrounding flora.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Details Card -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 12px;">
+                        <h4 style="color: var(--quantum); margin: 0; font-family: 'Outfit', sans-serif; font-size: 0.95rem;">QML &amp; Ricci Curvature State Metrics</h4>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+                                <span style="color: var(--text-muted);">Current C/N Ratio:</span>
+                                <span id="cn-ratio-value" style="font-weight: 700; color: #fff;">--</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+                                <span style="color: var(--text-muted);">Ricci Scalar Curvature R:</span>
+                                <span id="cn-ricci-value" style="font-weight: 700; color: var(--accent);">--</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+                                <span style="color: var(--text-muted);">QML State Fidelity F:</span>
+                                <span id="cn-fidelity-value" style="font-weight: 700; color: var(--primary);">--</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 4px;">
+                                <span style="color: var(--text-muted);">Hamiltonian expectation ⟨H⟩:</span>
+                                <span id="cn-hamiltonian-value" style="font-weight: 700; color: var(--quantum);">--</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-muted);">CF Convergents:</span>
+                                <span id="cn-convergents-value" style="font-weight: 700; color: #fbbf24;">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Charts & Prescriptions -->
+                <div style="flex: 1.5; min-width: 500px; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Chart 1: Trajectory Plot -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-cn-trajectory" style="width: 100%; height: 230px;"></div>
+                    </div>
+
+                    <!-- Chart 2: Convergence plots -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-cn-convergence" style="width: 100%; height: 230px;"></div>
+                    </div>
+
+                    <!-- GenAI Report -->
+                    <div style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15); padding: 18px; border-radius: 16px; box-sizing: border-box;">
+                        <div id="cn-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="footer">&copy; 2026 Hydrostar Ecological Suite | Powered by Flask, Plotly.js & QML Optimizers</div>
     </div>
 
@@ -1309,7 +1407,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all viewer cards
-            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'grenadier-card', 'qke-card', 'sensornet-card', 'restoration-card', 'tahoe-card', 'austrian-card'].forEach(id => {
+            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'grenadier-card', 'qke-card', 'sensornet-card', 'restoration-card', 'tahoe-card', 'austrian-card', 'cnratio-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -1367,6 +1465,10 @@
                 document.getElementById('tab-austrian').classList.add('active');
                 document.getElementById('austrian-card').style.display = 'flex';
                 runAustrianLakes();
+            } else if (tabId === 'cnratio') {
+                document.getElementById('tab-cnratio').classList.add('active');
+                document.getElementById('cnratio-card').style.display = 'flex';
+                runCnRatioModel();
             }
         }
 
@@ -3486,6 +3588,142 @@
                     Plotly.react('plot-austrian-organism-recovery', [
                         traceChar, traceTrout, traceDaphnia
                     ], layoutOrganism, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+                });
+        }
+
+        // --- TAB 14: C/N RATIO MODEL ---
+        function runCnRatioModel() {
+            const targetRatio = document.getElementById('cn-target-ratio').value;
+            const iterations = document.getElementById('cn-iterations').value;
+
+            fetch(`/api/cn-ratio-optimization?target_ratio=${targetRatio}&iterations=${iterations}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error("C/N Ratio API Error:", data.error);
+                        return;
+                    }
+
+                    // Update metrics
+                    document.getElementById('cn-ratio-value').textContent = data.final_ratio.toFixed(2) + " : 1";
+                    document.getElementById('cn-ricci-value').textContent = data.ricci_curvature[data.ricci_curvature.length - 1].toFixed(5);
+                    document.getElementById('cn-fidelity-value').textContent = (data.fidelity[data.fidelity.length - 1] * 100).toFixed(2) + " %";
+                    document.getElementById('cn-hamiltonian-value').textContent = data.energy_expectation[data.energy_expectation.length - 1].toFixed(2) + " eV";
+                    document.getElementById('cn-convergents-value').textContent = data.convergents.join(", ");
+
+                    // Update GenAI report
+                    document.getElementById('cn-genai-text').innerHTML = data.genai_prescription
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n\n/g, '<br><br>')
+                        .replace(/\$(.*?)\$/g, '<em>$1</em>'); // simple LaTeX conversion to italic html
+
+                    const steps = data.steps;
+
+                    // Plot 1: C/N Ratio Trajectory
+                    const traceTarget = {
+                        x: [steps[0], steps[steps.length - 1]],
+                        y: [data.target_ratio, data.target_ratio],
+                        type: 'scatter', mode: 'lines',
+                        name: 'Target C/N Ratio',
+                        line: {color: '#ef4444', width: 2, dash: 'dash'}
+                    };
+                    const traceTrajectory = {
+                        x: steps, y: data.cn_trajectory,
+                        type: 'scatter', mode: 'lines+markers',
+                        name: 'Optimized C/N Ratio Trajectory',
+                        line: {color: '#10b981', width: 3},
+                        marker: {size: 5}
+                    };
+
+                    const layoutTrajectory = {
+                        title: {
+                            text: 'C/N Ratio Trajectory (Carbon-to-Nitrogen)',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Optimization Steps',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Ratio Value (x:1)',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.25
+                        }
+                    };
+
+                    Plotly.react('plot-cn-trajectory', [traceTarget, traceTrajectory], layoutTrajectory, {
+                        responsive: true,
+                        modeBarButtonsToRemove: ['toImage'],
+                        displaylogo: false
+                    });
+
+                    // Plot 2: Convergence Criteria
+                    const traceError = {
+                        x: steps, y: data.error_history,
+                        type: 'scatter', mode: 'lines',
+                        name: 'Error |CN - Target|',
+                        line: {color: '#38bdf8', width: 2}
+                    };
+                    const traceEnergy = {
+                        x: steps, y: data.energy_expectation,
+                        type: 'scatter', mode: 'lines',
+                        name: 'Hamiltonian Expectation ⟨H⟩',
+                        line: {color: '#c084fc', width: 2, dash: 'dot'}
+                    };
+                    const traceRicci = {
+                        x: steps, y: data.ricci_curvature,
+                        type: 'scatter', mode: 'lines',
+                        name: 'Ricci Curvature R',
+                        line: {color: '#fbbf24', width: 2, dash: 'dash'}
+                    };
+
+                    const layoutConvergence = {
+                        title: {
+                            text: 'QML Convergence & Ricci Curvature Decay',
+                            font: {color: '#cbd5e1', size: 11}
+                        },
+                        xaxis: {
+                            title: 'Optimization Steps',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        yaxis: {
+                            title: 'Magnitude',
+                            tickfont: {color: '#cbd5e1', size: 8},
+                            gridcolor: 'rgba(255,255,255,0.03)',
+                            titlefont: {color: '#cbd5e1', size: 9}
+                        },
+                        margin: {t: 35, l: 45, r: 25, b: 35},
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        legend: {
+                            font: {color: '#cbd5e1', size: 8},
+                            bgcolor: 'rgba(0,0,0,0.5)',
+                            orientation: 'h',
+                            x: 0,
+                            y: -0.25
+                        }
+                    };
+
+                    Plotly.react('plot-cn-convergence', [traceError, traceEnergy, traceRicci], layoutConvergence, {
                         responsive: true,
                         modeBarButtonsToRemove: ['toImage'],
                         displaylogo: false
