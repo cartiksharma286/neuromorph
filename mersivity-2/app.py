@@ -3115,6 +3115,7 @@ def dbs_waveforms():
         avg_current_a = frequency * charge_per_pulse_c + 15e-6 # adding 15uA baseline CPU current
         battery_hours = 1.0 / avg_current_a if avg_current_a > 0 else 100000
         battery_life_months = float(max(1.0, min(120.0, battery_hours / (24.0 * 30.5))))
+        battery_charged_pct = float(max(10.0, min(100.0, 100.0 - (avg_current_a * 120000.0))))
         
         # 2. Generate Waveform Time Series (50 ms window, 40 kHz sampling)
         fs = 40000.0
@@ -3230,7 +3231,8 @@ def dbs_waveforms():
                 'is_safe': is_safe,
                 'duty_cycle_pct': duty_cycle,
                 'energy_per_pulse_uj': energy_per_pulse,
-                'estimated_battery_months': battery_life_months
+                'estimated_battery_months': battery_life_months,
+                'battery_charged_pct': battery_charged_pct
             },
             'clinical_metrics': clinical_metrics,
             'ai_recommendation': ai_recommendation
@@ -5380,6 +5382,135 @@ def api_quantum_cf_seizure():
             'coupling': coupling
         })
         
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
+# --- ENDPOINT: Neuropsychiatric Hebbian Amplification & Ecological Lake Restoration ---
+_cache_hebbian_lake_restoration = {}
+
+@app.route('/api/hebbian-lake-restoration', methods=['GET'])
+def api_hebbian_lake_restoration():
+    global _cache_hebbian_lake_restoration
+    import time as pytime
+    from concurrent.futures import ThreadPoolExecutor
+    try:
+        bubble_size = float(request.args.get('bubble_size', 20.0))
+        learning_rate = float(request.args.get('learning_rate', 0.1))
+        initial_pollution = float(request.args.get('initial_pollution', 80.0))
+        epochs = int(request.args.get('epochs', 50))
+        quantum_coupling = float(request.args.get('quantum_coupling', 1.0))
+        channels = int(request.args.get('channels', 4))
+        therapeutic_gain = float(request.args.get('therapeutic_gain', 1.2))
+
+        bubble_size = max(5.0, min(50.0, bubble_size))
+        learning_rate = max(0.01, min(0.5, learning_rate))
+        initial_pollution = max(10.0, min(100.0, initial_pollution)) / 100.0
+        epochs = max(10, min(100, epochs))
+        quantum_coupling = max(0.1, min(2.0, quantum_coupling))
+        channels = max(1, min(8, channels))
+        therapeutic_gain = max(0.5, min(3.0, therapeutic_gain))
+
+        cache_key = (bubble_size, learning_rate, initial_pollution, epochs, quantum_coupling, channels, therapeutic_gain)
+        if cache_key in _cache_hebbian_lake_restoration:
+            return _cache_hebbian_lake_restoration[cache_key]
+
+        start_time = pytime.time()
+        
+        def simulate_channel(ch_idx):
+            np.random.seed(200 + ch_idx)
+            w = 0.1
+            p = initial_pollution
+            r_nr = 0.15
+            
+            p_history = []
+            r_history = []
+            w_history = []
+            coherence_history = []
+            loss_history = []
+            
+            for ep in range(epochs):
+                theta_ep = ep * (bubble_size / 20.0) * quantum_coupling
+                cognitive_focus = 0.8 + 0.2 * np.sin(theta_ep)
+                lake_feedback = 1.0 - p
+                
+                dw = learning_rate * cognitive_focus * lake_feedback - 0.05 * w
+                w = max(0.01, min(5.0, w + dw))
+                
+                dp = -0.08 * w * p * (1.0 - 0.5 * np.exp(-quantum_coupling))
+                p = max(0.02, min(1.0, p + dp))
+                
+                dr_nr = 0.12 * w * lake_feedback * therapeutic_gain * (1.0 - r_nr)
+                r_nr = max(0.05, min(0.99, r_nr + dr_nr))
+                
+                coherence = 100.0 * (1.0 - 0.85 * np.exp(-0.15 * quantum_coupling * ep) * np.abs(np.cos(theta_ep)))
+                coherence_history.append(float(coherence))
+                
+                sys_energy = 0.5 * (p**2) + 0.5 * ((1.0 - r_nr)**2) - 0.1 * w
+                loss_history.append(float(sys_energy))
+                
+                p_history.append(float(p * 100.0))
+                r_history.append(float(r_nr * 100.0))
+                w_history.append(float(w))
+            
+            return {
+                'pollution': p_history,
+                'repair': r_history,
+                'weight': w_history,
+                'coherence': coherence_history,
+                'loss': loss_history
+            }
+
+        with ThreadPoolExecutor(max_workers=channels) as executor:
+            channel_results = list(executor.map(simulate_channel, range(channels)))
+            
+        end_time = pytime.time()
+        exec_time_ms = float((end_time - start_time) * 1000.0)
+
+        epochs_arr = list(range(epochs))
+        avg_pollution = np.mean([r['pollution'] for r in channel_results], axis=0).tolist()
+        avg_repair = np.mean([r['repair'] for r in channel_results], axis=0).tolist()
+        avg_weight = np.mean([r['weight'] for r in channel_results], axis=0).tolist()
+        avg_coherence = np.mean([r['coherence'] for r in channel_results], axis=0).tolist()
+        avg_loss = np.mean([r['loss'] for r in channel_results], axis=0).tolist()
+
+        final_pollution_pct = avg_pollution[-1]
+        final_repair_pct = avg_repair[-1]
+        final_weight = avg_weight[-1]
+        final_coherence_pct = avg_coherence[-1]
+
+        genai_report = (
+            f"**Mersivity Bubble Hebbian Amplification & Ecological Lake Restoration Report:**\n\n"
+            f"1. **Mersivity Bubble & Cognitive Intent**: The therapeutic exercise utilizes a bubble size of **{bubble_size:.1f} meters** "
+            f"operating under a Quantum Coupling of $\\chi = {quantum_coupling:.2f}$ to map neuropsychiatric repair coordinates. "
+            f"Via the Hebbian learning rate of $\\eta = {learning_rate:.3f}$, attentional coupling weight reached a maximum of **{final_weight:.3f}**.\n\n"
+            f"2. **Dual-Path Ecological & Neural Repair**: Parallel cleaners (**{channels} active zones**) simultaneously driven by "
+            f"the bubble's resonance achieved an initial lake pollution reduction from **{initial_pollution * 100.0:.1f}%** down to **{final_pollution_pct:.2f}%**. "
+            f"Simultaneously, the therapeutic neuropsychiatric repair index of the subject converged successfully to **{final_repair_pct:.2f}%**.\n\n"
+            f"3. **Quantum-Theoretic Correlate**: Quantum phase alignment between the observer's neural network and the aquatic eco-system's state vector "
+            f"yielded a final quantum coherence entanglement level of **{final_coherence_pct:.2f}%**. The consolidated Hamiltonian free energy was minimized "
+            f"from {avg_loss[0]:.3f} down to **{avg_loss[-1]:.3f}**, validating the deep biophilic feedback loop."
+        )
+
+        result_payload = {
+            'epochs': epochs_arr,
+            'pollution_history': avg_pollution,
+            'repair_history': avg_repair,
+            'hebbian_weights': avg_weight,
+            'quantum_coherence': avg_coherence,
+            'loss_history': avg_loss,
+            'exec_time_ms': exec_time_ms,
+            'final_pollution': final_pollution_pct,
+            'final_repair': final_repair_pct,
+            'final_coherence': final_coherence_pct,
+            'final_weight': final_weight,
+            'genai_report': genai_report
+        }
+
+        _cache_hebbian_lake_restoration[cache_key] = jsonify(result_payload)
+        return _cache_hebbian_lake_restoration[cache_key]
+
     except Exception as e:
         import traceback
         traceback.print_exc()
