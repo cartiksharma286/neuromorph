@@ -230,6 +230,7 @@
                 <button class="tab" id="tab-coolpool" onclick="selectTab('coolpool')">📊 Cool Pool Stats</button>
                 <button class="tab" id="tab-conservation2045" onclick="selectTab('conservation2045')">🔮 2045 Conservation</button>
                 <button class="tab" id="tab-lidar" onclick="selectTab('lidar')">📡 LiDAR & Hardware</button>
+                <button class="tab" id="tab-circuitry" onclick="selectTab('circuitry')">📻 Sensor Circuitry</button>
                 <button class="tab" id="tab-grenadier" onclick="selectTab('grenadier')">🏞️ Grenadier Pond</button>
                 <button class="tab" id="tab-qke" onclick="selectTab('qke')">🔮 Quantum Kalman</button>
                 <button class="tab" id="tab-sensornet" onclick="selectTab('sensornet')">🌐 Sensor Network</button>
@@ -239,6 +240,7 @@
                 <button class="tab" id="tab-cnratio" onclick="selectTab('cnratio')">🌾 C/N Ratio Model</button>
                 <button class="tab" id="tab-primeregressor" onclick="selectTab('primeregressor')">🔬 Prime Regressor</button>
                 <button class="tab" id="tab-ecoli" onclick="selectTab('ecoli')">🦠 E.coli Detection</button>
+                <button class="tab" id="tab-ecolidesign" onclick="selectTab('ecolidesign')">🎛️ E.coli Design Studio</button>
             </div>
         </header>
 
@@ -692,6 +694,108 @@
                         <div id="lidar-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
                             <!-- Advisory details go here -->
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="circuitry-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>📻 Sensor Electrical Circuitry, RF Telemetry & Raspberry Pi Embedded Design</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">Model: Analog Front-End Schematic, RF Backhaul, QML Co-Optimization</span>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                <div style="flex: 0 0 360px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 14px;">
+                        <h4 style="color: var(--accent); margin: 0; font-family: 'Outfit', sans-serif;">Embedded Circuit Controls</h4>
+
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <span style="color:#9ca3af; font-size:0.84rem; font-weight:600;">Sensor Stack</span>
+                            <select id="circuit-sensor-type" onchange="runSensorCircuitry()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
+                                <option value="ecoli_array" selected>E.coli Electrochemical Array</option>
+                                <option value="multiparameter_sonde">Multiparameter Sonde</option>
+                                <option value="optical_biofilm">Optical Biofilm Sentinel</option>
+                            </select>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <span style="color:#9ca3af; font-size:0.84rem; font-weight:600;">RF Telemetry Band</span>
+                            <select id="circuit-rf-band" onchange="runSensorCircuitry()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
+                                <option value="433">433 MHz Long-Reach</option>
+                                <option value="915" selected>915 MHz LoRa / FSK</option>
+                                <option value="2400">2.4 GHz Mesh</option>
+                            </select>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <span style="color:#9ca3af; font-size:0.84rem; font-weight:600;">Raspberry Pi Module</span>
+                            <select id="circuit-pi-model" onchange="runSensorCircuitry()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
+                                <option value="zero2w">Raspberry Pi Zero 2 W</option>
+                                <option value="pi4">Raspberry Pi 4B</option>
+                                <option value="cm4" selected>Raspberry Pi CM4</option>
+                            </select>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Analog Gain:</span><span id="label-circuit-gain" style="color:var(--secondary); font-weight:700;">42 dB</span></div>
+                            <input type="range" id="circuit-gain" min="18" max="72" step="2" value="42" oninput="document.getElementById('label-circuit-gain').textContent=this.value+' dB'; runSensorCircuitry();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <span style="color:#9ca3af; font-size:0.84rem; font-weight:600;">ADC Resolution</span>
+                            <select id="circuit-adc-bits" onchange="runSensorCircuitry()" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; color:#fff; width:100%;">
+                                <option value="16">16-bit</option>
+                                <option value="18">18-bit</option>
+                                <option value="24" selected>24-bit</option>
+                            </select>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>QML Circuit Depth:</span><span id="label-circuit-qml-depth" style="color:var(--quantum); font-weight:700;">6</span></div>
+                            <input type="range" id="circuit-qml-depth" min="2" max="14" step="1" value="6" oninput="document.getElementById('label-circuit-qml-depth').textContent=this.value; runSensorCircuitry();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Duty Cycle:</span><span id="label-circuit-duty" style="color:#10b981; font-weight:700;">35 %</span></div>
+                            <input type="range" id="circuit-duty" min="5" max="95" step="5" value="35" oninput="document.getElementById('label-circuit-duty').textContent=this.value+' %'; runSensorCircuitry();" style="width:100%;">
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <h5 style="color:var(--quantum); margin:0; font-family:'Outfit',sans-serif; font-size:0.9rem;">Circuit Performance Characteristics</h5>
+                        <div style="font-size:0.82rem; color:#cbd5e1; display:flex; flex-direction:column; gap:6px;">
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Signal-to-Noise:</span><span id="circuit-metric-snr" style="font-weight:700; color:#38bdf8;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Detection Fidelity:</span><span id="circuit-metric-fidelity" style="font-weight:700; color:#10b981;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Telemetry Range:</span><span id="circuit-metric-range" style="font-weight:700; color:#f59e0b;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Average Power:</span><span id="circuit-metric-power" style="font-weight:700; color:#fb7185;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Latency:</span><span id="circuit-metric-latency" style="font-weight:700; color:#c084fc;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Battery Endurance:</span><span id="circuit-metric-battery" style="font-weight:700; color:#93c5fd;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">QML Confidence:</span><span id="circuit-metric-qml" style="font-weight:700; color:#22d3ee;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Payload Throughput:</span><span id="circuit-metric-throughput" style="font-weight:700; color:#fde68a;">...</span></div>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
+                        <h5 style="color:var(--primary); margin:0; font-family:'Outfit',sans-serif; font-size:0.9rem;">Custom Embedded BOM</h5>
+                        <div id="circuit-components" style="display:flex; flex-direction:column; gap:8px;"></div>
+                    </div>
+                </div>
+
+                <div style="flex: 1; min-width: 520px; display: flex; flex-direction: column; gap: 20px;">
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="plot-circuit-schematic" style="width:100%; height:340px;"></div>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:16px;">
+                        <div style="flex:1; min-width:280px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="plot-circuit-performance" style="width:100%; height:300px;"></div>
+                        </div>
+                        <div style="flex:1; min-width:280px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="plot-circuit-qml" style="width:100%; height:300px;"></div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(56, 189, 248, 0.04); border: 1px solid rgba(56, 189, 248, 0.15); padding: 18px; border-radius: 16px;">
+                        <div id="circuit-genai-text" style="font-size:0.84rem; line-height:1.55; color:#cbd5e1;">Loading circuit synthesis...</div>
                     </div>
                 </div>
             </div>
@@ -1544,6 +1648,22 @@
                             <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Epochs:</span><span id="label-ec-epochs" style="color:#f59e0b; font-weight:700;">50</span></div>
                             <input type="range" id="ec-epochs" min="10" max="120" step="5" value="50" oninput="document.getElementById('label-ec-epochs').textContent=this.value; runEcoliDetectionDebounced();" style="width:100%;">
                         </div>
+
+                        <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+                                <div style="display:flex; flex-direction:column; gap:4px;">
+                                    <h5 style="margin:0; color:var(--quantum); font-family:'Outfit', sans-serif; font-size:0.92rem;">Custom Sensor Positions</h5>
+                                    <span style="font-size:0.76rem; color:var(--text-muted);">Normalized lake coordinates from 0.00 to 1.00 with per-sensor precision gain.</span>
+                                </div>
+                                <span id="ec-sensor-count" style="font-size:0.76rem; color:var(--accent); font-weight:700;">4 sensors</span>
+                            </div>
+                            <div id="ec-sensor-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button type="button" onclick="addEcoliSensorRow();" style="border:none; border-radius:999px; background:rgba(59,130,246,0.18); color:#dbeafe; padding:7px 12px; font-size:0.75rem; cursor:pointer;">+ Add Sensor</button>
+                                <button type="button" onclick="resetEcoliSensorRows();" style="border:none; border-radius:999px; background:rgba(16,185,129,0.18); color:#d1fae5; padding:7px 12px; font-size:0.75rem; cursor:pointer;">Reset Layout</button>
+                            </div>
+                            <div id="ec-sensor-layout-summary" style="font-size:0.74rem; color:var(--text-muted);">Detection geometry updates live as you reposition the probes.</div>
+                        </div>
                     </div>
 
                     <!-- Telemetry Index Box -->
@@ -1554,6 +1674,8 @@
                             <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Remaining NTU:</span><span id="ec-param-ntu" style="font-weight:700; color:#fb7185;">...</span></div>
                             <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Topological Curvature:</span><span id="ec-param-curvature" style="font-weight:700; color:#fbbf24;">...</span></div>
                             <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Phase Coherence:</span><span id="ec-param-coherence" style="font-weight:700; color:#06b6d4;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Detection Precision:</span><span id="ec-param-precision" style="font-weight:700; color:#c084fc;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Active Sensors:</span><span id="ec-param-sensors" style="font-weight:700; color:#93c5fd;">...</span></div>
                         </div>
                     </div>
 
@@ -1563,6 +1685,7 @@
                         <div style="font-size:0.82rem; display:flex; flex-direction:column; gap:7px;">
                             <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">EPA Recreational (&lt;100 CFU):</span><span id="ec-comp-epa" style="font-weight:700;">...</span></div>
                             <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Drinking Clarity (&lt;1.0 NTU):</span><span id="ec-comp-clarity" style="font-weight:700;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Priority Zone:</span><span id="ec-comp-focus" style="font-weight:700; color:#fbbf24;">...</span></div>
                         </div>
                     </div>
                 </div>
@@ -1577,9 +1700,151 @@
                             <div id="ec-plot-coherence-loss" style="width:100%; height:320px;"></div>
                         </div>
                     </div>
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="ec-plot-spatial" style="width:100%; height:360px;"></div>
+                    </div>
                     <div style="background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15); padding: 20px; border-radius: 16px;">
                         <h5 style="color:var(--primary); margin:0 0 12px; font-family:'Outfit',sans-serif;">🌱 Ephemeral Bioremediation Suggestions &amp; Ecological Care plan</h5>
                         <div id="ec-genai-text" style="font-size:0.84rem; line-height:1.6; color:#cbd5e1;">Loading analysis...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Tab: Advanced E.coli Design Studio -->
+        <div id="ecolidesign-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>🎛️ Advanced E.coli Electro-Chemical &amp; RF Sensor Design Studio</span>
+                <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 400;">Raspberry Pi Hardware Configuration &middot; Randles Spectroscopy &middot; RF S11 Transmission Matching &middot; QML SNR Optimization</span>
+            </div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%;">
+                
+                <!-- LEFT COLUMN: CONTROLS & PHYSICAL PARAMS -->
+                <div style="flex: 0 0 340px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 14px;">
+                        <h4 style="color: var(--accent); margin: 0; font-family: 'Outfit', sans-serif;">Electrode &amp; RF Controls</h4>
+                        
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                                <span>Operating Temp:</span>
+                                <span id="label-eds-temp" style="color:var(--accent); font-weight:700;">298.15 K</span>
+                            </div>
+                            <input type="range" id="eds-temp" min="273.15" max="330.15" step="1.0" value="298.15" oninput="document.getElementById('label-eds-temp').textContent=parseFloat(this.value).toFixed(2)+' K'; runAdvancedEcoliDesignDebounced();" style="width:100%;">
+                        </div>
+                        
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                                <span>Front-End Bandwidth:</span>
+                                <span id="label-eds-bw" style="color:var(--secondary); font-weight:700;">1.0 MHz</span>
+                            </div>
+                            <input type="range" id="eds-bw" min="10000" max="10000000" step="10000" value="1000000" oninput="document.getElementById('label-eds-bw').textContent=(parseFloat(this.value)/1.0e6).toFixed(2)+' MHz'; runAdvancedEcoliDesignDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                                <span>Base Charge-Transfer R_ct:</span>
+                                <span id="label-eds-rct" style="color:#fb7185; font-weight:700;">25.0 kΩ</span>
+                            </div>
+                            <input type="range" id="eds-rct" min="5000" max="100000" step="1000" value="25000" oninput="document.getElementById('label-eds-rct').textContent=(parseFloat(this.value)/1000.0).toFixed(1)+' kΩ'; runAdvancedEcoliDesignDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                                <span>Double Layer C_dl:</span>
+                                <span id="label-eds-cdl" style="color:var(--quantum); font-weight:700;">1.20 nF</span>
+                            </div>
+                            <input type="range" id="eds-cdl" min="0.10" max="10.00" step="0.10" value="1.20" oninput="document.getElementById('label-eds-cdl').textContent=parseFloat(this.value).toFixed(2)+' nF'; runAdvancedEcoliDesignDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                                <span>QML Filter Feedback Gain:</span>
+                                <span id="label-eds-qml" style="color:#06b6d4; font-weight:700;">1.50x</span>
+                            </div>
+                            <input type="range" id="eds-qml" min="0.10" max="3.00" step="0.05" value="1.50" oninput="document.getElementById('label-eds-qml').textContent=parseFloat(this.value).toFixed(2)+'x'; runAdvancedEcoliDesignDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                                <span>RF Resonance Frequency:</span>
+                                <span id="label-eds-rf" style="color:#10b981; font-weight:700;">1.00 MHz</span>
+                            </div>
+                            <input type="range" id="eds-rf" min="0.10" max="10.00" step="0.10" value="1.00" oninput="document.getElementById('label-eds-rf').textContent=parseFloat(this.value).toFixed(2)+' MHz'; runAdvancedEcoliDesignDebounced();" style="width:100%;">
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Summary Statistics Indicators -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <h5 style="color:var(--quantum); margin:0; font-family:'Outfit',sans-serif; font-size:0.9rem;">Physiological Design Metrics</h5>
+                        <div style="font-size:0.82rem; color:#cbd5e1; display:flex; flex-direction:column; gap:6px;">
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Resonant Match L-C Frequency:</span><span id="eds-metric-freq" style="font-weight:700; color:#10b981;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Optimal Return Loss (S11):</span><span id="eds-metric-s11" style="font-weight:700; color:#fb7185;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Max Classical SNR:</span><span id="eds-metric-classnr" style="font-weight:700; color:#fbbf24;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Max QML Filtered SNR:</span><span id="eds-metric-qmlsnr" style="font-weight:700; color:#06b6d4;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Instrumentation Noise Floor:</span><span id="eds-metric-noise" style="font-weight:700; color:#c084fc;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Total Embedded Device Cost:</span><span id="eds-metric-cost" style="font-weight:700; color:#93c5fd;">...</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Embedded Specs -->
+                    <div style="background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.2); padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 6px;">
+                        <h5 style="color:#60a5fa; margin:0; font-family:'Outfit',sans-serif; font-size:0.9rem;">Raspberry Pi Spec Host</h5>
+                        <div style="font-size:0.8rem; display:flex; flex-direction:column; gap:4px; color:#cbd5e1;">
+                            <div><strong>Host Controller:</strong> <span id="eds-spec-controller" style="color:#93c5fd;">Raspberry Pi 4</span></div>
+                            <div><strong>ADC Stage:</strong> <span id="eds-spec-adc" style="color:#93c5fd;">ADS1115 (16-bit)</span></div>
+                            <div><strong>RF Receiver:</strong> <span id="eds-spec-rf" style="color:#93c5fd;">AD8302 Phase/Gain</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: DYNAMIC SPECTRUM PLOTS -->
+                <div style="flex: 1; min-width: 500px; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Line 1: Spectroscopy Plots -->
+                    <div style="display:flex; flex-wrap:wrap; gap:16px;">
+                        <div style="flex:1; min-width:280px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="eds-plot-impedance" style="width:100%; height:320px;"></div>
+                        </div>
+                        <div style="flex:1; min-width:280px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="eds-plot-returnloss" style="width:100%; height:320px;"></div>
+                        </div>
+                    </div>
+                    <!-- Line 2: Concentration & Transconductance SNR -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                        <div id="eds-plot-snr" style="width:100%; height:340px;"></div>
+                    </div>
+
+                    <!-- Line 3: Bill of Materials & Technical Schematic -->
+                    <div style="display:flex; flex-wrap:wrap; gap:16px;">
+                        <!-- Bill of Materials Table -->
+                        <div style="flex:1.2; min-width:320px; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 15px;">
+                            <h5 style="color:var(--accent); margin:0 0 10px; font-family:'Outfit',sans-serif; font-size:0.95rem;">📋 Embedded Hardware Bill of Materials (BOM)</h5>
+                            <table style="width:100%; border-collapse:collapse; font-size:0.78rem; text-align:left; color:#e2e8f0;">
+                                <thead>
+                                    <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-muted);">
+                                        <th style="padding:6px;">Component Part</th>
+                                        <th style="padding:6px;">Manufacturer</th>
+                                        <th style="padding:6px; text-align:right;">Cost (USD)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eds-bom-table">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Embedded Systems Wiring Diagram -->
+                        <div style="flex:1.8; min-width:380px;">
+                            <h5 style="color:var(--quantum); margin:0 0 10px; font-family:'Outfit',sans-serif; font-size:0.95rem;">🔌 Raspberry Pi Pinout &amp; Analog Wiring Interface</h5>
+                            <pre id="eds-ascii-schematic" style="font-family:'Courier New', monospace; font-size:0.62rem; line-height:1.2; white-space:pre-wrap; background:#050b14; border:1px solid rgba(59,130,246,0.2); border-radius:12px; padding:15px; color:#38bdf8; margin:0; height:180px; overflow-y:auto;"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic AI Prescription card -->
+                    <div style="background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15); padding: 20px; border-radius: 16px;">
+                        <h5 style="color:var(--primary); margin:0 0 12px; font-family:'Outfit',sans-serif;">🔬 QML Embedded Transconductance Optimization Prescription</h5>
+                        <div id="eds-genai-text" style="font-size:0.84rem; line-height:1.6; color:#cbd5e1;">Calculating hardware optimization matrix...</div>
                     </div>
                 </div>
             </div>
@@ -1594,7 +1859,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all viewer cards
-            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'grenadier-card', 'qke-card', 'sensornet-card', 'restoration-card', 'tahoe-card', 'austrian-card', 'cnratio-card', 'primeregressor-card', 'ecoli-card'].forEach(id => {
+            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'circuitry-card', 'grenadier-card', 'qke-card', 'sensornet-card', 'restoration-card', 'tahoe-card', 'austrian-card', 'cnratio-card', 'primeregressor-card', 'ecoli-card', 'ecolidesign-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -1628,6 +1893,10 @@
                 document.getElementById('tab-lidar').classList.add('active');
                 document.getElementById('lidar-card').style.display = 'flex';
                 runLidarHardware();
+            } else if (tabId === 'circuitry') {
+                document.getElementById('tab-circuitry').classList.add('active');
+                document.getElementById('circuitry-card').style.display = 'flex';
+                runSensorCircuitry();
             } else if (tabId === 'grenadier') {
                 document.getElementById('tab-grenadier').classList.add('active');
                 document.getElementById('grenadier-card').style.display = 'flex';
@@ -1664,6 +1933,10 @@
                 document.getElementById('tab-ecoli').classList.add('active');
                 document.getElementById('ecoli-card').style.display = 'flex';
                 runEcoliDetection();
+            } else if (tabId === 'ecolidesign') {
+                document.getElementById('tab-ecolidesign').classList.add('active');
+                document.getElementById('ecolidesign-card').style.display = 'flex';
+                runAdvancedEcoliDesign();
             }
         }
 
@@ -2569,6 +2842,179 @@
                         displaylogo: false
                     });
                 });
+        }
+
+        function runSensorCircuitry() {
+            const sensorType = document.getElementById('circuit-sensor-type').value;
+            const rfBand = document.getElementById('circuit-rf-band').value;
+            const piModel = document.getElementById('circuit-pi-model').value;
+            const gainDb = document.getElementById('circuit-gain').value;
+            const adcBits = document.getElementById('circuit-adc-bits').value;
+            const qmlDepth = document.getElementById('circuit-qml-depth').value;
+            const dutyCycle = document.getElementById('circuit-duty').value;
+
+            fetch(`/api/sensor-circuitry?sensor_type=${sensorType}&rf_band=${rfBand}&pi_model=${piModel}&gain_db=${gainDb}&adc_bits=${adcBits}&qml_depth=${qmlDepth}&duty_cycle=${dutyCycle}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    const metrics = data.metrics;
+                    document.getElementById('circuit-metric-snr').textContent = `${metrics.snr_db.toFixed(1)} dB`;
+                    document.getElementById('circuit-metric-fidelity').textContent = `${metrics.fidelity_pct.toFixed(1)}%`;
+                    document.getElementById('circuit-metric-range').textContent = `${metrics.range_m.toFixed(0)} m`;
+                    document.getElementById('circuit-metric-power').textContent = `${metrics.avg_power_w.toFixed(2)} W`;
+                    document.getElementById('circuit-metric-latency').textContent = `${metrics.latency_ms.toFixed(1)} ms`;
+                    document.getElementById('circuit-metric-battery').textContent = `${metrics.battery_hours.toFixed(1)} h`;
+                    document.getElementById('circuit-metric-qml').textContent = `${metrics.qml_confidence.toFixed(1)}%`;
+                    document.getElementById('circuit-metric-throughput').textContent = `${metrics.throughput_kbps.toFixed(0)} kbps`;
+
+                    document.getElementById('circuit-genai-text').innerHTML = data.genai_prescription
+                        .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent); font-weight:700;">$1</strong>')
+                        .replace(/\n\n/g, '<br><br>');
+
+                    const componentContainer = document.getElementById('circuit-components');
+                    componentContainer.innerHTML = '';
+                    data.components.forEach((component) => {
+                        componentContainer.innerHTML += `
+                            <div style="background: rgba(15,23,42,0.55); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px 12px; display:flex; flex-direction:column; gap:4px;">
+                                <div style="display:flex; justify-content:space-between; gap:8px; font-size:0.79rem;">
+                                    <span style="color:#e2e8f0; font-weight:700;">${component.block}</span>
+                                    <span style="color:#93c5fd;">${component.selection}</span>
+                                </div>
+                                <div style="font-size:0.75rem; color:#94a3b8; line-height:1.4;">${component.purpose}</div>
+                            </div>
+                        `;
+                    });
+
+                    const nodeMap = Object.fromEntries(data.schematic.nodes.map((node) => [node.id, node]));
+                    const edgeX = [];
+                    const edgeY = [];
+                    data.schematic.edges.forEach((edge) => {
+                        const source = nodeMap[edge.source];
+                        const target = nodeMap[edge.target];
+                        if (!source || !target) {
+                            return;
+                        }
+                        edgeX.push(source.x, target.x, null);
+                        edgeY.push(source.y, target.y, null);
+                    });
+
+                    const edgeTrace = {
+                        x: edgeX,
+                        y: edgeY,
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: { color: 'rgba(148,163,184,0.75)', width: 2 },
+                        hoverinfo: 'skip',
+                        name: 'Signal Flow'
+                    };
+                    const nodeTrace = {
+                        x: data.schematic.nodes.map((node) => node.x),
+                        y: data.schematic.nodes.map((node) => node.y),
+                        text: data.schematic.nodes.map((node) => node.label),
+                        type: 'scatter',
+                        mode: 'markers+text',
+                        textposition: 'top center',
+                        textfont: { color: '#e2e8f0', size: 9 },
+                        marker: {
+                            size: 26,
+                            color: data.schematic.nodes.map((node) => ({ sensor: '#10b981', analog: '#38bdf8', digital: '#f59e0b', compute: '#c084fc', qml: '#22d3ee', rf: '#fb7185', power: '#fde68a', io: '#94a3b8' }[node.group] || '#38bdf8')),
+                            line: { color: '#0f172a', width: 1.4 }
+                        },
+                        hovertemplate: '%{text}<extra></extra>',
+                        name: 'Circuit Blocks'
+                    };
+
+                    Plotly.react('plot-circuit-schematic', [edgeTrace, nodeTrace], {
+                        title: { text: `${data.sensor_type_label} Schematic with ${data.pi_label} and ${data.rf_label}`, font: {color:'#cbd5e1', size:11} },
+                        xaxis: { visible: false, range: [0, 8] },
+                        yaxis: { visible: false, range: [0, 3.5] },
+                        margin: {t:40,l:10,r:10,b:10},
+                        paper_bgcolor:'rgba(0,0,0,0)',
+                        plot_bgcolor:'rgba(0,0,0,0)',
+                        showlegend: false
+                    }, {responsive:true, displaylogo:false});
+
+                    const perf = data.performance_sweep;
+                    const traceFidelity = {
+                        x: perf.gain_axis,
+                        y: perf.fidelity_curve,
+                        name: 'Detection Fidelity',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: { color: '#10b981', width: 2.5 },
+                        marker: { size: 4, color: '#10b981' }
+                    };
+                    const traceSnr = {
+                        x: perf.gain_axis,
+                        y: perf.snr_curve,
+                        name: 'SNR',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: { color: '#38bdf8', width: 2, dash: 'dot' }
+                    };
+                    const tracePower = {
+                        x: perf.gain_axis,
+                        y: perf.power_curve,
+                        name: 'Average Power',
+                        type: 'scatter',
+                        mode: 'lines',
+                        yaxis: 'y2',
+                        line: { color: '#fb7185', width: 2 }
+                    };
+
+                    Plotly.react('plot-circuit-performance', [traceFidelity, traceSnr, tracePower], {
+                        title: { text: 'Performance Characteristics vs Analog Gain', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'Front-End Gain (dB)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'Fidelity / SNR', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis2: { title: 'Power (W)', overlaying: 'y', side: 'right', tickfont:{color:'#cbd5e1',size:8}, titlefont:{color:'#cbd5e1',size:9} },
+                        margin: {t:40,l:45,r:45,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                    }, {responsive:true, displaylogo:false});
+
+                    const qml = data.optimization;
+                    const traceObjective = {
+                        x: qml.iterations,
+                        y: qml.objective_history,
+                        name: 'Objective',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: { color: '#c084fc', width: 2.4 },
+                        marker: { size: 4, color: '#c084fc' }
+                    };
+                    const traceOptFidelity = {
+                        x: qml.iterations,
+                        y: qml.fidelity_history,
+                        name: 'Fidelity',
+                        type: 'scatter',
+                        mode: 'lines',
+                        yaxis: 'y2',
+                        line: { color: '#22c55e', width: 2 }
+                    };
+                    const traceOptPower = {
+                        x: qml.iterations,
+                        y: qml.power_history,
+                        name: 'Power',
+                        type: 'scatter',
+                        mode: 'lines',
+                        yaxis: 'y3',
+                        line: { color: '#f97316', width: 1.8, dash: 'dash' }
+                    };
+
+                    Plotly.react('plot-circuit-qml', [traceObjective, traceOptFidelity, traceOptPower], {
+                        title: { text: 'Quantum ML Optimization Trajectory', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'Optimization Iteration', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'Objective', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis2: { title: 'Fidelity (%)', overlaying: 'y', side: 'right', tickfont:{color:'#cbd5e1',size:8}, titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis3: { title: 'Power (W)', anchor: 'free', overlaying: 'y', side: 'right', position: 0.94, tickfont:{color:'#cbd5e1',size:8}, titlefont:{color:'#cbd5e1',size:9} },
+                        margin: {t:40,l:45,r:55,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                    }, {responsive:true, displaylogo:false});
+                })
+                .catch(err => console.error('Error fetching sensor circuitry data:', err));
         }
 
         // --- TAB 8: GRENADIER POND LIGHTWATER RESTORATION ---
@@ -4044,6 +4490,124 @@
         }
 
         // --- TAB ECOLI: PRECISION E.COLI DETECTION ---
+        const defaultEcoliSensors = [
+            { label: 'North Inlet', x: 0.18, y: 0.82, sensitivity: 1.15 },
+            { label: 'Wetland Shelf', x: 0.34, y: 0.62, sensitivity: 1.05 },
+            { label: 'Bridge Outfall', x: 0.68, y: 0.58, sensitivity: 1.20 },
+            { label: 'South Basin', x: 0.76, y: 0.24, sensitivity: 0.95 }
+        ];
+
+        function clampEcoliValue(value, min, max, fallback) {
+            const numeric = parseFloat(value);
+            if (Number.isNaN(numeric)) {
+                return fallback;
+            }
+            return Math.min(max, Math.max(min, numeric));
+        }
+
+        function normalizeEcoliSensor(sensor, index) {
+            const fallbackLabel = `Sensor ${index + 1}`;
+            const label = String(sensor.label || fallbackLabel).trim().slice(0, 28);
+            return {
+                label: label || fallbackLabel,
+                x: clampEcoliValue(sensor.x, 0.02, 0.98, 0.50),
+                y: clampEcoliValue(sensor.y, 0.02, 0.98, 0.50),
+                sensitivity: clampEcoliValue(sensor.sensitivity, 0.4, 1.8, 1.0)
+            };
+        }
+
+        function readEcoliSensorRows() {
+            const rows = Array.from(document.querySelectorAll('#ec-sensor-list .ec-sensor-row'));
+            if (!rows.length) {
+                return defaultEcoliSensors.map((sensor, index) => normalizeEcoliSensor(sensor, index));
+            }
+
+            return rows.map((row, index) => normalizeEcoliSensor({
+                label: row.querySelector('[data-field="label"]').value,
+                x: row.querySelector('[data-field="x"]').value,
+                y: row.querySelector('[data-field="y"]').value,
+                sensitivity: row.querySelector('[data-field="sensitivity"]').value
+            }, index));
+        }
+
+        function updateEcoliSensorSummary() {
+            const sensors = readEcoliSensorRows();
+            const gain = sensors.reduce((sum, sensor) => sum + sensor.sensitivity, 0);
+            const centroidX = sensors.reduce((sum, sensor) => sum + sensor.x, 0) / sensors.length;
+            const centroidY = sensors.reduce((sum, sensor) => sum + sensor.y, 0) / sensors.length;
+
+            document.getElementById('ec-sensor-count').textContent = `${sensors.length} sensors`;
+            document.getElementById('ec-sensor-layout-summary').textContent =
+                `Array gain ${gain.toFixed(2)} with centroid (${centroidX.toFixed(2)}, ${centroidY.toFixed(2)}).`;
+        }
+
+        function buildEcoliSensorRow(sensor, index) {
+            const normalized = normalizeEcoliSensor(sensor, index);
+            const row = document.createElement('div');
+            row.className = 'ec-sensor-row';
+            row.style.display = 'grid';
+            row.style.gridTemplateColumns = '1.2fr 0.75fr 0.75fr 0.8fr auto';
+            row.style.gap = '6px';
+            row.style.alignItems = 'center';
+            row.innerHTML = `
+                <input data-field="label" value="${normalized.label}" style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); color:#e2e8f0; border-radius:10px; padding:7px 9px; font-size:0.76rem;">
+                <input data-field="x" type="number" min="0" max="1" step="0.01" value="${normalized.x.toFixed(2)}" style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); color:#e2e8f0; border-radius:10px; padding:7px 9px; font-size:0.76rem;">
+                <input data-field="y" type="number" min="0" max="1" step="0.01" value="${normalized.y.toFixed(2)}" style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); color:#e2e8f0; border-radius:10px; padding:7px 9px; font-size:0.76rem;">
+                <input data-field="sensitivity" type="number" min="0.4" max="1.8" step="0.05" value="${normalized.sensitivity.toFixed(2)}" style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); color:#e2e8f0; border-radius:10px; padding:7px 9px; font-size:0.76rem;">
+                <button type="button" style="border:none; border-radius:10px; background:rgba(239,68,68,0.16); color:#fecaca; padding:7px 9px; font-size:0.76rem; cursor:pointer;">Remove</button>
+            `;
+
+            row.querySelectorAll('input').forEach((input) => {
+                input.addEventListener('input', () => {
+                    updateEcoliSensorSummary();
+                    runEcoliDetectionDebounced();
+                });
+            });
+
+            row.querySelector('button').addEventListener('click', () => {
+                row.remove();
+                if (!document.querySelector('#ec-sensor-list .ec-sensor-row')) {
+                    addEcoliSensorRow({ label: 'Sensor 1', x: 0.50, y: 0.50, sensitivity: 1.0 }, false);
+                }
+                updateEcoliSensorSummary();
+                runEcoliDetectionDebounced();
+            });
+
+            return row;
+        }
+
+        function addEcoliSensorRow(sensor = null, triggerDetection = true) {
+            const container = document.getElementById('ec-sensor-list');
+            if (!container) {
+                return;
+            }
+
+            const nextIndex = container.children.length;
+            const nextSensor = sensor || { label: `Sensor ${nextIndex + 1}`, x: 0.50, y: 0.50, sensitivity: 1.0 };
+            container.appendChild(buildEcoliSensorRow(nextSensor, nextIndex));
+            updateEcoliSensorSummary();
+
+            if (triggerDetection) {
+                runEcoliDetectionDebounced();
+            }
+        }
+
+        function renderEcoliSensorRows(sensors) {
+            const container = document.getElementById('ec-sensor-list');
+            if (!container) {
+                return;
+            }
+
+            container.innerHTML = '';
+            (sensors || defaultEcoliSensors).forEach((sensor, index) => addEcoliSensorRow(sensor, false, index));
+            updateEcoliSensorSummary();
+        }
+
+        function resetEcoliSensorRows() {
+            renderEcoliSensorRows(defaultEcoliSensors);
+            runEcoliDetectionDebounced();
+        }
+
         let ecoliDebounceTimer = null;
         function runEcoliDetectionDebounced() {
             clearTimeout(ecoliDebounceTimer);
@@ -4058,8 +4622,9 @@
             const quantumPhase        = document.getElementById('ec-phase').value;
             const epochs              = document.getElementById('ec-epochs').value;
             const treatmentModifier   = document.getElementById('ec-treatment').value;
+            const sensorPositions     = encodeURIComponent(JSON.stringify(readEcoliSensorRows()));
 
-            const url = `/api/ecoli-quantum-detection?zones=${zones}&cfu_initial=${cfuInitial}&ntu_initial=${ntuInitial}&combinatoric_weight=${combinatoricWeight}&quantum_phase=${quantumPhase}&epochs=${epochs}&treatment_modifier=${treatmentModifier}`;
+            const url = `/api/ecoli-quantum-detection?zones=${zones}&cfu_initial=${cfuInitial}&ntu_initial=${ntuInitial}&combinatoric_weight=${combinatoricWeight}&quantum_phase=${quantumPhase}&epochs=${epochs}&treatment_modifier=${treatmentModifier}&sensor_positions=${sensorPositions}`;
 
             fetch(url)
                 .then(r => r.json())
@@ -4074,6 +4639,8 @@
                     document.getElementById('ec-param-ntu').textContent = parseFloat(data.final_ntu).toFixed(2) + " NTU";
                     document.getElementById('ec-param-curvature').textContent = parseFloat(data.final_curvature).toFixed(4);
                     document.getElementById('ec-param-coherence').textContent = parseFloat(data.final_coherence).toFixed(4);
+                    document.getElementById('ec-param-precision').textContent = parseFloat(data.spatial_detection.mean_precision_pct).toFixed(1) + "%";
+                    document.getElementById('ec-param-sensors').textContent = String(data.spatial_detection.sensor_count);
 
                     // Update Lake Bathing standards
                     const safeEPA = data.is_cfu_safe;
@@ -4086,6 +4653,8 @@
                     const clarityEl = document.getElementById('ec-comp-clarity');
                     clarityEl.textContent = safeClarity ? "✓ CLEAR WATER" : "✗ HIGH TURBIDITY (>1.0)";
                     clarityEl.style.color = safeClarity ? "#10b981" : "#ef4444";
+
+                    document.getElementById('ec-comp-focus').textContent = data.spatial_detection.recommended_focus;
 
                     // Update Markdown / Bioremediation advice
                     let txt = data.genai_report || "";
@@ -4156,13 +4725,251 @@
                         margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
                         legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
                     }, {responsive:true, displaylogo:false});
+
+                    const spatial = data.spatial_detection;
+                    const traceSpatialHeat = {
+                        x: spatial.grid_x,
+                        y: spatial.grid_y,
+                        z: spatial.precision_field,
+                        type: 'heatmap',
+                        colorscale: [
+                            [0.0, '#1e293b'],
+                            [0.35, '#2563eb'],
+                            [0.65, '#06b6d4'],
+                            [1.0, '#10b981']
+                        ],
+                        zmin: 0,
+                        zmax: 100,
+                        colorbar: {
+                            title: 'Precision %',
+                            titlefont: { color: '#cbd5e1', size: 9 },
+                            tickfont: { color: '#cbd5e1', size: 8 }
+                        },
+                        hovertemplate: 'x=%{x:.2f}<br>y=%{y:.2f}<br>Precision=%{z:.1f}%<extra></extra>'
+                    };
+
+                    const traceZoneHotspots = {
+                        x: spatial.zone_centers.map((zone) => zone.x),
+                        y: spatial.zone_centers.map((zone) => zone.y),
+                        text: spatial.zone_centers.map((zone) => `${zone.label}<br>${zone.residual_cfu.toFixed(1)} CFU<br>${zone.precision_pct.toFixed(1)}% precision`),
+                        type: 'scatter',
+                        mode: 'markers+text',
+                        textposition: 'top center',
+                        textfont: { color: '#e2e8f0', size: 9 },
+                        marker: {
+                            size: spatial.zone_centers.map((zone) => 10 + Math.min(16, zone.residual_cfu / 180)),
+                            color: spatial.zone_centers.map((zone) => zone.residual_cfu),
+                            colorscale: 'YlOrRd',
+                            cmin: 0,
+                            cmax: Math.max(...spatial.zone_centers.map((zone) => zone.residual_cfu), 1),
+                            line: { color: '#f8fafc', width: 1.2 },
+                            symbol: 'circle'
+                        },
+                        hovertemplate: '%{text}<extra></extra>',
+                        name: 'Risk Zones'
+                    };
+
+                    const traceCustomSensors = {
+                        x: spatial.sensor_positions.map((sensor) => sensor.x),
+                        y: spatial.sensor_positions.map((sensor) => sensor.y),
+                        text: spatial.sensor_positions.map((sensor) => `${sensor.label}<br>Gain ${sensor.sensitivity.toFixed(2)}`),
+                        type: 'scatter',
+                        mode: 'markers+text',
+                        textposition: 'bottom center',
+                        textfont: { color: '#dbeafe', size: 9 },
+                        marker: {
+                            size: spatial.sensor_positions.map((sensor) => 12 + sensor.sensitivity * 5),
+                            color: '#7dd3fc',
+                            line: { color: '#0f172a', width: 1.5 },
+                            symbol: 'diamond'
+                        },
+                        hovertemplate: '%{text}<extra></extra>',
+                        name: 'Custom Sensors'
+                    };
+
+                    Plotly.react('ec-plot-spatial', [traceSpatialHeat, traceZoneHotspots, traceCustomSensors], {
+                        title: { text: 'Spatial Detection Precision Map & E.coli Hotspot Coverage', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'Normalized Lake X', range: [0, 1], tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'Normalized Lake Y', range: [0, 1], tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9}, scaleanchor: 'x', scaleratio: 1 },
+                        margin: {t:40,l:45,r:35,b:40},
+                        paper_bgcolor:'rgba(0,0,0,0)',
+                        plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.18}
+                    }, {responsive:true, displaylogo:false});
                     
                 })
                 .catch(err => console.error("Error fetching E.coli detection telemetry:", err));
         }
 
+        let advEcoliDebounceTimer = null;
+        function runAdvancedEcoliDesignDebounced() {
+            clearTimeout(advEcoliDebounceTimer);
+            advEcoliDebounceTimer = setTimeout(runAdvancedEcoliDesign, 25);
+        }
+
+        function runAdvancedEcoliDesign() {
+            const temp = document.getElementById('eds-temp').value;
+            const bw = document.getElementById('eds-bw').value;
+            const rct = document.getElementById('eds-rct').value;
+            const cdl = (parseFloat(document.getElementById('eds-cdl').value) * 1.0e-9).toString();
+            const qml = document.getElementById('eds-qml').value;
+            const rf = document.getElementById('eds-rf').value;
+
+            const url = `/api/advanced-ecoli-design?temperature=${temp}&bandwidth=${bw}&r_charge_transfer=${rct}&double_layer_cap=${cdl}&qml_gain=${qml}&rf_center_freq=${rf}`;
+
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error("Advanced Ecoli Design API Error:", data.error);
+                        return;
+                    }
+
+                    // 1. Update Metrics
+                    // Find optimal matching return loss & its index
+                    let minS11 = data.return_loss_db[0];
+                    let minIdx = 0;
+                    for (let i = 1; i < data.return_loss_db.length; i++) {
+                        if (data.return_loss_db[i] < minS11) {
+                            minS11 = data.return_loss_db[i];
+                            minIdx = i;
+                        }
+                    }
+                    const optFreqHz = data.frequency_hz[minIdx];
+                    const optFreqMhz = optFreqHz / 1.0e6;
+
+                    document.getElementById('eds-metric-freq').textContent = optFreqMhz.toFixed(3) + " MHz";
+                    document.getElementById('eds-metric-s11').textContent = minS11.toFixed(2) + " dB";
+                    
+                    const maxClassnr = Math.max(...data.classical_snr_db);
+                    const maxQmlsnr = Math.max(...data.quantum_snr_db);
+                    const minNoise = Math.min(...data.noise_floor_uv);
+
+                    document.getElementById('eds-metric-classnr').textContent = maxClassnr.toFixed(2) + " dB";
+                    document.getElementById('eds-metric-qmlsnr').textContent = maxQmlsnr.toFixed(2) + " dB";
+                    document.getElementById('eds-metric-noise').textContent = minNoise.toFixed(2) + " µV";
+                    document.getElementById('eds-metric-cost').textContent = "$" + data.bom.total_cost.toFixed(2);
+
+                    document.getElementById('eds-spec-controller').textContent = data.bom.controller;
+                    document.getElementById('eds-spec-adc').textContent = data.bom.adc;
+                    document.getElementById('eds-spec-rf').textContent = data.bom.rf_detector;
+
+                    // 2. Render ASCII Schematic
+                    document.getElementById('eds-ascii-schematic').textContent = data.ascii_schematic;
+
+                    // 3. Render BOM Table
+                    const tbody = document.getElementById('eds-bom-table');
+                    tbody.innerHTML = "";
+                    data.bom.items.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.style.borderBottom = "1px solid rgba(255,255,255,0.04)";
+                        tr.innerHTML = `
+                            <td style="padding:6px; color:#e2e8f0; font-weight:600;">${item.item}<br/><span style="font-size:0.7rem; color:var(--text-muted); font-weight:400;">${item.role}</span></td>
+                            <td style="padding:6px; color:#94a3b8;">${item.manufacturer}</td>
+                            <td style="padding:6px; color:#10b981; font-weight:700; text-align:right;">$${item.cost_usd.toFixed(2)}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // 4. Render Prescription Markdown -> HTML
+                    let txt = data.genai_prescription || "";
+                    txt = txt.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    txt = txt.replace(/\$(.*?)\$/g, '<em>$1</em>');
+                    txt = txt.replace(/\n\n/g, '<br><br>');
+                    txt = txt.replace(/### /g, '');
+                    document.getElementById('eds-genai-text').innerHTML = txt;
+
+                    // 5. Plot 1: Randles Equivalent Impedance Spectrogram
+                    const traceMag = {
+                        x: data.frequency_hz,
+                        y: data.z_magnitude_ohms,
+                        name: 'Impedance Magnitude |Z| (Ω)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#38bdf8', width: 2.5}
+                    };
+                    const tracePhase = {
+                        x: data.frequency_hz,
+                        y: data.z_phase_deg,
+                        name: 'Impedance Phase θ (°)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        yaxis: 'y2',
+                        line: {color: '#fb7185', width: 2, dash: 'dot'}
+                    };
+
+                    Plotly.react('eds-plot-impedance', [traceMag, tracePhase], {
+                        title: { text: 'Electrochemical Interface Interface Impedance Spectrogram', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'Frequency (Hz)', type: 'log', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'Magnitude |Z| (Ohms)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis2: {
+                            title: 'Phase Angle (deg)',
+                            tickfont:{color:'#cbd5e1',size:8},
+                            titlefont:{color:'#cbd5e1',size:9},
+                            overlaying: 'y',
+                            side: 'right',
+                            showgrid: false
+                        },
+                        margin: {t:40,l:45,r:45,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                    }, {responsive:true, displaylogo:false});
+
+                    // 6. Plot 2: RF Front-End S11 Return Loss
+                    const traceS11 = {
+                        x: data.frequency_hz,
+                        y: data.return_loss_db,
+                        name: 'S11 Return Loss (dB)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#10b981', width: 2.5},
+                        fill: 'tozeroy',
+                        fillcolor: 'rgba(16, 185, 129, 0.05)'
+                    };
+
+                    Plotly.react('eds-plot-returnloss', [traceS11], {
+                        title: { text: 'RF Front-End Transmission S11 Return Loss', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'Frequency (Hz)', type: 'log', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'Return Loss (dB)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)'
+                    }, {responsive:true, displaylogo:false});
+
+                    // 7. Plot 3: E.coli concentration sweep performance comparing Classic vs. QML
+                    const traceClassicSNR = {
+                        x: data.cfu_concentration,
+                        y: data.classical_snr_db,
+                        name: 'Classical Hardware SNR (No QML Filter)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#f59e0b', width: 2},
+                        marker: {size: 4}
+                    };
+                    const traceQuantumSNR = {
+                        x: data.cfu_concentration,
+                        y: data.quantum_snr_db,
+                        name: 'QML Ansatz-Filtered Dynamic SNR',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#06b6d4', width: 3},
+                        marker: {size: 5}
+                    };
+
+                    Plotly.react('eds-plot-snr', [traceClassicSNR, traceQuantumSNR], {
+                        title: { text: 'Transconductance Signal-to-Noise Ratio vs. E.coli Concentration (1 to 10^7 CFU)', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'E.coli Concentration (CFU/100mL)', type: 'log', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'Signal-to-Noise Ratio (dB)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                    }, {responsive:true, displaylogo:false});
+
+                })
+                .catch(err => console.error("Error fetching Advanced Ecoli Design data:", err));
+        }
+
         // Select first tab on document load
-        window.addEventListener('DOMContentLoaded', () => selectTab('telemetry'));
+        window.addEventListener('DOMContentLoaded', () => {
+            renderEcoliSensorRows(defaultEcoliSensors);
+            selectTab('telemetry');
+        });
     </script>
 </body>
 </html>
