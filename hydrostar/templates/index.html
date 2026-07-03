@@ -237,6 +237,8 @@
                 <button class="tab" id="tab-tahoe" onclick="selectTab('tahoe')">🌲 Lake Tahoe</button>
                 <button class="tab" id="tab-austrian" onclick="selectTab('austrian')">🇦🇹 Austrian Lakes</button>
                 <button class="tab" id="tab-cnratio" onclick="selectTab('cnratio')">🌾 C/N Ratio Model</button>
+                <button class="tab" id="tab-primeregressor" onclick="selectTab('primeregressor')">🔬 Prime Regressor</button>
+                <button class="tab" id="tab-ecoli" onclick="selectTab('ecoli')">🦠 E.coli Detection</button>
             </div>
         </header>
 
@@ -1398,6 +1400,191 @@
             </div>
         </div>
 
+
+        <!-- Prime Regressor Tab Card -->
+        <div id="primeregressor-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>&#128300; Quantum Prime Regressor &mdash; Eigen Analysis, NTU Restoration &amp; Ecosystem Balance</span>
+                <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 400;">Ephemeral Primes &middot; Marchenko-Pastur RMT &middot; Wald Sequential Stopping &middot; Lotka-Volterra</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%;">
+                <!-- LEFT COLUMN -->
+                <div style="flex: 0 0 340px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 14px;">
+                        <h4 style="color: var(--accent); margin: 0; font-family: 'Outfit', sans-serif;">Model Controls</h4>
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Prime Count (N):</span><span id="label-pr-num-primes" style="color:var(--accent); font-weight:700;">30</span></div>
+                            <input type="range" id="pr-num-primes" min="10" max="60" step="5" value="30" oninput="document.getElementById('label-pr-num-primes').textContent=this.value; runPrimeRegressor();" style="width:100%;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>NTU Target:</span><span id="label-pr-ntu-target" style="color:var(--primary); font-weight:700;">0.3 NTU</span></div>
+                            <input type="range" id="pr-ntu-target" min="0.1" max="2.0" step="0.1" value="0.3" oninput="document.getElementById('label-pr-ntu-target').textContent=parseFloat(this.value).toFixed(1)+' NTU'; runPrimeRegressor();" style="width:100%;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Bioremediation Strength (&#951;):</span><span id="label-pr-bioremedy" style="color:#10b981; font-weight:700;">0.85</span></div>
+                            <input type="range" id="pr-bioremedy" min="0.1" max="1.0" step="0.05" value="0.85" oninput="document.getElementById('label-pr-bioremedy').textContent=parseFloat(this.value).toFixed(2); runPrimeRegressor();" style="width:100%;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Quantum Coupling (&#949;):</span><span id="label-pr-qt-coupling" style="color:var(--quantum); font-weight:700;">0.12</span></div>
+                            <input type="range" id="pr-qt-coupling" min="0.01" max="0.5" step="0.01" value="0.12" oninput="document.getElementById('label-pr-qt-coupling').textContent=parseFloat(this.value).toFixed(2); runPrimeRegressor();" style="width:100%;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Simulation Steps:</span><span id="label-pr-steps" style="color:#f59e0b; font-weight:700;">80</span></div>
+                            <input type="range" id="pr-steps" min="30" max="160" step="10" value="80" oninput="document.getElementById('label-pr-steps').textContent=this.value; runPrimeRegressor();" style="width:100%;">
+                        </div>
+                    </div>
+                    <div style="background: rgba(192,132,252,0.06); border: 1px solid rgba(192,132,252,0.2); padding: 16px; border-radius: 14px;">
+                        <h5 style="color:var(--quantum); margin:0 0 10px; font-family:'Outfit',sans-serif; font-size:0.9rem;">Spectral Parameters</h5>
+                        <div style="font-size:0.82rem; color:#cbd5e1; display:flex; flex-direction:column; gap:6px;">
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Dominant Eigenvalue:</span><span id="pr-param-lambda1" style="font-weight:700; color:var(--quantum);">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Effective Rate:</span><span id="pr-param-lambdaeff" style="font-weight:700; color:var(--accent);">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">MP Upper Bound:</span><span id="pr-param-lplus" style="font-weight:700; color:#f59e0b;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Aspect Ratio &#947;:</span><span id="pr-param-gamma" style="font-weight:700; color:#10b981;">...</span></div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); padding: 16px; border-radius: 14px;">
+                        <h5 style="color:var(--primary); margin:0 0 10px; font-family:'Outfit',sans-serif; font-size:0.9rem;">&#127758; Regulatory Compliance</h5>
+                        <div style="font-size:0.82rem; display:flex; flex-direction:column; gap:7px;">
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Final NTU:</span><span id="pr-comp-ntu" style="font-weight:700;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Target NTU:</span><span id="pr-comp-target" style="font-weight:700;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">&#964;* Optimal Stop:</span><span id="pr-comp-tau" style="font-weight:700; color:var(--accent);">...</span></div>
+                            <hr style="border-color:rgba(255,255,255,0.06); margin:4px 0;">
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Canadian CCME (&lt;1.0):</span><span id="pr-comp-ccme" style="font-weight:700;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">US EPA (&lt;0.3 NTU):</span><span id="pr-comp-epa" style="font-weight:700;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">EU WFD (&lt;1.0 NTU):</span><span id="pr-comp-eu" style="font-weight:700;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">WHO (&lt;4.0 NTU):</span><span id="pr-comp-who" style="font-weight:700;">...</span></div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(56,189,248,0.04); border: 1px solid rgba(56,189,248,0.15); padding: 16px; border-radius: 14px;">
+                        <h5 style="color:var(--accent); margin:0 0 10px; font-family:'Outfit',sans-serif; font-size:0.9rem;">&#8721; Finite Math Equations</h5>
+                        <div style="font-size:0.74rem; color:#94a3b8; display:flex; flex-direction:column; gap:7px; font-family:'Courier Prime', monospace; line-height:1.4;">
+                            <div><span style="color:#c084fc;">&#966;_k(t)</span> = <span id="pr-eq-prime">loading...</span></div>
+                            <div><span style="color:#38bdf8;">G_q</span> = <span id="pr-eq-gram">loading...</span></div>
+                            <div><span style="color:#f59e0b;">Eigen</span>: <span id="pr-eq-eigen">loading...</span></div>
+                            <div><span style="color:#10b981;">NTU(t)</span>: <span id="pr-eq-ntu">loading...</span></div>
+                            <div><span style="color:#c084fc;">&#955;_eff</span> = <span id="pr-eq-lambda">loading...</span></div>
+                            <div><span style="color:#f59e0b;">&#964;*</span>: <span id="pr-eq-stop">loading...</span></div>
+                            <div><span style="color:#10b981;">LV</span>: <span id="pr-eq-lv" style="word-break:break-all;">loading...</span></div>
+                            <div><span style="color:#38bdf8;">Q(t)</span> = <span id="pr-eq-quality">loading...</span></div>
+                            <div><span style="color:#f59e0b;">&#961;_MP</span>: <span id="pr-eq-mp" style="word-break:break-all;">loading...</span></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- RIGHT COLUMN -->
+                <div style="flex: 1; min-width: 500px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display:flex; flex-wrap:wrap; gap:16px;">
+                        <div style="flex:1; min-width:280px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="pr-plot-ntu" style="width:100%; height:300px;"></div>
+                        </div>
+                        <div style="flex:1; min-width:280px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="pr-plot-eigenspectrum" style="width:100%; height:300px;"></div>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:16px;">
+                        <div style="flex:1; min-width:280px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="pr-plot-lv" style="width:100%; height:300px;"></div>
+                        </div>
+                        <div style="flex:1; min-width:280px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="pr-plot-cumulative" style="width:100%; height:300px;"></div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15); padding: 20px; border-radius: 16px;">
+                        <h5 style="color:var(--primary); margin:0 0 12px; font-family:'Outfit',sans-serif;">&#129302; Quantum AI Prescription</h5>
+                        <div id="pr-genai-text" style="font-size:0.84rem; line-height:1.6; color:#cbd5e1;">Loading analysis...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- E.coli Detection & Continued Geometries Tab Card -->
+        <div id="ecoli-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>🦠 Precision E.coli Detection &amp; Continued Geometries Bioremediation Suite</span>
+                <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 400;">Quantum Phase Coordinates &middot; Combinatoric Colony Prediction &middot; CFU &amp; NTU Multi-Zone Optimization</span>
+            </div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%;">
+                <!-- LEFT COLUMN: CONTROLS & COMPLIANCE -->
+                <div style="flex: 0 0 340px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 14px;">
+                        <h4 style="color: var(--accent); margin: 0; font-family: 'Outfit', sans-serif;">Detector Hyperparameters</h4>
+                        
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Parallel Zones:</span><span id="label-ec-zones" style="color:var(--accent); font-weight:700;">4</span></div>
+                            <input type="range" id="ec-zones" min="1" max="8" step="1" value="4" oninput="document.getElementById('label-ec-zones').textContent=this.value; runEcoliDetectionDebounced();" style="width:100%;">
+                        </div>
+                        
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Initial Colony Count:</span><span id="label-ec-cfu" style="color:var(--secondary); font-weight:700;">1400 CFU</span></div>
+                            <input type="range" id="ec-cfu" min="100" max="5000" step="100" value="1400" oninput="document.getElementById('label-ec-cfu').textContent=this.value+' CFU'; runEcoliDetectionDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Initial Turbidity:</span><span id="label-ec-ntu" style="color:#fb7185; font-weight:700;">4.5 NTU</span></div>
+                            <input type="range" id="ec-ntu" min="0.5" max="20.0" step="0.5" value="4.5" oninput="document.getElementById('label-ec-ntu').textContent=parseFloat(this.value).toFixed(1)+' NTU'; runEcoliDetectionDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Combinatoric Weight (g_c):</span><span id="label-ec-comb" style="color:var(--quantum); font-weight:700;">0.85</span></div>
+                            <input type="range" id="ec-comb" min="0.1" max="2.0" step="0.05" value="0.85" oninput="document.getElementById('label-ec-comb').textContent=parseFloat(this.value).toFixed(2); runEcoliDetectionDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Quantum Phase θ_q:</span><span id="label-ec-phase" style="color:#06b6d4; font-weight:700;">0.25</span></div>
+                            <input type="range" id="ec-phase" min="0.01" max="1.00" step="0.01" value="0.25" oninput="document.getElementById('label-ec-phase').textContent=parseFloat(this.value).toFixed(2); runEcoliDetectionDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Treatment Modifier:</span><span id="label-ec-treatment" style="color:#10b981; font-weight:700;">1.00</span></div>
+                            <input type="range" id="ec-treatment" min="0.10" max="3.00" step="0.10" value="1.00" oninput="document.getElementById('label-ec-treatment').textContent=parseFloat(this.value).toFixed(2); runEcoliDetectionDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);"><span>Epochs:</span><span id="label-ec-epochs" style="color:#f59e0b; font-weight:700;">50</span></div>
+                            <input type="range" id="ec-epochs" min="10" max="120" step="5" value="50" oninput="document.getElementById('label-ec-epochs').textContent=this.value; runEcoliDetectionDebounced();" style="width:100%;">
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Index Box -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <h5 style="color:var(--quantum); margin:0; font-family:'Outfit',sans-serif; font-size:0.9rem;">Ecoli Telemetry Output</h5>
+                        <div style="font-size:0.82rem; color:#cbd5e1; display:flex; flex-direction:column; gap:6px;">
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Remaining CFU:</span><span id="ec-param-cfu" style="font-weight:700; color:var(--secondary);">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Remaining NTU:</span><span id="ec-param-ntu" style="font-weight:700; color:#fb7185;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Topological Curvature:</span><span id="ec-param-curvature" style="font-weight:700; color:#fbbf24;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Phase Coherence:</span><span id="ec-param-coherence" style="font-weight:700; color:#06b6d4;">...</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Safety & Environmental Guidelines -->
+                    <div style="background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <h5 style="color:var(--primary); margin:0; font-family:'Outfit',sans-serif; font-size:0.9rem;">Lake Bathing Safety Standards</h5>
+                        <div style="font-size:0.82rem; display:flex; flex-direction:column; gap:7px;">
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">EPA Recreational (&lt;100 CFU):</span><span id="ec-comp-epa" style="font-weight:700;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Drinking Clarity (&lt;1.0 NTU):</span><span id="ec-comp-clarity" style="font-weight:700;">...</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: PLOTS & ADVANCED PRESCRIPSTIONS -->
+                <div style="flex: 1; min-width: 500px; display: flex; flex-direction: column; gap: 20px;">
+                    <div style="display:flex; flex-wrap:wrap; gap:16px;">
+                        <div style="flex:1; min-width:280px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="ec-plot-cfu-ntu" style="width:100%; height:320px;"></div>
+                        </div>
+                        <div style="flex:1; min-width:280px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="ec-plot-coherence-loss" style="width:100%; height:320px;"></div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15); padding: 20px; border-radius: 16px;">
+                        <h5 style="color:var(--primary); margin:0 0 12px; font-family:'Outfit',sans-serif;">🌱 Ephemeral Bioremediation Suggestions &amp; Ecological Care plan</h5>
+                        <div id="ec-genai-text" style="font-size:0.84rem; line-height:1.6; color:#cbd5e1;">Loading analysis...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="footer">&copy; 2026 Hydrostar Ecological Suite | Powered by Flask, Plotly.js & QML Optimizers</div>
     </div>
 
@@ -1407,7 +1594,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all viewer cards
-            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'grenadier-card', 'qke-card', 'sensornet-card', 'restoration-card', 'tahoe-card', 'austrian-card', 'cnratio-card'].forEach(id => {
+            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'grenadier-card', 'qke-card', 'sensornet-card', 'restoration-card', 'tahoe-card', 'austrian-card', 'cnratio-card', 'primeregressor-card', 'ecoli-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -1469,6 +1656,14 @@
                 document.getElementById('tab-cnratio').classList.add('active');
                 document.getElementById('cnratio-card').style.display = 'flex';
                 runCnRatioModel();
+            } else if (tabId === 'primeregressor') {
+                document.getElementById('tab-primeregressor').classList.add('active');
+                document.getElementById('primeregressor-card').style.display = 'flex';
+                runPrimeRegressor();
+            } else if (tabId === 'ecoli') {
+                document.getElementById('tab-ecoli').classList.add('active');
+                document.getElementById('ecoli-card').style.display = 'flex';
+                runEcoliDetection();
             }
         }
 
@@ -3729,6 +3924,241 @@
                         displaylogo: false
                     });
                 });
+        }
+
+        // ── QUANTUM PRIME REGRESSOR TAB ─────────────────────────────────────────
+        function runPrimeRegressor() {
+            const numPrimes    = document.getElementById('pr-num-primes').value;
+            const ntuTarget    = document.getElementById('pr-ntu-target').value;
+            const bioremedy    = document.getElementById('pr-bioremedy').value;
+            const qtCoupling   = document.getElementById('pr-qt-coupling').value;
+            const steps        = document.getElementById('pr-steps').value;
+
+            const url = `/api/quantum-prime-regressor?num_primes=${numPrimes}&ntu_target=${ntuTarget}&bioremedy=${bioremedy}&qt_coupling=${qtCoupling}&steps=${steps}`;
+
+            fetch(url).then(r => r.json()).then(data => {
+                if (data.error) { console.error(data.error); return; }
+
+                // ── Panel: Finite Math Equations ──
+                const fm = data.finite_math;
+                document.getElementById('pr-eq-prime').textContent      = fm.prime_regressor;
+                document.getElementById('pr-eq-gram').textContent        = fm.gram_matrix;
+                document.getElementById('pr-eq-eigen').textContent       = fm.eigenvalue_eqn;
+                document.getElementById('pr-eq-ntu').textContent         = fm.ntu_model;
+                document.getElementById('pr-eq-lambda').textContent      = fm.lambda_eff;
+                document.getElementById('pr-eq-stop').textContent        = fm.stopping_time;
+                document.getElementById('pr-eq-lv').textContent          = fm.lotka_volterra;
+                document.getElementById('pr-eq-quality').textContent     = fm.habitat_quality;
+                document.getElementById('pr-eq-mp').textContent          = fm.marchenko_pastur;
+
+                // ── Panel: Compliance ──
+                const c = data.compliance;
+                document.getElementById('pr-comp-ntu').textContent       = c.final_ntu.toFixed(4) + ' NTU';
+                document.getElementById('pr-comp-target').textContent    = c.target_ntu + ' NTU';
+                document.getElementById('pr-comp-tau').textContent       = c.stopping_time_months + ' months (step ' + c.stopping_step + ')';
+                document.getElementById('pr-comp-ccme').textContent      = c.canadian_ccme  ? '✓ PASS' : '✗ FAIL';
+                document.getElementById('pr-comp-ccme').style.color      = c.canadian_ccme  ? '#10b981' : '#ef4444';
+                document.getElementById('pr-comp-epa').textContent       = c.us_epa         ? '✓ PASS' : '✗ FAIL';
+                document.getElementById('pr-comp-epa').style.color       = c.us_epa         ? '#10b981' : '#ef4444';
+                document.getElementById('pr-comp-eu').textContent        = c.eu_wfd         ? '✓ PASS' : '✗ FAIL';
+                document.getElementById('pr-comp-eu').style.color        = c.eu_wfd         ? '#10b981' : '#ef4444';
+                document.getElementById('pr-comp-who').textContent       = c.who_guideline  ? '✓ PASS' : '✗ FAIL';
+                document.getElementById('pr-comp-who').style.color       = c.who_guideline  ? '#10b981' : '#ef4444';
+
+                // ── Panel: Params ──
+                const p = data.params;
+                document.getElementById('pr-param-lambda1').textContent  = 'λ₁ = ' + p.lambda_1;
+                document.getElementById('pr-param-lambdaeff').textContent = 'λ_eff = ' + p.lambda_eff;
+                document.getElementById('pr-param-lplus').textContent    = 'λ⁺ = ' + p.lam_plus;
+                document.getElementById('pr-param-gamma').textContent    = 'γ = ' + p.gamma;
+
+                // ── GenAI Prescription ──
+                let txt = data.genai_prescription;
+                txt = txt.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                txt = txt.replace(/\n\n/g, '<br><br>');
+                document.getElementById('pr-genai-text').innerHTML = txt;
+
+                // ── Plot 1: NTU Trajectory ──
+                const tAxis = data.ntu_trajectory.map((_, i) => i);
+                Plotly.react('pr-plot-ntu', [
+                    { x: tAxis, y: data.ntu_trajectory, name: 'NTU(t)', type: 'scatter', mode: 'lines',
+                      line: {color: '#38bdf8', width: 2.5} },
+                    { x: tAxis, y: data.wald_boundary, name: 'Wald Stop Boundary', type: 'scatter', mode: 'lines',
+                      line: {color: '#f59e0b', width: 1.5, dash: 'dash'} },
+                    { x: [data.tau_star], y: [data.ntu_trajectory[data.tau_star]],
+                      name: 'τ* Optimal Stop', type: 'scatter', mode: 'markers',
+                      marker: {size: 12, color: '#10b981', symbol: 'star'} }
+                ], {
+                    title: { text: 'NTU Turbidity Restoration – Wald Optimal Stopping', font: {color:'#cbd5e1', size:11} },
+                    xaxis: { title: 'Step', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                    yaxis: { title: 'Turbidity (NTU)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                    margin: {t:35,l:50,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                    legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                }, {responsive:true, displaylogo:false});
+
+                // ── Plot 2: Lotka-Volterra Ecosystem ──
+                const lvSteps = data.lv.steps;
+                Plotly.react('pr-plot-lv', [
+                    { x: lvSteps, y: data.lv.algae,    name: 'Algae (Producer)',   type: 'scatter', mode: 'lines', line:{color:'#10b981', width:2.5} },
+                    { x: lvSteps, y: data.lv.plankton, name: 'Plankton (Consumer)', type: 'scatter', mode: 'lines', line:{color:'#38bdf8', width:2.5} },
+                    { x: lvSteps, y: data.lv.fish,     name: 'Fish (Top Predator)', type: 'scatter', mode: 'lines', line:{color:'#c084fc', width:2.5} }
+                ], {
+                    title: { text: 'Algae-Plankton-Fish Producer-Consumer Balance', font:{color:'#cbd5e1',size:11} },
+                    xaxis: { title: 'Step', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                    yaxis: { title: 'Biomass (rel.)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                    margin: {t:35,l:50,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                    legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                }, {responsive:true, displaylogo:false});
+
+                // ── Plot 3: Eigenspectrum (Marchenko-Pastur vs Actual) ──
+                const es = data.eigenspectrum;
+                const eigenIdx = es.actual_eigenvalues.map((_,i) => i+1);
+                Plotly.react('pr-plot-eigenspectrum', [
+                    { x: es.lambda_range, y: es.mp_density, name: 'Marchenko-Pastur (null)', type: 'scatter', mode: 'lines',
+                      line:{color:'rgba(248,113,113,0.7)', width:2, dash:'dot'}, fill:'tozeroy', fillcolor:'rgba(239,68,68,0.08)' },
+                    { x: es.actual_eigenvalues, y: es.actual_eigenvalues.map(_=>0.1),
+                      name: 'Quantum Eigenvalues', type: 'scatter', mode: 'markers',
+                      marker:{size:7, color:'#c084fc', symbol:'line-ns-open', line:{width:2}} }
+                ], {
+                    title: { text: 'Quantum Eigenspectrum vs Marchenko-Pastur (RMT Baseline)', font:{color:'#cbd5e1',size:11} },
+                    xaxis: { title: 'Eigenvalue λ', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                    yaxis: { title: 'Density ρ(λ)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                    margin: {t:35,l:50,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                    legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                }, {responsive:true, displaylogo:false});
+
+                // ── Plot 4: Cumulative Eigenvalue Energy ──
+                Plotly.react('pr-plot-cumulative', [
+                    { x: eigenIdx, y: data.cumulative_energy.map(v => v*100),
+                      name: 'Cumulative Variance Explained (%)', type: 'scatter', mode: 'lines+markers',
+                      line:{color:'#fbbf24', width:2.5}, marker:{size:5},
+                      fill:'tozeroy', fillcolor:'rgba(251,191,36,0.08)' }
+                ], {
+                    title: { text: 'Cumulative Spectral Energy – Prime Regressor Basis', font:{color:'#cbd5e1',size:11} },
+                    xaxis: { title: 'Eigenvalue Rank k', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                    yaxis: { title: 'Cumulative Energy (%)', range:[0,105], tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                    margin: {t:35,l:50,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                    legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)'}
+                }, {responsive:true, displaylogo:false});
+            });
+        }
+
+        // --- TAB ECOLI: PRECISION E.COLI DETECTION ---
+        let ecoliDebounceTimer = null;
+        function runEcoliDetectionDebounced() {
+            clearTimeout(ecoliDebounceTimer);
+            ecoliDebounceTimer = setTimeout(runEcoliDetection, 25);
+        }
+
+        function runEcoliDetection() {
+            const zones               = document.getElementById('ec-zones').value;
+            const cfuInitial          = document.getElementById('ec-cfu').value;
+            const ntuInitial          = document.getElementById('ec-ntu').value;
+            const combinatoricWeight  = document.getElementById('ec-comb').value;
+            const quantumPhase        = document.getElementById('ec-phase').value;
+            const epochs              = document.getElementById('ec-epochs').value;
+            const treatmentModifier   = document.getElementById('ec-treatment').value;
+
+            const url = `/api/ecoli-quantum-detection?zones=${zones}&cfu_initial=${cfuInitial}&ntu_initial=${ntuInitial}&combinatoric_weight=${combinatoricWeight}&quantum_phase=${quantumPhase}&epochs=${epochs}&treatment_modifier=${treatmentModifier}`;
+
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+
+                    // Update parameters output panel
+                    document.getElementById('ec-param-cfu').textContent = parseFloat(data.final_cfu).toFixed(1) + " CFU";
+                    document.getElementById('ec-param-ntu').textContent = parseFloat(data.final_ntu).toFixed(2) + " NTU";
+                    document.getElementById('ec-param-curvature').textContent = parseFloat(data.final_curvature).toFixed(4);
+                    document.getElementById('ec-param-coherence').textContent = parseFloat(data.final_coherence).toFixed(4);
+
+                    // Update Lake Bathing standards
+                    const safeEPA = data.is_cfu_safe;
+                    const safeClarity = data.is_ntu_safe;
+
+                    const epaEl = document.getElementById('ec-comp-epa');
+                    epaEl.textContent = safeEPA ? "✓ RECREATIONAL SAFE" : "✗ UNSAFE (HIGH COLONIES)";
+                    epaEl.style.color = safeEPA ? "#10b981" : "#ef4444";
+
+                    const clarityEl = document.getElementById('ec-comp-clarity');
+                    clarityEl.textContent = safeClarity ? "✓ CLEAR WATER" : "✗ HIGH TURBIDITY (>1.0)";
+                    clarityEl.style.color = safeClarity ? "#10b981" : "#ef4444";
+
+                    // Update Markdown / Bioremediation advice
+                    let txt = data.genai_report || "";
+                    txt = txt.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    txt = txt.replace(/\n\n/g, '<br><br>');
+                    document.getElementById('ec-genai-text').innerHTML = txt;
+
+                    // Plot 1: CFU & NTU decays over Epochs
+                    const epochAxis = Array.from({length: data.cfu_history.length}, (_, i) => i);
+                    
+                    const traceCFU = {
+                        x: epochAxis,
+                        y: data.cfu_history,
+                        name: 'Colony Density (CFU)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#3b82f6', width: 3}
+                    };
+
+                    const traceNTU = {
+                        x: epochAxis,
+                        y: data.ntu_history,
+                        name: 'Turbidity (NTU)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        yaxis: 'y2',
+                        line: {color: '#ef4444', width: 2.5, dash: 'dash'}
+                    };
+
+                    Plotly.react('ec-plot-cfu-ntu', [traceCFU, traceNTU], {
+                        title: { text: 'E.coli Colony Density & Turbidity Reductions', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'Epochs (Time Intervals)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'Colonies (CFU/100mL)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis2: {
+                            title: 'Turbidity (NTU)',
+                            tickfont:{color:'#cbd5e1',size:8},
+                            titlefont:{color:'#cbd5e1',size:9},
+                            overlaying: 'y',
+                            side: 'right'
+                        },
+                        margin: {t:40,l:45,r:45,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                    }, {responsive:true, displaylogo:false});
+
+                    // Plot 2: Phase Coherence, Curvatures & Quantum Phase Space
+                    const traceCoherence = {
+                        x: epochAxis,
+                        y: data.coherence_history,
+                        name: 'Coherence',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#06b6d4', width: 2}
+                    };
+
+                    const traceCurvature = {
+                        x: epochAxis,
+                        y: data.curvature_history,
+                        name: 'Topological Curvature',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#fbbf24', width: 1.8}
+                    };
+
+                    Plotly.react('ec-plot-coherence-loss', [traceCoherence, traceCurvature], {
+                        title: { text: 'Quantum Coherence & Continued Geometrical Curvatures', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'Epochs', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'Metric Level', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                    }, {responsive:true, displaylogo:false});
+                    
+                })
+                .catch(err => console.error("Error fetching E.coli detection telemetry:", err));
         }
 
         // Select first tab on document load
