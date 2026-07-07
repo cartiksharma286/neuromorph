@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const equipmentView   = document.getElementById('equipment-view');
     const dementiaLtView  = document.getElementById('dementia-lt-view');
     const dementiaDbsView = document.getElementById('dementia-dbs-view');
+    const sleepapneaView  = document.getElementById('sleepapnea-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let tremorLoaded     = false;
     let dementiaLtLoaded = false;
     let dementiaDbsLoaded = false;
+    let sleepapneaLoaded = false;
     let paradigmCache    = {};
 
     // ── Plotly dark theme ────────────────────────────────────────
@@ -51,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView];
+    const allViews = [simulationView, tremorView, ocdView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -99,6 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Dementia DBS Treatment Protocol',
             subtitle: 'Statistical Manifold Distributions · Optimal Stage Gating',
             view:     dementiaDbsView, showRunBtn: false
+        },
+        'sleepapnea': {
+            title:    'Sleep Apnea Neuromodulation Care',
+            subtitle: 'Adaptive Closed-loop rTMS & Statistical Continued Fraction Phase Synchronization',
+            view:     sleepapneaView, showRunBtn: false
         }
     };
 
@@ -131,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'dementia-lt' && !dementiaLtLoaded)     loadDementiaLt();
             if (tab === 'dementia-dbs' && !dementiaDbsLoaded)   loadDementiaDbs();
             if (tab === 'ocd')                                  loadOcdData();
+            if (tab === 'sleepapnea')                           runSleepApneaRtms();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -898,3 +906,109 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error loading OCD data:', e);
         }
     }
+
+    // ═════════════════════════════════════════════════════════════════
+    //  SLEEP APNEA RTMS NEUROMODULATION SUITE logic
+    // ═════════════════════════════════════════════════════════════════
+
+    let sleepApneaDebounceTimer = null;
+    window.runSleepApneaRtmsDebounced = function() {
+        clearTimeout(sleepApneaDebounceTimer);
+        sleepApneaDebounceTimer = setTimeout(runSleepApneaRtms, 25);
+    };
+
+    window.runSleepApneaRtms = async function() {
+        const baselineAhiEl = document.getElementById('sa-baseline-ahi');
+        if (!baselineAhiEl) return; // not initialized or view not loaded
+
+        const baselineAhi = baselineAhiEl.value;
+        const rtmsFreq = document.getElementById('sa-rtms-freq').value;
+        const adaptiveGain = document.getElementById('sa-adaptive-gain').value;
+        const durationDays = document.getElementById('sa-duration-days').value;
+        const targetSyncRatio = document.getElementById('sa-target-sync-ratio').value;
+
+        const url = `/api/sleep-apnea-rtms?baseline_ahi=${baselineAhi}&rtms_freq_hz=${rtmsFreq}&adaptive_gain=${adaptiveGain}&duration_days=${durationDays}&target_sync_ratio=${targetSyncRatio}`;
+
+        try {
+            const r = await fetch(url);
+            const data = await r.json();
+            if (data.error) {
+                console.error("Sleep Apnea rTMS API Error:", data.error);
+                return;
+            }
+
+            // 1. Update Metrics
+            document.getElementById('sa-metric-baseline').textContent = parseFloat(baselineAhi).toFixed(1) + " events/hr";
+            const finalCpap = data.ahi_cpap[data.ahi_cpap.length - 1];
+            const finalStd = data.ahi_rtms_std[data.ahi_rtms_std.length - 1];
+            const finalOpt = data.ahi_rtms_opt[data.ahi_rtms_opt.length - 1];
+
+            document.getElementById('sa-metric-cpap').textContent = finalCpap.toFixed(1) + " events/hr";
+            document.getElementById('sa-metric-rtms-std').textContent = finalStd.toFixed(1) + " events/hr";
+            document.getElementById('sa-metric-rtms-opt').textContent = finalOpt.toFixed(1) + " events/hr";
+            document.getElementById('sa-metric-convergents').textContent = data.convergents.join(', ');
+            document.getElementById('sa-metric-expansion').textContent = "[" + data.cf_expansion.join(', ') + "]";
+
+            // 2. Render ASCII Schematic
+            document.getElementById('sa-ascii-schematic').textContent = data.ascii_schematic;
+
+            // 3. Render Prescription Markdown -> HTML
+            let txt = data.genai_prescription || "";
+            txt = txt.replace(/\*\*(.*?)\*\//g, '<strong>$1</strong>');
+            txt = txt.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            txt = txt.replace(/\$(.*?)\$/g, '<em>$1</em>');
+            txt = txt.replace(/\n\n/g, '<br><br>');
+            txt = txt.replace(/### /g, '');
+            document.getElementById('sa-genai-text').innerHTML = txt;
+
+            // 4. Plot 1: AHI Trajectories
+            const traceBaseline = {
+                x: data.days,
+                y: data.ahi_baseline,
+                name: 'Untreated Baseline AHI',
+                type: 'scatter',
+                mode: 'lines',
+                line: {color: '#ff7b72', width: 2, dash: 'dot'}
+            };
+            const traceCpap = {
+                x: data.days,
+                y: data.ahi_cpap,
+                name: 'Standard CPAP Therapy',
+                type: 'scatter',
+                mode: 'lines',
+                line: {color: '#ffa657', width: 2}
+            };
+            const traceStdRtms = {
+                x: data.days,
+                y: data.ahi_rtms_std,
+                name: 'Open-loop rTMS (Standard)',
+                type: 'scatter',
+                mode: 'lines',
+                line: {color: '#58a6ff', width: 2.5}
+            };
+            const traceOptRtms = {
+                x: data.days,
+                y: data.ahi_rtms_opt,
+                name: 'Adaptive Closed-loop rTMS (Optimal)',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {color: '#56d364', width: 3.5},
+                marker: {size: 5}
+            };
+
+            const darkThemeLayout = {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                margin: { t: 50, b: 40, l: 40, r: 40 },
+                xaxis: { title: 'Duration (Days)', gridcolor: 'rgba(255,255,255,0.05)', color: '#8b949e' },
+                yaxis: { title: 'AHI (events / hour)', gridcolor: 'rgba(255,255,255,0.05)', color: '#8b949e' },
+                font: { color: '#c9d1d9', family: 'Inter' },
+                legend: { font: { color: '#c9d1d9', size: 10 }, bgcolor: 'rgba(0,0,0,0.4)', orientation: 'h', x: 0, y: -0.25 }
+            };
+
+            Plotly.react('sa-plot-trajectory', [traceBaseline, traceCpap, traceStdRtms, traceOptRtms], darkThemeLayout, {responsive:true, displaylogo:false});
+
+        } catch (err) {
+            console.error("Error fetching Sleep Apnea rTMS data:", err);
+        }
+    };

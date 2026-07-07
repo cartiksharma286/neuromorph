@@ -41,6 +41,9 @@
                 <button class="nav-btn" data-tab="equipment">
                     <span class="icon">⚙️</span> Equipment
                 </button>
+                <button class="nav-btn" data-tab="sleepapnea">
+                    <span class="icon">😴</span> Sleep Apnea rTMS
+                </button>
             </nav>
             <div class="server-status">
                 <div class="status-indicator"></div>
@@ -291,6 +294,173 @@
                     </div>
                 </div>
                 <div id="equipment-list" class="equipment-grid"></div>
+            </div>
+
+            <!-- ── Sleep Apnea rTMS Neuromodulation Suite ── -->
+            <div id="sleepapnea-view" class="hidden">
+                <style>
+                    .sa-control-box {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                        background: rgba(255, 255, 255, 0.02);
+                        border: 1px solid rgba(255, 255, 255, 0.06);
+                        padding: 16px;
+                        border-radius: 12px;
+                        margin-bottom: 16px;
+                    }
+                    .sa-slider-group {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 4px;
+                    }
+                    .sa-slider-header {
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 12px;
+                        color: var(--text-secondary);
+                    }
+                    .sa-slider-val {
+                        color: #58a6ff;
+                        font-weight: 700;
+                    }
+                    .sa-slider-input {
+                        width: 100%;
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 4px;
+                        height: 6px;
+                        outline: none;
+                        -webkit-appearance: none;
+                    }
+                    .sa-slider-input::-webkit-slider-thumb {
+                        -webkit-appearance: none;
+                        width: 14px;
+                        height: 14px;
+                        border-radius: 50%;
+                        background: #58a6ff;
+                        cursor: pointer;
+                    }
+                    .sa-metric-row {
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 13px;
+                        color: var(--text-primary);
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                        padding: 6px 0;
+                    }
+                    .sa-metric-lbl {
+                        color: var(--text-secondary);
+                    }
+                    .sa-metric-val {
+                        font-weight: 600;
+                    }
+                </style>
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT PANEL: CONTROLS -->
+                    <div class="panel glass-panel" style="flex: 0 0 320px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>rTMS Stimulation Controls</h3>
+                        
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Baseline AHI (events/hr):</span>
+                                    <span id="label-sa-baseline-ahi" class="sa-slider-val">38.0</span>
+                                </div>
+                                <input type="range" id="sa-baseline-ahi" min="15.0" max="80.0" step="1.0" value="38.0" oninput="document.getElementById('label-sa-baseline-ahi').textContent=parseFloat(this.value).toFixed(1); runSleepApneaRtmsDebounced();" class="sa-slider-input">
+                            </div>
+                            
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Stimulation Freq (f_s):</span>
+                                    <span id="label-sa-rtms-freq" class="sa-slider-val">10.0 Hz</span>
+                                </div>
+                                <input type="range" id="sa-rtms-freq" min="1.0" max="30.0" step="0.5" value="10.0" oninput="document.getElementById('label-sa-rtms-freq').textContent=parseFloat(this.value).toFixed(1)+' Hz'; runSleepApneaRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Closed-loop Adaptive Gain:</span>
+                                    <span id="label-sa-adaptive-gain" class="sa-slider-val" style="color:#ff7b72;">1.50</span>
+                                </div>
+                                <input type="range" id="sa-adaptive-gain" min="0.1" max="3.0" step="0.1" value="1.5" oninput="document.getElementById('label-sa-adaptive-gain').textContent=parseFloat(this.value).toFixed(2); runSleepApneaRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Treatment Duration (Days):</span>
+                                    <span id="label-sa-duration-days" class="sa-slider-val" style="color:#d2a8ff;">30 Days</span>
+                                </div>
+                                <input type="range" id="sa-duration-days" min="7" max="90" step="1" value="30" oninput="document.getElementById('label-sa-duration-days').textContent=parseInt(this.value)+' Days'; runSleepApneaRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Target Sync Ratio (ρ*):</span>
+                                    <span id="label-sa-target-sync-ratio" class="sa-slider-val" style="color:#56d364;">1.3416</span>
+                                </div>
+                                <input type="range" id="sa-target-sync-ratio" min="0.5" max="3.0" step="0.01" value="1.3416" oninput="document.getElementById('label-sa-target-sync-ratio').textContent=parseFloat(this.value).toFixed(4); runSleepApneaRtmsDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <h3>Clinical Outcome Metrics</h3>
+                        <div class="sa-control-box" style="margin-bottom:0;">
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Baseline AHI:</span>
+                                <span id="sa-metric-baseline" class="sa-metric-val" style="color:#ff7b72;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Therapy 1: CPAP Residual:</span>
+                                <span id="sa-metric-cpap" class="sa-metric-val" style="color:#ffb86c;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Therapy 2: Std rTMS AHI:</span>
+                                <span id="sa-metric-rtms-std" class="sa-metric-val" style="color:#58a6ff;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Therapy 3: Adaptive rTMS:</span>
+                                <span id="sa-metric-rtms-opt" class="sa-metric-val" style="color:#56d364;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">CF Convergents:</span>
+                                <span id="sa-metric-convergents" class="sa-metric-val" style="color:#d2a8ff; font-size:11px;">...</span>
+                            </div>
+                            <div class="sa-metric-row" style="border-bottom:none;">
+                                <span class="sa-metric-lbl">CF Expansion:</span>
+                                <span id="sa-metric-expansion" class="sa-metric-val" style="color:#79c0ff; font-size:11px;">...</span>
+                            </div>
+                        </div>
+
+                        <h3>AWS Cloud Interoperability</h3>
+                        <div class="sa-control-box" style="background: rgba(35,134,54,0.06); border: 1px solid rgba(35,134,54,0.2); margin-bottom:0;">
+                            <div style="font-size:12px; line-height:1.4; color:#e6edf3;">
+                                <strong>System:</strong> AWS HealthLake FHIR R4<br>
+                                <strong>Resource:</strong> ApneaEventObservation<br>
+                                <strong>Compliance:</strong> SMART on FHIR Secure
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: PLOTS, SCHEMATIC AND PRESCRIPTION -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+                        <!-- Trajectory Plot -->
+                        <div class="panel glass-panel">
+                            <h3>AHI Clinical Evolution Trajectory</h3>
+                            <div id="sa-plot-trajectory" class="chart-container" style="min-height:300px;"></div>
+                        </div>
+
+                        <!-- Technical H-Bridge Pulse Schematic -->
+                        <div class="panel glass-panel">
+                            <h3>🔌 Patient Respiratory Sync &amp; Pulse Generator Circuit (H-Bridge) Schematic</h3>
+                            <pre id="sa-ascii-schematic" style="font-family:'Courier New', monospace; font-size:11px; line-height:1.3; white-space:pre-wrap; background:#050b14; border:1px solid rgba(88,166,255,0.2); border-radius:12px; padding:15px; color:#58a6ff; margin:0; height:340px; overflow:auto;"></pre>
+                        </div>
+
+                        <!-- Clinical Prescription Card -->
+                        <div class="panel glass-panel" style="background: rgba(35,134,54,0.04); border: 1px solid rgba(35,134,54,0.15);">
+                            <h3>🔬 QML Neuromodulation Performance &amp; Clinical Interoperability Prescription</h3>
+                            <div id="sa-genai-text" style="font-size:13px; line-height:1.6; color:#c9d1d9; margin-top:10px;">Compiling clinical synchronization analysis...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
