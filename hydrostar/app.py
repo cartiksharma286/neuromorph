@@ -3214,11 +3214,63 @@ def api_lake_ontario_detection():
                 w = math.exp(-0.5 * (dist / sigma_rbf)**2)
                 weights.append(w * sr['y'])
                 denom += w
+        # Reconstruct field from sensor points using Radial Basis Functions
+        reconstructed_field = []
+        for x in distances:
+            # RBF Interpolation: sum_i w_i * exp(-((x - x_i)/sigma)^2)
+            n_sens = len(sensor_readings)
+            if n_sens == 1:
+                reconstructed_field.append(sensor_readings[0]['y'])
+                continue
+                
+            weights = []
+            denom = 0.0
+            sigma_rbf = 15.0 if placement_strategy == 'optimal_topological' else 25.0
+            for sr in sensor_readings:
+                dist = abs(x - sr['x'])
+                w = math.exp(-0.5 * (dist / sigma_rbf)**2)
+                weights.append(w * sr['y'])
+                denom += w
             if denom > 0:
                 recon_val = sum(weights) / denom
             else:
                 recon_val = 120.0
             reconstructed_field.append(float(round(recon_val, 2)))
+
+        # 3.5 Lat-Long Geodesic Layout Simulation
+        # Centered around Lake Ontario Toronto bay: Lat 43.628, Lng -79.395
+        base_lat = 43.6285
+        base_lng = -79.3952
+        
+        # Determine placements
+        geodesic_layout = []
+        for idx, sr in enumerate(sensor_readings):
+            # Map transect x (0-100m) to lat/long offset
+            # Roughly 1 arcsecond of latitude ~ 30 meters
+            # Roughly 1 arcsecond of longitude ~ 23 meters (at 43 deg Lat)
+            lat_offset = (sr['x'] - 50.0) / 111000.0  # 1 degree lat ~ 111,000 meters
+            lng_offset = (sr['x'] * 0.7 - 25.0) / 85000.0   # 1 degree lng ~ 85,000 meters
+            
+            # Map Geodesic vs Topological deviations
+            # Path layout following the lake curvature (Great circle geodesics)
+            lat = base_lat + lat_offset
+            lng = base_lng + lng_offset
+            
+            # Geodesic correction offset represents the ellipsoidal pathing
+            ellipsoid_correction_lat = 0.00015 * math.sin(sr['x'] * math.pi / 50.0)
+            ellipsoid_correction_lng = 0.00012 * math.cos(sr['x'] * math.pi / 40.0)
+            
+            geo_lat = lat + ellipsoid_correction_lat
+            geo_lng = lng + ellipsoid_correction_lng
+            
+            geodesic_layout.append({
+                'id': idx + 1,
+                'topo_lat': float(round(lat, 6)),
+                'topo_lng': float(round(lng, 6)),
+                'geo_lat': float(round(geo_lat, 6)),
+                'geo_lng': float(round(geo_lng, 6)),
+                'concentration': sr['y']
+            })
 
         # 4. Battery Discharge Profile (Time-Domain in Hours)
         # Calculates hardware power draw from Pi Zero 2 W, cameras, LEDs, and Atlas Hat
@@ -3374,6 +3426,7 @@ def api_lake_ontario_detection():
             'reconstructed_field': reconstructed_field,
             'sensor_xs': sensor_xs,
             'sensor_readings': sensor_readings,
+            'geodesic_layout': geodesic_layout,
             'hours_axis': hours_axis.tolist(),
             'battery_voltage': battery_voltage,
             'battery_soc': battery_soc,
