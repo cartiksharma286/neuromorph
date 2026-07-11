@@ -241,6 +241,7 @@
                 <button class="tab" id="tab-primeregressor" onclick="selectTab('primeregressor')">🔬 Prime Regressor</button>
                 <button class="tab" id="tab-ecoli" onclick="selectTab('ecoli')">🦠 E.coli Detection</button>
                 <button class="tab" id="tab-ecolidesign" onclick="selectTab('ecolidesign')">🎛️ E.coli Design Studio</button>
+                <button class="tab" id="tab-lakeontario" onclick="selectTab('lakeontario')">🌊 Ontario E.coli Studio</button>
             </div>
         </header>
 
@@ -1929,6 +1930,135 @@
         </div>
 
 
+        <!-- Tab: Lake Ontario E.coli Studio -->
+        <div id="lakeontario-card" class="viewer-card" style="display: none; box-sizing: border-box;">
+            <div class="viewer-title">
+                <span>🌊 Lake Ontario E.coli Topological Detection &amp; Pi Zero 2 W Stack Studio</span>
+                <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 400;">Environmental SDS Kit &middot; Galvanic i3-Interlink Isolation &middot; IMX462 Night-Vision Camera &middot; LED Flash &middot; 10-Year Predictions &middot; Optimal Placement Signal Reconstruction</span>
+            </div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%;">
+                
+                <!-- LEFT COLUMN: CONTROLS & PHYSICAL PARAMS -->
+                <div style="flex: 0 0 340px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 14px;">
+                        <h4 style="color: var(--accent); margin: 0; font-family: 'Outfit', sans-serif;">Topological &amp; Hardware Controls</h4>
+                        
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <label style="font-size:0.8rem; color:var(--text-muted);">Sensor Placement Placement:</label>
+                            <select id="ontario-placement" onchange="runLakeOntarioDesign();" style="background:#0e1726; color:#cbd5e1; border:1px solid rgba(255,255,255,0.1); padding:8px 12px; border-radius:8px; font-size:0.85rem; width:100%; outline:none;">
+                                <option value="optimal_topological" selected>Optimal Topological Placement</option>
+                                <option value="uniform_baseline">Uniform Baseline Placement</option>
+                            </select>
+                        </div>
+                        
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                                <span>Active Node Count:</span>
+                                <span id="label-ontario-nodes" style="color:var(--accent); font-weight:700;">5 Nodes</span>
+                            </div>
+                            <input type="range" id="ontario-nodes" min="1" max="15" step="1" value="5" oninput="document.getElementById('label-ontario-nodes').textContent=this.value+' Nodes'; runLakeOntarioDesignDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                                <span>Battery Capacity:</span>
+                                <span id="label-ontario-battery" style="color:#fb7185; font-weight:700;">12000 mAh</span>
+                            </div>
+                            <input type="range" id="ontario-battery" min="2000" max="25000" step="500" value="12000" oninput="document.getElementById('label-ontario-battery').textContent=this.value+' mAh'; runLakeOntarioDesignDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                                <span>Camera flash LED Load:</span>
+                                <span id="label-ontario-led" style="color:var(--quantum); font-weight:700;">85% Duty</span>
+                            </div>
+                            <input type="range" id="ontario-led" min="0" max="100" step="5" value="85" oninput="document.getElementById('label-ontario-led').textContent=this.value+'% Duty'; runLakeOntarioDesignDebounced();" style="width:100%;">
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
+                                <span>QML Active Feedback Gain:</span>
+                                <span id="label-ontario-qml" style="color:#06b6d4; font-weight:700;">1.60x</span>
+                            </div>
+                            <input type="range" id="ontario-qml" min="0.1" max="3.0" step="0.1" value="1.6" oninput="document.getElementById('label-ontario-qml').textContent=parseFloat(this.value).toFixed(2)+'x'; runLakeOntarioDesignDebounced();" style="width:100%;">
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Summary Statistics Indicators -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 18px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <h5 style="color:var(--quantum); margin:0; font-family:'Outfit',sans-serif; font-size:0.9rem;">Pi Zero 2 W Stack Metrics</h5>
+                        <div style="font-size:0.82rem; color:#cbd5e1; display:flex; flex-direction:column; gap:6px;">
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Node Power Draw:</span><span id="ontario-metric-power" style="font-weight:700; color:#10b981;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Battery Field Lifespan:</span><span id="ontario-metric-lifespan" style="font-weight:700; color:#cbd5e1;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Topological Interpolation Error:</span><span id="ontario-metric-error" style="font-weight:700; color:#fb7185;">...</span></div>
+                            <div style="display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">Total Stack BOM Cost:</span><span id="ontario-metric-cost" style="font-weight:700; color:#38bdf8;">...</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: PLOTS & DIAGRAMS -->
+                <div style="flex: 1; min-width: 500px; display: flex; flex-direction: column; gap: 20px;">
+                    
+                    <!-- Plot Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 20px; width: 100%;">
+                        <!-- Decadal Predictions -->
+                        <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="ontario-plot-decadal" style="width:100%; height:320px;"></div>
+                        </div>
+                        
+                        <!-- Reconstruction Performance -->
+                        <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="ontario-plot-reconstruction" style="width:100%; height:320px;"></div>
+                        </div>
+                        
+                        <!-- Battery Lifespan -->
+                        <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="ontario-plot-battery" style="width:100%; height:320px;"></div>
+                        </div>
+                        
+                        <!-- Node Sweep Curves -->
+                        <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
+                            <div id="ontario-plot-error-sweep" style="width:100%; height:320px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Bill of Materials (BOM) Section -->
+                    <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px;">
+                        <h5 style="color:var(--accent); margin:0 0 15px; font-family:'Outfit',sans-serif; font-size:1.0rem;">📋 Unified Pi Zero 2 W Sensor Node Hardware Bill of Materials (BOM)</h5>
+                        <div style="overflow-x:auto;">
+                            <table id="ontario-bom-table" style="width:100%; border-collapse:collapse; font-size:0.83rem; text-align:left; color:#cbd5e1;">
+                                <thead>
+                                    <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-muted);">
+                                        <th style="padding:10px 8px;">Part Item</th>
+                                        <th style="padding:10px 8px;">Source/Manufacturer</th>
+                                        <th style="padding:10px 8px; text-align:right;">Cost (USD)</th>
+                                        <th style="padding:10px 8px;">Embedded System Role</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic rows loaded from api -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Technical ASCII Schematic Panel -->
+                    <div>
+                        <h5 style="color:var(--quantum); margin:0 0 10px; font-family:'Outfit',sans-serif; font-size:0.95rem;">🔌 Raspberry Pi Zero 2 W Stack Technical Schematic</h5>
+                        <pre id="ontario-ascii-schematic" style="font-family:'Courier New', monospace; font-size:0.75rem; line-height:1.3; white-space:pre-wrap; background:#050b14; border:1px solid rgba(59,130,246,0.2); border-radius:12px; padding:15px; color:#38bdf8; margin:0; height:380px; overflow-x:auto; overflow-y:auto;"></pre>
+                    </div>
+
+                    <!-- Diagnostics & Restoration Prescription Card -->
+                    <div style="background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15); padding: 20px; border-radius: 16px;">
+                        <h5 style="color:var(--primary); margin:0 0 12px; font-family:'Outfit',sans-serif; font-size:1.0rem;">🔬 QML Guided Lake Ontario Coherent Restoration Diagnostics</h5>
+                        <div id="ontario-genai-text" style="font-size:0.84rem; line-height:1.6; color:#cbd5e1;">Conducting decadal simulation of Lake Ontario...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <!-- Sleep Apnea rTMS tab removed -->
         <div id="sleepapnea-card" style="display:none;">
             <div class="viewer-title">
@@ -2039,7 +2169,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all viewer cards
-            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'circuitry-card', 'grenadier-card', 'qke-card', 'sensornet-card', 'restoration-card', 'tahoe-card', 'austrian-card', 'cnratio-card', 'primeregressor-card', 'ecoli-card', 'ecolidesign-card'].forEach(id => {
+            ['telemetry-card', 'fusion-card', 'ecological-card', 'qml-card', 'coolpool-card', 'conservation2045-card', 'lidar-card', 'circuitry-card', 'grenadier-card', 'qke-card', 'sensornet-card', 'restoration-card', 'tahoe-card', 'austrian-card', 'cnratio-card', 'primeregressor-card', 'ecoli-card', 'ecolidesign-card', 'lakeontario-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -2117,6 +2247,10 @@
                 document.getElementById('tab-ecolidesign').classList.add('active');
                 document.getElementById('ecolidesign-card').style.display = 'flex';
                 runAdvancedEcoliDesign();
+            } else if (tabId === 'lakeontario') {
+                document.getElementById('tab-lakeontario').classList.add('active');
+                document.getElementById('lakeontario-card').style.display = 'flex';
+                runLakeOntarioDesign();
             }
         }
 
@@ -5383,6 +5517,202 @@
             document.getElementById('ecoli-stat-accuracy').textContent   = `${accuracy}%`;
         }
         // ─── END E.COLI DETECTION ANALYTICS ─────────────────────────────────────
+
+        let ontarioDebounceTimer = null;
+        function runLakeOntarioDesignDebounced() {
+            clearTimeout(ontarioDebounceTimer);
+            ontarioDebounceTimer = setTimeout(runLakeOntarioDesign, 50);
+        }
+
+        function runLakeOntarioDesign() {
+            const placement = document.getElementById('ontario-placement').value;
+            const nodes = document.getElementById('ontario-nodes').value;
+            const battery = document.getElementById('ontario-battery').value;
+            const led = document.getElementById('ontario-led').value;
+            const qml = document.getElementById('ontario-qml').value;
+
+            const url = `/api/lake-ontario-detection?placement_strategy=${placement}&sensor_count=${nodes}&battery_capacity=${battery}&led_brightness=${led}&qml_gain=${qml}`;
+
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error("Lake Ontario Design API Error:", data.error);
+                        return;
+                    }
+
+                    // 1. Update Metrics
+                    document.getElementById('ontario-metric-power').textContent = data.avg_power_w.toFixed(3) + " W";
+                    const lifespanDays = data.total_battery_hours / 24.0;
+                    document.getElementById('ontario-metric-lifespan').textContent = data.total_battery_hours.toFixed(1) + " hours (" + lifespanDays.toFixed(1) + " days)";
+                    document.getElementById('ontario-metric-error').textContent = data.err_optimal[data.sensor_xs.length - 1].toFixed(2) + "%";
+                    document.getElementById('ontario-metric-cost').textContent = "$" + data.total_bom_cost.toFixed(2);
+
+                    // 2. Render ASCII Schematic
+                    document.getElementById('ontario-ascii-schematic').textContent = data.ascii_schematic;
+
+                    // 3. Render BOM Table
+                    const tbody = document.getElementById('ontario-bom-table').querySelector('tbody');
+                    tbody.innerHTML = "";
+                    data.bom_items.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.style.borderBottom = "1px solid rgba(255,255,255,0.04)";
+                        tr.innerHTML = `
+                            <td style="padding:6px; color:#e2e8f0; font-weight:600;">${item.item}</td>
+                            <td style="padding:6px; color:#94a3b8;">${item.manufacturer}</td>
+                            <td style="padding:6px; color:#10b981; font-weight:700; text-align:right;">$${item.cost_usd.toFixed(2)}</td>
+                            <td style="padding:6px; color:#94a3b8; font-size:0.75rem;">${item.role}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // 4. Render Prescription Markdown -> HTML
+                    let txt = data.genai_prescription || "";
+                    txt = txt.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    txt = txt.replace(/\$(.*?)\$/g, '<em>$1</em>');
+                    txt = txt.replace(/\n\n/g, '<br><br>');
+                    txt = txt.replace(/### /g, '');
+                    document.getElementById('ontario-genai-text').innerHTML = txt;
+
+                    // 5. Plot 1: 10-Year Decadal Predict E.coli
+                    const traceNoAction = {
+                        x: data.years,
+                        y: data.ecoli_no_action,
+                        name: 'No Action (Baseline Rise)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#ef4444', width: 2, dash: 'dash'},
+                        marker: {size: 4}
+                    };
+                    const traceStandard = {
+                        x: data.years,
+                        y: data.ecoli_standard,
+                        name: 'Standard Place Model',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#fbbf24', width: 2, dash: 'dot'},
+                        marker: {size: 4}
+                    };
+                    const traceOptimal = {
+                        x: data.years,
+                        y: data.ecoli_optimal,
+                        name: 'QML topological placement (Pi Zero 2 W)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#10b981', width: 3},
+                        marker: {size: 6}
+                    };
+
+                    Plotly.react('ontario-plot-decadal', [traceNoAction, traceStandard, traceOptimal], {
+                        title: { text: '10-Year Decadal E.coli Projection (CFU/100mL)', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'Years in Future', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'E.coli Concentration (CFU/100mL)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                    }, {responsive:true, displaylogo:false});
+
+                    // 6. Plot 2: Shoreline Transect Signal Reconstruction
+                    const traceActual = {
+                        x: data.distances,
+                        y: data.actual_field,
+                        name: 'Actual Shoreline E.coli field',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#34d399', width: 1.5, dash: 'dash'}
+                    };
+                    const traceReconstructed = {
+                        x: data.distances,
+                        y: data.reconstructed_field,
+                        name: 'Reconstructed Field Interpolation',
+                        type: 'scatter',
+                        mode: 'lines',
+                        fill: 'tozeroy',
+                        fillcolor: 'rgba(6, 182, 212, 0.04)',
+                        line: {color: '#06b6d4', width: 2.5}
+                    };
+                    const traceSensors = {
+                        x: data.sensor_readings.map(sr => sr.x),
+                        y: data.sensor_readings.map(sr => sr.y),
+                        name: 'Active Sensor placement',
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: {color: '#fb7185', size: 10, symbol: 'diamond-cross'}
+                    };
+
+                    Plotly.react('ontario-plot-reconstruction', [traceActual, traceReconstructed, traceSensors], {
+                        title: { text: 'Optimal Signal Reconstruction vs. Actual Field Transect', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'Shoreline Transect Distance (meters)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'E.coli Concentration (CFU/100mL)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                    }, {responsive:true, displaylogo:false});
+
+                    // 7. Plot 3: Battery Discharge SOC and Voltage Curves
+                    const traceSOC = {
+                        x: data.hours_axis,
+                        y: data.battery_soc,
+                        name: 'State of Charge (%)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#c084fc', width: 2.5}
+                    };
+                    const traceVoltage = {
+                        x: data.hours_axis,
+                        y: data.battery_voltage,
+                        name: 'Cell Voltage (V)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        yaxis: 'y2',
+                        line: {color: '#fb7185', width: 2, dash: 'dot'}
+                    };
+
+                    Plotly.react('ontario-plot-battery', [traceSOC, traceVoltage], {
+                        title: { text: 'Time-Domain Cell Voltage & SOC Discharge Profile', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'Deployment Duration (Hours)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'State of Charge (%)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis2: {
+                            title: 'Cell Voltage (V)',
+                            tickfont:{color:'#cbd5e1',size:8},
+                            titlefont:{color:'#cbd5e1',size:9},
+                            overlaying: 'y',
+                            side: 'right',
+                            showgrid: false
+                        },
+                        margin: {t:40,l:45,r:45,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                    }, {responsive:true, displaylogo:false});
+
+                    // 8. Plot 4: Error Convergence vs Node count Sweep
+                    const traceErrStd = {
+                        x: data.nodes_axis,
+                        y: data.err_standard,
+                        name: 'Uniform Placements (Standard)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#f59e0b', width: 2},
+                        marker: {size: 4}
+                    };
+                    const traceErrOpt = {
+                        x: data.nodes_axis,
+                        y: data.err_optimal,
+                        name: 'Topological Placements (Optimal RBF)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#06b6d4', width: 3},
+                        marker: {size: 5}
+                    };
+
+                    Plotly.react('ontario-plot-error-sweep', [traceErrStd, traceErrOpt], {
+                        title: { text: 'Reconstruction Error vs. Sensor Node Density Sweep', font: {color:'#cbd5e1', size:11} },
+                        xaxis: { title: 'Total Dedeployed Nodes', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        yaxis: { title: 'Interpolation RMS Error (%)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                        margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                    }, {responsive:true, displaylogo:false});
+
+                })
+                .catch(err => console.error("Error fetching Lake Ontario design analytics:", err));
+        }
 
         // Select first tab on document load
         window.addEventListener('DOMContentLoaded', () => {
