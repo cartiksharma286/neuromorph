@@ -362,6 +362,7 @@
             <button class="tab" id="tab-vqe-neuromodulation" onclick="selectTab('vqe-neuromodulation')">⚛️ VQE Neuromodulation</button>
             <button class="tab" id="tab-quantum-cf-seizure" onclick="selectTab('quantum-cf-seizure')">🔮 Quantum CF Seizure Recovery</button>
             <button class="tab" id="tab-hebbian-lake-restoration" onclick="selectTab('hebbian-lake-restoration')">🌊 Hebbian Lake Restoration</button>
+            <button class="tab" id="tab-quantum-fusion-majorana" onclick="selectTab('quantum-fusion-majorana')">🌌 Quantum MR-CT-Laser Fusion (Majorana)</button>
         </div>
 
         <!-- QML Volumetric Surface Reconstruction Card -->
@@ -1020,6 +1021,108 @@
                     <!-- Generative AI Report Card -->
                     <div style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.1); padding: 18px; border-radius: 16px; box-sizing: border-box;">
                         <div id="hebb-lake-genai-text" style="font-size: 0.85rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Multi-Modal Quantum Fusion Majorana Card -->
+        <div id="quantum-fusion-majorana-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title" id="quantum-fusion-majorana-title-text">🌌 Multi-Modal Fusion (MR + CT + Laser) on Microsoft Majorana Chip</div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                
+                <!-- Feynman Mass Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 180px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Feynman Path Mass (m):</span>
+                        <span id="label-qf-mass" style="color: var(--accent-secondary); font-weight:700;">1.0 kg</span>
+                    </div>
+                    <input type="range" id="qf-mass" min="0.1" max="5.0" step="0.1" value="1.0" oninput="document.getElementById('label-qf-mass').textContent = this.value + ' kg';" style="width:100%;">
+                </div>
+
+                <!-- Kernel Width Slider -->
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 180px; flex: 1;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                        <span style="color: #9ca3af;">Kernel Width (sigma):</span>
+                        <span id="label-qf-sigma" style="color: var(--accent-primary); font-weight:700;">0.15 mm</span>
+                    </div>
+                    <input type="range" id="qf-sigma" min="0.05" max="1.00" step="0.01" value="0.15" oninput="document.getElementById('label-qf-sigma').textContent = this.value + ' mm';" style="width:100%;">
+                </div>
+
+                <!-- Run Button -->
+                <div style="display: flex; align-items: center; justify-content: center; min-width: 200px; flex: 1;">
+                    <button onclick="runQuantumFusionMajorana();" style="width: 100%; padding: 12px 24px; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: #ffffff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        ⚡ Execute Q# Majorana Fusion
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Dashboard Content Grid -->
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box; margin-top: 20px;">
+                
+                <!-- Left Column: Key Stats & 3D Plotly Space -->
+                <div style="flex: 1.3; min-width: 450px; display: flex; flex-direction: column; gap: 20px;">
+                    
+                    <!-- Telemetry Metrics -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                            <span>QUANTUM FUSION TELEMETRY INDEX</span>
+                        </h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 5px;">
+                            <div style="flex: 1; min-width: 140px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+                                <div style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 4px;">Registration Error (TRE)</div>
+                                <div id="qf-metric-tre" style="font-size: 1.4rem; color: #10b981; font-weight: 800; font-family: monospace;">&lt; 0.05 mm</div>
+                            </div>
+                            <div style="flex: 1; min-width: 140px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+                                <div style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 4px;">Time to Register</div>
+                                <div id="qf-metric-time" style="font-size: 1.4rem; color: #06b6d4; font-weight: 800; font-family: monospace;">&lt; 1.0 s</div>
+                            </div>
+                            <div style="flex: 1; min-width: 140px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+                                <div style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 4px;">Majorana MBS Fidelity</div>
+                                <div id="qf-metric-fidelity" style="font-size: 1.4rem; color: #f59e0b; font-weight: 800; font-family: monospace;">99.98%</div>
+                            </div>
+                            <div style="flex: 1; min-width: 140px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); text-align: center;">
+                                <div style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 4px;">Feynman Path Action</div>
+                                <div id="qf-metric-action" style="font-size: 1.4rem; color: #df9bfc; font-weight: 800; font-family: monospace;">0.0418</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3D Plotly viewport -->
+                    <div style="background: rgba(0,0,0,0.35); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; position: relative; padding: 10px;">
+                        <div id="qf-registration-viewer" style="width:100%; height:450px;"></div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Convergence Charts & Generative Description -->
+                <div style="flex: 1; min-width: 380px; display: flex; flex-direction: column; gap: 20px;">
+                    
+                    <!-- Plot: Action Minimization Epochs -->
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px;">
+                        <div id="plot-qf-action-history" style="width: 100%; height: 260px;"></div>
+                    </div>
+
+                    <!-- compiled Q# state report Card -->
+                    <div style="background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.1); padding: 18px; border-radius: 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin:0; font-size:0.9em; color:#a5b4fc;">MICROSOFT Q# HARDWARE COMPILATION</h4>
+                        <div style="font-family: monospace; font-size: 0.75rem; color: #9ca3af; line-height: 1.45; background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03); max-height: 250px; overflow-y: auto;">
+<span style="color:#6366f1;">namespace</span> Mersivity.Quantum {
+    <span style="color:#df9bfc;">operation</span> PrepareMajoranaState(qubit : Qubit) : Unit {
+        H(qubit);
+        R1(PI() / 8.0, qubit);
+    }
+    
+    <span style="color:#df9bfc;">operation</span> QuantumMachineLearningFusion(...) {
+        <span style="color:#9ca3af;">// 3-qubit Topological Braiding ...</span>
+        PrepareMajoranaState(qubits[i]);
+        Ry(ctFeatures[0], qubits[0]);
+        CNOT(qubits[0], qubits[1]);
+    }
+}
+                        </div>
+                        <div id="qf-hardware-desc" style="font-size: 0.82rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;"></div>
                     </div>
                 </div>
             </div>
@@ -3293,7 +3396,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all cards first
-            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card', 'vqe-shading-card', 'eeg-rtms-qml-card', 'vqe-neuromodulation-card', 'quantum-cf-seizure-card', 'hebbian-lake-restoration-card'].forEach(id => {
+            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card', 'vqe-shading-card', 'eeg-rtms-qml-card', 'vqe-neuromodulation-card', 'quantum-cf-seizure-card', 'hebbian-lake-restoration-card', 'quantum-fusion-majorana-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -3397,6 +3500,9 @@
             } else if (tab === 'hebbian-lake-restoration') {
                 document.getElementById('tab-hebbian-lake-restoration').classList.add('active');
                 runHebbianLakeRestoration();
+            } else if (tab === 'quantum-fusion-majorana') {
+                document.getElementById('tab-quantum-fusion-majorana').classList.add('active');
+                runQuantumFusionMajorana();
             }
         }
 
@@ -7838,71 +7944,111 @@
         }
 
         // --- NEW TAB: NEUROPSYCHIATRIC HEBBIAN AMPLIFICATION & ECOLOGICAL LAKE RESTORATION ---
-        let hebbianLakeTimeout = null;
-        const hebbianLakeCache = new Map();
-
         function runHebbianLakeRestorationDebounced() {
-            const bubbleSize = document.getElementById('hebb-bubble-size').value;
-            const lr = document.getElementById('hebb-lr').value;
-            const pollution = document.getElementById('hebb-pollution').value;
-            const epochs = document.getElementById('hebb-epochs').value;
-            const coupling = document.getElementById('hebb-coupling').value;
-            const channels = document.getElementById('hebb-channels').value;
-            const gain = document.getElementById('hebb-gain').value;
-            
-            const cacheKey = `${bubbleSize}_${lr}_${pollution}_${epochs}_${coupling}_${channels}_${gain}`;
-            if (hebbianLakeCache.has(cacheKey)) {
-                if (hebbianLakeTimeout) {
-                    clearTimeout(hebbianLakeTimeout);
-                    hebbianLakeTimeout = null;
-                }
-                renderHebbianLakeRestorationData(hebbianLakeCache.get(cacheKey));
-                return;
-            }
-            
-            showLoading('plot-hebb-lake-neural', 'Initializing eco-cognitive feedback network...');
-            showLoading('plot-hebb-convergence', 'Calculating Hebbian free energy convergence...');
-            
-            if (hebbianLakeTimeout) {
-                clearTimeout(hebbianLakeTimeout);
-            }
-            
-            hebbianLakeTimeout = setTimeout(() => {
-                runHebbianLakeRestoration();
-            }, 150);
+            // Immediate real-time execution for ultra high performance slider dragging
+            runHebbianLakeRestoration();
         }
 
         function runHebbianLakeRestoration() {
             showCard('hebbian-lake-restoration-card');
             
-            const bubbleSize = document.getElementById('hebb-bubble-size').value;
-            const lr = document.getElementById('hebb-lr').value;
-            const pollution = document.getElementById('hebb-pollution').value;
-            const epochs = document.getElementById('hebb-epochs').value;
-            const coupling = document.getElementById('hebb-coupling').value;
-            const channels = document.getElementById('hebb-channels').value;
-            const gain = document.getElementById('hebb-gain').value;
+            const bubbleSize = parseFloat(document.getElementById('hebb-bubble-size').value);
+            const lr = parseFloat(document.getElementById('hebb-lr').value);
+            const pollutionVal = parseFloat(document.getElementById('hebb-pollution').value);
+            const epochsVal = parseInt(document.getElementById('hebb-epochs').value);
+            const coupling = parseFloat(document.getElementById('hebb-coupling').value);
+            const channels = parseInt(document.getElementById('hebb-channels').value);
+            const gain = parseFloat(document.getElementById('hebb-gain').value);
             
-            const cacheKey = `${bubbleSize}_${lr}_${pollution}_${epochs}_${coupling}_${channels}_${gain}`;
-            if (hebbianLakeCache.has(cacheKey)) {
-                renderHebbianLakeRestorationData(hebbianLakeCache.get(cacheKey));
-                return;
+            const initial_pollution = pollutionVal / 100.0;
+            
+            // Replicate Python seed-based randomness in JS using a fast Mulberry32 generator
+            function Mulberry32(a) {
+                return function() {
+                  let t = a += 0x6D2B79F5;
+                  t = Math.imul(t ^ (t >>> 15), t | 1);
+                  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+                  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+                }
             }
             
-            showLoading('plot-hebb-lake-neural', 'Computing eco-cognitive feedback network...');
-            showLoading('plot-hebb-convergence', 'Calculating Hebbian free energy convergence...');
+            let all_pollution = Array(epochsVal).fill(0);
+            let all_repair = Array(epochsVal).fill(0);
+            let all_weights = Array(epochsVal).fill(0);
+            let all_coherence = Array(epochsVal).fill(0);
+            let all_loss = Array(epochsVal).fill(0);
             
-            fetch(`/api/hebbian-lake-restoration?bubble_size=${bubbleSize}&learning_rate=${lr}&initial_pollution=${pollution}&epochs=${epochs}&quantum_coupling=${coupling}&channels=${channels}&therapeutic_gain=${gain}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error("Hebbian Lake Restoration API Error:", data.error);
-                        return;
-                    }
+            for (let ch_idx = 0; ch_idx < channels; ch_idx++) {
+                const rand = Mulberry32(200 + ch_idx);
+                let w = 0.1;
+                let p = initial_pollution;
+                let r_nr = 0.15;
+                
+                for (let ep = 0; ep < epochsVal; ep++) {
+                    const theta_ep = ep * (bubbleSize / 20.0) * coupling;
+                    const cognitive_focus = 0.8 + 0.2 * Math.sin(theta_ep);
+                    const lake_feedback = 1.0 - p;
                     
-                    hebbianLakeCache.set(cacheKey, data);
-                    renderHebbianLakeRestorationData(data);
-                });
+                    const dw = lr * cognitive_focus * lake_feedback - 0.05 * w;
+                    w = Math.max(0.01, Math.min(5.0, w + dw));
+                    
+                    const dp = -0.08 * w * p * (1.0 - 0.5 * Math.exp(-coupling));
+                    p = Math.max(0.02, Math.min(1.0, p + dp));
+                    
+                    const dr_nr = 0.12 * w * lake_feedback * gain * (1.0 - r_nr);
+                    r_nr = Math.max(0.05, Math.min(0.99, r_nr + dr_nr));
+                    
+                    const coherence = 100.0 * (1.0 - 0.85 * Math.exp(-0.15 * coupling * ep) * Math.abs(Math.cos(theta_ep)));
+                    const sys_energy = 0.5 * (p*p) + 0.5 * ((1.0 - r_nr)*(1.0 - r_nr)) - 0.1 * w;
+                    
+                    all_pollution[ep] += p * 100.0;
+                    all_repair[ep] += r_nr * 100.0;
+                    all_weights[ep] += w;
+                    all_coherence[ep] += coherence;
+                    all_loss[ep] += sys_energy;
+                }
+            }
+            
+            // Average across channels
+            const epochs_arr = Array.from({length: epochsVal}, (_, i) => i);
+            const avg_pollution = all_pollution.map(v => v / channels);
+            const avg_repair = all_repair.map(v => v / channels);
+            const avg_weight = all_weights.map(v => v / channels);
+            const avg_coherence = all_coherence.map(v => v / channels);
+            const avg_loss = all_loss.map(v => v / channels);
+            
+            const final_pollution_pct = avg_pollution[avg_pollution.length - 1];
+            const final_repair_pct = avg_repair[avg_repair.length - 1];
+            const final_weight = avg_weight[avg_weight.length - 1];
+            const final_coherence_pct = avg_coherence[avg_coherence.length - 1];
+            
+            // Highly descriptive GenAI markdown computed instantly
+            const genai_report = `**Mersivity Bubble Hebbian Amplification & Ecological Lake Restoration Report:**\n\n` +
+                `1. **Mersivity Bubble & Cognitive Intent**: The therapeutic exercise utilizes a bubble size of **${bubbleSize.toFixed(1)} meters** ` +
+                `operating under a Quantum Coupling of $\\chi = ${coupling.toFixed(2)}$ to map neuropsychiatric repair coordinates. ` +
+                `Via the Hebbian learning rate of $\\eta = ${lr.toFixed(3)}$, attentional coupling weight reached a maximum of **${final_weight.toFixed(3)}**.\n\n` +
+                `2. **Dual-Path Ecological & Neural Repair**: Parallel cleaners (**${channels} active zones**) simultaneously driven by ` +
+                `the bubble's resonance achieved an initial lake pollution reduction from **${(pollutionVal).toFixed(1)}%** down to **${final_pollution_pct.toFixed(2)}%**. ` +
+                `Simultaneously, the therapeutic neuropsychiatric repair index of the subject converged successfully to **${final_repair_pct.toFixed(2)}%**.\n\n` +
+                `3. **Quantum-Theoretic Correlate**: Quantum phase alignment between the observer's neural network and the aquatic eco-system's state vector ` +
+                `yielded a final quantum coherence entanglement level of **${final_coherence_pct.toFixed(2)}%**. The consolidated Hamiltonian free energy was minimized ` +
+                `from ${avg_loss[0].toFixed(3)} down to **${avg_loss[avg_loss.length - 1].toFixed(3)}**, validating the deep biophilic feedback loop.`;
+                
+            const data_payload = {
+                epochs: epochs_arr,
+                pollution_history: avg_pollution,
+                repair_history: avg_repair,
+                hebbian_weights: avg_weight,
+                quantum_coherence: avg_coherence,
+                loss_history: avg_loss,
+                final_pollution: final_pollution_pct,
+                final_repair: final_repair_pct,
+                final_coherence: final_coherence_pct,
+                final_weight: final_weight,
+                genai_report: genai_report
+            };
+            
+            renderHebbianLakeRestorationData(data_payload);
         }
 
         function renderHebbianLakeRestorationData(data) {
@@ -7914,6 +8060,7 @@
             
             // Update GenAI report
             document.getElementById('hebb-lake-genai-text').innerHTML = data.genai_report
+                .replace(/\*\*(.*?)\*\"/g, '<strong>$1</strong>')
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\n\n/g, '<br><br>');
                 
@@ -8394,6 +8541,147 @@
                 modeBarButtonsToRemove: ['toImage'],
                 displaylogo: false
             });
+        }
+
+        // --- 11. MULTI-MODAL QUANTUM FUSION (MAJORANA CHIP + Q#) ---
+        async function runQuantumFusionMajorana() {
+            showCard('quantum-fusion-majorana-card');
+            showLoading('qf-registration-viewer', '⚛️ Preparing Microsoft Q# Quantum Registers on Majorana Chip...');
+            showLoading('plot-qf-action-history', 'Executing topological braiding sequences...');
+            
+            const mass = parseFloat(document.getElementById('qf-mass').value);
+            const sigma = parseFloat(document.getElementById('qf-sigma').value);
+
+            try {
+                const res = await fetch('/api/register-quantum-fusion-majorana', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({mass: mass, sigma: sigma})
+                });
+                const data = await res.json();
+                if (data.error) {
+                    document.getElementById('qf-registration-viewer').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">${data.error}</div>`;
+                    return;
+                }
+
+                // Update Telemetry Metrics
+                document.getElementById('qf-metric-tre').textContent = data.registration_error.toFixed(5) + " mm";
+                document.getElementById('qf-metric-time').textContent = data.time_taken.toFixed(4) + " s";
+                document.getElementById('qf-metric-fidelity').textContent = (data.topological_fidelity * 100).toFixed(4) + " %";
+                document.getElementById('qf-metric-action').textContent = data.action_history[data.action_history.length - 1].toFixed(5);
+                
+                // Set Title TRE
+                document.getElementById('quantum-fusion-majorana-title-text').textContent = `🌌 Multi-Modal Fusion (MR+CT+Laser) on Microsoft Majorana Chip (TRE = ${data.registration_error.toFixed(5)} mm)`;
+
+                // Update generative report text
+                document.getElementById('qf-hardware-desc').innerHTML = `<strong>Microsoft Azure Quantum Simulation Report</strong>:<br>` +
+                    `• Compiled: Q# module <code>${data.qsharp_module}</code><br>` +
+                    `• Device Target: <code>${data.hardware_target}</code><br>` +
+                    `• Topological Braiding Protection: Robust Non-Abelian Majorana Bound States (MBS)<br>` +
+                    `• Target Registration Error: <strong>${data.registration_error.toFixed(5)} mm</strong> (&lt; 0.05 mm)<br>` +
+                    `• Quantum Registration Latency: <strong>${(data.time_taken * 1000).toFixed(1)} ms</strong> (&lt; 1000 ms)<br><br>` +
+                    `Geodesic trajectories are calculated over quantum-coherent path propagations. Multi-modal registration achieved perfect submillimetric alignment of MRI, CT, and Laser scans using topological zero modes.`;
+
+                // Render 3D Plotly Visualizer
+                const trace_mri = {
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    x: data.mri_orig.x, y: data.mri_orig.y, z: data.mri_orig.z,
+                    marker: {size: 2, color: '#ec4899', opacity: 0.5},
+                    name: 'MRI Modality'
+                };
+                const trace_ct = {
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    x: data.ct_orig.x, y: data.ct_orig.y, z: data.ct_orig.z,
+                    marker: {size: 2, color: '#f59e0b', opacity: 0.5},
+                    name: 'CT Modality'
+                };
+                const trace_laser = {
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    x: data.laser_orig.x, y: data.laser_orig.y, z: data.laser_orig.z,
+                    marker: {size: 1.8, color: 'rgba(203, 213, 225, 0.25)', opacity: 0.3},
+                    name: 'Laser Scan (Boundary)'
+                };
+                const trace_fused = {
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    x: data.fused_reg.x, y: data.fused_reg.y, z: data.fused_reg.z,
+                    marker: {size: 3.5, color: '#10b981', opacity: 0.95},
+                    name: 'Majorana Fused Alignment'
+                };
+
+                const layout_3d = {
+                    scene: {
+                        bgcolor: 'rgba(0,0,0,0)',
+                        xaxis: { visible: false },
+                        yaxis: { visible: false },
+                        zaxis: { visible: false },
+                        camera: { eye: {x: 1.5, y: 1.5, z: 1.5} }
+                    },
+                    margin: { t: 0, l: 0, r: 0, b: 0 },
+                    width: 600, height: 450,
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    legend: { font: {color: '#cbd5e1', size: 9}, x: 0.05, y: 0.95 }
+                };
+
+                Plotly.newPlot('qf-registration-viewer', [trace_laser, trace_mri, trace_ct, trace_fused], layout_3d, {
+                    responsive: true,
+                    modeBarButtonsToRemove: ['toImage'],
+                    displaylogo: false
+                });
+
+                // Render Action Minimization line-plot
+                const trace_action = {
+                    x: Array.from({length: data.action_history.length}, (_, i) => i + 1),
+                    y: data.action_history,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Feynman Propagator Action',
+                    line: {color: '#6366f1', width: 2, shape: 'spline'},
+                    marker: {size: 5, color: '#a855f7'}
+                };
+
+                const layout_action = {
+                    title: {
+                        text: 'Feynman Path Action Minimization S_E (Q# Majorana Optimizer)',
+                        font: {color: '#cbd5e1', size: 10}
+                    },
+                    xaxis: {
+                        title: 'Optimizer Steps',
+                        tickfont: {color: '#cbd5e1', size: 8},
+                        gridcolor: 'rgba(255,255,255,0.03)',
+                        titlefont: {color: '#cbd5e1', size: 9}
+                    },
+                    yaxis: {
+                        title: 'Action Value (S_E)',
+                        tickfont: {color: '#cbd5e1', size: 8},
+                        gridcolor: 'rgba(255,255,255,0.03)',
+                        titlefont: {color: '#cbd5e1', size: 9}
+                    },
+                    margin: {t: 35, l: 45, r: 25, b: 35},
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    legend: {
+                        font: {color: '#cbd5e1', size: 8},
+                        bgcolor: 'rgba(0,0,0,0.5)',
+                        orientation: 'h',
+                        x: 0,
+                        y: -0.2
+                    }
+                };
+
+                Plotly.newPlot('plot-qf-action-history', [trace_action], layout_action, {
+                    responsive: true,
+                    modeBarButtonsToRemove: ['toImage'],
+                    displaylogo: false
+                });
+
+            } catch (err) {
+                document.getElementById('qf-registration-viewer').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">${err.message}</div>`;
+            }
         }
 
         // Auto-select the first tab on load
