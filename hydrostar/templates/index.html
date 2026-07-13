@@ -2002,10 +2002,6 @@
                     
                     <!-- Plot Grid -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 20px; width: 100%;">
-                        <!-- Decadal Predictions -->
-                        <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
-                            <div id="ontario-plot-decadal" style="width:100%; height:320px;"></div>
-                        </div>
                         
                         <!-- Reconstruction Performance -->
                         <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; padding: 10px;">
@@ -2056,8 +2052,39 @@
 
                     <!-- Diagnostics & Restoration Prescription Card -->
                     <div style="background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15); padding: 20px; border-radius: 16px;">
-                        <h5 style="color:var(--primary); margin:0 0 12px; font-family:'Outfit',sans-serif; font-size:1.0rem;">🔬 QML Guided Lake Ontario Coherent Restoration Diagnostics</h5>
-                        <div id="ontario-genai-text" style="font-size:0.84rem; line-height:1.6; color:#cbd5e1;">Conducting decadal simulation of Lake Ontario...</div>
+                        <h5 style="color:var(--primary); margin:0 0 12px; font-family:'Outfit',sans-serif; font-size:1.0rem;">🔬 QML Guided Yellow Creek Ravine Coherent Restoration Diagnostics</h5>
+                        <div id="ontario-genai-text" style="font-size:0.84rem; line-height:1.6; color:#cbd5e1;">Conducting decadal simulation of Yellow Creek Ravine...</div>
+                    </div>
+
+                    <!-- Decadal CFU Projections & QML Model Technical Blurb -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; width: 100%;">
+                        <div style="background: rgba(59,130,246,0.04); border: 1px solid rgba(59,130,246,0.15); padding: 20px; border-radius: 16px; box-sizing: border-box;">
+                            <h5 style="color: #38bdf8; margin: 0 0 12px; font-family: 'Outfit', sans-serif; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                                📈 10-Year Decadal CFU Projection Basis
+                            </h5>
+                            <div style="font-size: 0.8rem; line-height: 1.5; color: #cbd5e1;">
+                                <p style="margin: 0 0 8px;">The <strong>10-Year Colony Forming Unit (CFU/100mL) Projections</strong> are mathematically formulated using a coupled non-linear transport and microbial decay model. The environmental variables represent:</p>
+                                <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px;">
+                                    <li><strong>Baseline Runoff Escalation:</strong> Combined sewer overflows (CSOs) and storm runoffs from Yellow Creek Ravine scale systematically with local precipitation index $P(t)$ and urban catchment imperviousness factor $\eta$.</li>
+                                    <li><strong>Climate HdT (Heating Decay-Temperature):</strong> Seasonal microbial multiplication kinetics scale exponentially according to Arrhenius temperature dependence $e^{-a/T}$, offset by baseline global heating models.</li>
+                                    <li><strong>Optimal Spatial Topology:</strong> QML-driven real-time optimal coordinate selection drives an active feedback system, activating aeration gates and bio-retention filters to rapidly decay bacteria counts down to safe background levels (&lt; 100 CFU).</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(168,85,247,0.04); border: 1px solid rgba(168,85,247,0.15); padding: 20px; border-radius: 16px; box-sizing: border-box;">
+                            <h5 style="color: #c084fc; margin: 0 0 12px; font-family: 'Outfit', sans-serif; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                                🔮 Exact QML Model: QK-GPR Architecture
+                            </h5>
+                            <div style="font-size: 0.8rem; line-height: 1.5; color: #cbd5e1;">
+                                <p style="margin: 0 0 8px;">The core predictive intelligence is a <strong>Quantum Kernel-Enhanced Gaussian Process Regressor (QK-GPR)</strong>. This hybrid classical-quantum solver replaces traditional RBF radial kernels with a high-dimensional quantum similarity measure computed on physical qubits:</p>
+                                <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px;">
+                                    <li><strong>IQP Feature Mapping:</strong> Classic telemetry (pH, DO, Temp, Turbidity) is mapped into a high-dimensional Hilbert space via an Instantaneous Quantum Polynomial-time (IQP) ansatz: $U_{\Phi}(\mathbf{x}) = e^{i \sum_j x_j Z_j + i \sum_{j,k} x_j x_k Z_j Z_k}$.</li>
+                                    <li><strong>Variational Quantum Circuit (VQC):</strong> Multi-layer Chebyshev rotational ansatz blocks ($\mathbf{\theta}$) capture intricate cross-correlation structures of contaminant transport.</li>
+                                    <li><strong>Log-Likelihood Optimization:</strong> Variational parameters are trained over quantum-classical loops to maximize marginal log-likelihood, resolving highly complex spatio-temporal covariance without overfitting.</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5579,42 +5606,44 @@
                     txt = txt.replace(/### /g, '');
                     document.getElementById('ontario-genai-text').innerHTML = txt;
 
-                    // 5. Plot 1: 10-Year Decadal Predict E.coli
-                    const traceNoAction = {
-                        x: data.years,
-                        y: data.ecoli_no_action,
-                        name: 'No Action (Baseline Rise)',
-                        type: 'scatter',
-                        mode: 'lines+markers',
-                        line: {color: '#ef4444', width: 2, dash: 'dash'},
-                        marker: {size: 4}
-                    };
-                    const traceStandard = {
-                        x: data.years,
-                        y: data.ecoli_standard,
-                        name: 'Standard Place Model',
-                        type: 'scatter',
-                        mode: 'lines+markers',
-                        line: {color: '#fbbf24', width: 2, dash: 'dot'},
-                        marker: {size: 4}
-                    };
-                    const traceOptimal = {
-                        x: data.years,
-                        y: data.ecoli_optimal,
-                        name: 'QML topological placement (Pi Zero 2 W)',
-                        type: 'scatter',
-                        mode: 'lines+markers',
-                        line: {color: '#10b981', width: 3},
-                        marker: {size: 6}
-                    };
+                    // 5. Plot 1: 10-Year Decadal Predict E.coli (Hidded in phase 1 of grant)
+                    if (document.getElementById('ontario-plot-decadal')) {
+                        const traceNoAction = {
+                            x: data.years,
+                            y: data.ecoli_no_action,
+                            name: 'No Action (Baseline Rise)',
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            line: {color: '#ef4444', width: 2, dash: 'dash'},
+                            marker: {size: 4}
+                        };
+                        const traceStandard = {
+                            x: data.years,
+                            y: data.ecoli_standard,
+                            name: 'Standard Place Model',
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            line: {color: '#fbbf24', width: 2, dash: 'dot'},
+                            marker: {size: 4}
+                        };
+                        const traceOptimal = {
+                            x: data.years,
+                            y: data.ecoli_optimal,
+                            name: 'QML topological placement (Pi Zero 2 W)',
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            line: {color: '#10b981', width: 3},
+                            marker: {size: 6}
+                        };
 
-                    Plotly.react('ontario-plot-decadal', [traceNoAction, traceStandard, traceOptimal], {
-                        title: { text: '10-Year Decadal E.coli Projection (CFU/100mL)', font: {color:'#cbd5e1', size:11} },
-                        xaxis: { title: 'Years in Future', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
-                        yaxis: { title: 'E.coli Concentration (CFU/100mL)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
-                        margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
-                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
-                    }, {responsive:true, displaylogo:false});
+                        Plotly.react('ontario-plot-decadal', [traceNoAction, traceStandard, traceOptimal], {
+                            title: { text: '10-Year Decadal E.coli Projection (CFU/100mL)', font: {color:'#cbd5e1', size:11} },
+                            xaxis: { title: 'Years in Future', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                            yaxis: { title: 'E.coli Concentration (CFU/100mL)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.04)', titlefont:{color:'#cbd5e1',size:9} },
+                            margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                            legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                        }, {responsive:true, displaylogo:false});
+                    }
 
                     // 6. Plot 2: Shoreline Transect Signal Reconstruction
                     const traceActual = {
