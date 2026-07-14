@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>U of T Spatial VR & QML Learning Management Suite</title>
+    
+    <!-- Fonts & Styling -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Plotly.js for state graphs & expectation traces -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <style>
+        /* University of Toronto Luxury Theme and High-Tech Palette */
+        :root {
+            --uoft-blue: #002A5C;
+            --uoft-teal: #008bb0;
+            --uoft-white: #ffffff;
+            --space-dark: #000c1a;
+            --card-glass: rgba(0, 42, 92, 0.25);
+            --card-border: rgba(0, 139, 176, 0.35);
+            --glow-neon: 0 0 16px rgba(0, 139, 176, 0.6);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --font-main: 'Montserrat', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        body {
+            background-color: var(--space-dark);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(0, 42, 92, 0.6) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(0, 139, 176, 0.4) 0px, transparent 50%);
+            margin: 0;
+            padding: 0;
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        /* High-End Header with U of T Shield Motif */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid rgba(0, 139, 176, 0.2);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        header .title-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header .logo-shield {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--uoft-blue), var(--uoft-teal));
+            border-radius: 12px;
+            border: 2px solid var(--uoft-white);
+            box-shadow: var(--glow-neon);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--uoft-white);
+        }
+
+        header h1 {
+            font-size: 1.85rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: 0.5px;
+            background: linear-gradient(120deg, var(--uoft-white) 30%, var(--uoft-teal) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header .badge {
+            background: rgba(0, 139, 176, 0.15);
+            border: 1px solid var(--uoft-teal);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--uoft-teal);
+            box-shadow: var(--glow-neon);
+        }
+
+        /* Stunning Glassmorphic Tab Navigation */
+        .tab-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: rgba(0, 12, 26, 0.85);
+            border: 1px solid rgba(0, 139, 176, 0.25);
+            padding: 8px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 0 10px rgba(0, 139, 176, 0.1);
+        }
+
+        .tab {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            color: var(--uoft-white);
+            background: rgba(0, 139, 176, 0.1);
+        }
+
+        .tab.active {
+            color: var(--uoft-white);
+            background: linear-gradient(135deg, var(--uoft-blue), var(--uoft-teal));
+            box-shadow: var(--glow-neon);
+            transform: translateY(-2px);
+        }
+
+        /* Grid layouts */
+        .dashboard-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .viewer-card {
+            background: var(--card-glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 8px 32px 0 rgba(0, 12, 26, 0.37);
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            box-sizing: border-box;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .viewer-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: var(--uoft-white);
+            border-bottom: 1px solid rgba(0, 139, 176, 0.15);
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .layout-rows {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            width: 100%;
+        }
+
+        .control-panel {
+            flex: 1;
+            min-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .display-panel {
+            flex: 1.6;
+            min-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Beautiful Input Elements */
+        .slider-group {
+            background: rgba(0, 12, 26, 0.4);
+            border: 1px solid rgba(0, 139, 176, 0.15);
+            border-radius: 16px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .slider-header .value {
+            color: var(--uoft-teal);
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(0, 42, 92, 0.5);
+            outline: none;
+            margin: 10px 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--uoft-teal);
+            cursor: pointer;
+            box-shadow: var(--glow-neon);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Stunning CTA Buttons */
+        .primary-btn {
+            background: linear-gradient(135deg, var(--uoft-blue) 0%, var(--uoft-teal) 100%);
+            color: var(--uoft-white);
+            border: 2px solid var(--uoft-teal);
+            border-radius: 14px;
+            padding: 15px 30px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: var(--glow-neon);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.15);
+        }
+
+        /* Metrics Dashlets */
+        .metric-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .metric-card {
+            flex: 1;
+            min-width: 130px;
+            background: rgba(0, 12, 26, 0.5);
+            border: 1px solid rgba(0, 139, 176, 0.15);
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: inset 0 0 10px rgba(0, 139, 176, 0.05);
+        }
+
+        .metric-card .caption {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-card .val {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--uoft-white);
+            font-family: var(--font-mono);
+        }
+
+        /* Interactive VR & Agentic Logs */
+        .terminal-log {
+            background: rgba(0, 12, 26, 0.85);
+            border: 1px solid rgba(0, 139, 176, 0.2);
+            border-radius: 16px;
+            padding: 15px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            max-height: 250px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        .terminal-log .info {
+            color: var(--uoft-teal);
+        }
+
+        .terminal-log .highlight {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .terminal-log .alert {
+            color: #f59e0b;
+        }
+
+        /* Prescriptions / Scaffolding Cards */
+        .advisor-card {
+            background: rgba(0, 139, 176, 0.04);
+            border: 2px dashed rgba(0, 139, 176, 0.25);
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .advisor-badge {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--uoft-teal);
+            color: var(--uoft-white);
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 8px;
+            text-transform: uppercase;
+        }
+
+        /* Float effects & glow styles */
+        .glow-text {
+            text-shadow: var(--glow-neon);
+        }
+
+        .quantum-orb-container {
+            width: 100%;
+            height: 350px;
+            background: radial-gradient(circle, rgba(0,42,92,0.6) 0%, rgba(0,12,26,0.95) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 139, 176, 0.25);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Animated virtual space canvas boundary */
+        .vr-space-grid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                linear-gradient(rgba(0,139,176,0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,139,176,0.15) 1px, transparent 1px);
+            background-size: 30px 48px;
+            transform: perspective(600px) rotateX(60deg) translateY(-30%);
+            animation: gridscroll 10s linear infinite;
+        }
+
+        @keyframes gridscroll {
+            0% { transform: perspective(600px) rotateX(60deg) translateY(-10%); }
+            100% { transform: perspective(600px) rotateX(60deg) translateY(10%); }
+        }
+
+        .vr-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, rgba(0, 139, 176, 0.75), rgba(0, 42, 92, 0.75));
+            border-radius: 50%;
+            border: 2px solid var(--uoft-white);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            box-shadow: var(--glow-neon);
+            animation: float-avatar 3s ease-in-out infinite;
+        }
+
+        @keyframes float-avatar {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Luxury Top Header -->
+        <header>
+            <div class="title-group">
+                <div class="logo-shield">U</div>
+                <div>
+                    <h1 class="glow-text">U of T NeuroLink</h1>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600;">COGNITIVE VR, AGENTIC AI & topoloGICAL QUANTUM LEARNING SUITE</div>
+                </div>
+            </div>
+            <span class="badge">U of T PARTNER VALIDATED</span>
+        </header>
+
+        <!-- Dynamic High-End glassmorphic navigation -->
+        <div class="tab-bar">
+            <button class="tab active" id="tab-learn" onclick="selectTab('learning')">👁️ VR Spatial Learning</button>
+            <button class="tab" id="tab-manage" onclick="selectTab('learning-management')">🤖 Agentic AI Co-Pilot</button>
+            <button class="tab" id="tab-edtech" onclick="selectTab('edtech')">🧠 Hebbian Plasticity Engine</button>
+            <button class="tab" id="tab-reporting" onclick="selectTab('reporting')">⚡ Quantum ML Telemetry & Reporting</button>
+            <button class="tab" id="tab-acad" onclick="selectTab('acad-professional')">🏢 Engineering & Business LMS</button>
+            <button class="tab" id="tab-edtech-mgmt" onclick="selectTab('edtech-management')">⚙️ EdTech Management</button>
+            <button class="tab" id="tab-accel" onclick="selectTab('accelerated-learning')">🚀 Accelerated Learning Systems</button>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <!-- TAB 1: LEARNING (VR SPATIAL CLASSROOM) -->
+            <div id="learning-card" class="viewer-card" style="display: flex;">
+                <div class="viewer-title"><span style="color:var(--uoft-teal);">👁️</span> Virtual Reality Spatial Classroom Console</div>
+                
+                <div class="layout-rows">
+                    <!-- Controls -->
+                    <div class="control-panel">
+                        <div style="background:rgba(255,255,255,0.01); padding:15px; border-radius:16px; border:1px solid rgba(255,255,255,0.03);">
+                            <h3 style="margin-top:0; font-size:1rem; color:var(--text-primary);">SPATIAL COGNITIVE LOAD</h3>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.45;">Simulate student immersion and auditory/visual sensory levels dynamically in the U of T virtual classroom portal.</p>
+                        </div>
+
+                        <!-- Stimulus Sliders -->
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Spatial Luminescence</span>
+                                <span class="value" id="val-stim-0">60%</span>
+                            </div>
+                            <input type="range" id="stim-0" min="10" max="100" value="60" oninput="document.getElementById('val-stim-0').textContent=this.value+'%'; triggerSimulationDebounced();">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Acoustic Resonator</span>
+                                <span class="value" id="val-stim-1">70%</span>
+                            </div>
+                            <input type="range" id="stim-1" min="10" max="100" value="70" oninput="document.getElementById('val-stim-1').textContent=this.value+'%'; triggerSimulationDebounced();">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Attentional Focus Gain</span>
+                                <span class="value" id="val-stim-2">80%</span>
+                            </div>
+                            <input type="range" id="stim-2" min="10" max="100" value="80" oninput="document.getElementById('val-stim-2').textContent=this.value+'%'; triggerSimulationDebounced();">
+                        </div>
+
+                        <button onclick="triggerSimulation();" class="primary-btn">
+                            ⚡ Potentiate VR Classroom State
+                        </button>
+                    </div>
+
+                    <!-- Visual interactive simulator display -->
+                    <div class="display-panel">
+                        <div class="quantum-orb-container">
+                            <div class="vr-space-grid"></div>
+                            <div class="vr-avatar">🎓</div>
+                            
+                            <!-- Overlay VR metrics tag -->
+                            <div style="position:absolute; bottom:20px; left:20px; right:20px; display:flex; justify-content:space-between; z-index:20;">
+                                <div style="background:rgba(0,0,0,0.7); padding:8px 15px; border-radius:10px; border:1px solid rgba(0, 139, 176, 0.4); font-size:0.75rem;">
+                                    <span>Gaze Tracking: </span><span style="color:#10b981; font-weight:700;">ACTIVE</span>
+                                </div>
+                                <div style="background:rgba(0,0,0,0.7); padding:8px 15px; border-radius:10px; border:1px solid rgba(0, 139, 176, 0.4); font-size:0.75rem;">
+                                    <span>Haptic Delta: </span><span style="color:var(--uoft-teal); font-weight:700;">2.45 ms</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="terminal-log" id="vr-console-log">
+                            <span class="info">[09:00:00]</span> U of T VR-LMS Initialized.<br>
+                            <span class="info">[09:00:02]</span> Gaze tracking calibrated for subject at Trinity College VR Theater.<br>
+                            <span class="highlight">[09:00:05]</span> Synaptic potentiation feedback loop active.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: LEARNING MANAGEMENT (AGENTIC AI CO-PILOT) -->
+            <div id="learning-management-card" class="viewer-card">
+                <div class="viewer-title"><span style="color:var(--uoft-teal);">🤖</span> Agentic AI Student Advisory & Scaffolding</div>
+
+                <div class="layout-rows">
+                    <!-- Advisor prescriptive state -->
+                    <div class="control-panel">
+                        <div class="advisor-card">
+                            <span class="advisor-badge">UT-Copilot Policy Engine</span>
+                            <h3 style="margin-top:15px; font-size:1.1rem; color:var(--uoft-teal);" id="advisor-state-title">Active State: Balanced Strengthening</h3>
+                            
+                            <p id="advisor-advice-text" style="font-size:0.85rem; line-height:1.5; color:var(--text-primary); margin-bottom:20px;">
+                                Evaluating spatial telemetry coordinates... Potentiating Hebbian weight reinforcement thresholds.
+                            </p>
+
+                            <div style="background:rgba(0,12,26,0.5); padding:12px; border-radius:12px; border:1px solid rgba(0,139,176,0.1); display:flex; flex-direction:column; gap:8px;">
+                                <div style="font-size:0.75rem; color:var(--text-secondary);">REINFORCEMENT ACTIVE POLICIES:</div>
+                                <div style="display:flex; flex-wrap:wrap; gap:6px;" id="policies-pill-container">
+                                    <span style="background:rgba(0,139,176,0.1); border:1px solid var(--uoft-teal); padding:3px 10px; border-radius:12px; font-size:0.7rem; color:var(--uoft-white);">Socratic Scaffolding</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Gauge Indicators -->
+                        <div class="metric-container">
+                            <div class="metric-card">
+                                <div class="caption">Consolidated Plasticity Index</div>
+                                <div class="val" id="mgmt-average-plasticity">0.245</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="caption">Comp. Scaffold Score</div>
+                                <div class="val" id="mgmt-scaffold-score">32.4 %</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flow of Agentic decisions -->
+                    <div class="display-panel">
+                        <div style="background:rgba(0,12,26,0.4); border:1px solid var(--card-border); padding:20px; border-radius:20px;">
+                            <h3 style="margin-top:0; font-size:1rem; color:var(--uoft-white);">Agentic AI Dynamic Policy Graph</h3>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:15px;">Shows live state estimation loop representing reinforcement steps.</p>
+                            
+                            <div style="display:flex; flex-direction:column; gap:10px;" id="agentic-flow-graph">
+                                <!-- Generated dynamically -->
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="width:12px; height:12px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></div>
+                                    <span style="font-size:0.8rem; font-family:var(--font-mono);">Attentional input telemetry mapped to variational angles</span>
+                                </div>
+                                <div style="width:2px; height:20px; background:rgba(0,139,176,0.4); margin-left:5px;"></div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="width:12px; height:12px; border-radius:50%; background:var(--uoft-teal); box-shadow:0 0 8px var(--uoft-teal);"></div>
+                                    <span style="font-size:0.8rem; font-family:var(--font-mono);">Classified target Student Competence via 2Qubit expectation</span>
+                                </div>
+                                <div style="width:2px; height:20px; background:rgba(0,139,176,0.4); margin-left:5px;"></div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="width:12px; height:12px; border-radius:50%; background:#f59e0b; box-shadow:0 0 8px #f59e0b;"></div>
+                                    <span style="font-size:0.8rem; font-family:var(--font-mono);">Selected dynamic spatial rendering scaffolding policies</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: EDTECH (HEBBIAN PLASTICITY & BRAIN-INTERFACE) -->
+            <div id="edtech-card" class="viewer-card">
+                <div class="viewer-title"><span style="color:var(--uoft-teal);">🧠</span> Hebbian Synaptic Weight Progression & Adaptation</div>
+
+                <div class="layout-rows">
+                    <!-- Hebbian Formula Controls -->
+                    <div class="control-panel">
+                        <div style="background:rgba(255,255,255,0.01); padding:15px; border-radius:16px; border:1px solid rgba(255,255,255,0.03);">
+                            <h4 style="margin:0; color:#a5b4fc; font-size:0.9rem;">NEURAL PLASTICITY HYPERPARAMETERS</h4>
+                            <p style="font-size:0.78rem; color:var(--text-secondary); line-height:1.4;">Tweak Hebbian synaptic variables to observe live changes on cognitive maps.</p>
+                        </div>
+
+                        <!-- Plasticity Sliders -->
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Hebbian Learning Rate (η)</span>
+                                <span class="value" id="val-hebb-lr">0.05</span>
+                            </div>
+                            <input type="range" id="param-hebb-lr" min="0.01" max="0.30" step="0.01" value="0.05" oninput="document.getElementById('val-hebb-lr').textContent=this.value; triggerSimulationDebounced();">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Synaptic Forgotten Decay (λ)</span>
+                                <span class="value" id="val-hebb-decay">0.01</span>
+                            </div>
+                            <input type="range" id="param-hebb-decay" min="0.001" max="0.10" step="0.001" value="0.01" oninput="document.getElementById('val-hebb-decay').textContent=this.value; triggerSimulationDebounced();">
+                        </div>
+
+                        <!-- Mathematics card block -->
+                        <div style="background:rgba(0,12,26,0.3); border:1px solid rgba(0, 139, 176, 0.15); padding:15px; border-radius:16px; font-family:var(--font-mono); font-size:0.75rem; color:var(--uoft-teal); text-align:center;">
+                            $$w_{ij}(t+1) = w_{ij}(t) + \eta \cdot x_i \cdot y_j - \lambda \cdot w_{ij}(t)$$
+                        </div>
+                    </div>
+
+                    <!-- Plot display for Hebbian synaptic evolution -->
+                    <div class="display-panel">
+                        <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px;">
+                            <div id="plot-hebbian-evolution" style="width:100%; height:320px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: REPORTING & QML TELEMETRY -->
+            <div id="reporting-card" class="viewer-card">
+                <div class="viewer-title"><span style="color:var(--uoft-teal);">⚡</span> Quantum Machine Learning Telemetry & reporting</div>
+
+                <div class="layout-rows">
+                    <!-- QML summary dashboard stats -->
+                    <div class="control-panel">
+                        <div style="background:rgba(255,255,255,0.01); padding:15px; border-radius:16px; border:1px solid rgba(255,255,255,0.03); display:flex; flex-direction:column; gap:5px;">
+                            <h3 style="margin:0; font-size:1rem; color:var(--uoft-white);">Hilbert Space Telemetry</h3>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.45;">Student performance measures (Attention and cognitive focus) mapped statically onto Hilbert angles representing high-level quantum state vectors.</p>
+                        </div>
+
+                        <div class="metric-container">
+                            <div class="metric-card">
+                                <div class="caption">Bloch Sphere X</div>
+                                <div id="bloch-x-val" class="val">0.342</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="caption">Bloch Sphere Y</div>
+                                <div id="bloch-y-val" class="val">0.457</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="caption">Bloch Sphere Z</div>
+                                <div id="bloch-z-val" class="val">0.819</div>
+                            </div>
+                        </div>
+
+                        <!-- Quantum compilation stats -->
+                        <div style="background:rgba(0,12,26,0.6); padding:15px; border-radius:16px; border:1px solid rgba(0,139,176,0.15); display:flex; flex-direction:column; gap:8px;">
+                            <div style="font-size:0.72rem; color:var(--text-secondary); font-family:var(--font-mono);">VARIATIONAL QUANTUM CIR_DEF:</div>
+                            <div style="font-family:var(--font-mono); font-size:0.75rem; color:#f59e0b; line-height:1.4;">
+                                q_0: ──Ry(θ_1)───●───[Z Expect]──<br>
+                                q_1: ──Ry(θ_2)───X───[Z Expect]──
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trace plot for VQE Cost Minimization -->
+                    <div class="display-panel">
+                        <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px;">
+                            <div id="plot-qml-vqe-loss" style="width:100%; height:320px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: ACADEMIC MATERIAL & PROFESSIONAL SCHOOLS (ENGINEERING & BUSINESS) -->
+            <div id="acad-professional-card" class="viewer-card">
+                <div class="viewer-title"><span style="color:var(--uoft-teal);">🏢</span> Engineering Sciences & Business School LMS Dynamics</div>
+
+                <div class="layout-rows">
+                    <!-- Dynamic slider parameters for Professional curriculum -->
+                    <div class="control-panel">
+                        <div style="background:rgba(255,255,255,0.01); padding:15px; border-radius:16px; border:1px solid rgba(255,255,255,0.03);">
+                            <h3 style="margin-top:0; font-size:1rem; color:var(--text-primary);">CURRICULUM FLOW PARAMETERS</h3>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.45;">Modulate student load dynamics between heavy conceptual STEM lectures (EngSci) and interactive business cases (Rotman School of Management).</p>
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Newtonian EngSci Vector Mechanics Load</span>
+                                <span class="value" id="val-eng-load">75%</span>
+                            </div>
+                            <input type="range" id="eng-load" min="10" max="100" value="75" oninput="document.getElementById('val-eng-load').textContent=this.value+'%'; triggerAcadPlot();">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Rotman Case Study Complexity</span>
+                                <span class="value" id="val-biz-load">60%</span>
+                            </div>
+                            <input type="range" id="biz-load" min="10" max="100" value="60" oninput="document.getElementById('val-biz-load').textContent=this.value+'%'; triggerAcadPlot();">
+                        </div>
+
+                        <div class="metric-container">
+                            <div class="metric-card">
+                                <div class="caption">Occipital STEM Engagement</div>
+                                <div id="eng-engagement-val" class="val">84.2%</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="caption">Frontal Case Focus</div>
+                                <div id="biz-engagement-val" class="val">79.5%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic LMS Characteristic plot -->
+                    <div class="display-panel">
+                        <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px;">
+                            <div id="plot-professional-characteristics" style="width:100%; height:320px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: EDTECH MANAGEMENT -->
+            <div id="edtech-management-card" class="viewer-card">
+                <div class="viewer-title"><span style="color:var(--uoft-teal);">⚙️</span> EdTech Infrastructure Optimization & Resource Load</div>
+
+                <div class="layout-rows">
+                    <!-- EdTech Infrastructure Parameters -->
+                    <div class="control-panel">
+                        <div style="background:rgba(255,255,255,0.01); padding:15px; border-radius:16px; border:1px solid rgba(255,255,255,0.03);">
+                            <h3 style="margin-top:0; font-size:1rem; color:var(--text-primary);">CLOUD & EDGE TELEMETRY INFRASTRUCTURE</h3>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">Tweak user request counts and edge resource scales to observe queue-theoretic bounds.</p>
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>LMS Concurrent Requests</span>
+                                <span class="value" id="val-mgmt-users">2500 users</span>
+                            </div>
+                            <input type="range" id="mgmt-users" min="100" max="10000" step="100" value="2500" oninput="document.getElementById('val-mgmt-users').textContent=this.value+' users'; triggerEdTechPlot();">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Edge Gateway Node Scale</span>
+                                <span class="value" id="val-mgmt-nodes">8 units</span>
+                            </div>
+                            <input type="range" id="mgmt-nodes" min="2" max="24" step="1" value="8" oninput="document.getElementById('val-mgmt-nodes').textContent=this.value+' units'; triggerEdTechPlot();">
+                        </div>
+
+                        <div class="metric-container">
+                            <div class="metric-card">
+                                <div class="caption">LMS Queue Latency</div>
+                                <div id="mgmt-latency-val" class="val">14.5 ms</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="caption">CPU Thermal Core Limit</div>
+                                <div id="mgmt-thermal-val" class="val">42.2 °C</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EdTech Management characteristic plot -->
+                    <div class="display-panel">
+                        <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px;">
+                            <div id="plot-management-characteristics" style="width:100%; height:320px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 7: ACCELERATED LEARNING SYSTEMS -->
+            <div id="accelerated-learning-card" class="viewer-card">
+                <div class="viewer-title"><span style="color:var(--uoft-teal);">🚀</span> Accelerated Learning Systems & Synaptic Strengthening</div>
+
+                <div class="layout-rows">
+                    <!-- Acceleration parameters -->
+                    <div class="control-panel">
+                        <div style="background:rgba(255,255,255,0.01); padding:15px; border-radius:16px; border:1px solid rgba(255,255,255,0.03);">
+                            <h3 style="margin-top:0; font-size:1rem; color:var(--text-primary);">SYNAPTIC ACCELERATION COEFFICIENTS</h3>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.45;">Modulate neurofeedback signal-to-noise ratio (SNR) gain limits and total consolidation periods to view memory retention speedups.</p>
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>VR Auditory Feedback Amplification</span>
+                                <span class="value" id="val-accel-gain">1.50</span>
+                            </div>
+                            <input type="range" id="accel-gain" min="0.50" max="3.00" step="0.05" value="1.50" oninput="document.getElementById('val-accel-gain').textContent=this.value; triggerAccelPlot();">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Consolidation Time Lock</span>
+                                <span class="value" id="val-accel-consolidation">45 mins</span>
+                            </div>
+                            <input type="range" id="accel-consolidation" min="5" max="180" step="5" value="45" oninput="document.getElementById('val-accel-consolidation').textContent=this.value+' mins'; triggerAccelPlot();">
+                        </div>
+
+                        <div class="metric-container">
+                            <div class="metric-card">
+                                <div class="caption">Attentional Potentiation Speedup</div>
+                                <div id="accel-speedup-val" class="val">2.34x</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="caption">Memory Forgetting Halflife</div>
+                                <div id="accel-halflife-val" class="val">18.4 hrs</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Accelerated learning retention graph -->
+                    <div class="display-panel">
+                        <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px;">
+                            <div id="plot-accelerated-retention" style="width:100%; height:320px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="text-align: center; color: var(--text-secondary); font-size: 0.75rem; margin-top: 40px; padding: 15px; border-top: 1px solid rgba(0,139,176,0.1);">
+            &copy; 2026 University of Toronto | Advanced EdTech & Computational Learning Sciences Platform Initiative
+        </div>
+    </div>
+
+    <!-- Script integrations -->
+    <script>
+        // Tab system switcher
+        function selectTab(tabName) {
+            // Remove active style from tabs
+            document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
+            // Hide all dashboard panels
+            document.querySelectorAll('.viewer-card').forEach(el => el.style.display = 'none');
+
+            if (tabName === 'learning') {
+                document.getElementById('tab-learn').classList.add('active');
+                document.getElementById('learning-card').style.display = 'flex';
+            } else if (tabName === 'learning-management') {
+                document.getElementById('tab-manage').classList.add('active');
+                document.getElementById('learning-management-card').style.display = 'flex';
+            } else if (tabName === 'edtech') {
+                document.getElementById('tab-edtech').classList.add('active');
+                document.getElementById('edtech-card').style.display = 'flex';
+            } else if (tabName === 'reporting') {
+                document.getElementById('tab-reporting').classList.add('active');
+                document.getElementById('reporting-card').style.display = 'flex';
+            } else if (tabName === 'acad-professional') {
+                document.getElementById('tab-acad').classList.add('active');
+                document.getElementById('acad-professional-card').style.display = 'flex';
+                triggerAcadPlot();
+            } else if (tabName === 'edtech-management') {
+                document.getElementById('tab-edtech-mgmt').classList.add('active');
+                document.getElementById('edtech-management-card').style.display = 'flex';
+                triggerEdTechPlot();
+            } else if (tabName === 'accelerated-learning') {
+                document.getElementById('tab-accel').classList.add('active');
+                document.getElementById('accelerated-learning-card').style.display = 'flex';
+                triggerAccelPlot();
+            }
+        }
+
+        // Global simulation function
+        let timeoutId = null;
+        function triggerSimulationDebounced() {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(triggerSimulation, 250);
+        }
+
+        async function triggerSimulation() {
+            const stim_0 = parseFloat(document.getElementById('stim-0').value) / 100.0;
+            const stim_1 = parseFloat(document.getElementById('stim-1').value) / 100.0;
+            const stim_2 = parseFloat(document.getElementById('stim-2').value) / 100.0;
+            
+            const learningRate = parseFloat(document.getElementById('param-hebb-lr').value);
+            const decay = parseFloat(document.getElementById('param-hebb-decay').value);
+
+            // Construct mock signals represent 5 sectors
+            const stimuli = [stim_0, stim_1, stim_2, 0.5, 0.4];
+            const attention = [0.8, 0.7, stim_2, 0.6, 0.5];
+
+            try {
+                const response = await fetch('/api/simulate-learning', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        learning_rate: learningRate,
+                        decay: decay,
+                        stimuli: stimuli,
+                        attention: attention
+                    })
+                });
+                const res = await response.json();
+                if (res.error) {
+                    console.error(res.error);
+                    return;
+                }
+
+                // Render metrics logs on VR console
+                const consoleEl = document.getElementById('vr-console-log');
+                consoleEl.innerHTML += `<br><span class="info">[${new Date().toLocaleTimeString()}]</span> Synaptic Potentiation re-evaluated with att_focus=${stim_2.toFixed(2)}`;
+                consoleEl.scrollTop = consoleEl.scrollHeight;
+
+                // Update tab 2 metrics
+                document.getElementById('mgmt-average-plasticity').textContent = res.average_plasticity.toFixed(4);
+                document.getElementById('mgmt-scaffold-score').textContent = res.agentic_intervention.prescribed_scaffolding_level.toFixed(2) + " %";
+                
+                // Update advisor text
+                document.getElementById('advisor-state-title').textContent = "Active Policy: " + res.agentic_intervention.agentic_state;
+                document.getElementById('advisor-advice-text').innerHTML = res.agentic_intervention.actionable_advice;
+
+                // Update active policy pills
+                const pillContainer = document.getElementById('policies-pill-container');
+                pillContainer.innerHTML = '';
+                res.agentic_intervention.active_policies.forEach(p => {
+                    const pill = document.createElement('span');
+                    pill.style.background = 'rgba(0,139,176,0.1)';
+                    pill.style.border = '1px solid var(--uoft-teal)';
+                    pill.style.padding = '4px 12px';
+                    pill.style.borderRadius = '12px';
+                    pill.style.fontSize = '0.7em';
+                    pill.style.color = '#fff';
+                    pill.textContent = p;
+                    pillContainer.appendChild(pill);
+                });
+
+                // Update Bloch coordinates
+                document.getElementById('bloch-x-val').textContent = res.quantum_telemetry.bloch_coordinates.x.toFixed(4);
+                document.getElementById('bloch-y-val').textContent = res.quantum_telemetry.bloch_coordinates.y.toFixed(4);
+                document.getElementById('bloch-z-val').textContent = res.quantum_telemetry.bloch_coordinates.z.toFixed(4);
+
+                // Update Hebbian synaptic evolution plot (Multi-Trace Plotly)
+                const trace_nav = {
+                    y: res.history_weights_epochs.map(h => h[0]),
+                    type: 'scatter', mode: 'lines', name: 'Spatial Nav. (Occipital)',
+                    line: {color: '#008bb0', width: 2.5}
+                };
+                const trace_att = {
+                    y: res.history_weights_epochs.map(h => h[1]),
+                    type: 'scatter', mode: 'lines', name: 'Exec. Attention (Frontal)',
+                    line: {color: '#f59e0b', width: 2}
+                };
+                const trace_sens = {
+                    y: res.history_weights_epochs.map(h => h[2]),
+                    type: 'scatter', mode: 'lines', name: 'Sensory Integr. (Parietal)',
+                    line: {color: '#10b981', width: 2}
+                };
+                const trace_cons = {
+                    y: res.history_weights_epochs.map(h => h[3]),
+                    type: 'scatter', mode: 'lines+markers', name: 'Memory Consolidation',
+                    line: {color: '#ec4899', width: 1.5, dash: 'dash'},
+                    marker: {size: 3}
+                };
+
+                const layout_hebb = {
+                    title: { text: 'Hebbian Synaptic Potentiation Weight (dw/dt Over Epochs)', font: {color: '#cbd5e1', size: 11} },
+                    xaxis: { title: 'Epoch Iterations', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9} },
+                    yaxis: { title: 'Synaptic Weight (w_ij)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9} },
+                    margin: {t: 35, l: 45, r: 25, b: 35},
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    legend: { font: {color: '#cbd5e1', size: 8}, bgcolor: 'rgba(0,0,0,0.5)', orientation: 'h', x: 0, y: -0.2 }
+                };
+
+                Plotly.newPlot('plot-hebbian-evolution', [trace_nav, trace_att, trace_sens, trace_cons], layout_hebb, {responsive: true, displaylogo: false});
+
+                // Update VQE minimization loss history chart
+                const trace_vqe = {
+                    y: res.quantum_telemetry.vqe_loss,
+                    type: 'scatter', mode: 'lines+markers', name: 'VQE VQC Expectation Cost',
+                    line: {color: '#df9bfc', width: 2.2},
+                    marker: {size: 4}
+                };
+
+                const layout_vqe = {
+                    title: { text: 'Quantum Parameterized Variational Ansatz Optimization', font: {color: '#cbd5e1', size: 11} },
+                    xaxis: { title: 'QPU Parameters Iterations', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9} },
+                    yaxis: { title: 'Energy Expectation Value <Z>', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9} },
+                    margin: {t: 35, l: 45, r: 25, b: 35},
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    legend: { font: {color: '#cbd5e1', size: 8}, bgcolor: 'rgba(0,0,0,0.5)', orientation: 'h', x: 0, y: -0.2 }
+                };
+
+                Plotly.newPlot('plot-qml-vqe-loss', [trace_vqe], layout_vqe, {responsive: true, displaylogo: false});
+
+            } catch (err) {
+                console.error("Simulation request error: ", err);
+            }
+        }
+
+        // --- TAB 5: ACADEMIC & PROFESSIONAL SCHOOL MODULES ---
+        function triggerAcadPlot() {
+            const engLoad = parseFloat(document.getElementById('eng-load').value);
+            const bizLoad = parseFloat(document.getElementById('biz-load').value);
+
+            // Compute dynamic engagements
+            const engEngage = (engLoad * 0.95 + 10 * Math.random()).toFixed(1);
+            const bizEngage = (bizLoad * 0.9 + 12 * Math.random()).toFixed(1);
+
+            document.getElementById('eng-engagement-val').textContent = engEngage + "%";
+            document.getElementById('biz-engagement-val').textContent = bizEngage + "%";
+
+            // Characteristics list model plotting engagement by week
+            const weeks = Array.from({length: 12}, (_, i) => "W" + (i + 1));
+            
+            const engCurve = Array.from({length: 12}, (_, i) => 
+                (engLoad * 0.8 * (1.0 - 0.25 * Math.sin(i / 1.5)) + 4 * Math.random())
+            );
+
+            const bizCurve = Array.from({length: 12}, (_, i) => 
+                (bizLoad * 0.85 * (1.0 - 0.3 * Math.cos(i / 2.0)) + 5 * Math.random())
+            );
+
+            const traceEng = {
+                x: weeks, y: engCurve,
+                type: 'scatter', mode: 'lines+markers', name: 'EngSci Vector Mechanics',
+                line: {color: '#008bb0', width: 3, shape: 'spline'}
+            };
+
+            const traceBiz = {
+                x: weeks, y: bizCurve,
+                type: 'scatter', mode: 'lines+markers', name: 'Rotman Case Strategy',
+                line: {color: '#ec4899', width: 3, shape: 'spline'}
+            };
+
+            const layout = {
+                title: { text: 'Curriculum Synergies & Cognitive Focus Trajectories', font: {color: '#cbd5e1', size: 11} },
+                xaxis: { title: 'Semester Weeks', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9} },
+                yaxis: { title: 'LMS Engagement Metric (%)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9}, range: [10, 110] },
+                margin: {t: 40, l: 45, r: 25, b: 35},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: { font: {color: '#cbd5e1', size: 8}, bgcolor: 'rgba(0,0,0,0.5)', orientation: 'h', x: 0, y: -0.2 }
+            };
+
+            Plotly.newPlot('plot-professional-characteristics', [traceEng, traceBiz], layout, {responsive: true, displaylogo: false});
+        }
+
+        // --- TAB 6: EDTECH MANAGEMENT INFRASRUCTURE ---
+        function triggerEdTechPlot() {
+            const users = parseFloat(document.getElementById('mgmt-users').value);
+            const nodes = parseInt(document.getElementById('mgmt-nodes').value);
+
+            // Compute metrics
+            const latency = (users / (nodes * 50.0) + 1.2 * Math.random()).toFixed(1);
+            const thermal = (40.0 + (users / 1000.0) * 1.5 - nodes * 0.2 + Math.random()).toFixed(1);
+
+            document.getElementById('mgmt-latency-val').textContent = latency + " ms";
+            document.getElementById('mgmt-thermal-val').textContent = thermal + " °C";
+
+            // Plot server capacity bounds
+            const xLimits = Array.from({length: 15}, (_, i) => (i + 1) * 1000);
+            const loadCurves = xLimits.map(u => (u / (nodes * 40.0)));
+
+            const traceLoad = {
+                x: xLimits, y: loadCurves,
+                type: 'scatter', mode: 'lines+markers', name: 'Resource Allocation Index',
+                line: {color: '#f59e0b', width: 2.2},
+                marker: {color: '#df9bfc'}
+            };
+
+            const layout = {
+                title: { text: 'EdTech Load Scaling Curve (Queue Bounds)', font: {color: '#cbd5e1', size: 11} },
+                xaxis: { title: 'Concurrent Portal Sessions', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9} },
+                yaxis: { title: 'Queue Buffer Capacity (m/s)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9} },
+                margin: {t: 40, l: 45, r: 25, b: 35},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: { font: {color: '#cbd5e1', size: 8}, bgcolor: 'rgba(0,0,0,0.5)', orientation: 'h', x: 0, y: -0.2 }
+            };
+
+            Plotly.newPlot('plot-management-characteristics', [traceLoad], layout, {responsive: true, displaylogo: false});
+        }
+
+        // --- TAB 7: ACCELERATED LEARNING SYSTEM DYNAMICS ---
+        function triggerAccelPlot() {
+            const gain = parseFloat(document.getElementById('accel-gain').value);
+            const consolidation = parseInt(document.getElementById('accel-consolidation').value);
+
+            // Compute stats
+            const speedup = (gain * 1.25 + consolidation / 120.0 + 0.1 * Math.random()).toFixed(2);
+            const halflife = (12.0 * gain + (consolidation / 15.0) + Math.random()).toFixed(1);
+
+            document.getElementById('accel-speedup-val').textContent = speedup + "x";
+            document.getElementById('accel-halflife-val').textContent = halflife + " hrs";
+
+            // Plot learning curve with different feedback models
+            const hours = Array.from({length: 24}, (_, i) => i);
+            
+            // Standard Ebbinghaus forgetting Curve map
+            const normalForgetting = hours.map(h => 100.0 * Math.exp(-0.06 * h));
+            // Quantum Hebbian Accelerated Forget map
+            const acceleratedForgetting = hours.map(h => 100.0 * Math.exp(-0.02 * h / (gain * 0.8)));
+
+            const traceNormal = {
+                x: hours, y: normalForgetting,
+                type: 'scatter', mode: 'lines', name: 'Legacy LMS Forgetting Curve',
+                line: {color: '#ef4444', width: 2, dash: 'dash'}
+            };
+
+            const traceAccel = {
+                x: hours, y: acceleratedForgetting,
+                type: 'scatter', mode: 'lines', name: 'Hebbian Synaptic Accelerated Retention',
+                line: {color: '#10b981', width: 3}
+            };
+
+            const layout = {
+                title: { text: 'Information Retention Index Over Virtual Time Horizon', font: {color: '#cbd5e1', size: 11} },
+                xaxis: { title: 'Time Elapsed (hours)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9} },
+                yaxis: { title: 'Memory Strength Retention (%)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9}, range: [0, 110] },
+                margin: {t: 40, l: 45, r: 25, b: 35},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: { font: {color: '#cbd5e1', size: 8}, bgcolor: 'rgba(0,0,0,0.5)', orientation: 'h', x: 0, y: -0.2 }
+            };
+
+            Plotly.newPlot('plot-accelerated-retention', [traceNormal, traceAccel], layout, {responsive: true, displaylogo: false});
+        }
+
+        // Initialize simulation variables on load
+        window.addEventListener('DOMContentLoaded', () => {
+            triggerSimulation();
+            triggerAcadPlot();
+            triggerEdTechPlot();
+            triggerAccelPlot();
+        });
+    </script>
+
+    <!-- KaTeX / MathJax auto rendering integration -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+</body>
+</html>
