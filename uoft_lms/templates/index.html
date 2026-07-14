@@ -441,6 +441,7 @@
             <button class="tab" id="tab-acad" onclick="selectTab('acad-professional')">🏢 Engineering & Business LMS</button>
             <button class="tab" id="tab-edtech-mgmt" onclick="selectTab('edtech-management')">⚙️ EdTech Management</button>
             <button class="tab" id="tab-accel" onclick="selectTab('accelerated-learning')">🚀 Accelerated Learning Systems</button>
+            <button class="tab" id="tab-hyper" onclick="selectTab('hyperlearning')">💫 Hyperlearning & GPA Optimizer</button>
         </div>
 
         <div class="dashboard-grid">
@@ -814,6 +815,66 @@
                 </div>
             </div>
 
+            <!-- TAB 8: HYPERLEARNING & GPA OPTIMIZATION HORIZONS -->
+            <div id="hyperlearning-card" class="viewer-card">
+                <div class="viewer-title"><span style="color:var(--uoft-teal);">💫</span> Adaptive Hyperlearning Course Selection & GPA Projection Optimizer</div>
+
+                <div class="layout-rows">
+                    <!-- Hyperlearning and Horizon Parameters -->
+                    <div class="control-panel">
+                        <div style="background:rgba(255,255,255,0.01); padding:15px; border-radius:16px; border:1px solid rgba(255,255,255,0.03);">
+                            <h3 style="margin-top:0; font-size:1rem; color:var(--text-primary);">ADAPTIVE ACADEMIC MODEL</h3>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.45;">Simulate student GPA outcomes under adaptive reinforcement scheduling across standard 4-year undergraduate or 2-year Master's degree horizons.</p>
+                        </div>
+
+                        <!-- Horizon Selector -->
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Academic Program Horizon</span>
+                            </div>
+                            <div style="display:flex; gap:10px; margin-top:5px;">
+                                <button id="btn-horizon-4" onclick="setHorizon(4);" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--uoft-teal); background:var(--uoft-blue); color:#fff; font-weight:bold; cursor:pointer;">4-Year Undergrad</button>
+                                <button id="btn-horizon-2" onclick="setHorizon(2);" style="flex:1; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,12,26,0.6); color:var(--text-secondary); font-weight:bold; cursor:pointer;">2-Year Master's</button>
+                            </div>
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Adaptive Learning Frequency</span>
+                                <span class="value" id="val-hyper-adaptive">Daily reviews</span>
+                            </div>
+                            <input type="range" id="hyper-adaptive" min="1" max="10" value="8" oninput="const labels=['Weekly', 'Bi-weekly', 'Semi-weekly', 'Alternate days', 'Daily reviews', 'Intense hyperlearning']; document.getElementById('val-hyper-adaptive').textContent=labels[Math.floor(this.value/2)] || 'Real-time feedback'; triggerHyperPlot();">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Cognitive Study Fatigue Coefficient</span>
+                                <span class="value" id="val-hyper-fatigue">12%</span>
+                            </div>
+                            <input type="range" id="hyper-fatigue" min="0" max="40" step="1" value="12" oninput="document.getElementById('val-hyper-fatigue').textContent=this.value+'%'; triggerHyperPlot();">
+                        </div>
+
+                        <div class="metric-container">
+                            <div class="metric-card">
+                                <div class="caption">Predicted Terminal GPA</div>
+                                <div id="predicted-gpa-val" class="val" style="color:#10b981;">3.92 / 4.0</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="caption">Synaptic Efficiency</div>
+                                <div id="synaptic-efficiency-val" class="val" style="color:var(--uoft-teal);">94.8%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GPA Projection Graph -->
+                    <div class="display-panel">
+                        <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 16px; padding: 10px;">
+                            <div id="plot-hyper-gpa" style="width:100%; height:320px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div style="text-align: center; color: var(--text-secondary); font-size: 0.75rem; margin-top: 40px; padding: 15px; border-top: 1px solid rgba(0,139,176,0.1);">
@@ -1115,12 +1176,101 @@
             Plotly.newPlot('plot-accelerated-retention', [traceNormal, traceAccel], layout, {responsive: true, displaylogo: false});
         }
 
+        // --- TAB 8: HYPERLEARNING & GPA OPTIMIZATION ---
+        let currentHorizonYears = 4; // default
+
+        function setHorizon(years) {
+            currentHorizonYears = years;
+            const btn4 = document.getElementById('btn-horizon-4');
+            const btn2 = document.getElementById('btn-horizon-2');
+
+            if (years === 4) {
+                btn4.style.background = 'var(--uoft-blue)';
+                btn4.style.borderColor = 'var(--uoft-teal)';
+                btn4.style.color = '#fff';
+
+                btn2.style.background = 'rgba(0,12,26,0.6)';
+                btn2.style.borderColor = 'rgba(255,255,255,0.1)';
+                btn2.style.color = 'var(--text-secondary)';
+            } else {
+                btn2.style.background = 'var(--uoft-blue)';
+                btn2.style.borderColor = 'var(--uoft-teal)';
+                btn2.style.color = '#fff';
+
+                btn4.style.background = 'rgba(0,12,26,0.6)';
+                btn4.style.borderColor = 'rgba(255,255,255,0.1)';
+                btn4.style.color = 'var(--text-secondary)';
+            }
+            triggerHyperPlot();
+        }
+
+        function triggerHyperPlot() {
+            const adaptiveFreq = parseFloat(document.getElementById('hyper-adaptive').value);
+            const fatigue = parseFloat(document.getElementById('hyper-fatigue').value) / 100.0;
+
+            // Generate terms
+            let periodsCount = (currentHorizonYears === 4) ? 8 : 4; // Semesters
+            let stepLabel = (currentHorizonYears === 4) ? "Undergrad Semesters" : "Graduate Semesters";
+
+            const semesters = Array.from({length: periodsCount}, (_, i) => "S" + (i + 1));
+            
+            // Models comparing non-adaptive standard GPA vs Quantum AI Adaptive Hyperlearning GPA
+            // Standard GPA starts high, but suffers fatigue decay over semesters
+            const standardGpa = [];
+            let currentStandard = 3.4;
+            for (let i = 0; i < periodsCount; i++) {
+                currentStandard -= (fatigue * 0.4) * (1.0 + 0.1 * i);
+                standardGpa.push(parseFloat(Math.max(2.0, Math.min(4.0, currentStandard + 0.1 * Math.random())).toFixed(2)));
+            }
+
+            // Adaptive Hyperlearning GPA improves monotonically driven by Hebbian training frequency
+            const adaptiveGpa = [];
+            let currentAdaptive = 3.5;
+            for (let i = 0; i < periodsCount; i++) {
+                const adaptationFactor = adaptiveFreq * 0.08 * (1.0 - fatigue);
+                currentAdaptive += adaptationFactor / (1.0 + 0.4 * i);
+                adaptiveGpa.push(parseFloat(Math.max(2.0, Math.min(4.0, currentAdaptive + 0.05 * Math.random())).toFixed(2)));
+            }
+
+            const terminalGpa = adaptiveGpa[adaptiveGpa.length - 1];
+            const synapticEff = (90.0 + adaptiveFreq * 1.0 - fatigue * 10).toFixed(1);
+
+            document.getElementById('predicted-gpa-val').textContent = terminalGpa.toFixed(2) + " / 4.0";
+            document.getElementById('synaptic-efficiency-val').textContent = synapticEff + "%";
+
+            const traceStd = {
+                x: semesters, y: standardGpa,
+                type: 'scatter', mode: 'lines+markers', name: 'Standard (Static LMS) GPA',
+                line: {color: '#ef4444', width: 2, dash: 'dash'}
+            };
+
+            const traceAdapt = {
+                x: semesters, y: adaptiveGpa,
+                type: 'scatter', mode: 'lines+markers', name: 'QML Adaptive Hyperlearning GPA',
+                line: {color: '#10b981', width: 3.5},
+                marker: {size: 6, color: '#008bb0'}
+            };
+
+            const layout = {
+                title: { text: `LMS Optimization trajectory over ${currentHorizonYears}-Year Academic Horizon`, font: {color: '#cbd5e1', size: 11} },
+                xaxis: { title: stepLabel, tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9} },
+                yaxis: { title: 'Predicted Cumulative GPA', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9}, range: [2.0, 4.1] },
+                margin: {t: 40, l: 45, r: 25, b: 35},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: { font: {color: '#cbd5e1', size: 8}, bgcolor: 'rgba(0,0,0,0.5)', orientation: 'h', x: 0, y: -0.2 }
+            };
+
+            Plotly.newPlot('plot-hyper-gpa', [traceStd, traceAdapt], layout, {responsive: true, displaylogo: false});
+        }
+
         // Initialize simulation variables on load
         window.addEventListener('DOMContentLoaded', () => {
             triggerSimulation();
             triggerAcadPlot();
             triggerEdTechPlot();
             triggerAccelPlot();
+            triggerHyperPlot();
         });
     </script>
 
