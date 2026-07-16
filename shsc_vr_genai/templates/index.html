@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunnybrook Health Sciences -- VR GenAI Surgical Suite</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        :root {
+            --sb-navy: #0b1a30;
+            --sb-gold: #c5a059;
+            --sb-green: #0d382b;
+            --sb-blue: #1e3a8a;
+            --cyber-blue: #06b6d4;
+            --cyber-indigo: #6366f1;
+            --alert-pink: #ec4899;
+            --dark-bg: #030712;
+            --card-bg: rgba(17, 24, 39, 0.7);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: #f3faf6;
+            background-image: radial-gradient(radial, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .heading-font {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Glassmorphism card styles */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(6, 182, 212, 0.15);
+        }
+
+        /* Sunnybrook primary accents */
+        .academic-gold {
+            color: var(--sb-gold);
+        }
+        
+        .gold-border {
+            border-color: var(--sb-gold);
+        }
+
+        /* Tab switching */
+        .tab-btn {
+            position: relative;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            border-bottom: 2px solid var(--cyber-blue);
+        }
+
+        .tab-btn:not(.active) {
+            color: #9ca3af;
+        }
+
+        .tab-btn:not(.active):hover {
+            color: #e5e7eb;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Slider accent styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--cyber-blue);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--cyber-blue);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Animate pulse */
+        .glowing-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--cyber-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--cyber-blue), 0 0 20px var(--cyber-blue);
+            animation: pulse-glow 1.5s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                transform: scale(0.9);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+                box-shadow: 0 0 14px var(--cyber-blue), 0 0 24px var(--cyber-blue);
+            }
+            100% {
+                transform: scale(0.9);
+                opacity: 0.7;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-gray-200">
+
+    <!-- TOP HEADER BANNER -->
+    <header class="w-full border-b border-gray-800 bg-[#070d19]/80 backdrop-blur-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <!-- Sunnybrook Hospital Inspired Academic crest representation -->
+                <div class="p-2 bg-gradient-to-br from-[#0c2340] to-[#0d382b] border-2 border-amber-500 rounded-lg shadow-lg flex items-center justify-center">
+                    <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="heading-font font-bold text-lg md:text-xl text-white tracking-wide uppercase flex items-center gap-2">
+                        Sunnybrook <span class="text-sky-400">Health Sciences</span>
+                    </h1>
+                    <p class="text-xs text-gray-400 font-medium">Virtual Reality Neurosurgery &amp; Orthopedics Platform &middot; shsc_vr_genai</p>
+                </div>
+            </div>
+            
+            <!-- Tab selector navigation -->
+            <nav class="flex gap-2 bg-gray-900/60 p-1.5 border border-gray-800 rounded-xl overflow-x-auto max-w-full">
+                <button onclick="switchTab('neurosurgery')" id="btn-neurosurgery" class="tab-btn px-4 py-2 text-xs md:text-sm rounded-lg active">🧠 Neurosurgery</button>
+                <button onclick="switchTab('orthopedics')" id="btn-orthopedics" class="tab-btn px-4 py-2 text-xs md:text-sm rounded-lg">🦴 Orthopedics</button>
+                <button onclick="switchTab('vlm')" id="btn-vlm" class="tab-btn px-4 py-2 text-xs md:text-sm rounded-lg">👁️ VLM Reasoning</button>
+                <button onclick="switchTab('analytics')" id="btn-analytics" class="tab-btn px-4 py-2 text-xs md:text-sm rounded-lg">📈 Educational Analytics</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN BODY SECTION -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        
+        <!-- CARD 1: NEUROSURGERY VR SIMULATOR -->
+        <div id="neurosurgery-card" class="tab-content flex flex-col gap-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800 pb-4">
+                <div>
+                    <h2 class="heading-font text-2xl font-semibold text-white flex items-center gap-2">
+                        <span>🧠 Subcortical DBS Electrode &amp; Catheter Projection Class</span>
+                    </h2>
+                    <p class="text-xs text-gray-400">Euler Pathing, Angular Torques, and Trajectory Statistical Deviation Tracking over Brain Parenchyma Manifolds</p>
+                </div>
+                <div class="flex items-center gap-2 bg-sky-950/40 border border-sky-900/50 px-3 py-1.5 rounded-full text-xs text-sky-300">
+                    <span class="glowing-dot"></span>
+                    <span>Live Haptic Feed Connected</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Controls Side (Left 4 cols) -->
+                <div class="lg:col-span-4 flex flex-col gap-6">
+                    <div class="glass-card p-6 flex flex-col gap-5">
+                        <h3 class="heading-font text-sky-400 font-semibold text-md border-b border-gray-800 pb-2">Target &amp; Mismatch Controls</h3>
+                        
+                        <!-- Target X Slider -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Target X Coordinate:</span>
+                                <span id="label-ns-tx" class="text-sky-300 font-bold">0.50</span>
+                            </div>
+                            <input type="range" id="ns-tx" min="0.25" max="0.75" step="0.01" value="0.50" oninput="document.getElementById('label-ns-tx').textContent=parseFloat(this.value).toFixed(2); runNeurosurgerySimulation();">
+                        </div>
+
+                        <!-- Target Y Slider -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Target Y Coordinate:</span>
+                                <span id="label-ns-ty" class="text-sky-300 font-bold">0.52</span>
+                            </div>
+                            <input type="range" id="ns-ty" min="0.25" max="0.75" step="0.01" value="0.52" oninput="document.getElementById('label-ns-ty').textContent=parseFloat(this.value).toFixed(2); runNeurosurgerySimulation();">
+                        </div>
+
+                        <!-- Drift Slider -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Physiological Tremor (Drift):</span>
+                                <span id="label-ns-drift" class="text-pink-400 font-bold">1.00x</span>
+                            </div>
+                            <input type="range" id="ns-drift" min="0.10" max="3.00" step="0.05" value="1.00" oninput="document.getElementById('label-ns-drift').textContent=parseFloat(this.value).toFixed(2)+'x'; runNeurosurgerySimulation();">
+                        </div>
+
+                        <!-- Previous reps / skill slider -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Trainee Experience (Reps):</span>
+                                <span id="label-ns-reps" class="text-amber-400 font-bold">12 Reps</span>
+                            </div>
+                            <input type="range" id="ns-reps" min="1" max="40" step="1" value="12" oninput="document.getElementById('label-ns-reps').textContent=this.value+' Reps'; runNeurosurgerySimulation();">
+                        </div>
+                    </div>
+
+                    <!-- Statistics Telemetry Output panel -->
+                    <div class="glass-card p-6 flex flex-col gap-4">
+                        <h3 class="heading-font text-[#c5a059] font-semibold text-sm border-b border-gray-800 pb-2">Simulation Performance Characteristics</h3>
+                        <div class="flex flex-col gap-3 text-xs md:text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Surgical Accuracy Score:</span>
+                                <span id="ns-metric-precision" class="font-bold text-emerald-400">...</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Final Target Mismatch:</span>
+                                <span id="ns-metric-mismatch" class="font-bold text-pink-400">...</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Active Cortical Fatigue Stress:</span>
+                                <span id="ns-metric-fatigue" class="font-bold text-amber-500">...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation & Plots View area (Right 8 cols) -->
+                <div class="lg:col-span-8 flex flex-col gap-6">
+                    <!-- Interactive Virtual Camera Viewport -->
+                    <div class="glass-card p-6 flex flex-col gap-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="heading-font text-gray-200 text-sm font-semibold uppercase tracking-wider">🔬 VR Stereotactic Catheter Pathing</h3>
+                            <span class="text-[10px] bg-sky-950 text-sky-300 border border-sky-800 px-2 py-0.5 rounded uppercase">2D Coronal Projection</span>
+                        </div>
+                        <div class="relative w-full aspect-[21/9] bg-[#02050c]/90 border border-gray-850 rounded-xl overflow-hidden flex items-center justify-center">
+                            <!-- Canvas containing the interactive ventricle needle insertion view -->
+                            <canvas id="ns-canvas" class="absolute inset-0 w-full h-full cursor-crosshair"></canvas>
+                            <!-- Text overlay indicating targets -->
+                            <div class="absolute top-3 left-4 flex flex-col gap-1 text-[10px] text-gray-500 font-mono">
+                                <div>START COORDINATE: (0.10, 0.10)</div>
+                                <div id="ns-canvas-target-text">TARGET COORDINATE: (0.50, 0.52)</div>
+                            </div>
+                            <div class="absolute bottom-3 right-4 text-[10px] text-sky-400 bg-sky-950/60 border border-sky-900/40 px-2.5 py-1 rounded font-mono">
+                                Click Canvas to Manual Target
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Plotting Area -->
+                    <div class="glass-card p-4">
+                        <div id="ns-plot-telemetry" style="width:100%; height:320px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 2: ORTHOPEDIC SURGERY VR -->
+        <div id="orthopedics-card" class="tab-content flex flex-col gap-8" style="display: none;">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800 pb-4">
+                <div>
+                    <h2 class="heading-font text-2xl font-semibold text-white flex items-center gap-2">
+                        <span>🦴 L4-L5 Spinal Pedicle Screw &amp; Joint Intramedullary Drilling</span>
+                    </h2>
+                    <p class="text-xs text-gray-400">Cortical Bone Penetration Density Loops, Screws Pre-drift Stability indices, and Thread Structural Shear stresses</p>
+                </div>
+                <div class="flex items-center gap-2 bg-emerald-950/40 border border-emerald-900/50 px-3 py-1.5 rounded-full text-xs text-emerald-300">
+                    <span class="glowing-dot" style="background-color:#10b981; box-shadow: 0 0 10px #10b981;"></span>
+                    <span>Bone Density Sensor Ready</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Controls Column (Left) -->
+                <div class="lg:col-span-4 flex flex-col gap-6">
+                    <div class="glass-card p-6 flex flex-col gap-5">
+                        <h3 class="heading-font text-emerald-400 font-semibold text-md border-b border-gray-800 pb-2">Tissue Drill Controls</h3>
+                        
+                        <!-- Bone type dropdown -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs text-gray-400" for="ortho-bone-type">Subject Bone Morphology:</label>
+                            <select id="ortho-bone-type" onchange="runOrthopedicSimulation();" class="text-xs bg-gray-900 border border-gray-800 p-2.5 rounded-lg text-white font-medium focus:outline-none focus:border-emerald-500">
+                                <option value="cortical" selected>Healthy Cortical Standard Dense</option>
+                                <option value="cancellous">Porous Cancellous Trabecular</option>
+                                <option value="osteoporotic">Osteoporotic Fragile Cortical Segment</option>
+                            </select>
+                        </div>
+
+                        <!-- Force Slider -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Thrust Axial Force:</span>
+                                <span id="label-ortho-force" class="text-emerald-300 font-bold">45.0 N</span>
+                            </div>
+                            <input type="range" id="ortho-force" min="10" max="100" step="1" value="45" oninput="document.getElementById('label-ortho-force').textContent=parseFloat(this.value).toFixed(1)+' N'; runOrthopedicSimulation();">
+                        </div>
+
+                        <!-- RPM Slider -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Drill Speed (RPM):</span>
+                                <span id="label-ortho-rpm" class="text-sky-300 font-bold">1200 RPM</span>
+                            </div>
+                            <input type="range" id="ortho-rpm" min="400" max="3000" step="50" value="1200" oninput="document.getElementById('label-ortho-rpm').textContent=this.value+' RPM'; runOrthopedicSimulation();">
+                        </div>
+
+                        <!-- Angular Mismatch Angle -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Angulation Error (Tilt):</span>
+                                <span id="label-ortho-angle" class="text-pink-400 font-bold">0.0° (Perfect)</span>
+                            </div>
+                            <input type="range" id="ortho-angle" min="-10.0" max="10.0" step="0.5" value="0.0" oninput="document.getElementById('label-ortho-angle').textContent=parseFloat(this.value).toFixed(1)+'°'; runOrthopedicSimulation();">
+                        </div>
+                    </div>
+
+                    <!-- Metrics -->
+                    <div class="glass-card p-6 flex flex-col gap-4">
+                        <h3 class="heading-font text-[#c5a059] font-semibold text-sm border-b border-gray-800 pb-2">Screw Insertion Evaluation</h3>
+                        <div class="flex flex-col gap-3 text-xs md:text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Bone Thread Compliance:</span>
+                                <span id="ortho-metric-breach" class="font-bold text-emerald-400">✓ COMPLIANT</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Optimal Insertion Torque:</span>
+                                <span id="ortho-metric-torque" class="font-bold text-[#c5a059]">...</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Structural Seating Stability:</span>
+                                <span id="ortho-metric-stability" class="font-bold text-sky-400">...</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Mechanical Vibration Mean:</span>
+                                <span id="ortho-metric-vibe" class="font-bold text-pink-400">...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Plots Area -->
+                <div class="lg:col-span-8 flex flex-col gap-6">
+                    <div class="glass-card p-4">
+                        <div id="ortho-plot-torque" style="width:100%; height:320px;"></div>
+                    </div>
+                    <div class="glass-card p-4">
+                        <div id="ortho-plot-vibe" style="width:100%; height:260px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 3: VLM MULTIMODAL REASONING & OPTIMIZATION -->
+        <div id="vlm-card" class="tab-content flex flex-col gap-8" style="display: none;">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800 pb-4">
+                <div>
+                    <h2 class="heading-font text-2xl font-semibold text-white flex items-center gap-2">
+                        <span>👁️ Surgical Multimodal Visual-Language Reasoning Engine (VLM)</span>
+                    </h2>
+                    <p class="text-xs text-gray-400">Deep Spatial Representation Parsing, Intelligent Hazard Detection &amp; Structural Care Optimization</p>
+                </div>
+                <div class="flex text-xs bg-slate-900 border border-slate-800 p-1 rounded-lg">
+                    <button onclick="switchVlmScene('neurosurgery_dbs')" id="scene-btn-dbs" class="scene-select-btn px-3 py-1 rounded bg-[#0b1a30] text-sky-400 border border-sky-900/50">Neurosurgery: DBS</button>
+                    <button onclick="switchVlmScene('neurosurgery_tumor')" id="scene-btn-tumor" class="scene-select-btn px-3 py-1 rounded text-gray-400">Neurosurgery: Resection</button>
+                    <button onclick="switchVlmScene('orthopedic_pedicle')" id="scene-btn-pedicle" class="scene-select-btn px-3 py-1 rounded text-gray-400">Ortho: Pedicle Screw</button>
+                    <button onclick="switchVlmScene('orthopedic_femoral')" id="scene-btn-femoral" class="scene-select-btn px-3 py-1 rounded text-gray-400">Ortho: Femoral Nailing</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Canvas Left (7 columns) -->
+                <div class="lg:col-span-7 flex flex-col gap-6">
+                    <div class="glass-card p-6 flex flex-col gap-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="heading-font text-gray-200 text-sm font-semibold uppercase tracking-wider">🔬 Unified Surgical Camera Viewport (VLM Input)</h3>
+                            <span id="vlm-camera-title" class="text-xs text-[#c5a059] font-medium">Deep Brain Stimulation View</span>
+                        </div>
+                        <div class="relative w-full aspect-video bg-[#040812] border border-gray-800 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center">
+                            <!-- Visual scene background grid -->
+                            <canvas id="vlm-canvas" class="absolute inset-0 w-full h-full cursor-pointer"></canvas>
+                            <div class="absolute inset-x-0 bottom-4 text-center cursor-pointer pointer-events-none">
+                                <span class="bg-gray-900/90 text-sky-300 font-mono text-[10px] border border-sky-900/50 px-3 py-1.5 rounded-full inline-block">
+                                    Click Anywhere within viewport to target VLM reasoning probe
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Output Right (5 columns) -->
+                <div class="lg:col-span-5 flex flex-col gap-6">
+                    <!-- Attention Heatmap Indicator metrics -->
+                    <div class="glass-card p-6 flex flex-col gap-4 bg-teal-950/10 border-teal-900/30">
+                        <h4 class="heading-font text-teal-400 font-semibold text-sm uppercase tracking-wide flex justify-between">
+                            <span>Diagnostic Score</span>
+                            <span id="vlm-metric-score" class="font-bold text-white text-md">...</span>
+                        </h4>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-gray-400">Target Region Focus:</span>
+                            <span id="vlm-metric-status" class="px-2 py-0.5 rounded font-mono font-bold bg-[#1e1e1e] text-emerald-400">...</span>
+                        </div>
+                        <div class="text-xs border-t border-gray-800 pt-3 flex flex-col gap-2">
+                            <div class="flex justify-between"><span class="text-gray-500">Muti-modal Focus Point:</span><span id="vlm-metric-point" class="font-mono text-gray-300">...</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Interactive Target Layer:</span><span id="vlm-metric-layer" class="text-sky-300">...</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">Safe Dosage Limit:</span><span id="vlm-metric-lim" class="font-mono text-amber-500">...</span></div>
+                        </div>
+                    </div>
+
+                    <!-- AI Diagnostic Prescription Report -->
+                    <div style="background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15);" class="p-6 rounded-2xl flex flex-col gap-3 shadow-lg">
+                        <h4 class="heading-font text-emerald-400 font-semibold text-sm uppercase tracking-wider flex items-center gap-2">
+                            <span>🤖 Sunnybrook VLM AI Clinical Prescription</span>
+                        </h4>
+                        <div id="vlm-prescription-report" class="text-xs md:text-sm text-gray-300 leading-relaxed max-h-[300px] overflow-y-auto pr-2">
+                            Click coordinates within the physical surgical viewport to analyze structural care safety and trigger generative artificial intelligence reasoning output...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 4: EDUCATIONAL ANALYTICS -->
+        <div id="analytics-card" class="tab-content flex flex-col gap-8" style="display: none;">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800 pb-4">
+                <div>
+                    <h2 class="heading-font text-2xl font-semibold text-white flex items-center gap-2">
+                        <span>📈 Surgical resident Training Analytics &amp; Competency Verification</span>
+                    </h2>
+                    <p class="text-xs text-gray-400">Cross-entropy skill indexes, Sequential Wald statistics, and Multi-modal transition load matrices</p>
+                </div>
+                <div class="flex items-center gap-2 bg-indigo-950/40 border border-indigo-900/50 px-3 py-1.5 rounded-full text-xs text-indigo-300">
+                    <span class="glowing-dot" style="background-color:#6366f1; box-shadow: 0 0 10px #6366f1;"></span>
+                    <span>Statistical Core Engine Configured</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Controls Column -->
+                <div class="lg:col-span-4 flex flex-col gap-6">
+                    <div class="glass-card p-6 flex flex-col gap-5">
+                        <h3 class="heading-font text-indigo-400 font-semibold text-md border-b border-gray-800 pb-2">Academic Hyperparameters</h3>
+                        
+                        <!-- Learning Trials -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Total Simulated Trials:</span>
+                                <span id="label-an-trials" class="text-indigo-300 font-bold">20 Trials</span>
+                            </div>
+                            <input type="range" id="an-trials" min="5" max="50" step="5" value="20" oninput="document.getElementById('label-an-trials').textContent=this.value+' Trials'; runAnalyticsSimulation();">
+                        </div>
+
+                        <!-- Learning Rate Alpha Slider -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Cohort Learning Rate (α):</span>
+                                <span id="label-an-lr" class="text-sky-300 font-bold">0.28</span>
+                            </div>
+                            <input type="range" id="an-lr" min="0.05" max="0.80" step="0.01" value="0.28" oninput="document.getElementById('label-an-lr').textContent=parseFloat(this.value).toFixed(2); runAnalyticsSimulation();">
+                        </div>
+
+                        <!-- Skill Decay / Interval Slider -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Skill Non-use (Decay Weeks):</span>
+                                <span id="label-an-decay" class="text-pink-400 font-bold">2 Weeks</span>
+                            </div>
+                            <input type="range" id="an-decay" min="0" max="12" step="1" value="2" oninput="document.getElementById('label-an-decay').textContent=this.value+' Weeks'; runAnalyticsSimulation();">
+                        </div>
+                    </div>
+
+                    <!-- Metrics Card -->
+                    <div class="glass-card p-6 flex flex-col gap-4">
+                        <h3 class="heading-font text-[#c5a059] font-semibold text-sm border-b border-gray-800 pb-2">Trainee Competency Scoring</h3>
+                        <div class="flex flex-col gap-3 text-xs md:text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Wald Certification Met:</span>
+                                <span id="an-metric-cert" class="font-bold text-indigo-400">...</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Optimal Certification Trial:</span>
+                                <span id="an-metric-stoptrial" class="font-bold text-[#c5a059]">...</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Cohort Retention Index:</span>
+                                <span id="an-metric-retention" class="font-bold text-emerald-400">...</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Achieved Spatial Accuracy:</span>
+                                <span id="an-metric-acc" class="font-bold text-sky-400">...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation Plots Grid (Right 8 columns) -->
+                <div class="lg:col-span-8 flex flex-col gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="glass-card p-4">
+                            <div id="an-plot-learning" style="width:100%; height:280px;"></div>
+                        </div>
+                        <div class="glass-card p-4">
+                            <div id="an-plot-errors" style="width:100%; height:280px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="glass-card p-4">
+                            <div id="an-plot-vibe" style="width:100%; height:280px;"></div>
+                        </div>
+                        <div class="glass-card p-4">
+                            <div id="an-plot-cognitive" style="width:100%; height:280px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Generative Artificial Intelligence Academic Narrative -->
+                    <div style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.20);" class="p-6 rounded-2xl shadow-lg">
+                        <h3 class="heading-font text-indigo-400 font-bold text-sm uppercase tracking-wide border-b border-indigo-900/30 pb-2 mb-3">
+                            🎓 Academy Training &amp; Learning Prescriptive Assessment
+                        </h3>
+                        <div id="an-genai-text" class="text-xs md:text-sm text-gray-300 leading-relaxed">
+                            Generating cognitive learning analysis parameters...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full border-t border-gray-800 bg-[#070d19]/80 py-8 text-center text-xs text-gray-500 mt-12">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col gap-2">
+            <div>Sunnybrook Health Sciences Centre Simulation Suite &copy; 2026. All rights secured.</div>
+            <div class="text-gray-600 font-mono">Platform Integration Level: Multi-modal VLM Node &middot; Statistical Gaussian Drift &middot; Wald Decision Matrix Bounds</div>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE VR JAVASCRIPT SYSTEM CODE -->
+    <script>
+        // Tab router mapping
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(card => card.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(`${tabId}-card`).style.display = 'flex';
+            document.getElementById(`btn-${tabId}`).classList.add('active');
+
+            // Force quick sizing calculations for plotly on initial layout changes
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 10);
+        }
+
+        // ── TASK 1: NEUROSURGERY SIMULATOR CANVAS RENDERING & CALL CODE ─────────────────
+        const nsCanvas = document.getElementById('ns-canvas');
+        const nsCtx = nsCanvas.getContext('2d');
+        let nsTargetX = 0.50;
+        let nsTargetY = 0.52;
+        let nsLastXPoints = [];
+        let nsLastYPoints = [];
+
+        // Handle coordinate resize mapping
+        function resizeNsCanvas() {
+            nsCanvas.width = nsCanvas.parentElement.clientWidth;
+            nsCanvas.height = nsCanvas.parentElement.clientHeight;
+            drawNeurosurgeryGuides();
+        }
+        window.addEventListener('resize', resizeNsCanvas);
+
+        // Click on Coronal viewport to pick target point
+        nsCanvas.addEventListener('mousedown', function(e) {
+            const rect = nsCanvas.getBoundingClientRect();
+            const clickX = (e.clientX - rect.left) / rect.width;
+            const clickY = (e.clientY - rect.top) / rect.height;
+            
+            document.getElementById('ns-tx').value = clickX.toFixed(2);
+            document.getElementById('ns-ty').value = clickY.toFixed(2);
+            document.getElementById('label-ns-tx').textContent = clickX.toFixed(2);
+            document.getElementById('label-ns-ty').textContent = clickY.toFixed(2);
+            
+            runNeurosurgerySimulation();
+        });
+
+        function runNeurosurgerySimulation() {
+            const tx = document.getElementById('ns-tx').value;
+            const ty = document.getElementById('ns-ty').value;
+            const drift = document.getElementById('ns-drift').value;
+            const reps = document.getElementById('ns-reps').value;
+
+            nsTargetX = parseFloat(tx);
+            nsTargetY = parseFloat(ty);
+
+            const url = `/api/neurosurgery-sim?target_x=${tx}&target_y=${ty}&drift=${drift}&reps=${reps}`;
+            
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) return;
+
+                    // Update UI cards
+                    document.getElementById('ns-metric-precision').textContent = data.surgical_precision_score.toFixed(1) + "%";
+                    document.getElementById('ns-metric-mismatch').textContent = data.final_deviation_mm.toFixed(2) + " mm";
+                    document.getElementById('ns-metric-fatigue').textContent = (data.hebbian_tissue_fatigue_index).toFixed(3) + " kPa";
+
+                    // Save coords for canvas drawing loop
+                    nsLastXPoints = data.path_x;
+                    nsLastYPoints = data.path_y;
+
+                    drawNeurosurgeryGuides();
+
+                    // Plot positional telemetry drift over the track
+                    const traceX = {
+                        x: data.steps_axis,
+                        y: data.path_x,
+                        name: 'X Position Vector',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#06b6d4', width: 2.5}
+                    };
+
+                    const traceY = {
+                        x: data.steps_axis,
+                        y: data.path_y,
+                        name: 'Y Position Vector',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#fbbf24', width: 2.5}
+                    };
+
+                    const traceShear = {
+                        x: data.steps_axis,
+                        y: data.shear_force_psi,
+                        name: 'Shear Fatigue Force (kPa)',
+                        yaxis: 'y2',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#ec4899', width: 2, dash: 'dot'}
+                    };
+
+                    Plotly.react('ns-plot-telemetry', [traceX, traceY, traceShear], {
+                        title: { text: 'Stereotactic Spatiotemporal Position & Cortical Shear Stress Trajectory', font: {color:'#cbd5e1', size:11, family:'Outfit'} },
+                        xaxis: { title: 'Drill Integration Step', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        yaxis: { title: 'Normalized Spatial Dimension (0-1)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        yaxis2: {
+                            title: 'Coupled Shearing Strain (kPa)',
+                            tickfont:{color:'#cbd5e1',size:8},
+                            titlefont:{color:'#cbd5e1',size:8},
+                            overlaying: 'y',
+                            side: 'right',
+                            gridcolor:'rgba(255,255,255,0.01)'
+                        },
+                        margin: {t:40,l:45,r:45,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:8}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.25}
+                    }, {responsive:true, displaylogo:false});
+
+                });
+        }
+
+        function drawNeurosurgeryGuides() {
+            if (!nsCanvas.width) return;
+            const w = nsCanvas.width;
+            const h = nsCanvas.height;
+
+            // Clear frame
+            nsCtx.fillStyle = '#02050c';
+            nsCtx.fillRect(0, 0, w, h);
+
+            // Draw stereotactic reference lines
+            nsCtx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+            nsCtx.lineWidth = 1;
+            for (let i = 0; i < w; i += 40) {
+                nsCtx.beginPath();
+                nsCtx.moveTo(i, 0);
+                nsCtx.lineTo(i, h);
+                nsCtx.stroke();
+            }
+            for (let j = 0; j < h; j += 40) {
+                nsCtx.beginPath();
+                nsCtx.moveTo(0, j);
+                nsCtx.lineTo(w, j);
+                nsCtx.stroke();
+            }
+
+            // Draw anatomical subthalamic nucleus mock zone (concentric circle targets)
+            const targetPx = nsTargetX * w;
+            const targetPy = nsTargetY * h;
+
+            nsCtx.fillStyle = 'rgba(6, 182, 212, 0.08)';
+            nsCtx.strokeStyle = 'rgba(6, 182, 212, 0.3)';
+            nsCtx.beginPath();
+            nsCtx.arc(targetPx, targetPy, 50, 0, 2*Math.PI);
+            nsCtx.fill();
+            nsCtx.stroke();
+
+            nsCtx.fillStyle = 'rgba(16, 185, 129, 0.05)';
+            nsCtx.beginPath();
+            nsCtx.arc(targetPx, targetPy, 25, 0, 2*Math.PI);
+            nsCtx.fill();
+
+            // Draw target point
+            nsCtx.strokeStyle = '#c5a059';
+            nsCtx.fillStyle = '#c5a059';
+            nsCtx.lineWidth = 1.5;
+            nsCtx.beginPath();
+            nsCtx.arc(targetPx, targetPy, 4, 0, 2*Math.PI);
+            nsCtx.fill();
+
+            // Draw Target crosshair
+            nsCtx.beginPath();
+            nsCtx.moveTo(targetPx - 12, targetPy);
+            nsCtx.lineTo(targetPx + 12, targetPy);
+            nsCtx.moveTo(targetPx, targetPy - 12);
+            nsCtx.lineTo(targetPx, targetPy + 12);
+            nsCtx.stroke();
+
+            // Draw Entry Point bone guide (0.10, 0.10)
+            nsCtx.strokeStyle = '#ef4444';
+            nsCtx.fillStyle = '#ef4444';
+            nsCtx.beginPath();
+            nsCtx.arc(0.10 * w, 0.10 * h, 5, 0, 2*Math.PI);
+            nsCtx.fill();
+
+            // Draw entire pathway trace from simulation
+            if (nsLastXPoints.length > 0) {
+                nsCtx.strokeStyle = '#6366f1';
+                nsCtx.lineWidth = 3;
+                nsCtx.beginPath();
+                nsCtx.moveTo(nsLastXPoints[0] * w, nsLastYPoints[0] * h);
+                for (let k = 1; k < nsLastXPoints.length; ++k) {
+                    nsCtx.lineTo(nsLastXPoints[k] * w, nsLastYPoints[k] * h);
+                }
+                nsCtx.stroke();
+
+                // Draw current probe tip position marker
+                const len = nsLastXPoints.length;
+                nsCtx.fillStyle = '#10b981';
+                nsCtx.beginPath();
+                nsCtx.arc(nsLastXPoints[len-1] * w, nsLastYPoints[len-1] * h, 6, 0, 2*Math.PI);
+                nsCtx.fill();
+            }
+        }
+
+
+        // ── TASK 2: ORTHOPEDIC DRILLING SIMULATION RENDERING CODE ─────────────────────
+        function runOrthopedicSimulation() {
+            const force = document.getElementById('ortho-force').value;
+            const rpm = document.getElementById('ortho-rpm').value;
+            const angle = document.getElementById('ortho-angle').value;
+            const bone_type = document.getElementById('ortho-bone-type').value;
+
+            const url = `/api/orthopedic-sim?force=${force}&rpm=${rpm}&angle=${angle}&bone_type=${bone_type}`;
+
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) return;
+
+                    // Update metrics
+                    document.getElementById('ortho-metric-stability').textContent = data.characteristics.stability_percentage.toFixed(1) + "%";
+                    document.getElementById('ortho-metric-torque').textContent = data.characteristics.peak_resistive_torque_nm.toFixed(2) + " Nm";
+                    document.getElementById('ortho-metric-vibe').textContent = data.characteristics.mean_mechanical_vibration_g.toFixed(3) + " g";
+                    
+                    const complianceEl = document.getElementById('ortho-metric-breach');
+                    complianceEl.textContent = data.characteristics.cortical_breach_status;
+                    if (data.characteristics.is_compliant) {
+                        complianceEl.className = "font-bold text-emerald-400";
+                    } else {
+                        complianceEl.className = "font-bold text-pink-500 animate-pulse";
+                    }
+
+                    // Plot torque vs depth profile
+                    const traceTorque = {
+                        x: data.depth_axis,
+                        y: data.torque_nm,
+                        name: 'Resistive Torque Profile (Nm)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        marker: {size: 4, color: '#10b981'},
+                        line: {color: '#10b981', width: 2.5}
+                    };
+
+                    Plotly.react('ortho-plot-torque', [traceTorque], {
+                        title: { text: 'Cortical-Cancellous Resistance Torque over Penetration Depth', font: {color:'#cbd5e1', size:11, family:'Outfit'} },
+                        xaxis: { title: 'Drilling Penetration Depth (mm)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        yaxis: { title: 'Torque Force (Nm)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        margin: {t:45,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{display:false}
+                    }, {responsive:true, displaylogo:false});
+
+                    // Plot Vibration G sensor log
+                    const traceVibe = {
+                        x: data.depth_axis,
+                        y: data.axial_vibration_g,
+                        name: 'Accelerometer Vibration Frequency',
+                        type: 'scatter',
+                        fill: 'tozeroy',
+                        fillcolor: 'rgba(236,72,153,0.08)',
+                        line: {color: '#ec4899', width: 1.8}
+                    };
+
+                    Plotly.react('ortho-plot-vibe', [traceVibe], {
+                        title: { text: 'Drill Tip Vibration Spectrogram (G-Force Accel)', font: {color:'#cbd5e1', size:10, family:'Outfit'} },
+                        xaxis: { title: 'Depth (mm)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        yaxis: { title: 'Vibration Acceleration (g)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                    }, {responsive:true, displaylogo:false});
+                });
+        }
+
+
+        // ── TASK 3: VLM VISUAL REASONING CANVAS & DETECTOR CODE ─────────────────────
+        const vlmCanvas = document.getElementById('vlm-canvas');
+        const vlmCtx = vlmCanvas.getContext('2d');
+        let currentVlmSceneId = 'neurosurgery_dbs';
+        let vlmClickX = 0.50;
+        let vlmClickY = 0.52;
+        let vlmAttentionPoints = [];
+
+        function resizeVlmCanvas() {
+            vlmCanvas.width = vlmCanvas.parentElement.clientWidth;
+            vlmCanvas.height = vlmCanvas.parentElement.clientHeight;
+            drawVlmViewport();
+        }
+        window.addEventListener('resize', resizeVlmCanvas);
+
+        vlmCanvas.addEventListener('mousedown', function(e) {
+            const rect = vlmCanvas.getBoundingClientRect();
+            // Calculate relative coordinates
+            vlmClickX = (e.clientX - rect.left) / rect.width;
+            vlmClickY = (e.clientY - rect.top) / rect.height;
+
+            runVlmReasoningProbe();
+        });
+
+        function switchVlmScene(sceneId) {
+            currentVlmSceneId = sceneId;
+            document.querySelectorAll('.scene-select-btn').forEach(btn => {
+                btn.className = "scene-select-btn px-3 py-1 rounded text-gray-400";
+            });
+
+            let btnName = 'scene-btn-dbs';
+            if (sceneId === 'neurosurgery_tumor') btnName = 'scene-btn-tumor';
+            else if (sceneId === 'orthopedic_pedicle') btnName = 'scene-btn-pedicle';
+            else if (sceneId === 'orthopedic_femoral') btnName = 'scene-btn-femoral';
+
+            document.getElementById(btnName).className = "scene-select-btn px-3 py-1 rounded bg-[#0b1a30] text-sky-400 border border-sky-900/50";
+            
+            // Set coordinate default triggers
+            vlmClickX = 0.50;
+            vlmClickY = 0.52;
+            
+            runVlmReasoningProbe();
+        }
+
+        function runVlmReasoningProbe() {
+            const url = `/api/vlm-reasoning?scene_id=${currentVlmSceneId}&x=${vlmClickX}&y=${vlmClickY}&difficulty_mod=1.0`;
+
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) return;
+
+                    // Update Header Title
+                    document.getElementById('vlm-camera-title').textContent = data.scene_title;
+
+                    // Update diagnostics
+                    document.getElementById('vlm-metric-score').textContent = data.scoring_metric.toFixed(1) + "/100";
+                    
+                    const stateEl = document.getElementById('vlm-metric-status');
+                    stateEl.textContent = data.clinical_state;
+                    if (data.clinical_state.includes("WARNING") || data.clinical_state.includes("HAZARD")) {
+                        stateEl.className = "px-2 py-0.5 rounded font-mono font-bold bg-pink-950 text-pink-400 animate-bounce";
+                    } else if (data.clinical_state.includes("Aligned")) {
+                        stateEl.className = "px-2 py-0.5 rounded font-mono font-bold bg-emerald-950 text-emerald-400";
+                    } else {
+                        stateEl.className = "px-2 py-0.5 rounded font-mono font-bold bg-amber-950 text-amber-400";
+                    }
+
+                    document.getElementById('vlm-metric-point').textContent = `X: ${vlmClickX.toFixed(3)}, Y: ${vlmClickY.toFixed(3)}`;
+                    document.getElementById('vlm-metric-layer').textContent = data.coordinate_evaluation.tissue_signature;
+                    document.getElementById('vlm-metric-lim').textContent = data.anesthesia_threshold_mg_kg.toFixed(1) + " mg/kg/hr";
+
+                    // Convert raw markdown to html for prescription report
+                    let txt = data.reasoning_agent_prescription || "";
+                    txt = txt.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    txt = txt.replace(/\n\n/g, '<br><br>');
+                    txt = txt.replace(/### (.*?)\n/g, '<h4 class="font-bold text-[#c5a059] border-b border-gray-800 pb-1 mb-2 text-sm">$1</h4>');
+                    document.getElementById('vlm-prescription-report').innerHTML = txt;
+
+                    // Save density weight mappings for drawing
+                    vlmAttentionPoints = data.attention_heatmap;
+                    drawVlmViewport();
+                });
+        }
+
+        function drawVlmViewport() {
+            if (!vlmCanvas.width) return;
+            const w = vlmCanvas.width;
+            const h = vlmCanvas.height;
+
+            // Clear Viewport background
+            vlmCtx.fillStyle = '#040714';
+            vlmCtx.fillRect(0, 0, w, h);
+
+            // Draw anatomical shapes mimicking brain tumor resection or skeletal bone cross section 
+            if (currentVlmSceneId.includes('neurosurgery')) {
+                // Neuro Ventricular cavities
+                vlmCtx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+                vlmCtx.beginPath();
+                vlmCtx.arc(w*0.35, h*0.5, 90, 0, Math.PI, true);
+                vlmCtx.arc(w*0.65, h*0.5, 90, 0, Math.PI, true);
+                vlmCtx.fill();
+
+                // Target Circle Subthalamic Nucleus
+                vlmCtx.strokeStyle = 'rgba(6,182,212,0.18)';
+                vlmCtx.fillStyle = 'rgba(6,182,212,0.06)';
+                vlmCtx.beginPath();
+                vlmCtx.ellipse(w*0.50, h*0.52, 60, 45, 0, 0, 2*Math.PI);
+                vlmCtx.stroke();
+                vlmCtx.fill();
+                
+                // Hazard Loop Zone (Internal Capsule)
+                vlmCtx.strokeStyle = 'rgba(244,63,94,0.18)';
+                vlmCtx.fillStyle = 'rgba(244,63,94,0.04)';
+                vlmCtx.beginPath();
+                vlmCtx.ellipse(w*0.25, h*0.50, 45, 110, 0.1, 0, 2*Math.PI);
+                vlmCtx.stroke();
+                vlmCtx.fill();
+            } else {
+                // Orthopedic bone layout: Vertebral body cross section / pedicle boundary
+                vlmCtx.fillStyle = 'rgba(248, 250, 252, 0.015)';
+                vlmCtx.beginPath();
+                vlmCtx.arc(w*0.5, h*0.5, 180, 0, 2*Math.PI);
+                vlmCtx.fill();
+
+                // Pedicle Corridor target
+                vlmCtx.strokeStyle = 'rgba(16,185,129,0.18)';
+                vlmCtx.fillStyle = 'rgba(16,185,129,0.05)';
+                vlmCtx.beginPath();
+                vlmCtx.rect(w*0.46, h*0.42, w*0.08, h*0.14);
+                vlmCtx.stroke();
+                vlmCtx.fill();
+
+                // Spinal cord Hazard (Spinal canal inner boundary)
+                vlmCtx.strokeStyle = 'rgba(244,63,94,0.18)';
+                vlmCtx.fillStyle = 'rgba(244,63,94,0.04)';
+                vlmCtx.beginPath();
+                vlmCtx.arc(w*0.32, h*0.50, 50, 0, 2*Math.PI);
+                vlmCtx.stroke();
+                vlmCtx.fill();
+            }
+
+            // Draw VLM neural network attention heatmap concentric projections
+            vlmAttentionPoints.forEach(pt => {
+                const px = pt.x * w;
+                const py = pt.y * h;
+                const radius = 30 * pt.density_heat;
+
+                const grad = vlmCtx.createRadialGradient(px, py, 0, px, py, radius);
+                grad.addColorStop(0, `rgba(20, 184, 166, ${pt.density_heat * 0.4})`);
+                grad.addColorStop(1, 'rgba(20, 184, 166, 0.0)');
+
+                vlmCtx.fillStyle = grad;
+                vlmCtx.beginPath();
+                vlmCtx.arc(px, py, radius, 0, 2*Math.PI);
+                vlmCtx.fill();
+            });
+
+            // Draw Target cross point picked by resident click
+            const pickPx = vlmClickX * w;
+            const pickPy = vlmClickY * h;
+            
+            vlmCtx.strokeStyle = '#c5a059';
+            vlmCtx.lineWidth = 1.5;
+            vlmCtx.beginPath();
+            vlmCtx.arc(pickPx, pickPy, 6, 0, 2*Math.PI);
+            vlmCtx.stroke();
+            
+            vlmCtx.beginPath();
+            vlmCtx.moveTo(pickPx - 15, pickPy);
+            vlmCtx.lineTo(pickPx + 15, pickPy);
+            vlmCtx.moveTo(pickPx, pickPy - 15);
+            vlmCtx.lineTo(pickPx, pickPy + 15);
+            vlmCtx.stroke();
+
+            // Label targets
+            vlmCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            vlmCtx.font = '9px monospace';
+            if (currentVlmSceneId.includes('neurosurgery')) {
+                vlmCtx.fillText("STN Target Area", w*0.5 - 35, h*0.52);
+                vlmCtx.fillText("INTERNAL CAPSULE RISK BORDER", w*0.2 - 20, h*0.50);
+            } else {
+                vlmCtx.fillText("Ideal Pedicle Pathway Corridor", w*0.48 - 45, h*0.47);
+                vlmCtx.fillText("MEDIAL PATHWAY NERVE RISK ZONE", w*0.25, h*0.50);
+            }
+        }
+
+
+        // ── TASK 4: ACADEMIC EDUCATIONAL ANALYTICS AND PROGRAM COHORT CODE ────────────
+        function runAnalyticsSimulation() {
+            const trials = document.getElementById('an-trials').value;
+            const alpha = document.getElementById('an-lr').value;
+            const decay = document.getElementById('an-decay').value;
+
+            const url = `/api/training-analytics?trials=${trials}&learning_rate=${alpha}&decay_weeks=${decay}`;
+
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) return;
+
+                    // Update stats
+                    document.getElementById('an-metric-cert').textContent = data.characteristics.wald_certified_status;
+                    document.getElementById('an-metric-stoptrial').textContent = data.characteristics.wald_certified_status.includes("TRAINING") ? "Pending Certification" : "Trial #" + data.characteristics.wald_stopping_trial;
+                    document.getElementById('an-metric-retention').textContent = data.characteristics.retention_percentage.toFixed(1) + "%";
+                    document.getElementById('an-metric-acc').textContent = data.characteristics.positional_accuracy_achieved.toFixed(2) + " mm";
+
+                    // Update medical diagnostic analysis text
+                    let txt = data.genai_prescription || "";
+                    txt = txt.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    txt = txt.replace(/\n\n/g, '<br><br>');
+                    txt = txt.replace(/### (.*?)\n/g, '<h4 class="font-bold text-[#c5a059] border-b border-gray-800 pb-1.5 mb-3 text-sm">$1</h4>');
+                    document.getElementById('an-genai-text').innerHTML = txt;
+
+                    // Plot 1: Standard Learning Curves
+                    const traceRes = {
+                        x: data.trials_axis,
+                        y: data.resident_skill_history,
+                        name: 'Trainee Cohort Skill %',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#6366f1', width: 3},
+                        marker: {size: 6, color: '#6366f1'}
+                    };
+
+                    const traceExp = {
+                        x: data.trials_axis,
+                        y: data.expert_skill_history,
+                        name: 'Board-Certified Specialist Baseline',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#cbd5e1', width: 1.8, dash: 'dash'}
+                    };
+
+                    Plotly.react('an-plot-learning', [traceRes, traceExp], {
+                        title: { text: 'Resident Skill Index Convergence vs Specialist Baseline', font: {color:'#cbd5e1', size:11, family:'Outfit'} },
+                        xaxis: { title: 'Trainee Practice Trial Reps', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        yaxis: { title: 'Proficiency Score (%)', range: [0, 100], tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:7}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.28}
+                    }, {responsive:true, displaylogo:false});
+
+                    // Plot 2: Declining Errors over repetitions
+                    const tracePosErr = {
+                        x: data.trials_axis,
+                        y: data.resident_position_error,
+                        name: 'Positional Drift (mm)',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#f43f5e', width: 2.2}
+                    };
+
+                    const traceAngErr = {
+                        x: data.trials_axis,
+                        y: data.resident_angle_error,
+                        name: 'Angular Mismatch (deg)',
+                        yaxis: 'y2',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#fbbf24', width: 2.2}
+                    };
+
+                    Plotly.react('an-plot-errors', [tracePosErr, traceAngErr], {
+                        title: { text: 'Stereotactic Deviation and Angulation Vector Decay', font: {color:'#cbd5e1', size:11, family:'Outfit'} },
+                        xaxis: { title: 'Simulated Task Trials', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        yaxis: { title: 'Spatial Mismatch (mm)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        yaxis2: {
+                            title: 'Angle Deviation (deg)',
+                            tickfont:{color:'#cbd5e1',size:8},
+                            titlefont:{color:'#cbd5e1',size:8},
+                            overlaying: 'y',
+                            side: 'right',
+                            gridcolor:'rgba(255,255,255,0.01)'
+                        },
+                        margin: {t:40,l:45,r:45,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:7}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.28}
+                    }, {responsive:true, displaylogo:false});
+
+                    // Plot 3: Wald LLR stopping boundaries 
+                    const traceWald = {
+                        x: data.trials_axis,
+                        y: data.wald_cumulative_llr,
+                        name: 'Trainee Cumulative LLR',
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        line: {color: '#10b981', width: 2.5},
+                        marker: {size: 5}
+                    };
+
+                    const traceLowerBound = {
+                        x: [1, data.trials_axis.length],
+                        y: [-2.944, -2.944],
+                        name: 'Deficit Boundary (H0)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#ef4444', width: 1.5, dash: 'dash'}
+                    };
+
+                    const traceUpperBound = {
+                        x: [1, data.trials_axis.length],
+                        y: [2.944, 2.944],
+                        name: 'Specialist Threshold (H1)',
+                        type: 'scatter',
+                        mode: 'lines',
+                        line: {color: '#6366f1', width: 1.5, dash: 'dash'}
+                    };
+
+                    Plotly.react('an-plot-vibe', [traceWald, traceLowerBound, traceUpperBound], {
+                        title: { text: 'Wald SPRT Decision Matrix & Certification Convergence', font: {color:'#cbd5e1', size:11, family:'Outfit'} },
+                        xaxis: { title: 'Consecutive Task Repetitions', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        yaxis: { title: 'Log Likelihood Ratio (LLR)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:7}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.28}
+                    }, {responsive:true, displaylogo:false});
+
+                    // Plot 4: Cognitive load trajectories over prolonged duration (stacked area)
+                    const profile = data.cognitive_profile;
+                    const traceNominal = {
+                        x: profile.durations_axis_minutes,
+                        y: profile.nominal,
+                        name: 'Nominal Focused State',
+                        type: 'scatter',
+                        stackgroup: 'one',
+                        mode: 'none',
+                        fillcolor: 'rgba(16,185,129,0.3)',
+                    };
+
+                    const traceFocused = {
+                        x: profile.durations_axis_minutes,
+                        y: profile.focused,
+                        name: 'Flow/High Focus State',
+                        type: 'scatter',
+                        stackgroup: 'one',
+                        mode: 'none',
+                        fillcolor: 'rgba(6,182,212,0.3)',
+                    };
+
+                    const traceOverload = {
+                        x: profile.durations_axis_minutes,
+                        y: profile.overload,
+                        name: 'Cognitive Overload Stress',
+                        type: 'scatter',
+                        stackgroup: 'one',
+                        mode: 'none',
+                        fillcolor: 'rgba(244,63,94,0.35)',
+                    };
+
+                    Plotly.react('an-plot-cognitive', [traceNominal, traceFocused, traceOverload], {
+                        title: { text: 'Predictive Mental Fatigues & Active Flow State Ratios', font: {color:'#cbd5e1', size:11, family:'Outfit'} },
+                        xaxis: { title: 'Uninterrupted Session Duration (Minutes)', tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        yaxis: { title: 'State Probability Percentage (%)', range: [0, 100], tickfont:{color:'#cbd5e1',size:8}, gridcolor:'rgba(255,255,255,0.03)', titlefont:{color:'#cbd5e1',size:8} },
+                        margin: {t:40,l:45,r:25,b:35}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+                        legend:{font:{color:'#cbd5e1',size:7}, bgcolor:'rgba(0,0,0,0.5)', orientation:'h', x:0, y:-0.28}
+                    }, {responsive:true, displaylogo:false});
+
+                });
+        }
+
+
+        // ── CORE SYSTEM STARTUP INGESTION ───────────────────────────────────────────
+        document.addEventListener("DOMContentLoaded", function() {
+            // Adjust canvas sizing
+            resizeNsCanvas();
+            resizeVlmCanvas();
+
+            // Run initial simulations to paint first frame metrics and plotly charts
+            runNeurosurgerySimulation();
+            runOrthopedicSimulation();
+            runVlmReasoningProbe();
+            runAnalyticsSimulation();
+        });
+    </script>
+</body>
+</html>
