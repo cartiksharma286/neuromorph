@@ -439,6 +439,7 @@
             <button class="tab" id="tab-edtech" onclick="selectTab('edtech')">🧠 Hebbian Plasticity Engine</button>
             <button class="tab" id="tab-reporting" onclick="selectTab('reporting')">⚡ Quantum ML Telemetry & Reporting</button>
             <button class="tab" id="tab-acad" onclick="selectTab('acad-professional')">🏢 Engineering & Business LMS</button>
+            <button class="tab" id="tab-econ-arts" onclick="selectTab('econ-arts')">📚 Economics & Arts+Sci LMS</button>
             <button class="tab" id="tab-edtech-mgmt" onclick="selectTab('edtech-management')">⚙️ EdTech Management</button>
             <button class="tab" id="tab-accel" onclick="selectTab('accelerated-learning')">🚀 Accelerated Learning Systems</button>
             <button class="tab" id="tab-hyper" onclick="selectTab('hyperlearning')">💫 Hyperlearning & GPA Optimizer</button>
@@ -717,6 +718,100 @@
                 </div>
             </div>
 
+            <!-- TAB 6: ECONOMICS & ARTS AND SCIENCE ADAPTIVE LMS -->
+            <div id="econ-arts-card" class="viewer-card">
+                <div class="viewer-title"><span style="color:var(--uoft-teal);">📚</span> U of T Economics Material & Arts and Science Adaptive LLM Learning Studio</div>
+
+                <div class="layout-rows">
+                    <div class="control-panel">
+                        <div class="advisor-card">
+                            <span class="advisor-badge">Arts & Science LLM Orchestrator</span>
+                            <h3 style="margin-top:15px; font-size:1.05rem; color:var(--uoft-teal);">Economics learning sequences with adaptive seminar support</h3>
+                            <p style="font-size:0.84rem; line-height:1.5; color:var(--text-primary); margin-bottom:16px;">
+                                Curate economics educational material for quantitative reasoning while tailoring discussion-led Arts & Science pathways with LLM-guided retrieval, feedback, and writing support.
+                            </p>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px;">
+                                <div style="background:rgba(0,12,26,0.55); border:1px solid rgba(0,139,176,0.14); border-radius:14px; padding:12px;">
+                                    <div style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:6px;">ECONOMICS CORE</div>
+                                    <div style="font-size:0.82rem; line-height:1.45;">Intermediate micro, macro policy, econometrics drills, and data interpretation tutorials.</div>
+                                </div>
+                                <div style="background:rgba(0,12,26,0.55); border:1px solid rgba(0,139,176,0.14); border-radius:14px; padding:12px;">
+                                    <div style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:6px;">ARTS & SCIENCE</div>
+                                    <div style="font-size:0.82rem; line-height:1.45;">Seminar prompts, comparative reading guides, argument maps, and reflective synthesis checkpoints.</div>
+                                </div>
+                                <div style="background:rgba(0,12,26,0.55); border:1px solid rgba(0,139,176,0.14); border-radius:14px; padding:12px;">
+                                    <div style="font-size:0.72rem; color:var(--text-secondary); margin-bottom:6px;">LLM PARADIGM</div>
+                                    <div style="font-size:0.82rem; line-height:1.45;">Socratic tutoring, staged hints, spaced retrieval, and rubric-aware feedback loops.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Economics Quantitative Depth</span>
+                                <span class="value" id="val-econ-depth">72%</span>
+                            </div>
+                            <input type="range" id="econ-depth" min="20" max="100" value="72" oninput="document.getElementById('val-econ-depth').textContent=this.value+'%'; triggerEconArtsPlot();">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>Arts & Science Seminar Adaptivity</span>
+                                <span class="value" id="val-arts-adapt">68%</span>
+                            </div>
+                            <input type="range" id="arts-adapt" min="20" max="100" value="68" oninput="document.getElementById('val-arts-adapt').textContent=this.value+'%'; triggerEconArtsPlot();">
+                        </div>
+
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <span>LLM Socratic Guidance Intensity</span>
+                                <span class="value" id="val-llm-guidance">74%</span>
+                            </div>
+                            <input type="range" id="llm-guidance" min="20" max="100" value="74" oninput="document.getElementById('val-llm-guidance').textContent=this.value+'%'; triggerEconArtsPlot();">
+                        </div>
+
+                        <div class="metric-container">
+                            <div class="metric-card">
+                                <div class="caption">Policy Concept Mastery</div>
+                                <div id="econ-mastery-val" class="val">86.4%</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="caption">Seminar Match Score</div>
+                                <div id="arts-match-val" class="val">81.2%</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="caption">LLM Feedback Gain</div>
+                                <div id="llm-feedback-val" class="val">1.84x</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="display-panel">
+                        <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 16px; padding: 10px;">
+                            <div id="plot-econ-arts-lms" style="width:100%; height:320px;"></div>
+                        </div>
+
+                        <div style="background:rgba(0,12,26,0.55); border:1px solid rgba(0,139,176,0.15); border-radius:18px; padding:18px; display:flex; flex-direction:column; gap:12px;">
+                            <div style="font-size:0.76rem; color:var(--text-secondary); font-family:var(--font-mono);">OPTIMAL LLM LEARNING PARADIGMS</div>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:12px;">
+                                    <div style="font-size:0.78rem; color:var(--uoft-teal); margin-bottom:5px;">Retrieval Before Explanation</div>
+                                    <div style="font-size:0.8rem; color:var(--text-primary); line-height:1.45;">The LMS first asks for a policy forecast or thesis claim, then the LLM gives calibrated hints and worked examples.</div>
+                                </div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:12px;">
+                                    <div style="font-size:0.78rem; color:var(--uoft-teal); margin-bottom:5px;">Quant + Narrative Pairing</div>
+                                    <div style="font-size:0.8rem; color:var(--text-primary); line-height:1.45;">Econometrics exercises are paired with seminar reflection prompts so analytic and interpretive learning reinforce each other.</div>
+                                </div>
+                                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:12px;">
+                                    <div style="font-size:0.78rem; color:var(--uoft-teal); margin-bottom:5px;">Rubric-Aware Revision Loops</div>
+                                    <div style="font-size:0.8rem; color:var(--text-primary); line-height:1.45;">The model adapts feedback to course rubrics, highlighting reasoning gaps, evidence quality, and mathematical fluency.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB 6: EDTECH MANAGEMENT -->
             <div id="edtech-management-card" class="viewer-card">
                 <div class="viewer-title"><span style="color:var(--uoft-teal);">⚙️</span> EdTech Infrastructure Optimization & Resource Load</div>
@@ -907,6 +1002,10 @@
                 document.getElementById('tab-acad').classList.add('active');
                 document.getElementById('acad-professional-card').style.display = 'flex';
                 triggerAcadPlot();
+            } else if (tabName === 'econ-arts') {
+                document.getElementById('tab-econ-arts').classList.add('active');
+                document.getElementById('econ-arts-card').style.display = 'flex';
+                triggerEconArtsPlot();
             } else if (tabName === 'edtech-management') {
                 document.getElementById('tab-edtech-mgmt').classList.add('active');
                 document.getElementById('edtech-management-card').style.display = 'flex';
@@ -1099,6 +1198,56 @@
             Plotly.newPlot('plot-professional-characteristics', [traceEng, traceBiz], layout, {responsive: true, displaylogo: false});
         }
 
+        // --- TAB 6: ECONOMICS & ARTS AND SCIENCE ADAPTIVE LMS ---
+        function triggerEconArtsPlot() {
+            const econDepth = parseFloat(document.getElementById('econ-depth').value);
+            const artsAdapt = parseFloat(document.getElementById('arts-adapt').value);
+            const llmGuidance = parseFloat(document.getElementById('llm-guidance').value);
+
+            const mastery = Math.min(99, econDepth * 0.72 + llmGuidance * 0.22 + 18);
+            const seminarMatch = Math.min(99, artsAdapt * 0.68 + llmGuidance * 0.18 + 22);
+            const feedbackGain = 1.0 + (llmGuidance / 100.0) * 0.9 + (artsAdapt / 100.0) * 0.25;
+
+            document.getElementById('econ-mastery-val').textContent = mastery.toFixed(1) + '%';
+            document.getElementById('arts-match-val').textContent = seminarMatch.toFixed(1) + '%';
+            document.getElementById('llm-feedback-val').textContent = feedbackGain.toFixed(2) + 'x';
+
+            const weeks = Array.from({length: 10}, (_, i) => 'W' + (i + 1));
+            const econTrack = weeks.map((_, i) => Math.min(100, econDepth * 0.72 + 8 + i * (llmGuidance / 32)));
+            const artsTrack = weeks.map((_, i) => Math.min(100, artsAdapt * 0.7 + 12 + i * (llmGuidance / 38) + 3 * Math.sin(i / 1.5)));
+            const llmTrack = weeks.map((_, i) => Math.min(100, 45 + llmGuidance * 0.45 + i * 2.5 + artsAdapt * 0.12));
+
+            const traceEcon = {
+                x: weeks, y: econTrack,
+                type: 'scatter', mode: 'lines+markers', name: 'Economics quantitative mastery',
+                line: {color: '#f59e0b', width: 3, shape: 'spline'}
+            };
+
+            const traceArts = {
+                x: weeks, y: artsTrack,
+                type: 'scatter', mode: 'lines+markers', name: 'Arts & Science seminar retention',
+                line: {color: '#10b981', width: 3, shape: 'spline'}
+            };
+
+            const traceLlm = {
+                x: weeks, y: llmTrack,
+                type: 'scatter', mode: 'lines', name: 'LLM adaptive tutoring coverage',
+                line: {color: '#008bb0', width: 2.5, dash: 'dash'}
+            };
+
+            const layout = {
+                title: { text: 'Adaptive LMS progression for Economics and Arts & Science cohorts', font: {color: '#cbd5e1', size: 11} },
+                xaxis: { title: 'Instructional Weeks', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9} },
+                yaxis: { title: 'Learning readiness index (%)', tickfont: {color: '#cbd5e1', size: 8}, gridcolor: 'rgba(255,255,255,0.03)', titlefont: {color: '#cbd5e1', size: 9}, range: [40, 102] },
+                margin: {t: 40, l: 45, r: 25, b: 35},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: { font: {color: '#cbd5e1', size: 8}, bgcolor: 'rgba(0,0,0,0.5)', orientation: 'h', x: 0, y: -0.2 }
+            };
+
+            Plotly.newPlot('plot-econ-arts-lms', [traceEcon, traceArts, traceLlm], layout, {responsive: true, displaylogo: false});
+        }
+
         // --- TAB 6: EDTECH MANAGEMENT INFRASRUCTURE ---
         function triggerEdTechPlot() {
             const users = parseFloat(document.getElementById('mgmt-users').value);
@@ -1272,6 +1421,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             triggerSimulation();
             triggerAcadPlot();
+            triggerEconArtsPlot();
             triggerEdTechPlot();
             triggerAccelPlot();
             triggerHyperPlot();
