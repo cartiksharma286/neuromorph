@@ -34,16 +34,6 @@ REGION_PROFILES = {
     },
 }
 
-EAST_COAST_CITIES = [
-    {"city": "Buffalo", "distance_km": 920.0, "x": 0.38, "y": 0.45},
-    {"city": "Albany", "distance_km": 1080.0, "x": 0.52, "y": 0.39},
-    {"city": "Boston", "distance_km": 1340.0, "x": 0.74, "y": 0.30},
-    {"city": "New York City", "distance_km": 1235.0, "x": 0.66, "y": 0.44},
-    {"city": "Philadelphia", "distance_km": 1315.0, "x": 0.63, "y": 0.54},
-    {"city": "Washington DC", "distance_km": 1485.0, "x": 0.69, "y": 0.66},
-    {"city": "Portland, ME", "distance_km": 1425.0, "x": 0.82, "y": 0.24},
-]
-
 MONTH_NAMES = [
     "Jan",
     "Feb",
@@ -311,92 +301,143 @@ def compute_containment_strategy(
     }
 
 
-def compute_smoke_propagation(
+def compute_bioremediation(
     region="northern_ontario",
-    source_intensity=1.15,
-    easterly_flow=24.0,
-    humidity_scrub=58.0,
-    qml_dissipation=0.64,
+    myco_dose=65.0,
+    phyto_coverage=72.0,
+    bio_density=58.0,
+    biostim_factor=50.0,
+    optimal_weight=0.55,
 ):
+    """
+    Classical LQR-optimal bioremediation for post-wildfire soil and ecosystem recovery.
+    State: r(t) = soil remediation index in [0, 100]
+    Cost:  J = sum_t [ Q*(100 - r(t))^2 + R*||u(t)||^2 ]
+    Optimal gain: K* = sqrt(Q / R)  (infinite-horizon Riccati solution)
+    Control: u*(t) = K* * (100 - r(t)) / 100  (state feedback)
+    """
     profile = REGION_PROFILES.get(region, REGION_PROFILES["northern_ontario"])
-    source_intensity = clamp(float(source_intensity), 0.5, 2.0)
-    easterly_flow = clamp(float(easterly_flow), 8.0, 40.0)
-    humidity_scrub = clamp(float(humidity_scrub), 20.0, 90.0)
-    qml_dissipation = clamp(float(qml_dissipation), 0.0, 1.0)
+    myco_dose = clamp(float(myco_dose), 0.0, 100.0)
+    phyto_coverage = clamp(float(phyto_coverage), 0.0, 100.0)
+    bio_density = clamp(float(bio_density), 0.0, 100.0)
+    biostim_factor = clamp(float(biostim_factor), 0.0, 100.0)
+    optimal_weight = clamp(float(optimal_weight), 0.0, 1.0)
 
-    humidity_factor = humidity_scrub / 100.0
+    u_m = myco_dose / 100.0
+    u_p = phyto_coverage / 100.0
+    u_b = bio_density / 100.0
+    u_s = biostim_factor / 100.0
 
-    east_coast_aqi = []
-    transported_pm25 = []
-    plume_half_life_hours = []
-    city_series = {city["city"]: [] for city in EAST_COAST_CITIES}
+    # LQR cost weights — higher optimal_weight penalises control effort more
+    Q = 1.0 + 0.5 * (1.0 - optimal_weight)
+    R = 0.3 + 0.7 * optimal_weight
+
+    # Process effectiveness coefficients
+    gamma = 0.04 + 0.02 * profile["remoteness"]
+    alpha_m = 0.038 + 0.012 * u_s      # mycoremediation
+    alpha_p = 0.029 + 0.008 * profile["watershed_recovery"]  # phytoremediation
+    alpha_b = 0.022 + 0.010 * u_s      # bioaugmentation
+
+    # Infinite-horizon LQR optimal gain
+    K_star = math.sqrt(Q / R)
+
+    soil_remediation_index = []
+    microbial_activity = []
+    phyto_cover_pct = []
+    toxin_degradation_pct = []
+    carbon_sequestration_kgha = []
+    optimal_control_effort = []
+
+    r = 12.0 + 5.0 * (1.0 - profile["remoteness"])  # post-fire initial soil index
+    toxin = 0.0
+    carbon_total = 0.0
+    J_running = 0.0
+    phyto = 4.0
 
     for idx in range(HORIZON_MONTHS):
         season = seasonal_fire_pressure(idx)
-        kernel = qml_alignment_kernel(qml_dissipation, profile["remoteness"], humidity_factor, idx)
-        source_load = profile["corridor_pm"] * source_intensity * season * (1.15 + 0.12 * profile["remoteness"])
-        dissipation = 0.22 + 0.0042 * humidity_scrub + 0.20 * qml_dissipation + 0.018 * kernel
-        corridor = 0.84 + 0.012 * easterly_flow
 
-        city_month_pm = []
-        for city in EAST_COAST_CITIES:
-            transport = source_load * corridor * math.exp(-dissipation * city["distance_km"] / 900.0)
-            transport *= 1.0 + 0.12 * season
-            pm25 = clamp(4.0 + 1.8 * transport, 3.5, 72.0)
-            city_series[city["city"]].append(round(pm25, 2))
-            city_month_pm.append(pm25)
+        # Optimal state-feedback control
+        error = 100.0 - r
+        u_opt = clamp(K_star * error / 100.0, 0.0, 1.2)
 
-        avg_pm = float(np.mean(city_month_pm))
-        aqi = clamp(28.0 + 2.25 * avg_pm - 6.5 * qml_dissipation - 0.09 * humidity_scrub, 22.0, 170.0)
-        half_life = clamp(17.0 - 0.12 * humidity_scrub - 4.5 * qml_dissipation - 0.08 * easterly_flow + 2.1 * profile["remoteness"], 4.5, 18.0)
+        # Euler integration of soil remediation state
+        dr = (alpha_m * u_m + alpha_p * u_p + alpha_b * u_b) * u_opt * 100.0
+        dr -= gamma * r
+        dr -= 3.5 * max(0.0, season - 0.85)   # fire season disturbance
+        dr += 0.8 * u_s                         # biostimulation boost
+        r = clamp(r + dr, r * 0.90, 100.0)
 
-        transported_pm25.append(round(avg_pm, 2))
-        east_coast_aqi.append(round(aqi, 2))
-        plume_half_life_hours.append(round(half_life, 2))
+        # Microbial activity (sigmoidal response to soil index)
+        microbe = 22.0 + 60.0 / (1.0 + math.exp(-0.12 * (r - 44.0)))
+        microbe += 8.0 * u_m + 5.0 * u_s - 4.5 * max(0.0, season - 0.9)
+        microbe = clamp(microbe, 16.0, 97.0)
 
-    city_snapshot = []
-    for city in EAST_COAST_CITIES:
-        summer_pm = float(np.mean([city_series[city["city"]][idx] for idx in SUMMER_INDICES]))
-        city_snapshot.append(
-            {
-                "city": city["city"],
-                "pm25": round(summer_pm, 2),
-                "aqi": round(clamp(26.0 + 2.35 * summer_pm, 24.0, 170.0), 1),
-                "x": city["x"],
-                "y": city["y"],
-            }
-        )
+        # Phytoremediation cover — logistic growth
+        phyto += u_p * 3.8 * (1.0 - phyto / 95.0) * (0.6 + 0.4 * profile["watershed_recovery"])
+        phyto -= 1.2 * max(0.0, season - 0.88)
+        phyto = clamp(phyto, 2.0, 95.0)
 
-    top_city = max(city_snapshot, key=lambda item: item["pm25"])
-    safeguard_score = clamp(
-        100.0 - max(0.0, float(np.mean(east_coast_aqi)) - 40.0) * 1.25 - max(transported_pm25) * 0.55 + 14.0 * qml_dissipation,
-        38.0,
-        99.0,
-    )
+        # Cumulative toxin degradation
+        dtoxin = 0.9 * u_m + 0.5 * u_b + 0.3 * microbe / 100.0 + 0.2 * u_s
+        dtoxin *= 0.7 + 0.3 * r / 100.0
+        toxin = clamp(toxin + dtoxin, 0.0, 100.0)
+
+        # Carbon sequestration (kg/ha/month)
+        monthly_carbon = 18.0 * u_p * (phyto / 100.0) * profile["watershed_recovery"]
+        monthly_carbon += 6.0 * u_m * (r / 100.0)
+        monthly_carbon = clamp(monthly_carbon, 0.5, 38.0)
+        carbon_total += monthly_carbon
+
+        # Normalised aggregate control effort
+        u_total = u_opt * (u_m + u_p + u_b + u_s * 0.5) / 3.5
+        J_running += Q * error ** 2 + R * u_total ** 2
+
+        soil_remediation_index.append(round(r, 2))
+        microbial_activity.append(round(microbe, 2))
+        phyto_cover_pct.append(round(phyto, 2))
+        toxin_degradation_pct.append(round(toxin, 2))
+        carbon_sequestration_kgha.append(round(carbon_total, 1))
+        optimal_control_effort.append(round(u_total, 3))
+
+    recovery_month = next((i + 1 for i, v in enumerate(soil_remediation_index) if v >= 85.0), HORIZON_MONTHS)
+    control_efficiency = clamp(100.0 - J_running / (HORIZON_MONTHS * 800.0), 38.0, 98.0)
+    first_summer_idxs = [i for i in SUMMER_INDICES if i < 12]
+    second_summer_idxs = [i for i in SUMMER_INDICES if i >= 12]
+    first_s = round(float(np.mean([soil_remediation_index[i] for i in first_summer_idxs])), 1) if first_summer_idxs else soil_remediation_index[0]
+    second_s = round(float(np.mean([soil_remediation_index[i] for i in second_summer_idxs])), 1) if second_summer_idxs else soil_remediation_index[-1]
 
     characteristics = {
-        "east_coast_aqi_safeguard": round(safeguard_score, 1),
-        "peak_transport_pm25": round(max(transported_pm25), 1),
-        "average_plume_half_life_hours": round(float(np.mean(plume_half_life_hours)), 1),
-        "highest_risk_city": top_city["city"],
-        "current_east_coast_aqi": round(east_coast_aqi[-1], 1),
+        "final_soil_index": round(soil_remediation_index[-1], 1),
+        "optimal_recovery_month": int(recovery_month),
+        "total_carbon_seq_kgha": round(carbon_total, 1),
+        "toxin_clearance_pct": round(toxin_degradation_pct[-1], 1),
+        "control_efficiency_score": round(control_efficiency, 1),
+        "final_phyto_cover": round(phyto_cover_pct[-1], 1),
+        "first_summer_soil_index": first_s,
+        "second_summer_soil_index": second_s,
+        "final_microbial_index": round(microbial_activity[-1], 1),
     }
 
     narrative = (
-        f"Smoke transport from {profile['label']} is propagated eastward over the same 24-month summer horizon. "
-        f"Under the current source load, wind corridor and quantum dissipation settings, the highest recurring East Coast exposure is projected at "
-        f"{top_city['city']} with {top_city['pm25']:.1f} ug/m3 summer PM2.5, while the mean plume half-life compresses to "
-        f"{characteristics['average_plume_half_life_hours']:.1f} hours to uphold downstream air quality metrics."
+        f"Classical LQR-optimal bioremediation for {profile['label']} applies mycoremediation (u_m={u_m:.2f}), "
+        f"phytoremediation (u_p={u_p:.2f}), and bioaugmentation (u_b={u_b:.2f}) under cost J = sum Q*(100-r)^2 + R*u^2 "
+        f"with LQR gain K* = sqrt(Q/R) = {K_star:.3f}. "
+        f"The soil remediation index reaches {characteristics['final_soil_index']:.1f}/100 by month {HORIZON_MONTHS}, "
+        f"with the 85/100 optimal threshold attained at month {characteristics['optimal_recovery_month']}. "
+        f"Cumulative carbon sequestration is {characteristics['total_carbon_seq_kgha']:.0f} kg/ha "
+        f"with {characteristics['toxin_clearance_pct']:.1f}% toxin clearance across the 24-month horizon."
     )
 
     return {
         "region_label": profile["label"],
         "month_labels": MONTH_LABELS,
-        "east_coast_aqi": east_coast_aqi,
-        "transported_pm25": transported_pm25,
-        "plume_half_life_hours": plume_half_life_hours,
-        "city_series": city_series,
-        "city_snapshot": city_snapshot,
+        "soil_remediation_index": soil_remediation_index,
+        "microbial_activity": microbial_activity,
+        "phyto_cover_pct": phyto_cover_pct,
+        "toxin_degradation_pct": toxin_degradation_pct,
+        "carbon_sequestration_kgha": carbon_sequestration_kgha,
+        "optimal_control_effort": optimal_control_effort,
         "characteristics": characteristics,
         "narrative": narrative,
     }
@@ -427,14 +468,15 @@ def api_containment_strategy():
     return jsonify(payload)
 
 
-@app.route("/api/smoke-propagation", methods=["GET"])
-def api_smoke_propagation():
-    payload = compute_smoke_propagation(
+@app.route("/api/bioremediation", methods=["GET"])
+def api_bioremediation():
+    payload = compute_bioremediation(
         region=request.args.get("region", "northern_ontario"),
-        source_intensity=request.args.get("source", 1.15),
-        easterly_flow=request.args.get("flow", 24),
-        humidity_scrub=request.args.get("humidity", 58),
-        qml_dissipation=request.args.get("qml", 0.64),
+        myco_dose=request.args.get("myco", 65),
+        phyto_coverage=request.args.get("phyto", 72),
+        bio_density=request.args.get("bio", 58),
+        biostim_factor=request.args.get("biostim", 50),
+        optimal_weight=request.args.get("weight", 0.55),
     )
     return jsonify(payload)
 
