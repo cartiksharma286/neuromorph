@@ -122,6 +122,272 @@ SURGICAL_SCENES_DATABASE = {
     }
 }
 
+KNEE_WORKFLOW_GUIDES = {
+    'midvastus': {
+        'label': 'Mini-midvastus MIS TKA',
+        'exposure_factor': 1.00,
+        'soft_tissue_score': 88,
+        'workflow': [
+            {
+                'phase': 'Pre-op digital templating',
+                'objective': 'Review CT or long-leg radiographs, confirm implant sizing, and pre-brief instrument flow.',
+                'teaching_focus': 'Align distributed planning artifacts across simulation stations and OR teams.'
+            },
+            {
+                'phase': 'Portal and arthrotomy setup',
+                'objective': 'Establish a muscle-sparing midvastus window with direct visualization of the trochlear entry corridor.',
+                'teaching_focus': 'Maintain extensor continuity while preserving a reproducible exposure window for trainees.'
+            },
+            {
+                'phase': 'Guidewire and canal control',
+                'objective': 'Advance the guidewire on the intended femoral or tibial axis and confirm capture before reaming or cutting.',
+                'teaching_focus': 'Translate wire feel, fluoroscopy cues, and tracking overlays into a stable trajectory decision.'
+            },
+            {
+                'phase': 'Bone preparation and balancing',
+                'objective': 'Perform measured resections, gap balancing, and trial verification through the minimized exposure.',
+                'teaching_focus': 'Teach sequencing discipline so limited visualization does not degrade alignment checks.'
+            },
+            {
+                'phase': 'Implantation and closure',
+                'objective': 'Seat components, verify patellar tracking, and close with recovery-oriented soft-tissue handling.',
+                'teaching_focus': 'Use structured after-action review metrics for readiness reporting.'
+            }
+        ]
+    },
+    'subvastus': {
+        'label': 'Subvastus MIS TKA',
+        'exposure_factor': 0.96,
+        'soft_tissue_score': 92,
+        'workflow': [
+            {
+                'phase': 'Pre-op digital templating',
+                'objective': 'Review alignment plan, implant inventory, and navigation checkpoints before incision.',
+                'teaching_focus': 'Supports lower-profile deployment training where resources must be synchronized early.'
+            },
+            {
+                'phase': 'Muscle-preserving exposure',
+                'objective': 'Develop a subvastus interval without violating the quadriceps tendon.',
+                'teaching_focus': 'Reinforce atraumatic tissue handling and visualization management in constrained windows.'
+            },
+            {
+                'phase': 'Guidewire navigation',
+                'objective': 'Advance the guidewire while maintaining canal centerline control and rotational discipline.',
+                'teaching_focus': 'Pairs tactile education with digital navigation overlays for precision repetition.'
+            },
+            {
+                'phase': 'Resection, trialing, and balance',
+                'objective': 'Complete femoral and tibial preparation, then validate gaps and component rotation.',
+                'teaching_focus': 'Emphasize checkpoint-based workflow so learners can recover from reduced exposure.'
+            },
+            {
+                'phase': 'Final implant and readiness review',
+                'objective': 'Seat implants, verify ROM, and close with documented performance metrics.',
+                'teaching_focus': 'Feed outcomes directly into competency and readiness dashboards.'
+            }
+        ]
+    },
+    'quad_sparing': {
+        'label': 'Quadriceps-sparing MIS TKA',
+        'exposure_factor': 1.08,
+        'soft_tissue_score': 95,
+        'workflow': [
+            {
+                'phase': 'Pre-op digital rehearsal',
+                'objective': 'Run a constrained-access rehearsal with implant sizing, workspace setup, and contingency prompts.',
+                'teaching_focus': 'Best suited for advanced learners working through a narrow-access cognitive load profile.'
+            },
+            {
+                'phase': 'Limited incision access',
+                'objective': 'Create a minimal arthrotomy while preserving quadriceps continuity and patellar mobility.',
+                'teaching_focus': 'Focus on camera orientation, instrument choreography, and deliberate exposure changes.'
+            },
+            {
+                'phase': 'Guidewire and alignment discipline',
+                'objective': 'Keep the wire coaxial despite restricted visualization and small angular errors.',
+                'teaching_focus': 'Highlights the value of real-time digital prompts for early deviation correction.'
+            },
+            {
+                'phase': 'Resection and component placement',
+                'objective': 'Perform bone prep and implant seating without losing gap symmetry or rotational alignment.',
+                'teaching_focus': 'Teach workflow pacing under minimally invasive access constraints.'
+            },
+            {
+                'phase': 'Closeout and recovery pathway',
+                'objective': 'Validate patellar tracking, implant seating, and post-op mobilization goals.',
+                'teaching_focus': 'Close the loop with digital competency capture and remote instructor review.'
+            }
+        ]
+    }
+}
+
+MILITARY_EDUCATION_PROFILES = {
+    'us_military': {
+        'label': 'US Military Medical Education',
+        'initiative': 'Distributed readiness pipeline for expeditionary orthopedic teams.',
+        'priority': 'Common metrics, simulation-backed sustainment, and faster remediation for deployed care teams.'
+    },
+    'canadian_military': {
+        'label': 'Canadian Armed Forces Education',
+        'initiative': 'Joint digital surgery curriculum supporting austere and coalition care settings.',
+        'priority': 'Interoperable training records, bilingual-ready content pathways, and team-based performance review.'
+    },
+    'joint_allied': {
+        'label': 'US / Canadian Allied Initiative',
+        'initiative': 'Shared digital transformation track for bilateral orthopedic simulation and competency reporting.',
+        'priority': 'Standardized workflow guides, cloud-hosted simulation evidence, and interoperable after-action analytics.'
+    }
+}
+
+
+def compute_knee_education_simulation(
+    wire_diameter_mm=2.8,
+    stiffness_index=58.0,
+    insertion_angle_deg=1.5,
+    approach='midvastus',
+    mission='joint_allied',
+):
+    """
+    Compute the knee education guidewire and MIS TKA workflow metrics used by
+    both the dashboard endpoint and offline publication artifacts.
+    """
+    if approach not in KNEE_WORKFLOW_GUIDES:
+        approach = 'midvastus'
+    if mission not in MILITARY_EDUCATION_PROFILES:
+        mission = 'joint_allied'
+
+    guide = KNEE_WORKFLOW_GUIDES[approach]
+    mission_profile = MILITARY_EDUCATION_PROFILES[mission]
+
+    wire_diameter_mm = max(1.6, min(4.0, float(wire_diameter_mm)))
+    stiffness_index = max(25.0, min(95.0, float(stiffness_index)))
+    insertion_angle_deg = max(-6.0, min(6.0, float(insertion_angle_deg)))
+
+    depth_axis = np.linspace(0.0, 120.0, 36).tolist()
+    tracking_error_mm = []
+    tactile_load_n = []
+
+    exposure_factor = guide['exposure_factor']
+    stiffness_gain = 0.85 + ((stiffness_index - 25.0) / 70.0) * 0.55
+    diameter_gain = 0.88 + ((wire_diameter_mm - 1.6) / 2.4) * 0.28
+
+    for depth in depth_axis:
+        depth_ratio = depth / 120.0
+        angle_penalty = 1.0 + (abs(insertion_angle_deg) / 7.0)
+        deviation = (
+            0.28
+            + 1.35 * depth_ratio * exposure_factor * angle_penalty / (stiffness_gain * diameter_gain)
+            + 0.06 * math.sin(depth_ratio * math.pi * 3.0)
+        )
+        tactile_load = (
+            15.0
+            + (stiffness_index * 0.18)
+            + (wire_diameter_mm * 4.8)
+            + depth_ratio * 16.0 * exposure_factor
+            + abs(insertion_angle_deg) * 1.2
+        )
+
+        tracking_error_mm.append(float(round(deviation, 3)))
+        tactile_load_n.append(float(round(tactile_load, 2)))
+
+    mean_tracking_error = float(np.mean(tracking_error_mm))
+    max_tactile_load = float(np.max(tactile_load_n))
+    canal_capture_probability = max(
+        45.0,
+        min(
+            98.0,
+            95.0
+            - abs(insertion_angle_deg) * 4.2
+            - (exposure_factor - 1.0) * 14.0
+            + (stiffness_index - 58.0) * 0.18
+            + (wire_diameter_mm - 2.8) * 2.6,
+        ),
+    )
+    alignment_index = max(
+        35.0,
+        min(
+            99.0,
+            94.0
+            - mean_tracking_error * 12.0
+            - abs(insertion_angle_deg) * 2.4
+            + (stiffness_index - 58.0) * 0.10,
+        ),
+    )
+    fluoroscopy_saves = max(
+        1,
+        int(
+            round(
+                9
+                - (stiffness_index - 58.0) / 12.0
+                - (wire_diameter_mm - 2.8)
+                + abs(insertion_angle_deg) / 2.5
+                + (exposure_factor - 1.0) * 3.0
+            )
+        ),
+    )
+
+    workflow_readiness_score = max(
+        50.0,
+        min(
+            99.0,
+            0.45 * alignment_index
+            + 0.35 * canal_capture_probability
+            + 0.20 * guide['soft_tissue_score'],
+        ),
+    )
+
+    mission_bias = {
+        'us_military': 84.0,
+        'canadian_military': 86.0,
+        'joint_allied': 89.0,
+    }[mission]
+    digital_interoperability_score = max(
+        60.0,
+        min(
+            99.0,
+            mission_bias
+            + 0.12 * (alignment_index - 80.0)
+            + 0.08 * (canal_capture_probability - 80.0)
+            - 0.35 * fluoroscopy_saves,
+        ),
+    )
+
+    readiness_narrative = (
+        f"{mission_profile['label']} uses the {guide['label']} pathway to pair minimally invasive exposure discipline "
+        f"with repeatable guidewire checkpoints. The current configuration projects a canal capture probability of "
+        f"{canal_capture_probability:.1f}% and an implant alignment index of {alignment_index:.1f}%. "
+        f"Digital transformation focus: {mission_profile['priority']}"
+    )
+
+    recommended_action = (
+        'Maintain current wire profile and continue with templated MIS workflow checkpoints.'
+        if canal_capture_probability >= 88.0 and alignment_index >= 85.0
+        else 'Reduce angular error or increase wire support before progressing to resection and implant preparation.'
+    )
+
+    return {
+        'depth_axis_mm': depth_axis,
+        'tracking_error_mm': tracking_error_mm,
+        'tactile_load_n': tactile_load_n,
+        'workflow_guide': guide['workflow'],
+        'approach_summary': {
+            'label': guide['label'],
+            'soft_tissue_preservation_score': guide['soft_tissue_score'],
+            'recommended_action': recommended_action,
+        },
+        'mission_profile': mission_profile,
+        'characteristics': {
+            'canal_capture_probability': round(canal_capture_probability, 1),
+            'alignment_index': round(alignment_index, 1),
+            'mean_tracking_error_mm': round(mean_tracking_error, 3),
+            'max_tactile_load_n': round(max_tactile_load, 2),
+            'estimated_fluoroscopy_saves': fluoroscopy_saves,
+            'workflow_readiness_score': round(workflow_readiness_score, 1),
+            'digital_interoperability_score': round(digital_interoperability_score, 1),
+        },
+        'initiative_brief': readiness_narrative,
+    }
+
 @app.route('/api/vlm-reasoning', methods=['POST', 'GET'])
 def api_vlm_reasoning():
     """
@@ -393,6 +659,28 @@ def api_orthopedic_sim():
         return jsonify({'error': str(e)}), 400
 
 
+# ── ENDPOINT: KNEE EDUCATION GUIDEWIRE & MIS TKA WORKFLOW ───────────────────
+@app.route('/api/knee-education-sim', methods=['GET'])
+def api_knee_education_sim():
+    """
+    Educational knee surgery simulator for guidewire characteristics and
+    minimally invasive total knee arthroplasty workflow rehearsal.
+    """
+    try:
+        payload = compute_knee_education_simulation(
+            wire_diameter_mm=request.args.get('wire_diameter', 2.8),
+            stiffness_index=request.args.get('stiffness', 58.0),
+            insertion_angle_deg=request.args.get('angle', 1.5),
+            approach=request.args.get('approach', 'midvastus'),
+            mission=request.args.get('mission', 'joint_allied'),
+        )
+        return jsonify(payload)
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
+
 # ── ENDPOINT: TRAINING ANALYTICS & LEARNING PROGRESS ──────────────────────────
 @app.route('/api/training-analytics', methods=['GET'])
 def api_training_analytics():
@@ -534,5 +822,5 @@ def index():
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8200))
+    port = int(os.environ.get('PORT', 9000))
     app.run(debug=True, host='0.0.0.0', port=port, threaded=True)

@@ -18,12 +18,17 @@ Emulates transpedicular corridor drilling for L4-L5 screws and femoral nailing:
 - **Bone Penetration Density Profile**: Torque resistant curves mapped over dense outer cortical layers, transition portals, and cancellous/osteoporotic segments.
 - **Accident Prevention Flags**: Live breach alarms if the angulation exceeds bottlenecks, warning of medial spinal canal breaches or lateral cortical fissures.
 
-### 3. 👁️ VLM Visual Reasoning & Attention Maps
+### 3. 🦿 Knee Surgery Education & MIS TKA Workflow
+Dedicated orthopedic knee education tab for guidewire characteristic simulation and minimally invasive total knee arthroplasty rehearsal:
+- **Guidewire Characteristic Modeling**: Simulates tracking deviation, tactile load, and canal capture probability as wire diameter, stiffness, and insertion angle change.
+- **Workflow-Guided Training**: Presents structured mini-midvastus, subvastus, and quadriceps-sparing workflow guides tuned for US and Canadian military digital transformation initiatives.
+
+### 4. 👁️ VLM Visual Reasoning & Attention Maps
 Models a high-dimensional Vision-Language-Action Multi-modal reasoner:
 - **Attention Overlays**: Generates coordinates-focused statistical attention concentric circular bounds mimicking attention heads inside VLM convolutional layers.
 - **Multimodal Feedback**: Dynamic clinical prescriptions assessing anatomical boundaries, safety margins, and structural risk zones.
 
-### 4. 📈 Educational Analytics Dashboard
+### 5. 📈 Educational Analytics Dashboard
 A comprehensive cognitive evaluation interface tracking cohort progress:
 - **Learning Convergence Profile**: Mapped via the Power Law of Practice with exponential trial gains:
   $$SK(t) = SK_0 + (SK_{\infty} - SK_0)(1 - e^{-\alpha \cdot t})$$
