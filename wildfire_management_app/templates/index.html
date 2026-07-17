@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ontario Wildfire Quantum Operations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pine: #17362d;
+            --forest: #215146;
+            --ash: #d6e3df;
+            --ember: #d66936;
+            --sun: #e7b84f;
+            --sky: #70c0d8;
+            --storm: #0b1720;
+            --panel: rgba(10, 20, 26, 0.72);
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            color: #eef7f3;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(214, 105, 54, 0.18), transparent 28%),
+                radial-gradient(circle at 80% 0%, rgba(112, 192, 216, 0.16), transparent 25%),
+                linear-gradient(180deg, #081219 0%, #0a1820 48%, #10211c 100%);
+            min-height: 100vh;
+        }
+
+        .heading-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .glass-panel {
+            background: var(--panel);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+            border-radius: 24px;
+        }
+
+        .tab-btn {
+            border-radius: 16px;
+            color: #9ab1b7;
+            transition: all 0.22s ease;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, rgba(214, 105, 54, 0.28), rgba(112, 192, 216, 0.18));
+            border: 1px solid rgba(231, 184, 79, 0.28);
+        }
+
+        .tab-btn:not(.active):hover {
+            color: #e8f3ef;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 999px;
+            background: var(--sun);
+            box-shadow: 0 0 0 3px rgba(231, 184, 79, 0.18);
+            cursor: pointer;
+        }
+
+        .metric-card {
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .metric-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .narrative-box {
+            border-radius: 20px;
+            border: 1px solid rgba(112, 192, 216, 0.16);
+            background: rgba(34, 74, 76, 0.18);
+        }
+
+        .section-kicker {
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            color: #9cc4cf;
+        }
+
+        .plot-card {
+            border-radius: 22px;
+            background: rgba(8, 17, 22, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .map-shell {
+            position: relative;
+            overflow: hidden;
+            border-radius: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: linear-gradient(160deg, rgba(8, 19, 27, 0.92), rgba(12, 27, 34, 0.84));
+            min-height: 320px;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.14);
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body>
+    <header class="sticky top-0 z-40 border-b border-white/5 bg-[#08131a]/85 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div class="max-w-3xl">
+                <div class="section-kicker mb-2">Ontario summer horizon simulator</div>
+                <h1 class="heading-font text-3xl md:text-4xl font-bold text-white">Ontario Wildfire Management and Air Quality Optimization</h1>
+                <p class="text-sm md:text-base text-slate-300 mt-2">Statistical quantum machine learning for Ontario and Northern Ontario containment planning, ecological land restoration, and smoke propagation control toward the US East Coast.</p>
+            </div>
+            <nav class="flex flex-wrap gap-2 bg-white/5 border border-white/8 rounded-2xl p-2">
+                <button id="btn-overview" class="tab-btn active px-4 py-2 text-sm" onclick="switchTab('overview')">Regional command</button>
+                <button id="btn-containment" class="tab-btn px-4 py-2 text-sm" onclick="switchTab('containment')">Containment and restoration</button>
+                <button id="btn-smoke" class="tab-btn px-4 py-2 text-sm" onclick="switchTab('smoke')">Smoke propagation east coast</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-8">
+        <section id="overview-card" class="tab-panel flex flex-col gap-8">
+            <div class="glass-panel p-6 md:p-7 flex flex-col gap-6">
+                <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 border-b border-white/8 pb-5">
+                    <div>
+                        <div class="section-kicker mb-2">Regional operations outlook</div>
+                        <h2 class="heading-font text-2xl font-semibold text-white">Ontario and Northern Ontario wildfire command forecast</h2>
+                        <p class="text-sm text-slate-300 mt-2">Deploy crews, tanker support, humidity management, and quantum alignment to pull the active burn footprint and AQI profile downward over a 24-month summer-centric horizon.</p>
+                    </div>
+                    <div class="text-xs uppercase tracking-[0.22em] text-amber-200 bg-amber-500/10 border border-amber-400/20 rounded-full px-4 py-2">24 month seasonal horizon</div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-4 flex flex-col gap-6">
+                        <div class="metric-card p-5 flex flex-col gap-4">
+                            <div>
+                                <label class="text-xs text-slate-400 uppercase tracking-[0.18em]" for="ov-region">Region</label>
+                                <select id="ov-region" onchange="runOverviewForecast()" class="mt-2 w-full rounded-xl border border-white/10 bg-[#0e1c23] px-3 py-3 text-sm text-white outline-none">
+                                    <option value="ontario">Central and Southern Ontario</option>
+                                    <option value="northern_ontario" selected>Northern Ontario Boreal Belt</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>Incident crews</span><span id="label-ov-crews" class="text-amber-300 font-semibold">92 crews</span></div>
+                                <input id="ov-crews" type="range" min="35" max="180" step="1" value="92" oninput="document.getElementById('label-ov-crews').textContent=this.value + ' crews'; runOverviewForecast();">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>Tanker sorties</span><span id="label-ov-tankers" class="text-sky-300 font-semibold">18 sorties</span></div>
+                                <input id="ov-tankers" type="range" min="4" max="34" step="1" value="18" oninput="document.getElementById('label-ov-tankers').textContent=this.value + ' sorties'; runOverviewForecast();">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>Humidity support</span><span id="label-ov-humidity" class="text-emerald-300 font-semibold">52%</span></div>
+                                <input id="ov-humidity" type="range" min="20" max="90" step="1" value="52" oninput="document.getElementById('label-ov-humidity').textContent=this.value + '%'; runOverviewForecast();">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>QML alignment weight</span><span id="label-ov-qml" class="text-rose-300 font-semibold">0.62</span></div>
+                                <input id="ov-qml" type="range" min="0" max="1" step="0.01" value="0.62" oninput="document.getElementById('label-ov-qml').textContent=parseFloat(this.value).toFixed(2); runOverviewForecast();">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Suppression efficiency</div><div id="ov-metric-suppression" class="metric-value mt-2">...</div></div>
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Active fire area</div><div id="ov-metric-area" class="metric-value mt-2">...</div></div>
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Local AQI</div><div id="ov-metric-aqi" class="metric-value mt-2">...</div></div>
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">QML stability</div><div id="ov-metric-qml" class="metric-value mt-2">...</div></div>
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Fire area reduction</div><div id="ov-metric-reduction" class="metric-value mt-2">...</div></div>
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Summer AQI gain</div><div id="ov-metric-summer-aqi" class="metric-value mt-2">...</div></div>
+                        </div>
+
+                        <div class="narrative-box p-5">
+                            <div class="section-kicker mb-2">Operational characteristics</div>
+                            <p id="ov-narrative" class="text-sm leading-7 text-slate-200">Loading regional command narrative...</p>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-8 grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div class="plot-card p-4"><div id="overview-plot-main" style="width:100%;height:300px;"></div></div>
+                        <div class="plot-card p-4"><div id="overview-plot-readiness" style="width:100%;height:300px;"></div></div>
+                        <div class="plot-card p-4"><div id="overview-plot-summer" style="width:100%;height:300px;"></div></div>
+                        <div class="plot-card p-4"><div id="overview-plot-convergence" style="width:100%;height:300px;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="containment-card" class="tab-panel flex flex-col gap-8" style="display:none;">
+            <div class="glass-panel p-6 md:p-7 flex flex-col gap-6">
+                <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 border-b border-white/8 pb-5">
+                    <div>
+                        <div class="section-kicker mb-2">Containment strategies tab</div>
+                        <h2 class="heading-font text-2xl font-semibold text-white">Wildfire containment, convergence, and ecological restoration</h2>
+                        <p class="text-sm text-slate-300 mt-2">This tab links containment strategy to ecological restoration of land, smoke-sensitive PM2.5 control, and mitigation convergence characteristics across two summer cycles.</p>
+                    </div>
+                    <div class="text-xs uppercase tracking-[0.22em] text-cyan-200 bg-cyan-500/10 border border-cyan-400/20 rounded-full px-4 py-2">Convergence over 24 months</div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-4 flex flex-col gap-6">
+                        <div class="metric-card p-5 flex flex-col gap-4">
+                            <div>
+                                <label class="text-xs text-slate-400 uppercase tracking-[0.18em]" for="ct-region">Region</label>
+                                <select id="ct-region" onchange="runContainmentStrategy()" class="mt-2 w-full rounded-xl border border-white/10 bg-[#0e1c23] px-3 py-3 text-sm text-white outline-none">
+                                    <option value="ontario">Central and Southern Ontario</option>
+                                    <option value="northern_ontario" selected>Northern Ontario Boreal Belt</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>Containment crews</span><span id="label-ct-crews" class="text-amber-300 font-semibold">118 crews</span></div>
+                                <input id="ct-crews" type="range" min="40" max="200" step="1" value="118" oninput="document.getElementById('label-ct-crews').textContent=this.value + ' crews'; runContainmentStrategy();">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>Firebreak length</span><span id="label-ct-firebreak" class="text-sky-300 font-semibold">145 km</span></div>
+                                <input id="ct-firebreak" type="range" min="20" max="320" step="5" value="145" oninput="document.getElementById('label-ct-firebreak').textContent=this.value + ' km'; runContainmentStrategy();">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>Ecological restoration</span><span id="label-ct-restoration" class="text-emerald-300 font-semibold">70%</span></div>
+                                <input id="ct-restoration" type="range" min="10" max="100" step="1" value="70" oninput="document.getElementById('label-ct-restoration').textContent=this.value + '%'; runContainmentStrategy();">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>Prescribed burn capacity</span><span id="label-ct-burn" class="text-orange-300 font-semibold">54%</span></div>
+                                <input id="ct-burn" type="range" min="5" max="100" step="1" value="54" oninput="document.getElementById('label-ct-burn').textContent=this.value + '%'; runContainmentStrategy();">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>QML mitigation weight</span><span id="label-ct-qml" class="text-rose-300 font-semibold">0.66</span></div>
+                                <input id="ct-qml" type="range" min="0" max="1" step="0.01" value="0.66" oninput="document.getElementById('label-ct-qml').textContent=parseFloat(this.value).toFixed(2); runContainmentStrategy();">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Final convergence</div><div id="ct-metric-convergence" class="metric-value mt-2">...</div></div>
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Convergence month</div><div id="ct-metric-month" class="metric-value mt-2">...</div></div>
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Restored hectares</div><div id="ct-metric-restored" class="metric-value mt-2">...</div></div>
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Summer PM2.5 reduction</div><div id="ct-metric-pm" class="metric-value mt-2">...</div></div>
+                        </div>
+
+                        <div class="narrative-box p-5">
+                            <div class="section-kicker mb-2">Containment characteristics</div>
+                            <p id="ct-narrative" class="text-sm leading-7 text-slate-200">Loading mitigation and restoration narrative...</p>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-8 grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div class="plot-card p-4"><div id="containment-plot-convergence" style="width:100%;height:340px;"></div></div>
+                        <div class="plot-card p-4"><div id="containment-plot-restoration" style="width:100%;height:340px;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="smoke-card" class="tab-panel flex flex-col gap-8" style="display:none;">
+            <div class="glass-panel p-6 md:p-7 flex flex-col gap-6">
+                <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 border-b border-white/8 pb-5">
+                    <div>
+                        <div class="section-kicker mb-2">East Coast air quality tab</div>
+                        <h2 class="heading-font text-2xl font-semibold text-white">Smoke propagation to the US East Coast</h2>
+                        <p class="text-sm text-slate-300 mt-2">Model eastward smoke travel, dissipation, and AQI safeguard scores from Ontario wildfire sources while holding a 24-month summer monitoring horizon.</p>
+                    </div>
+                    <div class="text-xs uppercase tracking-[0.22em] text-rose-100 bg-rose-500/10 border border-rose-400/20 rounded-full px-4 py-2">Air quality safeguard metrics</div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-4 flex flex-col gap-6">
+                        <div class="metric-card p-5 flex flex-col gap-4">
+                            <div>
+                                <label class="text-xs text-slate-400 uppercase tracking-[0.18em]" for="sm-region">Source region</label>
+                                <select id="sm-region" onchange="runSmokePropagation()" class="mt-2 w-full rounded-xl border border-white/10 bg-[#0e1c23] px-3 py-3 text-sm text-white outline-none">
+                                    <option value="ontario">Central and Southern Ontario</option>
+                                    <option value="northern_ontario" selected>Northern Ontario Boreal Belt</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>Source intensity</span><span id="label-sm-source" class="text-amber-300 font-semibold">1.15x</span></div>
+                                <input id="sm-source" type="range" min="0.5" max="2.0" step="0.01" value="1.15" oninput="document.getElementById('label-sm-source').textContent=parseFloat(this.value).toFixed(2) + 'x'; runSmokePropagation();">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>Easterly flow corridor</span><span id="label-sm-flow" class="text-sky-300 font-semibold">24 m/s</span></div>
+                                <input id="sm-flow" type="range" min="8" max="40" step="1" value="24" oninput="document.getElementById('label-sm-flow').textContent=this.value + ' m/s'; runSmokePropagation();">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>Humidity scrub</span><span id="label-sm-humidity" class="text-emerald-300 font-semibold">58%</span></div>
+                                <input id="sm-humidity" type="range" min="20" max="90" step="1" value="58" oninput="document.getElementById('label-sm-humidity').textContent=this.value + '%'; runSmokePropagation();">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between text-xs text-slate-400"><span>QML dissipation</span><span id="label-sm-qml" class="text-rose-300 font-semibold">0.64</span></div>
+                                <input id="sm-qml" type="range" min="0" max="1" step="0.01" value="0.64" oninput="document.getElementById('label-sm-qml').textContent=parseFloat(this.value).toFixed(2); runSmokePropagation();">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">AQI safeguard</div><div id="sm-metric-safeguard" class="metric-value mt-2">...</div></div>
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Peak PM2.5</div><div id="sm-metric-pm" class="metric-value mt-2">...</div></div>
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Plume half-life</div><div id="sm-metric-half" class="metric-value mt-2">...</div></div>
+                            <div class="metric-card p-4"><div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Highest risk city</div><div id="sm-metric-city" class="metric-value mt-2">...</div></div>
+                        </div>
+
+                        <div class="narrative-box p-5">
+                            <div class="section-kicker mb-2">Propagation characteristics</div>
+                            <p id="sm-narrative" class="text-sm leading-7 text-slate-200">Loading smoke propagation narrative...</p>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-8 flex flex-col gap-6">
+                        <div class="map-shell p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <div class="section-kicker">Schematic transport map</div>
+                                    <h3 class="heading-font text-lg font-semibold text-white">Ontario to East Coast smoke corridor</h3>
+                                </div>
+                                <div class="text-xs text-slate-400 uppercase tracking-[0.18em]">Summer mean transport intensity</div>
+                            </div>
+                            <div class="relative w-full aspect-[16/8] rounded-2xl overflow-hidden">
+                                <canvas id="smoke-canvas" class="absolute inset-0 w-full h-full"></canvas>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <div class="plot-card p-4"><div id="smoke-plot-main" style="width:100%;height:320px;"></div></div>
+                            <div class="plot-card p-4"><div id="smoke-plot-city" style="width:100%;height:320px;"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-6 pb-10 text-xs text-slate-500">
+        Ontario wildfire simulator for command planning, ecological restoration, and summer smoke dissipation analytics.
+    </footer>
+
+    <script>
+        const plotTheme = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: {color: '#dbe7e5', family: 'IBM Plex Sans'},
+            margin: {t: 48, r: 42, b: 48, l: 54}
+        };
+
+        let smokeCitySnapshot = [];
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-panel').forEach(function(panel) {
+                panel.style.display = 'none';
+            });
+            document.querySelectorAll('.tab-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tabId + '-card').style.display = 'flex';
+            document.getElementById('btn-' + tabId).classList.add('active');
+            setTimeout(function() {
+                window.dispatchEvent(new Event('resize'));
+            }, 20);
+        }
+
+        function axisBase(titleText) {
+            return {
+                title: titleText,
+                tickfont: {size: 9, color: '#dbe7e5'},
+                titlefont: {size: 10, color: '#dbe7e5'},
+                gridcolor: 'rgba(255,255,255,0.05)',
+                zerolinecolor: 'rgba(255,255,255,0.05)'
+            };
+        }
+
+        function setText(id, value) {
+            document.getElementById(id).textContent = value;
+        }
+
+        function runOverviewForecast() {
+            const region = document.getElementById('ov-region').value;
+            const crews = document.getElementById('ov-crews').value;
+            const tankers = document.getElementById('ov-tankers').value;
+            const humidity = document.getElementById('ov-humidity').value;
+            const qml = document.getElementById('ov-qml').value;
+            const url = '/api/command-forecast?region=' + region + '&crews=' + crews + '&tankers=' + tankers + '&humidity=' + humidity + '&qml=' + qml;
+
+            fetch(url)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    setText('ov-metric-suppression', data.characteristics.avg_suppression_efficiency.toFixed(1) + '%');
+                    setText('ov-metric-area', data.characteristics.current_active_fire_area_ha.toFixed(0) + ' ha');
+                    setText('ov-metric-aqi', data.characteristics.local_aqi_index.toFixed(1));
+                    setText('ov-metric-qml', data.characteristics.qml_stability_score.toFixed(1) + '/100');
+                    setText('ov-metric-reduction', data.characteristics.fire_reduction_pct.toFixed(1) + '%');
+                    setText('ov-metric-summer-aqi', data.characteristics.summer_air_quality_gain.toFixed(1) + ' pts');
+                    setText('ov-narrative', data.narrative);
+
+                    Plotly.react('overview-plot-main', [
+                        {
+                            x: data.month_labels,
+                            y: data.active_fire_hectares,
+                            name: 'Active fire area',
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            line: {color: '#d66936', width: 2.6},
+                            marker: {size: 5, color: '#e7b84f'}
+                        },
+                        {
+                            x: data.month_labels,
+                            y: data.local_aqi,
+                            name: 'Local AQI',
+                            yaxis: 'y2',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#70c0d8', width: 2.4, dash: 'dot'}
+                        }
+                    ], {
+                        title: {text: 'Active burn footprint and local AQI over the 24-month horizon', font: {size: 12, family: 'Space Grotesk', color: '#ffffff'}},
+                        xaxis: axisBase('Month'),
+                        yaxis: axisBase('Active fire area (ha)'),
+                        yaxis2: Object.assign(axisBase('AQI index'), {overlaying: 'y', side: 'right'}),
+                        legend: {orientation: 'h', x: 0, y: -0.22, font: {size: 9}},
+                        paper_bgcolor: plotTheme.paper_bgcolor,
+                        plot_bgcolor: plotTheme.plot_bgcolor,
+                        font: plotTheme.font,
+                        margin: plotTheme.margin
+                    }, {responsive: true, displaylogo: false});
+
+                    var peakMonth = data.characteristics.peak_fire_month_label;
+
+                    Plotly.react('overview-plot-readiness', [
+                        {
+                            x: data.month_labels,
+                            y: data.suppression_efficiency,
+                            name: 'Suppression efficiency',
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            line: {color: '#4fd1a7', width: 2.4}
+                        },
+                        {
+                            x: data.month_labels,
+                            y: data.readiness_score,
+                            name: 'Readiness score',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#f4c15d', width: 2.2}
+                        },
+                        {
+                            x: data.month_labels,
+                            y: data.qml_kernel.map(function(item) { return item * 100.0; }),
+                            name: 'QML kernel alignment',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#f472b6', width: 1.9, dash: 'dash'}
+                        }
+                    ], {
+                        title: {text: 'Suppression convergence and quantum alignment characteristics', font: {size: 12, family: 'Space Grotesk', color: '#ffffff'}},
+                        xaxis: axisBase('Month'),
+                        yaxis: axisBase('Score'),
+                        legend: {orientation: 'h', x: 0, y: -0.22, font: {size: 9}},
+                        paper_bgcolor: plotTheme.paper_bgcolor,
+                        plot_bgcolor: plotTheme.plot_bgcolor,
+                        font: plotTheme.font,
+                        margin: plotTheme.margin
+                    }, {responsive: true, displaylogo: false});
+
+                    // Plot 3: Summer season year-over-year comparison
+                    var summerCategories = ['AQI (first summer)', 'AQI (second summer)', 'Fire area (first, /10)', 'Fire area (second, /10)', 'Suppression (first)', 'Suppression (second)'];
+                    var summerValues = [
+                        data.characteristics.first_summer_aqi,
+                        data.characteristics.second_summer_aqi,
+                        data.characteristics.first_summer_fire_ha / 10.0,
+                        data.characteristics.second_summer_fire_ha / 10.0,
+                        data.characteristics.first_summer_suppression,
+                        data.characteristics.second_summer_suppression
+                    ];
+                    var summerColors = ['#d66936', '#4fd1a7', '#f4c15d', '#60a5fa', '#f472b6', '#a78bfa'];
+                    Plotly.react('overview-plot-summer', [
+                        {
+                            x: ['First Summer 2026', 'Second Summer 2027'],
+                            y: [data.characteristics.first_summer_aqi, data.characteristics.second_summer_aqi],
+                            name: 'Mean AQI',
+                            type: 'bar',
+                            marker: {color: ['#d66936', '#4fd1a7']}
+                        },
+                        {
+                            x: ['First Summer 2026', 'Second Summer 2027'],
+                            y: [data.characteristics.first_summer_fire_ha, data.characteristics.second_summer_fire_ha],
+                            name: 'Mean fire area (ha)',
+                            yaxis: 'y2',
+                            type: 'bar',
+                            marker: {color: ['rgba(244,193,93,0.7)', 'rgba(96,165,250,0.7)']}
+                        },
+                        {
+                            x: ['First Summer 2026', 'Second Summer 2027'],
+                            y: [data.characteristics.first_summer_suppression, data.characteristics.second_summer_suppression],
+                            name: 'Suppression (%)',
+                            type: 'scatter',
+                            mode: 'markers+lines',
+                            marker: {size: 10, color: '#f472b6'},
+                            line: {color: '#f472b6', width: 2.0}
+                        }
+                    ], {
+                        title: {text: 'Year-over-year summer season characteristics', font: {size: 12, family: 'Space Grotesk', color: '#ffffff'}},
+                        barmode: 'group',
+                        xaxis: axisBase('Season'),
+                        yaxis: axisBase('AQI index / Suppression (%)'),
+                        yaxis2: Object.assign(axisBase('Active fire area (ha)'), {overlaying: 'y', side: 'right'}),
+                        legend: {orientation: 'h', x: 0, y: -0.26, font: {size: 9}},
+                        paper_bgcolor: plotTheme.paper_bgcolor,
+                        plot_bgcolor: plotTheme.plot_bgcolor,
+                        font: plotTheme.font,
+                        margin: plotTheme.margin
+                    }, {responsive: true, displaylogo: false});
+
+                    // Plot 4: QML kernel vs suppression convergence scatter
+                    Plotly.react('overview-plot-convergence', [
+                        {
+                            x: data.qml_kernel,
+                            y: data.suppression_efficiency,
+                            mode: 'markers',
+                            name: 'QML kernel vs suppression',
+                            type: 'scatter',
+                            marker: {
+                                size: 7,
+                                color: data.active_fire_hectares,
+                                colorscale: [[0,'#4fd1a7'],[0.5,'#e7b84f'],[1,'#d66936']],
+                                colorbar: {title: 'Fire area (ha)', titlefont: {size: 9}, tickfont: {size: 8}},
+                                showscale: true
+                            }
+                        },
+                        {
+                            x: data.qml_kernel.slice(0, 1),
+                            y: data.suppression_efficiency.slice(0, 1),
+                            mode: 'markers',
+                            name: 'Month 1',
+                            marker: {size: 12, color: '#ffffff', symbol: 'star'}
+                        },
+                        {
+                            x: data.qml_kernel.slice(-1),
+                            y: data.suppression_efficiency.slice(-1),
+                            mode: 'markers',
+                            name: 'Month 24',
+                            marker: {size: 12, color: '#4fd1a7', symbol: 'diamond'}
+                        }
+                    ], {
+                        title: {text: 'QML kernel alignment vs suppression efficiency convergence', font: {size: 12, family: 'Space Grotesk', color: '#ffffff'}},
+                        xaxis: axisBase('QML kernel alignment'),
+                        yaxis: axisBase('Suppression efficiency (%)'),
+                        legend: {orientation: 'h', x: 0, y: -0.26, font: {size: 9}},
+                        paper_bgcolor: plotTheme.paper_bgcolor,
+                        plot_bgcolor: plotTheme.plot_bgcolor,
+                        font: plotTheme.font,
+                        margin: plotTheme.margin
+                    }, {responsive: true, displaylogo: false});
+                });
+        }
+
+        function runContainmentStrategy() {
+            const region = document.getElementById('ct-region').value;
+            const crews = document.getElementById('ct-crews').value;
+            const firebreak = document.getElementById('ct-firebreak').value;
+            const restoration = document.getElementById('ct-restoration').value;
+            const burn = document.getElementById('ct-burn').value;
+            const qml = document.getElementById('ct-qml').value;
+            const url = '/api/containment-strategy?region=' + region + '&crews=' + crews + '&firebreak=' + firebreak + '&restoration=' + restoration + '&burn=' + burn + '&qml=' + qml;
+
+            fetch(url)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    setText('ct-metric-convergence', data.characteristics.final_convergence_pct.toFixed(1) + '%');
+                    setText('ct-metric-month', 'M' + data.characteristics.convergence_month);
+                    setText('ct-metric-restored', Math.round(data.characteristics.restored_hectares).toLocaleString() + ' ha');
+                    setText('ct-metric-pm', data.characteristics.summer_pm25_reduction.toFixed(1) + ' ug/m3');
+                    setText('ct-narrative', data.narrative);
+
+                    Plotly.react('containment-plot-convergence', [
+                        {
+                            x: data.month_labels,
+                            y: data.mitigation_convergence_pct,
+                            name: 'Mitigation convergence',
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            line: {color: '#4fd1a7', width: 2.6},
+                            marker: {size: 4, color: '#4fd1a7'}
+                        },
+                        {
+                            x: data.month_labels,
+                            y: data.active_risk_hectares,
+                            name: 'Residual active risk',
+                            yaxis: 'y2',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#d66936', width: 2.2, dash: 'dot'}
+                        }
+                    ], {
+                        title: {text: 'Containment convergence versus residual wildfire risk', font: {size: 12, family: 'Space Grotesk', color: '#ffffff'}},
+                        xaxis: axisBase('Month'),
+                        yaxis: axisBase('Convergence (%)'),
+                        yaxis2: Object.assign(axisBase('Risk hectares'), {overlaying: 'y', side: 'right'}),
+                        legend: {orientation: 'h', x: 0, y: -0.22, font: {size: 9}},
+                        paper_bgcolor: plotTheme.paper_bgcolor,
+                        plot_bgcolor: plotTheme.plot_bgcolor,
+                        font: plotTheme.font,
+                        margin: plotTheme.margin
+                    }, {responsive: true, displaylogo: false});
+
+                    Plotly.react('containment-plot-restoration', [
+                        {
+                            x: data.month_labels,
+                            y: data.cumulative_restored_hectares,
+                            name: 'Cumulative restored hectares',
+                            type: 'scatter',
+                            mode: 'lines',
+                            fill: 'tozeroy',
+                            fillcolor: 'rgba(79, 209, 167, 0.15)',
+                            line: {color: '#4fd1a7', width: 2.5}
+                        },
+                        {
+                            x: data.month_labels,
+                            y: data.land_recovery_index,
+                            name: 'Land recovery index',
+                            yaxis: 'y2',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#70c0d8', width: 2.2}
+                        },
+                        {
+                            x: data.month_labels,
+                            y: data.regional_pm25,
+                            name: 'Regional PM2.5',
+                            yaxis: 'y2',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#f472b6', width: 1.8, dash: 'dash'}
+                        }
+                    ], {
+                        title: {text: 'Ecological restoration and air quality recovery characteristics', font: {size: 12, family: 'Space Grotesk', color: '#ffffff'}},
+                        xaxis: axisBase('Month'),
+                        yaxis: axisBase('Restored hectares'),
+                        yaxis2: Object.assign(axisBase('Recovery index / PM2.5'), {overlaying: 'y', side: 'right'}),
+                        legend: {orientation: 'h', x: 0, y: -0.24, font: {size: 9}},
+                        paper_bgcolor: plotTheme.paper_bgcolor,
+                        plot_bgcolor: plotTheme.plot_bgcolor,
+                        font: plotTheme.font,
+                        margin: plotTheme.margin
+                    }, {responsive: true, displaylogo: false});
+                });
+        }
+
+        function runSmokePropagation() {
+            const region = document.getElementById('sm-region').value;
+            const source = document.getElementById('sm-source').value;
+            const flow = document.getElementById('sm-flow').value;
+            const humidity = document.getElementById('sm-humidity').value;
+            const qml = document.getElementById('sm-qml').value;
+            const url = '/api/smoke-propagation?region=' + region + '&source=' + source + '&flow=' + flow + '&humidity=' + humidity + '&qml=' + qml;
+
+            fetch(url)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    smokeCitySnapshot = data.city_snapshot;
+                    drawSmokeMap();
+
+                    setText('sm-metric-safeguard', data.characteristics.east_coast_aqi_safeguard.toFixed(1) + '/100');
+                    setText('sm-metric-pm', data.characteristics.peak_transport_pm25.toFixed(1) + ' ug/m3');
+                    setText('sm-metric-half', data.characteristics.average_plume_half_life_hours.toFixed(1) + ' h');
+                    setText('sm-metric-city', data.characteristics.highest_risk_city);
+                    setText('sm-narrative', data.narrative);
+
+                    Plotly.react('smoke-plot-main', [
+                        {
+                            x: data.month_labels,
+                            y: data.east_coast_aqi,
+                            name: 'East Coast AQI',
+                            type: 'scatter',
+                            mode: 'lines+markers',
+                            line: {color: '#70c0d8', width: 2.5},
+                            marker: {size: 4, color: '#70c0d8'}
+                        },
+                        {
+                            x: data.month_labels,
+                            y: data.transported_pm25,
+                            name: 'Transported PM2.5',
+                            yaxis: 'y2',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#d66936', width: 2.2, dash: 'dot'}
+                        },
+                        {
+                            x: data.month_labels,
+                            y: data.plume_half_life_hours,
+                            name: 'Plume half-life',
+                            yaxis: 'y2',
+                            type: 'scatter',
+                            mode: 'lines',
+                            line: {color: '#4fd1a7', width: 1.8, dash: 'dash'}
+                        }
+                    ], {
+                        title: {text: 'East Coast AQI, transported PM2.5, and plume half-life', font: {size: 12, family: 'Space Grotesk', color: '#ffffff'}},
+                        xaxis: axisBase('Month'),
+                        yaxis: axisBase('AQI index'),
+                        yaxis2: Object.assign(axisBase('PM2.5 / half-life'), {overlaying: 'y', side: 'right'}),
+                        legend: {orientation: 'h', x: 0, y: -0.24, font: {size: 9}},
+                        paper_bgcolor: plotTheme.paper_bgcolor,
+                        plot_bgcolor: plotTheme.plot_bgcolor,
+                        font: plotTheme.font,
+                        margin: plotTheme.margin
+                    }, {responsive: true, displaylogo: false});
+
+                    Plotly.react('smoke-plot-city', [
+                        {
+                            x: data.city_snapshot.map(function(item) { return item.city; }),
+                            y: data.city_snapshot.map(function(item) { return item.pm25; }),
+                            type: 'bar',
+                            name: 'Summer PM2.5',
+                            marker: {color: ['#f4c15d', '#d66936', '#70c0d8', '#4fd1a7', '#f472b6', '#8b5cf6', '#60a5fa']}
+                        },
+                        {
+                            x: data.city_snapshot.map(function(item) { return item.city; }),
+                            y: data.city_snapshot.map(function(item) { return item.aqi; }),
+                            yaxis: 'y2',
+                            type: 'scatter',
+                            mode: 'markers+lines',
+                            name: 'Estimated AQI',
+                            line: {color: '#ffffff', width: 1.6},
+                            marker: {size: 7, color: '#ffffff'}
+                        }
+                    ], {
+                        title: {text: 'Summer smoke burden across East Coast cities', font: {size: 12, family: 'Space Grotesk', color: '#ffffff'}},
+                        xaxis: axisBase('City'),
+                        yaxis: axisBase('PM2.5 (ug/m3)'),
+                        yaxis2: Object.assign(axisBase('AQI index'), {overlaying: 'y', side: 'right'}),
+                        legend: {orientation: 'h', x: 0, y: -0.24, font: {size: 9}},
+                        paper_bgcolor: plotTheme.paper_bgcolor,
+                        plot_bgcolor: plotTheme.plot_bgcolor,
+                        font: plotTheme.font,
+                        margin: plotTheme.margin
+                    }, {responsive: true, displaylogo: false});
+                });
+        }
+
+        const smokeCanvas = document.getElementById('smoke-canvas');
+        const smokeCtx = smokeCanvas.getContext('2d');
+
+        function resizeSmokeCanvas() {
+            const parent = smokeCanvas.parentElement;
+            smokeCanvas.width = parent.clientWidth;
+            smokeCanvas.height = parent.clientHeight;
+            drawSmokeMap();
+        }
+
+        function drawSmokeMap() {
+            if (!smokeCanvas.width) {
+                return;
+            }
+
+            const width = smokeCanvas.width;
+            const height = smokeCanvas.height;
+            const sourceX = width * 0.17;
+            const sourceY = height * 0.40;
+
+            smokeCtx.clearRect(0, 0, width, height);
+
+            const background = smokeCtx.createLinearGradient(0, 0, width, height);
+            background.addColorStop(0, '#0a1820');
+            background.addColorStop(1, '#112a24');
+            smokeCtx.fillStyle = background;
+            smokeCtx.fillRect(0, 0, width, height);
+
+            smokeCtx.fillStyle = 'rgba(38, 92, 79, 0.28)';
+            smokeCtx.beginPath();
+            smokeCtx.moveTo(width * 0.07, height * 0.18);
+            smokeCtx.quadraticCurveTo(width * 0.22, height * 0.08, width * 0.29, height * 0.26);
+            smokeCtx.quadraticCurveTo(width * 0.24, height * 0.56, width * 0.10, height * 0.62);
+            smokeCtx.quadraticCurveTo(width * 0.02, height * 0.50, width * 0.07, height * 0.18);
+            smokeCtx.fill();
+
+            smokeCtx.fillStyle = 'rgba(112, 192, 216, 0.10)';
+            smokeCtx.fillRect(width * 0.86, 0, width * 0.14, height);
+
+            const sourceGlow = smokeCtx.createRadialGradient(sourceX, sourceY, 0, sourceX, sourceY, 54);
+            sourceGlow.addColorStop(0, 'rgba(214, 105, 54, 0.95)');
+            sourceGlow.addColorStop(1, 'rgba(214, 105, 54, 0.0)');
+            smokeCtx.fillStyle = sourceGlow;
+            smokeCtx.beginPath();
+            smokeCtx.arc(sourceX, sourceY, 54, 0, Math.PI * 2);
+            smokeCtx.fill();
+
+            smokeCtx.fillStyle = '#f4c15d';
+            smokeCtx.beginPath();
+            smokeCtx.arc(sourceX, sourceY, 7, 0, Math.PI * 2);
+            smokeCtx.fill();
+
+            smokeCtx.fillStyle = 'rgba(255,255,255,0.78)';
+            smokeCtx.font = '12px IBM Plex Sans';
+            smokeCtx.fillText('Ontario source zone', sourceX - 36, sourceY - 18);
+            smokeCtx.fillText('US East Coast', width * 0.86, height * 0.10);
+
+            smokeCitySnapshot.forEach(function(city) {
+                const cityX = city.x * width;
+                const cityY = city.y * height;
+                const intensity = Math.min(1.0, city.pm25 / 28.0);
+                const controlX = (sourceX + cityX) / 2.0;
+                const controlY = Math.min(sourceY, cityY) - height * (0.16 + 0.12 * intensity);
+
+                smokeCtx.beginPath();
+                smokeCtx.moveTo(sourceX, sourceY);
+                smokeCtx.quadraticCurveTo(controlX, controlY, cityX, cityY);
+                smokeCtx.lineWidth = 1.8 + 4.0 * intensity;
+                smokeCtx.strokeStyle = 'rgba(216, 105, 54, ' + (0.18 + 0.42 * intensity) + ')';
+                smokeCtx.stroke();
+
+                smokeCtx.fillStyle = 'rgba(112, 192, 216, 0.85)';
+                smokeCtx.beginPath();
+                smokeCtx.arc(cityX, cityY, 5 + 4 * intensity, 0, Math.PI * 2);
+                smokeCtx.fill();
+
+                smokeCtx.fillStyle = '#eef7f3';
+                smokeCtx.font = '11px IBM Plex Sans';
+                smokeCtx.fillText(city.city, cityX + 10, cityY + 4);
+                smokeCtx.fillStyle = 'rgba(255,255,255,0.7)';
+                smokeCtx.font = '10px IBM Plex Sans';
+                smokeCtx.fillText(city.pm25.toFixed(1) + ' ug/m3', cityX + 10, cityY + 18);
+            });
+        }
+
+        window.addEventListener('resize', resizeSmokeCanvas);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            resizeSmokeCanvas();
+            runOverviewForecast();
+            runContainmentStrategy();
+            runSmokePropagation();
+        });
+    </script>
+</body>
+</html>
