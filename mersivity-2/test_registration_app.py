@@ -2,7 +2,7 @@ import requests
 import json
 
 def test_registration(endpoint, payload=None):
-    url = f"http://127.0.0.1:5055{endpoint}"
+    url = f"http://127.0.0.1:5058{endpoint}"
     response = requests.post(url, json=payload) if payload else requests.post(url)
     try:
         data = response.json()

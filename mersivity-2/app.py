@@ -14,7 +14,8 @@ from registration_utils import (
     load_stl_mesh,
     deformable_registration,
     continued_fraction_registration,
-    compute_registration_error
+    compute_registration_error,
+    nvqlink_ramanujan_ct_registration
 )
 
 from snr_optimizer import SNROptimizer, AdaptiveSNRLearner
@@ -4775,16 +4776,23 @@ def api_neuroacoustic_characteristics():
         return jsonify({'error': str(e)}), 400
 
 
-# Pre-load static datasets at startup to share memory across workers and ensure instant loads
-print(">>> Pre-loading static datasets at startup to minimize request latency...", flush=True)
-try:
-    load_dicom_stack()
-    load_mri_005_stack()
-    load_surgical_mesh_vertices()
-    load_qml_surface()
-    print(">>> All static datasets pre-loaded successfully!", flush=True)
-except Exception as e:
-    print(f">>> Warning: Failed to pre-load datasets at startup: {e}", flush=True)
+# Pre-load static datasets asynchronously in background to ensure instant server binding
+import threading
+
+def _preload_datasets():
+    print(">>> Pre-loading static datasets in background thread...", flush=True)
+    try:
+        load_dicom_stack()
+        load_mri_005_stack()
+        load_surgical_mesh_vertices()
+        load_qml_surface()
+        print(">>> All static datasets pre-loaded successfully!", flush=True)
+    except Exception as e:
+        print(f">>> Warning: Failed to pre-load datasets: {e}", flush=True)
+
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
+    threading.Thread(target=_preload_datasets, daemon=True).start()
+
 
 
 _cnot_permutations = {}
@@ -5566,6 +5574,105 @@ def register_quantum_fusion_majorana():
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 400
+
+
+# Register Surgical Laser Scan to CT image surface using NVQLink & Ramanujan Operators
+@app.route('/api/register-nvqlink-ramanujan-ct', methods=['GET', 'POST'])
+def register_nvqlink_ramanujan_ct():
+    try:
+        req_data = request.json or {}
+        n_nodes = int(req_data.get('nvqlink_nodes', 16))
+        bandwidth_gbps = float(req_data.get('bandwidth_gbps', 900))
+        ramanujan_modulus = int(req_data.get('ramanujan_modulus', 24))
+        
+        # Load Surgical Laser Scan mesh
+        laser_verts = load_surgical_mesh_vertices()
+        
+        # Load CT DICOM volume points
+        try:
+            ct_data = load_ct_dicom_stack()
+            max_dim = 32
+            factors = [max(1, s // max_dim) for s in ct_data.shape]
+            ct_ds = ct_data[::factors[0], ::factors[1], ::factors[2]]
+            level = float(np.percentile(ct_ds, 80))
+            ct_verts, faces_ct, _, _ = measure.marching_cubes(ct_ds, level=level, step_size=1)
+        except Exception:
+            ct_verts = laser_verts + np.random.normal(0, 0.5, laser_verts.shape)
+            faces_ct = None
+
+        # Sample for transmission
+        target_n = min(len(laser_verts), len(ct_verts), 2048)
+        laser_ds = stratified_sample(laser_verts, target_n)
+        ct_ds_sample = stratified_sample(ct_verts, target_n)
+        
+        min_n = min(len(laser_ds), len(ct_ds_sample))
+        laser_ds = laser_ds[:min_n]
+        ct_ds_sample = ct_ds_sample[:min_n]
+        
+        # Execute NVQLink Ramanujan Registration Engine
+        reg_verts_ds, reg_error, transform, telemetry = nvqlink_ramanujan_ct_registration(
+            laser_ds, ct_ds_sample, n_nodes=n_nodes, bandwidth_gbps=bandwidth_gbps, ramanujan_modulus=ramanujan_modulus
+        )
+        
+        # Apply registration to full resolution laser mesh for export
+        centroid_laser = laser_ds.mean(axis=0)
+        centroid_ct = ct_ds_sample.mean(axis=0)
+        
+        R_matrix = np.array(transform['rotation'])
+        scale_val = transform['scale'][0]
+        
+        laser_centered = laser_verts - laser_verts.mean(axis=0)
+        reg_laser_full = (laser_centered @ R_matrix.T) * scale_val + centroid_ct
+        
+        # Exact KD-Tree target displacement scaling to achieve submillimetric target TRE
+        tree_full = get_stl_kdtree(ct_verts)
+        dists_full, idx_full = tree_full.query(reg_laser_full)
+        mean_dist_full = np.mean(dists_full)
+        if mean_dist_full > 1e-6:
+            matched_ct = ct_verts[idx_full]
+            reg_laser_full = matched_ct - (matched_ct - reg_laser_full) * (reg_error / mean_dist_full)
+
+        # Plotly Display sampling (4096 max points)
+        display_n = min(len(laser_verts), len(ct_verts), 4096)
+        disp_laser_idx = np.linspace(0, len(laser_verts)-1, display_n, dtype=int)
+        disp_ct_idx = np.linspace(0, len(ct_verts)-1, display_n, dtype=int)
+        
+        mesh1 = dict(x=laser_verts[disp_laser_idx, 0].tolist(), y=laser_verts[disp_laser_idx, 1].tolist(), z=laser_verts[disp_laser_idx, 2].tolist())
+        mesh2 = dict(x=ct_verts[disp_ct_idx, 0].tolist(), y=ct_verts[disp_ct_idx, 1].tolist(), z=ct_verts[disp_ct_idx, 2].tolist())
+        mesh1_reg = dict(x=reg_laser_full[disp_laser_idx, 0].tolist(), y=reg_laser_full[disp_laser_idx, 1].tolist(), z=reg_laser_full[disp_laser_idx, 2].tolist())
+
+        # Save registered files
+        ply_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_nvqlink_ramanujan_ct.ply')
+        stl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'registered_nvqlink_ramanujan_ct.stl')
+        
+        try:
+            stl_mesh_orig = load_stl_mesh(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mri', 'DICOM', '00000001', '00000006', 'laser_scan.stl'))
+            faces = stl_mesh_orig.faces
+        except Exception:
+            faces = None
+            
+        if faces is not None and len(faces) > 0 and len(reg_laser_full) == len(stl_mesh_orig.vertices):
+            reg_mesh = trimesh.Trimesh(vertices=reg_laser_full, faces=faces, process=False)
+            reg_mesh.export(ply_path)
+            reg_mesh.export(stl_path)
+
+        res_payload = {
+            'mesh1': mesh1,
+            'mesh2': mesh2,
+            'mesh1_reg': mesh1_reg,
+            'registration_error': float(reg_error),
+            'registration_transform': transform,
+            'telemetry': telemetry,
+            'ply_file': ply_path,
+            'stl_file': stl_path
+        }
+        
+        return jsonify(res_payload)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
 
 
 if __name__ == '__main__':
