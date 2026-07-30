@@ -1252,6 +1252,14 @@ def get_ocd_fea_simulation():
     sessions = list(range(1, 30))
     ybocs_scores = [round(float(max(8.0, 34.0 - 0.85 * s + np.random.normal(0, 0.4))), 1) for s in sessions]
 
+    # 4b. 6-Month rTMS Recovery Longitudinal Paradigm (180 days)
+    recovery_days = list(range(1, 181))
+    recovery_scores = []
+    for d in recovery_days:
+        base_recovery = 34.0 * np.exp(-d / 45.0) + 6.0
+        noise = np.random.normal(0, 0.25 * np.exp(-d / 90.0))
+        recovery_scores.append(round(float(max(5.0, base_recovery + noise)), 2))
+
     # 5. Jaynes-Cummings Quantum Simulation for OCD (20Hz H7 Coil pulse mode)
     jc_sim = simulate_jaynes_cummings_rtms(omega_c=20.0, omega_a=19.8, coupling_g=0.75, n_photons=5, t_max=1.0)
 
@@ -1282,6 +1290,10 @@ def get_ocd_fea_simulation():
         "ybocs_trajectory": {
             "sessions": sessions,
             "ybocs_scores": ybocs_scores
+        },
+        "six_month_recovery": {
+            "days": recovery_days,
+            "scores": recovery_scores
         },
         "jaynes_cummings": jc_sim,
         "recommended_protocol": recommended_protocol

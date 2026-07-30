@@ -1014,6 +1014,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, { responsive: true });
             }
 
+            // 5b. 6-Month longitudinal recovery plot
+            if (data.six_month_recovery) {
+                Plotly.newPlot('ocd-six-month-recovery-chart', [
+                    {
+                        x: data.six_month_recovery.days,
+                        y: data.six_month_recovery.scores,
+                        type: 'scatter', mode: 'lines',
+                        line: { color: '#56d364', width: 3.5, shape: 'spline' },
+                        fill: 'tozeroy', fillcolor: 'rgba(86,211,100,0.06)',
+                        name: 'Longitudinal Recovery'
+                    },
+                    {
+                        x: [1, 29, 90, 180],
+                        y: [34, 12, 8, 6],
+                        type: 'scatter', mode: 'markers',
+                        marker: { size: 10, color: '#f85149', symbol: 'diamond' },
+                        name: 'Clinical Assessment Gates'
+                    }
+                ], {
+                    ...PL,
+                    xaxis: { ...PL.xaxis, title: 'Longitudinal Treatment (Days)' },
+                    yaxis: { ...PL.yaxis, title: 'Y-BOCS Score / Severity Threshold', range: [0, 40] },
+                    legend: { font: { color: '#cbd5e1' }, orientation: 'h', x: 0, y: 1.12 }
+                }, { responsive: true });
+            }
+
             // 6. Recommended Protocol Card
             if (data.recommended_protocol) {
                 renderRecommendedCard('ocd-recommended-card', data.recommended_protocol);
