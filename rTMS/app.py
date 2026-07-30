@@ -94,7 +94,23 @@ def rtms_nature_publication():
     )
 
 
-# ── Monteris CF Treatment Paradigm Routes ────────────────────────────────────
+@app.route('/api/rtms-ocd-publication', methods=['GET'])
+def rtms_ocd_publication():
+    """Generate and serve the Specialized OCD rTMS Nature publication PDF."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'rtms_ocd.pdf')
+    try:
+        if not os.path.exists(pdf_path):
+            from generate_nature_ocd_pdf import build_pdf
+            build_pdf()
+    except Exception as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 500
+
+    return send_file(
+        pdf_path,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name='rtms_ocd.pdf',
+    )
 
 @app.route('/api/monteris/full-paradigm', methods=['POST'])
 def monteris_full_paradigm():
