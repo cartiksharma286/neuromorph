@@ -26,6 +26,9 @@
                 <button class="nav-btn" data-tab="ocd">
                     <span class="icon">🔄</span> OCD Treatment
                 </button>
+                <button class="nav-btn" data-tab="jaynes">
+                    <span class="icon">⚛️</span> Jaynes-Cummings
+                </button>
                 <button class="nav-btn" data-tab="tremor">
                     <span class="icon">🫀</span> Essential Tremor
                 </button>
@@ -107,6 +110,34 @@
                 </div>
             </div>
 
+            <!-- ── Jaynes-Cummings Predictions Tab ── -->
+            <div id="jc-view" class="hidden">
+                <div class="dashboard-grid" style="margin-bottom:20px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Jaynes-Cummings Neural Excitation Predictions</h3>
+                        <div id="jc-excitation-chart" class="chart-container" style="min-height:320px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Model Characteristics</h3>
+                        <div id="jc-characteristics-card"></div>
+                    </div>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="panel glass-panel">
+                        <h3>Combinatorial Photon-State Weights</h3>
+                        <div id="jc-weights-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Vacuum Rabi Spectrum</h3>
+                        <div id="jc-spectrum-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Treatment Paradigm Snapshot</h3>
+                        <div id="jc-paradigm-card"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ── Treatment Paradigm Tab ── -->
             <div id="paradigm-view" class="hidden">
                 <!-- Condition Selector -->
@@ -152,16 +183,42 @@
             </div>
 
             <!-- ── OCD Treatment Tab ── -->
-            <div id="ocd-view" class="hidden dashboard-grid">
-                <div class="panel glass-panel large-panel">
-                    <h3>Continued Fraction RF Tuning Convergence</h3>
-                    <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Frequency matching for optimal OCD rTMS / DBS protocols.</p>
-                    <div id="ocd-cf-chart" class="chart-container" style="min-height:300px;"></div>
+            <div id="ocd-view" class="hidden">
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel">
+                        <h3>Continued Fraction RF Tuning Convergence</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Frequency matching for optimal OCD rTMS / DBS protocols.</p>
+                        <div id="ocd-cf-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel large-panel">
+                        <h3>Cortical Surface Deep FEA (dACC / ALIC)</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Finite Element Analysis map highlighting spatial V/m convergence.</p>
+                        <div id="ocd-fea-surface" class="chart-container" style="min-height:450px;"></div>
+                    </div>
                 </div>
-                <div class="panel glass-panel large-panel" style="grid-column: span 2;">
-                    <h3>Cortical Surface Deep FEA (dACC / ALIC)</h3>
-                    <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Finite Element Analysis map highlighting spatial V/m convergence.</p>
-                    <div id="ocd-fea-surface" class="chart-container" style="min-height:450px;"></div>
+                <!-- Row 2: Jaynes-Cummings Quantum Rabi Model & Global Optima Convergence -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Jaynes-Cummings Quantum Rabi Excitation Spectrum (H7 Deep TMS Coil)</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">H_JC = ℏ ω_c a† a + ½ ℏ ω_a σ_z + ℏ g (a† σ_- + a σ_+)</p>
+                        <div id="ocd-jc-chart" class="chart-container" style="min-height:320px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Quantum VQC Global Optima Convergence</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Parameter Shift VQE vs. Classical SGD for dACC target focus.</p>
+                        <div id="ocd-convergence-chart" class="chart-container" style="min-height:320px;"></div>
+                    </div>
+                </div>
+                <!-- Row 3: Recommended OCD Protocol & Y-BOCS Trajectory -->
+                <div class="dashboard-grid">
+                    <div class="panel glass-panel">
+                        <h3>Recommended OCD Treatment Protocol</h3>
+                        <div id="ocd-recommended-card"></div>
+                    </div>
+                    <div class="panel glass-panel large-panel">
+                        <h3>Y-BOCS Score Progression (29-Session Trajectory)</h3>
+                        <div id="ocd-ybocs-chart" class="chart-container" style="min-height:280px;"></div>
+                    </div>
                 </div>
             </div>
 
@@ -241,11 +298,24 @@
                         <div id="dlt-attenuation-chart" class="chart-container" style="min-height:300px;"></div>
                     </div>
                 </div>
-                <!-- Row 4: Treatment Optimization + Protocol Cards -->
+                <!-- Row 4: Jaynes-Cummings Model & Global Optima Convergence -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Jaynes-Cummings Quantum Rabi Excitations (Cortical Neurons)</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Neural state excitation probability P_e(t) & vacuum Rabi splitting under rTMS pulse train</p>
+                        <div id="dlt-jc-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Cloud Quantum VQE Global Optima Convergence</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">VQE parameter shift vs classical SGD loss decay trajectory</p>
+                        <div id="dlt-optimization-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                </div>
+                <!-- Row 5: Protocol Cards & Recommended Protocol -->
                 <div class="dashboard-grid" style="margin-bottom:24px;">
                     <div class="panel glass-panel">
-                        <h3>Treatment Optimization Convergence</h3>
-                        <div id="dlt-optimization-chart" class="chart-container" style="min-height:280px;"></div>
+                        <h3>Recommended Quantum-Optimized Protocol</h3>
+                        <div id="dlt-recommended-card"></div>
                     </div>
                     <div class="panel glass-panel large-panel">
                         <h3>Clinical Protocol Stages — Smart Aging Pathway</h3>
@@ -291,6 +361,18 @@
                     <div class="panel glass-panel">
                         <h3>Heat Dissipation by Component</h3>
                         <div id="eq-heat-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                </div>
+                <!-- Row 2: Global Optima Convergence & Recommended Hardware Protocol -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Hardware Stack Global Optima Convergence Trajectory</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">System stability, thermal efficiency, and QPU gate fidelity vs. optimization steps.</p>
+                        <div id="eq-convergence-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Recommended Hardware Pairing Protocol</h3>
+                        <div id="eq-recommended-card"></div>
                     </div>
                 </div>
                 <div id="equipment-list" class="equipment-grid"></div>

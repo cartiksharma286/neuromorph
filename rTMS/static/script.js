@@ -1,3 +1,18 @@
+const PL = {
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor:  'rgba(0,0,0,0)',
+    font:   { color: '#8b949e', family: 'Inter' },
+    margin: { l: 50, r: 30, t: 30, b: 50 },
+    xaxis:  { gridcolor: 'rgba(255,255,255,0.1)' },
+    yaxis:  { gridcolor: 'rgba(255,255,255,0.1)' },
+    scene: {
+        xaxis: { gridcolor: 'rgba(255,255,255,0.1)', backgroundcolor: 'rgba(0,0,0,0)' },
+        yaxis: { gridcolor: 'rgba(255,255,255,0.1)', backgroundcolor: 'rgba(0,0,0,0)' },
+        zaxis: { gridcolor: 'rgba(255,255,255,0.1)', backgroundcolor: 'rgba(0,0,0,0)' },
+        bgcolor: 'rgba(0,0,0,0)'
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── DOM refs ─────────────────────────────────────────────────
@@ -11,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const simulationView  = document.getElementById('simulation-view');
     const tremorView      = document.getElementById('tremor-view');
     const ocdView         = document.getElementById('ocd-view');
+    const jcView          = document.getElementById('jc-view');
     const paradigmView    = document.getElementById('paradigm-view');
     const equipmentView   = document.getElementById('equipment-view');
     const dementiaLtView  = document.getElementById('dementia-lt-view');
@@ -34,26 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let dementiaLtLoaded = false;
     let dementiaDbsLoaded = false;
     let sleepapneaLoaded = false;
+    let jcLoaded         = false;
     let paradigmCache    = {};
 
-    // ── Plotly dark theme ────────────────────────────────────────
-    const PL = {
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor:  'rgba(0,0,0,0)',
-        font:   { color: '#8b949e', family: 'Inter' },
-        margin: { l: 50, r: 30, t: 30, b: 50 },
-        xaxis:  { gridcolor: 'rgba(255,255,255,0.1)' },
-        yaxis:  { gridcolor: 'rgba(255,255,255,0.1)' },
-        scene: {
-            xaxis: { gridcolor: 'rgba(255,255,255,0.1)', backgroundcolor: 'rgba(0,0,0,0)' },
-            yaxis: { gridcolor: 'rgba(255,255,255,0.1)', backgroundcolor: 'rgba(0,0,0,0)' },
-            zaxis: { gridcolor: 'rgba(255,255,255,0.1)', backgroundcolor: 'rgba(0,0,0,0)' },
-            bgcolor: 'rgba(0,0,0,0)'
-        }
-    };
-
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -81,6 +82,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'OCD Treatment Clinical Care',
             subtitle: 'Deep Continued Fractions rTMS & Cortical Surface Deep FEA',
             view:     ocdView, showRunBtn: false
+        },
+        jaynes: {
+            title:    'Jaynes-Cummings rTMS Predictions',
+            subtitle: 'Quantum-neural excitation forecasts and treatment paradigm characteristics',
+            view:     jcView, showRunBtn: false
         },
         paradigm: {
             title:    'Optimal Treatment Paradigm',
@@ -138,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'dementia-lt' && !dementiaLtLoaded)     loadDementiaLt();
             if (tab === 'dementia-dbs' && !dementiaDbsLoaded)   loadDementiaDbs();
             if (tab === 'ocd')                                  loadOcdData();
+            if (tab === 'jaynes' && !jcLoaded)                  loadJaynesCummingsData();
             if (tab === 'sleepapnea')                           runSleepApneaRtms();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
@@ -175,6 +182,69 @@ document.addEventListener('DOMContentLoaded', () => {
             runBtn.style.opacity = '1';
         }
     });
+
+    async function loadJaynesCummingsData() {
+        try {
+            const [jcRes, paradigmRes] = await Promise.all([
+                fetch('/api/jaynes-cummings?omega_c=20&omega_a=20&g=0.75&n_photons=4'),
+                fetch('/api/treatment-paradigm?condition=stroke')
+            ]);
+            const jcPayload = await jcRes.json();
+            const paradigmPayload = await paradigmRes.json();
+            if (jcPayload.status === 'success' && paradigmPayload.status === 'success') {
+                renderJaynesCummingsTab(jcPayload.data, paradigmPayload.data);
+                jcLoaded = true;
+            }
+        } catch (err) {
+            console.error('Jaynes-Cummings tab error:', err);
+        }
+    }
+
+    function renderJaynesCummingsTab(data, paradigmData) {
+        const stage = paradigmData.stage_gates || {};
+        Plotly.newPlot('jc-excitation-chart', [
+            { x: data.time, y: data.p_excited, type: 'scatter', mode: 'lines', line: { color: '#58a6ff', width: 3 }, name: 'Excited State P_e(t)' },
+            { x: data.time, y: data.p_ground, type: 'scatter', mode: 'lines', line: { color: '#8b949e', width: 2, dash: 'dot' }, name: 'Ground State P_g(t)' },
+            { x: data.time, y: data.sigma_z, type: 'scatter', mode: 'lines', line: { color: '#b06ef5', width: 2 }, name: 'Inversion <σ_z>' }
+        ], { ...PL, xaxis: { ...PL.xaxis, title: 'Time (a.u.)' }, yaxis: { ...PL.yaxis, title: 'Probability / inversion' }, legend: { font: { color: '#e6edf3' }, orientation: 'h', x: 0, y: 1.15 } }, { responsive: true });
+
+        const weights = data.combinatorial_weights || [];
+        Plotly.newPlot('jc-weights-chart', [{
+            x: weights.map(w => `State ${w.state}`),
+            y: weights.map(w => w.weight),
+            type: 'bar',
+            marker: { color: weights.map((_, i) => ['#58a6ff', '#b06ef5', '#56d364', '#f1c40f', '#f85149', '#79c0ff'][i % 6]) },
+            name: 'Binomial weight'
+        }], { ...PL, xaxis: { ...PL.xaxis, title: 'Photon state' }, yaxis: { ...PL.yaxis, title: 'Weight' } }, { responsive: true });
+
+        const spectrum = data.vacuum_rabi_spectrum || {};
+        Plotly.newPlot('jc-spectrum-chart', [{
+            x: spectrum.freq_GHz || [], y: spectrum.intensity || [], type: 'scatter', mode: 'lines+markers',
+            line: { color: '#56d364', width: 2.5 }, marker: { size: 6, color: '#238636' }, name: 'Vacuum Rabi Spectrum'
+        }], { ...PL, xaxis: { ...PL.xaxis, title: 'Frequency (GHz)' }, yaxis: { ...PL.yaxis, title: 'Relative intensity' } }, { responsive: true });
+
+        document.getElementById('jc-characteristics-card').innerHTML = `
+            <table class="eq-spec-table" style="margin-top:8px;">
+                <tr><td>Model</td><td>${data.model}</td></tr>
+                <tr><td>Omega C</td><td>${data.omega_c.toFixed(2)} GHz</td></tr>
+                <tr><td>Omega A</td><td>${data.omega_a.toFixed(2)} GHz</td></tr>
+                <tr><td>Coupling</td><td>${data.coupling_g.toFixed(3)}</td></tr>
+                <tr><td>Photon States</td><td>${data.n_photons}</td></tr>
+                <tr><td>Rabi Frequency</td><td>${data.rabi_freq_MHz} MHz</td></tr>
+                <tr><td>Resonance Shift</td><td>${data.neural_analogy.resonance_shift}</td></tr>
+                <tr><td>Coherence Index</td><td>${data.neural_analogy.coherence_index}</td></tr>
+            </table>`;
+
+        document.getElementById('jc-paradigm-card').innerHTML = `
+            <table class="eq-spec-table" style="margin-top:8px;">
+                <tr><td>Condition</td><td>${paradigmData.condition}</td></tr>
+                <tr><td>Metric</td><td>${stage.metric_name || 'Outcome metric'}</td></tr>
+                <tr><td>DBS Target</td><td>${stage.dbs_target || 'N/A'}</td></tr>
+                <tr><td>DBS Frequency</td><td>${stage.dbs_freq_hz || 'N/A'} Hz</td></tr>
+                <tr><td>Gate Thresholds</td><td>${(stage.gate_thresholds || []).join(', ')}</td></tr>
+                <tr><td>Phase Crossings</td><td>${(stage.gate_events || []).map(g => `θ${g.threshold}@${g.session_crossed}`).join(' · ')}</td></tr>
+            </table>`;
+    }
 
     // ── Reset simulation UI ───────────────────────────────────────
     function resetSimUI() {
@@ -253,11 +323,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const res     = await fetch('/api/equipment');
             const payload = await res.json();
             if (payload.status !== 'success') return;
-            renderEquipmentCharts(payload.data);
-            renderEquipmentCards(payload.data);
+            const data = payload.data;
+            renderEquipmentCharts(data.equipment || data);
+            renderEquipmentCards(data.equipment || data);
+            if (data.global_optima_convergence) {
+                renderGlobalOptimaConvergenceChart('eq-convergence-chart', data.global_optima_convergence, 'equipment');
+            }
+            if (data.recommended_protocol) {
+                renderRecommendedCard('eq-recommended-card', data.recommended_protocol);
+            }
             equipmentLoaded = true;
         } catch (err) { console.error('Equipment error:', err); }
     }
+
 
     function renderEquipmentCharts(items) {
         const names = items.map(e => e.name.length > 22 ? e.name.slice(0, 20) + '…' : e.name);
@@ -563,7 +641,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAttenuation(d.bem_simulation.attenuation);
         renderDltOptimization(d.optimization);
         renderProtocolCards(d.protocols);
+        if (d.jaynes_cummings) {
+            renderJaynesCummingsPlot('dlt-jc-chart', d.jaynes_cummings);
+        }
+        if (d.recommended_protocol) {
+            renderRecommendedCard('dlt-recommended-card', d.recommended_protocol);
+        }
     }
+
 
     function renderCognitiveTracking(ct) {
         Plotly.newPlot('dlt-cognitive-chart', [
@@ -902,10 +987,116 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
+            // 3. Jaynes-Cummings Quantum Rabi Excitations
+            if (data.jaynes_cummings) {
+                renderJaynesCummingsPlot('ocd-jc-chart', data.jaynes_cummings);
+            }
+
+            // 4. Quantum VQC Global Optima Convergence
+            if (data.global_optima_convergence) {
+                renderGlobalOptimaConvergenceChart('ocd-convergence-chart', data.global_optima_convergence, 'ocd');
+            }
+
+            // 5. Y-BOCS Trajectory Chart
+            if (data.ybocs_trajectory) {
+                Plotly.newPlot('ocd-ybocs-chart', [{
+                    x: data.ybocs_trajectory.sessions,
+                    y: data.ybocs_trajectory.ybocs_scores,
+                    type: 'scatter', mode: 'lines+markers',
+                    line: { color: '#ff7b72', width: 3, shape: 'spline' },
+                    marker: { size: 7, color: '#da3633' },
+                    fill: 'tozeroy', fillcolor: 'rgba(255,123,114,0.1)',
+                    name: 'Y-BOCS Score'
+                }], {
+                    ...PL,
+                    xaxis: { ...PL.xaxis, title: 'Treatment Session #' },
+                    yaxis: { ...PL.yaxis, title: 'Y-BOCS Severity Score', range: [0, 40] }
+                }, { responsive: true });
+            }
+
+            // 6. Recommended Protocol Card
+            if (data.recommended_protocol) {
+                renderRecommendedCard('ocd-recommended-card', data.recommended_protocol);
+            }
+
         } catch(e) {
             console.error('Error loading OCD data:', e);
         }
     }
+
+    function renderJaynesCummingsPlot(containerId, jc) {
+        if (!jc || !document.getElementById(containerId)) return;
+        Plotly.newPlot(containerId, [
+            {
+                x: jc.time, y: jc.p_excited,
+                type: 'scatter', mode: 'lines',
+                line: { color: '#00f2fe', width: 3 },
+                name: 'Neural Excitation P_e(t)'
+            },
+            {
+                x: jc.time, y: jc.p_ground,
+                type: 'scatter', mode: 'lines',
+                line: { color: '#8b949e', width: 2, dash: 'dot' },
+                name: 'Resting State P_g(t)'
+            },
+            {
+                x: jc.time, y: jc.sigma_z,
+                type: 'scatter', mode: 'lines',
+                line: { color: '#b06ef5', width: 2 },
+                name: 'Inversion <σ_z(t)>'
+            }
+        ], {
+            ...PL,
+            xaxis: { ...PL.xaxis, title: 'Pulse Duration / Time (t)' },
+            yaxis: { ...PL.yaxis, title: 'Quantum Probability / Inversion', range: [-1.1, 1.1] },
+            legend: { font: { color: '#e6edf3' }, orientation: 'h', x: 0, y: 1.15 }
+        }, { responsive: true });
+    }
+
+    function renderGlobalOptimaConvergenceChart(containerId, conv, type) {
+        if (!conv || !document.getElementById(containerId)) return;
+        const iterations = conv.map(c => c.iteration || c.step);
+        const qLoss = conv.map(c => c.quantum_vqe_loss || c.qpu_gate_fidelity_pct);
+        const cLoss = conv.map(c => c.classical_sgd_loss || c.system_stability_pct);
+
+        Plotly.newPlot(containerId, [
+            {
+                x: iterations, y: qLoss,
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#56d364', width: 3 }, marker: { size: 6, color: '#238636' },
+                name: type === 'equipment' ? 'QPU Fidelity (%)' : 'Quantum VQE Loss'
+            },
+            {
+                x: iterations, y: cLoss,
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#ff7b72', width: 2, dash: 'dash' }, marker: { size: 5, color: '#da3633' },
+                name: type === 'equipment' ? 'System Stability (%)' : 'Classical SGD Loss'
+            }
+        ], {
+            ...PL,
+            xaxis: { ...PL.xaxis, title: 'Optimization Step / Iteration' },
+            yaxis: { ...PL.yaxis, title: 'Convergence Loss / Metric' },
+            legend: { font: { color: '#e6edf3' }, orientation: 'h', x: 0, y: 1.15 }
+        }, { responsive: true });
+    }
+
+    function renderRecommendedCard(containerId, rec) {
+        const container = document.getElementById(containerId);
+        if (!container || !rec) return;
+        const rows = Object.entries(rec).map(([k, v]) => {
+            if (k === 'title') return `<div style="font-weight:700;color:#58a6ff;font-size:15px;margin-bottom:8px;">${v}</div>`;
+            const keyLabel = k.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            return `<tr><td style="color:#8b949e;padding:4px 8px;font-size:12px;">${keyLabel}</td><td style="color:#e6edf3;font-weight:600;padding:4px 8px;font-size:12px;">${v}</td></tr>`;
+        }).join('');
+        container.innerHTML = `
+            <div style="background:rgba(35,134,54,0.06);border:1px solid rgba(35,134,54,0.3);border-radius:8px;padding:14px;margin-top:4px;">
+                <table class="eq-spec-table" style="margin:0;width:100%;">
+                    ${rows}
+                </table>
+            </div>
+        `;
+    }
+
 
     // ═════════════════════════════════════════════════════════════════
     //  SLEEP APNEA RTMS NEUROMODULATION SUITE logic

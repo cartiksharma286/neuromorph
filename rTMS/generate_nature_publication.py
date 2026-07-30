@@ -389,7 +389,31 @@ def build_pdf():
         "φ_k  =  1  −  (|f_target − fₖ|/f_target  +  |I_target − Iₖ|/I_target) / 2",
         "Eq. 10 — Iteration fitness; φ_k → 1.0 at convergence", S)
 
-    story.append(Paragraph("2.5  Magnetic Stress–Strain Profile (BEM Surface)", S["subsection"]))
+    story.append(Paragraph("2.5  Combinatorial Photon-State Emission for Neural Excitation", S["subsection"]))
+    story.append(Paragraph(
+        "To extend the ordinary Jaynes–Cummings oscillator into a neural excitation model, we assign "
+        "each cortical photon-emission pathway a combinatorial weight derived from the number of available "
+        "microstate channels. The resulting emission probabilities are then modulated by a finite energy–mass "
+        "equivalence term to capture the effective excitability of each cortical mode.",
+        S["body"]))
+    story += eq(
+        "w_k = \nchoose(N, k) p^k (1-p)^{N-k}",
+        "Eq. 11 — Binomial photon-state weighting over N cortical emission channels", S)
+    story.append(Paragraph(
+        "Here <i>p</i> is the effective coupling probability between the rTMS pulse envelope and the targeted neural mode, and "
+        "<i>k</i> indexes the available photon-state emission pathways. The corresponding energy-equivalent mass is:",
+        S["body"]))
+    story += eq(
+        "m_eq(k) = E_k / c^2,   E_k = ℏω_k + (ℏω_c / N)",
+        "Eq. 12 — Energy–mass equivalence of the k-th emission state", S)
+    story.append(Paragraph(
+        "The neural excitation probability is therefore a weighted sum of Rabi oscillations with this finite gain term:",
+        S["body"]))
+    story += eq(
+        "P_e(t) = Σ_k w_k sin²(Ω_k t / 2) (1 + m_eq(k)/(m_ref c²))",
+        "Eq. 13 — Finite neural excitation probability under combinatorial photon emissions", S)
+
+    story.append(Paragraph("2.6  Magnetic Stress–Strain Profile (BEM Surface)", S["subsection"]))
     story.append(Paragraph(
         "The magnetic stress tensor <b>T</b> at each BEM surface node is computed from "
         "the Maxwell stress tensor in the tissue:",
@@ -402,7 +426,7 @@ def build_pdf():
         S["body"]))
     story += eq(
         "σ_vm  =  √( ½[(T₁₁−T₂₂)²  +  (T₂₂−T₃₃)²  +  (T₃₃−T₁₁)²]  +  3(T₁₂²+T₂₃²+T₃₁²) )",
-        "Eq. 12 — Von Mises magnetic stress; scale bar in the BEM visualisation", S)
+        "Eq. 14 — Von Mises magnetic stress; scale bar in the BEM visualisation", S)
 
     # ── 3. Methods ────────────────────────────────────
     story.append(Paragraph("3. Methods", S["section"]))

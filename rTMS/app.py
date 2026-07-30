@@ -8,7 +8,8 @@ from logic.rtms_engine import (
     get_tremor_clinical_data,
     get_treatment_paradigm,
     get_dementia_longterm_care,
-    get_ocd_fea_simulation
+    get_ocd_fea_simulation,
+    simulate_jaynes_cummings_rtms
 )
 from logic.monteris_cf_treatment import (
     full_treatment_paradigm,
@@ -63,6 +64,35 @@ def dbs_imaging_protocol():
 @app.route('/api/ocd-treatment', methods=['GET'])
 def ocd_treatment():
     return jsonify({"status": "success", "data": get_ocd_fea_simulation()})
+
+@app.route('/api/jaynes-cummings', methods=['GET', 'POST'])
+def jaynes_cummings_route():
+    data = request.get_json(silent=True) or {}
+    omega_c = float(request.args.get('omega_c', data.get('omega_c', 10.0)))
+    omega_a = float(request.args.get('omega_a', data.get('omega_a', 10.0)))
+    g = float(request.args.get('g', data.get('g', 0.5)))
+    n_photons = int(request.args.get('n_photons', data.get('n_photons', 3)))
+    sim = simulate_jaynes_cummings_rtms(omega_c=omega_c, omega_a=omega_a, coupling_g=g, n_photons=n_photons)
+    return jsonify({"status": "success", "data": sim})
+
+@app.route('/api/rtms-nature-publication', methods=['GET'])
+def rtms_nature_publication():
+    """Generate and serve the RTMS Nature publication PDF."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'rTMS_Nature_Publication.pdf')
+    try:
+        if not os.path.exists(pdf_path):
+            from generate_nature_publication import build_pdf
+            build_pdf()
+    except Exception as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 500
+
+    return send_file(
+        pdf_path,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name='rTMS_Nature_Publication.pdf',
+    )
+
 
 # ── Monteris CF Treatment Paradigm Routes ────────────────────────────────────
 
@@ -280,4 +310,8 @@ def api_sleep_apnea_rtms():
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=5002)
+    args = parser.parse_args()
+    app.run(debug=True, host='0.0.0.0', port=args.port)
