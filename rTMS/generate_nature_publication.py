@@ -169,53 +169,55 @@ def eq(text, label, styles):
 # ─────────────────────────────────────────────────────
 def make_protocol_table():
     data = [
-        ["Parameter", "Stroke", "Dementia (AD)", "Essential Tremor"],
-        ["Target Region", "M1 Motor Cortex", "DLPFC (bilateral)", "Cerebellum + M1"],
-        ["Frequency (Hz)", "10 (excitatory)", "20 (excitatory)", "1 (inhibitory)"],
-        ["Intensity (% MSO)", "80", "100", "70"],
-        ["Pulses / Session", "2000", "3000", "1200"],
-        ["Sessions", "15", "20", "10"],
-        ["Coil", "Figure-8 (70mm)", "H7 deep TMS", "Figure-8 (70mm)"],
-        ["Optimal FEA Depth (mm)", "18–25", "45–60", "22–30"],
-        ["BEM E-Field Peak (V/m)", "142 ± 18", "89 ± 12", "121 ± 15"],
-        ["Optimization Fitness", "0.987 ± 0.004", "0.971 ± 0.008", "0.994 ± 0.002"],
+        ["Parameter", "Stroke", "Dementia (AD)", "OCD Treatment", "Essential Tremor"],
+        ["Target Region", "M1 Motor Cortex", "DLPFC (bilateral)", "mPFC & dACC", "Cerebellum + M1"],
+        ["Frequency (Hz)", "10 (excitatory)", "20 (excitatory)", "20 (excitatory)", "1 (inhibitory)"],
+        ["Intensity (% MSO)", "80", "100", "100 (RMT)", "70"],
+        ["Pulses / Session", "2000", "3000", "2000", "1200"],
+        ["Sessions", "15", "20", "29", "10"],
+        ["Coil", "Figure-8 (70mm)", "H7 deep TMS", "H7 Deep TMS", "Figure-8 (70mm)"],
+        ["Optimal FEA Depth (mm)", "18–25", "45–60", "45–55", "22–30"],
+        ["BEM E-Field Peak (V/m)", "142 ± 18", "89 ± 12", "135 ± 14", "121 ± 15"],
+        ["Optimization Fitness", "0.987 ± 0.004", "0.971 ± 0.008", "0.997 ± 0.002", "0.994 ± 0.002"],
     ]
     style = TableStyle([
         ("BACKGROUND",   (0, 0), (-1, 0),  NATURE_RED),
         ("TEXTCOLOR",    (0, 0), (-1, 0),  colors.white),
         ("FONTNAME",     (0, 0), (-1, 0),  "Helvetica-Bold"),
-        ("FONTSIZE",     (0, 0), (-1, 0),  8),
+        ("FONTSIZE",     (0, 0), (-1, 0),  7.5),
         ("ALIGN",        (0, 0), (-1, -1), "CENTER"),
         ("FONTNAME",     (0, 1), (0, -1),  "Helvetica-Bold"),
-        ("FONTSIZE",     (0, 1), (-1, -1), 8),
+        ("FONTSIZE",     (0, 1), (-1, -1), 7.5),
         ("BACKGROUND",   (0, 1), (-1, -1), colors.white),
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, LIGHT_GREY]),
         ("GRID",         (0, 0), (-1, -1), 0.3, MID_GREY),
-        ("TOPPADDING",   (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING",(0, 0), (-1, -1), 4),
+        ("TOPPADDING",   (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 3),
     ])
-    return Table(data, colWidths=[3.8*cm, 3.5*cm, 3.5*cm, 3.5*cm], style=style)
+    return Table(data, colWidths=[3.2*cm, 2.8*cm, 2.8*cm, 2.8*cm, 2.8*cm], style=style)
 
 def make_evidence_table():
     data = [
-        ["Condition", "Target", "Evidence", "TETRAS Δ", "Motor Score Δ"],
-        ["Essential Tremor", "Cerebellum", "Level A", "−18.4 (p<0.001)", "−52%"],
-        ["Essential Tremor", "M1 Cortex",  "Level B", "−12.1 (p=0.003)", "−38%"],
-        ["Stroke",           "M1 Cortex",  "Level A", "N/A",             "−44%"],
-        ["Dementia (AD)",    "DLPFC",      "Level B", "N/A",             "+31% (ADAS-Cog)"],
+        ["Condition", "Target", "Evidence", "TETRAS / Y-BOCS Δ", "Improvement Δ / Out."],
+        ["OCD Treatment",    "mPFC & dACC", "Level A", "−22.0 (Y-BOCS, p<0.001)", "−64.7% (6-Mo Traj.)"],
+        ["Essential Tremor", "Cerebellum", "Level A", "−18.4 (TETRAS, p<0.001)","−52%"],
+        ["Essential Tremor", "M1 Cortex",  "Level B", "−12.1 (TETRAS, p=0.003)","−38%"],
+        ["Stroke",           "M1 Cortex",  "Level A", "N/A",                    "−44% (Motor Δ)"],
+        ["Dementia (AD)",    "DLPFC",      "Level B", "N/A",                    "+31% (ADAS-Cog)"],
     ]
     style = TableStyle([
         ("BACKGROUND",   (0, 0), (-1, 0), NATURE_BLUE),
         ("TEXTCOLOR",    (0, 0), (-1, 0), colors.white),
         ("FONTNAME",     (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE",     (0, 0), (-1,-1), 8),
+        ("FONTSIZE",     (0, 0), (-1,-1), 7.5),
         ("ALIGN",        (0, 0), (-1,-1), "CENTER"),
         ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.white, LIGHT_GREY]),
         ("GRID",         (0, 0), (-1,-1), 0.3, MID_GREY),
-        ("TOPPADDING",   (0, 0), (-1,-1), 4),
-        ("BOTTOMPADDING",(0, 0), (-1,-1), 4),
+        ("TOPPADDING",   (0, 0), (-1,-1), 3),
+        ("BOTTOMPADDING",(0, 0), (-1,-1), 3),
     ])
-    return Table(data, colWidths=[3.6*cm, 3.2*cm, 2.4*cm, 3.6*cm, 3.5*cm], style=style)
+    return Table(data, colWidths=[3.0*cm, 2.8*cm, 2.0*cm, 3.8*cm, 3.2*cm], style=style)
+
 
 # ─────────────────────────────────────────────────────
 # Build document
