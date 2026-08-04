@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quantum NGS Recommendation Studio</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="background-glow glow-one"></div>
+    <div class="background-glow glow-two"></div>
+    <div class="background-grid"></div>
+
+    <main class="shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Next-generation sequencing • quantum-inspired intelligence • LLM-ready guidance</p>
+          <h1>Recommendation engine for modern NGS pipelines.</h1>
+          <p class="lead">
+            Blend wet-lab clinician reasoning, bioinformatics constraints, and biology-driven interpretation into a stunning, adaptive workflow blueprint.
+          </p>
+          <div class="hero-stats">
+            <article>
+              <strong>4 expert lenses</strong>
+              <span>clinical • wet-lab • compute • biology</span>
+            </article>
+            <article>
+              <strong>Quantum coherence</strong>
+              <span>adaptive confidence scoring</span>
+            </article>
+            <article>
+              <strong>LLM rationale</strong>
+              <span>human-readable next steps</span>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <form id="recommendationForm">
+          <div class="form-grid">
+            <label class="card">
+              <span>Primary goal</span>
+              <select name="purpose">
+                <option value="clinical">Clinical decision support</option>
+                <option value="discovery">Discovery research</option>
+                <option value="monitoring">Residual disease monitoring</option>
+              </select>
+            </label>
+
+            <label class="card">
+              <span>Sample type</span>
+              <select name="sample">
+                <option value="blood">Blood</option>
+                <option value="tissue">Fresh tissue</option>
+                <option value="ffpe">FFPE</option>
+                <option value="saliva">Saliva</option>
+              </select>
+            </label>
+
+            <label class="card">
+              <span>Turnaround urgency</span>
+              <select name="urgency">
+                <option value="urgent">Urgent</option>
+                <option value="standard">Standard</option>
+                <option value="deep">Deep exploratory</option>
+              </select>
+            </label>
+
+            <label class="card">
+              <span>Sensitivity target</span>
+              <select name="sensitivity">
+                <option value="high">High sensitivity</option>
+                <option value="balanced">Balanced</option>
+                <option value="broad">Broad discovery</option>
+              </select>
+            </label>
+
+            <label class="card">
+              <span>Assay complexity</span>
+              <select name="complexity">
+                <option value="oncology">Oncology panel</option>
+                <option value="rna">RNA expression</option>
+                <option value="metagenomic">Metagenomics</option>
+                <option value="genome">Whole genome</option>
+              </select>
+            </label>
+
+            <label class="card">
+              <span>Team emphasis</span>
+              <select name="team">
+                <option value="hybrid">Hybrid team</option>
+                <option value="wetlab">Wet-lab centric</option>
+                <option value="bioinformatics">Bioinformatics centric</option>
+              </select>
+            </label>
+          </div>
+
+          <button type="submit">Generate recommendation</button>
+        </form>
+
+        <section id="resultPanel" class="result-panel" aria-live="polite">
+          <div class="placeholder">
+            <h2>Launch a pipeline blueprint</h2>
+            <p>Your response will synthesize an adaptive recommendation using a quantum-inspired scoring field and an LLM-friendly rationale.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
