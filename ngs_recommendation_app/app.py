@@ -116,8 +116,44 @@ def build_recommendation(payload):
     else:
         score += 0.06
 
-    coherence = round(min(0.99, 0.68 + score * 0.28), 2)
-    entropy = round(max(0.1, 0.95 - score * 0.35), 2)
+    # Feynman Path Integral-based optimization for supervised geodesic workflow prediction
+    # We define a discrete set of path variations representing pathway alignments.
+    # The propagation amplitude K along a geodesic path x_t is modeled by a sum over discrete phase actions:
+    # S[x] = Sum_t { (x_t - x_{t-1})^2 / (2 * delta_t) - V(x_t) }
+    # Amplitude K = Sum_{paths} exp(i * S[x] / hbar). The absolute amplitude is mapped to a path-resolved coherence score.
+    
+    import math
+    import cmath
+
+    # Model 3 discrete checkpoint states in the NGS geodesic pathway transition
+    # Checkpoint values depend on purpose, urgency, and complexity inputs
+    x_start = 1.0 if purpose == "clinical" else 0.8
+    x_end = 1.2 if complexity == "oncology" else (1.4 if complexity == "metagenomic" else 1.0)
+    
+    # Compute the amplitude by integrating (summing) over intermediate pipeline paths
+    paths = [0.9, 1.0, 1.1, 1.3]
+    h_bar = 0.65
+    delta_t = 0.5
+    total_amplitude = 0.0 + 0.0j
+
+    for val in paths:
+        # Action S for the path x_start -> val -> x_end
+        kinetic_1 = ((val - x_start) ** 2) / (2 * delta_t)
+        kinetic_2 = ((x_end - val) ** 2) / (2 * delta_t)
+        # Potential boundary constraint based on urgency & sensitivity
+        potential = 0.2 if urgency == "urgent" else 0.08
+        if sensitivity == "high":
+            potential += 0.15
+        
+        action = kinetic_1 + kinetic_2 - potential
+        # Phase amplitude exp(i * S / hbar)
+        phase = cmath.exp(1j * action / h_bar)
+        total_amplitude += phase
+
+    amplitude_magnitude = abs(total_amplitude) / len(paths)
+    # Mapping amplitude magnitude to normalized path coherence and entropy
+    coherence = round(min(0.99, max(0.40, 0.65 + amplitude_magnitude * 0.35)), 2)
+    entropy = round(max(0.01, min(0.90, 1.15 - coherence - score * 0.15)), 2)
 
     if purpose == "clinical" and urgency == "urgent":
         workflow = "Rapid targeted oncology panel with UMI-aware QC"
