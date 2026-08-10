@@ -10,8 +10,8 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar glass-panel">
+        <!-- Top Navigation Bar (row-wise tabs) -->
+        <header class="topbar glass-panel">
             <div class="logo">
                 <div class="logo-icon">M</div>
                 <h2>NeuroMorph rTMS</h2>
@@ -47,17 +47,20 @@
                 <button class="nav-btn" data-tab="sleepapnea">
                     <span class="icon">😴</span> Sleep Apnea rTMS
                 </button>
+                <button class="nav-btn" data-tab="nash-geodesic">
+                    <span class="icon">📐</span> Nash Equilibria Registration
+                </button>
             </nav>
-            <div style="padding:0 24px; margin-top:20px;">
-                <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px; width:100%; box-sizing:border-box;">
+            <div class="topbar-actions">
+                <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
                     <span>📥 Download Nature Paper</span>
                 </a>
+                <div class="server-status">
+                    <div class="status-indicator"></div>
+                    <span>Connected to Google Cloud</span>
+                </div>
             </div>
-            <div class="server-status">
-                <div class="status-indicator"></div>
-                <span>Connected to Google Cloud</span>
-            </div>
-        </aside>
+        </header>
 
         <!-- Main Content Area -->
         <main class="main-content">
@@ -558,8 +561,77 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ── Nash / Geodesic Registration Tab ── -->
+            <div id="nash-geodesic-view" class="hidden">
+                <div style="padding:0 0 16px 0;">
+                    <a href="/api/nature-registration-preprint" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px;">
+                        <span>📥 Download Nature Registration Preprint (PDF)</span>
+                    </a>
+                </div>
+                <!-- Row 1: Nash Equilibrium Utility Convergence + Equilibrium Density -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Nash Equilibrium Utility Convergence (Laser · MRI · CT)</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Multi-player non-cooperative registration game: U_i(T_i*, T_-i*) ≥ U_i(T_i, T_-i*)</p>
+                        <div id="ng-nash-utility-chart" class="chart-container" style="min-height:320px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Equilibrium Mixed-Strategy Distribution</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Converged transform-perturbation density at Nash equilibrium.</p>
+                        <div id="ng-nash-density-chart" class="chart-container" style="min-height:320px;"></div>
+                    </div>
+                </div>
+                <!-- Row 2: Eigen Spectra + Nash Gap -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Laplace-Beltrami Eigen Spectra (Δ_M ψ = -λψ)</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Coordinate-invariant shape descriptors per modality surface mesh.</p>
+                        <div id="ng-eigen-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Nash Gap Decay</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Maximum unilateral utility improvement remaining per iteration.</p>
+                        <div id="ng-nash-gap-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                </div>
+                <!-- Row 3: Cauchy-Schwarz Bounds -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel" style="grid-column: span 3;">
+                        <h3>Cauchy-Schwarz Convergence Bounds — |⟨f,g⟩|² ≤ ⟨f,f⟩⟨g,g⟩</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Cross-modality correlation ratio bounded in [0,1]; ratio → 1 indicates co-linear Hilbert-space alignment.</p>
+                        <div id="ng-cauchy-schwarz-chart" class="chart-container" style="min-height:320px;"></div>
+                    </div>
+                </div>
+                <!-- Row 4: Geodesic Mapping -->
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Riemannian Geodesic Mapping (Cross-Modality Alignment Path)</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">d²xᵅ/dt² + Γᵅ_βγ (dxᵝ/dt)(dxᵞ/dt) = 0</p>
+                        <div id="ng-geodesic-chart" class="chart-container" style="min-height:420px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Registration Fidelity</h3>
+                        <div id="ng-fidelity-card"></div>
+                    </div>
+                </div>
+                <!-- Row 5: Longitudinal Registration Tracking -->
+                <div class="dashboard-grid">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Longitudinal Registration Accuracy (12-Session Follow-up)</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Repeated clinical re-registration fidelity tracked across sequential visits against the 1.0 mm clinical tolerance threshold.</p>
+                        <div id="ng-longitudinal-error-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Per-Session Convergence Quality</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Final Nash gap &amp; Cauchy-Schwarz ratio achieved at convergence, per session.</p>
+                        <div id="ng-longitudinal-quality-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+
 </body>
 </html>

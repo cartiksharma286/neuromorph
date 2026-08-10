@@ -21,6 +21,7 @@ from logic.monteris_cf_treatment import (
     risk_stratification,
 )
 from logic.dbs_statistical_manifold import generate_dbs_treatment_protocol
+from logic.nash_geodesic_registration import generate_nash_geodesic_registration
 
 app = Flask(__name__)
 CORS(app)
@@ -74,6 +75,28 @@ def jaynes_cummings_route():
     n_photons = int(request.args.get('n_photons', data.get('n_photons', 3)))
     sim = simulate_jaynes_cummings_rtms(omega_c=omega_c, omega_a=omega_a, coupling_g=g, n_photons=n_photons)
     return jsonify({"status": "success", "data": sim})
+
+@app.route('/api/nash-geodesic-registration', methods=['GET'])
+def nash_geodesic_registration():
+    return jsonify({"status": "success", "data": generate_nash_geodesic_registration()})
+
+@app.route('/api/nature-registration-preprint', methods=['GET'])
+def nature_registration_preprint():
+    """Generate and serve the Laser-MR-CT registration Nature preprint PDF."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'SEQ_Nature_Laser_MR_CT_Registration.pdf')
+    try:
+        if not os.path.exists(pdf_path):
+            from generate_nature_registration_preprint import build_pdf
+            build_pdf()
+    except Exception as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 500
+
+    return send_file(
+        pdf_path,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name='SEQ_Nature_Laser_MR_CT_Registration.pdf',
+    )
 
 @app.route('/api/rtms-nature-publication', methods=['GET'])
 def rtms_nature_publication():

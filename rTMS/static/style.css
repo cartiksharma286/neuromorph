@@ -30,6 +30,7 @@ body {
 
 .app-container {
     display: flex;
+    flex-direction: column;
     height: 100vh;
 }
 
@@ -42,21 +43,22 @@ body {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
-/* Sidebar */
-.sidebar {
-    width: 280px;
+/* Top Navigation Bar (row-wise tabs) */
+.topbar {
+    width: 100%;
     background: var(--sidebar-bg);
     display: flex;
-    flex-direction: column;
-    padding: 24px;
-    border-right: 1px solid var(--glass-border);
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--glass-border);
 }
 
 .logo {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 48px;
 }
 
 .logo-icon {
@@ -72,27 +74,36 @@ body {
     box-shadow: 0 0 15px var(--accent-glow);
 }
 
-.sidebar nav {
-    flex-grow: 1;
+.topbar nav {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: auto;
 }
 
 .nav-btn {
     background: transparent;
     border: 1px solid transparent;
     color: var(--text-secondary);
-    padding: 14px 20px;
+    padding: 10px 16px;
     border-radius: 8px;
     text-align: left;
-    font-size: 16px;
+    font-size: 13.5px;
     font-family: inherit;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    white-space: nowrap;
 }
 
 .nav-btn:hover {
@@ -104,7 +115,7 @@ body {
     background: rgba(88, 166, 255, 0.1);
     color: var(--primary-color);
     border: 1px solid var(--primary-color);
-    box-shadow: inset 4px 0 0 var(--primary-color);
+    box-shadow: inset 0 -3px 0 var(--primary-color);
 }
 
 .server-status {
@@ -113,8 +124,7 @@ body {
     gap: 10px;
     font-size: 13px;
     color: var(--text-secondary);
-    padding-top: 20px;
-    border-top: 1px solid var(--glass-border);
+    white-space: nowrap;
 }
 
 .status-indicator {

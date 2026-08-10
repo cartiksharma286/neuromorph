@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dementiaLtView  = document.getElementById('dementia-lt-view');
     const dementiaDbsView = document.getElementById('dementia-dbs-view');
     const sleepapneaView  = document.getElementById('sleepapnea-view');
+    const nashGeodesicView = document.getElementById('nash-geodesic-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -51,10 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let dementiaDbsLoaded = false;
     let sleepapneaLoaded = false;
     let jcLoaded         = false;
+    let nashGeodesicLoaded = false;
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, nashGeodesicView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -112,6 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Sleep Apnea Neuromodulation Care',
             subtitle: 'Adaptive Closed-loop rTMS & Statistical Continued Fraction Phase Synchronization',
             view:     sleepapneaView, showRunBtn: false
+        },
+        'nash-geodesic': {
+            title:    'Nash / Geodesic Registration',
+            subtitle: 'Laser-MRI-CT Registration · Eigen Spectra · Cauchy-Schwarz Convergence Bounds',
+            view:     nashGeodesicView, showRunBtn: false
         }
     };
 
@@ -146,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'ocd')                                  loadOcdData();
             if (tab === 'jaynes' && !jcLoaded)                  loadJaynesCummingsData();
             if (tab === 'sleepapnea')                           runSleepApneaRtms();
+            if (tab === 'nash-geodesic' && !nashGeodesicLoaded)   loadNashGeodesicRegistration();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -914,6 +922,100 @@ document.addEventListener('DOMContentLoaded', () => {
             dementiaDbsLoaded = true;
         } catch (e) {
             console.error('Failed to load Dementia DBS data:', e);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  NASH / GEODESIC REGISTRATION TAB
+    // ═══════════════════════════════════════════════════════════════
+    async function loadNashGeodesicRegistration() {
+        try {
+            const res     = await fetch('/api/nash-geodesic-registration');
+            const payload = await res.json();
+            if (payload.status !== 'success') return;
+            renderNashGeodesicTab(payload.data);
+            nashGeodesicLoaded = true;
+        } catch (err) {
+            console.error('Nash/Geodesic registration error:', err);
+        }
+    }
+
+    function renderNashGeodesicTab(data) {
+        const nash = data.nash;
+        const eig  = data.eigen_spectra;
+        const cs   = data.cauchy_schwarz;
+        const geo  = data.geodesic;
+
+        // Nash equilibrium utility convergence
+        Plotly.newPlot('ng-nash-utility-chart', [
+            { x: nash.iterations, y: nash.utility_laser, type: 'scatter', mode: 'lines', name: 'Laser Scan U', line: { color: '#58a6ff', width: 2.5 } },
+            { x: nash.iterations, y: nash.utility_mri,   type: 'scatter', mode: 'lines', name: 'MRI U',        line: { color: '#b06ef5', width: 2.5 } },
+            { x: nash.iterations, y: nash.utility_ct,    type: 'scatter', mode: 'lines', name: 'CT U',         line: { color: '#56d364', width: 2.5 } }
+        ], { ...PL, xaxis: { ...PL.xaxis, title: 'Iteration' }, yaxis: { ...PL.yaxis, title: 'Utility (Alignment Fidelity)' },
+             legend: { font: { color: '#e6edf3' }, orientation: 'h', x: 0, y: 1.15 } }, { responsive: true });
+
+        // Equilibrium mixed-strategy density
+        Plotly.newPlot('ng-nash-density-chart', [{
+            x: nash.equilibrium_bins, y: nash.equilibrium_density, type: 'scatter', mode: 'lines',
+            fill: 'tozeroy', line: { color: '#f1c40f', width: 2 }, name: 'Equilibrium Density'
+        }], { ...PL, xaxis: { ...PL.xaxis, title: 'Transform Perturbation' }, yaxis: { ...PL.yaxis, title: 'Probability Density' } }, { responsive: true });
+
+        // Laplace-Beltrami eigen spectra
+        Plotly.newPlot('ng-eigen-chart', [
+            { x: eig.modes, y: eig.eigenvalues_laser, type: 'scatter', mode: 'lines+markers', name: 'Laser Scan λ', line: { color: '#58a6ff' }, marker: { size: 5 } },
+            { x: eig.modes, y: eig.eigenvalues_mri,   type: 'scatter', mode: 'lines+markers', name: 'MRI λ',        line: { color: '#b06ef5' }, marker: { size: 5 } },
+            { x: eig.modes, y: eig.eigenvalues_ct,    type: 'scatter', mode: 'lines+markers', name: 'CT λ',         line: { color: '#56d364' }, marker: { size: 5 } }
+        ], { ...PL, xaxis: { ...PL.xaxis, title: 'Mode index' }, yaxis: { ...PL.yaxis, title: 'Eigenvalue λ (rad/mm)' },
+             legend: { font: { color: '#e6edf3' } } }, { responsive: true });
+
+        // Nash gap decay
+        Plotly.newPlot('ng-nash-gap-chart', [{
+            x: nash.iterations, y: nash.nash_gap, type: 'scatter', mode: 'lines', fill: 'tozeroy',
+            line: { color: '#f85149', width: 2.5 }, name: 'Nash Gap'
+        }], { ...PL, xaxis: { ...PL.xaxis, title: 'Iteration' }, yaxis: { ...PL.yaxis, title: 'Max Unilateral Gain' } }, { responsive: true });
+
+        // Cauchy-Schwarz bounds
+        Plotly.newPlot('ng-cauchy-schwarz-chart', [
+            { x: cs.iterations, y: cs.ratio_laser_mri, type: 'scatter', mode: 'lines', name: 'Laser↔MRI ratio', line: { color: '#58a6ff', width: 2.5 } },
+            { x: cs.iterations, y: cs.ratio_mri_ct,    type: 'scatter', mode: 'lines', name: 'MRI↔CT ratio',    line: { color: '#b06ef5', width: 2.5 } },
+            { x: cs.iterations, y: cs.ratio_laser_ct,  type: 'scatter', mode: 'lines', name: 'Laser↔CT ratio',  line: { color: '#56d364', width: 2.5 } },
+            { x: cs.iterations, y: cs.upper_bound,     type: 'scatter', mode: 'lines', name: 'Cauchy-Schwarz upper bound (1.0)', line: { color: '#f85149', width: 1.5, dash: 'dash' } }
+        ], { ...PL, xaxis: { ...PL.xaxis, title: 'Iteration' }, yaxis: { ...PL.yaxis, title: '|⟨f,g⟩|² / (⟨f,f⟩⟨g,g⟩)', range: [0, 1.05] },
+             legend: { font: { color: '#e6edf3' }, orientation: 'h', x: 0, y: 1.15 } }, { responsive: true });
+
+        // Geodesic mapping path
+        Plotly.newPlot('ng-geodesic-chart', [
+            { x: geo.x, y: geo.y, z: geo.z, type: 'scatter3d', mode: 'lines', line: { color: '#58a6ff', width: 5 }, name: 'Geodesic Path' },
+            { x: geo.landmark_x, y: geo.landmark_y, z: geo.landmark_z, type: 'scatter3d', mode: 'markers', marker: { size: 5, color: '#f1c40f' }, name: 'Registered Landmarks' }
+        ], { ...PL, margin: { l: 0, r: 0, t: 0, b: 0 }, legend: { font: { color: '#e6edf3' } } }, { responsive: true });
+
+        document.getElementById('ng-fidelity-card').innerHTML = `
+            <table class="eq-spec-table" style="margin-top:8px;">
+                <tr><td>Max Geodesic Error</td><td>${geo.max_geodesic_error_mm.toFixed(2)} mm</td></tr>
+                <tr><td>Mean Geodesic Error</td><td>${geo.mean_geodesic_error_mm.toFixed(2)} mm</td></tr>
+                <tr><td>Final Nash Gap</td><td>${nash.nash_gap[nash.nash_gap.length - 1].toFixed(4)}</td></tr>
+                <tr><td>Final Laser↔MRI C-S Ratio</td><td>${cs.ratio_laser_mri[cs.ratio_laser_mri.length - 1].toFixed(4)}</td></tr>
+                <tr><td>Final MRI↔CT C-S Ratio</td><td>${cs.ratio_mri_ct[cs.ratio_mri_ct.length - 1].toFixed(4)}</td></tr>
+                <tr><td>Final Laser↔CT C-S Ratio</td><td>${cs.ratio_laser_ct[cs.ratio_laser_ct.length - 1].toFixed(4)}</td></tr>
+            </table>`;
+
+        // Longitudinal registration tracking across clinical sessions
+        const lt = data.longitudinal;
+        if (lt) {
+            Plotly.newPlot('ng-longitudinal-error-chart', [
+                { x: lt.sessions, y: lt.mean_error_mm, type: 'scatter', mode: 'lines+markers', name: 'Mean Error (mm)', line: { color: '#58a6ff', width: 2.5 }, marker: { size: 6 } },
+                { x: lt.sessions, y: lt.max_error_mm,  type: 'scatter', mode: 'lines+markers', name: 'Max Error (mm)',  line: { color: '#f1c40f', width: 2 }, marker: { size: 5 } },
+                { x: lt.sessions, y: lt.clinical_tolerance_mm, type: 'scatter', mode: 'lines', name: 'Clinical Tolerance (1.0 mm)', line: { color: '#f85149', width: 1.5, dash: 'dash' } }
+            ], { ...PL, xaxis: { ...PL.xaxis, title: 'Clinical Session' }, yaxis: { ...PL.yaxis, title: 'Registration Error (mm)' },
+                 legend: { font: { color: '#e6edf3' }, orientation: 'h', x: 0, y: 1.15 } }, { responsive: true });
+
+            Plotly.newPlot('ng-longitudinal-quality-chart', [
+                { x: lt.sessions, y: lt.nash_gap_final, type: 'bar', name: 'Final Nash Gap', marker: { color: '#f85149' }, yaxis: 'y' },
+                { x: lt.sessions, y: lt.cauchy_schwarz_final, type: 'scatter', mode: 'lines+markers', name: 'Final C-S Ratio', line: { color: '#56d364', width: 2.5 }, marker: { size: 6 }, yaxis: 'y2' }
+            ], { ...PL, xaxis: { ...PL.xaxis, title: 'Clinical Session' },
+                 yaxis: { ...PL.yaxis, title: 'Nash Gap' },
+                 yaxis2: { title: 'Cauchy-Schwarz Ratio', overlaying: 'y', side: 'right', range: [0, 1.05], gridcolor: 'rgba(255,255,255,0.05)' },
+                 legend: { font: { color: '#e6edf3' }, orientation: 'h', x: 0, y: 1.15 } }, { responsive: true });
         }
     }
 
