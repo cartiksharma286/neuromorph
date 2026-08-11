@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NeuroVista AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="bg-orb orb-one"></div>
+      <div class="bg-orb orb-two"></div>
+      <div class="bg-orb orb-three"></div>
+
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">N</div>
+          <div>
+            <div class="brand-name">NeuroVista AI</div>
+            <div class="brand-subtitle">LangChain assistant</div>
+          </div>
+        </div>
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          <span id="status-label">Ready</span>
+        </div>
+      </header>
+
+      <main class="app-shell">
+        <section class="hero-panel">
+          <div class="eyebrow">Smart answers. Clean visuals.</div>
+          <h1>Ask anything. Get grounded, helpful answers.</h1>
+          <p>
+            A responsive LangChain-powered assistant built for normal questions,
+            decision support, and clear visual reasoning.
+          </p>
+
+          <div class="sample-questions">
+            <button class="chip">What is the best way to plan a project?</button>
+            <button class="chip">Explain quantum computing in simple terms</button>
+            <button class="chip">Help me summarize this research idea</button>
+          </div>
+        </section>
+
+        <section class="chat-panel">
+          <div class="chat-window" id="chat-window">
+            <div class="message bot">
+              <div class="avatar">AI</div>
+              <div class="bubble">
+                Hello! I’m ready to answer your questions. Ask me anything and I’ll respond clearly.
+              </div>
+            </div>
+          </div>
+
+          <form id="chat-form" class="composer">
+            <textarea id="question" rows="1" placeholder="Type your question here..."></textarea>
+            <button type="submit">Send</button>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>
