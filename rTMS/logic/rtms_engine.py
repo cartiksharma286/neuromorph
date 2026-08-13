@@ -3,72 +3,6 @@ import math
 import time
 
 
-def simulate_jaynes_cummings_rtms(omega_c=10.0, omega_a=10.0, coupling_g=0.5, n_photons=3):
-    """Return a compact Jaynes-Cummings-inspired neural excitation model for rTMS."""
-    t = np.linspace(0.0, 1.0, 80)
-    detuning = omega_a - omega_c
-    rabi = np.sqrt(detuning**2 + 4 * (coupling_g**2) * (np.arange(n_photons + 1) + 1))
-
-    poisson = np.array([
-        ((n_photons**n) * np.exp(-n_photons)) / math.factorial(n)
-        for n in range(n_photons + 1)
-    ], dtype=float)
-    poisson = poisson / poisson.sum()
-
-    p_excited = []
-    p_ground = []
-    sigma_z = []
-    for ti in t:
-        prob = 0.0
-        for idx, n in enumerate(range(n_photons + 1)):
-            p_n = (4 * (coupling_g**2) * (n + 1) / (rabi[idx]**2 + 1e-12)) * (np.sin(rabi[idx] * ti / 2.0) ** 2)
-            prob += poisson[idx] * p_n
-        prob = float(np.clip(prob, 0.0, 1.0))
-        p_excited.append(prob)
-        p_ground.append(1.0 - prob)
-        sigma_z.append(prob - (1.0 - prob))
-
-    combinatorial_weights = []
-    for state in range(n_photons):
-        coeff = math.factorial(n_photons) // (math.factorial(state) * math.factorial(n_photons - state))
-        weight = coeff * (0.55**state) * (0.45**(n_photons - state))
-        combinatorial_weights.append({
-            "state": state,
-            "weight": round(float(weight), 4),
-            "binomial_coefficient": coeff,
-        })
-
-    spectrum_freq = np.linspace(8.0, 12.0, 80)
-    spectrum_intensity = []
-    for freq in spectrum_freq:
-        lorentz = (coupling_g / ((freq - (omega_c - coupling_g))**2 + coupling_g**2)) + (coupling_g / ((freq - (omega_c + coupling_g))**2 + coupling_g**2))
-        spectrum_intensity.append(float(lorentz / max(lorentz, 1e-9)))
-
-    return {
-        "model": "Jaynes-Cummings rTMS Neural Excitation",
-        "omega_c": float(omega_c),
-        "omega_a": float(omega_a),
-        "coupling_g": float(coupling_g),
-        "n_photons": int(n_photons),
-        "time": [round(float(v), 4) for v in t],
-        "p_excited": [round(float(v), 4) for v in p_excited],
-        "p_ground": [round(float(v), 4) for v in p_ground],
-        "sigma_z": [round(float(v), 4) for v in sigma_z],
-        "combinatorial_weights": combinatorial_weights,
-        "vacuum_rabi_spectrum": {
-            "freq_GHz": [round(float(v), 4) for v in spectrum_freq],
-            "intensity": [round(float(v), 4) for v in spectrum_intensity],
-        },
-        "rabi_freq_MHz": round(float(np.max(rabi) * 1000.0), 2),
-        "neural_analogy": {
-            "resonance_shift": round(float(abs(omega_a - omega_c) / max(abs(omega_c), 1.0) + coupling_g), 4),
-            "phase_locking": round(float(coupling_g / (abs(omega_a - omega_c) + 0.1)), 4),
-            "coherence_index": round(float(np.mean(sigma_z)), 4),
-            "predicted_gain": round(float(1.0 + 0.12 * n_photons), 3),
-        },
-    }
-
-
 def simulate_fea(resolution=20):
     """
     Simulates Finite Element Analysis (FEA) of cortical manifolds for E-field distribution.
@@ -802,120 +736,6 @@ def _dementia_bem_simulation(n_layers=4, resolution=30, include_dbs=True):
     }
 
 
-def get_dementia_longterm_care():
-    """
-    Returns comprehensive long-term dementia care data including:
-    - Clinical protocols for staged care
-    - Cortical surface geodesic analysis
-    - BEM tissue simulation for rTMS targeting
-    - Smart aging biomarker tracking
-    - Treatment optimization metrics
-    """
-    # Longitudinal cognitive tracking (ADAS-Cog, MMSE, MoCA)
-    months = list(range(1, 25))
-    adas_baseline = 35
-    mmse_baseline = 22
-    moca_baseline = 18
-
-    adas_scores, mmse_scores, moca_scores = [], [], []
-    a, m, mc = float(adas_baseline), float(mmse_baseline), float(moca_baseline)
-    for mo in months:
-        # rTMS treatment effect: gradual improvement with plateau
-        a -= np.random.uniform(0.3, 1.2) * np.exp(-mo / 20)
-        m += np.random.uniform(0.1, 0.6) * np.exp(-mo / 18)
-        mc += np.random.uniform(0.1, 0.5) * np.exp(-mo / 22)
-        adas_scores.append(round(float(np.clip(a, 8, 40)), 1))
-        mmse_scores.append(round(float(np.clip(m, 18, 30)), 1))
-        moca_scores.append(round(float(np.clip(mc, 14, 30)), 1))
-
-    # Smart aging biomarkers
-    biomarkers = {
-        "months": months,
-        "amyloid_pet_suvr": [round(1.4 - 0.015 * mo + np.random.normal(0, 0.02), 3) for mo in months],
-        "tau_pet_suvr": [round(1.8 - 0.01 * mo + np.random.normal(0, 0.03), 3) for mo in months],
-        "hippocampal_volume_ml": [round(3.2 + 0.008 * mo + np.random.normal(0, 0.02), 3) for mo in months],
-        "cortical_thickness_mm": [round(2.5 + 0.005 * mo + np.random.normal(0, 0.01), 3) for mo in months]
-    }
-
-    # Clinical protocol stages for long-term dementia care
-    protocols = [
-        {
-            "stage": "Stage I — Early Intervention",
-            "duration": "Months 1–6",
-            "target": "Bilateral DLPFC",
-            "frequency_hz": 20,
-            "intensity_mso": 80,
-            "sessions_per_week": 5,
-            "pulses_session": 3000,
-            "coil": "H7 Deep TMS Coil",
-            "adjunct": "Cognitive rehabilitation therapy (CRT)",
-            "biomarker_gate": "ADAS-Cog improvement ≥ 3 points"
-        },
-        {
-            "stage": "Stage II — Consolidation",
-            "duration": "Months 7–12",
-            "target": "DLPFC + Precuneus",
-            "frequency_hz": 10,
-            "intensity_mso": 90,
-            "sessions_per_week": 3,
-            "pulses_session": 2000,
-            "coil": "Figure-8 (70mm) + Neuronavigation",
-            "adjunct": "rTMS + Fornix DBS integration",
-            "biomarker_gate": "Amyloid PET SUVR reduction ≥ 5%"
-        },
-        {
-            "stage": "Stage III — Maintenance",
-            "duration": "Months 13–18",
-            "target": "DLPFC + Hippocampal circuit",
-            "frequency_hz": 5,
-            "intensity_mso": 70,
-            "sessions_per_week": 2,
-            "pulses_session": 1500,
-            "coil": "H7 Deep TMS Coil",
-            "adjunct": "DBS maintenance + pharmacotherapy",
-            "biomarker_gate": "MMSE stable ≥ 24"
-        },
-        {
-            "stage": "Stage IV — Smart Aging Extension",
-            "duration": "Months 19–24+",
-            "target": "Personalised geodesic-optimised ROI",
-            "frequency_hz": 10,
-            "intensity_mso": 60,
-            "sessions_per_week": 1,
-            "pulses_session": 1000,
-            "coil": "Conformal geodesic-guided coil",
-            "adjunct": "AI-adaptive closed-loop neuromodulation",
-            "biomarker_gate": "Cortical thickness stable; tau PET declining"
-        }
-    ]
-
-    # Treatment optimization convergence
-    opt_iterations = []
-    score = 0.0
-    for i in range(1, 21):
-        score += np.random.uniform(2.5, 6.0) * np.exp(-i / 25)
-        opt_iterations.append({
-            "iteration": i,
-            "composite_score": round(float(np.clip(score, 0, 100)), 2),
-            "geodesic_coverage_pct": round(float(np.clip(40 + score * 0.8 + np.random.normal(0, 2), 40, 98)), 1),
-            "bem_field_efficiency": round(float(np.clip(0.3 + score * 0.012 + np.random.normal(0, 0.02), 0.3, 0.98)), 3)
-        })
-
-    return {
-        "cognitive_tracking": {
-            "months": months,
-            "adas_cog": adas_scores,
-            "mmse": mmse_scores,
-            "moca": moca_scores
-        },
-        "biomarkers": biomarkers,
-        "protocols": protocols,
-        "geodesics": _cortical_surface_geodesics(),
-        "bem_simulation": _dementia_bem_simulation(),
-        "optimization": opt_iterations
-    }
-
-
 def get_treatment_paradigm(condition="stroke"):
     """
     Returns the full optimal treatment paradigm for a given condition:
@@ -1164,14 +984,30 @@ def get_dementia_longterm_care():
         }
     ]
 
-    # Global Optima Convergence & Quantum VQE Optimization Trajectory
+    # Global Optima Convergence & Quantum VQE Optimization Trajectory, closed-loop
+    # gated by proprioceptive (afferent muscle/joint) feedback from the active
+    # stimulation paradigm's frequency and intensity.
+    active_stage = protocols[0]
+    proprioceptive_gain = float(
+        (active_stage["frequency_hz"] / 20.0) * (active_stage["intensity_mso"] / 100.0)
+    )
     global_optima_convergence = []
     for k in range(1, 31):
-        quantum_loss = 0.85 * np.exp(-k / 4.2) + 0.005 * np.random.randn()
-        classical_loss = 0.85 * np.exp(-k / 14.0) + 0.04 * np.random.randn()
-        fidelity = 1.0 - 0.25 * np.exp(-k / 5.0) + 0.005 * np.random.randn()
+        # Afferent proprioceptive feedback amplitude sampled once per VQE
+        # parameter-shift iteration; stronger feedback accelerates convergence.
+        proprioceptive_feedback = float(np.clip(
+            proprioceptive_gain * (0.6 + 0.4 * np.cos(k / 6.0)) + 0.05 * np.random.randn(),
+            0.05, 1.5
+        ))
+        quantum_tau = 4.2 / max(proprioceptive_feedback, 0.2)
+        classical_tau = 14.0 / max(proprioceptive_feedback, 0.35)
+        fidelity_tau = 5.0 / max(proprioceptive_feedback, 0.3)
+        quantum_loss = 0.85 * np.exp(-k / quantum_tau) + 0.005 * np.random.randn()
+        classical_loss = 0.85 * np.exp(-k / classical_tau) + 0.04 * np.random.randn()
+        fidelity = 1.0 - 0.25 * np.exp(-k / fidelity_tau) + 0.005 * np.random.randn()
         global_optima_convergence.append({
             "iteration": k,
+            "proprioceptive_feedback": round(proprioceptive_feedback, 4),
             "quantum_vqe_loss": round(float(np.clip(quantum_loss, 0.001, 1.0)), 5),
             "classical_sgd_loss": round(float(np.clip(classical_loss, 0.02, 1.0)), 5),
             "quantum_fidelity_pct": round(float(np.clip(fidelity * 100, 75.0, 99.9)), 2)

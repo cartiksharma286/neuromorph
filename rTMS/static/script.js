@@ -217,13 +217,22 @@ document.addEventListener('DOMContentLoaded', () => {
         ], { ...PL, xaxis: { ...PL.xaxis, title: 'Time (a.u.)' }, yaxis: { ...PL.yaxis, title: 'Probability / inversion' }, legend: { font: { color: '#e6edf3' }, orientation: 'h', x: 0, y: 1.15 } }, { responsive: true });
 
         const weights = data.combinatorial_weights || [];
+        const weightLabels = weights.map(w => `State ${w.state}`);
         Plotly.newPlot('jc-weights-chart', [{
-            x: weights.map(w => `State ${w.state}`),
+            x: weightLabels,
             y: weights.map(w => w.weight),
             type: 'bar',
+            text: weights.map(w => w.weight.toFixed(4)),
+            textposition: 'outside',
+            hovertemplate: 'State %{customdata.state}<br>Weight: %{y:.4f}<br>C(n,k): %{customdata.coeff}<extra></extra>',
+            customdata: weights.map(w => ({ state: w.state, coeff: w.binomial_coefficient })),
             marker: { color: weights.map((_, i) => ['#58a6ff', '#b06ef5', '#56d364', '#f1c40f', '#f85149', '#79c0ff'][i % 6]) },
             name: 'Binomial weight'
-        }], { ...PL, xaxis: { ...PL.xaxis, title: 'Photon state' }, yaxis: { ...PL.yaxis, title: 'Weight' } }, { responsive: true });
+        }], {
+            ...PL,
+            xaxis: { ...PL.xaxis, title: 'Photon state', type: 'category', tickmode: 'array', tickvals: weightLabels, ticktext: weightLabels },
+            yaxis: { ...PL.yaxis, title: 'Weight' }
+        }, { responsive: true });
 
         const spectrum = data.vacuum_rabi_spectrum || {};
         Plotly.newPlot('jc-spectrum-chart', [{
@@ -647,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderGeodesicTable(d.geodesics.geodesics);
         renderDltBem(d.bem_simulation);
         renderAttenuation(d.bem_simulation.attenuation);
-        renderDltOptimization(d.optimization);
+        renderGlobalOptimaConvergenceChart('dlt-optimization-chart', d.global_optima_convergence, 'dementia');
         renderProtocolCards(d.protocols);
         if (d.jaynes_cummings) {
             renderJaynesCummingsPlot('dlt-jc-chart', d.jaynes_cummings);
@@ -788,28 +797,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 { x: 0.165, y: 105, text: 'CSF', showarrow: false, font: { color: '#58a6ff', size: 10 } },
                 { x: 0.30, y: 105, text: 'Grey Matter', showarrow: false, font: { color: '#e74c3c', size: 10 } }
             ]
-        }, { responsive: true });
-    }
-
-    function renderDltOptimization(opt) {
-        Plotly.newPlot('dlt-optimization-chart', [
-            { x: opt.map(o => o.iteration), y: opt.map(o => o.geodesic_coverage_pct),
-              type: 'scatter', mode: 'lines+markers',
-              line: { color: '#58a6ff', width: 3 }, marker: { size: 6 },
-              name: 'Geodesic Coverage (%)' },
-            { x: opt.map(o => o.iteration), y: opt.map(o => o.bem_field_efficiency * 100),
-              type: 'scatter', mode: 'lines+markers',
-              line: { color: '#56d364', width: 3, dash: 'dash' }, marker: { size: 6 },
-              name: 'BEM Field Efficiency (%)' },
-            { x: opt.map(o => o.iteration), y: opt.map(o => o.composite_score),
-              type: 'bar', marker: { color: 'rgba(176,110,245,0.3)' },
-              name: 'Composite Score', yaxis: 'y2' }
-        ], {
-            ...PL,
-            xaxis: { ...PL.xaxis, title: 'Optimisation Iteration' },
-            yaxis:  { ...PL.yaxis, title: 'Coverage / Efficiency (%)', range: [0, 110] },
-            yaxis2: { ...PL.yaxis, title: 'Composite', overlaying: 'y', side: 'right', showgrid: false },
-            legend: { font: { color: '#e6edf3' } }
         }, { responsive: true });
     }
 
@@ -1186,8 +1173,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const iterations = conv.map(c => c.iteration || c.step);
         const qLoss = conv.map(c => c.quantum_vqe_loss || c.qpu_gate_fidelity_pct);
         const cLoss = conv.map(c => c.classical_sgd_loss || c.system_stability_pct);
+        const hasFeedback = conv[0] && conv[0].proprioceptive_feedback !== undefined;
 
-        Plotly.newPlot(containerId, [
+        const traces = [
             {
                 x: iterations, y: qLoss,
                 type: 'scatter', mode: 'lines+markers',
@@ -1200,10 +1188,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 line: { color: '#ff7b72', width: 2, dash: 'dash' }, marker: { size: 5, color: '#da3633' },
                 name: type === 'equipment' ? 'System Stability (%)' : 'Classical SGD Loss'
             }
-        ], {
+        ];
+        if (hasFeedback) {
+            traces.push({
+                x: iterations, y: conv.map(c => c.proprioceptive_feedback),
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#f1c40f', width: 2, dash: 'dot' }, marker: { size: 5, color: '#d4a017' },
+                name: 'Proprioceptive Feedback (paradigm-gated)', yaxis: 'y2'
+            });
+        }
+
+        Plotly.newPlot(containerId, traces, {
             ...PL,
             xaxis: { ...PL.xaxis, title: 'Optimization Step / Iteration' },
             yaxis: { ...PL.yaxis, title: 'Convergence Loss / Metric' },
+            yaxis2: hasFeedback ? { ...PL.yaxis, title: 'Feedback Amplitude', overlaying: 'y', side: 'right', showgrid: false } : undefined,
             legend: { font: { color: '#e6edf3' }, orientation: 'h', x: 0, y: 1.15 }
         }, { responsive: true });
     }
