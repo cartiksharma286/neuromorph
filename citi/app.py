@@ -5,8 +5,12 @@ import numpy as np
 import random
 # from sklearn.ensemble import RandomForestClassifier # Not used in sim
 from generate_pdf import create_pdf
+from ibkr_bridge import IBKRBridge, IBKRUnavailableError
+from market_engine import MarketSimulationEngine, optimize_dividend_portfolio
 
 app = Flask(__name__, static_url_path='', static_folder='www')
+ibkr = IBKRBridge()
+market_engine = MarketSimulationEngine()
 
 # Mock Data for Canadian, N. Ontario & Greenland Mineral Ores
 # Mock Data for NASDAQ Stocks and Forex Pairs
@@ -65,47 +69,7 @@ def serve_index():
 
 @app.route('/api/market_data')
 def market_data():
-    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    sp500_base = 5000
-    lithium_base = 14000
-    vix_base = 13.5
-    
-    sp500 = [{"month": m, "price": round(sp500_base * (1 + (i*0.01) + random.uniform(-0.02, 0.02)), 2)} for i, m in enumerate(months)]
-    lithium = [{"month": m, "price": round(lithium_base * (1 + (i*0.02) + random.uniform(-0.05, 0.05)), 2)} for i, m in enumerate(months)]
-    vix = [{"month": m, "price": round(vix_base * (1 + random.uniform(-0.1, 0.2)), 2)} for m in months]
-
-    # Yield Curve (Treasury & Corporate spreads)
-    maturities = ["1M", "3M", "6M", "1Y", "2Y", "5Y", "10Y", "30Y"]
-    yield_curve = []
-    for i, mat in enumerate(maturities):
-        inversion_discount = -0.8 if i < 3 else 0.0
-        treasury = round(4.5 + inversion_discount + (i * 0.12) + random.uniform(-0.15, 0.15), 2)
-        corporate = round(treasury + 1.0 + (i * 0.05) + random.uniform(-0.1, 0.1), 2)
-        yield_curve.append({"maturity": mat, "treasury": treasury, "corporate": corporate})
-
-    # Market Characteristics
-    ten_y = yield_curve[6]["treasury"]
-    characteristics = {
-        "pe_ratio": round(random.uniform(20.0, 28.0), 1),
-        "earnings_yield": round(random.uniform(3.5, 5.2), 2),
-        "10y_treasury": ten_y,
-        "equity_risk_premium": round(ten_y - random.uniform(0.5, 1.5), 2),
-        "credit_spread": round(yield_curve[6]["corporate"] - ten_y, 2),
-        "vix_current": vix[-1]["price"]
-    }
-
-    return jsonify({
-        "sp500": sp500,
-        "lithium": lithium,
-        "vix": vix,
-        "yield_curve": yield_curve,
-        "characteristics": characteristics,
-        "meta": {
-            "sp_target": sp500[-1]["price"],
-            "lithium_target": lithium[-1]["price"],
-            "vix_target": vix[-1]["price"]
-        }
-    })
+    return jsonify(market_engine.snapshot())
 
 @app.route('/api/portfolio')
 def get_portfolio():
@@ -193,11 +157,29 @@ def generate_mineral_strategy():
         {"ticker": "FCX", "name": "Freeport-McMoRan", "type": "Stock", "price": 42.00, "vol": 0.32, "yield": 2.5},
         {"ticker": "ALB", "name": "Albemarle", "type": "Stock", "price": 120.00, "vol": 0.45, "yield": 1.9},
     ]
+    snapshot = market_engine.snapshot()
+    simulated_spots = {
+        "LITH_SPOT": snapshot["meta"]["lithium_target"],
+        "URA_SPOT": snapshot["meta"]["uranium_target"],
+    }
+    market_source = snapshot["source"]
+    if ibkr.connected:
+        try:
+            stock_feed = ibkr.stock_feed([asset["ticker"] for asset in assets if asset["type"] == "Stock"])
+            live_by_symbol = {item["ticker"]: item for item in stock_feed}
+            for asset in assets:
+                live_item = live_by_symbol.get(asset["ticker"])
+                if live_item:
+                    asset["price"] = live_item["price"]
+                    asset["vol"] = max(live_item["realized_volatility"], 0.05)
+            market_source = "IBKR stocks with correlated commodity simulation"
+        except (IBKRUnavailableError, ValueError):
+            pass
+    for asset in assets:
+        if asset["ticker"] in simulated_spots:
+            asset["price"] = simulated_spots[asset["ticker"]]
     
-    optimized_portfolio = []
     derivatives_data = []
-    
-    total_yield_capacity = 0
     
     # Options Pricing Logic (Simplified Black-Scholes)
     import math
@@ -231,20 +213,6 @@ def generate_mineral_strategy():
         call_premium = bs_price(spot_price, call_strike, T, r_rate, adjusted_vol, 'call')
         put_premium = bs_price(spot_price, put_strike, T, r_rate, adjusted_vol, 'put')
         
-        # Enhanced Yield Calculation
-        # Optimizing update frequency (weekly vs monthly) based on quantum phase
-        option_yield_annualized = (call_premium / spot_price) * 12 * 0.82 * 100 # Improved capture rate
-        
-        # Surface Integral boost
-        quantum_yield_boost = 0.0
-        if asset['type'] == 'Stock':
-             quantum_yield_boost = asset['yield'] * 0.65 # Enhanced Special dividend capture
-        
-        total_effective_yield = (asset['yield'] + option_yield_annualized + quantum_yield_boost) * surface_curvature_boost
-        asset['effective_yield'] = total_effective_yield
-        
-        score = total_effective_yield / (adjusted_vol * 100)
-        
         # Signals
         rsi = random.uniform(30, 70)
         trend = "BULLISH" if rsi > 45 else "NEUTRAL"
@@ -272,25 +240,7 @@ def generate_mineral_strategy():
             }
         })
         
-        if total_effective_yield > 22.0:
-            optimized_portfolio.append({
-                "ticker": asset['ticker'],
-                "dividend_yield": f"{asset['yield']}% + {option_yield_annualized:.1f}% (Opt) + {quantum_yield_boost:.1f}% (Q-Div) = {total_effective_yield:.1f}%",
-                "allocation": "TBD",
-                "projected_income": "TBD",
-                "risk_adjusted_score": round(score, 2),
-                "_raw_score": score,
-                "_eff_yield": total_effective_yield
-            })
-
-    # Normalizing Allocations
-    total_raw_score = sum(item['_raw_score'] for item in optimized_portfolio)
-    for item in optimized_portfolio:
-        weight = (item['_raw_score'] / total_raw_score) * 100
-        item['allocation'] = f"{weight:.1f}%"
-        income = 100000 * (weight/100) * (item['_eff_yield']/100)
-        item['projected_income'] = f"${income:,.2f} /yr"
-        total_yield_capacity += (weight/100) * item['_eff_yield']
+    optimized_portfolio, cash_dividend_yield = optimize_dividend_portfolio(assets)
 
     # Generate Yield Frontier Plot Data
     yield_plot_data = []
@@ -300,8 +250,7 @@ def generate_mineral_strategy():
         risk = 0.1 + (i * 0.05)
         # Classical: Yield ~ 5% + log(risk)*something
         classical_y = 5.0 + (risk * 15.0)
-        # Quantum: Yield ~ Classical * SurfaceBoost
-        quantum_y = classical_y * surface_curvature_boost * 1.1 + np.random.normal(0, 0.5)
+        quantum_y = classical_y * (1.0 + 0.18 * math.exp(-risk * 2.0))
         yield_plot_data.append({
             "risk": round(risk, 2),
             "classical_yield": round(classical_y, 2),
@@ -309,32 +258,51 @@ def generate_mineral_strategy():
         })
 
     return jsonify({
-        "strategy_name": "Quantum Dividend Surface Maximizer",
-        "description": "Utilizes Topological Quantum Field Theory (TQFT) to map dividend yield surfaces, identifying optimal strike placements for maximized income >28%.",
-        "target_yield": f"{total_yield_capacity:.1f}%",
+        "strategy_name": "Volatility-Adjusted Dividend Allocator",
+        "description": "Inverse-volatility allocation across dividend-paying mining stocks with separately reported option-premium estimates.",
+        "target_yield": f"{cash_dividend_yield:.1f}% cash yield",
         "optimized_portfolio": optimized_portfolio,
         "derivatives_chain": derivatives_data,
         "yield_plot": yield_plot_data,
-        "market_context": "Quantum Surface Topography: High-Yield Basin detected. Optimal strategy involves aggressive theta decay capture."
+        "market_context": f"Market source: {market_source}. Option premiums are model estimates, not guaranteed income.",
+        "market_source": market_source,
+        "generated_at": snapshot["generated_at"],
     })
-
-# ... IBKR ...
 
 @app.route('/api/connect_ibkr', methods=['POST'])
 def connect_ibkr():
-    """
-    Simulates NVQLink broker connection handshake.
-    In production this would authenticate via IBKR TWS API / FIX protocol.
-    """
-    session_token = f"NVQ-{random.randint(100000, 999999)}"
-    return jsonify({
-        "status": "connected",
-        "message": f"NVQLink session established ({session_token})",
-        "session_token": session_token,
-        "protocol": "FIX 4.4 / NVQLink v2",
-        "latency_ms": round(random.uniform(1.2, 4.8), 2),
-        "market_data_feed": "live"
-    })
+    try:
+        status = ibkr.connect()
+        return jsonify({
+            "status": "connected",
+            "message": f"IBKR {status['trading_mode']} session connected on port {status['port']}",
+            **status,
+        })
+    except (IBKRUnavailableError, ConnectionError, OSError, TimeoutError) as exc:
+        return jsonify({
+            "status": "disconnected",
+            "error": str(exc),
+            "message": "Start TWS or IB Gateway, enable API connections, and verify the IBKR environment settings.",
+            **ibkr.status(),
+        }), 503
+
+
+@app.route('/api/ibkr/status')
+def ibkr_status():
+    return jsonify(ibkr.status())
+
+
+@app.route('/api/ibkr/feed')
+def ibkr_feed():
+    symbols = request.args.get('symbols', 'AAPL,MSFT,NVDA,TSLA,AMZN').split(',')
+    try:
+        return jsonify({
+            "source": "Interactive Brokers TWS API",
+            "feed": ibkr.stock_feed(symbols),
+            "status": ibkr.status(),
+        })
+    except (IBKRUnavailableError, ValueError) as exc:
+        return jsonify({"error": str(exc), "status": ibkr.status()}), 503
 
 
 @app.route('/api/optimize_trade', methods=['POST'])
@@ -502,31 +470,23 @@ def optimize_trade():
 
 @app.route('/api/trade/place', methods=['POST'])
 def place_order():
-    """
-    Executes a Buy/Sell order via NVQLink (Simulated).
-    """
-    data = request.json
+    data = request.json or {}
     ticker = data.get('ticker')
-    action = data.get('action')  # BUY / SELL
-    price = data.get('price')
-    quantity = data.get('quantity', 100)  # Default lot size
+    action = data.get('action')
+    quantity = data.get('quantity', 1)
+    confirmed = data.get('confirmed', False)
 
-    if not ticker or action not in ('BUY', 'SELL'):
+    if not ticker:
         return jsonify({"error": "Invalid order parameters"}), 400
 
-    # Generate order ID (no blocking sleep — protocol responds immediately)
-    order_id = f"ORD-{random.randint(10000, 99999)}-{ticker}"
-    
-    return jsonify({
-        "status": "FILLED",
-        "order_id": order_id,
-        "ticker": ticker,
-        "action": action,
-        "filled_price": price,
-        "quantity": quantity,
-        "timestamp": pd.Timestamp.now().isoformat(),
-        "message": f"{action} order for {quantity} units of {ticker} filled at {price}"
-    })
+    try:
+        return jsonify(ibkr.place_market_order(ticker, action, quantity, confirmed))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except PermissionError as exc:
+        return jsonify({"error": str(exc)}), 403
+    except IBKRUnavailableError as exc:
+        return jsonify({"error": str(exc), "status": ibkr.status()}), 503
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
