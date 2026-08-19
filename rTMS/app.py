@@ -22,6 +22,7 @@ from logic.monteris_cf_treatment import (
 )
 from logic.dbs_statistical_manifold import generate_dbs_treatment_protocol
 from logic.nash_geodesic_registration import generate_nash_geodesic_registration
+from logic.depression_rtms import simulate_depression_rtms
 
 app = Flask(__name__)
 CORS(app)
@@ -347,6 +348,43 @@ def api_sleep_apnea_rtms():
     except Exception as e:
         import traceback; traceback.print_exc()
         return jsonify({'error': str(e)}), 400
+
+
+def _depression_params():
+    return {
+        'baseline_phq9': float(request.args.get('baseline_phq9', 19.0)),
+        'sessions': int(request.args.get('sessions', 30)),
+        'rtms_frequency_hz': float(request.args.get('rtms_frequency_hz', 10.0)),
+        'cbt_weight': float(request.args.get('cbt_weight', 0.65)),
+        'control_gain': float(request.args.get('control_gain', 0.85)),
+        'signature_ratio': float(request.args.get('signature_ratio', 1.61803398875)),
+    }
+
+
+@app.route('/api/depression-rtms', methods=['GET'])
+def api_depression_rtms():
+    """Return the seeded depression rTMS/CBT computational research model."""
+    try:
+        return jsonify(simulate_depression_rtms(**_depression_params()))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'error': f'Invalid depression model parameter: {exc}'}), 400
+
+
+@app.route('/api/depression-rtms-preprint', methods=['GET'])
+def depression_rtms_preprint():
+    """Generate the depression model Nature-style preprint from current controls."""
+    try:
+        from generate_nature_depression_rtms import build_pdf
+
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Depression_rTMS_CBT.pdf')
+        build_pdf(output_path, _depression_params())
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Depression_rTMS_CBT.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'error': f'Invalid depression preprint parameter: {exc}'}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(exc)}), 500
 
 if __name__ == '__main__':
     import argparse

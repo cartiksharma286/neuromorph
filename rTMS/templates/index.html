@@ -47,6 +47,9 @@
                 <button class="nav-btn" data-tab="sleepapnea">
                     <span class="icon">😴</span> Sleep Apnea rTMS
                 </button>
+                <button class="nav-btn" data-tab="depression">
+                    <span class="icon">◉</span> Depression rTMS
+                </button>
                 <button class="nav-btn" data-tab="nash-geodesic">
                     <span class="icon">📐</span> Nash Equilibria Registration
                 </button>
@@ -557,6 +560,80 @@
                         <div class="panel glass-panel" style="background: rgba(35,134,54,0.04); border: 1px solid rgba(35,134,54,0.15);">
                             <h3>🔬 QML Neuromodulation Performance &amp; Clinical Interoperability Prescription</h3>
                             <div id="sa-genai-text" style="font-size:13px; line-height:1.6; color:#c9d1d9; margin-top:10px;">Compiling clinical synchronization analysis...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Depression rTMS + CBT Computational Research Suite -->
+            <div id="depression-view" class="hidden">
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel" style="display:flex; flex-direction:column; gap:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                            <div>
+                                <h3 style="margin-bottom:4px;">Finite Research Controls</h3>
+                                <p style="color:#8b949e; font-size:12px; line-height:1.45;">Synthetic PHQ-9 trajectories only. Not a clinical prescription.</p>
+                            </div>
+                            <a id="dep-preprint-link" href="/api/depression-rtms-preprint" class="primary-btn" style="text-decoration:none; padding:8px 10px; font-size:11px; white-space:nowrap;">PDF Preprint</a>
+                        </div>
+                        <div class="sa-control-box" style="margin:0;">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header"><span>Baseline PHQ-9</span><span id="label-dep-phq9" class="sa-slider-val">19.0</span></div>
+                                <input class="sa-slider-input" type="range" id="dep-phq9" min="5" max="27" step="1" value="19" oninput="document.getElementById('label-dep-phq9').textContent=parseFloat(this.value).toFixed(1); runDepressionRtmsDebounced();">
+                            </div>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header"><span>Finite Sessions</span><span id="label-dep-sessions" class="sa-slider-val">30</span></div>
+                                <input class="sa-slider-input" type="range" id="dep-sessions" min="10" max="40" step="1" value="30" oninput="document.getElementById('label-dep-sessions').textContent=this.value; runDepressionRtmsDebounced();">
+                            </div>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header"><span>Frequency Input</span><span id="label-dep-frequency" class="sa-slider-val">10.0 Hz</span></div>
+                                <input class="sa-slider-input" type="range" id="dep-frequency" min="1" max="20" step="0.5" value="10" oninput="document.getElementById('label-dep-frequency').textContent=parseFloat(this.value).toFixed(1)+' Hz'; runDepressionRtmsDebounced();">
+                            </div>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header"><span>CBT State Weight</span><span id="label-dep-cbt" class="sa-slider-val">0.65</span></div>
+                                <input class="sa-slider-input" type="range" id="dep-cbt" min="0" max="1" step="0.05" value="0.65" oninput="document.getElementById('label-dep-cbt').textContent=parseFloat(this.value).toFixed(2); runDepressionRtmsDebounced();">
+                            </div>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header"><span>Optimal-Control Gain</span><span id="label-dep-control" class="sa-slider-val">0.85</span></div>
+                                <input class="sa-slider-input" type="range" id="dep-control" min="0.1" max="1.5" step="0.05" value="0.85" oninput="document.getElementById('label-dep-control').textContent=parseFloat(this.value).toFixed(2); runDepressionRtmsDebounced();">
+                            </div>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header"><span>Signature Ratio</span><span id="label-dep-ratio" class="sa-slider-val">1.618034</span></div>
+                                <input class="sa-slider-input" type="range" id="dep-ratio" min="0.5" max="3" step="0.001" value="1.618034" oninput="document.getElementById('label-dep-ratio').textContent=parseFloat(this.value).toFixed(6); runDepressionRtmsDebounced();">
+                            </div>
+                        </div>
+                        <div class="sa-control-box" style="margin:0;">
+                            <div class="sa-metric-row"><span class="sa-metric-lbl">Final modeled PHQ-9</span><span id="dep-final-phq9" class="sa-metric-val">...</span></div>
+                            <div class="sa-metric-row"><span class="sa-metric-lbl">Modeled change</span><span id="dep-response" class="sa-metric-val">...</span></div>
+                            <div class="sa-metric-row"><span class="sa-metric-lbl">Cognitive state</span><span id="dep-cognitive-state" class="sa-metric-val">...</span></div>
+                            <div class="sa-metric-row"><span class="sa-metric-lbl">Mean control effort</span><span id="dep-control-effort" class="sa-metric-val">...</span></div>
+                            <div class="sa-metric-row" style="border-bottom:none;"><span class="sa-metric-lbl">Prime sessions</span><span id="dep-prime-sessions" class="sa-metric-val" style="font-size:11px; text-align:right;">...</span></div>
+                        </div>
+                    </div>
+                    <div style="grid-column:span 2; display:flex; flex-direction:column; gap:20px;">
+                        <div class="panel glass-panel">
+                            <h3>Comparative PHQ-9 Research Trajectories</h3>
+                            <div id="dep-trajectory-chart" class="chart-container" style="min-height:310px;"></div>
+                        </div>
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Seeded Statistical Distributions</h3>
+                                <div id="dep-distribution-chart" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Optimal Control + CBT State</h3>
+                                <div id="dep-control-chart" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Finite Objective + Number Signature</h3>
+                                <div id="dep-signature-chart" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Research Paradigm</h3>
+                                <div id="dep-paradigm-card" style="font-size:12px; line-height:1.55;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>

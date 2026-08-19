@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dementiaLtView  = document.getElementById('dementia-lt-view');
     const dementiaDbsView = document.getElementById('dementia-dbs-view');
     const sleepapneaView  = document.getElementById('sleepapnea-view');
+    const depressionView  = document.getElementById('depression-view');
     const nashGeodesicView = document.getElementById('nash-geodesic-view');
 
     // Sim result spans
@@ -56,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, nashGeodesicView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, nashGeodesicView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -115,6 +116,11 @@ document.addEventListener('DOMContentLoaded', () => {
             subtitle: 'Adaptive Closed-loop rTMS & Statistical Continued Fraction Phase Synchronization',
             view:     sleepapneaView, showRunBtn: false
         },
+        'depression': {
+            title:    'Depression rTMS + CBT Research Studio',
+            subtitle: 'Statistical distributions · finite optimal control · cognitive state theory · number signatures',
+            view:     depressionView, showRunBtn: false
+        },
         'nash-geodesic': {
             title:    'Nash / Geodesic Registration',
             subtitle: 'Laser-MRI-CT Registration · Eigen Spectra · Cauchy-Schwarz Convergence Bounds',
@@ -153,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'ocd')                                  loadOcdData();
             if (tab === 'jaynes' && !jcLoaded)                  loadJaynesCummingsData();
             if (tab === 'sleepapnea')                           runSleepApneaRtms();
+            if (tab === 'depression')                           runDepressionRtms();
             if (tab === 'nash-geodesic' && !nashGeodesicLoaded)   loadNashGeodesicRegistration();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
@@ -1328,5 +1335,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (err) {
             console.error("Error fetching Sleep Apnea rTMS data:", err);
+        }
+    };
+
+    // Depression rTMS + CBT computational research suite
+    let depressionDebounceTimer = null;
+    window.runDepressionRtmsDebounced = function() {
+        clearTimeout(depressionDebounceTimer);
+        depressionDebounceTimer = setTimeout(runDepressionRtms, 40);
+    };
+
+    window.runDepressionRtms = async function() {
+        const baselineEl = document.getElementById('dep-phq9');
+        if (!baselineEl) return;
+
+        const params = new URLSearchParams({
+            baseline_phq9: baselineEl.value,
+            sessions: document.getElementById('dep-sessions').value,
+            rtms_frequency_hz: document.getElementById('dep-frequency').value,
+            cbt_weight: document.getElementById('dep-cbt').value,
+            control_gain: document.getElementById('dep-control').value,
+            signature_ratio: document.getElementById('dep-ratio').value
+        });
+        document.getElementById('dep-preprint-link').href = `/api/depression-rtms-preprint?${params.toString()}`;
+
+        try {
+            const response = await fetch(`/api/depression-rtms?${params.toString()}`);
+            const data = await response.json();
+            if (!response.ok || data.error) throw new Error(data.error || `HTTP ${response.status}`);
+
+            document.getElementById('dep-final-phq9').textContent = data.metrics.final_phq9.toFixed(2);
+            document.getElementById('dep-response').textContent = `${data.metrics.modeled_response_pct.toFixed(1)}%`;
+            document.getElementById('dep-cognitive-state').textContent = data.metrics.final_distortion_state.toFixed(3);
+            document.getElementById('dep-control-effort').textContent = data.metrics.mean_control_effort.toFixed(3);
+            document.getElementById('dep-prime-sessions').textContent = data.prime_sessions.join(', ');
+
+            const commonLayout = {
+                paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+                margin: {t: 28, b: 46, l: 48, r: 20},
+                font: {color: '#c9d1d9', family: 'Inter'},
+                xaxis: {title: 'Session', gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e'},
+                yaxis: {gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e'},
+                legend: {orientation: 'h', x: 0, y: -0.24, font: {size: 10}}
+            };
+            Plotly.react('dep-trajectory-chart', [
+                {x:data.sessions, y:data.phq9_usual_care, name:'Usual-care model', type:'scatter', mode:'lines', line:{color:'#8b949e', dash:'dot'}},
+                {x:data.sessions, y:data.phq9_cbt_only, name:'CBT-only model', type:'scatter', mode:'lines', line:{color:'#58a6ff'}},
+                {x:data.sessions, y:data.phq9_rtms_only, name:'rTMS-only model', type:'scatter', mode:'lines', line:{color:'#ffa657'}},
+                {x:data.sessions, y:data.phq9_adaptive_combined, name:'Adaptive combined', type:'scatter', mode:'lines+markers', line:{color:'#56d364', width:3}, marker:{size:4}}
+            ], {...commonLayout, yaxis:{...commonLayout.yaxis, title:'PHQ-9', range:[0,27]}}, {responsive:true, displaylogo:false});
+
+            Plotly.react('dep-distribution-chart', [
+                {x:data.distribution.bin_centers, y:data.distribution.baseline_counts, name:'Baseline', type:'bar', marker:{color:'#58a6ff'}},
+                {x:data.distribution.bin_centers, y:data.distribution.post_counts, name:'Synthetic post-model', type:'bar', marker:{color:'#56d364'}}
+            ], {...commonLayout, barmode:'group', xaxis:{...commonLayout.xaxis, title:'PHQ-9 bin'}, yaxis:{...commonLayout.yaxis, title:'Count'}}, {responsive:true, displaylogo:false});
+
+            Plotly.react('dep-control-chart', [
+                {x:data.sessions, y:data.control_effort, name:'Control effort', type:'scatter', mode:'lines', line:{color:'#ff7b72', width:2}},
+                {x:data.sessions, y:data.cognitive_distortion_state, name:'Cognitive state', type:'scatter', mode:'lines', line:{color:'#d2a8ff', width:2}}
+            ], {...commonLayout, yaxis:{...commonLayout.yaxis, title:'Normalized state', range:[0,1.05]}}, {responsive:true, displaylogo:false});
+
+            Plotly.react('dep-signature-chart', [
+                {x:data.sessions, y:data.objective, name:'Finite objective', type:'scatter', mode:'lines', line:{color:'#56d364'}, yaxis:'y'},
+                {x:data.sessions, y:data.number_signature, name:'Modulo-17 signature', type:'scatter', mode:'lines+markers', line:{color:'#ffa657'}, marker:{size:4}, yaxis:'y2'}
+            ], {...commonLayout, yaxis:{...commonLayout.yaxis, title:'Objective'}, yaxis2:{title:'Signature', overlaying:'y', side:'right', color:'#ffa657'}}, {responsive:true, displaylogo:false});
+
+            const paradigm = data.paradigm;
+            document.getElementById('dep-paradigm-card').innerHTML = `
+                <div style="color:#ff7b72; font-weight:700; margin-bottom:10px;">${paradigm.status}</div>
+                <table class="eq-spec-table" style="margin:0; width:100%;">
+                    <tr><td>Target abstraction</td><td>${paradigm.target}</td></tr>
+                    <tr><td>Finite horizon</td><td>${paradigm.sessions} sessions</td></tr>
+                    <tr><td>CBT component</td><td>${paradigm.cbt_component}</td></tr>
+                    <tr><td>Controller</td><td>${paradigm.control_rule}</td></tr>
+                    <tr><td>Safety</td><td>${paradigm.safety}</td></tr>
+                    <tr><td>CF expansion</td><td>[${data.continued_fraction.coefficients.join(', ')}]</td></tr>
+                </table>`;
+        } catch (error) {
+            console.error('Depression rTMS API error:', error);
+            document.getElementById('dep-paradigm-card').textContent = `Model unavailable: ${error.message}`;
         }
     };
