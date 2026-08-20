@@ -23,6 +23,7 @@ from logic.monteris_cf_treatment import (
 from logic.dbs_statistical_manifold import generate_dbs_treatment_protocol
 from logic.nash_geodesic_registration import generate_nash_geodesic_registration
 from logic.depression_rtms import simulate_depression_rtms
+from logic.anxiety_millennials_rtms import simulate_anxiety_rtms
 
 app = Flask(__name__)
 CORS(app)
@@ -385,6 +386,52 @@ def depression_rtms_preprint():
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(exc)}), 500
+
+
+def _anxiety_params():
+    data = request.get_json(silent=True) or {}
+    return {
+        'baseline_gad7': float(request.args.get('baseline_gad7', data.get('baseline_gad7', 16.0))),
+        'treatment_weeks': int(request.args.get('treatment_weeks', data.get('treatment_weeks', 24))),
+        'rtms_freq_hz': float(request.args.get('rtms_freq_hz', data.get('rtms_freq_hz', 1.0))),
+        'pharm_arm': str(request.args.get('pharm_arm', data.get('pharm_arm', 'synergistic'))),
+        'stimulation_intensity_pct': float(request.args.get('stimulation_intensity_pct', data.get('stimulation_intensity_pct', 110.0))),
+        'cbt_synergy_gain': float(request.args.get('cbt_synergy_gain', data.get('cbt_synergy_gain', 0.75))),
+        'cf_signature_ratio': float(request.args.get('cf_signature_ratio', data.get('cf_signature_ratio', 1.41421356))),
+    }
+
+
+@app.route('/api/anxiety-rtms', methods=['GET', 'POST'])
+def api_anxiety_rtms():
+    """Return the computational research model for rTMS in millennial refractory anxiety."""
+    try:
+        params = _anxiety_params()
+        result = simulate_anxiety_rtms(**params)
+        return jsonify({'status': 'success', 'data': result})
+    except (TypeError, ValueError) as exc:
+        return jsonify({'error': f'Invalid anxiety model parameter: {exc}'}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(exc)}), 500
+
+
+@app.route('/api/anxiety-rtms-preprint', methods=['GET'])
+def anxiety_rtms_preprint():
+    """Generate and download the Nature-style preprint PDF for millennial anxiety rTMS."""
+    try:
+        from generate_nature_anxiety_rtms import build_pdf
+
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Anxiety_rTMS_Millennials.pdf')
+        build_pdf(output_path, _anxiety_params())
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Anxiety_rTMS_Millennials.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'error': f'Invalid anxiety preprint parameter: {exc}'}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(exc)}), 500
+
 
 if __name__ == '__main__':
     import argparse

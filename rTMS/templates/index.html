@@ -50,6 +50,9 @@
                 <button class="nav-btn" data-tab="depression">
                     <span class="icon">◉</span> Depression rTMS
                 </button>
+                <button class="nav-btn" data-tab="anxiety">
+                    <span class="icon">⚡</span> Anxiety in Millennials
+                </button>
                 <button class="nav-btn" data-tab="nash-geodesic">
                     <span class="icon">📐</span> Nash Equilibria Registration
                 </button>
@@ -634,6 +637,177 @@
                                 <h3>Research Paradigm</h3>
                                 <div id="dep-paradigm-card" style="font-size:12px; line-height:1.55;"></div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Anxiety in Millennials rTMS + Pharmacological Synergy Tab ── -->
+            <div id="anxiety-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center;">
+                    <a id="anx-preprint-btn" href="/api/anxiety-rtms-preprint" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #0e7090, #155e75); padding:10px 18px; border-radius:8px; font-weight:600; box-shadow:0 4px 12px rgba(14,112,144,0.35);">
+                        <span>📥 Download Nature Anxiety Preprint (PDF)</span>
+                    </a>
+                    <span style="font-size:12px; color:#8b949e; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
+                        Cohort: Refractory GAD in Millennials (Ages 28–44) · Closed-Loop EEG &amp; FEA
+                    </span>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT PANEL: CONTROLS & BIOMARKERS -->
+                    <div class="panel glass-panel" style="flex: 0 0 320px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>rTMS &amp; Pharmacotherapy Controls</h3>
+                        
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Baseline GAD-7 (0-21):</span>
+                                    <span id="label-anx-baseline-gad7" class="sa-slider-val" style="color:#ff7b72;">16.0</span>
+                                </div>
+                                <input type="range" id="anx-baseline-gad7" min="5.0" max="21.0" step="0.5" value="16.0" oninput="document.getElementById('label-anx-baseline-gad7').textContent=parseFloat(this.value).toFixed(1); runAnxietyRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Treatment Horizon (Weeks):</span>
+                                    <span id="label-anx-weeks" class="sa-slider-val" style="color:#79c0ff;">24 Wks</span>
+                                </div>
+                                <input type="range" id="anx-weeks" min="8" max="52" step="1" value="24" oninput="document.getElementById('label-anx-weeks').textContent=parseInt(this.value)+' Wks'; runAnxietyRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Stimulation Frequency:</span>
+                                    <span id="label-anx-freq" class="sa-slider-val" style="color:#56d364;">1.0 Hz (Inhibitory)</span>
+                                </div>
+                                <input type="range" id="anx-freq" min="0.5" max="20.0" step="0.5" value="1.0" oninput="document.getElementById('label-anx-freq').textContent=parseFloat(this.value).toFixed(1)+' Hz'; runAnxietyRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Stimulation Intensity (% RMT):</span>
+                                    <span id="label-anx-intensity" class="sa-slider-val" style="color:#d2a8ff;">110 %</span>
+                                </div>
+                                <input type="range" id="anx-intensity" min="80" max="140" step="5" value="110" oninput="document.getElementById('label-anx-intensity').textContent=parseInt(this.value)+' %'; runAnxietyRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Pharm + CBT Synergy Gain:</span>
+                                    <span id="label-anx-cbt-gain" class="sa-slider-val" style="color:#ffb86c;">0.75</span>
+                                </div>
+                                <input type="range" id="anx-cbt-gain" min="0.1" max="1.5" step="0.05" value="0.75" oninput="document.getElementById('label-anx-cbt-gain').textContent=parseFloat(this.value).toFixed(2); runAnxietyRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>CF Signature Ratio (ρ*):</span>
+                                    <span id="label-anx-ratio" class="sa-slider-val" style="color:#58a6ff;">1.414214</span>
+                                </div>
+                                <input type="range" id="anx-ratio" min="0.5" max="3.5" step="0.001" value="1.414214" oninput="document.getElementById('label-anx-ratio').textContent=parseFloat(this.value).toFixed(6); runAnxietyRtmsDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <h3>Quantitative Clinical Biomarkers</h3>
+                        <div class="sa-control-box" style="margin-bottom:0;">
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Final Modeled GAD-7:</span>
+                                <span id="anx-metric-final-gad7" class="sa-metric-val" style="color:#56d364;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Modeled Reduction:</span>
+                                <span id="anx-metric-reduction" class="sa-metric-val" style="color:#79c0ff;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Effect Size (Cohen's d):</span>
+                                <span id="anx-metric-cohend" class="sa-metric-val" style="color:#ffb86c;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Frontal Alpha Asymmetry (ΔFAA):</span>
+                                <span id="anx-metric-delta-faa" class="sa-metric-val" style="color:#d2a8ff;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Peak Cortical E-Field:</span>
+                                <span id="anx-metric-peak-e" class="sa-metric-val" style="color:#ff7b72;">...</span>
+                            </div>
+                            <div class="sa-metric-row" style="border-bottom:none;">
+                                <span class="sa-metric-lbl">CF Convergents:</span>
+                                <span id="anx-metric-convergents" class="sa-metric-val" style="color:#58a6ff; font-size:11px;">...</span>
+                            </div>
+                        </div>
+
+                        <h3>FHIR R4 Cloud Interoperability</h3>
+                        <div class="sa-control-box" style="background: rgba(14,112,144,0.08); border: 1px solid rgba(14,112,144,0.25); margin-bottom:0;">
+                            <div style="font-size:11.5px; line-height:1.45; color:#e6edf3;">
+                                <strong>Repository:</strong> AWS HealthLake FHIR R4<br>
+                                <strong>Resource:</strong> Observation/Anxiety-rTMS-FAA<br>
+                                <strong>Security:</strong> SMART on FHIR OAuth2.0 / HIPAA<br>
+                                <strong>Biometrics:</strong> Continuous HRV &amp; EEG Synced
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: MULTI-PANEL CHARTS & SCHEMATICS -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+                        <!-- Row 1: Longitudinal Trajectory Plot -->
+                        <div class="panel glass-panel">
+                            <h3>Longitudinal GAD-7 Anxiety Trajectory across Clinical Arms</h3>
+                            <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Comparing Sham, Pharmacotherapy (SSRI/SNRI), Standalone rTMS, and Synergistic rTMS+Pharm Protocol.</p>
+                            <div id="anx-plot-trajectory" class="chart-container" style="min-height:300px;"></div>
+                        </div>
+
+                        <!-- Row 2: Cortical Surface FEA & Current Density + EEG Power Spectral Density -->
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Cortical Surface FEA E-Field &amp; Current Density Penetration</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Maxwell-Helmholtz boundary element depth decay: E(z) = E₀·exp(-z/δ) across multi-layer cranial geometry.</p>
+                                <div id="anx-plot-fea" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>EEG Power Spectral Density: Pre vs. Post Modulation</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Quenching of 6Hz theta &amp; 24Hz beta rumination with alpha rhythm restoration (8-12Hz).</p>
+                                <div id="anx-plot-psd" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Raw EEG Waveform Epochs & Pharmacological Trial Arms -->
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Raw EEG Time-Domain Epochs (Pre-Op Anxious vs. Post-Op Regulated)</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">High-density 24-channel frontal derivation (F3/F4) waveform trace before and after protocol completion.</p>
+                                <div id="anx-plot-raw-eeg" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Pharmacological Clinical Trials &amp; Synergistic Effect Sizes</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Remission rate (%) and Cohen's d across multi-arm Bayesian trial models.</p>
+                                <div id="anx-plot-trials" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Long-Term Markov Horizon & Staging Gates -->
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Long-Term Horizon Markov Planning: Remission vs. Relapse Hazard</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Markov decision process (MDP) modeling cumulative remission rate (%) vs. monthly relapse hazard (%).</p>
+                                <div id="anx-plot-markov" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Finite Staging Gate Candidate Objective Costs</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Multi-objective optimization cost across admissible Induction &amp; Consolidation boundaries.</p>
+                                <div id="anx-plot-staging" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Technical H-Bridge & Control Architecture Schematic -->
+                        <div class="panel glass-panel">
+                            <h3>🔌 Closed-Loop EEG-rTMS &amp; Pharmacological Neuro-Modulation System Architecture</h3>
+                            <pre id="anx-ascii-schematic" style="font-family:'Courier New', monospace; font-size:11px; line-height:1.3; white-space:pre-wrap; background:#050b14; border:1px solid rgba(14,112,144,0.3); border-radius:12px; padding:15px; color:#38bdf8; margin:0; height:340px; overflow:auto;"></pre>
+                        </div>
+
+                        <!-- Clinical Prescription & Tapering Report Card -->
+                        <div class="panel glass-panel" style="background: rgba(14,112,144,0.04); border: 1px solid rgba(14,112,144,0.2);">
+                            <h3>🔬 Millennial Anxiety rTMS Neuromodulation &amp; Pharmacotherapy Tapering Prescription</h3>
+                            <div id="anx-genai-text" style="font-size:13px; line-height:1.6; color:#c9d1d9; margin-top:10px;">Compiling quantitative anxiety neuromodulation telemetry...</div>
                         </div>
                     </div>
                 </div>

@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dementiaDbsView = document.getElementById('dementia-dbs-view');
     const sleepapneaView  = document.getElementById('sleepapnea-view');
     const depressionView  = document.getElementById('depression-view');
+    const anxietyView     = document.getElementById('anxiety-view');
     const nashGeodesicView = document.getElementById('nash-geodesic-view');
 
     // Sim result spans
@@ -57,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, nashGeodesicView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, nashGeodesicView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -121,6 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
             subtitle: 'Statistical distributions · finite optimal control · cognitive state theory · number signatures',
             view:     depressionView, showRunBtn: false
         },
+        'anxiety': {
+            title:    'Millennial Anxiety rTMS & Pharmacological Optimization',
+            subtitle: 'BEM/FEA Cortical Surfaces · EEG Waveforms (FAA) · Multi-Arm Trials · Long-Term Markov Horizon',
+            view:     anxietyView, showRunBtn: false
+        },
         'nash-geodesic': {
             title:    'Nash / Geodesic Registration',
             subtitle: 'Laser-MRI-CT Registration · Eigen Spectra · Cauchy-Schwarz Convergence Bounds',
@@ -160,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'jaynes' && !jcLoaded)                  loadJaynesCummingsData();
             if (tab === 'sleepapnea')                           runSleepApneaRtms();
             if (tab === 'depression')                           runDepressionRtms();
+            if (tab === 'anxiety')                              runAnxietyRtms();
             if (tab === 'nash-geodesic' && !nashGeodesicLoaded)   loadNashGeodesicRegistration();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
@@ -1414,5 +1421,149 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Depression rTMS API error:', error);
             document.getElementById('dep-paradigm-card').textContent = `Model unavailable: ${error.message}`;
+        }
+    };
+
+    // ─────────────────────────────────────────────────────────────
+    // Anxiety in Millennials rTMS + Pharmacotherapy Research Suite
+    // ─────────────────────────────────────────────────────────────
+    let anxietyDebounceTimer = null;
+    window.runAnxietyRtmsDebounced = function() {
+        clearTimeout(anxietyDebounceTimer);
+        anxietyDebounceTimer = setTimeout(runAnxietyRtms, 40);
+    };
+
+    window.runAnxietyRtms = async function() {
+        const baselineEl = document.getElementById('anx-baseline-gad7');
+        if (!baselineEl) return;
+
+        const params = new URLSearchParams({
+            baseline_gad7: baselineEl.value,
+            treatment_weeks: document.getElementById('anx-weeks').value,
+            rtms_freq_hz: document.getElementById('anx-freq').value,
+            stimulation_intensity_pct: document.getElementById('anx-intensity').value,
+            cbt_synergy_gain: document.getElementById('anx-cbt-gain').value,
+            cf_signature_ratio: document.getElementById('anx-ratio').value
+        });
+
+        const preprintBtn = document.getElementById('anx-preprint-btn');
+        if (preprintBtn) {
+            preprintBtn.href = `/api/anxiety-rtms-preprint?${params.toString()}`;
+        }
+
+        try {
+            const response = await fetch(`/api/anxiety-rtms?${params.toString()}`);
+            const result = await response.json();
+            if (!response.ok || result.error) throw new Error(result.error || `HTTP ${response.status}`);
+            const data = result.data;
+
+            // Update Metrics
+            document.getElementById('anx-metric-final-gad7').textContent = data.metrics.final_gad7.toFixed(2);
+            document.getElementById('anx-metric-reduction').textContent = `-${data.metrics.absolute_reduction.toFixed(1)} pts (${data.metrics.percent_reduction.toFixed(1)}%)`;
+            document.getElementById('anx-metric-cohend').textContent = `${data.metrics.cohen_d.toFixed(2)} (Large)`;
+            document.getElementById('anx-metric-delta-faa').textContent = `+${data.metrics.delta_faa.toFixed(3)} (Valence Restored)`;
+            document.getElementById('anx-metric-peak-e').textContent = `${data.metrics.peak_e_vm.toFixed(1)} V/m`;
+            document.getElementById('anx-metric-convergents').textContent = `[${data.cf_convergents.slice(0, 4).map(c => c.fraction).join(', ')}]`;
+
+            const commonLayout = {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                margin: {t: 28, b: 46, l: 48, r: 24},
+                font: {color: '#c9d1d9', family: 'Inter'},
+                xaxis: {title: 'Treatment Horizon (Weeks)', gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e'},
+                yaxis: {gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e'},
+                legend: {orientation: 'h', x: 0, y: -0.24, font: {size: 10}}
+            };
+
+            // 1. Trajectory plot
+            Plotly.react('anx-plot-trajectory', [
+                {x: data.weeks, y: data.gad7_sham, name: 'Placebo / Sham rTMS', type: 'scatter', mode: 'lines', line: {color: '#8b949e', dash: 'dot'}},
+                {x: data.weeks, y: data.gad7_pharm, name: 'SSRI / SNRI Monotherapy', type: 'scatter', mode: 'lines', line: {color: '#58a6ff'}},
+                {x: data.weeks, y: data.gad7_rtms, name: '1Hz dlPFC Monotherapy', type: 'scatter', mode: 'lines', line: {color: '#ffa657'}},
+                {x: data.weeks, y: data.gad7_synergistic, name: 'Synergistic (rTMS + Pharm + CBT)', type: 'scatter', mode: 'lines+markers', line: {color: '#56d364', width: 3}, marker: {size: 4}}
+            ], {
+                ...commonLayout,
+                yaxis: {...commonLayout.yaxis, title: 'GAD-7 Score (0-21)', range: [0, 22]}
+            }, {responsive: true, displaylogo: false});
+
+            // 2. FEA Cortical Penetration
+            Plotly.react('anx-plot-fea', [
+                {x: data.fea.depths_mm, y: data.fea.e_field_vm, name: 'E-Field (V/m)', type: 'scatter', mode: 'lines', line: {color: '#ff7b72', width: 2.5}},
+                {x: data.fea.depths_mm, y: data.fea.current_density_am2, name: 'Current Density (A/m²)', type: 'scatter', mode: 'lines', line: {color: '#d2a8ff', width: 2}, yaxis: 'y2'}
+            ], {
+                ...commonLayout,
+                xaxis: {...commonLayout.xaxis, title: 'Cranial Depth z (mm)'},
+                yaxis: {...commonLayout.yaxis, title: 'E-Field (V/m)'},
+                yaxis2: {title: 'J (A/m²)', overlaying: 'y', side: 'right', color: '#d2a8ff', gridcolor: 'rgba(210,168,255,0.08)'}
+            }, {responsive: true, displaylogo: false});
+
+            // 3. EEG Power Spectral Density
+            Plotly.react('anx-plot-psd', [
+                {x: data.eeg.frequencies, y: data.eeg.psd_pre, name: 'Pre-Op Anxious (Negative FAA)', type: 'scatter', mode: 'lines', line: {color: '#ff7b72', width: 2}},
+                {x: data.eeg.frequencies, y: data.eeg.psd_post, name: 'Post-Op Regulated (+FAA)', type: 'scatter', mode: 'lines', line: {color: '#38bdf8', width: 2.5}}
+            ], {
+                ...commonLayout,
+                xaxis: {...commonLayout.xaxis, title: 'Frequency (Hz)'},
+                yaxis: {...commonLayout.yaxis, title: 'PSD (μV²/Hz)'}
+            }, {responsive: true, displaylogo: false});
+
+            // 4. Raw EEG Time-Domain traces
+            Plotly.react('anx-plot-raw-eeg', [
+                {x: data.eeg.time_pts, y: data.eeg.raw_eeg_pre, name: 'Pre-Op Trace (F4/F3)', type: 'scatter', mode: 'lines', line: {color: '#ff7b72', width: 1.2}},
+                {x: data.eeg.time_pts, y: data.eeg.raw_eeg_post, name: 'Post-Op Trace (Normalized)', type: 'scatter', mode: 'lines', line: {color: '#56d364', width: 1.2}}
+            ], {
+                ...commonLayout,
+                xaxis: {...commonLayout.xaxis, title: 'Time (Seconds)'},
+                yaxis: {...commonLayout.yaxis, title: 'Amplitude (μV)'}
+            }, {responsive: true, displaylogo: false});
+
+            // 5. Clinical Trials Bar Chart
+            const armLabels = data.trials.trial_arms.map(a => a.arm.split('(')[0].trim());
+            const remRates = data.trials.trial_arms.map(a => a.remission_pct);
+            const cohenList = data.trials.trial_arms.map(a => a.cohen_d);
+            Plotly.react('anx-plot-trials', [
+                {x: armLabels, y: remRates, name: 'Remission Rate (%)', type: 'bar', marker: {color: '#38bdf8'}},
+                {x: armLabels, y: cohenList.map(c => c * 40.0), name: "Cohen's d (Scaled x40)", type: 'bar', marker: {color: '#56d364'}}
+            ], {
+                ...commonLayout,
+                barmode: 'group',
+                xaxis: {...commonLayout.xaxis, title: 'Trial Protocol Arm', tickangle: -20},
+                yaxis: {...commonLayout.yaxis, title: 'Percentage / Scaled Score'}
+            }, {responsive: true, displaylogo: false});
+
+            // 6. Markov Remission & Relapse Hazard
+            Plotly.react('anx-plot-markov', [
+                {x: data.weeks, y: data.remission_probability, name: 'Remission Probability (%)', type: 'scatter', mode: 'lines', line: {color: '#56d364', width: 2.5}},
+                {x: data.weeks, y: data.relapse_hazard_pct, name: 'Relapse Hazard Rate (%)', type: 'scatter', mode: 'lines', line: {color: '#ff7b72', width: 2, dash: 'dash'}}
+            ], {
+                ...commonLayout,
+                yaxis: {...commonLayout.yaxis, title: 'Probability / Hazard (%)', range: [0, 105]}
+            }, {responsive: true, displaylogo: false});
+
+            // 7. Staging candidate costs
+            Plotly.react('anx-plot-staging', [
+                {x: data.staging.candidate_rank, y: data.staging.candidate_costs, name: 'Candidate Gate Cost J', type: 'scatter', mode: 'lines+markers', line: {color: '#d2a8ff'}, marker: {size: 4}}
+            ], {
+                ...commonLayout,
+                xaxis: {...commonLayout.xaxis, title: 'Ranked Gate Pair Candidate'},
+                yaxis: {...commonLayout.yaxis, title: 'Multi-Objective Cost'}
+            }, {responsive: true, displaylogo: false});
+
+            // ASCII schematic
+            const asciiEl = document.getElementById('anx-ascii-schematic');
+            if (asciiEl) asciiEl.textContent = data.ascii_schematic;
+
+            // Clinical summary text
+            const summaryEl = document.getElementById('anx-genai-text');
+            if (summaryEl) {
+                summaryEl.innerHTML = data.clinical_summary
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n\n/g, '<br/><br/>');
+            }
+
+        } catch (error) {
+            console.error('Anxiety rTMS API error:', error);
+            const summaryEl = document.getElementById('anx-genai-text');
+            if (summaryEl) summaryEl.textContent = `Simulation unavailable: ${error.message}`;
         }
     };
