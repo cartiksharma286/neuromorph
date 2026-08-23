@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Northstar Cloak | Quantum Privacy Lab</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="mark">N</span><div><strong>Northstar Cloak</strong><small>Canadian privacy research lab</small></div></div>
+      <div class="status"><span></span> LOCAL SANDBOX <b>v0.1</b></div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy"><p class="eyebrow">NEUROMORPH SERVICES / QUANTUM SECURITY</p><h1>Make the signal<br><em>uninteresting.</em></h1><p class="lede">A visual lab for exploring cloaked fields, recurrent-prime scheduling, and post-quantum privacy ceremonies without exporting sensitive data.</p><div class="notice">Research prototype · QML field optimization is simulated · cryptography requires a production-reviewed PQC library</div></div>
+      <div class="orbit" aria-label="Simulated cloaking field visualization"><div class="orbit-ring ring-a"></div><div class="orbit-ring ring-b"></div><div class="core">NCL</div><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i></div>
+    </section>
+
+    <section class="workspace">
+      <div class="panel controls"><div class="panel-head"><div><p class="eyebrow">01 / FIELD MODEL</p><h2>Quantum invisibility cloak</h2></div><span class="chip cyan">QML SIM</span></div><p class="muted">Tune a metamaterial-inspired field envelope. Lower visibility means less recoverable structure in the simulated observation.</p>
+        <label>Object radius <output id="radiusOut">1.0</output><input id="radius" type="range" min="0.5" max="2" step="0.1" value="1"></label>
+        <label>Metamaterial layers <output id="layersOut">6</output><input id="layers" type="range" min="2" max="12" step="1" value="6"></label>
+        <label>Field attenuation <output id="attenuationOut">0.65</output><input id="attenuation" type="range" min="0.1" max="1" step="0.05" value="0.65"></label>
+        <label>Prime seed <input id="seed" type="number" min="3" value="1009"></label><button class="primary" id="simulate">Run field simulation <span>↗</span></button>
+      </div>
+      <div class="panel visual"><div class="panel-head"><div><p class="eyebrow">LIVE PROJECTION</p><h2>Field response</h2></div><span class="chip green">STABLE</span></div><canvas id="fieldCanvas" width="680" height="290"></canvas><div class="metrics"><div><small>VISIBILITY INDEX</small><strong id="visibility">91.8%</strong></div><div><small>SCATTERING LOSS</small><strong id="scattering">7.1 dB</strong></div><div><small>QML CONFIDENCE</small><strong id="confidence">94.6%</strong></div></div><div class="chart-title">QML convergence <span id="convergenceStatus">ready</span></div><canvas id="convergenceCanvas" width="680" height="150"></canvas><div class="characteristics" id="cloakCharacteristics"></div></div>
+    </section>
+
+    <section class="lower-grid"><div class="panel primes"><div class="panel-head"><div><p class="eyebrow">02 / KEY SCHEDULE</p><h2>Recurrent primes</h2></div><span class="chip gold">AUDITABLE</span></div><p class="muted">A deterministic prime ladder binds session rotations to an inspectable schedule. It is a coordination primitive, not encryption.</p><div class="prime-list" id="primeList"></div><div class="schedule-id">SCHEDULE ID <strong id="scheduleId">NCL-3C7A8D10B4E2F6AA</strong></div></div>
+      <div class="panel session"><div class="panel-head"><div><p class="eyebrow">03 / PRIVACY SESSION</p><h2>Post-quantum ceremony</h2></div><span class="chip coral">CANADA</span></div><label>Data room label<input id="subject" value="Ontario watershed telemetry"></label><div class="protocol"><div><span>KEY EXCHANGE</span><strong>ML-KEM-768</strong></div><div><span>SIGNATURE</span><strong>ML-DSA-65</strong></div><div><span>GOVERNANCE</span><strong>PIPEDA / provincial review</strong></div></div><button class="secondary" id="createSession">Create privacy session <span>↗</span></button><div class="characteristics" id="sessionCharacteristics"></div><pre id="sessionResult">Awaiting local session creation...</pre></div></section>
+    <footer><span>Northstar Cloak · Neuromorph services</span><span>Designed for data minimization · No telemetry leaves this browser</span></footer>
+  </main><script src="{{ url_for('static', filename='app.js') }}"></script>
+</body></html>
