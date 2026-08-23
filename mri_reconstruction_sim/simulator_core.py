@@ -3172,6 +3172,10 @@ class MRIReconstructionSimulator:
         elif noise_filter == 'Median':
             import scipy.ndimage
             final_img = scipy.ndimage.median_filter(final_img, size=3)
+        elif noise_filter == 'Butterworth':
+            final_img = self.apply_butterworth_filter(final_img, cutoff=0.25, order=2)
+        elif noise_filter in ['Adaptive Signal Processing', 'Adaptive Filter', 'Adaptive']:
+            final_img = self.apply_adaptive_signal_processing_filter(final_img, window_size=5)
         elif noise_filter == 'Supervised Denoising':
             try:
                 from supervised_denoiser import AttentionDenoiser
@@ -3301,6 +3305,131 @@ class MRIReconstructionSimulator:
         masked_image = self._apply_ellipsoidal_mask(image)
         
         return masked_image
+
+    def apply_butterworth_filter(self, image, cutoff=0.25, order=2, mode='lowpass'):
+        """
+        Applies a 2D Butterworth Frequency Domain Filter to remove high-frequency noise
+        and speckle artifacts while preserving low/mid-frequency anatomical structures.
+
+        Parameters
+        ----------
+        image : np.ndarray
+            Input reconstructed MRI image.
+        cutoff : float
+            Normalized cutoff frequency (0.0 to 0.5). Default 0.25.
+        order : int
+            Butterworth filter order n. Default 2.
+        mode : str
+            'lowpass' or 'homomorphic'.
+
+        Returns
+        -------
+        np.ndarray
+            Butterworth-filtered image.
+        """
+        try:
+            img = np.nan_to_num(image).astype(np.float64)
+            H, W = img.shape
+            
+            if mode == 'homomorphic':
+                # Homomorphic filtering for multiplicative speckle: log -> filter -> exp
+                img_log = np.log1p(np.maximum(img, 0))
+                F = np.fft.fftshift(np.fft.fft2(img_log))
+            else:
+                F = np.fft.fftshift(np.fft.fft2(img))
+            
+            # Compute radial distances in frequency space
+            u = np.linspace(-0.5, 0.5, W)
+            v = np.linspace(-0.5, 0.5, H)
+            U, V = np.meshgrid(u, v)
+            D = np.sqrt(U**2 + V**2)
+            
+            # Butterworth Low-pass Filter transfer function: H(u,v) = 1 / (1 + (D/D0)^(2n))
+            D0 = max(cutoff, 1e-4)
+            butterworth_kernel = 1.0 / (1.0 + (D / D0)**(2 * order))
+            
+            # Apply filter in frequency domain
+            F_filtered = F * butterworth_kernel
+            
+            # Inverse FFT
+            filtered_img = np.real(np.fft.ifft2(np.fft.ifftshift(F_filtered)))
+            
+            if mode == 'homomorphic':
+                filtered_img = np.expm1(np.maximum(filtered_img, 0))
+            
+            # Preserve overall mean signal intensity
+            mean_orig = np.mean(img)
+            mean_filt = np.mean(filtered_img)
+            if mean_orig > 0 and mean_filt > 0:
+                filtered_img = np.clip(filtered_img * (mean_orig / mean_filt), 0, None)
+            
+            return filtered_img
+        except Exception as e:
+            print(f"Butterworth filter failed: {e}")
+            import scipy.ndimage as _ndi
+            return _ndi.gaussian_filter(image, sigma=1.0)
+
+    def apply_adaptive_signal_processing_filter(self, image, window_size=5, noise_var=None):
+        """
+        Applies an Advanced 2D Adaptive Signal Processing Filter (Adaptive Lee / Wiener Filter)
+        to suppress speckle artifacts based on local signal statistics.
+
+        Formula:
+          mu_L = local mean
+          var_L = local variance
+          weight W = max(0, (var_L - var_N) / var_L)
+          output = mu_L + W * (pixel - mu_L)
+
+        Parameters
+        ----------
+        image : np.ndarray
+            Input image.
+        window_size : int
+            Local window size for variance calculation. Default 5.
+        noise_var : float, optional
+            Estimated noise variance. If None, estimated from homogeneous background corners.
+
+        Returns
+        -------
+        np.ndarray
+            Adaptively filtered image.
+        """
+        try:
+            import scipy.ndimage as ndi
+            img = np.nan_to_num(image).astype(np.float64)
+            
+            # Compute local mean (mu_L) and local mean-squared
+            kernel = np.ones((window_size, window_size), dtype=np.float64) / (window_size**2)
+            mu_L = ndi.convolve(img, kernel, mode='reflect')
+            img_sq = ndi.convolve(img**2, kernel, mode='reflect')
+            var_L = np.maximum(img_sq - mu_L**2, 1e-9)
+            
+            # Estimate noise variance (var_N) if not provided
+            if noise_var is None:
+                # Estimate from corners (background)
+                corner_sz = max(4, img.shape[0] // 8)
+                corners = np.concatenate([
+                    img[:corner_sz, :corner_sz].ravel(),
+                    img[:corner_sz, -corner_sz:].ravel(),
+                    img[-corner_sz:, :corner_sz].ravel(),
+                    img[-corner_sz:, -corner_sz:].ravel()
+                ])
+                noise_var = float(np.var(corners))
+                if noise_var < 1e-8:
+                    noise_var = float(np.percentile(var_L, 10))
+            
+            # Adaptive Lee/Wiener filter weight W = max(0, (var_L - noise_var) / var_L)
+            W = np.clip((var_L - noise_var) / var_L, 0.0, 1.0)
+            
+            # Filter output
+            filtered_img = mu_L + W * (img - mu_L)
+            filtered_img = np.clip(filtered_img, 0, None)
+            
+            return filtered_img
+        except Exception as e:
+            print(f"Adaptive signal processing filter failed: {e}")
+            import scipy.ndimage as _ndi
+            return _ndi.median_filter(image, size=3)
 
     def _suppress_speckle(self, image):
         """

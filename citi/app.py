@@ -144,7 +144,9 @@ def generate_mineral_strategy():
     """
     Generates a specialized trading strategy for Mineral Ores.
     Includes Dividend Portfolio Optimization AND Derivatives/Spot Analysis.
-    TARGET YIELD: >22% via Quantum Dividend Surface Optimization.
+    Portfolio yield is enhanced via a Feynman path-integral (Monte-Carlo, Wiener
+    measure) evaluation of the CAPM-drift-corrected, compounding-adjusted
+    expected dividend yield per asset.
     """
     # 1. Expanded List of Mining Stocks/Commodities
     assets = [
@@ -240,7 +242,12 @@ def generate_mineral_strategy():
             }
         })
         
-    optimized_portfolio, cash_dividend_yield = optimize_dividend_portfolio(assets)
+    optimized_portfolio, cash_dividend_yield = optimize_dividend_portfolio(
+        assets,
+        risk_free_rate=snapshot["characteristics"]["10y_treasury"] / 100.0,
+        equity_risk_premium=snapshot["characteristics"]["equity_risk_premium"] / 100.0,
+        market_volatility=0.16,
+    )
 
     # Generate Yield Frontier Plot Data
     yield_plot_data = []
@@ -259,7 +266,9 @@ def generate_mineral_strategy():
 
     return jsonify({
         "strategy_name": "Volatility-Adjusted Dividend Allocator",
-        "description": "Inverse-volatility allocation across dividend-paying mining stocks with separately reported option-premium estimates.",
+        "description": "Inverse-volatility allocation across dividend-paying mining stocks, with yield "
+                        "enhanced by a Feynman path-integral (Monte-Carlo, CAPM drift) forward evaluation "
+                        "and separately labeled option-premium estimates.",
         "target_yield": f"{cash_dividend_yield:.1f}% cash yield",
         "optimized_portfolio": optimized_portfolio,
         "derivatives_chain": derivatives_data,

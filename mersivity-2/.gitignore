@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# OS
+.DS_Store
+
+# Large data / media / generated artifacts
+IMAGES/
+IMAGES_Mann.zip
+Mann_MRI/
+mri/
+converted_dicom/
+1/
+scratch/
+path/
+blender_circuitry_export/*.stl
+blender_circuitry_export/*.blend
+
+*.stl
+*.ply
+*.npy
+*.mnc.gz
+*.blend
+*.zip
+
+# Windows viewer binaries / disc artifacts
+SDViewerLITE.chm
+SDViewerLITE64.exe
+Autorun.inf
+DICOMDIR
+
+# Sensitive personal documents - must never be committed
+2024_TaxReturn-10.pdf
+*TaxReturn*
+
+# Editor
+.vscode/

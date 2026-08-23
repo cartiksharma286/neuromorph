@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter Street Basin Mersivity Project | Hydro-Veillance & Eco-Restoration</title>
+    <meta name="description" content="Long-term planning horizons, digital governance, eco-restoration and real-time NTU turbidity prediction for Toronto's Peter Street Basin based on Steve Mann's Veillance Theory and Humanistic Intelligence.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-deep: #050b14;
+            --bg-card: rgba(13, 25, 48, 0.55);
+            --bg-card-hover: rgba(20, 38, 71, 0.75);
+            --border-glow: rgba(6, 182, 212, 0.25);
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-violet: #a855f7;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-blur: blur(16px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.08), transparent 600px),
+                radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.06), transparent 700px),
+                radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.04), transparent 800px);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(5, 11, 20, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(6, 182, 212, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(6, 182, 212, 0.6);
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(6, 182, 212, 0.5);
+            box-shadow: 0 16px 50px rgba(6, 182, 212, 0.15);
+        }
+
+        /* Container Layout */
+        .container {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header Navigation */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(5, 11, 20, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 16px 0;
+        }
+
+        .nav-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .logo span.badge {
+            font-size: 0.68rem;
+            background: rgba(6, 182, 212, 0.15);
+            border: 1px solid rgba(6, 182, 212, 0.4);
+            color: var(--accent-cyan);
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 28px;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        nav a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent-emerald);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-emerald);
+            box-shadow: 0 0 10px var(--accent-emerald);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.3); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            color: var(--accent-cyan);
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .hero h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.8rem;
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p.lead {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 860px;
+            margin: 0 auto 40px;
+            font-weight: 400;
+        }
+
+        .hero-ctas {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 60px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), #0284c7);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(6, 182, 212, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* KPI Dashboard Stats Bar */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 70px;
+        }
+
+        .kpi-card {
+            padding: 24px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-cyan);
+        }
+
+        .kpi-card.emerald::before { background: var(--accent-emerald); }
+        .kpi-card.violet::before { background: var(--accent-violet); }
+        .kpi-card.amber::before { background: var(--accent-amber); }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .kpi-val {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .kpi-sub {
+            font-size: 0.82rem;
+            color: var(--accent-cyan);
+            font-weight: 500;
+        }
+
+        /* Section Headings */
+        .section-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .section-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        /* Steve Mann Veillance Section */
+        .mann-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 80px;
+        }
+
+        .mann-card {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .mann-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(6, 182, 212, 0.12);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+        }
+
+        .mann-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .mann-card p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        .mann-quote {
+            background: rgba(6, 182, 212, 0.05);
+            border-left: 3px solid var(--accent-cyan);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            font-style: italic;
+            color: #e2e8f0;
+        }
+
+        /* NTU Simulator Grid Section */
+        .sim-section {
+            margin-bottom: 90px;
+        }
+
+        .sim-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 28px;
+        }
+
+        @media (max-width: 1024px) {
+            .sim-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sim-controls {
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .control-val {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+            font-weight: 700;
+            background: rgba(6, 182, 212, 0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 12px var(--accent-cyan);
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+        }
+
+        .sim-output-card {
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .gauge-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 16px;
+        }
+
+        .gauge-box {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .gauge-lbl {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .gauge-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* 2D Canvas Hydro-Veillance Map */
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 260px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: #020712;
+        }
+
+        #hydroCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Long-Term Planning Horizons Timeline */
+        .horizon-section {
+            margin-bottom: 90px;
+        }
+
+        .horizon-nav {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 36px;
+        }
+
+        .horizon-tab {
+            padding: 12px 28px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .horizon-tab.active {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.35);
+        }
+
+        .horizon-content {
+            display: none;
+            padding: 36px;
+        }
+
+        .horizon-content.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        @media (max-width: 900px) {
+            .horizon-content.active {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .horizon-info h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        .horizon-info p {
+            color: var(--text-muted);
+            font-size: 0.98rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .feature-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.92rem;
+            color: #e2e8f0;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            color: var(--accent-emerald);
+            font-weight: 900;
+            background: rgba(16, 185, 129, 0.15);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        /* Digital Governance & Civic Section */
+        .gov-section {
+            margin-bottom: 90px;
+        }
+
+        .gov-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 28px;
+        }
+
+        @media (max-width: 960px) {
+            .gov-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .gov-card {
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .vote-item {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vote-info h4 {
+            color: #fff;
+            font-size: 0.98rem;
+            margin-bottom: 4px;
+        }
+
+        .vote-info p {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        .vote-btn {
+            background: rgba(6, 182, 212, 0.15);
+            border: 1px solid rgba(6, 182, 212, 0.4);
+            color: var(--accent-cyan);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .vote-btn:hover {
+            background: var(--accent-cyan);
+            color: #050b14;
+        }
+
+        /* Interactive Basin Map SVG */
+        .map-card {
+            padding: 36px;
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .svg-map-wrapper {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            background: #020712;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 20px;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(2, 6, 14, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 50px 0 30px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        /* Code Block Snippet */
+        .code-box {
+            background: #020612;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #38bdf8;
+            overflow-x: auto;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container nav-wrapper">
+            <a href="#" class="logo">
+                <div class="logo-icon">🌊</div>
+                <div>
+                    PETER STREET BASIN <span class="badge">MERSIVITY</span>
+                </div>
+            </a>
+
+            <nav>
+                <ul>
+                    <li><a href="#hero">Overview</a></li>
+                    <li><a href="#veillance">Steve Mann Theory</a></li>
+                    <li><a href="#simulator">NTU Predictor</a></li>
+                    <li><a href="#horizons">Horizons (2030-2100)</a></li>
+                    <li><a href="#governance">Civic Governance</a></li>
+                    <li><a href="#topology">Sensor Topology</a></li>
+                </ul>
+            </nav>
+
+            <div class="status-pill">
+                <div class="status-dot"></div>
+                LIVE HYDRO-TELEMETRY
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Hero Section -->
+        <section id="hero" class="hero">
+            <div class="hero-tag">
+                ✨ Toronto Waterfront Eco-Restoration & Hydro-Veillance
+            </div>
+
+            <h1>PETER STREET BASIN<br>MERSIVITY PROJECT</h1>
+
+            <p class="lead">
+                Transforming urban stormwater slips into living mersive hydro-ecosystems through real-time NTU turbidity prediction, citizen sousveillance, and participatory digital governance grounded in Steve Mann's seminal Humanistic Intelligence research.
+            </p>
+
+            <div class="hero-ctas">
+                <a href="#simulator" class="btn btn-primary">
+                    ⚡ Launch NTU Turbidity Predictor
+                </a>
+                <a href="#governance" class="btn btn-secondary">
+                    🏛️ Civic Governance Portal
+                </a>
+            </div>
+
+            <!-- KPI Dashboard Row -->
+            <div class="kpi-grid">
+                <div class="glass-panel kpi-card">
+                    <div class="kpi-label">Predicted Turbidity</div>
+                    <div class="kpi-val" id="kpi-ntu">14.8 NTU</div>
+                    <div class="kpi-sub">↓ 32% vs Baseline Storm Surge</div>
+                </div>
+
+                <div class="glass-panel kpi-card emerald">
+                    <div class="kpi-label">Water Clarity Index</div>
+                    <div class="kpi-val" id="kpi-clarity">84.2%</div>
+                    <div class="kpi-sub">High Transparency Rating</div>
+                </div>
+
+                <div class="glass-panel kpi-card violet">
+                    <div class="kpi-label">Active Mersive Sensors</div>
+                    <div class="kpi-val" id="kpi-nodes">32 Nodes</div>
+                    <div class="kpi-sub">Full Basin Spatial Coverage</div>
+                </div>
+
+                <div class="glass-panel kpi-card amber">
+                    <div class="kpi-label">Civic Trust Index</div>
+                    <div class="kpi-val" id="kpi-civic">94.6%</div>
+                    <div class="kpi-sub">Open Telemetry Compliance</div>
+                </div>
+            </div>
+
+            <!-- PSB Hero Image: Aerial Basin Photo -->
+            <div style="margin: 0 0 40px; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(6,182,212,0.25); border: 1px solid rgba(6,182,212,0.2); position: relative;">
+                <img src="/static/psb.jpg" alt="Peter Street Basin Spadina Quay aerial photograph with hydro-sousveillance sensor buoys" style="width:100%; height:400px; object-fit:cover; display:block;">
+                <div style="position:absolute; bottom:0; left:0; right:0; padding:24px 32px; background:linear-gradient(to top, rgba(5,11,20,0.95), transparent);">
+                    <div style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:4px;">Peter Street Basin Outfall — Spadina Quay, Toronto Harbourfront</div>
+                    <div style="font-size:0.85rem; color:#38bdf8;">Real-Time Hydro-Sousveillance Sensor Mesh &middot; Lake Ontario Outfall Turbidity Monitoring &middot; Open CC0 Telemetry</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Steve Mann Veillance Framework Section -->
+        <section id="veillance" style="margin-bottom: 90px;">
+            <div class="section-header">
+                <h2>STEVE MANN'S MERSIVITY & VEILLANCE THEORY</h2>
+                <p>Grounding water sensing in Humanistic Intelligence (HI), phenomenological augmented reality, and citizen-driven sousveillance.</p>
+            </div>
+
+            <div class="mann-grid">
+                <div class="glass-panel mann-card">
+                    <div class="mann-icon">👁️</div>
+                    <h3>Hydro-Sousveillance</h3>
+                    <p>
+                        Shifting water monitoring from closed municipal surveillance to open citizen-led <i>sousveillance</i> ("watching from below"). Open-access optical sensor arrays allow community members to inspect real-time water clarity without municipal opacity.
+                    </p>
+                    <div class="mann-quote">
+                        "Sousveillance empowers citizens to monitor the monitoring mechanisms, turning water quality into shared civic knowledge."
+                    </div>
+                </div>
+
+                <div class="glass-panel mann-card">
+                    <div class="mann-icon">🌊</div>
+                    <h3>Mersive Computing</h3>
+                    <p>
+                        Water is both the environment and the computational medium. Mersivity merges bodily immersion with real-time bio-telemetry, enabling direct physical interaction with aquatic data streams along the Spadina Quay.
+                    </p>
+                    <div class="mann-quote">
+                        "In a mersive space, the boundary between human, water, and computer dissolves into continuous feedback."
+                    </div>
+                </div>
+
+                <div class="glass-panel mann-card">
+                    <div class="mann-icon">👓</div>
+                    <h3>Phenomenological AR (PAR)</h3>
+                    <p>
+                        Visualizing imperceptible turbidity variations, E. coli gradients, and sediment plumes by superimposing real-time NTU field vectors directly onto physical water surfaces through smart optics and underwater camera arrays.
+                    </p>
+                    <div class="mann-quote">
+                        "Augmented reality becomes a tool of environmental truth when tuned to natural physical fields."
+                    </div>
+                    <!-- CAP Image: Steve Mann PAR Lens -->
+                    <div style="border-radius:12px; overflow:hidden; border:1px solid rgba(16,185,129,0.25); box-shadow:0 8px 30px rgba(0,0,0,0.5); position:relative;">
+                        <img src="/static/mersivity.jpg" alt="Steve Mann Phenomenological Augmented Reality lens cap - optical water sensing spectrometer" style="width:100%; height:200px; object-fit:cover; display:block;">
+                        <div style="position:absolute; bottom:0; left:0; right:0; padding:10px 14px; background:linear-gradient(to top, rgba(5,11,20,0.9), transparent); font-size:0.78rem; color:#10b981; font-weight:600;">PAR Lens Cap &middot; Sub-mm Optical Veillance Sensor</div>
+                    </div>
+                </div>
+
+                <div class="glass-panel mann-card">
+                    <div class="mann-icon">🧠</div>
+                    <h3>Humanistic Intelligence (HI)</h3>
+                    <p>
+                        Coupling human intuition with algorithmic NTU prediction models. Citizens and watershed managers operate as feedback loops in the control architecture, guiding bio-retention baffle throttling during storm surges.
+                    </p>
+                    <div class="mann-quote">
+                        "HI puts humans in the loop, creating cyborg ecosystems that adapt organically to climate stress."
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive NTU Turbidity Prediction Simulator -->
+        <section id="simulator" class="sim-section">
+            <div class="section-header">
+                <h2>NTU TURBIDITY PREDICTION SIMULATION ENGINE</h2>
+                <p>Simulate stormwater runoff dynamics, sediment transport, and bio-filtration efficiency in Peter Street Basin under real-time parameter variations.</p>
+            </div>
+
+            <div class="sim-layout">
+                <!-- Controls Column -->
+                <div class="glass-panel sim-controls">
+                    <h3 style="font-family:'Outfit',sans-serif; color:#fff; font-size:1.3rem; margin-bottom:10px;">
+                        🎛️ Hydrological Input Controls
+                    </h3>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <span>Rainfall Intensity (mm/hr)</span>
+                            <span class="control-val" id="val-rain">24.0 mm/hr</span>
+                        </div>
+                        <input type="range" id="input-rain" min="0" max="80" value="24" step="1" oninput="updateSimulation()">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <span>Stormwater Flow Rate Q (m³/s)</span>
+                            <span class="control-val" id="val-flow">6.5 m³/s</span>
+                        </div>
+                        <input type="range" id="input-flow" min="0.5" max="30.0" value="6.5" step="0.5" oninput="updateSimulation()">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <span>Influent Suspended Sediment (mg/L)</span>
+                            <span class="control-val" id="val-sediment">140 mg/L</span>
+                        </div>
+                        <input type="range" id="input-sediment" min="10" max="600" value="140" step="5" oninput="updateSimulation()">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <span>Bioretention Baffle Efficiency (%)</span>
+                            <span class="control-val" id="val-baffle">75%</span>
+                        </div>
+                        <input type="range" id="input-baffle" min="0" max="95" value="75" step="5" oninput="updateSimulation()">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <span>Active Mersive Sensor Nodes</span>
+                            <span class="control-val" id="val-nodes">32 Nodes</span>
+                        </div>
+                        <input type="range" id="input-nodes" min="4" max="64" value="32" step="4" oninput="updateSimulation()">
+                    </div>
+                </div>
+
+                <!-- Simulation Output Column -->
+                <div class="glass-panel sim-output-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="font-family:'Outfit',sans-serif; color:#fff; font-size:1.3rem;">
+                            📊 Real-Time Prediction & Field Visualization
+                        </h3>
+                        <span style="font-size:0.8rem; color:var(--accent-emerald); font-weight:600;">STATUS: PREDICTING</span>
+                    </div>
+
+                    <!-- Gauges -->
+                    <div class="gauge-row">
+                        <div class="gauge-box">
+                            <div class="gauge-lbl">Pred. Turbidity</div>
+                            <div class="gauge-num" id="out-ntu" style="color:var(--accent-cyan);">14.8</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted);">NTU</div>
+                        </div>
+
+                        <div class="gauge-box">
+                            <div class="gauge-lbl">Clarity Index</div>
+                            <div class="gauge-num" id="out-clarity" style="color:var(--accent-emerald);">84.2%</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted);">Transmissivity</div>
+                        </div>
+
+                        <div class="gauge-box">
+                            <div class="gauge-lbl">Est. E. coli</div>
+                            <div class="gauge-num" id="out-ecoli" style="color:var(--accent-amber);">185</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted);">CFU / 100mL</div>
+                        </div>
+
+                        <div class="gauge-box">
+                            <div class="gauge-lbl">Dissolved O₂</div>
+                            <div class="gauge-num" id="out-do" style="color:#38bdf8;">8.4</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted);">mg / L</div>
+                        </div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06);">
+                        <canvas id="ntuChart" height="150"></canvas>
+                    </div>
+
+                    <!-- 2D Particle Simulation Canvas -->
+                    <div>
+                        <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:6px; display:flex; justify-content:space-between;">
+                            <span>Hydro-Veillance Spatial Particle Field Simulation (Peter Street Basin Outfall)</span>
+                            <span style="color:var(--accent-cyan);">Flow Vector: East to Harbourfront</span>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="hydroCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Long-Term Planning Horizons Section -->
+        <section id="horizons" class="horizon-section">
+            <div class="section-header">
+                <h2>LONG-TERM PLANNING HORIZONS (2030 – 2100)</h2>
+                <p>A multi-generational roadmap for Toronto's waterfront: transitioning from storm runoff basin to autonomous mersive eco-haven.</p>
+            </div>
+
+            <div class="horizon-nav">
+                <button class="horizon-tab active" onclick="switchHorizon('h2030')">2030 Horizon: Hydro-Veillance Network</button>
+                <button class="horizon-tab" onclick="switchHorizon('h2045')">2045 Horizon: Autonomous Bio-Reefs</button>
+                <button class="horizon-tab" onclick="switchHorizon('h2100')">2100 Horizon: Closed-Loop Cyborg Basin</button>
+            </div>
+
+            <div id="h2030" class="glass-panel horizon-content active">
+                <div class="horizon-info">
+                    <h3>2030 Horizon: Sensor Infrastructure & Citizen Sousveillance</h3>
+                    <p>
+                        Establishing the foundational optical sensing mesh across Peter Street Basin, Spadina Quay, and Lake Ontario outfalls. Citizens access real-time NTU dashboards, transforming passive observers into active environmental stewards.
+                    </p>
+                    <ul class="feature-list">
+                        <li>32 High-speed optical NTU & spectral absorption sensors deployed.</li>
+                        <li>Public open telemetry API with zero municipal data latency.</li>
+                        <li>Automated sediment baffle traps reducing peak storm NTU by 35%.</li>
+                        <li>Citizen Sousveillance mobile kits for localized turbidity sampling.</li>
+                    </ul>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:16px; justify-content:center;">
+                    <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); padding:20px; border-radius:14px;">
+                        <div style="font-size:0.8rem; color:var(--accent-cyan); font-weight:700;">2030 ECOLOGICAL KPI TARGETS</div>
+                        <div style="font-size:1.8rem; font-weight:800; color:#fff; margin:6px 0;">Mean NTU &lt; 18.0</div>
+                        <div style="font-size:0.85rem; color:var(--text-muted);">85% compliance with aquatic life protection standards during heavy rainfall.</div>
+                    </div>
+                    <div class="code-box">
+// 2030 Open Telemetry API Payload
+{
+  "basin_id": "PETER_STREET_BASIN_01",
+  "horizon_year": 2030,
+  "turbidity_ntu": 14.8,
+  "clarity_pct": 84.2,
+  "sousveillance_trust_score": 0.96
+}
+                    </div>
+                </div>
+            </div>
+
+            <div id="h2045" class="glass-panel horizon-content">
+                <div class="horizon-info">
+                    <h3>2045 Horizon: Autonomous Floating Wetland Bio-Reefs</h3>
+                    <p>
+                        Deploying self-adjusting floating bio-baffles and active bio-filtration islands along the Peter Street Slip. AI-guided surge gates throttle incoming runoff, routing heavy sediment streams through root-matrix bio-sponges.
+                    </p>
+                    <ul class="feature-list">
+                        <li>AI-driven bio-retention surge gates operating on predictive NTU models.</li>
+                        <li>85% reduction in E. coli surge events during 100-year storm scenarios.</li>
+                        <li>Native macrophyte vegetation arrays extracting heavy metals & micro-plastics.</li>
+                        <li>Autonomous solar-powered hydro-drones conducting sub-surface cleansing.</li>
+                    </ul>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:16px; justify-content:center;">
+                    <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); padding:20px; border-radius:14px;">
+                        <div style="font-size:0.8rem; color:var(--accent-emerald); font-weight:700;">2045 ECOLOGICAL KPI TARGETS</div>
+                        <div style="font-size:1.8rem; font-weight:800; color:#fff; margin:6px 0;">Mean NTU &lt; 8.5</div>
+                        <div style="font-size:0.85rem; color:var(--text-muted);">Re-establishment of native salmonid spawning zones at Spadina Slip.</div>
+                    </div>
+                    <div class="code-box">
+// 2045 Autonomous Bio-Throttling Logic
+if (predicted_NTU > 25.0) {
+    activate_surge_baffles(level=0.85);
+    route_flow_to_floating_wetlands();
+}
+                    </div>
+                </div>
+            </div>
+
+            <div id="h2100" class="glass-panel horizon-content">
+                <div class="horizon-info">
+                    <h3>2100 Horizon: Closed-Loop Climate Adaptive Eco-Cyborg Basin</h3>
+                    <p>
+                        A fully integrated, self-healing aquatic ecosystem capable of absorbing 2-meter Lake Ontario sea level surges while providing pristine water clarity. Governance algorithms dynamically adjust ecological bio-pumps based on community vote consensus.
+                    </p>
+                    <ul class="feature-list">
+                        <li>100% climate-resilient sea level buffer protecting Toronto Harbourfront.</li>
+                        <li>Closed-loop digital governance: municipal budgets auto-allocated via smart contracts.</li>
+                        <li>Zero net turbidity spikes under extreme 200-year storm events.</li>
+                        <li>Full integration of Steve Mann's Humanistic Intelligence into urban hydro-infrastructure.</li>
+                    </ul>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:16px; justify-content:center;">
+                    <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); padding:20px; border-radius:14px;">
+                        <div style="font-size:0.8rem; color:var(--accent-violet); font-weight:700;">2100 ECOLOGICAL KPI TARGETS</div>
+                        <div style="font-size:1.8rem; font-weight:800; color:#fff; margin:6px 0;">Pristine NTU &lt; 3.0</div>
+                        <div style="font-size:0.85rem; color:var(--text-muted);">Zero-emission, self-sustaining urban aquatic sanctuary.</div>
+                    </div>
+                    <div class="code-box">
+// 2100 Smart Contract Civic Consensus
+contract BasinGovernance {
+    function executeBioPumpAdjust(uint256 voteWeight) public {
+        require(voteWeight > CONSENSUS_THRESHOLD);
+        adjustHydraulicBaffling();
+    }
+}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Digital Governance & Civic Government Efforts -->
+        <section id="governance" class="gov-section">
+            <div class="section-header">
+                <h2>DIGITAL GOVERNANCE & CIVIC COMMUNITY DEVELOPMENT</h2>
+                <p>Partnering with City of Toronto, Waterfront Toronto, and TRCA to empower citizen participation through open telemetry and democratic budget voting.</p>
+            </div>
+
+            <div class="gov-grid">
+                <!-- Civic Voting Simulator -->
+                <div class="glass-panel gov-card">
+                    <h3 style="font-family:'Outfit',sans-serif; color:#fff; font-size:1.3rem;">
+                        🏛️ Participatory Eco-Budget Voting Simulator
+                    </h3>
+                    <p style="color:var(--text-muted); font-size:0.9rem;">
+                        Simulate direct citizen governance. Cast your vote to allocate the 2026 $12M Peter Street Basin Eco-Restoration Grant across competing projects.
+                    </p>
+
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <div class="vote-item">
+                            <div class="vote-info">
+                                <h4>1. Sub-Surface Sediment Baffle Grid</h4>
+                                <p>Reduces stormwater turbidity &amp; traps suspended solids at Peter St Outfall.</p>
+                            </div>
+                            <button class="vote-btn" onclick="castVote('baffles')">Vote (+1)</button>
+                        </div>
+
+                        <div class="vote-item">
+                            <div class="vote-info">
+                                <h4>2. Citizen Hydro-Sousveillance Kiosks</h4>
+                                <p>Installs 12 public optical sensing stations along Spadina Quay.</p>
+                            </div>
+                            <button class="vote-btn" onclick="castVote('kiosks')">Vote (+1)</button>
+                        </div>
+
+                        <div class="vote-item">
+                            <div class="vote-info">
+                                <h4>3. Floating Native Wetland Reefs</h4>
+                                <p>Biological filtration islands to absorb heavy metals and E. coli surges.</p>
+                            </div>
+                            <button class="vote-btn" onclick="castVote('reefs')">Vote (+1)</button>
+                        </div>
+                    </div>
+
+                    <!-- Live Vote Distribution Chart -->
+                    <div style="margin-top:10px;">
+                        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:6px;">Current Community Vote Allocation (%)</div>
+                        <canvas id="voteChart" height="110"></canvas>
+                    </div>
+                </div>
+
+                <!-- Municipal Policy & Transparency Panel -->
+                <div class="glass-panel gov-card">
+                    <h3 style="font-family:'Outfit',sans-serif; color:#fff; font-size:1.3rem;">
+                        📜 Civic Government Partnership Framework
+                    </h3>
+
+                    <div style="display:flex; flex-direction:column; gap:14px; font-size:0.9rem; color:var(--text-muted);">
+                        <div style="border-left:3px solid var(--accent-cyan); padding-left:12px;">
+                            <strong style="color:#fff;">City of Toronto Stormwater Master Plan:</strong>
+                            Integrating Peter Street Basin real-time NTU telemetry into the municipal Western Beaches Storage Tunnel operations.
+                        </div>
+
+                        <div style="border-left:3px solid var(--accent-emerald); padding-left:12px;">
+                            <strong style="color:#fff;">Waterfront Toronto Revitalization:</strong>
+                            Co-designing public boardwalks with embedded phenomenological augmented reality (PAR) displays for real-time water clarity viewing.
+                        </div>
+
+                        <div style="border-left:3px solid var(--accent-violet); padding-left:12px;">
+                            <strong style="color:#fff;">TRCA Watershed Compliance Guarantee:</strong>
+                            Enforcing open-data sousveillance standards so water quality telemetry cannot be censored or suppressed.
+                        </div>
+                    </div>
+
+                    <div style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.2); padding:16px; border-radius:12px; margin-top:10px;">
+                        <div style="font-size:0.85rem; color:var(--accent-cyan); font-weight:700; margin-bottom:4px;">COMMUNITY BENEFIT AGREEMENT</div>
+                        <div style="font-size:0.82rem; color:#cbd5e1;">
+                            100% of telemetry data generated by the Peter Street Basin Mersivity Project is published under Creative Commons CC0 Public Domain.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Sensor Topology Map Section -->
+        <section id="topology" class="map-card glass-panel">
+            <div class="section-header">
+                <h2>PETER STREET BASIN SENSOR TOPOLOGY</h2>
+                <p>Interactive spatial layout of optical NTU nodes, bio-retention baffles, and sousveillance kiosks along Toronto's Harbourfront.</p>
+            </div>
+
+            <div class="svg-map-wrapper">
+                <svg viewBox="0 0 800 400" style="width:100%; height:auto;">
+                    <!-- Lake Ontario Water Body -->
+                    <rect x="0" y="0" width="800" height="400" fill="#020d1f" rx="12"/>
+                    
+                    <!-- Shoreline / Basin Outfall Geometry -->
+                    <path d="M 50 50 L 350 50 L 350 250 L 750 250 L 750 350 L 50 350 Z" fill="#07172f" stroke="#06b6d4" stroke-width="2"/>
+                    <path d="M 350 50 L 350 250" stroke="rgba(255,255,255,0.15)" stroke-dasharray="4 4"/>
+                    
+                    <!-- Labels -->
+                    <text x="70" y="80" fill="#94a3b8" font-size="14" font-weight="700">PETER STREET STORM BASIN SLIP</text>
+                    <text x="370" y="280" fill="#06b6d4" font-size="14" font-weight="700">TORONTO HARBOURFRONT / LAKE ONTARIO</text>
+                    <text x="70" y="320" fill="#10b981" font-size="12">Spadina Quay Promenade</text>
+
+                    <!-- Flow Vector Arrow -->
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#06b6d4" />
+                        </marker>
+                    </defs>
+                    <line x1="120" y1="150" x2="300" y2="150" stroke="#06b6d4" stroke-width="3" marker-end="url(#arrow)" stroke-dasharray="6 3"/>
+
+                    <!-- Sensor Nodes -->
+                    <!-- Node 1: Inflow -->
+                    <g transform="translate(100, 150)" cursor="pointer" onclick="highlightNode('Node 1: Storm Inflow Sensor', 'NTU: 18.4 | Flow: 6.5 m³/s')">
+                        <circle r="12" fill="rgba(6, 182, 212, 0.3)" stroke="#06b6d4" stroke-width="2"/>
+                        <circle r="5" fill="#06b6d4"/>
+                        <text x="18" y="4" fill="#fff" font-size="11" font-weight="600">S1: Outfall Inflow</text>
+                    </g>
+
+                    <!-- Node 2: Mid-Basin Baffle -->
+                    <g transform="translate(240, 150)" cursor="pointer" onclick="highlightNode('Node 2: Mid-Basin Bio-Baffle', 'NTU: 12.1 | Baffle Eff: 75%')">
+                        <circle r="12" fill="rgba(16, 185, 129, 0.3)" stroke="#10b981" stroke-width="2"/>
+                        <circle r="5" fill="#10b981"/>
+                        <text x="18" y="4" fill="#fff" font-size="11" font-weight="600">S2: Bio-Baffle Trap</text>
+                    </g>
+
+                    <!-- Node 3: Harbourfront Exit -->
+                    <g transform="translate(420, 270)" cursor="pointer" onclick="highlightNode('Node 3: Harbourfront Outfall', 'NTU: 8.2 | Clarity: 92.4%')">
+                        <circle r="12" fill="rgba(168, 85, 247, 0.3)" stroke="#a855f7" stroke-width="2"/>
+                        <circle r="5" fill="#a855f7"/>
+                        <text x="18" y="4" fill="#fff" font-size="11" font-weight="600">S3: Lake Ontario Outfall</text>
+                    </g>
+
+                    <!-- Node 4: Public Sousveillance Kiosk -->
+                    <g transform="translate(200, 310)" cursor="pointer" onclick="highlightNode('Node 4: Citizen Kiosk #1', 'Public PAR Display Active')">
+                        <rect x="-8" y="-8" width="16" height="16" fill="#f59e0b" rx="3"/>
+                        <text x="14" y="4" fill="#f59e0b" font-size="11" font-weight="600">Kiosk: Spadina Quay</text>
+                    </g>
+                </svg>
+
+                <div id="node-info-box" style="margin-top:14px; font-size:0.9rem; color:var(--accent-cyan); font-weight:600;">
+                    Click any sensor node above to inspect spatial hydro-telemetry attributes.
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p style="margin-bottom:12px;">
+                <strong>PETER STREET BASIN MERSIVITY PROJECT</strong> &bull; Grounded in the work of <a href="http://wearcam.org" target="_blank">Prof. Steve Mann</a>
+            </p>
+            <p style="font-size:0.8rem; color:#64748b;">
+                Developed for Toronto Waterfront Eco-Restoration, Digital Governance, and Humanistic Intelligence Research &copy; 2026.
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // 1. Chart.js NTU Forecast Chart Initialization
+        const ctxNTU = document.getElementById('ntuChart').getContext('2d');
+        let ntuChart = new Chart(ctxNTU, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [
+                    {
+                        label: 'Predicted NTU (With Bio-Baffles)',
+                        data: [8, 10, 22, 14.8, 12, 9, 7],
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.15)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3
+                    },
+                    {
+                        label: 'Baseline Unfiltered Storm Surge',
+                        data: [12, 18, 55, 42, 30, 22, 15],
+                        borderColor: '#ef4444',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.4,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: '#cbd5e1', font: { size: 10 } } }
+                },
+                scales: {
+                    x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'NTU Turbidity', color: '#94a3b8' } }
+                }
+            }
+        });
+
+        // 2. Chart.js Community Vote Distribution Chart Initialization
+        const ctxVote = document.getElementById('voteChart').getContext('2d');
+        let voteCounts = { baffles: 142, kiosks: 88, reefs: 215 };
+        let voteChart = new Chart(ctxVote, {
+            type: 'bar',
+            data: {
+                labels: ['Sediment Baffles', 'Sousveillance Kiosks', 'Wetland Reefs'],
+                datasets: [{
+                    label: 'Votes',
+                    data: [142, 88, 215],
+                    backgroundColor: ['#06b6d4', '#f59e0b', '#10b981'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    y: { ticks: { color: '#e2e8f0', font: { size: 10 } }, grid: { display: false } }
+                }
+            }
+        });
+
+        function castVote(type) {
+            voteCounts[type] += 1;
+            voteChart.data.datasets[0].data = [voteCounts.baffles, voteCounts.kiosks, voteCounts.reefs];
+            voteChart.update();
+        }
+
+        // 3. Dynamic NTU Simulation Engine Update
+        function updateSimulation() {
+            const rain = parseFloat(document.getElementById('input-rain').value);
+            const flow = parseFloat(document.getElementById('input-flow').value);
+            const sediment = parseFloat(document.getElementById('input-sediment').value);
+            const baffle = parseFloat(document.getElementById('input-baffle').value);
+            const nodes = parseInt(document.getElementById('input-nodes').value);
+
+            // Update Label Text
+            document.getElementById('val-rain').textContent = rain.toFixed(1) + ' mm/hr';
+            document.getElementById('val-flow').textContent = flow.toFixed(1) + ' m³/s';
+            document.getElementById('val-sediment').textContent = sediment + ' mg/L';
+            document.getElementById('val-baffle').textContent = baffle + '%';
+            document.getElementById('val-nodes').textContent = nodes + ' Nodes';
+
+            // Steve Mann Hydro-Veillance NTU Formula
+            const baseNTU = 0.35 * sediment * Math.pow(1.0 + 0.03 * rain, 1.1) * Math.pow(flow / 5.0, 0.65);
+            const predictedNTU = Math.max(1.5, baseNTU * (1.0 - 0.009 * baffle));
+            
+            const clarityPct = Math.max(5.0, Math.min(99.0, 100.0 * Math.exp(-0.028 * predictedNTU)));
+            const ecoliCFU = Math.round(12.0 * Math.pow(predictedNTU, 1.12) * (1.0 + 0.01 * rain));
+            const dissolvedO2 = Math.max(2.0, (11.5 - 0.04 * predictedNTU - 0.1 * flow)).toFixed(1);
+
+            // Update Outputs in UI
+            document.getElementById('out-ntu').textContent = predictedNTU.toFixed(1);
+            document.getElementById('out-clarity').textContent = clarityPct.toFixed(1) + '%';
+            document.getElementById('out-ecoli').textContent = ecoliCFU;
+            document.getElementById('out-do').textContent = dissolvedO2;
+
+            document.getElementById('kpi-ntu').textContent = predictedNTU.toFixed(1) + ' NTU';
+            document.getElementById('kpi-clarity').textContent = clarityPct.toFixed(1) + '%';
+            document.getElementById('kpi-nodes').textContent = nodes + ' Nodes';
+
+            // Update Chart Curve Data dynamically
+            const peakHour = Math.min(60, predictedNTU * 2.2);
+            ntuChart.data.datasets[0].data = [
+                (predictedNTU * 0.4).toFixed(1),
+                (predictedNTU * 0.7).toFixed(1),
+                peakHour.toFixed(1),
+                predictedNTU.toFixed(1),
+                (predictedNTU * 0.8).toFixed(1),
+                (predictedNTU * 0.5).toFixed(1),
+                (predictedNTU * 0.3).toFixed(1)
+            ];
+            ntuChart.update();
+        }
+
+        // 4. Horizon Tab Switching
+        function switchHorizon(tabId) {
+            document.querySelectorAll('.horizon-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.horizon-content').forEach(c => c.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // 5. Interactive SVG Map Node Click
+        function highlightNode(title, info) {
+            document.getElementById('node-info-box').innerHTML = `
+                📌 <strong>${title}</strong> — <span style="color:#fff;">${info}</span>
+            `;
+        }
+
+        // 6. 2D Hydro-Veillance Canvas Particle Animation
+        const canvas = document.getElementById('hydroCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let particles = [];
+        for (let i = 0; i < 70; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                speed: 0.8 + Math.random() * 2.0,
+                radius: 1.5 + Math.random() * 2.5,
+                alpha: 0.3 + Math.random() * 0.6
+            });
+        }
+
+        function animateCanvas() {
+            ctx.fillStyle = 'rgba(2, 7, 18, 0.25)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const ntuVal = parseFloat(document.getElementById('out-ntu').textContent) || 14.8;
+            const sedimentColor = ntuVal > 30 ? '245, 158, 11' : '6, 182, 212';
+
+            particles.forEach(p => {
+                p.x += p.speed;
+                if (p.x > canvas.width) p.x = 0;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${sedimentColor}, ${p.alpha})`;
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+    </script>
+</body>
+</html>

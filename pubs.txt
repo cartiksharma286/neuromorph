@@ -1,0 +1,5 @@
+"Quantum Hyper-Fluid Dynamics: A 4D Navier-Stokes Solver with Quantum 
+Statistical Turbulence 
+Quantum Machine Learning for MEG Source Localization, Variational 
+Optimization
+"Computational Optimization of rTMS via Finite Element Analysis

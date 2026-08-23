@@ -1,3 +1,4 @@
+import math
 import unittest
 from unittest.mock import patch
 
@@ -5,7 +6,7 @@ import numpy as np
 
 from app import app
 from ibkr_bridge import IBKRBridge, IBKRUnavailableError, calculate_volatility_signal
-from market_engine import MarketSimulationEngine, optimize_dividend_portfolio
+from market_engine import MarketSimulationEngine, _feynman_path_integral_yield, optimize_dividend_portfolio
 
 
 class FakeIBKRBridge:
@@ -91,6 +92,24 @@ class IBKRIntegrationTests(unittest.TestCase):
         allocation = sum(float(item["allocation"].rstrip("%")) for item in portfolio)
         self.assertAlmostEqual(allocation, 100.0, delta=0.2)
         self.assertGreater(portfolio_yield, 0.0)
+        self.assertIn("path_integral_yield", portfolio[0])
+
+    def test_feynman_path_integral_yield_matches_classical_limit(self):
+        # With zero drift, E[S_t] = 1 for all t regardless of volatility, so the
+        # path-integral estimator must converge to the base yield exactly.
+        rng = np.random.default_rng(42)
+        result = _feynman_path_integral_yield(7.2, volatility=0.25, drift=0.0,
+                                               n_paths=20000, rng=rng)
+        self.assertAlmostEqual(result, 7.2, delta=0.05)
+
+    def test_feynman_path_integral_yield_matches_closed_form_drift(self):
+        # E[(1/T) integral S_t dt] has the closed form (exp(mu*T)-1)/(mu*T) for GBM.
+        rng = np.random.default_rng(7)
+        drift, horizon = 0.10, 0.25
+        result = _feynman_path_integral_yield(10.0, volatility=0.2, drift=drift,
+                                               horizon_years=horizon, n_paths=20000, rng=rng)
+        closed_form = 10.0 * (math.exp(drift * horizon) - 1.0) / (drift * horizon)
+        self.assertAlmostEqual(result, closed_form, delta=0.05)
 
     def test_signal_uses_price_history(self):
         closes = 100.0 * np.exp(np.linspace(0.0, 0.12, 60))

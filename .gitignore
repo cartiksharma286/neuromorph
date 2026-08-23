@@ -1,0 +1,12 @@
+.venv
+venv
+__pycache__/
+*.pyc
+*.stl
+*.ply
+*.zip
+*.log
+.DS_Store
+.gradle/
+build/
+node_modules/

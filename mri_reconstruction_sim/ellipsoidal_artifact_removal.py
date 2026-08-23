@@ -260,7 +260,42 @@ class EllipsoidalArtifactRemover:
         
         return artifact_likelihood
     
-    def remove_artifacts(self, image, use_ellipsoid=True, speckle_threshold=0.75):
+    def apply_butterworth_filter(self, image, cutoff=0.25, order=2):
+        """Applies 2D Butterworth lowpass frequency filter to remove high-frequency noise speckles."""
+        img = np.nan_to_num(image).astype(np.float64)
+        H, W = img.shape
+        F = np.fft.fftshift(np.fft.fft2(img))
+        u = np.linspace(-0.5, 0.5, W)
+        v = np.linspace(-0.5, 0.5, H)
+        U, V = np.meshgrid(u, v)
+        D = np.sqrt(U**2 + V**2)
+        H_bw = 1.0 / (1.0 + (D / max(cutoff, 1e-4))**(2 * order))
+        filtered = np.real(np.fft.ifft2(np.fft.ifftshift(F * H_bw)))
+        mean_orig = np.mean(img)
+        mean_filt = np.mean(filtered)
+        if mean_orig > 0 and mean_filt > 0:
+            filtered = np.clip(filtered * (mean_orig / mean_filt), 0, None)
+        return filtered
+
+    def apply_adaptive_signal_processing_filter(self, image, window_size=5):
+        """Applies 2D local adaptive Lee/Wiener signal processing filter."""
+        img = np.nan_to_num(image).astype(np.float64)
+        kernel = np.ones((window_size, window_size), dtype=np.float64) / (window_size**2)
+        mu_L = ndi.convolve(img, kernel, mode='reflect')
+        img_sq = ndi.convolve(img**2, kernel, mode='reflect')
+        var_L = np.maximum(img_sq - mu_L**2, 1e-9)
+        corner_sz = max(4, img.shape[0] // 8)
+        corners = np.concatenate([
+            img[:corner_sz, :corner_sz].ravel(),
+            img[:corner_sz, -corner_sz:].ravel(),
+            img[-corner_sz:, :corner_sz].ravel(),
+            img[-corner_sz:, -corner_sz:].ravel()
+        ])
+        noise_var = float(np.var(corners)) if np.var(corners) > 1e-8 else float(np.percentile(var_L, 10))
+        W = np.clip((var_L - noise_var) / var_L, 0.0, 1.0)
+        return np.clip(mu_L + W * (img - mu_L), 0, None)
+
+    def remove_artifacts(self, image, use_ellipsoid=True, speckle_threshold=0.75, filter_type='default'):
         """
         Main artifact removal pipeline.
         
@@ -272,6 +307,8 @@ class EllipsoidalArtifactRemover:
             Whether to apply ellipsoidal mask
         speckle_threshold : float
             Threshold for speckle removal confidence
+        filter_type : str
+            Type of filter: 'default', 'butterworth', 'adaptive' / 'adaptive_signal_processing'
             
         Returns
         -------
@@ -284,7 +321,8 @@ class EllipsoidalArtifactRemover:
             'original_max': float(np.max(img)),
             'original_mean': float(np.mean(img)),
             'artifacts_removed_count': 0,
-            'ellipsoid_applied': use_ellipsoid
+            'ellipsoid_applied': use_ellipsoid,
+            'filter_type': filter_type
         }
         
         # Step 1: Adaptive ellipsoid fitting
@@ -320,14 +358,20 @@ class EllipsoidalArtifactRemover:
                 
                 cleaned[component] = replacement_val
         
-        # Step 4: Apply ellipsoidal mask if requested
+        # Step 4: Apply filter type (Butterworth, Adaptive, or Default)
+        if filter_type.lower() == 'butterworth':
+            cleaned = self.apply_butterworth_filter(cleaned, cutoff=0.25, order=2)
+        elif 'adaptive' in filter_type.lower():
+            cleaned = self.apply_adaptive_signal_processing_filter(cleaned, window_size=5)
+
+        # Step 5: Apply ellipsoidal mask if requested
         if use_ellipsoid:
             cleaned = cleaned * ellipsoid_mask
         
-        # Step 5: Final smoothing to blend repairs
+        # Step 6: Final smoothing to blend repairs
         cleaned = ndi.gaussian_filter(cleaned, sigma=0.8)
         
-        # Step 6: Restore valid intensity range
+        # Step 7: Restore valid intensity range
         if stats['original_max'] > 0:
             cleaned = cleaned * (stats['original_max'] / np.max(cleaned)) if np.max(cleaned) > 0 else cleaned
         

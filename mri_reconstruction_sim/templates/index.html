@@ -480,8 +480,8 @@
             </div>
 
             <div class="control-group">
-                <label>Image Noise</label>
-                <input type="range" id="noise" min="0" max="0.2" step="0.01" value="0">
+                <label>Image Noise (0% Pristine)</label>
+                <input type="range" id="noise" min="0" max="0.2" step="0.01" value="0" oninput="debouncedRun()">
             </div>
 
             <div class="control-group">
@@ -493,6 +493,8 @@
                 <label>Noise Management</label>
                 <select id="noise_filter" onchange="debouncedRun()">
                     <option value="None">No Denoising</option>
+                    <option value="Butterworth">🌊 Butterworth Filter (Speckle Removal)</option>
+                    <option value="Adaptive Signal Processing">⚡ Adaptive Signal Processing (Lee/Wiener Filter)</option>
                     <option value="Supervised Denoising">🤖 Supervised Classification (Demasking)</option>
                     <option value="Gaussian">Gaussian Smoothing</option>
                     <option value="Median">Median Filter</option>
@@ -1489,7 +1491,7 @@
                     </div>
                     <div style="display:flex; flex-direction:column; gap:0.4rem;">
                         <label style="color:#94a3b8; font-size:0.85rem;">Noise Level</label>
-                        <input type="number" id="sr-noise" value="0.05" min="0" max="1" step="0.01" style="width:90px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:4px 8px;">
+                        <input type="number" id="sr-noise" value="0" min="0" max="1" step="0.01" style="width:90px; background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:6px; padding:4px 8px;">
                     </div>
                     <div style="display:flex; align-items:flex-end;">
                         <button onclick="runSeqRank()" style="background:#6366f1; color:#fff; border:none; border-radius:8px; padding:8px 22px; cursor:pointer; font-weight:600;">▶ Rank Sequences</button>

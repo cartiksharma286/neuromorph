@@ -53,6 +53,12 @@
                 <button class="nav-btn" data-tab="anxiety">
                     <span class="icon">⚡</span> Anxiety in Millennials
                 </button>
+                <button class="nav-btn" data-tab="moduli-bem">
+                    <span class="icon">🧮</span> Moduli-BEM Paradigm
+                </button>
+                <button class="nav-btn" data-tab="tourette">
+                    <span class="icon">🎯</span> Tourette Syndrome (CSTC)
+                </button>
                 <button class="nav-btn" data-tab="nash-geodesic">
                     <span class="icon">📐</span> Nash Equilibria Registration
                 </button>
@@ -808,6 +814,286 @@
                         <div class="panel glass-panel" style="background: rgba(14,112,144,0.04); border: 1px solid rgba(14,112,144,0.2);">
                             <h3>🔬 Millennial Anxiety rTMS Neuromodulation &amp; Pharmacotherapy Tapering Prescription</h3>
                             <div id="anx-genai-text" style="font-size:13px; line-height:1.6; color:#c9d1d9; margin-top:10px;">Compiling quantitative anxiety neuromodulation telemetry...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Moduli-BEM Optimal Treatment Paradigm Tab ── -->
+            <div id="moduli-bem-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center;">
+                    <a id="mb-preprint-btn" href="/api/moduli-bem-preprint" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #6941c6, #4a2f9e); padding:10px 18px; border-radius:8px; font-weight:600; box-shadow:0 4px 12px rgba(105,65,198,0.35);">
+                        <span>📥 Download Nature Moduli-BEM Preprint (PDF)</span>
+                    </a>
+                    <span style="font-size:12px; color:#8b949e; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
+                        SL(2,Z) Fundamental Domain &middot; Elliptic Points &middot; Boundary Element Single-Layer Potential
+                    </span>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT PANEL: CONTROLS -->
+                    <div class="panel glass-panel" style="flex: 0 0 320px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Moduli-BEM Controls</h3>
+
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Clinical Condition:</span>
+                                </div>
+                                <select id="mb-condition" onchange="runModuliBemParadigm();" class="sa-slider-input" style="height:34px; background:#0e1726; color:#e6edf3; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:0 8px;">
+                                    <option value="stroke" selected>Stroke Motor Rehabilitation</option>
+                                    <option value="dementia">Dementia Cognitive Enhancement</option>
+                                    <option value="tremor">Essential Tremor</option>
+                                    <option value="ocd">OCD Deep Circuit Modulation</option>
+                                </select>
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Frequency Search Range (max):</span>
+                                    <span id="label-mb-freq-max" class="sa-slider-val">50.0 Hz</span>
+                                </div>
+                                <input type="range" id="mb-freq-max" min="10" max="100" step="1" value="50" oninput="document.getElementById('label-mb-freq-max').textContent=parseFloat(this.value).toFixed(1)+' Hz'; runModuliBemParadigmDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Intensity Search Range (max):</span>
+                                    <span id="label-mb-intensity-max" class="sa-slider-val">150.0% MSO</span>
+                                </div>
+                                <input type="range" id="mb-intensity-max" min="50" max="200" step="5" value="150" oninput="document.getElementById('label-mb-intensity-max').textContent=parseFloat(this.value).toFixed(1)+'% MSO'; runModuliBemParadigmDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <h3>Optimal Protocol Metrics</h3>
+                        <div class="sa-control-box" style="margin-bottom:0;">
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Optimal Frequency f*:</span>
+                                <span id="mb-metric-freq" class="sa-metric-val" style="color:#56d364;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Optimal Intensity I*:</span>
+                                <span id="mb-metric-intensity" class="sa-metric-val" style="color:#79c0ff;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Reduced Point z*:</span>
+                                <span id="mb-metric-zreduced" class="sa-metric-val" style="color:#d2a8ff; font-size:11px;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Nearest Elliptic Point:</span>
+                                <span id="mb-metric-elliptic" class="sa-metric-val" style="color:#ffb86c; font-size:11px; text-align:right; max-width:170px;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Stability Score Phi(z*):</span>
+                                <span id="mb-metric-stability" class="sa-metric-val" style="color:#58a6ff;">...</span>
+                            </div>
+                            <div class="sa-metric-row" style="border-bottom:none;">
+                                <span class="sa-metric-lbl">Peak Cortical Potential:</span>
+                                <span id="mb-metric-peak" class="sa-metric-val" style="color:#ff7b72;">...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: HEATMAPS & DIAGRAMS -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Moduli-Stability Heat Map: SL(2,Z) Fundamental Domain Reduction</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Phi(z) over the (frequency, intensity) protocol plane; bright bands mark modular-resonance protocols near the elliptic points i and rho.</p>
+                                <div id="mb-plot-moduli-heatmap" class="chart-container" style="min-height:360px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Boundary Element Cortical Potential Heat Map</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Single-layer potential phi(theta,phi) induced by the optimal-protocol coil dipole.</p>
+                                <div id="mb-plot-bem-heatmap" class="chart-container" style="min-height:360px;"></div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Cortical Depth Field Attenuation (Layered Conductivity)</h3>
+                                <div id="mb-plot-attenuation" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Continued-Fraction Frequency Convergents</h3>
+                                <div id="mb-plot-cf" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- ASCII Schematic -->
+                        <div class="panel glass-panel">
+                            <h3>🔌 Moduli-Theoretic Reduction &amp; Boundary Element Architecture</h3>
+                            <pre id="mb-ascii-schematic" style="font-family:'Courier New', monospace; font-size:11px; line-height:1.3; white-space:pre-wrap; background:#050b14; border:1px solid rgba(105,65,198,0.3); border-radius:12px; padding:15px; color:#c084fc; margin:0; height:340px; overflow:auto;"></pre>
+                        </div>
+
+                        <!-- Prescription -->
+                        <div class="panel glass-panel" style="background: rgba(105,65,198,0.04); border: 1px solid rgba(105,65,198,0.2);">
+                            <h3>🔬 Moduli-Theoretic Optimal Treatment Paradigm Prescription</h3>
+                            <div id="mb-genai-text" style="font-size:13px; line-height:1.6; color:#c9d1d9; margin-top:10px;">Compiling moduli-theoretic reduction and boundary-element analysis...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Tourette Syndrome (CSTC Combinatorics) Tab ── -->
+            <div id="tourette-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center;">
+                    <a id="ts-preprint-btn" href="/api/tourette-rtms-preprint" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #067647, #044e2e); padding:10px 18px; border-radius:8px; font-weight:600; box-shadow:0 4px 12px rgba(6,118,71,0.35);">
+                        <span>📥 Download Nature Tourette Preprint (PDF)</span>
+                    </a>
+                    <span style="font-size:12px; color:#8b949e; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
+                        Combinatorial CSTC Knapsack &middot; 1Hz LTD pre-SMA &middot; PUTS Urge Quenching &middot; Permutation Entropy
+                    </span>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT PANEL: CONTROLS & BIOMARKERS -->
+                    <div class="panel glass-panel" style="flex: 0 0 320px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Tourette rTMS &amp; CSTC Controls</h3>
+
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Baseline Total YGTSS (0-50):</span>
+                                    <span id="label-ts-baseline-ygtss" class="sa-slider-val" style="color:#ff7b72;">38.0</span>
+                                </div>
+                                <input type="range" id="ts-baseline-ygtss" min="10.0" max="50.0" step="1.0" value="38.0" oninput="document.getElementById('label-ts-baseline-ygtss').textContent=parseFloat(this.value).toFixed(1); runTouretteRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Treatment Horizon (Weeks):</span>
+                                    <span id="label-ts-weeks" class="sa-slider-val" style="color:#79c0ff;">20 Wks</span>
+                                </div>
+                                <input type="range" id="ts-weeks" min="8" max="40" step="1" value="20" oninput="document.getElementById('label-ts-weeks').textContent=parseInt(this.value)+' Wks'; runTouretteRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Daily Pulse Allocation:</span>
+                                    <span id="label-ts-pulses" class="sa-slider-val" style="color:#56d364;">2400 Pulses</span>
+                                </div>
+                                <input type="range" id="ts-pulses" min="1000" max="4000" step="100" value="2400" oninput="document.getElementById('label-ts-pulses').textContent=parseInt(this.value)+' Pulses'; runTouretteRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Stimulation Intensity (% RMT):</span>
+                                    <span id="label-ts-intensity" class="sa-slider-val" style="color:#d2a8ff;">110 %</span>
+                                </div>
+                                <input type="range" id="ts-intensity" min="80" max="140" step="5" value="110" oninput="document.getElementById('label-ts-intensity').textContent=parseInt(this.value)+' %'; runTouretteRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>HRT Behavioral Synergy Gain:</span>
+                                    <span id="label-ts-hrt-gain" class="sa-slider-val" style="color:#ffb86c;">0.80</span>
+                                </div>
+                                <input type="range" id="ts-hrt-gain" min="0.1" max="1.5" step="0.05" value="0.80" oninput="document.getElementById('label-ts-hrt-gain').textContent=parseFloat(this.value).toFixed(2); runTouretteRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>CF Signature Ratio (ρ*):</span>
+                                    <span id="label-ts-ratio" class="sa-slider-val" style="color:#58a6ff;">1.732051</span>
+                                </div>
+                                <input type="range" id="ts-ratio" min="0.5" max="3.5" step="0.001" value="1.732051" oninput="document.getElementById('label-ts-ratio').textContent=parseFloat(this.value).toFixed(6); runTouretteRtmsDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <h3>Quantitative Clinical Biomarkers</h3>
+                        <div class="sa-control-box" style="margin-bottom:0;">
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Final Modeled YGTSS:</span>
+                                <span id="ts-metric-final-ygtss" class="sa-metric-val" style="color:#56d364;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Total Tic Reduction:</span>
+                                <span id="ts-metric-reduction" class="sa-metric-val" style="color:#79c0ff;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Premonitory Urge (PUTS):</span>
+                                <span id="ts-metric-puts" class="sa-metric-val" style="color:#ffb86c;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Allocation Entropy H_alloc:</span>
+                                <span id="ts-metric-entropy" class="sa-metric-val" style="color:#d2a8ff;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Peak pre-SMA E-Field:</span>
+                                <span id="ts-metric-peak-e" class="sa-metric-val" style="color:#ff7b72;">...</span>
+                            </div>
+                            <div class="sa-metric-row" style="border-bottom:none;">
+                                <span class="sa-metric-lbl">CF Convergents:</span>
+                                <span id="ts-metric-convergents" class="sa-metric-val" style="color:#58a6ff; font-size:11px;">...</span>
+                            </div>
+                        </div>
+
+                        <h3>FHIR R4 Interoperability</h3>
+                        <div class="sa-control-box" style="background: rgba(6,118,71,0.08); border: 1px solid rgba(6,118,71,0.25); margin-bottom:0;">
+                            <div style="font-size:11.5px; line-height:1.45; color:#e6edf3;">
+                                <strong>System:</strong> AWS HealthLake FHIR R4<br>
+                                <strong>Resource:</strong> Observation/Tourette-rTMS-CSTC<br>
+                                <strong>Biometrics:</strong> Wearable Accelerometry/EMG Sync<br>
+                                <strong>Protocol:</strong> 1Hz LTD Bilateral pre-SMA + HRT
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: MULTI-PANEL CHARTS & SCHEMATICS -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+                        <!-- Row 1: Longitudinal Trajectory Plot -->
+                        <div class="panel glass-panel">
+                            <h3>Longitudinal Total YGTSS Trajectory across Treatment Arms</h3>
+                            <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Comparing Sham, Habit Reversal Training (HRT) Monotherapy, Standalone rTMS, and Combinatorial rTMS+HRT.</p>
+                            <div id="ts-plot-trajectory" class="chart-container" style="min-height:300px;"></div>
+                        </div>
+
+                        <!-- Row 2: Symptom Subscores & Combinatorial CSTC Knapsack Allocation -->
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Decoupled Sub-Components: Motor Tics, Vocal Tics &amp; Premonitory Urge (PUTS)</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Tracking isolated motor and phonic tic scores alongside premonitory sensory urge attenuation.</p>
+                                <div id="ts-plot-subscores" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Combinatorial Pulse Knapsack Allocation across CSTC Targets</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Optimal partition of discrete daily pulse quota across Left pre-SMA, Right pre-SMA, rIFG, dACC, and S1/M1.</p>
+                                <div id="ts-plot-allocation" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: BEM Electric Field Penetration & Permutation Entropy -->
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>BEM pre-SMA Cortical Surface Electric Field &amp; Current Density Penetration</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Multi-layer tissue depth attenuation: Scalp, Skull, CSF, Gray Matter, White Matter at pre-SMA target.</p>
+                                <div id="ts-plot-bem" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Tic Cluster Permutation Entropy &amp; Control Effort</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Bandt-Pompe permutation entropy H_perm decay reflecting motor rhythm stabilization.</p>
+                                <div id="ts-plot-entropy" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Finite Stage-Gate Optimization Costs -->
+                        <div class="panel glass-panel">
+                            <h3>Finite Multi-Stage Gate Candidate Objective Costs</h3>
+                            <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Multi-objective optimization cost across admissible Induction, Consolidation, and Maintenance boundaries.</p>
+                            <div id="ts-plot-staging" class="chart-container" style="min-height:280px;"></div>
+                        </div>
+
+                        <!-- Technical H-Bridge & Control Architecture Schematic -->
+                        <div class="panel glass-panel">
+                            <h3>🔌 Closed-Loop Tourette rTMS &amp; Combinatorial CSTC Pulse Generator Architecture</h3>
+                            <pre id="ts-ascii-schematic" style="font-family:'Courier New', monospace; font-size:11px; line-height:1.3; white-space:pre-wrap; background:#050b14; border:1px solid rgba(6,118,71,0.3); border-radius:12px; padding:15px; color:#34d399; margin:0; height:340px; overflow:auto;"></pre>
+                        </div>
+
+                        <!-- Clinical Prescription Card -->
+                        <div class="panel glass-panel" style="background: rgba(6,118,71,0.04); border: 1px solid rgba(6,118,71,0.2);">
+                            <h3>🔬 Tourette Syndrome Combinatorial rTMS Neuromodulation &amp; HRT Prescription</h3>
+                            <div id="ts-genai-text" style="font-size:13px; line-height:1.6; color:#c9d1d9; margin-top:10px;">Compiling quantitative Tourette neuromodulation telemetry...</div>
                         </div>
                     </div>
                 </div>

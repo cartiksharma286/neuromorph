@@ -24,6 +24,8 @@ from logic.dbs_statistical_manifold import generate_dbs_treatment_protocol
 from logic.nash_geodesic_registration import generate_nash_geodesic_registration
 from logic.depression_rtms import simulate_depression_rtms
 from logic.anxiety_millennials_rtms import simulate_anxiety_rtms
+from logic.moduli_bem_paradigm import get_moduli_bem_paradigm
+from logic.tourette_rtms import simulate_tourette_rtms
 
 app = Flask(__name__)
 CORS(app)
@@ -427,6 +429,83 @@ def anxiety_rtms_preprint():
         return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Anxiety_rTMS_Millennials.pdf')
     except (TypeError, ValueError) as exc:
         return jsonify({'error': f'Invalid anxiety preprint parameter: {exc}'}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(exc)}), 500
+
+
+@app.route('/api/moduli-bem-paradigm', methods=['GET'])
+def moduli_bem_paradigm():
+    """Moduli-theoretic (SL(2,Z)) optimal treatment paradigm with boundary-element heat maps."""
+    try:
+        condition = request.args.get('condition', 'stroke')
+        freq_max = float(request.args.get('freq_max', 50.0))
+        intensity_max = float(request.args.get('intensity_max', 150.0))
+        result = get_moduli_bem_paradigm(condition, (1.0, freq_max), (10.0, intensity_max))
+        return jsonify({'status': 'success', 'data': result})
+    except (TypeError, ValueError) as exc:
+        return jsonify({'error': f'Invalid moduli-BEM parameter: {exc}'}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(exc)}), 500
+
+
+@app.route('/api/moduli-bem-preprint', methods=['GET'])
+def moduli_bem_preprint():
+    """Generate and download the Nature-style preprint PDF for the moduli-BEM treatment paradigm."""
+    try:
+        from generate_nature_moduli_bem import build_pdf
+
+        condition = request.args.get('condition', 'stroke')
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Moduli_BEM_Paradigm.pdf')
+        build_pdf(output_path, {'condition': condition})
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Moduli_BEM_Paradigm.pdf')
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(exc)}), 500
+
+
+def _tourette_params():
+    data = request.get_json(silent=True) or {}
+    return {
+        'baseline_ygtss': float(request.args.get('baseline_ygtss', data.get('baseline_ygtss', 38.0))),
+        'treatment_weeks': int(request.args.get('treatment_weeks', data.get('treatment_weeks', 20))),
+        'stimulation_intensity_pct': float(request.args.get('stimulation_intensity_pct', data.get('stimulation_intensity_pct', 110.0))),
+        'daily_pulses': int(request.args.get('daily_pulses', data.get('daily_pulses', 2400))),
+        'hrt_synergy_gain': float(request.args.get('hrt_synergy_gain', data.get('hrt_synergy_gain', 0.80))),
+        'cf_signature_ratio': float(request.args.get('cf_signature_ratio', data.get('cf_signature_ratio', 1.7320508))),
+    }
+
+
+@app.route('/api/tourette-rtms', methods=['GET', 'POST'])
+def api_tourette_rtms():
+    """Return the computational research model for rTMS in Tourette syndrome & combinatorial CSTC allocation."""
+    try:
+        params = _tourette_params()
+        result = simulate_tourette_rtms(**params)
+        return jsonify({'status': 'success', 'data': result})
+    except (TypeError, ValueError) as exc:
+        return jsonify({'error': f'Invalid Tourette model parameter: {exc}'}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(exc)}), 500
+
+
+@app.route('/api/tourette-rtms-preprint', methods=['GET'])
+def tourette_rtms_preprint():
+    """Generate and download the Nature-style preprint PDF for Tourette syndrome combinatorial rTMS."""
+    try:
+        from generate_nature_tourette_rtms import build_pdf
+
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Tourette_rTMS_Combinatorics.pdf')
+        build_pdf(output_path, _tourette_params())
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Tourette_rTMS_Combinatorics.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'error': f'Invalid Tourette preprint parameter: {exc}'}), 400
     except Exception as exc:
         import traceback
         traceback.print_exc()

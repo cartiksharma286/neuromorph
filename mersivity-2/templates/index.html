@@ -343,6 +343,7 @@
             <button class="tab" id="tab-cf" onclick="selectTab('cf')">Register via ResNet + Elliptic</button>
             <button class="tab" id="tab-qml" onclick="selectTab('qml')">Register via Quantum ML</button>
             <button class="tab" id="tab-mri-to-ct-qml" onclick="selectTab('mri-to-ct-qml')">MRI-to-CT Quantum ML</button>
+            <button class="tab" id="tab-mri-to-ct-fencing" onclick="selectTab('mri-to-ct-fencing')">MR-CT Geometric Fencing</button>
             <button class="tab" id="tab-mri-to-stl-qml-feynman" onclick="selectTab('mri-to-stl-qml-feynman')">MRI-to-STL QML+Feynman</button>
             <button class="tab" id="tab-ct-to-stl-qml-wittek" onclick="selectTab('ct-to-stl-qml-wittek')">CT-to-STL QML (Wittek)</button>
             <button class="tab" id="tab-stat-risk" onclick="selectTab('stat-risk')">Register via Stat+Combinatorics</button>
@@ -360,10 +361,14 @@
             <button class="tab" id="tab-neuroacoustic-char" onclick="selectTab('neuroacoustic-char')">⚡ Neuroacoustic Characteristics</button>
             <button class="tab" id="tab-eeg-rtms-qml" onclick="selectTab('eeg-rtms-qml')">🧠 EEG rTMS BCI QAOA</button>
             <button class="tab" id="tab-vqe-neuromodulation" onclick="selectTab('vqe-neuromodulation')">⚛️ VQE Neuromodulation</button>
+            <button class="tab" id="tab-jaynes-cummings" onclick="selectTab('jaynes-cummings')">⚛️ Jaynes-Cummings rTMS</button>
             <button class="tab" id="tab-quantum-cf-seizure" onclick="selectTab('quantum-cf-seizure')">🔮 Quantum CF Seizure Recovery</button>
             <button class="tab" id="tab-hebbian-lake-restoration" onclick="selectTab('hebbian-lake-restoration')">🌊 Hebbian Lake Restoration</button>
             <button class="tab" id="tab-quantum-fusion-majorana" onclick="selectTab('quantum-fusion-majorana')">🌌 Quantum MR-CT-Laser Fusion (Majorana)</button>
             <button class="tab" id="tab-nvqlink-ramanujan-ct" onclick="selectTab('nvqlink-ramanujan-ct')">⚡ NVQLink Ramanujan CT</button>
+            <button class="tab" id="tab-cf-llm-dicom-queue" onclick="selectTab('cf-llm-dicom-queue')">🧮 CF-LLM DICOM Queue & Elliptic Primes</button>
+            <button class="tab" id="tab-cardio-quantum-kalman" onclick="selectTab('cardio-quantum-kalman')">❤️ Cardiovascular Robot Quantum Kalman</button>
+            <button class="tab" id="tab-nash-prime-queue" onclick="selectTab('nash-prime-queue')">🧮 Nash-Prime Queue Optimizer</button>
         </div>
 
         <!-- QML Volumetric Surface Reconstruction Card -->
@@ -1346,6 +1351,276 @@
             </div>
         </div>
 
+        <!-- Continued-Fraction LLM DICOM Queue & Elliptic/Prime Finite Math Card -->
+        <div id="cf-llm-dicom-queue-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">🧮 Continued-Fraction LLM DICOM Queue Triage & Elliptic-Prime Finite Math</div>
+
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px;">
+                <!-- Left: Controls + summary + PDF download -->
+                <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 14px;">
+                        <h3 style="margin: 0; color: #a5b4fc; font-size: 1.1em;">🧬 Predictive Triage Parameters</h3>
+                        <p style="margin: 0; font-size: 0.8em; color: #9ca3af; line-height: 1.4;">
+                            A continued-fraction LLM resolves DICOM/HL7 message urgency as a truncated continued fraction (next-token style prediction), projected onto an elliptic-integral E(m)/K(m) manifold and modulated by prime-gap finite mathematics to estimate queue wait times.
+                        </p>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                <span style="color: #9ca3af;">DICOM Queue Size:</span>
+                                <span id="cf-dicom-queue-size-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">24</span>
+                            </div>
+                            <input type="range" id="cf-dicom-queue-size" min="4" max="64" step="4" value="24" oninput="document.getElementById('cf-dicom-queue-size-val').textContent = this.value" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                <span style="color: #9ca3af;">CF Truncation Depth:</span>
+                                <span id="cf-dicom-depth-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">10</span>
+                            </div>
+                            <input type="range" id="cf-dicom-depth" min="2" max="20" step="1" value="10" oninput="document.getElementById('cf-dicom-depth-val').textContent = this.value" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                <span style="color: #9ca3af;">Prime Sieve Limit:</span>
+                                <span id="cf-dicom-prime-limit-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">500</span>
+                            </div>
+                            <input type="range" id="cf-dicom-prime-limit" min="50" max="5000" step="50" value="500" oninput="document.getElementById('cf-dicom-prime-limit-val').textContent = this.value" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <button onclick="runCfLlmDicomQueue()" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85em; box-shadow: 0 4px 12px rgba(99,102,241,0.3);">
+                            🚀 Run Predictive Triage Simulation
+                        </button>
+                    </div>
+
+                    <!-- Summary metrics -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em;">Predictive Summary</h4>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Avg Priority Score:</span>
+                            <span id="cf-dicom-avg-priority" style="color: #ec4899; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Avg Predicted Wait:</span>
+                            <span id="cf-dicom-avg-wait" style="color: #38bdf8; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Primes Found:</span>
+                            <span id="cf-dicom-prime-count" style="color: #10b981; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Twin-Prime Pairs:</span>
+                            <span id="cf-dicom-twin-primes" style="color: #f59e0b; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <a href="/api/download-cf-dicom-preprint" target="_blank" class="download-btn" style="margin-top: 6px; justify-content: center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 1px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Download Nature Preprint (PDF)
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right: Plots -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">CF-LLM Predictive Triage Ranking</h4>
+                        <div id="cf-dicom-priority-plot" style="width: 100%; height: 260px;"></div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                        <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                            <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">Elliptic-Integral Projection State E(m)/K(m)</h4>
+                            <div id="cf-dicom-elliptic-plot" style="width: 100%; height: 240px;"></div>
+                        </div>
+                        <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                            <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">Prime Counting &pi;(x) vs Li(x)</h4>
+                            <div id="cf-dicom-prime-plot" style="width: 100%; height: 240px;"></div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">Predicted Wait-Time Estimate (CF &times; Elliptic Projection &times; Prime Gaps)</h4>
+                        <div id="cf-dicom-wait-plot" style="width: 100%; height: 240px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cardiovascular Surgical Robot Quantum Kalman Estimation Card -->
+        <div id="cardio-quantum-kalman-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">❤️ Cardiovascular Surgical Robot: Quantum Kalman Estimation (Beyond Wittek Signature)</div>
+
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px;">
+                <!-- Left: Controls + summary + PDF download -->
+                <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 14px;">
+                        <h3 style="margin: 0; color: #a5b4fc; font-size: 1.1em;">🤖 Robotic Tracking Parameters</h3>
+                        <p style="margin: 0; font-size: 0.8em; color: #9ca3af; line-height: 1.4;">
+                            A Quantum Kalman Filter (QKF) tracks a robotic catheter tip against a beating, respiring cardiac surface. The amplitude-weighted gain is entirely independent of continued-fraction refinement, and is benchmarked directly against the Peter Wittek QML registration signature (0.0785&nbsp;mm TRE).
+                        </p>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                <span style="color: #9ca3af;">Heart Rate (bpm):</span>
+                                <span id="cardio-hr-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">72</span>
+                            </div>
+                            <input type="range" id="cardio-hr" min="40" max="180" step="2" value="72" oninput="document.getElementById('cardio-hr-val').textContent = this.value" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                <span style="color: #9ca3af;">Sensor Noise &sigma; (mm):</span>
+                                <span id="cardio-noise-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">0.06</span>
+                            </div>
+                            <input type="range" id="cardio-noise" min="0.01" max="0.3" step="0.01" value="0.06" oninput="document.getElementById('cardio-noise-val').textContent = this.value" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                <span style="color: #9ca3af;">Trajectory Duration (s):</span>
+                                <span id="cardio-duration-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">6</span>
+                            </div>
+                            <input type="range" id="cardio-duration" min="2" max="20" step="1" value="6" oninput="document.getElementById('cardio-duration-val').textContent = this.value" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <button onclick="runCardioQuantumKalman()" style="background: linear-gradient(135deg, #e11d48, #7c3aed); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85em; box-shadow: 0 4px 12px rgba(225,29,72,0.3);">
+                            🚀 Run Quantum Kalman Tracking Simulation
+                        </button>
+                    </div>
+
+                    <!-- Summary metrics -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em;">Benchmark Summary</h4>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Quantum Kalman RMSE:</span>
+                            <span id="cardio-rmse-qkf" style="color: #e11d48; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">CF-Smoothing Baseline RMSE:</span>
+                            <span id="cardio-rmse-cf" style="color: #f59e0b; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Wittek Signature TRE:</span>
+                            <span id="cardio-wittek-tre" style="color: #818cf8; font-weight: 700; font-family: monospace;">0.0785 mm</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Improvement vs Wittek:</span>
+                            <span id="cardio-improvement-wittek" style="color: #10b981; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Improvement vs CF Baseline:</span>
+                            <span id="cardio-improvement-cf" style="color: #38bdf8; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <a href="/api/download-cardio-kalman-preprint" target="_blank" class="download-btn" style="margin-top: 6px; justify-content: center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 1px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Download Nature Preprint (PDF)
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right: Plots -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">Robotic End-Effector Tracking (x&ndash;y projection)</h4>
+                        <div id="cardio-trajectory-plot" style="width: 100%; height: 300px;"></div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">Estimation Error over Cardiac Cycle</h4>
+                        <div id="cardio-error-plot" style="width: 100%; height: 240px;"></div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                        <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                            <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">Quantum Kalman Gain Evolution</h4>
+                            <div id="cardio-gain-plot" style="width: 100%; height: 240px;"></div>
+                        </div>
+                        <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                            <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">Benchmark Comparison (RMSE / TRE)</h4>
+                            <div id="cardio-benchmark-plot" style="width: 100%; height: 240px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nash-Prime Combinatorial Game-Theoretic Queue Optimizer Card -->
+        <div id="nash-prime-queue-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">🧮 Nash-Prime Combinatorial Game-Theoretic Queue Optimizer for Cardio-Neuroradiology Workflows</div>
+
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px;">
+                <!-- Left: Controls + summary + PDF download -->
+                <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 14px;">
+                        <h3 style="margin: 0; color: #a5b4fc; font-size: 1.1em;">♟️ Combinatorial Game Parameters</h3>
+                        <p style="margin: 0; font-size: 0.8em; color: #9ca3af; line-height: 1.4;">
+                            Each cardio-neuroradiology modality backlog is modelled as a Nim heap (Sprague&ndash;Grundy theorem). The smallest prime exceeding a heap's size &mdash; its <b>Nash prime</b> &mdash; sets the marginal cost of a finite Rosenthal congestion (potential) game. Greedy potential minimisation recovers a pure-strategy Nash equilibrium triage ordering, guaranteed to exist by Rosenthal (1973) / Nash (1951).
+                        </p>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                <span style="color: #9ca3af;">Backlog Load Scale:</span>
+                                <span id="nash-load-scale-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">1.0</span>
+                            </div>
+                            <input type="range" id="nash-load-scale" min="0.2" max="3" step="0.1" value="1.0" oninput="document.getElementById('nash-load-scale-val').textContent = this.value" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                <span style="color: #9ca3af;">Service Rate Scale:</span>
+                                <span id="nash-service-scale-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">1.0</span>
+                            </div>
+                            <input type="range" id="nash-service-scale" min="0.2" max="3" step="0.1" value="1.0" oninput="document.getElementById('nash-service-scale-val').textContent = this.value" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <button onclick="runNashPrimeQueueOptimizer()" style="background: linear-gradient(135deg, #6366f1, #059669); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85em; box-shadow: 0 4px 12px rgba(99,102,241,0.3);">
+                            ▶️ Run Nash-Prime Optimizer
+                        </button>
+                    </div>
+
+                    <!-- Summary metrics -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em;">Equilibrium Summary</h4>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">System Grundy Value (&bigoplus;n<sub>i</sub>):</span>
+                            <span id="nash-grundy-xor" style="color: #c084fc; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Bottleneck Wait (Baseline &rarr; Equilibrium):</span>
+                            <span id="nash-bottleneck" style="color: #f59e0b; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Bottleneck Reduction:</span>
+                            <span id="nash-bottleneck-reduction" style="color: #10b981; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Mean Wait Reduction:</span>
+                            <span id="nash-mean-reduction" style="color: #38bdf8; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Potential &Phi; (Baseline &rarr; Equilibrium):</span>
+                            <span id="nash-potential" style="color: #ec4899; font-weight: 700; font-family: monospace;">-</span>
+                        </div>
+                        <a href="/api/download-cardio-kalman-preprint" target="_blank" class="download-btn" style="margin-top: 6px; justify-content: center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 1px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Download Nature Preprint (PDF)
+                        </a>
+                        <a href="/" target="_blank" class="download-btn" style="margin-top: 6px; justify-content: center; background: linear-gradient(135deg, #059669, #38bdf8);">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 1px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                            🚀 Launch App
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right: Plots -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">Backlog Size vs. Nash Prime per Modality</h4>
+                        <div id="nash-prime-allocation-plot" style="width: 100%; height: 260px;"></div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">Queue Wait Time: Baseline vs. Nash Equilibrium</h4>
+                        <div id="nash-wait-comparison-plot" style="width: 100%; height: 260px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 3D Slice Viewer Card -->
         <div id="slice-card" class="viewer-card">
             <div class="viewer-title">DICOM 3D Slice Viewer</div>
@@ -1556,6 +1831,35 @@
                             <!-- Filled by JS -->
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mri-to-ct-fencing-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title" id="mri-to-ct-fencing-title">MR-CT Combinatorial Geometric Fencing</div>
+            <div style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 20px; width: 100%;">
+                <div style="min-width: 0;">
+                    <div id="mri-to-ct-fencing-viewer" class="plotly-container" style="height: 500px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);"></div>
+                    <div id="mri-to-ct-fencing-convergence" style="height: 220px; margin-top: 12px;"></div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0;">
+                    <label for="fencing-bin-count" style="color: #cbd5e1; font-size: 0.85em;">Fence density per axis</label>
+                    <select id="fencing-bin-count" style="background: #111827; color: #f8fafc; border: 1px solid #475569; padding: 10px;">
+                        <option value="2">2 × 2 × 2 (8 fences)</option>
+                        <option value="3">3 × 3 × 3 (27 fences)</option>
+                        <option value="4">4 × 4 × 4 (64 fences)</option>
+                    </select>
+                    <button onclick="runRegistrationMriToCtFencing()" style="background: #0f766e; color: white; border: 0; padding: 11px 14px; cursor: pointer; font-weight: 700;">Run registration</button>
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px; font-size: 0.9em;">
+                        <span style="color: #94a3b8;">Measured surface residual</span><strong id="fencing-tre">--</strong>
+                        <span style="color: #94a3b8;">Target</span><strong>&lt; 0.05 mm</strong>
+                        <span style="color: #94a3b8;">Status</span><strong id="fencing-status">--</strong>
+                        <span style="color: #94a3b8;">Fence combinations</span><strong id="fencing-combinations">--</strong>
+                        <span style="color: #94a3b8;">Wall time</span><strong id="fencing-wall-time">--</strong>
+                        <span style="color: #94a3b8;">Simulation resolution</span><strong id="fencing-time-resolution">--</strong>
+                    </div>
+                    <p id="fencing-timing-scope" style="color: #94a3b8; font-size: 0.78em; line-height: 1.5; margin: 0;"></p>
+                    <p id="fencing-coordinate-space" style="color: #94a3b8; font-size: 0.78em; line-height: 1.5; margin: 0;"></p>
                 </div>
             </div>
         </div>
@@ -3330,6 +3634,36 @@
             </div>
         </div>
 
+        <!-- Jaynes-Cummings rTMS Predictions Card -->
+        <div id="jaynes-cummings-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">⚛️ Jaynes-Cummings rTMS Predictions & Treatment Paradigm</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%; box-sizing: border-box;">
+                <div style="flex: 1.1; min-width: 300px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 18px;">
+                        <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 1.02em;">Model Characteristics</h4>
+                        <div id="jaynes-characteristics" style="display: flex; flex-direction: column; gap: 8px; font-size: 0.92em;"></div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 18px;">
+                        <h4 style="margin: 0 0 10px 0; color: #10b981; font-size: 1.02em;">Treatment Paradigm Snapshot</h4>
+                        <div id="jaynes-paradigm" style="display: flex; flex-direction: column; gap: 8px; font-size: 0.92em;"></div>
+                    </div>
+                </div>
+                <div style="flex: 2.4; min-width: 420px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="background: rgba(0,0,0,0.2); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); padding: 10px;">
+                        <div id="jaynes-excitation-plot" style="height: 280px; width: 100%;"></div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+                        <div style="flex: 1; min-width: 240px; background: rgba(0,0,0,0.2); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); padding: 10px;">
+                            <div id="jaynes-weights-plot" style="height: 240px; width: 100%;"></div>
+                        </div>
+                        <div style="flex: 1; min-width: 240px; background: rgba(0,0,0,0.2); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); padding: 10px;">
+                            <div id="jaynes-spectrum-plot" style="height: 240px; width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- BCI QML Optimization Card -->
         <div id="bci-qml-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
             <div class="viewer-title">🧠 Quantum Machine Learning BCI + rTMS Optimization Suite</div>
@@ -3502,7 +3836,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all cards first
-            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card', 'vqe-shading-card', 'eeg-rtms-qml-card', 'vqe-neuromodulation-card', 'quantum-cf-seizure-card', 'hebbian-lake-restoration-card', 'quantum-fusion-majorana-card', 'nvqlink-ramanujan-ct-card'].forEach(id => {
+            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-ct-fencing-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card', 'vqe-shading-card', 'eeg-rtms-qml-card', 'vqe-neuromodulation-card', 'jaynes-cummings-card', 'quantum-cf-seizure-card', 'hebbian-lake-restoration-card', 'quantum-fusion-majorana-card', 'nvqlink-ramanujan-ct-card', 'cf-llm-dicom-queue-card', 'cardio-quantum-kalman-card', 'nash-prime-queue-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -3538,6 +3872,9 @@
             } else if (tab === 'mri-to-ct-qml') {
                 document.getElementById('tab-mri-to-ct-qml').classList.add('active');
                 runRegistrationMriToCtQml();
+            } else if (tab === 'mri-to-ct-fencing') {
+                document.getElementById('tab-mri-to-ct-fencing').classList.add('active');
+                runRegistrationMriToCtFencing();
             } else if (tab === 'mri-to-stl-qml-feynman') {
                 document.getElementById('tab-mri-to-stl-qml-feynman').classList.add('active');
                 runRegistrationMriToStlQmlFeynman();
@@ -3600,6 +3937,9 @@
             } else if (tab === 'vqe-neuromodulation') {
                 document.getElementById('tab-vqe-neuromodulation').classList.add('active');
                 runVqeNeuromodulation();
+            } else if (tab === 'jaynes-cummings') {
+                document.getElementById('tab-jaynes-cummings').classList.add('active');
+                loadJaynesCummingsTab();
             } else if (tab === 'quantum-cf-seizure') {
                 document.getElementById('tab-quantum-cf-seizure').classList.add('active');
                 runQuantumCfSeizure();
@@ -3612,6 +3952,15 @@
             } else if (tab === 'nvqlink-ramanujan-ct') {
                 document.getElementById('tab-nvqlink-ramanujan-ct').classList.add('active');
                 runNvqlinkRamanujanRegistration();
+            } else if (tab === 'cf-llm-dicom-queue') {
+                document.getElementById('tab-cf-llm-dicom-queue').classList.add('active');
+                runCfLlmDicomQueue();
+            } else if (tab === 'cardio-quantum-kalman') {
+                document.getElementById('tab-cardio-quantum-kalman').classList.add('active');
+                runCardioQuantumKalman();
+            } else if (tab === 'nash-prime-queue') {
+                document.getElementById('tab-nash-prime-queue').classList.add('active');
+                runNashPrimeQueueOptimizer();
             }
         }
 
@@ -3620,6 +3969,77 @@
             if (target) {
                 target.style.display = 'flex';
                 target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        async function loadJaynesCummingsTab() {
+            showCard('jaynes-cummings-card');
+            const container = document.getElementById('jaynes-characteristics');
+            const paradigmContainer = document.getElementById('jaynes-paradigm');
+            if (container) {
+                container.innerHTML = '<div class="spinner"><span>Loading Jaynes-Cummings predictions…</span></div>';
+            }
+            try {
+                const response = await fetch('/api/jaynes-cummings-rtms');
+                const payload = await response.json();
+                const data = payload.data || {};
+                const chars = data.characteristics || {};
+                const paradigm = data.treatment_paradigm || {};
+                const rows = [
+                    ['Resonance shift', `${chars.resonance_shift}`],
+                    ['Phase locking', `${chars.phase_locking}`],
+                    ['Coherence index', `${chars.coherence_index}`],
+                    ['Predicted gain', `${chars.predicted_gain}`],
+                    ['Omega C', `${data.omega_c} GHz`],
+                    ['Omega A', `${data.omega_a} GHz`],
+                    ['Coupling g', `${data.coupling_g}`],
+                    ['Photon states', `${data.n_photons}`],
+                ];
+                container.innerHTML = rows.map(([label, value]) => `<div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px;"> <span style="color:#9ca3af;">${label}</span><span style="color:#f3f4f6; font-weight:700;">${value}</span></div>`).join('');
+                paradigmContainer.innerHTML = [
+                    ['Target', paradigm.target],
+                    ['Protocol', paradigm.protocol],
+                    ['Expected outcome', paradigm.expected_outcome],
+                    ['Sessions', `${paradigm.sessions}`],
+                ].map(([label, value]) => `<div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px;"> <span style="color:#9ca3af;">${label}</span><span style="color:#10b981; font-weight:700;">${value}</span></div>`).join('');
+
+                Plotly.newPlot('jaynes-excitation-plot', [
+                    { x: data.time, y: data.p_excited, type: 'scatter', mode: 'lines', name: 'Excited state', line: { color: '#38bdf8', width: 3 } },
+                    { x: data.time, y: data.p_ground, type: 'scatter', mode: 'lines', name: 'Ground state', line: { color: '#64748b', width: 2, dash: 'dot' } },
+                    { x: data.time, y: data.sigma_z, type: 'scatter', mode: 'lines', name: 'Inversion', line: { color: '#a78bfa', width: 2 } },
+                ], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 20, r: 10, b: 30, l: 40 },
+                    xaxis: { title: 'Time (a.u.)', color: '#9ca3af' },
+                    yaxis: { title: 'Probability / inversion', color: '#9ca3af' },
+                    legend: { font: { color: '#cbd5e1' } }
+                }, { responsive: true, displaylogo: false });
+
+                Plotly.newPlot('jaynes-weights-plot', [{
+                    x: (data.weights || []).map(item => `State ${item.state}`),
+                    y: (data.weights || []).map(item => item.weight),
+                    type: 'bar', marker: { color: '#818cf8' }, name: 'Combinatorial weight'
+                }], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 20, r: 10, b: 30, l: 40 },
+                    xaxis: { title: 'Photon state', color: '#9ca3af' },
+                    yaxis: { title: 'Weight', color: '#9ca3af' }
+                }, { responsive: true, displaylogo: false });
+
+                Plotly.newPlot('jaynes-spectrum-plot', [{
+                    x: (data.spectrum || {}).freq || [],
+                    y: (data.spectrum || {}).intensity || [],
+                    type: 'scatter', mode: 'lines+markers', line: { color: '#10b981', width: 3 }, marker: { size: 5, color: '#34d399' }, name: 'Vacuum Rabi spectrum'
+                }], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 20, r: 10, b: 30, l: 40 },
+                    xaxis: { title: 'Frequency (GHz)', color: '#9ca3af' },
+                    yaxis: { title: 'Relative intensity', color: '#9ca3af' }
+                }, { responsive: true, displaylogo: false });
+            } catch (error) {
+                container.innerHTML = `<div style="color:#ef4444;">Unable to load Jaynes-Cummings data.</div>`;
+                paradigmContainer.innerHTML = `<div style="color:#ef4444;">Unable to load treatment paradigm.</div>`;
+                console.error(error);
             }
         }
 
@@ -4709,6 +5129,56 @@
                 drawMriToCtQmlStateProbabilities();
             } catch (err) {
                 document.getElementById('mri-to-ct-qml-registration-viewer').innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">${err.message}</div>`;
+            }
+        }
+
+        async function runRegistrationMriToCtFencing() {
+            showCard('mri-to-ct-fencing-card');
+            showLoading('mri-to-ct-fencing-viewer', 'Building independent MR and CT surfaces and optimizing geometric fences...');
+            const fenceBins = Number(document.getElementById('fencing-bin-count').value);
+
+            try {
+                const response = await fetch('/api/register-mri-to-ct-fencing', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({target_error_mm: 0.05, fence_bins: fenceBins})
+                });
+                const data = await response.json();
+                if (!response.ok || data.error) throw new Error(data.error || `Request failed (${response.status})`);
+
+                const traces = [
+                    {type: 'scatter3d', mode: 'markers', x: data.mesh2.x, y: data.mesh2.y, z: data.mesh2.z, marker: {size: 2, color: '#f59e0b', opacity: 0.35}, name: 'CT target'},
+                    {type: 'scatter3d', mode: 'markers', x: data.mesh1.x, y: data.mesh1.y, z: data.mesh1.z, marker: {size: 2, color: '#ef476f', opacity: 0.3}, name: 'MRI source'},
+                    {type: 'scatter3d', mode: 'markers', x: data.mesh1_reg.x, y: data.mesh1_reg.y, z: data.mesh1_reg.z, marker: {size: 2.5, color: '#2dd4bf', opacity: 0.75}, name: 'Fenced MRI'}
+                ];
+                const sceneLayout = {
+                    scene: {bgcolor: 'rgba(0,0,0,0)', aspectmode: 'data', xaxis: {visible: false}, yaxis: {visible: false}, zaxis: {visible: false}},
+                    margin: {t: 8, l: 0, r: 0, b: 0}, paper_bgcolor: 'rgba(0,0,0,0)',
+                    legend: {font: {color: '#e2e8f0'}}
+                };
+                Plotly.newPlot('mri-to-ct-fencing-viewer', traces, sceneLayout, {responsive: true, displaylogo: false});
+
+                const convergence = data.telemetry.convergence_mm;
+                Plotly.newPlot('mri-to-ct-fencing-convergence', [{x: convergence.map((_, index) => index), y: convergence, mode: 'lines+markers', line: {color: '#2dd4bf'}, name: 'Measured TRE'}], {
+                    margin: {t: 30, l: 55, r: 15, b: 40}, title: {text: 'Measured convergence', font: {color: '#e2e8f0', size: 14}},
+                    xaxis: {title: 'Iteration', color: '#94a3b8'}, yaxis: {title: 'TRE (mm)', color: '#94a3b8'},
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0.22)', font: {color: '#cbd5e1'},
+                    shapes: [{type: 'line', x0: 0, x1: Math.max(1, convergence.length - 1), y0: 0.05, y1: 0.05, line: {color: '#f59e0b', dash: 'dash'}}]
+                }, {responsive: true, displaylogo: false});
+
+                const measuredTre = data.registration_error;
+                const targetMet = data.telemetry.target_met;
+                document.getElementById('mri-to-ct-fencing-title').textContent = `MR-CT Combinatorial Geometric Fencing (surface residual = ${measuredTre.toFixed(5)} mm)`;
+                document.getElementById('fencing-tre').textContent = `${measuredTre.toFixed(5)} mm`;
+                document.getElementById('fencing-status').textContent = targetMet ? 'TARGET MET' : 'TARGET NOT MET';
+                document.getElementById('fencing-status').style.color = targetMet ? '#2dd4bf' : '#f87171';
+                document.getElementById('fencing-combinations').textContent = data.registration_transform.fence_combinations;
+                document.getElementById('fencing-wall-time').textContent = `${data.telemetry.wall_clock_seconds.toFixed(3)} s`;
+                document.getElementById('fencing-time-resolution').textContent = data.telemetry.simulation_time_resolution_label;
+                document.getElementById('fencing-timing-scope').textContent = `${data.telemetry.metric_scope}. ${data.telemetry.timing_scope}.`;
+                document.getElementById('fencing-coordinate-space').textContent = `Coordinate space: ${data.telemetry.coordinate_space}`;
+            } catch (error) {
+                document.getElementById('mri-to-ct-fencing-viewer').innerHTML = `<div style="color:#f87171; padding:24px;">${error.message}</div>`;
             }
         }
 
@@ -8891,6 +9361,238 @@
             } catch (err) {
                 console.error(err);
                 document.getElementById('nvqlink-ct-viewer').innerHTML = `<div style="color: var(--accent-danger); padding: 20px;">Execution Failed: ${err.message}</div>`;
+            }
+        }
+
+        // --- 13. CONTINUED-FRACTION LLM DICOM QUEUE TRIAGE & ELLIPTIC/PRIME FINITE MATH ---
+        async function runCfLlmDicomQueue() {
+            showCard('cf-llm-dicom-queue-card');
+
+            const queueSize = document.getElementById('cf-dicom-queue-size').value;
+            const cfDepth = document.getElementById('cf-dicom-depth').value;
+            const primeLimit = document.getElementById('cf-dicom-prime-limit').value;
+
+            showLoading('cf-dicom-priority-plot', 'Evaluating continued-fraction predictive triage...');
+            showLoading('cf-dicom-elliptic-plot', 'Computing elliptic-integral projection states...');
+            showLoading('cf-dicom-prime-plot', 'Sieving prime distribution...');
+            showLoading('cf-dicom-wait-plot', 'Coupling predictive wait-time estimate...');
+
+            try {
+                const res = await fetch(`/api/cf-llm-dicom-queue?queue_size=${queueSize}&cf_depth=${cfDepth}&prime_limit=${primeLimit}`);
+                const data = await res.json();
+                if (data.error) {
+                    console.error('CF-LLM DICOM queue API error:', data.error);
+                    return;
+                }
+
+                document.getElementById('cf-dicom-avg-priority').textContent = data.summary.avg_priority;
+                document.getElementById('cf-dicom-avg-wait').textContent = `${data.summary.avg_wait_estimate_ms} ms`;
+                document.getElementById('cf-dicom-prime-count').textContent = data.summary.prime_count;
+                document.getElementById('cf-dicom-twin-primes').textContent = data.summary.twin_prime_pairs;
+
+                // Priority ranking bar chart
+                const ranked = data.ranked_queue.slice(0, 16);
+                Plotly.newPlot('cf-dicom-priority-plot', [{
+                    x: ranked.map(m => m.priority_score),
+                    y: ranked.map(m => `${m.id} (${m.modality})`),
+                    type: 'bar', orientation: 'h',
+                    marker: { color: ranked.map(m => m.priority_score > 0.6 ? '#ec4899' : (m.priority_score > 0.3 ? '#f59e0b' : '#64748b')) }
+                }], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 35, l: 100 },
+                    xaxis: { title: 'Predicted priority score', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { color: '#9ca3af', autorange: 'reversed' }
+                }, { responsive: true, displaylogo: false });
+
+                // Elliptic-integral projection state plot
+                Plotly.newPlot('cf-dicom-elliptic-plot', [
+                    { x: data.elliptic.m, y: data.elliptic.K, type: 'scatter', mode: 'lines', name: 'K(m)', line: { color: '#38bdf8', width: 2 } },
+                    { x: data.elliptic.m, y: data.elliptic.E, type: 'scatter', mode: 'lines', name: 'E(m)', line: { color: '#10b981', width: 2 } },
+                    { x: data.elliptic.m, y: data.elliptic.projection_state, type: 'scatter', mode: 'lines', name: 'E(m)/K(m)', line: { color: '#a78bfa', width: 2.5, dash: 'dot' } },
+                ], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 35, l: 45 },
+                    xaxis: { title: 'm', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    legend: { font: { color: '#cbd5e1' }, orientation: 'h', y: -0.25 }
+                }, { responsive: true, displaylogo: false });
+
+                // Prime counting function plot
+                Plotly.newPlot('cf-dicom-prime-plot', [
+                    { x: data.primes.x, y: data.primes.pi_x, type: 'scatter', mode: 'lines', name: 'π(x)', line: { color: '#f3f4f6', width: 2 } },
+                    { x: data.primes.x, y: data.primes.li_x, type: 'scatter', mode: 'lines', name: 'Li(x)', line: { color: '#ec4899', width: 2, dash: 'dash' } },
+                ], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 35, l: 45 },
+                    xaxis: { title: 'x', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { title: 'Count', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    legend: { font: { color: '#cbd5e1' }, orientation: 'h', y: -0.25 }
+                }, { responsive: true, displaylogo: false });
+
+                // Predictive wait-time estimate plot
+                Plotly.newPlot('cf-dicom-wait-plot', [{
+                    x: data.ranked_queue.map(m => m.queue_position),
+                    y: data.predictive_wait_estimate_ms,
+                    type: 'scatter', mode: 'lines+markers',
+                    line: { color: '#f59e0b', width: 2.5, shape: 'spline' },
+                    marker: { color: '#fbbf24', size: 6 }
+                }], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 35, l: 45 },
+                    xaxis: { title: 'Predicted queue position', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { title: 'Predicted wait (ms)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' }
+                }, { responsive: true, displaylogo: false });
+            } catch (err) {
+                console.error('CF-LLM DICOM queue fetch failed:', err);
+            }
+        }
+
+        // --- 14. CARDIOVASCULAR SURGICAL ROBOT QUANTUM KALMAN ESTIMATION ---
+        async function runCardioQuantumKalman() {
+            showCard('cardio-quantum-kalman-card');
+
+            const heartRate = document.getElementById('cardio-hr').value;
+            const noiseStd = document.getElementById('cardio-noise').value;
+            const duration = document.getElementById('cardio-duration').value;
+
+            showLoading('cardio-trajectory-plot', 'Tracking robotic catheter tip via Quantum Kalman Filter...');
+            showLoading('cardio-error-plot', 'Computing estimation error over cardiac cycle...');
+            showLoading('cardio-gain-plot', 'Evaluating amplitude-weighted Kalman gain...');
+            showLoading('cardio-benchmark-plot', 'Benchmarking against Wittek signature...');
+
+            try {
+                const res = await fetch(`/api/cardio-quantum-kalman?heart_rate_bpm=${heartRate}&noise_std=${noiseStd}&duration_s=${duration}`);
+                const data = await res.json();
+                if (data.error) {
+                    console.error('Cardio Quantum Kalman API error:', data.error);
+                    return;
+                }
+
+                const s = data.summary;
+                document.getElementById('cardio-rmse-qkf').textContent = `${s.rmse_qkf_mm} mm`;
+                document.getElementById('cardio-rmse-cf').textContent = `${s.rmse_cf_baseline_mm} mm`;
+                document.getElementById('cardio-wittek-tre').textContent = `${s.wittek_signature_tre_mm} mm`;
+                document.getElementById('cardio-improvement-wittek').textContent = `${s.improvement_vs_wittek_pct}%`;
+                document.getElementById('cardio-improvement-cf').textContent = `${s.improvement_vs_cf_baseline_pct}%`;
+
+                // Trajectory tracking (x-y projection)
+                Plotly.newPlot('cardio-trajectory-plot', [
+                    { x: data.true_trajectory.x, y: data.true_trajectory.y, type: 'scatter', mode: 'lines', name: 'True path', line: { color: '#0f172a', width: 2.5 } },
+                    { x: data.measured_trajectory.x, y: data.measured_trajectory.y, type: 'scatter', mode: 'markers', name: 'Noisy measurement', marker: { color: '#64748b', size: 3, opacity: 0.5 } },
+                    { x: data.qkf_trajectory.x, y: data.qkf_trajectory.y, type: 'scatter', mode: 'lines', name: 'Quantum Kalman estimate', line: { color: '#e11d48', width: 2 } },
+                ], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 35, l: 45 },
+                    xaxis: { title: 'x (mm)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { title: 'y (mm)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)', scaleanchor: 'x' },
+                    legend: { font: { color: '#cbd5e1' }, orientation: 'h', y: -0.2 }
+                }, { responsive: true, displaylogo: false });
+
+                // Estimation error over time
+                function norm3(a, b, c, idx) { return Math.sqrt(a[idx] ** 2 + b[idx] ** 2 + c[idx] ** 2); }
+                const errMeasured = data.time.map((_, i) => norm3(
+                    data.measured_trajectory.x.map((v, j) => v - data.true_trajectory.x[j]),
+                    data.measured_trajectory.y.map((v, j) => v - data.true_trajectory.y[j]),
+                    data.measured_trajectory.z.map((v, j) => v - data.true_trajectory.z[j]), i));
+                const errCf = data.time.map((_, i) => norm3(
+                    data.cf_baseline_trajectory.x.map((v, j) => v - data.true_trajectory.x[j]),
+                    data.cf_baseline_trajectory.y.map((v, j) => v - data.true_trajectory.y[j]),
+                    data.cf_baseline_trajectory.z.map((v, j) => v - data.true_trajectory.z[j]), i));
+
+                Plotly.newPlot('cardio-error-plot', [
+                    { x: data.time, y: errMeasured, type: 'scatter', mode: 'lines', name: 'Raw measurement error', line: { color: '#64748b', width: 1.2 }, opacity: 0.6 },
+                    { x: data.time, y: errCf, type: 'scatter', mode: 'lines', name: 'CF-smoothing error', line: { color: '#f59e0b', width: 1.6 } },
+                    { x: data.time, y: data.per_step_error_qkf, type: 'scatter', mode: 'lines', name: 'Quantum Kalman error', line: { color: '#e11d48', width: 2.2 } },
+                ], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 35, l: 45 },
+                    xaxis: { title: 'Time (s)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { title: 'Position error (mm)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    legend: { font: { color: '#cbd5e1' }, orientation: 'h', y: -0.25 }
+                }, { responsive: true, displaylogo: false });
+
+                // Kalman gain evolution
+                Plotly.newPlot('cardio-gain-plot', [
+                    { x: data.time, y: data.kalman_gain.x, type: 'scatter', mode: 'lines', name: 'Kq (x)', line: { color: '#38bdf8', width: 1.8 } },
+                    { x: data.time, y: data.kalman_gain.y, type: 'scatter', mode: 'lines', name: 'Kq (y)', line: { color: '#10b981', width: 1.8 } },
+                    { x: data.time, y: data.kalman_gain.z, type: 'scatter', mode: 'lines', name: 'Kq (z)', line: { color: '#a78bfa', width: 1.8 } },
+                ], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 35, l: 45 },
+                    xaxis: { title: 'Time (s)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { title: 'Amplitude-weighted gain', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    legend: { font: { color: '#cbd5e1' }, orientation: 'h', y: -0.25 }
+                }, { responsive: true, displaylogo: false });
+
+                // Benchmark bar comparison
+                Plotly.newPlot('cardio-benchmark-plot', [{
+                    x: ['Raw measurement', 'CF smoothing', 'Wittek signature', 'Quantum Kalman'],
+                    y: [s.rmse_measured_mm, s.rmse_cf_baseline_mm, s.wittek_signature_tre_mm, s.rmse_qkf_mm],
+                    type: 'bar',
+                    marker: { color: ['#64748b', '#f59e0b', '#818cf8', '#e11d48'] }
+                }], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 60, l: 45 },
+                    yaxis: { title: 'RMSE / TRE (mm)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    xaxis: { color: '#9ca3af' }
+                }, { responsive: true, displaylogo: false });
+            } catch (err) {
+                console.error('Cardio Quantum Kalman fetch failed:', err);
+            }
+        }
+
+        // --- 15. NASH-PRIME COMBINATORIAL GAME-THEORETIC QUEUE OPTIMIZER ---
+        async function runNashPrimeQueueOptimizer() {
+            showCard('nash-prime-queue-card');
+
+            const loadScale = document.getElementById('nash-load-scale').value;
+            const serviceScale = document.getElementById('nash-service-scale').value;
+
+            showLoading('nash-prime-allocation-plot', 'Computing Sprague-Grundy heaps and Nash primes...');
+            showLoading('nash-wait-comparison-plot', 'Solving Rosenthal potential-game equilibrium...');
+
+            try {
+                const res = await fetch(`/api/nash-prime-queue-optimizer?load_scale=${loadScale}&service_scale=${serviceScale}`);
+                const data = await res.json();
+                if (data.error) {
+                    console.error('Nash-prime queue optimizer API error:', data.error);
+                    return;
+                }
+
+                const s = data.summary;
+                document.getElementById('nash-grundy-xor').textContent = data.grundy_xor;
+                document.getElementById('nash-bottleneck').textContent = `${s.bottleneck_baseline_hours} h → ${s.bottleneck_equilibrium_hours} h`;
+                document.getElementById('nash-bottleneck-reduction').textContent = `${s.bottleneck_reduction_pct}%`;
+                document.getElementById('nash-mean-reduction').textContent = `${s.mean_reduction_pct}%`;
+                document.getElementById('nash-potential').textContent = `${s.potential_baseline} → ${s.potential_equilibrium}`;
+
+                const shortLabels = data.modalities.map(m => m.length > 18 ? m.slice(0, 16) + '…' : m);
+
+                Plotly.newPlot('nash-prime-allocation-plot', [
+                    { x: shortLabels, y: data.loads, type: 'bar', name: 'Backlog size nᵢ', marker: { color: '#64748b' } },
+                    { x: shortLabels, y: data.nash_primes, type: 'bar', name: 'Nash prime P(nᵢ)', marker: { color: '#7c3aed' } },
+                ], {
+                    barmode: 'group',
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 70, l: 45 },
+                    xaxis: { color: '#9ca3af', tickangle: -20 },
+                    yaxis: { title: 'Studies / prime index', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    legend: { font: { color: '#cbd5e1' }, orientation: 'h', y: -0.35 }
+                }, { responsive: true, displaylogo: false });
+
+                Plotly.newPlot('nash-wait-comparison-plot', [
+                    { x: shortLabels, y: data.baseline_wait_hours, type: 'bar', name: 'Baseline wait (h)', marker: { color: '#f59e0b' } },
+                    { x: shortLabels, y: data.equilibrium_wait_hours, type: 'bar', name: 'Nash-equilibrium wait (h)', marker: { color: '#10b981' } },
+                ], {
+                    barmode: 'group',
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 70, l: 45 },
+                    xaxis: { color: '#9ca3af', tickangle: -20 },
+                    yaxis: { title: 'Expected wait time (hours)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    legend: { font: { color: '#cbd5e1' }, orientation: 'h', y: -0.35 }
+                }, { responsive: true, displaylogo: false });
+            } catch (err) {
+                console.error('Nash-prime queue optimizer fetch failed:', err);
             }
         }
 

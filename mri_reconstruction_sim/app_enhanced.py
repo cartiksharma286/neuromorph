@@ -1470,4 +1470,4 @@ if __name__ == '__main__':
     port = int(os.environ.get('FLASK_RUN_PORT', 5002))
     print(f"Server running on http://0.0.0.0:{port}")
     print("=" * 80)
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)

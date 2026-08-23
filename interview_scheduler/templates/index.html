@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Scheduling Optimizer - Combinatorial Annealing Suite</title>
+    
+    <!-- Premium Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=Courier+Prime&display=swap" rel="stylesheet">
+    
+    <!-- Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --primary: #c084fc; /* Lavender */
+            --accent: #38bdf8; /* Sky Blue */
+            --success: #34d399; /* Emerald Green */
+            --warning: #fbbf24; /* Amber */
+            --danger: #ef4444; /* Rose Red */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-bg: rgba(30, 41, 59, 0.45);
+            --border-glow: rgba(192, 132, 252, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at top right, rgba(192, 132, 252, 0.08), transparent 800px),
+                              radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.06), transparent 800px);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* Glassmorphic Header */
+        header {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .header-left h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-left h1 span.highlight {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-left .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Main Workspace Grid */
+        .workspace {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 25px;
+            width: 100%;
+        }
+
+        .viewer-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .viewer-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Forms inputs styling */
+        label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        input, select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(192, 132, 252, 0.25);
+        }
+
+        button.btn {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            outline: none;
+            box-shadow: 0 4px 12px rgba(192, 132, 252, 0.2);
+            text-align: center;
+        }
+
+        button.btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(192, 132, 252, 0.3);
+        }
+
+        /* Calendar Grid */
+        .calendar-week {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+
+        .calendar-day-col {
+            background: rgba(15, 23, 42, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 12px;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .day-header {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding-bottom: 8px;
+            margin-bottom: 4px;
+        }
+
+        .interview-block {
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.8rem;
+            line-height: 1.3;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-left: 4px solid #fff;
+            transition: transform 0.2s ease;
+        }
+
+        .interview-block:hover {
+            transform: scale(1.02);
+        }
+
+        .priority-high {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: var(--danger);
+            color: #fca5a5;
+        }
+        .priority-medium {
+            background: rgba(192, 132, 252, 0.15);
+            border-color: var(--primary);
+            color: #e9d5ff;
+        }
+        .priority-low {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: var(--accent);
+            color: #bae6fd;
+        }
+
+        /* Items list */
+        .item-list-container {
+            max-height: 250px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 4px;
+        }
+
+        .item-row {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .item-row button.del-btn {
+            background: transparent;
+            color: var(--danger);
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .item-row button.del-btn:hover {
+            color: #f87171;
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <h1>OPTISCHED<span class="highlight">ULER</span></h1>
+                <div class="subtitle">Combinatorial Job Interview Scheduling & Cognitive Load Optimization Suite</div>
+            </div>
+            <button class="btn" onclick="prepopulateSamples()">Prepopulate Sample Jobs</button>
+        </header>
+
+        <div class="workspace">
+            <!-- Left Panel: Job Input List & Optimizer Controls -->
+            <div class="viewer-card">
+                <div class="viewer-title">💼 Interview Pool</div>
+                
+                <div class="item-list-container" id="interview-list">
+                    <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 20px;">No interviews added yet. Add below or prepopulate!</div>
+                </div>
+
+                <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; display:flex; flex-direction:column; gap:12px;">
+                    <div style="font-size: 0.85rem; font-weight:600; color: #fff;">Add Potential Interview</div>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label>Company:
+                            <input type="text" id="add-company" placeholder="e.g. Google">
+                        </label>
+                        <label>Role:
+                            <input type="text" id="add-role" placeholder="e.g. Lead Dev">
+                        </label>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label>Priority:
+                            <select id="add-priority">
+                                <option value="High">🔥 High</option>
+                                <option value="Medium" selected>⚡ Medium</option>
+                                <option value="Low">💤 Low</option>
+                            </select>
+                        </label>
+                        <label>Preferred Day:
+                            <select id="add-pref-day">
+                                <option value="0">Monday</option>
+                                <option value="1">Tuesday</option>
+                                <option value="2">Wednesday</option>
+                                <option value="3">Thursday</option>
+                                <option value="4">Friday</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: flex-end;">
+                        <label>Duration:
+                            <select id="add-duration">
+                                <option value="0.5">30 Mins (0.5h)</option>
+                                <option value="1.0" selected>1 Hour (1.0h)</option>
+                                <option value="1.5">1.5 Hours (1.5h)</option>
+                                <option value="2.0">2 Hours (2.0h)</option>
+                            </select>
+                        </label>
+                        <button class="btn" style="height: 35px;" onclick="addInterview()">Add Job</button>
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; display:flex; flex-direction:column; gap:10px;">
+                    <div style="font-size: 0.85rem; font-weight:600; color: #fff;">Annealing Parameters</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label>Temp Limit:
+                            <input type="number" id="param-temp" value="100" min="10" max="500">
+                        </label>
+                        <label>Cooling Rate:
+                            <input type="number" id="param-cooling" value="0.95" step="0.01" min="0.80" max="0.99">
+                        </label>
+                    </div>
+                    <button class="btn" style="background: linear-gradient(135deg, var(--success), var(--accent)); box-shadow: 0 4px 12px rgba(52,211,153,0.25);" onclick="optimizeSchedule()">Optimize Weekly Schedule</button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Calendar Grid & Convergence Charts -->
+            <div style="display:flex; flex-direction:column; gap:25px;">
+                <!-- Weekly Grid -->
+                <div class="viewer-card">
+                    <div class="viewer-title">
+                        <span>📅 Weekly Optimized Interview Schedule</span>
+                        <span id="label-matches" style="font-size: 0.8rem; color: var(--success); font-weight: 500;">Matches: --</span>
+                    </div>
+                    
+                    <div class="calendar-week">
+                        <div class="calendar-day-col" id="col-0">
+                            <div class="day-header">Monday</div>
+                        </div>
+                        <div class="calendar-day-col" id="col-1">
+                            <div class="day-header">Tuesday</div>
+                        </div>
+                        <div class="calendar-day-col" id="col-2">
+                            <div class="day-header">Wednesday</div>
+                        </div>
+                        <div class="calendar-day-col" id="col-3">
+                            <div class="day-header">Thursday</div>
+                        </div>
+                        <div class="calendar-day-col" id="col-4">
+                            <div class="day-header">Friday</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metrics & Charts -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                    <!-- Chart 1: Annealing Cost Convergence -->
+                    <div class="viewer-card">
+                        <div class="viewer-title">🌀 Combinatorial Annealing Convergence</div>
+                        <div id="plot-convergence" style="width:100%; height: 260px;"></div>
+                    </div>
+
+                    <!-- Metrics and AI Advisory -->
+                    <div class="viewer-card" style="justify-content: space-between;">
+                        <div class="viewer-title">📊 Cognitive Health Metrics</div>
+                        
+                        <div style="display:flex; gap:12px; margin-bottom:10px;">
+                            <div style="flex:1; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:10px; padding:10px; text-align:center;">
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom:4px;">Fatigue Index</div>
+                                <div id="metric-fatigue" style="font-size:1.2rem; font-weight:700; color: var(--accent);">--</div>
+                            </div>
+                            <div style="flex:1; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:10px; padding:10px; text-align:center;">
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom:4px;">Avg Prep Buffer</div>
+                                <div id="metric-buffer" style="font-size:1.2rem; font-weight:700; color: var(--success);">--</div>
+                            </div>
+                            <div style="flex:1; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:10px; padding:10px; text-align:center;">
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom:4px;">Scheduling Overlaps</div>
+                                <div id="metric-overlaps" style="font-size:1.2rem; font-weight:700; color: var(--danger);">--</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(52, 211, 153, 0.03); border: 1px solid rgba(52, 211, 153, 0.15); border-radius: 12px; padding: 15px; height: 160px; overflow-y: auto;">
+                            <div id="genai-report-text" style="font-size: 0.8rem; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap;">
+                                Add interviews and trigger optimization to generate scheduling audit...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">&copy; 2026 OptiScheduler | Powered by Simulated Annealing &amp; Cognitive Load Metrics</div>
+    </div>
+
+    <script>
+        let interviewPool = [];
+        let nextId = 1;
+
+        const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+
+        function prepopulateSamples() {
+            interviewPool = [
+                { id: nextId++, company: "Google", role: "Principal AI Lead", priority: "High", duration: 1.5, preferred_day: 1 },
+                { id: nextId++, company: "Stripe", role: "Fintech Infrastructure Lead", priority: "High", duration: 1.0, preferred_day: 3 },
+                { id: nextId++, company: "Boston Scientific", role: "Principal Software Architect", priority: "High", duration: 1.0, preferred_day: 4 },
+                { id: nextId++, company: "Nvidia", role: "Senior QML Architect", priority: "Medium", duration: 1.0, preferred_day: 2 },
+                { id: nextId++, company: "HelloGBye", role: "Lead Optimization Eng", priority: "Medium", duration: 1.0, preferred_day: 0 },
+                { id: nextId++, company: "Eigen Health", role: "Robotics Dev", priority: "Low", duration: 1.0, preferred_day: 2 },
+                { id: nextId++, company: "Princess Margaret", role: "Bioinformatics Eng", priority: "Low", duration: 0.5, preferred_day: 4 }
+            ];
+            renderPool();
+        }
+
+        function renderPool() {
+            const listDiv = document.getElementById("interview-list");
+            if (interviewPool.length === 0) {
+                listDiv.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 20px;">No interviews added yet. Add below or prepopulate!</div>`;
+                return;
+            }
+            listDiv.innerHTML = "";
+            interviewPool.forEach(iv => {
+                const row = document.createElement("div");
+                row.className = "item-row";
+                row.innerHTML = `
+                    <div>
+                        <strong style="color:#fff;">${iv.company}</strong> - <span style="color:var(--text-muted);">${iv.role}</span>
+                        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
+                            ${iv.priority} | ${iv.duration}h | Pref: ${dayNames[iv.preferred_day]}
+                        </div>
+                    </div>
+                    <button class="del-btn" onclick="removeInterview(${iv.id})">&times;</button>
+                `;
+                listDiv.appendChild(row);
+            });
+        }
+
+        function addInterview() {
+            const company = document.getElementById("add-company").value.trim();
+            const role = document.getElementById("add-role").value.trim() || "Developer";
+            const priority = document.getElementById("add-priority").value;
+            const prefDay = parseInt(document.getElementById("add-pref-day").value);
+            const duration = parseFloat(document.getElementById("add-duration").value);
+
+            if (!company) {
+                alert("Please specify a company name.");
+                return;
+            }
+
+            interviewPool.push({
+                id: nextId++,
+                company: company,
+                role: role,
+                priority: priority,
+                duration: duration,
+                preferred_day: prefDay
+            });
+
+            document.getElementById("add-company").value = "";
+            document.getElementById("add-role").value = "";
+            renderPool();
+        }
+
+        function removeInterview(id) {
+            interviewPool = interviewPool.filter(iv => iv.id !== id);
+            renderPool();
+        }
+
+        function optimizeSchedule() {
+            if (interviewPool.length === 0) {
+                alert("Please add at least one interview to schedule.");
+                return;
+            }
+
+            const temp = parseFloat(document.getElementById("param-temp").value);
+            const cooling = parseFloat(document.getElementById("param-cooling").value);
+
+            fetch("/api/optimize", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    interviews: interviewPool,
+                    params: { temp: temp, cooling: cooling, steps: 500 }
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert("Error during optimization: " + data.error);
+                    return;
+                }
+                renderSchedule(data.schedule);
+                renderCharts(data.cost_history);
+                renderMetrics(data.metrics, data.genai_report);
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Failed to communicate with optimization endpoint.");
+            });
+        }
+
+        function renderSchedule(schedule) {
+            // Clear columns (keep headers)
+            for (let d = 0; d < 5; d++) {
+                const col = document.getElementById(`col-${d}`);
+                col.innerHTML = `<div class="day-header">${dayNames[d]}</div>`;
+            }
+
+            // Group by day and sort by start hour
+            const byDay = {};
+            schedule.forEach(item => {
+                if (!byDay[item.day]) byDay[item.day] = [];
+                byDay[item.day].push(item);
+            });
+
+            for (let d = 0; d < 5; d++) {
+                const col = document.getElementById(`col-${d}`);
+                const dayItems = byDay[d] || [];
+                dayItems.sort((a, b) => a.start_hour - b.start_hour);
+                
+                if (dayItems.length === 0) {
+                    const empty = document.createElement("div");
+                    empty.style.textAlign = "center";
+                    empty.style.fontSize = "0.75rem";
+                    empty.style.color = "var(--text-muted)";
+                    empty.style.marginTop = "20px";
+                    empty.textContent = "Free Day";
+                    col.appendChild(empty);
+                    continue;
+                }
+
+                dayItems.forEach(item => {
+                    const block = document.createElement("div");
+                    const priClass = `priority-${item.priority.toLowerCase()}`;
+                    block.className = `interview-block ${priClass}`;
+                    
+                    const formatHour = h => {
+                        const hr = Math.floor(h);
+                        const mn = (h - hr) * 60;
+                        const suffix = hr >= 12 ? "PM" : "AM";
+                        const dispHr = hr > 12 ? hr - 12 : hr;
+                        return `${dispHr}:${mn === 0 ? "00" : mn} ${suffix}`;
+                    };
+
+                    const startStr = formatHour(item.start_hour);
+                    const endStr = formatHour(item.start_hour + item.duration);
+
+                    block.innerHTML = `
+                        <div style="font-weight:700; font-size:0.85rem; margin-bottom:2px;">${item.company}</div>
+                        <div style="font-size:0.75rem; margin-bottom:4px;">${item.role}</div>
+                        <div style="font-size:0.7rem; opacity:0.8; font-weight:600;">🕒 ${startStr} - ${endStr}</div>
+                    `;
+                    col.appendChild(block);
+                });
+            }
+        }
+
+        function renderCharts(costHistory) {
+            const steps = Array.from({length: costHistory.length}, (_, i) => i);
+            const traceConvergence = {
+                x: steps,
+                y: costHistory,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Cost Score',
+                line: { color: '#c084fc', width: 2.5 }
+            };
+
+            const layoutConvergence = {
+                xaxis: {
+                    title: 'Cooling Steps',
+                    tickfont: { color: '#cbd5e1', size: 8 },
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: { color: '#cbd5e1', size: 9 }
+                },
+                yaxis: {
+                    title: 'Cost value (Minimize)',
+                    tickfont: { color: '#cbd5e1', size: 8 },
+                    gridcolor: 'rgba(255,255,255,0.03)',
+                    titlefont: { color: '#cbd5e1', size: 9 }
+                },
+                margin: { t: 15, l: 45, r: 15, b: 35 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                showlegend: false
+            };
+
+            Plotly.react('plot-convergence', [traceConvergence], layoutConvergence, {
+                responsive: true,
+                modeBarButtonsToRemove: ['toImage'],
+                displaylogo: false
+            });
+        }
+
+        function renderMetrics(metrics, report) {
+            document.getElementById("label-matches").textContent = `Matches: ${metrics.preferred_matches}`;
+            document.getElementById("metric-fatigue").textContent = metrics.fatigue_index;
+            document.getElementById("metric-buffer").textContent = `${metrics.avg_buffer_hours} hours`;
+            document.getElementById("metric-overlaps").textContent = metrics.conflicts;
+            
+            // Format report
+            document.getElementById("genai-report-text").innerHTML = report
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '<br><br>');
+        }
+
+        // Initialize with sample jobs
+        window.addEventListener('DOMContentLoaded', () => {
+            prepopulateSamples();
+        });
+    </script>
+</body>
+</html>

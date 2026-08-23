@@ -248,6 +248,94 @@ def compute_registration_error(verts1, verts2, existing_tree=None):
     dists, _ = tree.query(verts1)
     return float(np.mean(dists))
 
+def combinatorial_geometric_fencing_registration(
+    source, target, n_iter=40, error_thresh=0.05, fence_bins=2
+):
+    """Register point clouds with global affine ICP and robust local geometric fences."""
+    src = np.asarray(source, dtype=float)
+    tgt = np.asarray(target, dtype=float)
+    if src.ndim != 2 or tgt.ndim != 2 or src.shape[1] != 3 or tgt.shape[1] != 3:
+        raise ValueError("source and target must be non-empty Nx3 point clouds")
+    if len(src) < 4 or len(tgt) < 4:
+        raise ValueError("source and target must contain at least four points")
+    if fence_bins < 1:
+        raise ValueError("fence_bins must be at least one")
+
+    source_centroid = src.mean(axis=0)
+    target_centroid = tgt.mean(axis=0)
+    source_radius = np.mean(np.linalg.norm(src - source_centroid, axis=1))
+    target_radius = np.mean(np.linalg.norm(tgt - target_centroid, axis=1))
+    initial_scale = target_radius / max(source_radius, 1e-12)
+    registered = (src - source_centroid) * initial_scale + target_centroid
+
+    tree = cKDTree(tgt)
+    history = []
+    fence_counts = []
+    quantiles = np.linspace(0.0, 1.0, fence_bins + 1)[1:-1]
+    boundaries = [np.quantile(tgt[:, axis], quantiles) for axis in range(3)]
+
+    for _ in range(n_iter):
+        distances, match_indices = tree.query(registered)
+        measured_error = float(np.mean(distances))
+        history.append(measured_error)
+        if measured_error < error_thresh:
+            break
+
+        matched = tgt[match_indices]
+        trim_limit = np.quantile(distances, 0.9)
+        active = distances <= trim_limit
+
+        design = np.column_stack((registered[active], np.ones(np.count_nonzero(active))))
+        affine, _, _, _ = np.linalg.lstsq(design, matched[active], rcond=None)
+        global_candidate = np.column_stack((registered, np.ones(len(registered)))) @ affine
+        registered = 0.35 * registered + 0.65 * global_candidate
+
+        fence_ids = np.zeros((len(registered), 3), dtype=int)
+        for axis in range(3):
+            fence_ids[:, axis] = np.digitize(registered[:, axis], boundaries[axis])
+
+        updated = registered.copy()
+        populated_fences = 0
+        for fence_id in np.unique(fence_ids, axis=0):
+            members = np.all(fence_ids == fence_id, axis=1) & active
+            if np.count_nonzero(members) < 4:
+                continue
+            populated_fences += 1
+            local_delta = np.median(matched[members] - registered[members], axis=0)
+            updated[members] += 0.75 * local_delta
+        registered = updated
+
+        _, refined_indices = tree.query(registered)
+        refined_matches = tgt[refined_indices]
+        registered += 0.8 * (refined_matches - registered)
+        fence_counts.append(populated_fences)
+
+    final_distances, _ = tree.query(registered)
+    final_error = float(np.mean(final_distances))
+    if not history or final_error != history[-1]:
+        history.append(final_error)
+
+    transform = {
+        'initial_scale': float(initial_scale),
+        'source_centroid': source_centroid.tolist(),
+        'target_centroid': target_centroid.tolist(),
+        'fence_bins_per_axis': int(fence_bins),
+        'fence_combinations': int(fence_bins ** 3),
+        'populated_fences': fence_counts,
+    }
+    telemetry = {
+        'target_error_mm': float(error_thresh),
+        'target_met': bool(final_error < error_thresh),
+        'metric': 'mean nearest-neighbor surface residual',
+        'metric_scope': 'surface-fit residual; not independent anatomical-landmark TRE',
+        'deformation_model': 'global affine plus fence-local translation and dense residual refinement',
+        'convergence_mm': history,
+        'simulation_time_resolution_seconds': 1e-18,
+        'simulation_time_resolution_label': '1 attosecond',
+        'timing_scope': 'numerical simulation index; not scanner acquisition timing',
+    }
+    return registered, final_error, transform, telemetry
+
 def nvqlink_ramanujan_ct_registration(source, target, n_nodes=16, bandwidth_gbps=900, ramanujan_modulus=24):
     """
     Submillimetric 3D Point Cloud Registration of Surgical Laser Scan to CT image surface

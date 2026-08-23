@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const sleepapneaView  = document.getElementById('sleepapnea-view');
     const depressionView  = document.getElementById('depression-view');
     const anxietyView     = document.getElementById('anxiety-view');
+    const moduliBemView   = document.getElementById('moduli-bem-view');
+    const touretteView    = document.getElementById('tourette-view');
     const nashGeodesicView = document.getElementById('nash-geodesic-view');
 
     // Sim result spans
@@ -58,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, nashGeodesicView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -127,6 +129,16 @@ document.addEventListener('DOMContentLoaded', () => {
             subtitle: 'BEM/FEA Cortical Surfaces · EEG Waveforms (FAA) · Multi-Arm Trials · Long-Term Markov Horizon',
             view:     anxietyView, showRunBtn: false
         },
+        'moduli-bem': {
+            title:    'Moduli-Theoretic Treatment Paradigm & BEM Simulation',
+            subtitle: 'SL(2,Z) Fundamental Domain · Elliptic Resonance Points · Single-Layer BEM Cortical Heat Maps',
+            view:     moduliBemView, showRunBtn: false
+        },
+        'tourette': {
+            title:    'Tourette Syndrome Combinatorial rTMS Treatment Paradigm',
+            subtitle: 'Discrete CSTC Knapsack Pulse Allocation · 1Hz LTD pre-SMA · PUTS Urge Quenching · Permutation Entropy',
+            view:     touretteView, showRunBtn: false
+        },
         'nash-geodesic': {
             title:    'Nash / Geodesic Registration',
             subtitle: 'Laser-MRI-CT Registration · Eigen Spectra · Cauchy-Schwarz Convergence Bounds',
@@ -167,6 +179,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'sleepapnea')                           runSleepApneaRtms();
             if (tab === 'depression')                           runDepressionRtms();
             if (tab === 'anxiety')                              runAnxietyRtms();
+            if (tab === 'moduli-bem')                            runModuliBemParadigm();
+            if (tab === 'tourette')                             runTouretteRtms();
             if (tab === 'nash-geodesic' && !nashGeodesicLoaded)   loadNashGeodesicRegistration();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
@@ -1564,6 +1578,264 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Anxiety rTMS API error:', error);
             const summaryEl = document.getElementById('anx-genai-text');
+            if (summaryEl) summaryEl.textContent = `Simulation unavailable: ${error.message}`;
+        }
+    };
+
+    // ─────────────────────────────────────────────────────────────
+    // Moduli-Theoretic Treatment Paradigm & BEM Simulation Suite
+    // ─────────────────────────────────────────────────────────────
+    let moduliBemDebounceTimer = null;
+    window.runModuliBemParadigmDebounced = function() {
+        clearTimeout(moduliBemDebounceTimer);
+        moduliBemDebounceTimer = setTimeout(runModuliBemParadigm, 50);
+    };
+
+    window.runModuliBemParadigm = async function() {
+        const condEl = document.getElementById('mb-condition');
+        if (!condEl) return;
+
+        const condition = condEl.value;
+        const freqMax = document.getElementById('mb-freq-max').value;
+        const intensityMax = document.getElementById('mb-intensity-max').value;
+
+        const preprintBtn = document.getElementById('mb-preprint-btn');
+        if (preprintBtn) {
+            preprintBtn.href = `/api/moduli-bem-preprint?condition=${condition}&freq_max=${freqMax}&intensity_max=${intensityMax}`;
+        }
+
+        try {
+            const response = await fetch(`/api/moduli-bem-paradigm?condition=${condition}&freq_max=${freqMax}&intensity_max=${intensityMax}`);
+            const result = await response.json();
+            if (!response.ok || result.error) throw new Error(result.error || `HTTP ${response.status}`);
+            const data = result.data;
+            const opt = data.optimal_protocol;
+
+            // Update Metrics
+            document.getElementById('mb-metric-freq').textContent = `${opt.frequency_hz.toFixed(2)} Hz`;
+            document.getElementById('mb-metric-intensity').textContent = `${opt.intensity_pct.toFixed(1)}% MSO`;
+            document.getElementById('mb-metric-zreduced').textContent = `${opt.z_reduced.re.toFixed(3)} + ${opt.z_reduced.im.toFixed(3)}i`;
+            document.getElementById('mb-metric-elliptic').textContent = opt.nearest_elliptic_point;
+            document.getElementById('mb-metric-stability').textContent = opt.stability_score.toFixed(4);
+            document.getElementById('mb-metric-peak').textContent = `${data.bem_heatmap.peak_potential.toFixed(2)} (Scaled)`;
+
+            const commonLayout = {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                margin: {t: 30, b: 46, l: 48, r: 24},
+                font: {color: '#c9d1d9', family: 'Inter'},
+                xaxis: {gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e'},
+                yaxis: {gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e'},
+            };
+
+            // 1. Moduli Stability Heatmap
+            Plotly.react('mb-plot-moduli-heatmap', [{
+                z: data.moduli_grid.stability,
+                x: data.moduli_grid.freq_axis,
+                y: data.moduli_grid.intensity_axis,
+                type: 'heatmap',
+                colorscale: 'Viridis',
+                colorbar: {title: 'Phi(z)', tickfont: {color: '#cbd5e1', size: 8}}
+            }], {
+                ...commonLayout,
+                xaxis: {...commonLayout.xaxis, title: 'Frequency f (Hz)'},
+                yaxis: {...commonLayout.yaxis, title: 'Intensity I (% MSO)'}
+            }, {responsive: true, displaylogo: false});
+
+            // 2. BEM Cortical Potential Heatmap
+            Plotly.react('mb-plot-bem-heatmap', [{
+                z: data.bem_heatmap.potential,
+                x: data.bem_heatmap.theta,
+                y: data.bem_heatmap.phi,
+                type: 'heatmap',
+                colorscale: 'Plasma',
+                colorbar: {title: 'Potential', tickfont: {color: '#cbd5e1', size: 8}}
+            }], {
+                ...commonLayout,
+                xaxis: {...commonLayout.xaxis, title: 'Azimuth theta (rad)'},
+                yaxis: {...commonLayout.yaxis, title: 'Polar phi (rad)'}
+            }, {responsive: true, displaylogo: false});
+
+            // 3. Cortical Depth Field Attenuation
+            Plotly.react('mb-plot-attenuation', [{
+                x: data.bem_attenuation.depths_mm,
+                y: data.bem_attenuation.field_pct,
+                name: 'Induced E-Field',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {color: '#a78bfa', width: 2.5},
+                marker: {size: 4}
+            }], {
+                ...commonLayout,
+                xaxis: {...commonLayout.xaxis, title: 'Cortical Depth (mm)'},
+                yaxis: {...commonLayout.yaxis, title: 'Field Strength (% MSO)'}
+            }, {responsive: true, displaylogo: false});
+
+            // 4. Continued Fraction Convergents Bar
+            const cfLabels = data.cf_convergents.slice(0, 6).map(c => `${c.numerator}/${c.denominator}`);
+            const cfErrors = data.cf_convergents.slice(0, 6).map(c => Math.max(0.0001, c.error_pct));
+            Plotly.react('mb-plot-cf', [{
+                x: cfLabels,
+                y: cfErrors,
+                name: 'Approximation Error (%)',
+                type: 'bar',
+                marker: {color: '#38bdf8'}
+            }], {
+                ...commonLayout,
+                xaxis: {...commonLayout.xaxis, title: 'Rational Convergent p_k / q_k'},
+                yaxis: {...commonLayout.yaxis, title: 'Error vs f* (%)', type: 'log'}
+            }, {responsive: true, displaylogo: false});
+
+            // ASCII schematic
+            const asciiEl = document.getElementById('mb-ascii-schematic');
+            if (asciiEl) asciiEl.textContent = data.ascii_schematic;
+
+            // Clinical summary text
+            const summaryEl = document.getElementById('mb-genai-text');
+            if (summaryEl) {
+                summaryEl.innerHTML = data.clinical_summary
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n\n/g, '<br/><br/>');
+            }
+
+        } catch (error) {
+            console.error('Moduli-BEM API error:', error);
+            const summaryEl = document.getElementById('mb-genai-text');
+            if (summaryEl) summaryEl.textContent = `Simulation unavailable: ${error.message}`;
+        }
+    };
+
+    // ─────────────────────────────────────────────────────────────
+    // Tourette Syndrome (CSTC Combinatorics) Research Suite
+    // ─────────────────────────────────────────────────────────────
+    let touretteDebounceTimer = null;
+    window.runTouretteRtmsDebounced = function() {
+        clearTimeout(touretteDebounceTimer);
+        touretteDebounceTimer = setTimeout(runTouretteRtms, 50);
+    };
+
+    window.runTouretteRtms = async function() {
+        const baselineEl = document.getElementById('ts-baseline-ygtss');
+        if (!baselineEl) return;
+
+        const params = new URLSearchParams({
+            baseline_ygtss: baselineEl.value,
+            treatment_weeks: document.getElementById('ts-weeks').value,
+            daily_pulses: document.getElementById('ts-pulses').value,
+            stimulation_intensity_pct: document.getElementById('ts-intensity').value,
+            hrt_synergy_gain: document.getElementById('ts-hrt-gain').value,
+            cf_signature_ratio: document.getElementById('ts-ratio').value
+        });
+
+        const preprintBtn = document.getElementById('ts-preprint-btn');
+        if (preprintBtn) {
+            preprintBtn.href = `/api/tourette-rtms-preprint?${params.toString()}`;
+        }
+
+        try {
+            const response = await fetch(`/api/tourette-rtms?${params.toString()}`);
+            const result = await response.json();
+            if (!response.ok || result.error) throw new Error(result.error || `HTTP ${response.status}`);
+            const data = result.data;
+            const metrics = data.metrics;
+
+            // Update Metrics
+            document.getElementById('ts-metric-final-ygtss').textContent = metrics.final_ygtss.toFixed(2);
+            document.getElementById('ts-metric-reduction').textContent = `-${metrics.absolute_reduction.toFixed(1)} pts (${metrics.percent_reduction.toFixed(1)}%)`;
+            document.getElementById('ts-metric-puts').textContent = `${metrics.final_puts.toFixed(1)} (-${metrics.puts_reduction_pct.toFixed(1)}%)`;
+            document.getElementById('ts-metric-entropy').textContent = `${data.allocation.combinatorial_entropy.toFixed(3)} nats`;
+            document.getElementById('ts-metric-peak-e').textContent = `${metrics.peak_e_vm.toFixed(1)} V/m`;
+            document.getElementById('ts-metric-convergents').textContent = `[${data.cf_convergents.slice(0, 4).map(c => c.fraction).join(', ')}]`;
+
+            const commonLayout = {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                margin: {t: 28, b: 46, l: 48, r: 24},
+                font: {color: '#c9d1d9', family: 'Inter'},
+                xaxis: {title: 'Treatment Horizon (Weeks)', gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e'},
+                yaxis: {gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e'},
+                legend: {orientation: 'h', x: 0, y: -0.24, font: {size: 10}}
+            };
+
+            // 1. Longitudinal YGTSS Trajectory plot
+            Plotly.react('ts-plot-trajectory', [
+                {x: data.weeks, y: data.ygtss_sham, name: 'Sham rTMS Control', type: 'scatter', mode: 'lines', line: {color: '#8b949e', dash: 'dot'}},
+                {x: data.weeks, y: data.ygtss_hrt, name: 'HRT Behavioral Monotherapy', type: 'scatter', mode: 'lines', line: {color: '#58a6ff'}},
+                {x: data.weeks, y: data.ygtss_rtms, name: '1Hz pre-SMA Monotherapy', type: 'scatter', mode: 'lines', line: {color: '#ffa657'}},
+                {x: data.weeks, y: data.ygtss_synergistic, name: 'Combinatorial rTMS + HRT', type: 'scatter', mode: 'lines+markers', line: {color: '#56d364', width: 3}, marker: {size: 4}}
+            ], {
+                ...commonLayout,
+                yaxis: {...commonLayout.yaxis, title: 'Total YGTSS Score (0-50)', range: [0, 52]}
+            }, {responsive: true, displaylogo: false});
+
+            // 2. Subscores Plot (Motor, Vocal, PUTS)
+            Plotly.react('ts-plot-subscores', [
+                {x: data.weeks, y: data.motor_tic_score, name: 'Motor Tics Subscore', type: 'scatter', mode: 'lines', line: {color: '#d2a8ff', width: 2}},
+                {x: data.weeks, y: data.vocal_tic_score, name: 'Vocal Tics Subscore', type: 'scatter', mode: 'lines', line: {color: '#38bdf8', width: 2}},
+                {x: data.weeks, y: data.puts_urge_score, name: 'Premonitory Urge (PUTS 9-36)', type: 'scatter', mode: 'lines', line: {color: '#ff7b72', width: 2.5}}
+            ], {
+                ...commonLayout,
+                yaxis: {...commonLayout.yaxis, title: 'Component Score'}
+            }, {responsive: true, displaylogo: false});
+
+            // 3. Combinatorial Pulse Allocation Bar Chart
+            const nodeLabels = data.allocation.allocated_nodes.map(n => n.target_id);
+            const nodePulses = data.allocation.allocated_nodes.map(n => n.allocated_pulses);
+            const nodeShares = data.allocation.allocated_nodes.map(n => n.pulse_fraction_pct * 30.0);
+            Plotly.react('ts-plot-allocation', [
+                {x: nodeLabels, y: nodePulses, name: 'Allocated Pulses / Day', type: 'bar', marker: {color: '#a78bfa'}},
+                {x: nodeLabels, y: nodeShares, name: 'Pulse Share (% x30)', type: 'bar', marker: {color: '#34d399'}}
+            ], {
+                ...commonLayout,
+                barmode: 'group',
+                xaxis: {...commonLayout.xaxis, title: 'CSTC Cortical Target Node'},
+                yaxis: {...commonLayout.yaxis, title: 'Pulses / Scaled Share'}
+            }, {responsive: true, displaylogo: false});
+
+            // 4. BEM Depth Field Attenuation & Current Density
+            Plotly.react('ts-plot-bem', [
+                {x: data.bem_field.depths_mm, y: data.bem_field.e_field_vm, name: 'E-Field (V/m)', type: 'scatter', mode: 'lines', line: {color: '#ff7b72', width: 2.5}},
+                {x: data.bem_field.depths_mm, y: data.bem_field.current_density_am2, name: 'Current Density J (A/m²)', type: 'scatter', mode: 'lines', line: {color: '#38bdf8', width: 2}, yaxis: 'y2'}
+            ], {
+                ...commonLayout,
+                xaxis: {...commonLayout.xaxis, title: 'Tissue Depth z (mm)'},
+                yaxis: {...commonLayout.yaxis, title: 'E-Field (V/m)'},
+                yaxis2: {title: 'J (A/m²)', overlaying: 'y', side: 'right', color: '#38bdf8', gridcolor: 'rgba(56,189,248,0.08)'}
+            }, {responsive: true, displaylogo: false});
+
+            // 5. Permutation Entropy & Control Effort
+            Plotly.react('ts-plot-entropy', [
+                {x: data.weeks, y: data.tic_cluster_entropy, name: 'Permutation Entropy H_perm', type: 'scatter', mode: 'lines+markers', line: {color: '#34d399', width: 2.5}, marker: {size: 4}},
+                {x: data.weeks, y: data.control_effort, name: 'Control Effort u_k', type: 'scatter', mode: 'lines', line: {color: '#fbbf24', width: 2, dash: 'dot'}}
+            ], {
+                ...commonLayout,
+                yaxis: {...commonLayout.yaxis, title: 'Entropy / Control Effort [0-1]', range: [0, 1.05]}
+            }, {responsive: true, displaylogo: false});
+
+            // 6. Staging candidate costs
+            Plotly.react('ts-plot-staging', [
+                {x: data.staging.candidate_rank, y: data.staging.candidate_costs, name: 'Candidate Gate Cost J', type: 'scatter', mode: 'lines+markers', line: {color: '#d2a8ff'}, marker: {size: 4}}
+            ], {
+                ...commonLayout,
+                xaxis: {...commonLayout.xaxis, title: 'Ranked Gate Pair Candidate'},
+                yaxis: {...commonLayout.yaxis, title: 'Multi-Objective Cost J_stage'}
+            }, {responsive: true, displaylogo: false});
+
+            // ASCII schematic
+            const asciiEl = document.getElementById('ts-ascii-schematic');
+            if (asciiEl) asciiEl.textContent = data.ascii_schematic;
+
+            // Clinical summary text
+            const summaryEl = document.getElementById('ts-genai-text');
+            if (summaryEl) {
+                summaryEl.innerHTML = data.clinical_summary
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n\n/g, '<br/><br/>');
+            }
+
+        } catch (error) {
+            console.error('Tourette rTMS API error:', error);
+            const summaryEl = document.getElementById('ts-genai-text');
             if (summaryEl) summaryEl.textContent = `Simulation unavailable: ${error.message}`;
         }
     };

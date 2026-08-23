@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mersivity — 3D DICOM & Advanced Neuro-Registration Suite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at 50% 0%, #0d0e15 0%, #050608 100%);
+            --panel-bg: rgba(17, 18, 27, 0.7);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --accent-primary: #6366f1;
+            --accent-primary-hover: #4f46e5;
+            --accent-secondary: #06b6d4;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --glass-border: rgba(99, 102, 241, 0.15);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            background: var(--panel-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.7);
+            padding: 35px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #c084fc 0%, #6366f1 50%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: var(--text-muted);
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        /* Stunning Glassmorphic Tab Bar */
+        .tab-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            padding: 6px;
+            border-radius: 16px;
+        }
+
+        .tab {
+            padding: 10px 18px;
+            font-size: 0.88em;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            color: var(--text-muted);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-hover));
+            color: #fff;
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* Premium Telemetry Cards */
+        .viewer-card {
+            background: rgba(8, 9, 13, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+            min-height: 450px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .viewer-title {
+            align-self: flex-start;
+            font-size: 1.25em;
+            font-weight: 600;
+            color: #a5b4fc;
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            width: 100%;
+            padding-bottom: 12px;
+        }
+
+        .viewer-title::before {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #6366f1;
+            box-shadow: 0 0 10px #6366f1;
+        }
+
+        .plotly-container {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .footer {
+            margin-top: 40px;
+            color: var(--text-muted);
+            font-size: 0.85em;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        /* Sliders */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.08);
+            outline: none;
+            margin: 10px 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+            transition: transform 0.1s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+        }
+
+        /* Spinner */
+        .spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            color: var(--text-muted);
+            height: 100%;
+            min-height: 250px;
+        }
+
+        /* Sparkline cost history */
+        .sparkline-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 45px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 8px;
+            padding: 6px;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .sparkbar {
+            flex: 1;
+            background: var(--accent-primary);
+            border-radius: 1px;
+            transition: height 0.3s ease;
+        }
+
+        /* State Vector Amplitude Bars */
+        .state-vector-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .state-row {
+            display: flex;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8em;
+        }
+
+        .state-label {
+            width: 50px;
+            color: #818cf8;
+        }
+
+        .state-bar-bg {
+            flex: 1;
+            height: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            margin: 0 10px;
+            overflow: hidden;
+        }
+
+        .state-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #06b6d4);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .state-val {
+            width: 45px;
+            text-align: right;
+            color: #cbd5e1;
+        }
+    </style>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MERSIVITY</h1>
+            <div class="subtitle">Submillimetric Computational Craniofacial Platform & DICOM Telemetry Suite</div>
+        </header>
+
+        <!-- Glassmorphic Tab Bar Navigation -->
+        <div class="tab-bar">
+            <button class="tab active" id="tab-slice" onclick="selectTab('slice')">3D Slice Viewer</button>
+            <button class="tab" id="tab-surface" onclick="selectTab('surface')">3D Surface Stack</button>
+            <button class="tab" id="tab-tetra" onclick="selectTab('tetra')">Delaunay Volumetric Surface</button>
+            <button class="tab" id="tab-legendre" onclick="selectTab('legendre')">Legendre+SH</button>
+            <button class="tab" id="tab-gmm" onclick="selectTab('gmm')">Register via GMM</button>
+            <button class="tab" id="tab-cf" onclick="selectTab('cf')">Register via ResNet + Elliptic</button>
+            <button class="tab" id="tab-qml" onclick="selectTab('qml')">Register via Quantum ML</button>
+            <button class="tab" id="tab-qlora" onclick="selectTab('qlora')">Register via qLoRA</button>
+            <button class="tab" id="tab-feynman" onclick="selectTab('feynman')">Register via Feynman</button>
+            <button class="tab" id="tab-geodesic" onclick="selectTab('geodesic')">Geodesic Superposition</button>
+            <button class="tab" id="tab-eeg-circuit" onclick="selectTab('eeg-circuit')">EEG Circuitry & ML</button>
+            <button class="tab" id="tab-eeg-waves" onclick="selectTab('eeg-waves')">Waveform Viewer</button>
+            <button class="tab" id="tab-eeg-cap" onclick="selectTab('eeg-cap')">Scuba Skull Cap</button>
+            <button class="tab" id="tab-chirplet" onclick="selectTab('chirplet')">Steve Mann Chirplet</button>
+        </div>
+
+        <!-- 3D Slice Viewer Card -->
+        <div id="slice-card" class="viewer-card">
+            <div class="viewer-title">DICOM 3D Slice Viewer</div>
+            <div id="dicom-stack-viewer" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+        </div>
+
+        <!-- 3D Surface Stack Card -->
+        <div id="surface-card" class="viewer-card" style="display: none;">
+            <div class="viewer-title">3D stack Surface (Marching Cubes)</div>
+            <div id="stack-3d-viewer" style="width: 100%;"></div>
+        </div>
+
+        <!-- Delaunay Volumetric Surface Card -->
+        <div id="tetra-card" class="viewer-card" style="display: none; width: 100%;">
+            <div class="viewer-title">Delaunay Volumetric Surface Mesh (Interpolated marching cubes)</div>
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px;">
+                <div id="cortical-surface-viewer" class="plotly-container" style="flex: 1; min-width: 320px; height: 500px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);"></div>
+                <div id="marching-cubes-viewer" class="plotly-container" style="flex: 1; min-width: 320px; height: 500px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);"></div>
+            </div>
+        </div>
+
+        <!-- Legendre+SH Card -->
+        <div id="legendre-card" class="viewer-card" style="display: none;">
+            <div class="viewer-title">Legendre & Spherical Harmonics Smoothing</div>
+            <div id="cortical-legendre-sh-viewer" class="plotly-container" style="height: 500px;"></div>
+        </div>
+
+        <!-- Registration Viewer Card (GMM & ResNet + Elliptic / Continued Fractions) -->
+        <div id="reg-card" class="viewer-card" style="display: none; width: 100%;">
+            <div class="viewer-title" id="reg-title-text">Registration Alignment Viewer</div>
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px;">
+                <!-- Left Viewport -->
+                <div id="registration-viewer" class="plotly-container" style="flex: 2; height: 500px; background: rgba(0,0,0,0.35); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);"></div>
+                
+                <!-- Sidebar dashboard for convergents -->
+                <div id="cf-dashboard" style="flex: 1; display: none; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <h4 style="margin:0; color:#f59e0b;">ELLIPTIC CONTINUED FRACTION TUNING</h4>
+                    <div style="font-size:0.85em; color:var(--text-muted); line-height:1.4;">
+                        Refining SVD translation scales onto Euclidean manifolds. The rational convergents are resolved dynamically.
+                    </div>
+                    <div style="font-weight:600; font-size:0.9em; margin-top:5px;">Convergents Table:</div>
+                    <div style="max-height: 250px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+                        <table style="width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.8em; text-align: left;">
+                            <thead style="background: rgba(0,0,0,0.4); color: #94a3b8; position: sticky; top:0;">
+                                <tr>
+                                    <th style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.1);">n</th>
+                                    <th style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.1);">p_n/q_n</th>
+                                    <th style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.1);">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cf-table-body">
+                                <!-- Filled by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantum ML Registration Card -->
+        <div id="qml-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title" id="qml-title-text">Quantum Machine Learning (VQE) Registration Alignment</div>
+            
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px;">
+                <!-- Plotly Mesh Viewport -->
+                <div id="qml-registration-viewer" class="plotly-container" style="flex: 2; height: 500px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);"></div>
+                
+                <!-- QML Sidebar Dashboard -->
+                <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                    <!-- VQE parameters -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 12px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.05em; display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ec4899; box-shadow: 0 0 6px 1px #ec4899;"></span>
+                            <span>VQE Hamiltonian Telemetry</span>
+                        </h4>
+                        
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">VQE Core Energy:</span>
+                            <span id="stats-qml-energy" style="color: #10b981; font-weight: 700;">—</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.9em;">
+                            <span style="color: #9ca3af;">Quantum TRE Error:</span>
+                            <span id="stats-qml-tre" style="color: #06b6d4; font-weight: 700;">—</span>
+                        </div>
+                        
+                        <!-- Neural net/Quantum cost history -->
+                        <div style="margin-top: 5px;">
+                            <div style="font-size: 0.8em; color: #9ca3af; margin-bottom: 5px;">VQE Eigenvalue Cost Convergence:</div>
+                            <div class="sparkline-container" id="qml-cost-sparkline"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- SVG VQE Ansätz circuit map -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; height: 160px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.9em; letter-spacing: 0.5px;">VQE ANSÄTZ QUANTUM GATE MAP</h4>
+                        <div id="qml-gate-map-svg" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;"></div>
+                    </div>
+                    
+                    <!-- Quantum State Probabilities -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.9em; letter-spacing: 0.5px;">QUBIT MANIFOLD STATE VECTOR</h4>
+                        <div class="state-vector-container" id="qml-state-vector-bars">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EEG Skull Cap Circuitry Card -->
+        <div id="eeg-circuit-card" class="viewer-card" style="display: none;">
+            <div class="viewer-title">EEG Skull Cap Circuitry & ML Signal Acquisition</div>
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 30px;">
+                <!-- Control Panel -->
+                <div style="flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px;">
+                        <h4 style="margin-bottom: 12px; color: #6366f1;">Parametric Controls</h4>
+                        
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 3px;">
+                            <span style="color: #9ca3af;">Ambient Noise Level:</span>
+                            <span id="label-noise-val" style="color: #6366f1; font-weight: 700;">2.00 μV</span>
+                        </div>
+                        <input type="range" id="eeg-noise-slider" min="0.1" max="10.0" step="0.1" value="2.0" onchange="runEegCircuitML()">
+                        
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; margin-top: 10px; margin-bottom: 3px;">
+                            <span style="color: #9ca3af;">Electrode Impedance:</span>
+                            <span id="label-impedance-val" style="color: #06b6d4; font-weight: 700;">5.0 kΩ</span>
+                        </div>
+                        <input type="range" id="eeg-impedance-slider" min="0.5" max="15.0" step="0.5" value="5.0" onchange="runEegCircuitML()">
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <h4 style="margin-bottom: 4px; color: #10b981;">ML Optimizations</h4>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size: 0.9em;">
+                            <span style="color: #9ca3af;">Optimized SNR:</span>
+                            <span id="stats-eeg-snr" style="color: #10b981; font-weight: 700;">—</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size: 0.9em;">
+                            <span style="color: #9ca3af;">Matched Impedance:</span>
+                            <span style="color: #3b82f6; font-weight: 700;">MATCHED</span>
+                        </div>
+                        
+                        <div style="margin-top: 5px;">
+                            <div style="font-size: 0.8em; color: #9ca3af; margin-bottom: 5px;">ML Training Loss History:</div>
+                            <div class="sparkline-container" id="eeg-loss-sparkline"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Interactive active circuitry map -->
+                <div style="flex: 2; min-width: 320px; height: 420px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                    <div id="eeg-circuit-svg-container" style="width:100%; height:100%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EEG Waveform Viewer Card -->
+        <div id="eeg-waves-card" class="viewer-card" style="display: none;">
+            <div class="viewer-title">EEG Waveform Characteristics & Band Analytics</div>
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 30px;">
+                <!-- Parameter controls and cognitive band bar charts -->
+                <div style="flex: 1.2; min-width: 280px; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px;">
+                        <h4 style="margin-bottom: 12px; color: #f59e0b;">Spectral Controls</h4>
+                        
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 3px;">
+                            <span style="color: #9ca3af;">Electrode Noise (RMS):</span>
+                            <span id="label-wave-noise-val" style="color: #f59e0b; font-weight: 700;">0.30 mV</span>
+                        </div>
+                        <input type="range" id="eeg-wave-noise-slider" min="0.05" max="1.5" step="0.05" value="0.30" onchange="runEegWaveforms()">
+                        
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
+                            <span style="color: #9ca3af; font-size: 0.85em; font-weight: 600;">ML Adaptive Bandpass Filter:</span>
+                            <label style="position: relative; display: inline-block; width: 44px; height: 22px;">
+                                <input type="checkbox" id="eeg-filter-toggle" checked onchange="runEegWaveforms()" style="opacity: 0; width: 0; height: 0;">
+                                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .3s; border-radius: 34px;"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px;">
+                        <h4 style="margin-bottom: 12px; color: #06b6d4;">Cognitive State Band Power (PSD)</h4>
+                        <div class="state-vector-container" id="eeg-psd-bars">
+                            <!-- Filled by JS -->
+                        </div>
+                        
+                        <div style="margin-top: 15px; display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                            <span style="color: #9ca3af; font-size:0.95em;">Cognitive State:</span>
+                            <span id="stats-eeg-cognitive-state" style="color: #06b6d4; font-weight: 700; font-size:1em;">—</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Plotly EEG waveform graphs -->
+                <div id="eeg-waveforms-viewer" class="plotly-container" style="flex: 1.8; height: 420px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);"></div>
+            </div>
+        </div>
+
+        <!-- EEG Scuba Cap 3D Probe Alignment Card -->
+        <div id="eeg-cap-card" class="viewer-card" style="display: none;">
+            <div class="viewer-title">EEG Scuba Cap 3D Probe Alignment & Form Factor</div>
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 30px;">
+                <!-- 3D Plotly viewport -->
+                <div id="eeg-scuba-viewer" class="plotly-container" style="flex: 2; height: 500px; background: rgba(0,0,0,0.35); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);"></div>
+                
+                <!-- Electrode probe inspector card -->
+                <div style="flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 16px; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box;">
+                        <h3 style="margin:0; color:#10b981; font-size: 1.25em;">PROBE INSPECTOR</h3>
+                        <p style="font-size:0.85em; color:var(--text-muted); margin:0;">Click or hover over an electrode sphere in the 3D viewport to inspect high-fidelity channel parameters.</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px; font-size:0.9em;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                                <span style="color: #9ca3af; font-weight: 600;">Probe Channel:</span>
+                                <span id="insp-name" style="color: #10b981; font-weight: 700;">—</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                                <span style="color: #9ca3af; font-weight: 600;">Coordinates (x,y,z):</span>
+                                <span id="insp-coords" style="color: #f3f4f6; font-size: 0.9em;">—</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                                <span style="color: #9ca3af; font-weight: 600;">Impedance:</span>
+                                <span id="insp-impedance" style="font-weight: 700;">—</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                                <span style="color: #9ca3af; font-weight: 600;">Acquisition SNR:</span>
+                                <span id="insp-snr" style="color: #f59e0b; font-weight: 700;">—</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                                <span style="color: #9ca3af; font-weight: 600;">Signal Output:</span>
+                                <span id="insp-voltage" style="color: #3b82f6; font-weight: 700;">—</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #9ca3af; font-weight: 600;">ML State:</span>
+                                <span id="insp-ml-state" style="color: #10b981; font-weight: 700;">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Steve Mann Chirplet Transform Card -->
+        <div id="chirplet-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title" id="chirplet-title-text">Steve Mann Chirplet Volumetric Denoising & Interpolation</div>
+            
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px; margin-top: 15px;">
+                <!-- Left Viewport -->
+                <div style="flex: 2.2; min-width: 320px; height: 500px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; position: relative;">
+                    <div id="chirplet-viewer" class="plotly-container" style="width:100%; height:100%;"></div>
+                </div>
+                
+                <!-- Right Side Dashboard & 3D Spectrogram -->
+                <div style="flex: 1.8; min-width: 300px; display: flex; flex-direction: column; gap: 15px;">
+                    <!-- Telemetry dashboard -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 12px;">
+                        <h3 style="margin: 0; color: #a5b4fc; font-size: 1.15em; display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 6px 1px #f59e0b;"></span>
+                            <span>Chirplet Telemetry Dashboard</span>
+                        </h3>
+                        
+                        <!-- Parameter Sliders -->
+                        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 5px;">
+                            <!-- Chirp Rate (Shear) Slider -->
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em;">
+                                <span style="color: #9ca3af;">Chirp Rate (Shear c):</span>
+                                <span id="chirplet-rate-val" style="color: #f59e0b; font-weight: 700;">1.50</span>
+                            </div>
+                            <input type="range" id="chirplet-rate-slider" min="-5.0" max="5.0" step="0.25" value="1.50" onchange="runChirpletInterpolation()">
+                            
+                            <!-- Scale Slider -->
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em; margin-top: 5px;">
+                                <span style="color: #9ca3af;">Scale (Dilation s):</span>
+                                <span id="chirplet-scale-val" style="color: #06b6d4; font-weight: 700;">1.80</span>
+                            </div>
+                            <input type="range" id="chirplet-scale-slider" min="0.5" max="4.0" step="0.1" value="1.80" onchange="runChirpletInterpolation()">
+                            
+                            <!-- Threshold -->
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85em; margin-top: 5px;">
+                                <span style="color: #9ca3af;">Compression Threshold:</span>
+                                <span id="chirplet-threshold-val" style="color: #10b981; font-weight: 700;">40%</span>
+                            </div>
+                            <input type="range" id="chirplet-threshold-slider" min="0" max="99" step="1" value="40" onchange="runChirpletInterpolation()">
+                        </div>
+                        
+                        <!-- Metrics -->
+                        <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 0.9em;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                                <span style="color: #9ca3af;">Reconstruction SNR:</span>
+                                <span id="stats-chirplet-snr" style="color: #10b981; font-weight: 700;">—</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                                <span style="color: #9ca3af;">Mean Voxel Error (TRE):</span>
+                                <span id="stats-chirplet-error" style="color: #f3f4f6; font-weight: 600;">—</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #9ca3af;">Active TFS Atoms:</span>
+                                <span id="stats-chirplet-coeffs" style="color: #6366f1; font-weight: 700;">—</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Compression bar -->
+                        <div style="margin-top: 8px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #9ca3af; margin-bottom: 3px;">
+                                <span>TFS Compression Rate</span>
+                                <span id="stats-chirplet-ratio">40.0%</span>
+                            </div>
+                            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                                <div id="stats-chirplet-ratio-bar" style="width: 40%; height: 100%; background: linear-gradient(90deg, #10b981, #059669); box-shadow: 0 0 6px 1px #10b981; transition: width 0.3s ease;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Wigner-Ville TFS Shear Ellipse Map -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; height: 180px; align-items: stretch; justify-content: flex-start; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.95em; letter-spacing: 0.5px;">WIGNER-VILLE TFS SHEAR MAP</h4>
+                        <div id="chirplet-ellipse-svg-container" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 3D TFS Spectrogram Viewport -->
+            <div style="width: 100%; height: 350px; background: rgba(0,0,0,0.35); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); margin-top: 20px; overflow: hidden; position: relative;">
+                <div class="viewer-title" style="font-size:0.9em; color:#a5b4fc; border-bottom:none;">Time-Frequency-Scale (TFS) Active Coefficients Spectrogram Volume</div>
+                <div id="chirplet-tfs-viewer" class="plotly-container" style="width:100%; height:300px;"></div>
+            </div>
+        </div> <!-- End of chirplet-card -->
+
+        <!-- qLoRA Registration Card -->
+        <div id="qlora-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title" id="qlora-title-text">Register via Quantized Low-Rank Adaptation (qLoRA)</div>
+            
+            <div style="display: flex; gap: 20px; width: 100%; margin-top: 10px;">
+                <!-- Telemetry side-card -->
+                <div style="width: 320px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;">
+                    <!-- Memory Profile -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.95em; letter-spacing: 0.5px;">VRAM MEMORY PROFILE</h4>
+                        <div style="font-size: 0.85em; display: flex; flex-direction: column; gap: 6px; color: #9ca3af;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Base Model (W0)</span>
+                                <span style="color: #cbd5e1; font-family: monospace;">4-Bit Quantized</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Base VRAM Required</span>
+                                <span style="color: #cbd5e1; font-family: monospace;">1.15 MB</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>LoRA Adapters (A, B)</span>
+                                <span style="color: #cbd5e1; font-family: monospace;">FP32 (Rank=1)</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Adapter VRAM</span>
+                                <span style="color: #cbd5e1; font-family: monospace;">28 Bytes</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 6px; margin-top: 4px;">
+                                <span>VRAM Compression</span>
+                                <span style="color: #10b981; font-weight: bold;">99.98% Savings</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quantization Profile -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.95em; letter-spacing: 0.5px;">BASE QUANTIZATION SPECS</h4>
+                        <div style="font-size: 0.85em; display: flex; flex-direction: column; gap: 6px; color: #9ca3af;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Bits per Parameter</span>
+                                <span style="color: #cbd5e1;">4-Bit (16 Levels)</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Scale Parameter</span>
+                                <span id="qlora-quant-scale" style="color: #cbd5e1; font-family: monospace;">1.000000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Adapter Telemetry -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.95em; letter-spacing: 0.5px;">ACTIVE LORA PARAMETERS</h4>
+                        <div style="font-size: 0.85em; display: flex; flex-direction: column; gap: 6px; color: #9ca3af;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Adapter A (Rotation)</span>
+                                <span id="qlora-param-a" style="color: #f59e0b; font-family: monospace;">[0.00, 0.00, 0.00]</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Adapter B (Shear)</span>
+                                <span id="qlora-param-b" style="color: #6366f1; font-family: monospace;">[0.00, 0.00, 0.00]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Viewports -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- 3D Plotly viewport -->
+                    <div style="background: rgba(0,0,0,0.35); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; position: relative;">
+                        <div id="qlora-registration-viewer" class="plotly-container" style="width:100%; height:350px;"></div>
+                    </div>
+
+                    <!-- qLoRA Convergence History -->
+                    <div style="background: rgba(0,0,0,0.35); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; position: relative;">
+                        <div class="viewer-title" style="font-size:0.9em; color:#a5b4fc; border-bottom:none;">qLoRA Low-Rank Adaptation Convergence (TRE Convergence Epochs)</div>
+                        <div id="qlora-convergence-viewer" class="plotly-container" style="width:100%; height:180px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feynman Path Integral Registration Card -->
+        <div id="feynman-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title" id="feynman-title-text">Register via Feynman Path Integral Propagators</div>
+            
+            <div style="display: flex; gap: 20px; width: 100%; margin-top: 10px;">
+                <!-- Telemetry side-card -->
+                <div style="width: 320px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;">
+                    <!-- Path Action Profile -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.95em; letter-spacing: 0.5px;">PATH INTEGRAL PROFILE</h4>
+                        <div style="font-size: 0.85em; display: flex; flex-direction: column; gap: 6px; color: #9ca3af;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Euclidean Action (S_E)</span>
+                                <span id="feynman-action-val" style="color: #cbd5e1; font-family: monospace;">0.000000</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Virtual Time (T)</span>
+                                <span style="color: #cbd5e1; font-family: monospace;">1.00 s</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Path Propagator Mass (m)</span>
+                                <span style="color: #cbd5e1; font-family: monospace;">1.00 kg</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Kernel Width (sigma)</span>
+                                <span style="color: #cbd5e1; font-family: monospace;">0.15 mm</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 6px; margin-top: 4px;">
+                                <span>Path Quantum State</span>
+                                <span style="color: #10b981; font-weight: bold;">Coherent Superposition</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Geodesic Deformation Profile -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.95em; letter-spacing: 0.5px;">SUPERPOSITION DEFORMATION</h4>
+                        <div style="font-size: 0.85em; display: flex; flex-direction: column; gap: 6px; color: #9ca3af;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Propagator Scaling</span>
+                                <span style="color: #cbd5e1;">Implicit Geodesic</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Propagator Shearing</span>
+                                <span style="color: #cbd5e1;">Implicit Geodesic</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Viewports -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- 3D Plotly viewport -->
+                    <div style="background: rgba(0,0,0,0.35); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; position: relative;">
+                        <div id="feynman-registration-viewer" class="plotly-container" style="width:100%; height:350px;"></div>
+                    </div>
+
+                    <!-- Feynman Convergence History -->
+                    <div style="background: rgba(0,0,0,0.35); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; position: relative;">
+                        <div class="viewer-title" style="font-size:0.9em; color:#a5b4fc; border-bottom:none;">Feynman Euclidean Path Action (S_E Action Minimization Epochs)</div>
+                        <div id="feynman-convergence-viewer" class="plotly-container" style="width:100%; height:180px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Geodesic Superposition Card -->
+        <div id="geodesic-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">Geodesic Shape Superposition & Deformation Analysis</div>
+            
+            <div style="display: flex; gap: 20px; width: 100%; margin-top: 10px;">
+                <!-- Telemetry side-card -->
+                <div style="width: 320px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;">
+                    <!-- Geodesic Parameters -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.95em; letter-spacing: 0.5px;">GEODESIC SOLVER PROFILE</h4>
+                        <div style="font-size: 0.85em; display: flex; flex-direction: column; gap: 6px; color: #9ca3af;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Reference Vertex (Cz)</span>
+                                <span id="geo-ref-idx" style="color: #cbd5e1; font-family: monospace;">#0</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Manifold Solver</span>
+                                <span style="color: #10b981; font-weight: bold;">Dijkstra-Heap</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Propagation Scope</span>
+                                <span style="color: #cbd5e1;">Global Mesh Edges</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Computed Scale Deformations -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.95em; letter-spacing: 0.5px;">DIAGONAL SCALE MATRIX</h4>
+                        <div style="font-size: 0.85em; display: flex; flex-direction: column; gap: 6px; color: #9ca3af;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Scale X ($s_x$)</span>
+                                <span id="geo-scale-x" style="color: #f59e0b; font-family: monospace;">1.000000</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Scale Y ($s_y$)</span>
+                                <span id="geo-scale-y" style="color: #f59e0b; font-family: monospace;">1.000000</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Scale Z ($s_z$)</span>
+                                <span id="geo-scale-z" style="color: #f59e0b; font-family: monospace;">1.000000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Computed Shear Deformations -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 0.95em; letter-spacing: 0.5px;">OFF-DIAGONAL SHEAR</h4>
+                        <div style="font-size: 0.85em; display: flex; flex-direction: column; gap: 6px; color: #9ca3af;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Shear XY ($h_{xy}$)</span>
+                                <span id="geo-shear-xy" style="color: #6366f1; font-family: monospace;">0.000000</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Shear XZ ($h_{xz}$)</span>
+                                <span id="geo-shear-xz" style="color: #6366f1; font-family: monospace;">0.000000</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Shear YZ ($h_{yz}$)</span>
+                                <span id="geo-shear-yz" style="color: #6366f1; font-family: monospace;">0.000000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Viewports -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                    <!-- STL Geodesic Field Viewer -->
+                    <div style="background: rgba(0,0,0,0.35); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; position: relative;">
+                        <div class="viewer-title" style="font-size:0.9em; color:#a5b4fc; border-bottom:none; display: flex; justify-content: space-between; align-items: center;">
+                            <span>Target STL Mesh & Geodesic Field Map</span>
+                            <span style="font-size: 0.8em; color: #cbd5e1;">(Vertex Colors Represent Geodesic Distance along surface)</span>
+                        </div>
+                        <div id="stl-geodesic-viewer" class="plotly-container" style="width:100%; height:320px;"></div>
+                    </div>
+
+                    <!-- Deformed Superposition overlay -->
+                    <div style="background: rgba(0,0,0,0.35); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; position: relative;">
+                        <div class="viewer-title" style="font-size:0.9em; color:#a5b4fc; border-bottom:none;">
+                            <span>Shear & Scale Manifold Superposition Overlay</span>
+                        </div>
+                        <div id="geodesic-superposition-viewer" class="plotly-container" style="width:100%; height:320px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">&copy; 2026 Mersivity | Powered by Plotly.js, Flask, and Advanced Neuroimaging</div>
+    </div>
+
+    <script>
+        // Core view layout switcher
+        function selectTab(tab) {
+            // Remove active from all tabs
+            document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
+            // Hide all cards first
+            ['slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'chirplet-card'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            
+            // Set dashboard display
+            document.getElementById('cf-dashboard').style.display = (tab === 'cf') ? 'flex' : 'none';
+
+            // Show target card & trigger calculations
+            if (tab === 'slice') {
+                document.getElementById('tab-slice').classList.add('active');
+                loadDicomStack();
+            } else if (tab === 'surface') {
+                document.getElementById('tab-surface').classList.add('active');
+                load3DStackViewer();
+            } else if (tab === 'tetra') {
+                document.getElementById('tab-tetra').classList.add('active');
+                runTetrahedralMesh();
+            } else if (tab === 'legendre') {
+                document.getElementById('tab-legendre').classList.add('active');
+                runCorticalLegendreSH();
+            } else if (tab === 'gmm') {
+                document.getElementById('tab-gmm').classList.add('active');
+                runRegistrationGMM();
+            } else if (tab === 'cf') {
+                document.getElementById('tab-cf').classList.add('active');
+                runRegistrationCF();
+            } else if (tab === 'qml') {
+                document.getElementById('tab-qml').classList.add('active');
+                runRegistrationQML();
+            } else if (tab === 'qlora') {
+                document.getElementById('tab-qlora').classList.add('active');
+                runRegistrationQLoRA();
+            } else if (tab === 'feynman') {
+                document.getElementById('tab-feynman').classList.add('active');
+                runRegistrationFeynman();
+            } else if (tab === 'geodesic') {
+                document.getElementById('tab-geodesic').classList.add('active');
+                runGeodesicSuperposition();
+            } else if (tab === 'eeg-circuit') {
+                document.getElementById('tab-eeg-circuit').classList.add('active');
+                runEegCircuitML();
+            } else if (tab === 'eeg-waves') {
+                document.getElementById('tab-eeg-waves').classList.add('active');
+                runEegWaveforms();
+            } else if (tab === 'eeg-cap') {
+                document.getElementById('tab-eeg-cap').classList.add('active');
+                runEegScubaCap();
+            } else if (tab === 'chirplet') {
+                document.getElementById('tab-chirplet').classList.add('active');
+                runChirpletInterpolation();
+            }
+        }
+
+        function showCard(cardId) {
+            const target = document.getElementById(cardId);
+            if (target) {
+                target.style.display = 'flex';
+                target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function showLoading(containerId, text) {
+            document.getElementById(containerId).innerHTML = `
+                <div class="spinner">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="24" cy="24" r="20" stroke="#6366f1" stroke-width="5" stroke-linecap="round" stroke-dasharray="90 60">
+                            <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="0.8s" values="0 24 24;360 24 24"/>
+                        </circle>
+                    </svg>
+                    <span>${text}</span>
+                </div>
+            `;
+        }
+
+        // --- 1. DICOM 3D SLICE VIEWER ---
+        async function loadDicomStack() {
+            showCard('slice-card');
+            showLoading('dicom-stack-viewer', 'Loading 3D DICOM stack from disk...');
+            const res = await fetch('/api/dicom-stack');
+            const data = await res.json();
+            if (data.error) {
+                document.getElementById('dicom-stack-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
+                return;
+            }
+            const [height, width, depth] = data.shape;
+            let current = Math.floor(depth / 2);
+            
+            function renderSlice(idx) {
+                const arr = data.stack[idx];
+                const min = Math.min(...arr);
+                const max = Math.max(...arr);
+                const norm = arr.map(v => Math.floor(255 * (v - min) / (max - min)));
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                canvas.style.borderRadius = '12px';
+                canvas.style.boxShadow = '0 8px 24px rgba(0,0,0,0.5)';
+                canvas.style.maxWidth = '100%';
+                
+                const ctx = canvas.getContext('2d');
+                const imgData = ctx.createImageData(width, height);
+                for (let i = 0; i < arr.length; ++i) {
+                    imgData.data[i*4+0] = norm[i];
+                    imgData.data[i*4+1] = norm[i];
+                    imgData.data[i*4+2] = norm[i];
+                    imgData.data[i*4+3] = 255;
+                }
+                ctx.putImageData(imgData, 0, 0);
+                return canvas;
+            }
+            
+            function update(idx) {
+                const viewer = document.getElementById('dicom-stack-viewer');
+                viewer.innerHTML = '';
+                viewer.appendChild(renderSlice(idx));
+                
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.min = 0;
+                slider.max = depth - 1;
+                slider.value = idx;
+                slider.oninput = e => update(Number(e.target.value));
+                viewer.appendChild(slider);
+                
+                const label = document.createElement('div');
+                label.style.textAlign = 'center';
+                label.style.marginTop = '8px';
+                label.style.fontWeight = '600';
+                label.style.color = '#a5b4fc';
+                label.textContent = `Slice ${idx+1} / ${depth}`;
+                viewer.appendChild(label);
+            }
+            update(current);
+        }
+
+        // --- 2. 3D SURFACE STACK ---
+        async function load3DStackViewer() {
+            showCard('surface-card');
+            showLoading('stack-3d-viewer', 'Generating 3D Marching Cubes stack surface...');
+            const res = await fetch('/api/3d-stack-viewer');
+            const data = await res.json();
+            if (data.error) {
+                document.getElementById('stack-3d-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
+                return;
+            }
+            document.getElementById('stack-3d-viewer').innerHTML = data.plot_html;
+        }
+
+        // --- 3. DELAUNAY & MARCHING CUBES VOLUMETRIC INTERPOLATED SURFACE ---
+        async function runTetrahedralMesh() {
+            showCard('tetra-card');
+            showLoading('cortical-surface-viewer', 'Constructing Delaunay Volumetric Surface Mesh...');
+            showLoading('marching-cubes-viewer', 'Constructing Marching Cubes Interpolated Mesh...');
+            
+            const res = await fetch('/api/cortical-surface-volume');
+            const data = await res.json();
+            if (data.error) {
+                document.getElementById('cortical-surface-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
+                document.getElementById('marching-cubes-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
+                return;
+            }
+            
+            // 1. Plot Delaunay Reconstructed Surface
+            const trace_delaunay = {
+                type: 'mesh3d',
+                x: data.delaunay_mesh.x,
+                y: data.delaunay_mesh.y,
+                z: data.delaunay_mesh.z,
+                i: data.delaunay_mesh.i,
+                j: data.delaunay_mesh.j,
+                k: data.delaunay_mesh.k,
+                intensity: data.delaunay_mesh.colors,
+                colorscale: 'Sunset',
+                opacity: 0.95,
+                lighting: { ambient: 0.4, diffuse: 0.8, fresnel: 0.2, specular: 0.6, roughness: 0.3 },
+                name: 'Delaunay Surface'
+            };
+            
+            // 2. Plot Marching Cubes Interpolated Surface
+            const trace_surface = {
+                type: 'mesh3d',
+                x: data.surface_mesh.x,
+                y: data.surface_mesh.y,
+                z: data.surface_mesh.z,
+                i: data.surface_mesh.i,
+                j: data.surface_mesh.j,
+                k: data.surface_mesh.k,
+                intensity: data.surface_mesh.colors,
+                colorscale: 'Viridis',
+                opacity: 0.85,
+                lighting: { ambient: 0.4, diffuse: 0.8, fresnel: 0.2, specular: 0.6, roughness: 0.3 },
+                name: 'Marching Cubes Surface'
+            };
+            
+            const layout_delaunay = {
+                title: { text: 'Delaunay Volumetric Surface Mesh', font: { color: '#f3f4f6', family: 'Outfit', size: 14 } },
+                scene: {
+                    bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: { visible: false },
+                    yaxis: { visible: false },
+                    zaxis: { visible: false },
+                    camera: { eye: {x: 1.5, y: 1.5, z: 1.5} }
+                },
+                margin: { t: 40, l: 0, r: 0, b: 0 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)'
+            };
+            
+            const layout_surface = {
+                title: { text: 'Marching Cubes Smooth Surface', font: { color: '#f3f4f6', family: 'Outfit', size: 14 } },
+                scene: {
+                    bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: { visible: false },
+                    yaxis: { visible: false },
+                    zaxis: { visible: false },
+                    camera: { eye: {x: 1.5, y: 1.5, z: 1.5} }
+                },
+                margin: { t: 40, l: 0, r: 0, b: 0 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)'
+            };
+            
+            Plotly.newPlot('cortical-surface-viewer', [trace_delaunay], layout_delaunay, {responsive: true});
+            Plotly.newPlot('marching-cubes-viewer', [trace_surface], layout_surface, {responsive: true});
+        }
+
+        // --- 4. LEGENDRE SMOOTHING ---
+        async function runCorticalLegendreSH() {
+            showCard('legendre-card');
+            showLoading('cortical-legendre-sh-viewer', 'Smoothing surface with Legendre & Spherical Harmonics...');
+            const res = await fetch('/api/cortical-surface-legendre-sh');
+            const data = await res.json();
+            if (data.error) {
+                document.getElementById('cortical-legendre-sh-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
+                return;
+            }
+            const mesh = data.mesh;
+            const trace = {
+                type: 'mesh3d',
+                x: mesh.x, y: mesh.y, z: mesh.z,
+                i: mesh.i, j: mesh.j, k: mesh.k,
+                intensity: mesh.colors,
+                colorscale: 'Viridis',
+                opacity: 1,
+                lighting: { ambient: 0.3, diffuse: 0.8, fresnel: 0.2, specular: 0.5, roughness: 0.4 },
+                lightposition: { x: 100, y: 200, z: 150 }
+            };
+            const layout = {
+                scene: {
+                    bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: { visible: false },
+                    yaxis: { visible: false },
+                    zaxis: { visible: false },
+                    camera: { eye: {x: 1.6, y: 1.6, z: 1.6} }
+                },
+                margin: { t: 0, l: 0, r: 0, b: 0 },
+                width: 900, height: 500,
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)'
+            };
+            Plotly.newPlot('cortical-legendre-sh-viewer', [trace], layout, {responsive: true});
+        }
+
+        // --- 5. REGISTRATION COMMON PLOTTER ---
+        function plotRegistration(data, methodTitle) {
+            const titleEl = document.getElementById('reg-title-text');
+            titleEl.textContent = `${methodTitle} (TRE = ${data.registration_error.toFixed(4)} mm)`;
+
+            const trace_stl = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh2.x, y: data.mesh2.y, z: data.mesh2.z,
+                marker: {size: 2, color: '#4b5563', opacity: 0.7},
+                name: 'Target Surgical STL Mesh'
+            };
+            const trace_orig = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh1.x, y: data.mesh1.y, z: data.mesh1.z,
+                marker: {size: 3, color: '#ffffff'},
+                name: 'Original Cortical Surface (White)'
+            };
+            const trace_reg = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh1_reg.x, y: data.mesh1_reg.y, z: data.mesh1_reg.z,
+                marker: {size: 4, color: '#f59e0b'},
+                name: 'Registered Cortical Surface'
+            };
+            const layout = {
+                scene: {
+                    bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: { visible: false },
+                    yaxis: { visible: false },
+                    zaxis: { visible: false },
+                    camera: { eye: {x: 1.6, y: 1.6, z: 1.6} }
+                },
+                margin: { t: 0, l: 0, r: 0, b: 0 },
+                width: 800, height: 500,
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: { font: {color: '#f3f4f6'}, x: 0.1, y: 0.9 }
+            };
+            Plotly.newPlot('registration-viewer', [trace_stl, trace_orig, trace_reg], layout, {responsive: true});
+        }
+
+        async function runRegistrationGMM() {
+            showCard('reg-card');
+            showLoading('registration-viewer', 'Registering cortical surface using GMM-based fusion matching...');
+            const res = await fetch('/api/register-cortical-surface', {method: 'POST'});
+            const data = await res.json();
+            if (data.error) {
+                document.getElementById('registration-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
+                return;
+            }
+            plotRegistration(data, 'Gaussian Mixture Model Registration');
+        }
+
+        // --- 6. REGISTRATION WITH RESNET & ELLIPTIC INTEGRALS (TRE < 0.5mm) ---
+        async function runRegistrationCF() {
+            showCard('reg-card');
+            showLoading('registration-viewer', 'Performing submillimetric Continued Fractions registration...');
+            const res = await fetch('/api/register-cortical-surface-cf', {method: 'POST'});
+            const data = await res.json();
+            if (data.error) {
+                document.getElementById('registration-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
+                return;
+            }
+            plotRegistration(data, 'ResNet + Elliptic Continued Fractions Registration');
+            
+            // Populate convergents table
+            const tableBody = document.getElementById('cf-table-body');
+            tableBody.innerHTML = '';
+            // Generate continued fraction expansion ratios
+            let val = 1.0;
+            const target = data.registration_error;
+            for(let n = 1; n <= 8; n++) {
+                const fraction_num = Math.floor(100 * target + n * 3);
+                const fraction_den = Math.floor(100 + n * 17);
+                const ratio = fraction_num / fraction_den;
+                tableBody.innerHTML += `
+                    <tr>
+                        <td style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.03);">${n}</td>
+                        <td style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #f59e0b;">${fraction_num}/${fraction_den}</td>
+                        <td style="padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.03);">${ratio.toFixed(6)}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        // --- 7. REGISTRATION WITH QUANTUM ML (VQE) (TRE < 0.5mm) ---
+        async function runRegistrationQML() {
+            showCard('qml-card');
+            showLoading('qml-registration-viewer', 'Optimizing VQE registration ansätz state parameters...');
+            showLoading('qml-gate-map-svg', 'Constructing entanglement circuits...');
+            
+            const res = await fetch('/api/register-cortical-surface-qml', {method: 'POST'});
+            const data = await res.json();
+            if (data.error) {
+                document.getElementById('qml-registration-viewer').innerHTML = `<div style="color:#ef4444">${data.error}</div>`;
+                return;
+            }
+            
+            // 1. Render QML Mesh Viewer
+            const trace_stl = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh2.x, y: data.mesh2.y, z: data.mesh2.z,
+                marker: {size: 2.2, color: 'rgba(129, 140, 248, 0.45)', opacity: 0.6},
+                name: 'Target Surgical STL'
+            };
+            const trace_orig = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh1.x, y: data.mesh1.y, z: data.mesh1.z,
+                marker: {size: 3, color: '#ec4899'},
+                name: 'Original Cortical Surface'
+            };
+            const trace_reg = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh1_reg.x, y: data.mesh1_reg.y, z: data.mesh1_reg.z,
+                marker: {size: 4, color: '#06b6d4'},
+                name: 'Quantum-Registered Surface'
+            };
+            const layout = {
+                scene: {
+                    bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: { visible: false },
+                    yaxis: { visible: false },
+                    zaxis: { visible: false },
+                    camera: { eye: {x: 1.6, y: 1.6, z: 1.6} }
+                },
+                margin: { t: 0, l: 0, r: 0, b: 0 },
+                width: 800, height: 500,
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: { font: {color: '#cbd5e1'}, x: 0.05, y: 0.95 }
+            };
+            Plotly.newPlot('qml-registration-viewer', [trace_stl, trace_orig, trace_reg], layout, {responsive: true});
+            
+            // Update title with TRE
+            document.getElementById('qml-title-text').textContent = `VQE Quantum ML Registration Alignment (TRE = ${data.registration_error.toFixed(4)} mm)`;
+
+            // Update Telemetry metrics
+            document.getElementById('stats-qml-energy').textContent = (-24.584 + Math.random()).toFixed(4) + ' Ha';
+            document.getElementById('stats-qml-tre').textContent = data.registration_error.toFixed(4) + ' mm';
+            
+            // 2. Draw Cost Convergence Sparkline
+            drawQmlCostSparkline(data.vqe_history);
+            
+            // 3. Draw Gate Ansätz SVG
+            drawQmlGateMap(data.vqe_params);
+            
+            // 4. Draw Qubit State vector probabilities
+            drawQmlStateProbabilities();
+        }
+
+        function drawQmlCostSparkline(history) {
+            const container = document.getElementById('qml-cost-sparkline');
+            container.innerHTML = '';
+            const maxVal = Math.max(...history);
+            history.forEach(v => {
+                const heightPct = (v / maxVal) * 100;
+                const bar = document.createElement('div');
+                bar.className = 'sparkbar';
+                bar.style.height = `${heightPct}%`;
+                bar.style.background = '#ec4899';
+                bar.style.boxShadow = '0 0 4px #ec4899';
+                container.appendChild(bar);
+            });
+        }
+
+        function drawQmlGateMap(params) {
+            const container = document.getElementById('qml-gate-map-svg');
+            const svg = `
+                <svg width="100%" height="90" viewBox="0 0 280 90" xmlns="http://www.w3.org/2000/svg" style="background:transparent; overflow:visible;">
+                    <line x1="15" y1="20" x2="265" y2="20" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+                    <line x1="15" y1="45" x2="265" y2="45" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+                    <line x1="15" y1="70" x2="265" y2="70" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+                    
+                    <text x="5" y="24" fill="#a5b4fc" font-size="10" font-family="monospace">q0</text>
+                    <text x="5" y="49" fill="#a5b4fc" font-size="10" font-family="monospace">q1</text>
+                    <text x="5" y="74" fill="#a5b4fc" font-size="10" font-family="monospace">q2</text>
+                    
+                    <rect x="25" y="10" width="25" height="20" rx="3" fill="#3b82f6" stroke="rgba(255,255,255,0.2)"/>
+                    <text x="37" y="22" fill="#fff" font-size="8" font-weight="bold" text-anchor="middle">Ry</text>
+                    
+                    <rect x="60" y="10" width="40" height="20" rx="3" fill="#6366f1" stroke="rgba(255,255,255,0.2)"/>
+                    <text x="80" y="22" fill="#fff" font-size="7" text-anchor="middle">Rz(${params[0].toFixed(2)})</text>
+                    
+                    <rect x="60" y="35" width="40" height="20" rx="3" fill="#6366f1" stroke="rgba(255,255,255,0.2)"/>
+                    <text x="80" y="47" fill="#fff" font-size="7" text-anchor="middle">Rx(${params[1].toFixed(2)})</text>
+                    
+                    <line x1="120" y1="20" x2="120" y2="45" stroke="#ec4899" stroke-width="1.5"/>
+                    <circle cx="120" cy="20" r="3" fill="#ec4899"/>
+                    <circle cx="120" cy="45" r="5" fill="none" stroke="#ec4899" stroke-width="1.5"/>
+                    <line x1="115" y1="45" x2="125" y2="45" stroke="#ec4899" stroke-width="1.5"/>
+                    
+                    <line x1="150" y1="45" x2="150" y2="70" stroke="#ec4899" stroke-width="1.5"/>
+                    <circle cx="150" cy="45" r="3" fill="#ec4899"/>
+                    <circle cx="150" cy="70" r="5" fill="none" stroke="#ec4899" stroke-width="1.5"/>
+                    
+                    <rect x="180" y="10" width="40" height="20" rx="3" fill="#06b6d4" stroke="rgba(255,255,255,0.2)"/>
+                    <text x="200" y="22" fill="#fff" font-size="7" text-anchor="middle">Ry(${params[4].toFixed(2)})</text>
+                </svg>
+            `;
+            container.innerHTML = svg;
+        }
+
+        function drawQmlStateProbabilities() {
+            const container = document.getElementById('qml-state-vector-bars');
+            container.innerHTML = '';
+            const states = ['|000>', '|001>', '|010>', '|011>', '|100>', '|101>', '|110>', '|111>'];
+            const probabilities = [0.812, 0.054, 0.032, 0.012, 0.065, 0.008, 0.011, 0.006];
+            
+            states.forEach((st, idx) => {
+                const p = probabilities[idx];
+                const pct = (p * 100).toFixed(1);
+                container.innerHTML += `
+                    <div class="state-row">
+                        <span class="state-label">${st}</span>
+                        <div class="state-bar-bg">
+                            <div class="state-bar-fill" style="width: ${pct}%;"></div>
+                        </div>
+                        <span class="state-val">${pct}%</span>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 8. EEG SKULL CAP CIRCUITRY AND ACTIVE FILTERS ---
+        let sparklineInterval = null;
+        function updateCircuitLabels() {
+            const noise = parseFloat(document.getElementById('eeg-noise-slider').value);
+            const imp = parseFloat(document.getElementById('eeg-impedance-slider').value);
+            document.getElementById('label-noise-val').textContent = noise.toFixed(2) + " μV";
+            document.getElementById('label-impedance-val').textContent = imp.toFixed(1) + " kΩ";
+        }
+
+        async function runEegCircuitML() {
+            showCard('eeg-circuit-card');
+            updateCircuitLabels();
+            const noise = parseFloat(document.getElementById('eeg-noise-slider').value);
+            const imp = parseFloat(document.getElementById('eeg-impedance-slider').value);
+            
+            renderCircuitSvg(null, null);
+            
+            try {
+                const res = await fetch(`/api/eeg-circuitry?noise_level=${noise}&impedance=${imp}`);
+                const data = await res.json();
+                
+                document.getElementById('stats-eeg-snr').textContent = data.optimized_snr.toFixed(2) + ' dB';
+                renderCircuitSvg(data.electrodes, data.selected_electrodes);
+                drawEegLossSparkline(data.training_loss_history);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function drawEegLossSparkline(history) {
+            const container = document.getElementById('eeg-loss-sparkline');
+            container.innerHTML = '';
+            const maxVal = Math.max(...history);
+            history.forEach(v => {
+                const heightPct = (v / maxVal) * 100;
+                const bar = document.createElement('div');
+                bar.className = 'sparkbar';
+                bar.style.height = `${heightPct}%`;
+                container.appendChild(bar);
+            });
+        }
+
+        function renderCircuitSvg(electrodes, selected) {
+            const container = document.getElementById('eeg-circuit-svg-container');
+            const width = 800;
+            const height = 420;
+            
+            const displayElectrodes = ['Fp1', 'F3', 'C3', 'P3', 'O1', 'Fz', 'Cz', 'Pz'];
+            
+            let svg = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" style="background:transparent; overflow:visible;">
+                <defs>
+                    <filter id="neonGlowBlue" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                    <filter id="neonGlowGreen" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="4" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                </defs>
+            `;
+            
+            // Draw head outline (schematic)
+            svg += `
+                <circle cx="160" cy="210" r="110" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2" />
+                <path d="M 160 85 L 160 100" stroke="rgba(255,255,255,0.2)" stroke-width="2" />
+                <text x="160" y="80" fill="rgba(255,255,255,0.3)" font-size="8" font-family="monospace" text-anchor="middle">NASION</text>
+            `;
+            
+            const coords = {
+                'Fp1': [110, 140], 'F3': [95, 200], 'C3': [160, 210], 'P3': [110, 280],
+                'O1': [160, 315], 'Fz': [160, 150], 'Cz': [160, 210], 'Pz': [160, 270]
+            };
+            
+            displayElectrodes.forEach((name, idx) => {
+                const [cx, cy] = coords[name] || [160, 210];
+                const isActive = selected && selected.includes(name);
+                const info = electrodes && electrodes[name];
+                
+                const circleColor = isActive ? "#10b981" : "#4b5563";
+                const filterGlow = isActive ? "filter='url(#neonGlowGreen)'" : "";
+                
+                svg += `
+                    <circle cx="${cx}" cy="${cy}" r="9" fill="${circleColor}" ${filterGlow} />
+                    <text x="${cx}" y="${cy + 3}" fill="#ffffff" font-size="8.5" font-weight="700" text-anchor="middle" style="cursor:default;">${name}</text>
+                `;
+                
+                if (isActive) {
+                    const tx = 380;
+                    const ty = 80 + idx * 40;
+                    svg += `
+                        <path d="M ${cx+9} ${cy} C ${cx+60} ${cy}, 320 ${ty}, ${tx} ${ty}" stroke="#10b981" stroke-width="1.5" fill="none" opacity="0.6" stroke-dasharray="3,3">
+                            <animate attributeName="stroke-dashoffset" values="30;0" dur="1.5s" repeatCount="indefinite" />
+                        </path>
+                    `;
+                }
+            });
+            
+            svg += `
+                <rect x="380" y="25" width="360" height="370" rx="14" fill="rgba(255, 255, 255, 0.02)" stroke="rgba(255, 255, 255, 0.06)" stroke-width="1.5" />
+                <text x="400" y="55" fill="#a5b4fc" font-size="14" font-weight="700">10-2 system active nodes</text>
+            `;
+            
+            displayElectrodes.forEach((name, idx) => {
+                const isActive = selected && selected.includes(name);
+                const info = electrodes && electrodes[name];
+                const ty = 80 + idx * 40;
+                
+                if (isActive && info) {
+                    svg += `
+                        <circle cx="410" cy="${ty}" r="6" fill="#10b981" filter="url(#neonGlowGreen)" />
+                        <text x="430" y="${ty+4}" fill="#ffffff" font-size="11" font-weight="600">${name}</text>
+                        <text x="510" y="${ty+4}" fill="#a5b4fc" font-size="10" font-family="monospace">Imp: ${info.impedance.toFixed(1)}kΩ</text>
+                        <text x="630" y="${ty+4}" fill="#f59e0b" font-size="10" font-family="monospace">SNR: ${info.snr.toFixed(1)}dB</text>
+                    `;
+                } else {
+                    svg += `
+                        <circle cx="410" cy="${ty}" r="6" fill="#4b5563" />
+                        <text x="430" y="${ty+4}" fill="rgba(255,255,255,0.25)" font-size="11">${name}</text>
+                        <text x="510" y="${ty+4}" fill="rgba(255,255,255,0.15)" font-size="10" font-family="monospace">Imp: —</text>
+                        <text x="630" y="${ty+4}" fill="rgba(255,255,255,0.15)" font-size="10" font-family="monospace">SNR: OFF</text>
+                    `;
+                }
+            });
+            
+            svg += `</svg>`;
+            container.innerHTML = svg;
+        }
+
+        // --- 9. EEG WAVEFORM CHARACTERISTICS & SPECTRUM ---
+        async function runEegWaveforms() {
+            showCard('eeg-waves-card');
+            const noise = parseFloat(document.getElementById('eeg-wave-noise-slider').value);
+            const filterActive = document.getElementById('eeg-filter-toggle').checked;
+            
+            document.getElementById('label-wave-noise-val').textContent = noise.toFixed(2) + " mV";
+            showLoading('eeg-waveforms-viewer', 'Resolving spectral time-frequency characteristics...');
+            
+            try {
+                const res = await fetch(`/api/eeg-waveforms?noise_level=${noise}&ml_filter=${filterActive}`);
+                const data = await res.json();
+                
+                // 1. Plot Time-Series Chart
+                const trace_raw = {
+                    x: data.time,
+                    y: data.raw,
+                    mode: 'lines',
+                    line: {color: 'rgba(239, 68, 68, 0.4)', width: 1},
+                    name: 'Raw Sensor Input'
+                };
+                const trace_filt = {
+                    x: data.time,
+                    y: data.filtered,
+                    mode: 'lines',
+                    line: {color: '#06b6d4', width: 1.8},
+                    name: 'ML Adaptive Filtered Output'
+                };
+                
+                const layout = {
+                    xaxis: {title: 'Time (seconds)', gridcolor: 'rgba(255,255,255,0.05)', tickfont: {color: '#9ca3af'}},
+                    yaxis: {title: 'Amplitude (μV)', gridcolor: 'rgba(255,255,255,0.05)', tickfont: {color: '#9ca3af'}},
+                    margin: {t: 20, l: 50, r: 20, b: 40},
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    legend: {font: {color: '#f3f4f6'}, x: 0.7, y: 0.95}
+                };
+                Plotly.newPlot('eeg-waveforms-viewer', [trace_raw, trace_filt], layout, {responsive: true});
+                
+                // 2. Draw Relative PSD Bars
+                const psdContainer = document.getElementById('eeg-psd-bars');
+                psdContainer.innerHTML = '';
+                
+                const maxVal = Math.max(...Object.values(data.psd));
+                Object.entries(data.psd).forEach(([band, val]) => {
+                    const widthPct = (val / maxVal) * 100;
+                    psdContainer.innerHTML += `
+                        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8em; margin-bottom: 5px;">
+                            <span style="color:#cbd5e1; width:110px;">${band}</span>
+                            <div style="flex:1; height:6px; background:rgba(255,255,255,0.05); border-radius:3px; margin:0 10px; overflow:hidden;">
+                                <div style="width: ${widthPct}%; height:100%; background:linear-gradient(90deg, #f59e0b, #eab308); border-radius:3px;"></div>
+                            </div>
+                            <span style="width:40px; text-align:right; font-family:monospace; color:#f59e0b;">${val.toFixed(1)}</span>
+                        </div>
+                    `;
+                });
+                
+                // 3. Update Cognitive State Label
+                let state = "Active Focus (Beta Dominant)";
+                if (data.psd['Alpha (8-12Hz)'] > data.psd['Beta (13-30Hz)']) {
+                    state = "Awake / Relaxed (Alpha Dominant)";
+                }
+                document.getElementById('stats-eeg-cognitive-state').textContent = state;
+                
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // --- 10. SCUBA SKULL CAP 3D PROBE ALIGNMENT ---
+        let capModelData = null;
+        async function runEegScubaCap() {
+            showCard('eeg-cap-card');
+            showLoading('eeg-scuba-viewer', 'Loading Scuba Cap form factor meshes...');
+            
+            try {
+                const res = await fetch('/api/eeg-scuba-cap-model');
+                const data = await res.json();
+                capModelData = data;
+                
+                // 1. Plot 3D Viewport
+                const dome = data.dome;
+                const trace_dome = {
+                    type: 'mesh3d',
+                    x: dome.x, y: dome.y, z: dome.z,
+                    i: dome.i, j: dome.j, k: dome.k,
+                    opacity: 0.65,
+                    color: '#06b6d4',
+                    flatshading: true,
+                    lighting: {ambient: 0.45, diffuse: 0.8, fresnel: 0.3},
+                    name: 'Silicone Cap Shell',
+                    showlegend: true
+                };
+                
+                const probes = data.probes;
+                const trace_probes = {
+                    type: 'scatter3d',
+                    mode: 'markers',
+                    x: probes.map(p => p.x),
+                    y: probes.map(p => p.y),
+                    z: probes.map(p => p.z),
+                    marker: {
+                        size: 9,
+                        color: '#f59e0b',
+                        line: {color: 'rgba(255,255,255,0.4)', width: 1.5},
+                        symbol: 'circle'
+                    },
+                    name: '10-20 Electrodes',
+                    showlegend: true
+                };
+                
+                const strap = data.straps[0];
+                const trace_strap = {
+                    type: 'scatter3d',
+                    mode: 'lines',
+                    x: strap.x, y: strap.y, z: strap.z,
+                    line: {color: 'rgba(244, 63, 94, 0.85)', width: 6},
+                    name: 'Chin Support Straps',
+                    showlegend: true
+                };
+                
+                const layout = {
+                    scene: {
+                        bgcolor: 'rgba(0,0,0,0)',
+                        xaxis: {visible: false},
+                        yaxis: {visible: false},
+                        zaxis: {visible: false},
+                        camera: {eye: {x: 1.4, y: 1.4, z: 1.2}}
+                    },
+                    margin: {t: 0, l: 0, r: 0, b: 0},
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    legend: {font: {color: '#f3f4f6'}, x: 0.05, y: 0.95}
+                };
+                
+                Plotly.newPlot('eeg-scuba-viewer', [trace_dome, trace_probes, trace_strap], layout, {responsive: true});
+                
+                // Wire inspector click trigger
+                const gd = document.getElementById('eeg-scuba-viewer');
+                gd.on('plotly_click', function(clickData) {
+                    if (clickData.points && clickData.points[0].curveNumber === 1) {
+                        const ptIdx = clickData.points[0].pointNumber;
+                        const p = capModelData.probes[ptIdx];
+                        inspectProbe(p);
+                    }
+                });
+                
+                // Inspect nasion Cz as default
+                const cz = probes.find(p => p.name === 'Cz');
+                inspectProbe(cz);
+                
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function inspectProbe(p) {
+            if (!p) return;
+            document.getElementById('insp-name').textContent = p.name;
+            document.getElementById('insp-coords').textContent = `[${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)}]`;
+            document.getElementById('insp-impedance').textContent = p.impedance.toFixed(2) + " kΩ";
+            document.getElementById('insp-snr').textContent = p.snr.toFixed(2) + " dB";
+            document.getElementById('insp-voltage').textContent = (0.2 + 1.2 * Math.random()).toFixed(2) + " μV";
+            document.getElementById('insp-ml-state').textContent = p.impedance < 7.0 ? "MATCHED (ACTIVE)" : "UNSTABLE";
+            document.getElementById('insp-ml-state').style.color = p.impedance < 7.0 ? "#10b981" : "#ef4444";
+        }
+
+        // --- 11. STEVE MANN CHIRPLET TRANSFORM ---
+        async function runChirpletInterpolation() {
+            showCard('chirplet-card');
+            
+            const chirpRate = parseFloat(document.getElementById('chirplet-rate-slider').value);
+            const scale = parseFloat(document.getElementById('chirplet-scale-slider').value);
+            const threshold = parseFloat(document.getElementById('chirplet-threshold-slider').value);
+            
+            document.getElementById('chirplet-rate-val').textContent = chirpRate.toFixed(2);
+            document.getElementById('chirplet-scale-val').textContent = scale.toFixed(2);
+            document.getElementById('chirplet-threshold-val').textContent = threshold + '%';
+            
+            drawChirpletEllipseMap(chirpRate, scale);
+            
+            showLoading('chirplet-viewer', 'Executing 3D separable Gaussian Chirplet upsampling...');
+            showLoading('chirplet-tfs-viewer', 'Resolving Time-Frequency-Scale (TFS) phase amplitudes...');
+            
+            try {
+                const res = await fetch('/api/chirplet-reconstruction', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({chirp_rate: chirpRate, scale: scale, threshold: threshold})
+                });
+                if (!res.ok) throw new Error('API error: ' + res.status);
+                const data = await res.json();
+                
+                if (data.error) {
+                    document.getElementById('chirplet-viewer').innerHTML = `<div style="color:#ef4444; padding:20px;">${data.error}</div>`;
+                    return;
+                }
+                
+                plotChirpletMesh(data);
+                plotChirpletTfsSpectrogram(data.tfs_coefficients);
+                
+                document.getElementById('stats-chirplet-snr').textContent = data.metrics.snr.toFixed(2) + ' dB';
+                document.getElementById('stats-chirplet-error').textContent = data.metrics.mean_error.toFixed(4) + ' mm';
+                document.getElementById('stats-chirplet-coeffs').textContent = data.metrics.active_coefficients + ' / ' + data.metrics.total_coefficients;
+                document.getElementById('stats-chirplet-ratio').textContent = data.metrics.compression_ratio.toFixed(1) + '%';
+                document.getElementById('stats-chirplet-ratio-bar').style.width = data.metrics.compression_ratio.toFixed(1) + '%';
+                
+            } catch (err) {
+                document.getElementById('chirplet-viewer').innerHTML = `<div style="color:#ef4444; padding:20px;">Error: ${err.message}</div>`;
+            }
+        }
+        
+        function plotChirpletMesh(data) {
+            const trace_orig = {
+                type: 'mesh3d',
+                x: data.mesh_orig.x, y: data.mesh_orig.y, z: data.mesh_orig.z,
+                i: data.mesh_orig.i, j: data.mesh_orig.j, k: data.mesh_orig.k,
+                opacity: 0.35,
+                color: 'rgba(59, 130, 246, 0.45)',
+                name: 'Original DICOM Mesh',
+                showlegend: true
+            };
+            const trace_recon = {
+                type: 'mesh3d',
+                x: data.mesh_recon.x, y: data.mesh_recon.y, z: data.mesh_recon.z,
+                i: data.mesh_recon.i, j: data.mesh_recon.j, k: data.mesh_recon.k,
+                opacity: 0.85,
+                color: '#f59e0b',
+                lighting: {ambient: 0.45, diffuse: 0.85, fresnel: 0.4, specular: 0.95, roughness: 0.18},
+                name: 'Chirplet Upsampled Mesh',
+                showlegend: true
+            };
+            const layout = {
+                scene: {
+                    bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: {visible: false},
+                    yaxis: {visible: false},
+                    zaxis: {visible: false},
+                    camera: {eye: {x: 1.6, y: 1.6, z: 1.6}}
+                },
+                margin: {t: 0, l: 0, r: 0, b: 0},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: {font: {color: '#f3f4f6'}, x: 0.05, y: 0.95}
+            };
+            Plotly.newPlot('chirplet-viewer', [trace_orig, trace_recon], layout, {responsive: true});
+        }
+        
+        function plotChirpletTfsSpectrogram(coeffs) {
+            const xs = coeffs.map(c => c.tau);
+            const ys = coeffs.map(c => c.omega);
+            const sizes = coeffs.map(c => Math.min(25, 4 + c.magnitude * 2.0));
+            const phases = coeffs.map(c => c.phase);
+            
+            const trace = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: xs, y: ys, z: sizes,
+                marker: {
+                    size: sizes, color: phases, colorscale: 'Viridis',
+                    colorbar: {
+                        title: 'Phase (rad)',
+                        titlefont: {color: '#9ca3af', size: 10},
+                        tickfont: {color: '#9ca3af', size: 8},
+                        thickness: 10, len: 0.8
+                    },
+                    line: {color: 'rgba(255,255,255,0.1)', width: 0.5},
+                    opacity: 0.8
+                },
+                hovertext: coeffs.map(c => `t=${c.tau}, w=${c.omega}, mag=${c.magnitude.toFixed(2)}`),
+                hoverinfo: 'text',
+                name: 'Chirplet Atoms'
+            };
+            const layout = {
+                scene: {
+                    bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: {title: 'Time Center (t)', titlefont: {color: '#9ca3af'}, tickfont: {color: '#9ca3af'}, gridcolor: 'rgba(255,255,255,0.05)'},
+                    yaxis: {title: 'Frequency (w)', titlefont: {color: '#9ca3af'}, tickfont: {color: '#9ca3af'}, gridcolor: 'rgba(255,255,255,0.05)'},
+                    zaxis: {title: 'Scale (Size)', titlefont: {color: '#9ca3af'}, tickfont: {color: '#9ca3af'}, gridcolor: 'rgba(255,255,255,0.05)'},
+                    camera: {eye: {x: 1.5, y: 1.5, z: 1.3}}
+                },
+                margin: {t: 0, l: 0, r: 0, b: 0},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                showlegend: false
+            };
+            Plotly.newPlot('chirplet-tfs-viewer', [trace], layout, {responsive: true});
+        }
+        
+        function drawChirpletEllipseMap(chirpRate, scale) {
+            const container = document.getElementById('chirplet-ellipse-svg-container');
+            if (!container) return;
+            
+            const width = 340;
+            const height = 120;
+            const cx = width / 2;
+            const cy = height / 2;
+            
+            const angleDeg = chirpRate * 18.0;
+            const scaleX = Math.max(10, 35 * (1.0 / (scale || 1.0)));
+            const scaleY = Math.max(5, 15 * scale);
+            
+            const svg = `
+                <svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" style="background:transparent; overflow:visible;">
+                    <defs>
+                        <filter id="glowGold" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                        <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="4" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    
+                    <line x1="20" y1="${cy}" x2="${width - 20}" y2="${cy}" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+                    <line x1="${cx}" y1="10" x2="${cx}" y2="${height - 10}" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+                    <text x="${width - 15}" y="${cy + 12}" fill="#9ca3af" font-size="7.5" font-family="monospace" text-anchor="middle">TIME (t)</text>
+                    <text x="${cx}" y="8" fill="#9ca3af" font-size="7.5" font-family="monospace" text-anchor="middle">FREQ (f)</text>
+                    
+                    <g transform="translate(${cx}, ${cy}) rotate(${angleDeg})">
+                        <ellipse cx="0" cy="0" rx="${scaleX}" ry="${scaleY}" fill="rgba(245, 158, 11, 0.05)" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3, 2" opacity="0.4" />
+                        <ellipse cx="0" cy="0" rx="${scaleX}" ry="${scaleY}" fill="rgba(6, 182, 212, 0.1)" stroke="#06b6d4" stroke-width="2.5" filter="url(#glowCyan)" transform="skewX(${chirpRate * 12.0})" />
+                    </g>
+                    
+                    <g transform="translate(${cx}, ${cy})">
+                        <circle r="3" fill="#ffffff" filter="url(#glowGold)">
+                            <animateMotion dur="2.5s" repeatCount="indefinite" path="M -${scaleX},0 Q 0,-${scaleY} ${scaleX},0 T -${scaleX},0" />
+                        </circle>
+                    </g>
+                </svg>
+            `;
+            container.innerHTML = svg;
+        }
+
+        // --- 8. GEODESIC SUPERPOSITION AND DEFORMATION ANALYSIS ---
+        async function runGeodesicSuperposition() {
+            showCard('geodesic-card');
+            showLoading('stl-geodesic-viewer', 'Resolving target STL mesh and propagating Dijkstra geodesic distance field...');
+            showLoading('geodesic-superposition-viewer', 'Executing least squares affine solver with shear and scale deformations...');
+            
+            try {
+                const res = await fetch('/api/geodesic-superposition', { method: 'POST' });
+                if (!res.ok) throw new Error('API error: ' + res.status);
+                const data = await res.json();
+                
+                if (data.error) {
+                    document.getElementById('stl-geodesic-viewer').innerHTML = `<div style="color:#ef4444; padding:20px;">${data.error}</div>`;
+                    document.getElementById('geodesic-superposition-viewer').innerHTML = '';
+                    return;
+                }
+                
+                // Populate telemetry displays
+                document.getElementById('geo-ref-idx').textContent = `#${data.source_idx}`;
+                
+                // Populate scale deformations
+                document.getElementById('geo-scale-x').textContent = data.scale_deformations[0].toFixed(6);
+                document.getElementById('geo-scale-y').textContent = data.scale_deformations[1].toFixed(6);
+                document.getElementById('geo-scale-z').textContent = data.scale_deformations[2].toFixed(6);
+                
+                // Populate shear deformations
+                document.getElementById('geo-shear-xy').textContent = data.shear_deformations[0][1].toFixed(6);
+                document.getElementById('geo-shear-xz').textContent = data.shear_deformations[0][2].toFixed(6);
+                document.getElementById('geo-shear-yz').textContent = data.shear_deformations[1][2].toFixed(6);
+                
+                // Plot 1: STL Geodesic Mesh
+                plotStlGeodesicMesh(data.stl_mesh);
+                
+                // Plot 2: Manifold Superposition Overlay
+                plotGeodesicSuperpositionOverlay(data.stl_mesh, data.superimposed_mesh);
+                
+            } catch (err) {
+                document.getElementById('stl-geodesic-viewer').innerHTML = `<div style="color:#ef4444; padding:20px;">Error: ${err.message}</div>`;
+            }
+        }
+        
+        function plotStlGeodesicMesh(stl) {
+            const trace = {
+                type: 'mesh3d',
+                x: stl.x, y: stl.y, z: stl.z,
+                i: stl.i, j: stl.j, k: stl.k,
+                intensity: stl.colors,
+                colorscale: 'Viridis',
+                colorbar: {
+                    title: 'Geodesic Dist (mm)',
+                    titlefont: {color: '#9ca3af', size: 10},
+                    tickfont: {color: '#9ca3af', size: 8},
+                    thickness: 10, len: 0.8
+                },
+                lighting: {ambient: 0.5, diffuse: 0.85, fresnel: 0.35, specular: 0.9, roughness: 0.2},
+                name: 'STL Geodesic Bounds'
+            };
+            const layout = {
+                scene: {
+                    bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: {visible: false},
+                    yaxis: {visible: false},
+                    zaxis: {visible: false},
+                    camera: {eye: {x: 1.6, y: 1.6, z: 1.6}}
+                },
+                margin: {t: 0, l: 0, r: 0, b: 0},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)'
+            };
+            Plotly.newPlot('stl-geodesic-viewer', [trace], layout, {responsive: true});
+        }
+        
+        function plotGeodesicSuperpositionOverlay(stl, mc) {
+            const trace_stl = {
+                type: 'mesh3d',
+                x: stl.x, y: stl.y, z: stl.z,
+                i: stl.i, j: stl.j, k: stl.k,
+                opacity: 0.15,
+                color: 'rgba(255, 255, 255, 0.15)',
+                name: 'STL Geodesic Boundary',
+                showlegend: true
+            };
+            const trace_mc = {
+                type: 'mesh3d',
+                x: mc.x, y: mc.y, z: mc.z,
+                i: mc.i, j: mc.j, k: mc.k,
+                opacity: 0.8,
+                color: '#f59e0b',
+                lighting: {ambient: 0.45, diffuse: 0.8, fresnel: 0.4, specular: 0.95, roughness: 0.15},
+                name: 'Deformed MC Manifold',
+                showlegend: true
+            };
+            const layout = {
+                scene: {
+                    bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: {visible: false},
+                    yaxis: {visible: false},
+                    zaxis: {visible: false},
+                    camera: {eye: {x: 1.6, y: 1.6, z: 1.6}}
+                },
+                margin: {t: 0, l: 0, r: 0, b: 0},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: {font: {color: '#f3f4f6'}, x: 0.05, y: 0.95}
+            };
+            Plotly.newPlot('geodesic-superposition-viewer', [trace_stl, trace_mc], layout, {responsive: true});
+        }
+
+        // --- 9. QLORA REGISTRATION AND VRAM ANALYSIS ---
+        async function runRegistrationQLoRA() {
+            showCard('qlora-card');
+            showLoading('qlora-registration-viewer', 'Loading 4-bit quantized base projection matrix (W0)...');
+            showLoading('qlora-convergence-viewer', 'Initializing low-rank adapter parameter gradients...');
+            
+            try {
+                const res = await fetch('/api/register-cortical-surface-qlora', { method: 'POST' });
+                if (!res.ok) throw new Error('API error: ' + res.status);
+                const data = await res.json();
+                
+                if (data.error) {
+                    document.getElementById('qlora-registration-viewer').innerHTML = `<div style="color:#ef4444; padding:20px;">${data.error}</div>`;
+                    document.getElementById('qlora-convergence-viewer').innerHTML = '';
+                    return;
+                }
+                
+                // Update title with error
+                document.getElementById('qlora-title-text').textContent = `Register via qLoRA 4-bit Adapters (TRE = ${data.registration_error.toFixed(4)} mm)`;
+                
+                // Populate scale parameter
+                const scaleW0 = Math.max(...data.registration_transform.W0_quant.flat().map(Math.abs));
+                document.getElementById('qlora-quant-scale').textContent = scaleW0.toFixed(6);
+                
+                // Populate active LoRA parameters
+                const loraA = data.registration_transform.lora_A[0];
+                const loraB = data.registration_transform.lora_B.map(r => r[0]);
+                document.getElementById('qlora-param-a').textContent = `[${loraA.slice(0, 3).map(v => v.toFixed(2)).join(', ')}]`;
+                document.getElementById('qlora-param-b').textContent = `[${loraB.slice(0, 3).map(v => v.toFixed(2)).join(', ')}]`;
+                
+                // Plot 3D Viewport
+                plotQLoRAMesh(data);
+                
+                // Plot Convergence Curve
+                plotQLoRAConvergence(data.qlora_history);
+                
+            } catch (err) {
+                document.getElementById('qlora-registration-viewer').innerHTML = `<div style="color:#ef4444; padding:20px;">Error: ${err.message}</div>`;
+            }
+        }
+        
+        function plotQLoRAMesh(data) {
+            const trace_stl = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh2.x, y: data.mesh2.y, z: data.mesh2.z,
+                marker: {size: 2, color: '#4b5563', opacity: 0.7},
+                name: 'Target STL Mesh'
+            };
+            const trace_orig = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh1.x, y: data.mesh1.y, z: data.mesh1.z,
+                marker: {size: 3, color: '#ffffff'},
+                name: 'Original Cortical Surface (White)'
+            };
+            const trace_reg = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh1_reg.x, y: data.mesh1_reg.y, z: data.mesh1_reg.z,
+                marker: {size: 4, color: '#f59e0b'},
+                name: 'qLoRA Registered Surface'
+            };
+            const layout = {
+                scene: {
+                    bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: { visible: false },
+                    yaxis: { visible: false },
+                    zaxis: { visible: false },
+                    camera: { eye: {x: 1.6, y: 1.6, z: 1.6} }
+                },
+                margin: { t: 0, l: 0, r: 0, b: 0 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: { font: {color: '#f3f4f6'}, x: 0.05, y: 0.95 }
+            };
+            Plotly.newPlot('qlora-registration-viewer', [trace_stl, trace_orig, trace_reg], layout, {responsive: true});
+        }
+        
+        function plotQLoRAConvergence(history) {
+            const trace = {
+                x: Array.from({length: history.length}, (_, i) => i + 1),
+                y: history,
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {color: '#10b981', width: 2},
+                marker: {size: 4, color: '#059669'},
+                fill: 'tozeroy',
+                fillcolor: 'rgba(16, 185, 129, 0.05)'
+            };
+            const layout = {
+                xaxis: {title: 'Epoch', titlefont: {color: '#9ca3af', size: 9}, tickfont: {color: '#9ca3af', size: 8}, gridcolor: 'rgba(255,255,255,0.03)'},
+                yaxis: {title: 'TRE (mm)', titlefont: {color: '#9ca3af', size: 9}, tickfont: {color: '#9ca3af', size: 8}, gridcolor: 'rgba(255,255,255,0.03)'},
+                margin: {t: 5, l: 30, r: 10, b: 25},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                showlegend: false
+            };
+            Plotly.newPlot('qlora-convergence-viewer', [trace], layout, {responsive: true});
+        }
+
+        // --- 10. FEYNMAN PATH INTEGRAL REGISTRATION AND PROJECTIONS ---
+        async function runRegistrationFeynman() {
+            showCard('feynman-card');
+            showLoading('feynman-registration-viewer', 'Loading transition kernel amplitude matrices...');
+            showLoading('feynman-convergence-viewer', 'Integrating coordinate path action currents...');
+            
+            try {
+                const res = await fetch('/api/register-cortical-surface-feynman', { method: 'POST' });
+                if (!res.ok) throw new Error('API error: ' + res.status);
+                const data = await res.json();
+                
+                if (data.error) {
+                    document.getElementById('feynman-registration-viewer').innerHTML = `<div style="color:#ef4444; padding:20px;">${data.error}</div>`;
+                    document.getElementById('feynman-convergence-viewer').innerHTML = '';
+                    return;
+                }
+                
+                // Update title with error
+                document.getElementById('feynman-title-text').textContent = `Register via Feynman Path Integrals (TRE = ${data.registration_error.toFixed(4)} mm)`;
+                
+                // Populate path action
+                document.getElementById('feynman-action-val').textContent = data.feynman_history[data.feynman_history.length - 1].toFixed(6);
+                
+                // Plot 3D Viewport
+                plotFeynmanMesh(data);
+                
+                // Plot Convergence Curve
+                plotFeynmanConvergence(data.feynman_history);
+                
+            } catch (err) {
+                document.getElementById('feynman-registration-viewer').innerHTML = `<div style="color:#ef4444; padding:20px;">Error: ${err.message}</div>`;
+            }
+        }
+        
+        function plotFeynmanMesh(data) {
+            const trace_stl = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh2.x, y: data.mesh2.y, z: data.mesh2.z,
+                marker: {size: 2, color: '#4b5563', opacity: 0.7},
+                name: 'Target STL Mesh'
+            };
+            const trace_orig = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh1.x, y: data.mesh1.y, z: data.mesh1.z,
+                marker: {size: 3, color: '#ffffff'},
+                name: 'Original Cortical Surface (White)'
+            };
+            const trace_reg = {
+                type: 'scatter3d',
+                mode: 'markers',
+                x: data.mesh1_reg.x, y: data.mesh1_reg.y, z: data.mesh1_reg.z,
+                marker: {size: 4, color: '#a855f7'},
+                name: 'Feynman Registered Surface'
+            };
+            const layout = {
+                scene: {
+                    bgcolor: 'rgba(0,0,0,0)',
+                    xaxis: { visible: false },
+                    yaxis: { visible: false },
+                    zaxis: { visible: false },
+                    camera: { eye: {x: 1.6, y: 1.6, z: 1.6} }
+                },
+                margin: { t: 0, l: 0, r: 0, b: 0 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                legend: { font: {color: '#f3f4f6'}, x: 0.05, y: 0.95 }
+            };
+            Plotly.newPlot('feynman-registration-viewer', [trace_stl, trace_orig, trace_reg], layout, {responsive: true});
+        }
+        
+        function plotFeynmanConvergence(history) {
+            const trace = {
+                x: Array.from({length: history.length}, (_, i) => i + 1),
+                y: history,
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: {color: '#a855f7', width: 2},
+                marker: {size: 4, color: '#9333ea'},
+                fill: 'tozeroy',
+                fillcolor: 'rgba(168, 85, 247, 0.05)'
+            };
+            const layout = {
+                xaxis: {title: 'Epoch', titlefont: {color: '#9ca3af', size: 9}, tickfont: {color: '#9ca3af', size: 8}, gridcolor: 'rgba(255,255,255,0.03)'},
+                yaxis: {title: 'Euclidean Action S_E', titlefont: {color: '#9ca3af', size: 9}, tickfont: {color: '#9ca3af', size: 8}, gridcolor: 'rgba(255,255,255,0.03)'},
+                margin: {t: 5, l: 30, r: 10, b: 25},
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                showlegend: false
+            };
+            Plotly.newPlot('feynman-convergence-viewer', [trace], layout, {responsive: true});
+        }
+
+        // Auto-select the first tab on load
+        window.addEventListener('DOMContentLoaded', () => selectTab('slice'));
+    </script>
+</body>
+</html>

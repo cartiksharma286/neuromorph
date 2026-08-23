@@ -1,162 +1,492 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QML 3D Microsurgery Suturing Simulator</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e1e; color: #cfcfcf; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        h1 { color: #00d2ff; }
-        .container { display: flex; gap: 40px; margin-top: 10px; width: 90%; justify-content: center; }
-        .panel { background: #2a2a2a; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .stat { font-size: 1.2em; margin: 12px 0; border-bottom: 1px solid #444; padding-bottom: 5px; }
-        .stat span { font-weight: bold; color: #fff; }
-        .safe { color: #4CAF50; font-weight: bold; }
-        .warning { color: #f44336; font-weight: bold; }
-        button { background: #007acc; color: white; border: none; padding: 10px 20px; font-size: 1.1em; cursor: pointer; border-radius: 4px; margin-top: 10px; width: 100%; transition: background 0.3s; }
-        button:hover { background: #005f9e; }
-        #canvas-container { width: 500px; height: 400px; border: 2px solid #555; border-radius: 4px; overflow: hidden; background: #000; }
-    </style>
-    <!-- Include Three.js for 3D Rendering -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quantum Mineral Economics | Northern Ontario</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: rgba(11, 24, 41, 0.94);
+      --panel-2: #10243b;
+      --border: rgba(113, 165, 255, 0.2);
+      --text: #eaf4ff;
+      --muted: #90a7c2;
+      --accent: #44d3ff;
+      --accent-2: #7c8cff;
+      --good: #41e694;
+      --warn: #f6b26b;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #030813 0%, #07111f 55%, #0c1b2f 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 22px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+      margin-bottom: 18px;
+    }
+
+    .brand h1 { margin: 0 0 5px; font-size: 1.55rem; }
+    .brand p { margin: 0; color: var(--muted); }
+    .pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(68, 211, 255, 0.12);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .controls {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .control-card {
+      background: var(--panel-2);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 8px; }
+    select, input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    input[type="range"] { cursor: pointer; }
+    .value { color: var(--accent); font-weight: 700; }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #02101d;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+    }
+
+    .card h3, .card h4 { margin-top: 0; }
+    .metric { display: flex; justify-content: space-between; margin: 10px 0; font-size: 0.95rem; color: var(--muted); }
+    .metric strong { color: var(--text); }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 14px;
+    }
+
+    .mini-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .bar {
+      height: 10px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--good));
+      border-radius: inherit;
+    }
+
+    .list { padding-left: 16px; color: var(--muted); }
+    .list li { margin: 6px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      margin-top: 8px;
+    }
+
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      text-align: left;
+    }
+
+    .ok { color: var(--good); font-weight: 700; }
+    .warn { color: var(--warn); font-weight: 700; }
+    .mono { font-family: ui-monospace, SFMono-Regular, monospace; }
+
+    @media (max-width: 760px) {
+      .app { padding: 14px; }
+      header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
 </head>
 <body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <h1>Quantum Mineral Economics for Northern Ontario</h1>
+        <p>QML-informed ore-signature resonance, continued-fraction observability, and Canadian revenue scenarios for gold, silver, titanium, palladium, and nickel.</p>
+      </div>
+      <div class="pill">Canadian geology • wildfire-adjusted land economics • mining viability</div>
+    </header>
 
-    <h1>Quantum ML 3D Tissue Suturing & Scalpel Simulator</h1>
-    <p>Real-time dynamic tissue suturing, formal verification, GenAI scalpel manipulation & mathematical optimization</p>
-    
-    <div class="container">
-        <div class="panel">
-            <h3>3D Force Dynamics Workspace</h3>
-            <div id="canvas-container"></div>
-            <div style="margin-top: 10px; font-size: 0.9em; text-align: center;">
-                <span style="color: #ff3333;">● Scalpel End Effector</span> | 
-                <span style="color: #66ccff;">■ Tissue Grid (Stress Deflection)</span>
+    <section class="controls">
+      <div class="control-grid">
+        <div class="control-card">
+          <label for="commodity">Commodity</label>
+          <select id="commodity">
+            <option value="gold">Gold</option>
+            <option value="silver">Silver</option>
+            <option value="titanium">Titanium</option>
+            <option value="palladium">Palladium</option>
+            <option value="nickel">Nickel</option>
+          </select>
+        </div>
+        <div class="control-card">
+          <label for="oreGrade">Ore-signature index <span class="value" id="oreGradeValue"></span></label>
+          <input id="oreGrade" type="range" min="0.8" max="4.4" step="0.1" value="2.3" />
+        </div>
+        <div class="control-card">
+          <label for="recovery">Recovery efficiency <span class="value" id="recoveryValue"></span></label>
+          <input id="recovery" type="range" min="0.6" max="0.96" step="0.01" value="0.84" />
+        </div>
+        <div class="control-card">
+          <label for="wildfireCost">Wildfire land cost (CAD M) <span class="value" id="wildfireCostValue"></span></label>
+          <input id="wildfireCost" type="range" min="20" max="120" step="1" value="54" />
+        </div>
+        <div class="control-card">
+          <label for="cfDepth">Continued-fraction depth <span class="value" id="cfDepthValue"></span></label>
+          <input id="cfDepth" type="range" min="3" max="12" step="1" value="7" />
+        </div>
+        <div class="control-card">
+          <label for="years">Project horizon (years) <span class="value" id="yearsValue"></span></label>
+          <input id="years" type="range" min="5" max="12" step="1" value="8" />
+        </div>
+      </div>
+    </section>
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="overview">1. Overview</button>
+      <button class="tab-btn" data-tab="costs">2. Cost Economics</button>
+      <button class="tab-btn" data-tab="drilling">3. Drilling & Mining</button>
+      <button class="tab-btn" data-tab="soil">4. Soil & Topology</button>
+      <button class="tab-btn" data-tab="revenue">5. Revenue Outcomes</button>
+    </nav>
+
+    <main>
+      <section id="overview-tab" class="tab-content active">
+        <div class="grid">
+          <div class="card">
+            <h3>QML & observational resonance</h3>
+            <div class="pill-row">
+              <span class="mini-pill">Commodity: <strong id="commodityLabel"></strong></span>
+              <span class="mini-pill">CF stability: <strong id="cfScore"></strong></span>
+              <span class="mini-pill">Variance: <strong id="varianceScore"></strong></span>
             </div>
+            <div class="metric"><span>QML signal index</span><strong id="qmlScore"></strong></div>
+            <div class="metric"><span>Continued-fraction coefficients</span><strong id="cfCoeffs" class="mono"></strong></div>
+            <div class="metric"><span>Observational confidence</span><strong id="confidence"></strong></div>
+            <div class="bar"><span id="signalBar"></span></div>
+          </div>
+          <div class="card">
+            <h3>Scenario framing</h3>
+            <ul class="list">
+              <li>Targets a Canadian Northern Ontario mining corridor with wildfire land risk overlay.</li>
+              <li>Uses a continued fraction resonance proxy for ore-signature stability and predictive observability.</li>
+              <li>Weights soil topology, drilling cost, and extraction efficiency to frame a practical investment case.</li>
+            </ul>
+          </div>
         </div>
-        
-        <div class="panel" style="width: 300px;">
-            <h3>Simulation Telemetry</h3>
-            <div class="stat">Scalpel X: <span id="s_x">-</span></div>
-            <div class="stat">Scalpel Y: <span id="s_y">-</span></div>
-            <div class="stat">Max Tissue Stress: <span id="stress">-</span> kPa</div>
-            <div class="stat">QML Integrity: <span id="integrity">-</span></div>
-            <div class="stat">Verification: <span id="status">-</span></div>
-            
-            <button onclick="runStep()">Step Incision / Suture</button>
-            <button onclick="autoRun()" id="autoBtn">Start Real-Time Telemetry</button>
+        <div class="card">
+          <h3>Key indicators</h3>
+          <table>
+            <tr><th>Indicator</th><th>Value</th><th>Interpretation</th></tr>
+            <tr><td>Projected ore body spread</td><td id="spreadValue"></td><td id="spreadInterpret"></td></tr>
+            <tr><td>Soil stability index</td><td id="soilValue"></td><td id="soilInterpret"></td></tr>
+            <tr><td>Net benefit to Canada</td><td id="benefitValue"></td><td id="benefitInterpret"></td></tr>
+          </table>
         </div>
-    </div>
+      </section>
 
-    <script>
-        // Setup Three.js Scene
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x111111);
-        
-        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-        camera.position.set(5, -12, 10);
-        camera.lookAt(5, 5, 0);
-        
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        container.appendChild(renderer.domElement);
+      <section id="costs-tab" class="tab-content">
+        <div class="grid">
+          <div class="card">
+            <h3>Cost stack</h3>
+            <div class="metric"><span>Drilling and assay</span><strong id="drillCost"></strong></div>
+            <div class="metric"><span>Excavation and haulage</span><strong id="excCost"></strong></div>
+            <div class="metric"><span>Wildfire-adjusted land</span><strong id="landCost"></strong></div>
+            <div class="metric"><span>Annual operating cost</span><strong id="annualCost"></strong></div>
+          </div>
+          <div class="card">
+            <h3>Economic posture</h3>
+            <div class="metric"><span>Initial capex</span><strong id="capex"></strong></div>
+            <div class="metric"><span>Cash-flow break-even</span><strong id="breakEven"></strong></div>
+            <div class="metric"><span>Cost intensity</span><strong id="costIntensity"></strong></div>
+            <div class="metric"><span>Risk posture</span><strong id="riskLevel"></strong></div>
+          </div>
+        </div>
+      </section>
 
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040);
-        scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(10, -10, 10);
-        scene.add(directionalLight);
+      <section id="drilling-tab" class="tab-content">
+        <div class="grid">
+          <div class="card">
+            <h3>Drilling & excavation plan</h3>
+            <div class="metric"><span>Drill metres</span><strong id="drillMetres"></strong></div>
+            <div class="metric"><span>Excavation tonnes</span><strong id="excavationTonnes"></strong></div>
+            <div class="metric"><span>Recovered mineral tonnes</span><strong id="recoveredTonnes"></strong></div>
+            <div class="metric"><span>Mine access efficiency</span><strong id="accessEff"></strong></div>
+          </div>
+          <div class="card">
+            <h3>Operational note</h3>
+            <ul class="list">
+              <li id="operationalNote"></li>
+              <li>Drill spacing is tuned around the inferred ore-body spread and wildfire access constraints.</li>
+              <li>Excavation sequencing favors lower-risk benches to protect Northern Ontario wetlands and community access corridors.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
-        // Tissue Grid (Plane)
-        // Backend nodes: 20x20. Dimension: 10x10.
-        const tissueGeo = new THREE.PlaneGeometry(10, 10, 19, 19);
-        const tissueMat = new THREE.MeshPhongMaterial({ 
-            color: 0x2288cc, 
-            wireframe: true,
-            side: THREE.DoubleSide
-        });
-        const tissueMesh = new THREE.Mesh(tissueGeo, tissueMat);
-        // Plane is centered at 0,0. Let's move it so corners map correctly.
-        tissueMesh.position.set(5, 5, 0); 
-        scene.add(tissueMesh);
+      <section id="soil-tab" class="tab-content">
+        <div class="grid">
+          <div class="card">
+            <h3>Soil modelling</h3>
+            <div class="metric"><span>Topological spread index</span><strong id="topoIndex"></strong></div>
+            <div class="metric"><span>Soil stability score</span><strong id="soilScore"></strong></div>
+            <div class="metric"><span>Water-table sensitivity</span><strong id="waterSensitivity"></strong></div>
+            <div class="metric"><span>Contour resilience</span><strong id="contourResilience"></strong></div>
+          </div>
+          <div class="card">
+            <h3>Geological implication</h3>
+            <p id="geologyImplication" style="color: var(--muted); line-height: 1.7;"></p>
+          </div>
+        </div>
+      </section>
 
-        // Scalpel Indicator
-        const scalpelGeo = new THREE.SphereGeometry(0.3, 16, 16);
-        const scalpelMat = new THREE.MeshBasicMaterial({ color: 0xff3333 });
-        const scalpelMesh = new THREE.Mesh(scalpelGeo, scalpelMat);
-        scene.add(scalpelMesh);
+      <section id="revenue-tab" class="tab-content">
+        <div class="grid">
+          <div class="card">
+            <h3>Revenue outlook</h3>
+            <div class="metric"><span>Annual revenue</span><strong id="annualRevenue"></strong></div>
+            <div class="metric"><span>Total revenue over horizon</span><strong id="totalRevenue"></strong></div>
+            <div class="metric"><span>Net cash flow</span><strong id="netCashFlow"></strong></div>
+            <div class="metric"><span>Revenue-to-cost ratio</span><strong id="ratio"></strong></div>
+          </div>
+          <div class="card">
+            <h3>Canadian outcome</h3>
+            <p id="canadianOutcome" style="color: var(--muted); line-height: 1.7;"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-        animate();
+  <script>
+    const profiles = {
+      gold: { name: 'Gold', price: 2800, signature: 0.91, spread: 1.8, revenueFactor: 1.05, costBias: 1.05 },
+      silver: { name: 'Silver', price: 30, signature: 0.74, spread: 1.45, revenueFactor: 0.82, costBias: 0.92 },
+      titanium: { name: 'Titanium', price: 4.2, signature: 0.69, spread: 1.15, revenueFactor: 0.68, costBias: 0.78 },
+      palladium: { name: 'Palladium', price: 1450, signature: 0.88, spread: 1.65, revenueFactor: 0.97, costBias: 1.01 },
+      nickel: { name: 'Nickel', price: 18.5, signature: 0.83, spread: 1.58, revenueFactor: 0.9, costBias: 0.96 }
+    };
 
-        // Control Logic
-        let autoInterval = null;
+    const ids = ['commodity','oreGrade','recovery','wildfireCost','cfDepth','years'];
+    ids.forEach(id => document.getElementById(id).addEventListener('input', render));
+    ids.forEach(id => document.getElementById(id).addEventListener('change', render));
 
-        async function runStep() {
-            try {
-                const res = await fetch('/step');
-                const data = await res.json();
-                
-                // Update Telemetry
-                document.getElementById('s_x').innerText = data.scalpel_x.toFixed(2);
-                document.getElementById('s_y').innerText = data.scalpel_y.toFixed(2);
-                document.getElementById('stress').innerText = data.max_stress.toFixed(2);
-                document.getElementById('integrity').innerText = data.integrity.toFixed(4);
-                
-                const statusEl = document.getElementById('status');
-                if(data.is_safe) {
-                    statusEl.innerText = "Verified SAFE (Low Stress)";
-                    statusEl.className = "safe";
-                    tissueMat.color.setHex(0x2288cc); // Healthy blue
-                } else {
-                    statusEl.innerText = "WARNING: Suture Intervention Active";
-                    statusEl.className = "warning";
-                    tissueMat.color.setHex(0xcc3333); // Warn red
-                }
+    function activateTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+      });
+      document.querySelectorAll('.tab-content').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `${tabName}-tab`);
+      });
+      render();
+    }
 
-                // Update 3D Geometry
-                const positions = tissueMesh.geometry.attributes.position.array;
-                const field = data.stress_field; // 20x20 array
-                
-                // Map stress to Z elevation
-                for(let i=0; i<20; i++) {
-                    for(let j=0; j<20; j++) {
-                        const idx = (i * 20 + j) * 3;
-                        // Plane geometry layout maps vertices
-                        // The z-coordinate is the 3rd element.
-                        // We scale stress for visual effect
-                        positions[idx + 2] = field[i][j] * 0.15; 
-                    }
-                }
-                tissueMesh.geometry.attributes.position.needsUpdate = true;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => activateTab(btn.dataset.tab));
+    });
 
-                // Move Scalpel
-                scalpelMesh.position.set(data.scalpel_x, data.scalpel_y, data.max_stress * 0.15);
+    function continuedFractionCoefficients(value, depth) {
+      const coeffs = [];
+      let x = value;
+      for (let i = 0; i < depth; i += 1) {
+        const a = x >= 0 ? Math.floor(x) : Math.ceil(x);
+        coeffs.push(a);
+        const diff = x - a;
+        if (Math.abs(diff) < 1e-10) break;
+        x = 1 / diff;
+      }
+      return coeffs;
+    }
 
-            } catch (err) {
-                console.error("Error fetching simulation step", err);
-            }
-        }
+    function render() {
+      const commodity = profiles[document.getElementById('commodity').value];
+      const oreGrade = parseFloat(document.getElementById('oreGrade').value);
+      const recovery = parseFloat(document.getElementById('recovery').value);
+      const wildfireCost = parseFloat(document.getElementById('wildfireCost').value);
+      const cfDepth = parseInt(document.getElementById('cfDepth').value, 10);
+      const years = parseInt(document.getElementById('years').value, 10);
 
-        function autoRun() {
-            const btn = document.getElementById('autoBtn');
-            if(autoInterval) {
-                clearInterval(autoInterval);
-                autoInterval = null;
-                btn.innerText = "Start Real-Time Telemetry";
-            } else {
-                autoInterval = setInterval(runStep, 800);
-                btn.innerText = "Stop Telemetry";
-            }
-        }
-        
-        // Initial Fetch
-        runStep();
-    </script>
+      document.getElementById('oreGradeValue').textContent = `${oreGrade.toFixed(1)}x`;
+      document.getElementById('recoveryValue').textContent = `${(recovery * 100).toFixed(0)}%`;
+      document.getElementById('wildfireCostValue').textContent = `${wildfireCost.toFixed(0)} M`;
+      document.getElementById('cfDepthValue').textContent = cfDepth;
+      document.getElementById('yearsValue').textContent = years;
+
+      const cfTarget = commodity.signature + oreGrade * 0.05 + cfDepth * 0.01;
+      const cfCoeffs = continuedFractionCoefficients(cfTarget, cfDepth);
+      const cfValue = cfCoeffs.reduce((acc, coeff, index) => {
+        if (index === 0) return coeff;
+        return coeff + 1 / acc;
+      }, 0);
+      const cfScore = Math.min(99, 62 + (cfDepth * 2.4) + (recovery * 14) - Math.abs(cfValue - cfTarget) * 8);
+      const variance = Math.max(8, 24 - recovery * 10 - oreGrade * 1.4 + wildfireCost / 20);
+      const qmlScore = Math.min(99, Math.round((cfScore * 0.55) + (oreGrade * 12) + (recovery * 14) + (commodity.signature * 10)));
+      const confidence = Math.max(55, Math.min(98, 90 - variance / 2));
+
+      const landCost = wildfireCost * 1.15;
+      const drillCost = 12 + oreGrade * 4 + wildfireCost * 0.08 + cfDepth * 0.7;
+      const excCost = 10 + oreGrade * 3.2 + wildfireCost * 0.06 + (1 - recovery) * 8;
+      const annualCost = landCost + drillCost + excCost + 8 + (years * 0.2);
+      const capex = 54 + drillCost * 1.3 + excCost * 0.9 + landCost * 0.45;
+      const breakEven = Math.max(3, Math.round((capex / Math.max(annualCost * 0.45, 1)) * 1.1));
+      const costIntensity = (annualCost / Math.max(1, qmlScore)) * 1.12;
+      const riskLevel = costIntensity > 1.8 ? 'High' : costIntensity > 1.2 ? 'Medium' : 'Low';
+
+      const areaHa = 140 + oreGrade * 25 + cfDepth * 6;
+      const drillMetres = 5200 + areaHa * 16 + oreGrade * 280;
+      const excavationTonnes = 180000 + areaHa * 1100 + oreGrade * 18000;
+      const recoveredTonnes = Math.round(excavationTonnes * recovery * 0.95);
+      const accessEff = `${Math.min(97, Math.round(74 + recovery * 18 + oreGrade * 2.2))}%`;
+
+      const topoIndex = Math.min(95, Math.round(48 + oreGrade * 5.2 + recovery * 6 + cfDepth * 1.3));
+      const soilScore = Math.min(95, Math.round(73 - wildfireCost / 24 + oreGrade * 2.2));
+      const waterSensitivity = `${Math.min(95, Math.round(18 + wildfireCost / 14 + (1 - recovery) * 20))}%`;
+      const contourResilience = `${Math.min(96, Math.round(76 + oreGrade * 2.4 - wildfireCost / 45))}%`;
+
+      const annualRevenue = Math.round(recoveredTonnes * commodity.price * Math.max(oreGrade, 1.2) * commodity.revenueFactor / 95);
+      const totalRevenue = annualRevenue * years;
+      const netCashFlow = totalRevenue - annualCost * years;
+      const ratio = (totalRevenue / Math.max(1, annualCost * years)).toFixed(2);
+
+      document.getElementById('commodityLabel').textContent = commodity.name;
+      document.getElementById('cfScore').textContent = `${cfScore.toFixed(0)} / 100`;
+      document.getElementById('varianceScore').textContent = `${variance.toFixed(0)}%`;
+      document.getElementById('qmlScore').textContent = `${qmlScore} / 100`;
+      document.getElementById('cfCoeffs').textContent = cfCoeffs.slice(0, 6).join(' → ');
+      document.getElementById('confidence').textContent = `${confidence.toFixed(0)}%`;
+      document.getElementById('signalBar').style.width = `${qmlScore}%`;
+
+      document.getElementById('spreadValue').textContent = `${(commodity.spread + oreGrade * 0.1).toFixed(2)} km`;
+      document.getElementById('spreadInterpret').textContent = commodity.spread > 1.6 ? 'Broad ore-body spread, strong drill planning needed' : 'Compact trend, lower infrastructural dispersion';
+      document.getElementById('soilValue').textContent = `${soilScore}%`;
+      document.getElementById('soilInterpret').textContent = soilScore > 78 ? 'Stable geology with good bench resilience' : 'Moderate slope and soil risk require tighter controls';
+      document.getElementById('benefitValue').textContent = `$${(netCashFlow / 1e6).toFixed(1)} M`;
+      document.getElementById('benefitInterpret').textContent = netCashFlow > 0 ? 'Positive Canadian public value and provincial fiscal upside' : 'Project needs stronger grade or lower land cost';
+
+      document.getElementById('drillCost').textContent = `$${drillCost.toFixed(1)} M`;
+      document.getElementById('excCost').textContent = `$${excCost.toFixed(1)} M`;
+      document.getElementById('landCost').textContent = `$${landCost.toFixed(1)} M`;
+      document.getElementById('annualCost').textContent = `$${annualCost.toFixed(1)} M`;
+      document.getElementById('capex').textContent = `$${capex.toFixed(1)} M`;
+      document.getElementById('breakEven').textContent = `${breakEven} years`;
+      document.getElementById('costIntensity').textContent = `${costIntensity.toFixed(2)}x`;
+      document.getElementById('riskLevel').textContent = riskLevel;
+      document.getElementById('riskLevel').className = riskLevel === 'High' ? 'warn' : riskLevel === 'Medium' ? 'ok' : 'ok';
+
+      document.getElementById('drillMetres').textContent = `${Math.round(drillMetres).toLocaleString()} m`;
+      document.getElementById('excavationTonnes').textContent = `${Math.round(excavationTonnes).toLocaleString()} t`;
+      document.getElementById('recoveredTonnes').textContent = `${Math.round(recoveredTonnes).toLocaleString()} t`;
+      document.getElementById('accessEff').textContent = accessEff;
+      document.getElementById('operationalNote').textContent = `With ${commodity.name.toLowerCase()} at this signature profile, the optimal plan is a phased ramp with ${Math.round(recovery * 100)}% recovery and moderate wildfire exposure.`;
+
+      document.getElementById('topoIndex').textContent = `${topoIndex}/100`;
+      document.getElementById('soilScore').textContent = `${soilScore}/100`;
+      document.getElementById('waterSensitivity').textContent = waterSensitivity;
+      document.getElementById('contourResilience').textContent = contourResilience;
+      document.getElementById('geologyImplication').textContent = `The ${commodity.name.toLowerCase()} signal suggests ${topoIndex > 70 ? 'well-bounded' : 'fragmented'} topological continuity, with ${soilScore > 75 ? 'favorable bench stability' : 'elevated slope and runoff risk'}.`;
+
+      document.getElementById('annualRevenue').textContent = `$${(annualRevenue / 1e6).toFixed(1)} M`;
+      document.getElementById('totalRevenue').textContent = `$${(totalRevenue / 1e6).toFixed(1)} M`;
+      document.getElementById('netCashFlow').textContent = `$${(netCashFlow / 1e6).toFixed(1)} M`;
+      document.getElementById('ratio').textContent = `${ratio}x`;
+      document.getElementById('canadianOutcome').textContent = `For Northern Ontario, this ${commodity.name.toLowerCase()} scenario generates a publicly relevant mining proposition that can support jobs, provincial royalties, and infrastructure planning while keeping wildfire-land exposure visible in the economics.`;
+    }
+
+    render();
+  </script>
 </body>
 </html>
