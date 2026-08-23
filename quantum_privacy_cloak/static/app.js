@@ -41,7 +41,7 @@ async function simulate() {
     if (!response.ok) throw new Error('Simulation request failed');
     const data = await response.json();
     drawField(data.points); drawConvergence(data.convergence);
-    $('visibility').textContent = `${data.visibility}%`; $('scattering').textContent = `${data.scattering} dB`; $('confidence').textContent = `${data.qml_confidence}%`;
+    $('visibility').textContent = data.visibility_index < 0.001 ? '<0.001' : data.visibility_index.toFixed(6); $('scattering').textContent = `${data.scattering} dB`; $('confidence').textContent = `${data.qml_confidence}%`;
     $('scheduleId').textContent = data.schedule_id;
     $('primeList').innerHTML = data.prime_schedule.map((prime, index) => `<span>${String(index + 1).padStart(2, '0')} / ${prime}</span>`).join('');
     renderCharacteristics($('cloakCharacteristics'), data.cloak_characteristics);

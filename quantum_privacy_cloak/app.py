@@ -46,7 +46,19 @@ def digest_label(value: str) -> str:
     return hashlib.sha3_256(value.encode()).hexdigest()[:16].upper()
 
 
-def simulate_cloak(radius: float, layers: int, attenuation: float) -> dict:
+def continued_fraction_terms(value: float, count: int = 6) -> list[int]:
+    terms = []
+    for _ in range(count):
+        whole = math.floor(value)
+        terms.append(whole)
+        remainder = value - whole
+        if remainder < 1e-12:
+            break
+        value = 1 / remainder
+    return terms
+
+
+def simulate_cloak(radius: float, layers: int, attenuation: float, seed: int = 1009) -> dict:
     points = []
     samples = 48
     for index in range(samples):
@@ -59,16 +71,25 @@ def simulate_cloak(radius: float, layers: int, attenuation: float) -> dict:
     for iteration in range(1, 21):
         loss *= 0.78 + (layers / 1000)
         convergence.append({"iteration": iteration, "loss": round(loss, 5), "visibility": round(100 - (1 - loss / (1 + attenuation * 0.35)) * 100, 2)})
+    primes = recurrent_primes(seed, layers)
+    prime_modulus = primes[-1]
+    pair_interactions = math.comb(layers, 2)
+    cf_terms = continued_fraction_terms((prime_modulus + radius) / (layers + attenuation))
+    cf_stability = sum(1 / (term + 1) for term in cf_terms)
+    visibility_index = math.exp(-attenuation * (layers + pair_interactions / 2) - math.log(prime_modulus) / 3 - cf_stability)
     return {
         "points": points,
-        "visibility": round(max(0.1, 100 - attenuation * 72 - layers * 1.7), 1),
+        "visibility_index": visibility_index,
         "scattering": round(max(0.2, attenuation * 10 + layers * 0.8), 2),
         "qml_confidence": round(min(99.9, 86 + layers * 1.1 + attenuation * 3.4), 1),
         "convergence": convergence,
         "cloak_characteristics": {
             "cloak_gain_db": round(layers * attenuation * 1.85, 2),
             "field_stability": round(100 - attenuation * 18 + layers * 0.4, 1),
-            "prime_scale_factor": round(sum(1 / prime for prime in recurrent_primes(1009, layers)) * 100, 3),
+            "prime_modulus": prime_modulus,
+            "pair_interactions": pair_interactions,
+            "continued_fraction": "[" + ", ".join(map(str, cf_terms)) + "]",
+            "continued_fraction_stability": round(cf_stability, 4),
         },
     }
 
@@ -86,7 +107,7 @@ def simulate():
     attenuation = max(0.1, min(1.0, float(payload.get("attenuation", 0.65))))
     seed = max(3, int(payload.get("seed", 1009)))
     primes = recurrent_primes(seed, 8)
-    cloak = simulate_cloak(radius, layers, attenuation)
+    cloak = simulate_cloak(radius, layers, attenuation, seed)
     return jsonify({
         **cloak,
         "prime_schedule": primes,
