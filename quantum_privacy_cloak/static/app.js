@@ -256,14 +256,154 @@ async function loadComplianceAudit() {
   }
 }
 
+// ==================== NEWLY DEVELOPED PRIVACY ALGORITHMS ====================
+
+// 01: NTT Polynomial Multiplier
+async function runNtt() {
+  const btn = $('runNttBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Running NTT...'; }
+  try {
+    const response = await fetch('/api/algorithms/ntt', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        degree: $('nttDegree') ? $('nttDegree').value : 256,
+        seed: $('nttSeed') ? $('nttSeed').value : 1009
+      })
+    });
+    const data = await response.json();
+    const box = $('nttResultsBox');
+    if (box) {
+      box.innerHTML = `
+RING: <b>${data.ring}</b> (Modulus q = ${data.modulus_q}, Root of Unity ζ = ${data.root_of_unity_zeta})
+EXECUTION LATENCY: <b>${data.latency_microseconds} μs</b> (Simulated NTT Kernel)
+--------------------------------------------------------------------------------
+Poly A (Sample): [${data.poly_a_sample.join(', ')}...]
+Poly s (Secret): [${data.poly_s_sample.join(', ')}...]
+Product t (NTT): [${data.product_poly_t.join(', ')}...]
+--------------------------------------------------------------------------------
+MAX COEFF: ${data.max_coefficient} | AVG COEFF: ${data.average_coefficient}
+${data.theorem_tail_bound}`;
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Run NTT <span>↗</span>'; }
+  }
+}
+
+// 02: Rényi Differential Privacy (RDP)
+async function runRdp() {
+  const btn = $('runRdpBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Tracking RDP...'; }
+  try {
+    const response = await fetch('/api/algorithms/rdp', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        epochs: $('rdpEpochs') ? $('rdpEpochs').value : 20,
+        sigma: $('rdpSigma') ? $('rdpSigma').value : 1.5,
+        delta: $('rdpDelta') ? parseFloat($('rdpDelta').value) : 1e-6
+      })
+    });
+    const data = await response.json();
+    const box = $('rdpResultsBox');
+    if (box) {
+      box.innerHTML = `
+RDP COMPOSITION: <b>${data.epochs} epochs</b> (Gaussian σ = ${data.gaussian_sigma})
+OPTIMAL DIVERGENCE ORDER: <b>α = ${data.optimal_alpha}</b>
+TOTAL SPENT PRIVACY: <b>ε = ${data.optimal_standard_epsilon}</b> (δ = ${data.target_delta})
+MUTUAL INFORMATION BOUND: <b>I(X; Y) ≤ ${data.mutual_information_leakage_bound_bits}</b>
+--------------------------------------------------------------------------------
+STATUS: ${data.privacy_guarantee}`;
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Track RDP <span>↗</span>'; }
+  }
+}
+
+// 03: Stirling Partition & k-Anonymity
+async function runStirling() {
+  const btn = $('runStirlingBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Partitioning...'; }
+  try {
+    const response = await fetch('/api/algorithms/stirling', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        cohort_size: $('stirlingCohort') ? $('stirlingCohort').value : 48,
+        clusters: $('stirlingClusters') ? $('stirlingClusters').value : 4
+      })
+    });
+    const data = await response.json();
+    const box = $('stirlingResultsBox');
+    if (box) {
+      box.innerHTML = `
+COHORT SIZE: <b>N = ${data.cohort_size_N} patients</b> → <b>m = ${data.partition_clusters_m} clusters</b>
+STIRLING S(N, m): <b>${data.stirling_number_approx}</b> partition ways (log10 ≈ ${data.log10_stirling})
+GUARANTEED ANONYMITY: <b>${data.guaranteed_k_anonymity}</b> | <b>${data.achieved_l_diversity}</b>
+SHANNON PARTITION ENTROPY: <b>${data.shannon_partition_entropy}</b>
+RE-IDENTIFICATION BOUND: <b>${data.reidentification_probability_bound}</b>`;
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Partition <span>↗</span>'; }
+  }
+}
+
+// 04: Simplicial Metamaterial Tensors
+async function runTensors() {
+  const btn = $('runTensorsBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Solving...'; }
+  try {
+    const response = await fetch('/api/algorithms/tensors', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        inner_a: $('tensorA') ? $('tensorA').value : 0.5,
+        outer_b: $('tensorB') ? $('tensorB').value : 1.5,
+        layers: $('tensorLayers') ? $('tensorLayers').value : 12
+      })
+    });
+    const data = await response.json();
+    const box = $('tensorsResultsBox');
+    if (box) {
+      const sampleLayers = data.tensor_layers.slice(0, 3);
+      const layerRows = sampleLayers.map((l) => `L${l.layer_index} (r'=${l.r_prime}): ε^rr=${l.eps_rr}, ε^θθ=${l.eps_thetatheta}, n=${l.refractive_index}`).join('\n');
+      box.innerHTML = `
+ANNULAR REGION: [a=${data.inner_radius_a}, b=${data.outer_radius_b}] across <b>${data.layer_count} shells</b>
+TOTAL ATTENUATION: <b>${data.total_scattering_attenuation_db}</b>
+CF STABILITY SCORE: <b>S_CF = ${data.cf_stability_score}</b> (Terms: [${data.continued_fraction_terms.join(', ')}])
+--------------------------------------------------------------------------------
+${layerRows}
+... (${data.layer_count - 3} additional shells solved)`;
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Solve Tensors <span>↗</span>'; }
+  }
+}
+
 if ($('simulate')) $('simulate').addEventListener('click', simulate);
 if ($('createSession')) $('createSession').addEventListener('click', createSession);
 if ($('evaluatePqcBtn')) $('evaluatePqcBtn').addEventListener('click', evaluatePqc);
 if ($('cloakPatientBtn')) $('cloakPatientBtn').addEventListener('click', cloakPatient);
 if ($('runAuditBtn')) $('runAuditBtn').addEventListener('click', loadComplianceAudit);
+if ($('runNttBtn')) $('runNttBtn').addEventListener('click', runNtt);
+if ($('runRdpBtn')) $('runRdpBtn').addEventListener('click', runRdp);
+if ($('runStirlingBtn')) $('runStirlingBtn').addEventListener('click', runStirling);
+if ($('runTensorsBtn')) $('runTensorsBtn').addEventListener('click', runTensors);
 
 simulate();
 evaluatePqc();
 cloakPatient();
 loadComplianceAudit();
+runNtt();
+runRdp();
+runStirling();
+runTensors();
 

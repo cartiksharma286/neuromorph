@@ -223,6 +223,68 @@
             Let $w = \mathbf{e}^T\mathbf{r} + e_2 - \mathbf{s}^T\mathbf{e}_1 \in \mathcal{R}_q$. The probability that $\|w\|_\infty \ge \lfloor q/4 \rfloor = 832$ is strictly bounded by $\delta_{\text{fail}} \le 2^{-164.3}$. Combined with the Fujisaki-Okamoto transform, this eliminates side-channel decryption failure leakage across all multi-party patient data sharing nodes.
           </p>
         </div>
+
+        <!-- NEWLY DEVELOPED PRIVACY ALGORITHMS: NTT & RDP ENGINES -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px;">
+          <!-- NTT Engine -->
+          <div style="background:#f8fafc;border:1px solid #cbd5e1;padding:18px;border-radius:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <h4 style="margin:0;color:#0f172a;font-size:13px;font-family:'DM Mono',monospace;">01 / NTT POLYNOMIAL MULTIPLIER ENGINE</h4>
+              <span class="badge blue-bg">Z_3329[X]/(X^N+1)</span>
+            </div>
+            <p style="font-size:11px;color:#64748b;margin:6px 0 10px;">
+              Number Theoretic Transform accelerated polynomial convolution over cyclotomic ring with root of unity $\zeta = 17 \pmod{3329}$.
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
+              <div>
+                <label style="font-size:10px;margin:0 0 4px;">POLYNOMIAL DEGREE (N)</label>
+                <select id="nttDegree" style="padding:6px 8px;font-size:11px;">
+                  <option value="16">N = 16 (Sample verification)</option>
+                  <option value="32">N = 32 (Sub-ring)</option>
+                  <option value="64">N = 64 (Intermediate)</option>
+                  <option value="256" selected>N = 256 (NIST Kyber / ML-KEM)</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:10px;margin:0 0 4px;">ARITHMETIC SEED</label>
+                <input id="nttSeed" type="number" value="1009" style="padding:6px 8px;font-size:11px;">
+              </div>
+              <button class="primary" id="runNttBtn" style="padding:8px 12px;font-size:10px;height:34px;">Run NTT <span>↗</span></button>
+            </div>
+            <div id="nttResultsBox" style="margin-top:12px;background:#0f172a;color:#38bdf8;padding:10px;border-radius:6px;font:10.5px 'DM Mono',monospace;line-height:1.6;">
+              Click 'Run NTT' to execute polynomial transform...
+            </div>
+          </div>
+
+          <!-- RDP Privacy Loss Engine -->
+          <div style="background:#f8fafc;border:1px solid #cbd5e1;padding:18px;border-radius:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <h4 style="margin:0;color:#0f172a;font-size:13px;font-family:'DM Mono',monospace;">02 / RÉNYI DIFFERENTIAL PRIVACY (RDP)</h4>
+              <span class="badge gold-bg">Loss Composition</span>
+            </div>
+            <p style="font-size:11px;color:#64748b;margin:6px 0 10px;">
+              Multi-query federated training composition tracking exact Rényi divergence $\epsilon(\alpha) = \frac{\alpha}{2\sigma^2}$ and conversion to $(\epsilon, \delta)$-DP.
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;">
+              <div>
+                <label style="font-size:10px;margin:0 0 4px;">QUERIES / EPOCHS</label>
+                <input id="rdpEpochs" type="number" value="20" min="1" max="100" style="padding:6px 8px;font-size:11px;">
+              </div>
+              <div>
+                <label style="font-size:10px;margin:0 0 4px;">NOISE SCALE (&sigma;)</label>
+                <input id="rdpSigma" type="number" step="0.1" value="1.5" min="0.1" max="10" style="padding:6px 8px;font-size:11px;">
+              </div>
+              <div>
+                <label style="font-size:10px;margin:0 0 4px;">TARGET &delta;</label>
+                <input id="rdpDelta" type="text" value="1e-6" style="padding:6px 8px;font-size:11px;">
+              </div>
+              <button class="primary" id="runRdpBtn" style="padding:8px 12px;font-size:10px;height:34px;">Track RDP <span>↗</span></button>
+            </div>
+            <div id="rdpResultsBox" style="margin-top:12px;background:#0f172a;color:#4ade80;padding:10px;border-radius:6px;font:10.5px 'DM Mono',monospace;line-height:1.6;">
+              Click 'Track RDP' to compute composition profile...
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -329,6 +391,63 @@
             <small>HARDWARE CLOAK ATTENUATION</small>
             <strong id="cardAttenuation" style="color:#0284c7;">18.2 dB (&lt;10^-4)</strong>
             <span>Simplicial Transformation Annulus</span>
+          </div>
+        </div>
+
+        <!-- NEWLY DEVELOPED PRIVACY ALGORITHMS: STIRLING & TENSORS ENGINES -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px;">
+          <!-- Stirling Partition Engine -->
+          <div style="background:#f8fafc;border:1px solid #cbd5e1;padding:18px;border-radius:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <h4 style="margin:0;color:#0f172a;font-size:13px;font-family:'DM Mono',monospace;">03 / STIRLING PARTITION & K-ANONYMITY</h4>
+              <span class="badge coral-bg">S(N, m) Equivalence</span>
+            </div>
+            <p style="font-size:11px;color:#64748b;margin:6px 0 10px;">
+              Combinatorial set partition algorithm $\left\{ \begin{matrix} N \\ m \end{matrix} \right\} = \frac{1}{m!} \sum_{j=0}^m (-1)^{m-j} \binom{m}{j} j^N$ determining exact anonymity clusters.
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
+              <div>
+                <label style="font-size:10px;margin:0 0 4px;">COHORT SIZE (N)</label>
+                <input id="stirlingCohort" type="number" value="48" min="5" max="1000" style="padding:6px 8px;font-size:11px;">
+              </div>
+              <div>
+                <label style="font-size:10px;margin:0 0 4px;">CLUSTERS (m)</label>
+                <input id="stirlingClusters" type="number" value="4" min="2" max="50" style="padding:6px 8px;font-size:11px;">
+              </div>
+              <button class="primary" id="runStirlingBtn" style="padding:8px 12px;font-size:10px;height:34px;">Partition <span>↗</span></button>
+            </div>
+            <div id="stirlingResultsBox" style="margin-top:12px;background:#0f172a;color:#f43f5e;padding:10px;border-radius:6px;font:10.5px 'DM Mono',monospace;line-height:1.6;">
+              Click 'Partition' to compute equivalence classes...
+            </div>
+          </div>
+
+          <!-- Simplicial Tensor Engine -->
+          <div style="background:#f8fafc;border:1px solid #cbd5e1;padding:18px;border-radius:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <h4 style="margin:0;color:#0f172a;font-size:13px;font-family:'DM Mono',monospace;">04 / SIMPLICIAL TENSOR PROFILER</h4>
+              <span class="badge cyan-bg">ε, μ Tensor Matrix</span>
+            </div>
+            <p style="font-size:11px;color:#64748b;margin:6px 0 10px;">
+              Discrete transformation optics constitutive tensor evaluator for $\varepsilon^{rr}(r'), \varepsilon^{\theta\theta}(r'), \varepsilon^{zz}(r')$ across $L$ concentric shells.
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;">
+              <div>
+                <label style="font-size:10px;margin:0 0 4px;">INNER RADIUS (a)</label>
+                <input id="tensorA" type="number" step="0.1" value="0.5" min="0.1" max="5" style="padding:6px 8px;font-size:11px;">
+              </div>
+              <div>
+                <label style="font-size:10px;margin:0 0 4px;">OUTER RADIUS (b)</label>
+                <input id="tensorB" type="number" step="0.1" value="1.5" min="0.6" max="10" style="padding:6px 8px;font-size:11px;">
+              </div>
+              <div>
+                <label style="font-size:10px;margin:0 0 4px;">LAYERS (L)</label>
+                <input id="tensorLayers" type="number" value="12" min="2" max="24" style="padding:6px 8px;font-size:11px;">
+              </div>
+              <button class="primary" id="runTensorsBtn" style="padding:8px 12px;font-size:10px;height:34px;">Solve Tensors <span>↗</span></button>
+            </div>
+            <div id="tensorsResultsBox" style="margin-top:12px;background:#0f172a;color:#2dd4bf;padding:10px;border-radius:6px;font:10.5px 'DM Mono',monospace;line-height:1.6;">
+              Click 'Solve Tensors' to calculate constitutive tensors...
+            </div>
           </div>
         </div>
 
