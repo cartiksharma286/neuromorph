@@ -10,11 +10,23 @@
   <main class="shell">
     <header class="topbar">
       <div class="brand"><span class="mark">N</span><div><strong>Northstar Cloak</strong><small>Canadian privacy research lab</small></div></div>
-      <div class="status"><span></span> LOCAL SANDBOX <b>v0.1</b></div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="/api/preprint/view" target="_blank" class="chip blue" style="text-decoration:none;padding:6px 12px;border:1px solid #0284c7;background:#0284c7;color:#fff;border-radius:4px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">📄 NATURE PREPRINT (PDF) ↗</a>
+        <div class="status"><span></span> LOCAL SANDBOX <b>v0.1</b></div>
+      </div>
     </header>
 
     <section class="hero">
-      <div class="hero-copy"><p class="eyebrow">NEUROMORPH SERVICES / QUANTUM SECURITY</p><h1>Make the signal<br><em>uninteresting.</em></h1><p class="lede">A visual lab for exploring cloaked fields, recurrent-prime scheduling, and post-quantum privacy ceremonies without exporting sensitive data.</p><div class="notice">Research prototype · QML field optimization is simulated · cryptography requires a production-reviewed PQC library</div></div>
+      <div class="hero-copy">
+        <p class="eyebrow">NEUROMORPH SERVICES / QUANTUM SECURITY & CANADIAN PRIVACY</p>
+        <h1>Make the signal<br><em>uninteresting.</em></h1>
+        <p class="lede">A visual sovereign laboratory uniting finite-algebraic post-quantum lattice cryptography with discrete transformation optics to secure Canadian personal data against quantum intercepts and spatial surveillance.</p>
+        <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;">
+          <a href="/api/preprint/view" target="_blank" style="text-decoration:none;padding:10px 16px;background:#0284c7;color:#fff;border-radius:6px;font:11px 'DM Mono',monospace;font-weight:700;display:inline-flex;align-items:center;gap:8px;">View Nature Preprint (PDF) ↗</a>
+          <a href="/api/preprint/download" style="text-decoration:none;padding:10px 16px;background:rgba(2,132,199,0.12);color:#0369a1;border:1px solid #0284c7;border-radius:6px;font:11px 'DM Mono',monospace;font-weight:700;display:inline-flex;align-items:center;gap:8px;">Download Paper (.pdf) ↓</a>
+        </div>
+        <div class="notice">Research preprint: <em>Finite Mathematical Foundations of Quantum Cryptography & Adaptive Invisibility Cloaking</em> · PIPEDA & Provincial Privacy Architecture</div>
+      </div>
       <div class="orbit" aria-label="Simulated cloaking field visualization"><div class="orbit-ring ring-a"></div><div class="orbit-ring ring-b"></div><div class="core">NCL</div><i class="node n1"></i><i class="node n2"></i><i class="node n3"></i></div>
     </section>
 
@@ -28,8 +40,48 @@
       <div class="panel visual"><div class="panel-head"><div><p class="eyebrow">LIVE PROJECTION</p><h2>Field response</h2></div><span class="chip green">STABLE</span></div><canvas id="fieldCanvas" width="680" height="290"></canvas><div class="metrics"><div><small>VISIBILITY INDEX</small><strong id="visibility">&lt;0.001</strong></div><div><small>SCATTERING LOSS</small><strong id="scattering">17.6 dB</strong></div><div><small>QML CONFIDENCE</small><strong id="confidence">99.9%</strong></div></div><div class="chart-title">QML convergence <span id="convergenceStatus">ready</span></div><canvas id="convergenceCanvas" width="680" height="150"></canvas><div class="characteristics" id="cloakCharacteristics"></div></div>
     </section>
 
-    <section class="lower-grid"><div class="panel primes"><div class="panel-head"><div><p class="eyebrow">02 / KEY SCHEDULE</p><h2>Recurrent primes</h2></div><span class="chip gold">AUDITABLE</span></div><p class="muted">A deterministic prime ladder binds session rotations to an inspectable schedule. It is a coordination primitive, not encryption.</p><div class="prime-list" id="primeList"></div><div class="schedule-id">SCHEDULE ID <strong id="scheduleId">NCL-3C7A8D10B4E2F6AA</strong></div></div>
-      <div class="panel session"><div class="panel-head"><div><p class="eyebrow">03 / PRIVACY SESSION</p><h2>Post-quantum ceremony</h2></div><span class="chip coral">CANADA</span></div><label>Data room label<input id="subject" value="Ontario watershed telemetry"></label><div class="protocol"><div><span>KEY EXCHANGE</span><strong>ML-KEM-768</strong></div><div><span>SIGNATURE</span><strong>ML-DSA-65</strong></div><div><span>GOVERNANCE</span><strong>PIPEDA / provincial review</strong></div></div><button class="secondary" id="createSession">Create privacy session <span>↗</span></button><div class="characteristics" id="sessionCharacteristics"></div><pre id="sessionResult">Awaiting local session creation...</pre></div></section>
+    <section class="lower-grid">
+      <div class="panel primes"><div class="panel-head"><div><p class="eyebrow">02 / KEY SCHEDULE</p><h2>Recurrent primes</h2></div><span class="chip gold">AUDITABLE</span></div><p class="muted">A deterministic prime ladder binds session rotations to an inspectable schedule. It is a coordination primitive, not encryption.</p><div class="prime-list" id="primeList"></div><div class="schedule-id">SCHEDULE ID <strong id="scheduleId">NCL-3C7A8D10B4E2F6AA</strong></div></div>
+      <div class="panel session"><div class="panel-head"><div><p class="eyebrow">03 / PRIVACY SESSION</p><h2>Post-quantum ceremony</h2></div><span class="chip coral">CANADA</span></div><label>Data room label<input id="subject" value="Ontario watershed telemetry"></label><div class="protocol"><div><span>KEY EXCHANGE</span><strong>ML-KEM-768</strong></div><div><span>SIGNATURE</span><strong>ML-DSA-65</strong></div><div><span>GOVERNANCE</span><strong>PIPEDA / provincial review</strong></div></div><button class="secondary" id="createSession">Create privacy session <span>↗</span></button><div class="characteristics" id="sessionCharacteristics"></div><pre id="sessionResult">Awaiting local session creation...</pre></div>
+    </section>
+
+    <section style="margin-top:24px;">
+      <div class="panel" style="background:#fff;border:1px solid var(--line);padding:24px;">
+        <div class="panel-head" style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <p class="eyebrow">04 / THEORETICAL FRAMEWORK</p>
+            <h2 style="margin:4px 0 0;font-size:18px;">Finite Mathematics & Invisibility Equations</h2>
+          </div>
+          <a href="/api/preprint/view" target="_blank" style="text-decoration:none;padding:6px 12px;background:#0f172a;color:#fff;border-radius:4px;font:11px 'DM Mono',monospace;">Nature Preprint PDF ↗</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:14px;margin-top:16px;">
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:6px;">
+            <small style="color:#0284c7;font-weight:700;">LATTICE RING MODULUS</small>
+            <div style="font-family:'DM Mono',monospace;font-size:12px;margin-top:6px;color:#0f172a;">
+              $$\mathcal{R}_q = \mathbb{Z}_q[X]/(X^{256} + 1)$$
+              $$\mathbf{t} = \mathbf{A}\mathbf{s} + \mathbf{e} \pmod{3329}$$
+            </div>
+            <p style="font-size:11px;color:#64748b;margin:6px 0 0;">ML-KEM-768 post-quantum hardness for Canadian data encapsulation.</p>
+          </div>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:6px;">
+            <small style="color:#0284c7;font-weight:700;">METAMATERIAL TENSOR</small>
+            <div style="font-family:'DM Mono',monospace;font-size:12px;margin-top:6px;color:#0f172a;">
+              $$\varepsilon^{r'r'} = \mu^{r'r'} = \frac{r' - a}{r'}$$
+              $$\varepsilon^{\theta'\theta'} = \frac{r'}{r' - a}, \quad \varepsilon^{z'z'} = \left(\frac{b}{b-a}\right)^2 \frac{r' - a}{r'}$$
+            </div>
+            <p style="font-size:11px;color:#64748b;margin:6px 0 0;">Discrete transformation optics mapping continuous space to cloaked annulus.</p>
+          </div>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:6px;">
+            <small style="color:#0284c7;font-weight:700;">CONTINUED FRACTION STABILITY</small>
+            <div style="font-family:'DM Mono',monospace;font-size:12px;margin-top:6px;color:#0f172a;">
+              $$\frac{p_{max} + r_0}{L + \gamma} = [a_0; a_1, \dots, a_M]$$
+              $$\mathcal{V} = \exp\left(-\gamma\left[L + \frac{1}{2}\binom{L}{2}\right] - \frac{1}{3}\ln(p) - \mathcal{S}_{CF}\right)$$
+            </div>
+            <p style="font-size:11px;color:#64748b;margin:6px 0 0;">Impedance stability preventing multi-layer resonant scattering spikes.</p>
+          </div>
+        </div>
+      </div>
+    </section>
     <footer><span>Northstar Cloak · Neuromorph services</span><span>Designed for data minimization · No telemetry leaves this browser</span></footer>
   </main><script src="{{ url_for('static', filename='app.js') }}"></script>
 </body></html>

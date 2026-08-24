@@ -7,6 +7,7 @@ import random
 from generate_pdf import create_pdf
 from ibkr_bridge import IBKRBridge, IBKRUnavailableError
 from market_engine import MarketSimulationEngine, optimize_dividend_portfolio
+from feynman_path_integral_engine import optimize_yield_with_feynman_qml
 
 app = Flask(__name__, static_url_path='', static_folder='www')
 ibkr = IBKRBridge()
@@ -53,6 +54,13 @@ def download_report():
              return "Report Source Missing", 404
              
     return send_from_directory('.', report_file, as_attachment=True)
+
+@app.route('/api/feynman/report/download')
+def download_feynman_report():
+    report_file = 'Nature_Feynman_Path_Integral_Volatility_Trading.pdf'
+    if not os.path.exists(report_file):
+        return "Report not generated yet - call /api/feynman/report first", 404
+    return send_from_directory('.', report_file, as_attachment=False)
 
 @app.after_request
 def no_cache_html(response):
@@ -277,6 +285,47 @@ def generate_mineral_strategy():
         "market_source": market_source,
         "generated_at": snapshot["generated_at"],
     })
+
+@app.route('/api/feynman/optimize', methods=['POST'])
+def feynman_optimize():
+    """
+    Feynman path-integral (combinatorial projection state) yield optimizer:
+    replaces Black-Scholes with a discrete binomial-lattice path sum, then
+    layers a QML-sized volatility overlay to push total portfolio yield
+    above 30%, reporting the combinatorial-vs-Black-Scholes convergence and
+    Monte-Carlo VaR/CVaR risk instruments for the overlay notional.
+    """
+    try:
+        data = request.json or {}
+        capital = float(data.get('capital', 100000.0))
+        snapshot = market_engine.snapshot()
+        result = optimize_yield_with_feynman_qml(
+            capital=capital,
+            risk_free_rate=snapshot['characteristics']['10y_treasury'] / 100.0,
+            equity_risk_premium=snapshot['characteristics']['equity_risk_premium'] / 100.0,
+        )
+        result['generated_at'] = snapshot['generated_at']
+        return jsonify({'status': 'success', **result})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+
+
+@app.route('/api/feynman/report', methods=['POST'])
+def feynman_report():
+    """Runs the Nature-style preprint generator and returns the PDF filename"""
+    import subprocess
+    import sys
+    try:
+        script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'generate_nature_pdf_feynman_path_integral.py')
+        result = subprocess.run([sys.executable, script_path], cwd=os.path.dirname(script_path),
+                                 capture_output=True, text=True, timeout=120)
+        if result.returncode != 0:
+            return jsonify({'status': 'error', 'message': result.stderr}), 500
+        pdf_name = 'Nature_Feynman_Path_Integral_Volatility_Trading.pdf'
+        return jsonify({'status': 'success', 'pdf': pdf_name, 'log': result.stdout})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 
 @app.route('/api/connect_ibkr', methods=['POST'])
 def connect_ibkr():

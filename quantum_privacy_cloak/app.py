@@ -10,10 +10,12 @@ import hashlib
 import hmac
 import math
 import secrets
+import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_file
 
 app = Flask(__name__)
 
@@ -146,6 +148,24 @@ def session():
             "data_residency": "local sandbox",
         },
     })
+
+
+@app.get("/api/preprint/download")
+def download_preprint():
+    pdf_path = Path(__file__).parent / "Nature_Quantum_Cryptography_Privacy_Cloak_Canada.pdf"
+    if not pdf_path.exists():
+        script_path = Path(__file__).parent / "generate_nature_pdf_quantum_privacy_cloak.py"
+        subprocess.run([sys.executable, str(script_path)], check=True)
+    return send_file(pdf_path, as_attachment=True, download_name="Nature_Quantum_Cryptography_Privacy_Cloak_Canada.pdf")
+
+
+@app.get("/api/preprint/view")
+def view_preprint():
+    pdf_path = Path(__file__).parent / "Nature_Quantum_Cryptography_Privacy_Cloak_Canada.pdf"
+    if not pdf_path.exists():
+        script_path = Path(__file__).parent / "generate_nature_pdf_quantum_privacy_cloak.py"
+        subprocess.run([sys.executable, str(script_path)], check=True)
+    return send_file(pdf_path, mimetype="application/pdf")
 
 
 if __name__ == "__main__":

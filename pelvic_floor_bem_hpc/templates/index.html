@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pelvic Floor Implant BEM / HPC / NVQLink Design Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  window.MathJax = { tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] } };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1b2735 0%, #2c3e63 50%, #4a2f7a 100%); min-height: 100vh; color: #e8e8f0; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  header { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 15px; padding: 24px 30px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+  h1 { font-size: 24px; background: linear-gradient(90deg,#7ee8fa,#c471ed); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .subtitle { color: #a8b0c8; font-size: 13px; margin-top: 4px; }
+  .status-badge { background: #2ecc71; color: #06210f; padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .tab-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cfd6ef; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+  .tab-btn:hover { background: rgba(255,255,255,0.14); }
+  .tab-btn.active { background: linear-gradient(90deg,#4a90e2,#8e44ad); color: white; border-color: transparent; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadein 0.25s; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 15px; padding: 22px; margin-bottom: 20px; }
+  .card h2 { font-size: 16px; margin-bottom: 12px; color: #7ee8fa; }
+  label { display: block; font-size: 12px; color: #a8b0c8; margin: 10px 0 4px; }
+  input, select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.25); color: #fff; font-size: 13px; }
+  button.run { margin-top: 16px; width: 100%; padding: 12px; border: none; border-radius: 10px; background: linear-gradient(90deg,#4a90e2,#8e44ad); color: white; font-weight: bold; cursor: pointer; font-size: 14px; }
+  button.run:hover { opacity: 0.9; }
+  .math-box { background: rgba(0,0,0,0.3); border-left: 3px solid #7ee8fa; padding: 12px 16px; border-radius: 8px; margin: 10px 0; font-size: 14px; overflow-x: auto; }
+  .result-box { background: rgba(0,0,0,0.25); border-radius: 10px; padding: 14px; margin-top: 12px; font-size: 12.5px; white-space: pre-wrap; max-height: 340px; overflow-y: auto; font-family: 'SF Mono', Menlo, monospace; }
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 10px; margin-top: 10px; }
+  .metric { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; text-align: center; }
+  .metric .val { font-size: 18px; font-weight: bold; color: #7ee8fa; }
+  .metric .lbl { font-size: 10px; color: #a8b0c8; margin-top: 3px; }
+  canvas#viz3d { width: 100%; height: 340px; border-radius: 10px; background: #05070c; }
+  canvas#bemHeatmap { width: 100%; height: 300px; border-radius: 10px; background: #05070c; }
+  .colorbar { height: 12px; border-radius: 6px; margin-top: 10px; background: linear-gradient(90deg, rgb(0,0,143), rgb(0,132,255), rgb(76,255,170), rgb(255,230,0), rgb(220,20,0)); }
+  a.pdf-link { display: inline-block; margin-top: 14px; background: #2ecc71; color: #06210f; padding: 10px 18px; border-radius: 8px; font-weight: bold; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>Pelvic Floor Implant: BEM / HPC / NVQLink Design Studio</h1>
+      <div class="subtitle">Chamfer geometry &middot; continued-fraction manifold repair &middot; boundary element simulation &middot; HPC scaling &middot; NVQLink hybrid acceleration</div>
+    </div>
+    <div class="status-badge" id="statusBadge">SYSTEM READY</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('geometry')">1. Geometry &amp; Chamfer</button>
+    <button class="tab-btn" onclick="showTab('manifold')">2. Manifold Repair (CF)</button>
+    <button class="tab-btn" onclick="showTab('bem')">3. BEM Simulation</button>
+    <button class="tab-btn" onclick="showTab('hpc')">4. HPC Cluster</button>
+    <button class="tab-btn" onclick="showTab('nvqlink')">5. NVQLink</button>
+    <button class="tab-btn" onclick="showTab('preprint')">6. Nature Preprint</button>
+  </div>
+
+  <!-- TAB 1: GEOMETRY -->
+  <div id="geometry" class="tab-content active">
+    <div class="grid">
+      <div class="card">
+        <h2>Implant Boundary &amp; Chamfer Parameters</h2>
+        <label>Material</label>
+        <select id="material">
+          <option value="composite">Composite</option>
+          <option value="mesh">Mesh</option>
+          <option value="xenograft">Xenograft</option>
+          <option value="autograft">Autograft</option>
+          <option value="synthetic_polymer">Synthetic Polymer</option>
+        </select>
+        <label>Length (mm)</label><input id="length_mm" type="number" value="40">
+        <label>Width (mm)</label><input id="width_mm" type="number" value="30">
+        <label>Thickness (mm)</label><input id="thickness_mm" type="number" value="1.0" step="0.05">
+        <label>Corner Radius (mm)</label><input id="corner_radius_mm" type="number" value="4">
+        <label>Chamfer Width (mm)</label><input id="chamfer_width_mm" type="number" value="1.5" step="0.1">
+        <label>Chamfer Angle (deg)</label><input id="chamfer_angle_deg" type="number" value="45">
+        <button class="run" onclick="generateGeometry()">Generate Chamfered Geometry</button>
+        <div class="math-box">Chamfer bevel depth: $$ d_c = w_c \tan(\theta_c) $$</div>
+        <div id="geomResult" class="result-box" style="display:none;"></div>
+      </div>
+      <div class="card">
+        <h2>3D Preview</h2>
+        <canvas id="viz3d"></canvas>
+        <div class="metric-grid" id="geomMetrics"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: MANIFOLD REPAIR -->
+  <div id="manifold" class="tab-content">
+    <div class="grid">
+      <div class="card">
+        <h2>Continued-Fraction Manifold Blend</h2>
+        <p style="font-size:12.5px;color:#a8b0c8;">Regular continued fraction of rotation number $x$: $$ x = a_0 + \cfrac{1}{a_1 + \cfrac{1}{a_2 + \cfrac{1}{a_3 + \ddots}}} $$ with convergents $p_k/q_k$ generated by $p_k = a_k p_{k-1} + p_{k-2}$, $q_k = a_k q_{k-1} + q_{k-2}$.</p>
+        <label>Rotation Number (default = &phi; golden ratio)</label>
+        <input id="rotation_number" type="number" value="1.6180339887" step="0.0000001">
+        <label>Continued Fraction Depth</label>
+        <input id="cf_depth" type="number" value="8">
+        <button class="run" onclick="repairManifold()">Run Geometric Repair + CF Blend</button>
+        <div class="math-box">Quasi-periodic curvature field: $$ \kappa(s) = \sum_k \frac{\cos(2\pi q_k s + p_k)}{|q_k|+1} $$</div>
+        <div class="math-box">Gauss&ndash;Bonnet consistency: $$ \frac{1}{2\pi}\oint_M K\,dA + \oint_{\partial M} \kappa_g\,ds = \chi $$</div>
+        <div id="manifoldResult" class="result-box" style="display:none;"></div>
+      </div>
+      <div class="card">
+        <h2>Manifold Repair Metrics</h2>
+        <div class="metric-grid" id="manifoldMetrics"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: BEM -->
+  <div id="bem" class="tab-content">
+    <div class="grid">
+      <div class="card">
+        <h2>Boundary Element Method Simulation</h2>
+        <p style="font-size:12.5px;color:#a8b0c8;">Somigliana boundary integral identity (3D elastostatics):</p>
+        <div class="math-box">$$ c_{ij}(x)\,u_j(x) + \int_{\Gamma} T_{ij}(x,y)\,u_j(y)\,d\Gamma = \int_{\Gamma} U_{ij}(x,y)\,t_j(y)\,d\Gamma $$</div>
+        <p style="font-size:12.5px;color:#a8b0c8;">Kelvin fundamental solution:</p>
+        <div class="math-box">$$ U_{ij}(x,y) = \frac{1}{16\pi\mu(1-\nu) r}\Big[(3-4\nu)\delta_{ij} + \hat r_i \hat r_j\Big] $$</div>
+        <label>Intra-abdominal / Valsalva Pressure (kPa)</label>
+        <input id="pressure_kpa" type="number" value="15">
+        <label>Target Panel Count</label>
+        <input id="n_panels_target" type="number" value="96">
+        <button class="run" onclick="runBem()">Run BEM Solve</button>
+        <div id="bemResult" class="result-box" style="display:none;"></div>
+      </div>
+      <div class="card">
+        <h2>Stress / Displacement Field Heatmap</h2>
+        <label>Field</label>
+        <select id="bemFieldSelect" onchange="drawBemHeatmap()">
+          <option value="stress">Von Mises Proxy Stress (MPa)</option>
+          <option value="displacement">Displacement Magnitude (mm)</option>
+        </select>
+        <canvas id="bemHeatmap" style="margin-top:10px;"></canvas>
+        <div id="bemColorbar" class="colorbar"></div>
+        <div id="bemLegend" style="font-size:11px;color:#a8b0c8;margin-top:4px;"></div>
+        <div class="metric-grid" id="bemMetrics"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: HPC -->
+  <div id="hpc" class="tab-content">
+    <div class="grid">
+      <div class="card">
+        <h2>HPC Cluster Job Submission</h2>
+        <p style="font-size:12.5px;color:#a8b0c8;">Amdahl's law strong-scaling projection for the dense BEM solve:</p>
+        <div class="math-box">$$ S(P) = \frac{1}{(1-f) + \dfrac{f}{P}}, \qquad E(P) = \frac{S(P)}{P} $$</div>
+        <label>Nodes</label><input id="hpc_nodes" type="number" value="4">
+        <label>Tasks per Node</label><input id="hpc_tasks" type="number" value="16">
+        <label>Parallel Fraction f</label><input id="hpc_fraction" type="number" value="0.94" step="0.01">
+        <button class="run" onclick="submitHpcJob()">Submit SLURM Job</button>
+        <div id="hpcResult" class="result-box" style="display:none;"></div>
+      </div>
+      <div class="card">
+        <h2>Strong-Scaling Curve</h2>
+        <canvas id="hpcChart" height="220"></canvas>
+        <div class="metric-grid" id="hpcMetrics"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: NVQLINK -->
+  <div id="nvqlink" class="tab-content">
+    <div class="grid">
+      <div class="card">
+        <h2>NVQLink Hybrid GPU-QPU Acceleration</h2>
+        <p style="font-size:12.5px;color:#a8b0c8;">HHL-class quantum linear solver complexity vs. classical dense solve:</p>
+        <div class="math-box">$$ T_{quantum} \sim O\!\left(\log(N)\,\kappa^2/\epsilon\right) \quad \text{vs.} \quad T_{classical} \sim O(N^3) $$</div>
+        <button class="run" onclick="runNvqlink()">Run NVQLink Acceleration (requires BEM run)</button>
+        <div id="nvqlinkResult" class="result-box" style="display:none;"></div>
+      </div>
+      <div class="card">
+        <h2>Link Status &amp; Speedup</h2>
+        <div class="metric-grid" id="nvqlinkMetrics"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 6: PREPRINT -->
+  <div id="preprint" class="tab-content">
+    <div class="card">
+      <h2>Nature Preprint Generator</h2>
+      <p style="font-size:12.5px;color:#a8b0c8;">Generates a Nature-style preprint PDF summarizing the finite mathematical framework: BEM boundary integral formulation, HPC Amdahl scaling, NVQLink hybrid acceleration, chamfer geometry, and continued-fraction manifold repair.</p>
+      <button class="run" onclick="generatePreprint()">Generate Nature Preprint PDF</button>
+      <div id="preprintResult" class="result-box" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let scene, camera, renderer, meshGroup;
+let lastBemData = null;
+
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function initViz() {
+  const canvas = document.getElementById('viz3d');
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setSize(canvas.clientWidth, 340);
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / 340, 0.1, 1000);
+  camera.position.set(30, 30, 50);
+  camera.lookAt(0, 0, 0);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  const light = new THREE.DirectionalLight(0xffffff, 0.8);
+  light.position.set(20, 40, 30);
+  scene.add(light);
+  meshGroup = new THREE.Group();
+  scene.add(meshGroup);
+  animate();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (meshGroup) meshGroup.rotation.z += 0.004;
+  renderer.render(scene, camera);
+}
+
+function drawBoundary(points) {
+  meshGroup.clear();
+  const shape = new THREE.Shape();
+  points.forEach((p, i) => i === 0 ? shape.moveTo(p[0], p[1]) : shape.lineTo(p[0], p[1]));
+  shape.closePath();
+  const geometry = new THREE.ExtrudeGeometry(shape, { depth: 1.0, bevelEnabled: true, bevelThickness: 1.2, bevelSize: 1.2, bevelSegments: 4 });
+  const material = new THREE.MeshStandardMaterial({ color: 0x7ee8fa, metalness: 0.3, roughness: 0.4 });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.rotation.x = -Math.PI / 2.2;
+  meshGroup.add(mesh);
+}
+
+async function generateGeometry() {
+  const payload = {
+    material: document.getElementById('material').value,
+    length_mm: parseFloat(document.getElementById('length_mm').value),
+    width_mm: parseFloat(document.getElementById('width_mm').value),
+    thickness_mm: parseFloat(document.getElementById('thickness_mm').value),
+    corner_radius_mm: parseFloat(document.getElementById('corner_radius_mm').value),
+    chamfer_width_mm: parseFloat(document.getElementById('chamfer_width_mm').value),
+    chamfer_angle_deg: parseFloat(document.getElementById('chamfer_angle_deg').value),
+  };
+  const res = await fetch(`${API}/api/generate-geometry`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  const data = await res.json();
+  const box = document.getElementById('geomResult');
+  box.style.display = 'block';
+  box.textContent = JSON.stringify(data.chamfer, null, 2);
+  if (data.status === 'success') {
+    drawBoundary(data.boundary_points);
+    document.getElementById('geomMetrics').innerHTML = `
+      <div class="metric"><div class="val">${data.chamfer.chamfer_depth_mm}</div><div class="lbl">Chamfer Depth (mm)</div></div>
+      <div class="metric"><div class="val">${data.chamfer.num_vertices}</div><div class="lbl">Vertices</div></div>
+      <div class="metric"><div class="val">${data.chamfer.num_faces}</div><div class="lbl">Faces</div></div>
+      <div class="metric"><div class="val">${data.chamfer.stress_relief_factor}</div><div class="lbl">Stress Relief Factor</div></div>`;
+  }
+}
+
+async function repairManifold() {
+  const payload = {
+    rotation_number: parseFloat(document.getElementById('rotation_number').value),
+    cf_depth: parseInt(document.getElementById('cf_depth').value),
+  };
+  const res = await fetch(`${API}/api/repair-manifold`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  const data = await res.json();
+  const box = document.getElementById('manifoldResult');
+  box.style.display = 'block';
+  box.textContent = JSON.stringify(data, null, 2);
+  if (data.status === 'success') {
+    document.getElementById('manifoldMetrics').innerHTML = `
+      <div class="metric"><div class="val">${data.repair.holes_filled}</div><div class="lbl">Holes Filled</div></div>
+      <div class="metric"><div class="val">${data.repair.euler_characteristic}</div><div class="lbl">Euler Characteristic</div></div>
+      <div class="metric"><div class="val">${data.repair.is_manifold_closed}</div><div class="lbl">Closed Manifold</div></div>
+      <div class="metric"><div class="val">${data.manifold_blend.c2_continuity_index}</div><div class="lbl">C2 Continuity Index</div></div>
+      <div class="metric"><div class="val">${data.manifold_blend.final_convergent_p_over_q}</div><div class="lbl">Final Convergent p/q</div></div>`;
+  }
+}
+
+async function runBem() {
+  const payload = {
+    pressure_kpa: parseFloat(document.getElementById('pressure_kpa').value),
+    n_panels_target: parseInt(document.getElementById('n_panels_target').value),
+  };
+  const res = await fetch(`${API}/api/run-bem`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  const data = await res.json();
+  const box = document.getElementById('bemResult');
+  box.style.display = 'block';
+  box.textContent = JSON.stringify({ ...data.bem, panel_displacement_field: '[omitted]', panel_stress_field_mpa: '[omitted]', panel_positions: '[omitted]' }, null, 2);
+  if (data.status === 'success') {
+    document.getElementById('bemMetrics').innerHTML = `
+      <div class="metric"><div class="val">${data.bem.n_panels}</div><div class="lbl">Panels</div></div>
+      <div class="metric"><div class="val">${data.bem.max_displacement_mm}</div><div class="lbl">Max Displacement (mm)</div></div>
+      <div class="metric"><div class="val">${data.bem.max_von_mises_proxy_stress_mpa}</div><div class="lbl">Max Stress (MPa)</div></div>
+      <div class="metric"><div class="val">${data.bem.safety_factor}</div><div class="lbl">Safety Factor</div></div>`;
+    lastBemData = data.bem;
+    drawBemHeatmap();
+  }
+}
+
+function jetColor(t) {
+  t = Math.min(Math.max(t, 0), 1);
+  const r = Math.max(0, Math.min(1, 1.5 - Math.abs(4 * t - 3)));
+  const g = Math.max(0, Math.min(1, 1.5 - Math.abs(4 * t - 2)));
+  const b = Math.max(0, Math.min(1, 1.5 - Math.abs(4 * t - 1)));
+  return `rgb(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)})`;
+}
+
+function drawBemHeatmap() {
+  if (!lastBemData) return;
+  const field = document.getElementById('bemFieldSelect').value;
+  const values = field === 'stress' ? lastBemData.panel_stress_field_mpa : lastBemData.panel_displacement_field;
+  const positions = lastBemData.panel_positions;
+  const canvas = document.getElementById('bemHeatmap');
+  const w = canvas.width = canvas.clientWidth;
+  const h = canvas.height = 300;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#05070c';
+  ctx.fillRect(0, 0, w, h);
+
+  const xs = positions.map(p => p[0]), ys = positions.map(p => p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const minV = Math.min(...values), maxV = Math.max(...values);
+  const pad = 24;
+
+  positions.forEach((p, i) => {
+    const nx = pad + (p[0] - minX) / (maxX - minX + 1e-9) * (w - 2 * pad);
+    const ny = h - pad - (p[1] - minY) / (maxY - minY + 1e-9) * (h - 2 * pad);
+    const t = (values[i] - minV) / (maxV - minV + 1e-9);
+    ctx.fillStyle = jetColor(t);
+    ctx.beginPath();
+    ctx.arc(nx, ny, 6, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  const unit = field === 'stress' ? 'MPa' : 'mm';
+  document.getElementById('bemLegend').innerHTML =
+    `Min: ${minV.toFixed(4)} ${unit} &nbsp;|&nbsp; Max: ${maxV.toFixed(4)} ${unit} &nbsp;|&nbsp; ${positions.length} panels`;
+}
+
+async function submitHpcJob() {
+  const payload = {
+    nodes: parseInt(document.getElementById('hpc_nodes').value),
+    tasks_per_node: parseInt(document.getElementById('hpc_tasks').value),
+    parallel_fraction: parseFloat(document.getElementById('hpc_fraction').value),
+  };
+  const res = await fetch(`${API}/api/submit-hpc-job`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  const data = await res.json();
+  const box = document.getElementById('hpcResult');
+  box.style.display = 'block';
+  box.textContent = JSON.stringify(data.job, null, 2);
+  if (data.status === 'success') {
+    document.getElementById('hpcMetrics').innerHTML = `
+      <div class="metric"><div class="val">${data.job.actual_speedup}x</div><div class="lbl">Speedup</div></div>
+      <div class="metric"><div class="val">${data.job.parallel_efficiency_pct}%</div><div class="lbl">Efficiency</div></div>
+      <div class="metric"><div class="val">${data.job.projected_wall_time_sec}s</div><div class="lbl">Wall Time</div></div>`;
+    drawHpcChart(data.scaling_curve);
+  }
+}
+
+let hpcChartInstance = null;
+function drawHpcChart(curve) {
+  const ctx = document.getElementById('hpcChart');
+  if (hpcChartInstance) hpcChartInstance.destroy();
+  hpcChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: curve.ranks,
+      datasets: [
+        { label: 'Speedup', data: curve.speedup, borderColor: '#7ee8fa', tension: 0.3 },
+        { label: 'Efficiency %', data: curve.efficiency_pct, borderColor: '#c471ed', tension: 0.3 },
+      ]
+    },
+    options: { scales: { x: { title: { display: true, text: 'MPI Ranks' }, ticks: { color: '#cfd6ef' } }, y: { ticks: { color: '#cfd6ef' } } }, plugins: { legend: { labels: { color: '#cfd6ef' } } } }
+  });
+}
+
+async function runNvqlink() {
+  const res = await fetch(`${API}/api/nvqlink-accelerate`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+  const data = await res.json();
+  const box = document.getElementById('nvqlinkResult');
+  box.style.display = 'block';
+  box.textContent = JSON.stringify(data, null, 2);
+  if (data.status === 'success') {
+    document.getElementById('nvqlinkMetrics').innerHTML = `
+      <div class="metric"><div class="val">${data.link_status.latency_us}&mu;s</div><div class="lbl">Link Latency</div></div>
+      <div class="metric"><div class="val">${data.acceleration.qubits_required}</div><div class="lbl">Qubits Required</div></div>
+      <div class="metric"><div class="val">${data.acceleration.simulated_speedup_x}x</div><div class="lbl">Simulated Speedup</div></div>
+      <div class="metric"><div class="val">${data.acceleration.qpu_capacity_sufficient}</div><div class="lbl">QPU Capacity OK</div></div>`;
+  }
+}
+
+async function generatePreprint() {
+  const box = document.getElementById('preprintResult');
+  box.style.display = 'block';
+  box.textContent = 'Generating preprint...';
+  const res = await fetch(`${API}/api/generate-preprint`, { method: 'POST' });
+  const data = await res.json();
+  if (data.status === 'success') {
+    box.innerHTML = `Preprint generated successfully.<br><a class="pdf-link" href="/preprint/${data.pdf}" target="_blank">Open ${data.pdf}</a>`;
+  } else {
+    box.textContent = 'Error: ' + data.message;
+  }
+}
+
+window.onload = initViz;
+</script>
+</body>
+</html>
