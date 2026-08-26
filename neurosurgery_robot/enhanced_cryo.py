@@ -97,6 +97,9 @@ class EnhancedCryoModule:
         theta = np.arctan2(yy - py, xx - px)
         g_perturb = self.predictor.predict_perturbation(theta)
         
+        # Ovoid egg-shape geometry base
+        egg_skew = 1.0 + 0.15 * ((yy - py) / (max_dist + 1e-6))
+        
         # Necrotic Attraction: Pull ice ball towards necrotic core
         if np.any(self.necrotic_mask > 0.5):
             ny, nx = np.where(self.necrotic_mask > 0.5)

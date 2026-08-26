@@ -26,8 +26,19 @@ from generative_heating import GenerativeTissueHeating
 from nvqlink import NVQLinkBridge
 from quantum_ml_segmentation import QuantumMLSegmenter
 
+from cost_economics import RobotCostEconomics
+from thermometric_fencing_uq import (
+    CombinatorialThermometricFencing,
+    NumberTheoreticUQ,
+    EnhancedEndEffectorLocalization
+)
+
 nvqlink = NVQLinkBridge()
 qml_segmenter = QuantumMLSegmenter()
+cost_economics_engine = RobotCostEconomics()
+thermometric_fencing = CombinatorialThermometricFencing(grid_size=128, voxel_size_mm=0.5)
+number_theoretic_uq = NumberTheoreticUQ(num_samples=256)
+enhanced_localization = EnhancedEndEffectorLocalization()
 
 # Try to import optional modules
 
@@ -154,6 +165,36 @@ _ls_snapshot = {
     'solidity':        1.0,
     'boundary_length': 0,
 }
+
+# Shared Combinatorial Fencing, Number-Theoretic UQ, and Localization Snapshots
+_fencing_snapshot = {
+    'is_fenced_safe': True,
+    'min_clearance_mm': 12.5,
+    'safety_margin_mm': 3.0,
+    'fencing_penalty_energy': 0.0,
+    'structure_reports': [],
+    'fence_mask_ds': [r[:] for r in _z32],
+}
+_uq_snapshot = {
+    'mean_roi_temp_c': 37.0,
+    'temp_std_c': 0.05,
+    'weyl_star_discrepancy': 0.008,
+    'weyl_confidence_interval_95': [36.9, 37.1],
+    'ramanujan_harmonic_energy': 12.4,
+    'ramanujan_harmonics': [1.0, -1.0, 0.5, 0.2],
+    'farey_spacing_entropy': 4.15,
+    'cem43_thermal_dose_min': 0.0,
+    'mobius_dose_variance_bound': 0.0012,
+    'thermal_uncertainty_score': 0.85
+}
+_localization_snapshot = {
+    'localized_position_mm': [50.0, 50.0, 50.0],
+    'tracking_error_mm': 0.038,
+    'sub_millimeter_precision': True,
+    'riemannian_curvature_metric': 1.052,
+    'coherence_score': 0.998,
+    'drift_compensation_pct': 99.85
+}
 gt_controller = GameTheoryController() if HAS_GAME_THEORY else None
 vasculature = VasculatureSpectralAnalyzer(num_nodes=64) if HAS_VASCULATURE else None
 guidance = None
@@ -264,6 +305,7 @@ def simulation_loop():
     """Main simulation loop with enhanced surgical physics"""
     global simulation_running, laser_enabled, cryo_enabled, ablation_active, target_pos
     global guidance, five_g_guidance, _qkf_snapshot, _mr_seg_snapshot, _thermal_morph_snapshot, _ls_snapshot
+    global _fencing_snapshot, _uq_snapshot, _localization_snapshot
     
     loop_count = 0
     
@@ -378,6 +420,22 @@ def simulation_loop():
                 'hotspot_mask_ds':          morph_result['hotspot_mask'][::4, ::4].astype(int).tolist(),
                 'delta_t_ds':               morph_result['delta_t'][::4, ::4].tolist(),
             }
+
+            # Evaluate Combinatorial Thermometric Fencing & Number-Theoretic UQ
+            fencing_res = thermometric_fencing.evaluate_ablation_fencing(
+                thermo.get_map(), thermo.get_damage_map(), safety_margin_mm=3.0
+            )
+            _fencing_snapshot = fencing_res
+
+            uq_res = number_theoretic_uq.evaluate_thermal_uq(
+                thermo.get_map(), thermo.get_damage_map()
+            )
+            _uq_snapshot = uq_res
+
+            loc_res = enhanced_localization.update_pose_measurement(
+                current_pos, qkf_pos, [tx, tz]
+            )
+            _localization_snapshot = loc_res
         
         # Get tumor location from segmentation
         tumor_center = segmentation.get_center_of_mass()
@@ -596,6 +654,9 @@ def get_telemetry():
                 np.array(_qkf_snapshot['estimated_position']) - pos
             ) * 1000),
         },
+        'fencing': _fencing_snapshot,
+        'number_theoretic_uq': _uq_snapshot,
+        'enhanced_localization': _localization_snapshot,
         'mr_thermometry_seg': _mr_seg_snapshot,
         'thermal_neuro_morphometry': _thermal_morph_snapshot,
         'control': {
@@ -998,8 +1059,147 @@ def prostate_snr():
     return jsonify({"success": True, "image": r"data:image/png;base64," + b64_img})
 
 
+@app.route('/api/economics/simulate', methods=['GET', 'POST'])
+def economics_simulate():
+    """Simulates 10-year robot capital economics, revenue streams, and monetization horizon."""
+    params = request.get_json(silent=True) or request.args
+    fin_result = cost_economics_engine.simulate_financial_horizon(params)
+    
+    # Render financial chart
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4.2))
+    fig.patch.set_facecolor('#0f172a')
+    
+    years = fin_result['years']
+    rev = np.array(fin_result['revenue_breakdown']['total_revenue']) / 1e6
+    ebitda = np.array(fin_result['profitability']['ebitda']) / 1e6
+    cum_fcf = np.array(fin_result['profitability']['cumulative_free_cash_flow']) / 1e6
+    
+    ax1 = axes[0]
+    ax1.plot(years, rev, 's-', color='#38bdf8', lw=2, label='Revenue ($M)')
+    ax1.plot(years, ebitda, 'o--', color='#10b981', lw=2, label='EBITDA ($M)')
+    ax1.plot(years, cum_fcf, '^-', color='#c084fc', lw=2, label='Cum. FCF ($M)')
+    ax1.axhline(0, color='#64748b', linestyle=':', alpha=0.7)
+    ax1.set_title('10-Year Long-Term Capital Horizon Projections', color='#e2e8f0', fontsize=10.5, fontweight='bold')
+    ax1.set_xlabel('Horizon Timeline (Years)', color='#94a3b8', fontsize=9)
+    ax1.set_ylabel('$ Millions', color='#94a3b8', fontsize=9)
+    ax1.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=8)
+    ax1.grid(True, color='#334155', alpha=0.3)
+    ax1.set_facecolor('#0f172a')
+    
+    ax2 = axes[1]
+    hw = np.array(fin_result['revenue_breakdown']['hardware_sales']) / 1e6
+    disp = np.array(fin_result['revenue_breakdown']['disposables']) / 1e6
+    saas = np.array(fin_result['revenue_breakdown']['saas_and_service']) / 1e6
+    
+    ax2.bar(years, hw, label='Capital Hardware', color='#38bdf8', alpha=0.85)
+    ax2.bar(years, disp, bottom=hw, label='Sterile Disposables', color='#10b981', alpha=0.85)
+    ax2.bar(years, saas, bottom=hw+disp, label='SaaS & Service', color='#f59e0b', alpha=0.85)
+    ax2.set_title('Revenue Streams Breakdown ($M)', color='#e2e8f0', fontsize=10.5, fontweight='bold')
+    ax2.set_xlabel('Horizon Timeline (Years)', color='#94a3b8', fontsize=9)
+    ax2.set_ylabel('Stream Contribution ($M)', color='#94a3b8', fontsize=9)
+    ax2.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=8)
+    ax2.grid(True, color='#334155', alpha=0.3)
+    ax2.set_facecolor('#0f172a')
+    
+    for ax in [ax1, ax2]:
+        ax.tick_params(colors='#e2e8f0', labelsize=8)
+        for spine in ax.spines.values():
+            spine.set_color('#334155')
+            
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', dpi=130, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    
+    return jsonify({
+        'financials': fin_result,
+        'chart': 'data:image/png;base64,' + img_b64
+    })
+
+
+@app.route('/api/thermometric/fencing', methods=['GET', 'POST'])
+def get_thermometric_fencing():
+    """Returns detailed Combinatorial Fencing and Number-Theoretic UQ state."""
+    fencing_data = thermometric_fencing.evaluate_ablation_fencing(
+        thermo.get_map(), thermo.get_damage_map(), safety_margin_mm=3.0
+    )
+    uq_data = number_theoretic_uq.evaluate_thermal_uq(
+        thermo.get_map(), thermo.get_damage_map()
+    )
+    
+    # Generate combinatorial fencing visualization
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
+    fig.patch.set_facecolor('#0f172a')
+    
+    # Panel 1: Temperature Map with Fences & Isotherms
+    ax1 = axes[0]
+    t_map = thermo.get_map()
+    im1 = ax1.imshow(t_map, cmap='magma', vmin=37, vmax=80, extent=[0, 64, 0, 64])
+    cbar1 = fig.colorbar(im1, ax=ax1, fraction=0.046, pad=0.04)
+    cbar1.ax.tick_params(colors='#e2e8f0', labelsize=8)
+    cbar1.set_label('Temp (°C)', color='#e2e8f0', fontsize=8.5)
+    
+    for struct in thermometric_fencing.eloquent_structures:
+        pts = struct['points_mm']
+        hull_pts = np.vstack([pts, pts[0]])
+        ax1.plot(hull_pts[:, 0], hull_pts[:, 1], color=struct['color'], lw=2, label=struct['name'][:14])
+        ax1.fill(hull_pts[:, 0], hull_pts[:, 1], color=struct['color'], alpha=0.25)
+        
+    ax1.contour(np.linspace(0, 64, 128), np.linspace(0, 64, 128), t_map, levels=[43.0], colors=['#38bdf8'], linewidths=[1.5], linestyles=['--'])
+    ax1.contour(np.linspace(0, 64, 128), np.linspace(0, 64, 128), t_map, levels=[50.0], colors=['#ffffff'], linewidths=[1.5])
+    
+    ax1.set_title('Combinatorial Safety Fences & Isotherms', color='#e2e8f0', fontsize=10, fontweight='bold')
+    ax1.set_xlabel('Lateral X (mm)', color='#94a3b8', fontsize=8.5)
+    ax1.set_ylabel('Axial Z (mm)', color='#94a3b8', fontsize=8.5)
+    ax1.legend(loc='lower left', fontsize=7, facecolor='#1e293b', labelcolor='#e2e8f0')
+    ax1.set_facecolor('#0f172a')
+    
+    # Panel 2: Ramanujan Harmonics
+    ax2 = axes[1]
+    q_vals = list(range(1, len(uq_data['ramanujan_harmonics']) + 1))
+    ax2.bar(q_vals, uq_data['ramanujan_harmonics'], color='#c084fc', alpha=0.85, width=0.55)
+    ax2.set_title('Ramanujan Perfusion Harmonics c_q(n)', color='#e2e8f0', fontsize=10, fontweight='bold')
+    ax2.set_xlabel('Divisor Modulus q', color='#94a3b8', fontsize=8.5)
+    ax2.set_ylabel('Harmonic Amplitude', color='#94a3b8', fontsize=8.5)
+    ax2.grid(True, color='#334155', alpha=0.3)
+    ax2.set_facecolor('#0f172a')
+    
+    for ax in [ax1, ax2]:
+        ax.tick_params(colors='#e2e8f0', labelsize=8)
+        for spine in ax.spines.values():
+            spine.set_color('#334155')
+            
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', dpi=130, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    
+    return jsonify({
+        'fencing': fencing_data,
+        'uq': uq_data,
+        'fencing_chart': 'data:image/png;base64,' + img_b64
+    })
+
+
+@app.route('/api/generate-preprint-pdf', methods=['GET', 'POST'])
+def generate_preprint_pdf_endpoint():
+    """Compiles and downloads the Nature Preprint PDF."""
+    try:
+        from generate_nature_preprint_economics_thermometry import generate_nature_preprint_pdf
+        pdf_path = generate_nature_preprint_pdf()
+        if os.path.exists(pdf_path):
+            return send_file(
+                pdf_path,
+                as_attachment=True,
+                download_name='Nature_Preprint_Neurosurgical_Robotics_Economics_Thermometric_Fencing.pdf'
+            )
+        return jsonify({'error': 'Preprint PDF generation failed'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
-    port = int(os.environ.get('FLASK_RUN_PORT', 5001))
+    port = int(os.environ.get('FLASK_RUN_PORT', 5002))
     host = os.environ.get('FLASK_RUN_HOST', '0.0.0.0')
     print(f"\n{'='*60}")
     print(f"🚀 NeuroMorph Surgical Robotics Platform | Gemini AI Core")

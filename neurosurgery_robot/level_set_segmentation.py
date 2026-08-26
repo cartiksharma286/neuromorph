@@ -4,9 +4,14 @@ Uses active contours and morphological operations for perfect segmentation
 """
 
 import numpy as np
-from scipy.ndimage import distance_transform_edt, binary_dilation, label
-from scipy.ndimage.filters import gaussian_filter
-import skimage.segmentation as seg_module
+from scipy.ndimage import distance_transform_edt, binary_dilation, label, gaussian_filter
+
+try:
+    import skimage.segmentation as seg_module
+    HAS_SKIMAGE = True
+except ImportError:
+    HAS_SKIMAGE = False
+    seg_module = None
 
 class LevelSetSegmentation:
     """Perfect level set segmentation for tumor boundaries"""

@@ -7,9 +7,16 @@ import numpy as np
 from scipy.ndimage import laplace, gaussian_filter
 from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
-import numba
 
-@numba.jit(nopython=True, cache=True)
+try:
+    import numba
+    def _jit_wrapper(func):
+        return numba.jit(nopython=True, cache=True)(func)
+except ImportError:
+    def _jit_wrapper(func):
+        return func
+
+@_jit_wrapper
 def _compute_cem43_fast(temperature, dt, damage_map):
     """
     Fast CEM43 thermal dose calculation using Numba JIT compilation
@@ -32,7 +39,7 @@ def _compute_cem43_fast(temperature, dt, damage_map):
     
     return damage_map
 
-@numba.jit(nopython=True, cache=True)
+@_jit_wrapper
 def _apply_perfusion_cooling(temperature, damage_map, base_rate, arterial_temp, dt):
     """
     Fast perfusion cooling with necrotic tissue handling

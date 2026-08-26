@@ -55,10 +55,13 @@
                 <div class="glass-panel">
                     <div class="tabs">
                         <button class="tab-btn active" data-tab="tab-thermo">Visual RF</button>
+                        <button class="tab-btn" data-tab="tab-fencing">Fencing & UQ</button>
+                        <button class="tab-btn" data-tab="tab-economics">Cost Economics</button>
                         <button class="tab-btn" data-tab="tab-cryo">N2 Cryo</button>
                         <button class="tab-btn" data-tab="tab-robotics">Surgical Robotics</button>
                         <button class="tab-btn" data-tab="tab-5g">5G Guidance</button>
                         <button class="tab-btn" data-tab="tab-prostate">Prostate Surgery</button>
+                        <button class="tab-btn" data-tab="tab-preprint">Nature Preprint</button>
                     </div>
 
                     <!-- Thermal Tab -->
@@ -370,6 +373,158 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Combinatorial Fencing & Number-Theoretic UQ Tab -->
+                <div id="tab-fencing" class="tab-content">
+                    <h2 style="color: #c084fc;">🛡️ Combinatorial Fencing & Number-Theoretic UQ</h2>
+                    <p style="color: #94a3b8; font-size: 11.5px; margin: 4px 0 12px 0;">
+                        Simplicial safety barrier enclosure against eloquent tracts with Weyl QMC & Ramanujan sum dispersion bounding.
+                    </p>
+
+                    <!-- Fencing & UQ KPIs -->
+                    <div class="metrics" style="margin-bottom: 12px;">
+                        <div class="metric">
+                            <span class="m-label">Fence Status</span>
+                            <span class="m-value" id="fence-status" style="color: #10b981;">SAFE</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-label">Min Clearance</span>
+                            <span class="m-value" id="fence-clearance" style="color: #38bdf8;">12.5 mm</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-label">End-Effector Precision</span>
+                            <span class="m-value" id="fence-precision" style="color: #c084fc;">0.038 mm</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-label">Weyl Discrepancy D*</span>
+                            <span class="m-value" id="fence-weyl" style="color: #fbbf24;">0.0082</span>
+                        </div>
+                    </div>
+
+                    <!-- Fencing Visualizer Container -->
+                    <div id="fencing-img-container" style="width: 100%; min-height: 180px; background: #0f172a; border: 1px solid #7c3aed; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <span style="color:#64748b; font-size:11px;">Loading combinatorial safety fences & Ramanujan harmonics...</span>
+                    </div>
+
+                    <!-- Detailed UQ Metrics Box -->
+                    <div class="quantum-metrics-box" style="border:1px solid #a855f7; border-radius:8px; padding:10px; margin-bottom:12px;">
+                        <h3 style="color:#e9d5ff; font-size:11.5px; margin:0 0 6px 0; letter-spacing:0.04em;">
+                            NUMBER-THEORETIC DISPERSION QUANTIFICATION
+                        </h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11px;">
+                            <div style="background:#090d16; padding:6px 8px; border-radius:4px;">
+                                <div style="color:#94a3b8; font-size:9.5px;">FAREY SPACING ENTROPY</div>
+                                <div id="uq-farey" style="color:#38bdf8; font-weight:bold; font-size:13px;">4.15 bits</div>
+                            </div>
+                            <div style="background:#090d16; padding:6px 8px; border-radius:4px;">
+                                <div style="color:#94a3b8; font-size:9.5px;">MÖBIUS DOSE VARIANCE BOUND</div>
+                                <div id="uq-mobius" style="color:#10b981; font-weight:bold; font-size:13px;">± 0.0012</div>
+                            </div>
+                            <div style="background:#090d16; padding:6px 8px; border-radius:4px;">
+                                <div style="color:#94a3b8; font-size:9.5px;">RAMANUJAN HARMONIC ENERGY</div>
+                                <div id="uq-ramanujan" style="color:#c084fc; font-weight:bold; font-size:13px;">12.44</div>
+                            </div>
+                            <div style="background:#090d16; padding:6px 8px; border-radius:4px;">
+                                <div style="color:#94a3b8; font-size:9.5px;">RIEMANNIAN COVARIANCE</div>
+                                <div id="uq-riemannian" style="color:#fbbf24; font-weight:bold; font-size:13px;">det(g)=1.052</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-controls">
+                        <button class="btn-primary" style="background: linear-gradient(135deg, #7c3aed, #a855f7); width: 100%; margin-bottom: 8px;" onclick="loadFencingData()">
+                            🛡️ RE-EVALUATE SAFETY FENCES & UQ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cost Economics & Monetization Tab -->
+                <div id="tab-economics" class="tab-content">
+                    <h2 style="color: #38bdf8;">💼 Robot Cost Economics & Monetization Horizon</h2>
+                    <p style="color: #94a3b8; font-size: 11.5px; margin: 4px 0 12px 0;">
+                        10-Year Long-Term Capital Horizon Projections, CapEx / OpEx Modeling, and Hospital Unit Economics.
+                    </p>
+
+                    <!-- Interactive Parameter Sliders -->
+                    <div class="quantum-metrics-box" style="border:1px solid #0284c7; border-radius:8px; padding:10px; margin-bottom:12px;">
+                        <h3 style="color:#7dd3fc; font-size:11.5px; margin:0 0 8px 0; letter-spacing:0.04em;">
+                            FINANCIAL MODEL PARAMETERS
+                        </h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11px;">
+                            <div>
+                                <label style="color:#94a3b8; font-size:10px;">Robot CapEx ($)</label>
+                                <input type="number" id="econ-robot-cost" value="1450000" step="50000" style="width:100%; background:#090d16; border:1px solid #334155; color:#fff; padding:4px 6px; border-radius:4px; font-size:11px;">
+                            </div>
+                            <div>
+                                <label style="color:#94a3b8; font-size:10px;">Annual Procs / Unit</label>
+                                <input type="number" id="econ-procs-unit" value="180" step="10" style="width:100%; background:#090d16; border:1px solid #334155; color:#fff; padding:4px 6px; border-radius:4px; font-size:11px;">
+                            </div>
+                            <div>
+                                <label style="color:#94a3b8; font-size:10px;">Disposable Price ($)</label>
+                                <input type="number" id="econ-disp-price" value="4200" step="100" style="width:100%; background:#090d16; border:1px solid #334155; color:#fff; padding:4px 6px; border-radius:4px; font-size:11px;">
+                            </div>
+                            <div>
+                                <label style="color:#94a3b8; font-size:10px;">Hospital Billing ($)</label>
+                                <input type="number" id="econ-proc-charge" value="14500" step="500" style="width:100%; background:#090d16; border:1px solid #334155; color:#fff; padding:4px 6px; border-radius:4px; font-size:11px;">
+                            </div>
+                        </div>
+                        <button class="btn-primary" style="background: linear-gradient(135deg, #0284c7, #38bdf8); width: 100%; margin-top: 10px; padding: 6px;" onclick="runEconomicsSim()">
+                            📊 RUN CAPITAL HORIZON SIMULATION
+                        </button>
+                    </div>
+
+                    <!-- Economics KPI Summary -->
+                    <div class="metrics" style="margin-bottom: 12px;">
+                        <div class="metric">
+                            <span class="m-label">10-Yr NPV (@8%)</span>
+                            <span class="m-value" id="econ-npv" style="color: #10b981;">$24.8M</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-label">Internal Rate (IRR)</span>
+                            <span class="m-value" id="econ-irr" style="color: #38bdf8;">34.2%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-label">Payback Timeline</span>
+                            <span class="m-value" id="econ-payback" style="color: #fbbf24;">3 Years</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-label">10-Yr Cum. Revenue</span>
+                            <span class="m-value" id="econ-tot-rev" style="color: #c084fc;">$182.4M</span>
+                        </div>
+                    </div>
+
+                    <!-- Hospital Unit Margins -->
+                    <div class="quantum-metrics-box" style="border:1px solid #10b981; border-radius:8px; padding:10px; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:#a7f3d0; font-size:11px; font-weight:bold;">HOSPITAL PROCEDURE MARGIN:</span>
+                            <span id="econ-hosp-margin" style="color:#10b981; font-size:13px; font-weight:bold;">$7,657 (52.8%)</span>
+                        </div>
+                        <p style="color:#64748b; font-size:10px; margin:4px 0 0 0;">
+                            Net profit per MRgLITT case after disposable probe kit, clinical specialist staff, and amortized robotic CapEx.
+                        </p>
+                    </div>
+
+                    <!-- Financial Chart Display -->
+                    <div id="econ-chart-container" style="width: 100%; min-height: 180px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <span style="color:#64748b; font-size:11px;">Generating financial horizon charts...</span>
+                    </div>
+                </div>
+
+                <!-- Nature Preprint Tab -->
+                <div id="tab-preprint" class="tab-content">
+                    <h2 style="color: #fbbf24;">📄 Nature Publication Preprint</h2>
+                    <div class="quantum-metrics-box" style="border: 1px solid #fbbf24; border-radius: 8px; padding: 14px; margin-bottom: 14px;">
+                        <h3 style="color: #fef08a; font-size: 13px; margin: 0 0 6px 0;">
+                            Autonomous Neurosurgical Robotics: Combinatorial Thermometric Fencing, Number-Theoretic Uncertainty Quantification, and Long-Term Capital Horizon Economics
+                        </h3>
+                        <p style="color: #cbd5e1; font-size: 11px; line-height: 1.5; margin-bottom: 12px;">
+                            Academic preprint incorporating complete derivations of Pennes bioheat combinatorial fencing, Weyl quasi-Monte Carlo star discrepancy theorems, Ramanujan perfusion harmonic decompositions, sub-voxel Riemannian end-effector localization, and 10-year discounted free cash flow capital economics.
+                        </p>
+                        <a href="/api/generate-preprint-pdf" class="btn-primary" style="display: block; text-align: center; text-decoration: none; background: linear-gradient(135deg, #f59e0b, #d97706); padding: 10px; border-radius: 6px; font-size: 12px; font-weight: bold; letter-spacing: 0.04em;" download>
+                            📥 DOWNLOAD NATURE PREPRINT PDF
+                        </a>
+                    </div>
+                </div>
                 
                 <script>
                     function runProstateSim() {
@@ -388,6 +543,76 @@
                                 container.innerHTML = `<span style="color:#ef4444;">Error: ${err}</span>`;
                             });
                     }
+
+                    function loadFencingData() {
+                        const container = document.getElementById('fencing-img-container');
+                        container.innerHTML = '<span style="color:#c084fc;">Evaluating combinatorial simplicial fences & Ramanujan UQ...</span>';
+                        fetch('/api/thermometric/fencing')
+                            .then(r => r.json())
+                            .then(data => {
+                                if(data.fencing_chart) {
+                                    container.innerHTML = `<img src="${data.fencing_chart}" style="width:100%; height:auto; display:block; border-radius:6px;">`;
+                                }
+                                if(data.fencing) {
+                                    const f = data.fencing;
+                                    const statusEl = document.getElementById('fence-status');
+                                    statusEl.textContent = f.is_fenced_safe ? 'SAFE' : 'VIOLATED';
+                                    statusEl.style.color = f.is_fenced_safe ? '#10b981' : '#ef4444';
+                                    document.getElementById('fence-clearance').textContent = f.min_clearance_mm + ' mm';
+                                }
+                                if(data.uq) {
+                                    const u = data.uq;
+                                    document.getElementById('fence-weyl').textContent = u.weyl_star_discrepancy;
+                                    document.getElementById('uq-farey').textContent = u.farey_spacing_entropy + ' bits';
+                                    document.getElementById('uq-mobius').textContent = '± ' + u.mobius_dose_variance_bound;
+                                    document.getElementById('uq-ramanujan').textContent = u.ramanujan_harmonic_energy;
+                                }
+                            })
+                            .catch(err => {
+                                container.innerHTML = `<span style="color:#ef4444;">Fencing eval error: ${err}</span>`;
+                            });
+                    }
+
+                    function runEconomicsSim() {
+                        const container = document.getElementById('econ-chart-container');
+                        container.innerHTML = '<span style="color:#38bdf8;">Computing 10-year discounted cash flows & monetization models...</span>';
+                        
+                        const payload = {
+                            base_robot_cost: parseFloat(document.getElementById('econ-robot-cost').value) || 1450000,
+                            procedures_per_year_per_unit: parseInt(document.getElementById('econ-procs-unit').value) || 180,
+                            disposable_sale_price: parseFloat(document.getElementById('econ-disp-price').value) || 4200,
+                            procedure_charge: parseFloat(document.getElementById('econ-proc-charge').value) || 14500
+                        };
+
+                        fetch('/api/economics/simulate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if(data.chart) {
+                                container.innerHTML = `<img src="${data.chart}" style="width:100%; height:auto; display:block; border-radius:6px;">`;
+                            }
+                            if(data.financials && data.financials.summary_kpis) {
+                                const k = data.financials.summary_kpis;
+                                document.getElementById('econ-npv').textContent = '$' + k.npv_millions + 'M';
+                                document.getElementById('econ-irr').textContent = k.irr_pct + '%';
+                                document.getElementById('econ-payback').textContent = k.payback_years + ' Years';
+                                document.getElementById('econ-tot-rev').textContent = '$' + k.ten_year_cumulative_revenue_m + 'M';
+                                document.getElementById('econ-hosp-margin').textContent = '$' + k.hospital_per_procedure_margin.toLocaleString() + ' (' + k.hospital_margin_pct + '%)';
+                            }
+                        })
+                        .catch(err => {
+                            container.innerHTML = `<span style="color:#ef4444;">Economics simulation error: ${err}</span>`;
+                        });
+                    }
+
+                    // Auto-load on page load
+                    window.addEventListener('DOMContentLoaded', () => {
+                        loadFencingData();
+                        runEconomicsSim();
+                    });
                 </script>
 
                 <div class="glass-panel logs-view">

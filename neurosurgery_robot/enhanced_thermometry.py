@@ -7,7 +7,12 @@ import numpy as np
 from scipy.ndimage import laplace, gaussian_filter, convolve
 from scipy.sparse import diags, eye
 from scipy.sparse.linalg import spsolve
-import numba
+
+try:
+    import numba
+    HAS_NUMBA = True
+except ImportError:
+    HAS_NUMBA = False
 
 class EnhancedThermometry:
     """High-fidelity thermal simulation with bioheat physics"""

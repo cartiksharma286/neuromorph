@@ -87,11 +87,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // Activate selected
             tab.classList.add('active');
             const targetId = tab.getAttribute('data-tab');
-            document.getElementById(targetId).classList.add('active');
+            const targetEl = document.getElementById(targetId);
+            if (targetEl) {
+                targetEl.classList.add('active');
+            }
 
-            // Update chart if needed
+            // Update chart or trigger sub-view loader if needed
             if (targetId === 'tab-thermo' && thermalViz.chart) {
                 thermalViz.chart.update();
+            } else if (targetId === 'tab-fencing' && typeof loadFencingData === 'function') {
+                loadFencingData();
+            } else if (targetId === 'tab-economics' && typeof runEconomicsSim === 'function') {
+                runEconomicsSim();
             }
         });
     });
