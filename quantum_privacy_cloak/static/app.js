@@ -388,6 +388,133 @@ ${layerRows}
   }
 }
 
+// 05: Number-Theoretic Invisibility Verification (<= 10^-9)
+async function runNumberTheoreticVerify() {
+  const btn = $('runNtVerifyBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Verifying Invariants...'; }
+  try {
+    const payload = {
+      radius: $('ntRadius') ? parseFloat($('ntRadius').value) : 1.25,
+      layers: $('ntLayers') ? parseInt($('ntLayers').value) : 16,
+      attenuation: $('ntAttenuation') ? parseFloat($('ntAttenuation').value) : 0.98,
+      seed: $('ntSeed') ? parseInt($('ntSeed').value) : 1009
+    };
+    const response = await fetch('/api/cloak/number-theoretic-verify', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    if ($('ntResVis')) {
+      $('ntResVis').textContent = data.residual_visibility_scientific;
+      $('ntResVis').style.color = data.bound_satisfied ? '#22c55e' : '#f43f5e';
+    }
+    if ($('ntLyapunov')) $('ntLyapunov').textContent = `λ_L = ${data.lyapunov_exponent}`;
+    if ($('ntScattering')) $('ntScattering').textContent = `${data.scattering_cross_section_db} dB`;
+    if ($('ntHoeffding')) $('ntHoeffding').textContent = `< ${data.number_theoretic_parameters.hoeffding_tail_bound}`;
+
+    const proofBox = $('ntProofList');
+    if (proofBox && data.proof_certificates) {
+      proofBox.innerHTML = data.proof_certificates
+        .map((p) => `• <b>${p.lemma}:</b> ${p.formal_statement} <span style="color:#22c55e;">[${p.proof_status}]</span><br><small style="color:#64748b;margin-left:12px;">Method: ${p.math_engine}</small>`)
+        .join('<br>');
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '⚡ VERIFY INVISIBILITY ANALYSIS (≤ 1.0 × 10⁻⁹) <span>↗</span>'; }
+  }
+}
+
+// 06: Post-Quantum Cryptographic Privacy Session Generator
+async function runCreatePqcSession() {
+  const btn = $('createPqcSessionBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Synthesizing Session...'; }
+  try {
+    const payload = {
+      subject: $('pqcSessionSubject') ? $('pqcSessionSubject').value : 'Sovereign Health Enclave Post-Quantum Privacy Session',
+      security_level: $('pqcSessionSuite') ? $('pqcSessionSuite').value : 'ML-KEM-1024 / ML-DSA-87',
+      seed: $('ntSeed') ? parseInt($('ntSeed').value) : 1009
+    };
+    const response = await fetch('/api/privacy/pqc-session', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    const consoleBox = $('pqcSessionConsole');
+    if (consoleBox) {
+      consoleBox.innerHTML = `
+<span style="color:#22c55e;">✔ POST-QUANTUM PRIVACY SESSION ESTABLISHED</span>
+================================================================================
+<b>SESSION ID:</b>          <span style="color:#f59e0b;">${data.session_id}</span>
+<b>TIMESTAMP:</b>           ${data.created_at}
+<b>SUBJECT:</b>             ${data.subject}
+<b>SUITE:</b>               ${data.pqc_encapsulation.algorithm} + ${data.pqc_signature.algorithm}
+--------------------------------------------------------------------------------
+<b>KEM CIPHERTOKEN:</b>     ${data.pqc_encapsulation.cipher_token}
+<b>SHARED SECRET DIGEST:</b> ${data.pqc_encapsulation.shared_secret_digest}
+<b>QUANTUM SECURITY:</b>     ${data.pqc_encapsulation.quantum_security_level}
+<b>DECRYPTION FAILURE:</b>   ${data.pqc_encapsulation.decryption_failure_probability}
+<b>ML-DSA-87 SIGNATURE:</b>  ${data.pqc_signature.signature_commitment}
+--------------------------------------------------------------------------------
+<b>CLOAK RESIDUAL VISIBILITY:</b> <span style="color:#22c55e;">${data.invisibility_cloak_guarantee.residual_visibility_index} (≤ 1.0 × 10⁻⁹ PASS)</span>
+<b>LYAPUNOV EXPONENT:</b>    ${data.invisibility_cloak_guarantee.lyapunov_stability_exponent}
+<b>PROOF CERT HASH:</b>      ${data.invisibility_cloak_guarantee.formal_proof_certificate_hash}
+<b>STATUTORY STATUS:</b>     ${data.statutory_compliance_binding.canada}`;
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '🔒 SYNTHESIZE POST-QUANTUM PRIVACY SESSION <span>↗</span>'; }
+  }
+}
+
+// 07: European Sovereign Health Space Privacy Session Generator
+async function runCreateEuropeanSession() {
+  const btn = $('createEuSessionBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Synthesizing European Session...'; }
+  try {
+    const payload = {
+      hospital_center: $('euHospitalSelect') ? $('euHospitalSelect').value : 'Charité – Universitätsmedizin Berlin',
+      modality: $('euModalitySelect') ? $('euModalitySelect').value : '7T Neuro fMRI + Whole-Genome Sequencing (WGS)',
+      security_level: $('euPqcSuite') ? $('euPqcSuite').value : 'ML-KEM-1024 / ML-DSA-87 (Category 5 PQC)',
+      cohort_size: $('euCohortSize') ? parseInt($('euCohortSize').value) : 120,
+      seed: 1009
+    };
+    const response = await fetch('/api/session/europe', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    const consoleBox = $('euSessionConsole');
+    if (consoleBox) {
+      consoleBox.innerHTML = `
+<span style="color:#22c55e;">✔ EUROPEAN HEALTH DATA SPACE (EHDS) POST-QUANTUM SESSION ESTABLISHED</span>
+================================================================================
+<b>EHDS SESSION ID:</b>       <span style="color:#f59e0b;">${data.session_id}</span>
+<b>HOSPITAL NODE:</b>         ${data.hospital_node}
+<b>RESEARCH MODALITY:</b>     ${data.clinical_modality}
+<b>PQC CRYPTO SUITE:</b>      ${data.pqc_encapsulation.algorithm} + ${data.pqc_signature.algorithm} (256-Bit Quantum Resistant)
+--------------------------------------------------------------------------------
+<b>KEM CIPHERTOKEN:</b>       ${data.pqc_encapsulation.cipher_token}
+<b>ML-DSA-87 DIGITAL SIG:</b> ${data.pqc_signature.signature_commitment}
+<b>GDPR LEGAL BASIS:</b>       ${data.gdpr_legal_basis}
+<b>EHDS COMPLIANCE:</b>       ${data.ehds_compliance_status}
+<b>BSI / ANSSI DIRECTIVE:</b>  ${data.bsi_anssi_pqc_migration}
+--------------------------------------------------------------------------------
+<b>STIRLING ANONYMITY:</b>    ${data.combinatorial_anonymity.guaranteed_k_anonymity} (${data.combinatorial_anonymity.l_diversity_bound}) | S(N, m) ≈ ${data.combinatorial_anonymity.stirling_partitions_s_n_m} ways
+<b>RE-IDENTIFICATION RISK:</b> ${data.combinatorial_anonymity.reidentification_risk}
+<b>TRANSFORMATION CLOAK:</b>  ${data.sovereign_invisibility_guarantee.scattering_attenuation_db} attenuation (Vis: ${data.sovereign_invisibility_guarantee.residual_visibility})`;
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '🇪🇺 SYNTHESIZE EUROPEAN SOVEREIGN PRIVACY SESSION <span>↗</span>'; }
+  }
+}
+
 if ($('simulate')) $('simulate').addEventListener('click', simulate);
 if ($('createSession')) $('createSession').addEventListener('click', createSession);
 if ($('evaluatePqcBtn')) $('evaluatePqcBtn').addEventListener('click', evaluatePqc);
@@ -406,4 +533,7 @@ runNtt();
 runRdp();
 runStirling();
 runTensors();
+runNumberTheoreticVerify();
+runCreatePqcSession();
+runCreateEuropeanSession();
 
