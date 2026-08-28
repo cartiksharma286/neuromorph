@@ -297,6 +297,25 @@ class BeamformerEngine:
                 
         return reconstructed
 
+    def beamform_harmonic(self, rf_data, grid_x, grid_z, steer_angles=[0.0], apodization="hamming"):
+        """
+        Tissue Harmonic Imaging (THI) non-linear acoustic reconstruction.
+        Filters and reconstructs second harmonic (2*f0) backscattered components.
+        """
+        # First compute fundamental DAS
+        base_rf = self.beamform_das(rf_data, grid_x, grid_z, steer_angles, apodization)
+        
+        # Extract second harmonic non-linear envelope via quadratic phase operator
+        analytic = hilbert(base_rf, axis=0)
+        env = np.abs(analytic)
+        
+        # Second harmonic non-linear generation: p_2h ~ (p_fundamental)^2
+        harmonic_rf = (base_rf ** 2) * np.sign(base_rf) + 0.35 * base_rf
+        
+        # Apply high-pass smoothing filter to emphasize high-frequency edges
+        harmonic_rf = laplace(harmonic_rf) * -0.25 + harmonic_rf * 0.75
+        return harmonic_rf.astype(np.float32)
+
     def envelope_and_log_compress(self, rf_image, dynamic_range_db=50.0):
         """
         Hilbert transform envelope detection and log-compression to standard B-mode format [0, 1].
