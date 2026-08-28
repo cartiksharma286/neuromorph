@@ -73,20 +73,24 @@
             display: flex;
             border-bottom: var(--glass-border);
             background: rgba(0, 0, 0, 0.2);
+            overflow-x: auto;
         }
 
         .tab-btn {
             flex: 1;
-            padding: 18px;
+            min-width: 90px;
+            padding: 14px 10px;
             background: transparent;
             border: none;
             color: var(--text-secondary);
             cursor: pointer;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            white-space: nowrap;
             overflow: hidden;
+            text-align: center;
         }
 
         .tab-btn:hover {
@@ -108,6 +112,62 @@
             height: 2px;
             background: var(--accent-cyan);
             box-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 500;
+        }
+
+        .control-select, .control-slider {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #f8fafc;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .control-select:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .mode-toggle-group {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .mode-btn {
+            padding: 6px 2px;
+            font-size: 0.7rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .mode-btn.active {
+            background: #0891b2;
+            border-color: #22d3ee;
+            color: #ffffff;
         }
 
         .tab-content {
@@ -352,6 +412,7 @@
 
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('visuals')">Visuals</button>
+                <button class="tab-btn" onclick="switchTab('ultrasound')">US & Geodesic</button>
                 <button class="tab-btn" onclick="switchTab('nvq')">NVQLink</button>
                 <button class="tab-btn" onclick="switchTab('genai')">Gemini AI</button>
             </div>
@@ -436,23 +497,226 @@
                 </div>
             </div>
 
+            <!-- Ultrasound & Geodesic Fusion Tab -->
+            <div id="tab-ultrasound" class="tab-content">
+                <div class="panel">
+                    <h2>Ultrasound Beamformer & Fusion</h2>
+                    
+                    <div class="mode-toggle-group">
+                        <button class="mode-btn active" onclick="setUSDisplayMode('fusion', this)">Fusion</button>
+                        <button class="mode-btn" onclick="setUSDisplayMode('bmode', this)">B-Mode</button>
+                        <button class="mode-btn" onclick="setUSDisplayMode('worsley', this)">Worsley</button>
+                        <button class="mode-btn" onclick="setUSDisplayMode('geodesic', this)">Geodesic</button>
+                    </div>
+
+                    <div class="monitor-view" style="max-width: 256px;">
+                        <canvas id="us-canvas" width="256" height="256"></canvas>
+                    </div>
+
+                    <div class="status-row" style="margin-top: 10px;">
+                        <span>Geodesic Path: <b id="val-us-path" style="color:#22c55e">-- mm</b></span>
+                        <span>Mode: <b id="val-us-mode" style="color:#38bdf8">DAS</b></span>
+                    </div>
+                    <div class="status-row">
+                        <span>NVB Clearance: <b id="val-us-nvb" style="color:#4ade80">-- mm</b></span>
+                        <span>Urethra Dist: <b id="val-us-urethra" style="color:#60a5fa">-- mm</b></span>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Transducer Architecture</h2>
+                    <div class="control-group">
+                        <div class="control-label"><span>Array Architecture</span></div>
+                        <select id="us-array-type" class="control-select">
+                            <option value="linear">1D Linear Array (Transperineal)</option>
+                            <option value="curvilinear">Curvilinear Biplane TRUS</option>
+                            <option value="phased">Phased Array (Sector)</option>
+                        </select>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                        <div class="control-group">
+                            <div class="control-label"><span>Elements</span></div>
+                            <select id="us-elements" class="control-select">
+                                <option value="64">64 Elements</option>
+                                <option value="128" selected>128 Elements</option>
+                                <option value="256">256 Elements</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <div class="control-label"><span>Center Freq</span></div>
+                            <select id="us-frequency" class="control-select">
+                                <option value="3.5">3.5 MHz (Deep)</option>
+                                <option value="5.0" selected>5.0 MHz (Std)</option>
+                                <option value="7.5">7.5 MHz (Hi-Res)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label"><span>Steer Angle: <b id="lbl-steer-angle">0°</b></span></div>
+                        <input id="us-steer-angle" type="range" min="-30" max="30" step="1" value="0" class="control-slider">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label"><span>Beamformer Algorithm</span></div>
+                        <select id="us-beamformer-mode" class="control-select">
+                            <option value="das" selected>Delay-and-Sum (DAS)</option>
+                            <option value="mvdr">Capon MVDR Adaptive</option>
+                            <option value="plane_wave">Coherent Plane-Wave (PWCA)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label"><span>Apodization Window</span></div>
+                        <select id="us-apodization" class="control-select">
+                            <option value="hamming" selected>Hamming</option>
+                            <option value="hanning">Hanning</option>
+                            <option value="tukey">Tukey (alpha=0.5)</option>
+                            <option value="chebyshev">Chebyshev (-45dB)</option>
+                            <option value="rect">Rectangular (Uniform)</option>
+                        </select>
+                    </div>
+
+                    <div class="controls" style="margin-top: 10px;">
+                        <button id="btn-run-us-sim" style="background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%); border-color:#22d3ee;">RUN BEAMFORMER & FUSION</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Directivity & Radiation Beampattern</h2>
+                    <div style="background: #020617; border-radius: 6px; padding: 6px; border: 1px solid #334155; margin-bottom: 8px;">
+                        <canvas id="beampattern-canvas" width="280" height="130" style="width:100%; height:auto; display:block;"></canvas>
+                    </div>
+                    <div class="status-row">
+                        <span>Lateral FWHM: <b id="val-us-fwhm-lat">-- mm</b></span>
+                        <span>Axial FWHM: <b id="val-us-fwhm-ax">-- mm</b></span>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Worsley Topological Signatures</h2>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin-top:0;">Random Field Theory Euler Characteristic $\chi(A_u)$ excursion test for lesion margin detection.</p>
+                    
+                    <div class="control-group">
+                        <div class="control-label"><span>Excursion Threshold $u$: <b id="lbl-worsley-u">2.20</b></span></div>
+                        <input id="us-worsley-u" type="range" min="1.0" max="4.0" step="0.1" value="2.2" class="control-slider">
+                    </div>
+
+                    <div class="status-row">
+                        <span>Euler Char $\chi(A_u)$: <b id="val-worsley-chi" style="color:#fbbf24">--</b></span>
+                        <span>FWER $p$-value: <b id="val-worsley-p" style="color:#4ade80">--</b></span>
+                    </div>
+                    <div class="status-row">
+                        <span>Roughness $\det(\Lambda)$: <b id="val-worsley-lambda">--</b></span>
+                        <span>Excursion Area: <b id="val-worsley-area">--%</b></span>
+                    </div>
+                </div>
+            </div>
+
         </aside>
     </div>
 
     <!-- Logic -->
     <script src="/static/thermal_viz.js"></script>
     <script src="/static/robot_scene.js"></script>
+    <script src="/static/ultrasound_viz.js"></script>
     <script>
+        let usViz = null;
+
         function switchTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + id).classList.add('active');
+            const targetContent = document.getElementById('tab-' + id);
+            if (targetContent) targetContent.classList.add('active');
 
             // Highlight tab button
             const buttons = document.querySelectorAll('.tab-btn');
             if (id === 'visuals') buttons[0].classList.add('active');
-            if (id === 'nvq') buttons[1].classList.add('active');
-            if (id === 'genai') buttons[2].classList.add('active');
+            if (id === 'ultrasound') {
+                buttons[1].classList.add('active');
+                if (usViz && !usViz.currentData) {
+                    runUltrasoundSimulation();
+                }
+            }
+            if (id === 'nvq') buttons[2].classList.add('active');
+            if (id === 'genai') buttons[3].classList.add('active');
+        }
+
+        function setUSDisplayMode(mode, btn) {
+            document.querySelectorAll('.mode-btn').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            if (usViz) usViz.setDisplayMode(mode);
+        }
+
+        async function runUltrasoundSimulation() {
+            const btn = document.getElementById('btn-run-us-sim');
+            if (btn) {
+                btn.textContent = "SIMULATING...";
+                btn.disabled = true;
+            }
+
+            const steerAngle = parseFloat(document.getElementById('us-steer-angle').value) || 0.0;
+            const beamMode = document.getElementById('us-beamformer-mode').value || 'das';
+            const worsleyU = parseFloat(document.getElementById('us-worsley-u').value) || 2.2;
+            const apod = document.getElementById('us-apodization').value || 'hamming';
+
+            try {
+                // Update params on backend
+                const numElems = parseInt(document.getElementById('us-elements').value) || 128;
+                const freqMhz = parseFloat(document.getElementById('us-frequency').value) || 5.0;
+                const arrayType = document.getElementById('us-array-type').value || 'linear';
+
+                await fetch('/api/ultrasound/parameters', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        num_elements: numElems,
+                        frequency_mhz: freqMhz,
+                        array_type: arrayType
+                    })
+                });
+
+                // Run Simulation
+                const res = await fetch('/api/ultrasound/simulate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        steer_angle_deg: steerAngle,
+                        beamformer_mode: beamMode,
+                        worsley_threshold: worsleyU,
+                        apodization: apod
+                    })
+                });
+
+                const data = await res.json();
+                if (usViz) usViz.update(data);
+
+                // Update UI readouts
+                const nav = data.navigation_metrics;
+                if (nav) {
+                    document.getElementById('val-us-path').textContent = nav.path_length_mm + ' mm';
+                    document.getElementById('val-us-mode').textContent = nav.beamformer_mode;
+                    document.getElementById('val-us-nvb').textContent = nav.nvb_clearance_mm + ' mm';
+                    document.getElementById('val-us-urethra').textContent = nav.urethra_clearance_mm + ' mm';
+                    document.getElementById('val-us-fwhm-lat').textContent = nav.fwhm_lateral_mm + ' mm';
+                    document.getElementById('val-us-fwhm-ax').textContent = nav.fwhm_axial_mm + ' mm';
+                }
+
+                const wStats = data.worsley_stats;
+                if (wStats) {
+                    document.getElementById('val-worsley-chi').textContent = wStats.empirical_chi;
+                    document.getElementById('val-worsley-p').textContent = wStats.p_value_fwer.toExponential(2);
+                    document.getElementById('val-worsley-lambda').textContent = wStats.det_lambda;
+                    document.getElementById('val-worsley-area').textContent = wStats.active_area_pct + '%';
+                }
+            } catch (e) {
+                console.error("Ultrasound sim failed", e);
+            } finally {
+                if (btn) {
+                    btn.textContent = "RUN BEAMFORMER & FUSION";
+                    btn.disabled = false;
+                }
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -462,8 +726,34 @@
             try {
                 viz = new RobotScene('canvas-container');
                 thermo = new ThermalViz('thermo-canvas');
-                console.log("3D/Thermal Viz initialized");
+                usViz = new UltrasoundViz('us-canvas', 'beampattern-canvas');
+                console.log("3D/Thermal/Ultrasound Viz initialized");
             } catch (e) { console.error("Viz Init Failed", e); }
+
+            // -- Ultrasound Event Listeners --
+            const btnRunUS = document.getElementById('btn-run-us-sim');
+            if (btnRunUS) btnRunUS.addEventListener('click', runUltrasoundSimulation);
+
+            const steerSlider = document.getElementById('us-steer-angle');
+            if (steerSlider) {
+                steerSlider.addEventListener('input', (e) => {
+                    document.getElementById('lbl-steer-angle').textContent = e.target.value + '°';
+                });
+                steerSlider.addEventListener('change', runUltrasoundSimulation);
+            }
+
+            const worsleySlider = document.getElementById('us-worsley-u');
+            if (worsleySlider) {
+                worsleySlider.addEventListener('input', (e) => {
+                    document.getElementById('lbl-worsley-u').textContent = parseFloat(e.target.value).toFixed(2);
+                });
+                worsleySlider.addEventListener('change', runUltrasoundSimulation);
+            }
+
+            ['us-array-type', 'us-elements', 'us-frequency', 'us-beamformer-mode', 'us-apodization'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', runUltrasoundSimulation);
+            });
 
             // -- UI Elements --
             const btnSafety = document.getElementById('btn-safety');

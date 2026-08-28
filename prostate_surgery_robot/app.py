@@ -1,4 +1,5 @@
 
+import os
 import numpy as np
 import threading
 import time
@@ -13,12 +14,14 @@ from anatomy import ProstatePhantom
 from nvqlink import NVQLink
 from generative_ai import GeminiGenAI
 from kalman import KalmanFilter
+from ultrasound_beamformer import MultimodalFusionPipeline
 
 app = Flask(__name__)
 
 # System State
 robot = RobotKinematics()
 phantom = ProstatePhantom(width=128, height=128)
+us_pipeline = MultimodalFusionPipeline(grid_w=phantom.width, grid_h=phantom.height)
 # Ensure anatomy is generated/loaded to make mask available
 if not hasattr(phantom, 'tumor_mask'):
     phantom.load_anatomy()
@@ -149,6 +152,62 @@ def nvq_status():
         "quantum": nvq.quantum_entanglement
     })
 
+@app.route('/api/ultrasound/parameters', methods=['GET', 'POST'])
+def ultrasound_parameters():
+    if request.method == 'POST':
+        data = request.json or {}
+        num_elements = data.get('num_elements', 128)
+        freq_mhz = data.get('frequency_mhz', 5.0)
+        array_type = data.get('array_type', 'linear')
+        pitch_factor = data.get('pitch_factor', 0.5)
+        us_pipeline.update_transducer_config(
+            num_elements=num_elements,
+            frequency_mhz=freq_mhz,
+            array_type=array_type,
+            pitch_factor=pitch_factor
+        )
+    
+    tx = us_pipeline.transducer
+    return jsonify({
+        "num_elements": tx.num_elements,
+        "frequency_mhz": round(tx.f0 / 1e6, 2),
+        "wavelength_mm": round(tx.wavelength * 1e3, 3),
+        "pitch_mm": round(tx.pitch * 1e3, 3),
+        "element_width_mm": round(tx.element_width * 1e3, 3),
+        "kerf_mm": round(tx.kerf * 1e3, 3),
+        "total_aperture_mm": round(tx.total_aperture * 1e3, 2),
+        "array_type": tx.array_type,
+        "speed_of_sound": tx.c
+    })
+
+@app.route('/api/ultrasound/simulate', methods=['POST'])
+def ultrasound_simulate():
+    data = request.json or {}
+    steer_angle = float(data.get('steer_angle_deg', 0.0))
+    beamformer_mode = data.get('beamformer_mode', 'das').lower()
+    worsley_threshold = float(data.get('worsley_threshold', 2.2))
+    
+    pos = robot.get_end_effector()
+    grid_x = int(64 + (pos[0] * 2000))
+    grid_y = int(64 + (pos[1] * 2000))
+    grid_x = max(0, min(127, grid_x))
+    grid_y = max(0, min(127, grid_y))
+    
+    res = us_pipeline.run_full_simulation(
+        steer_angle_deg=steer_angle,
+        beamformer_mode=beamformer_mode,
+        worsley_threshold=worsley_threshold,
+        target_grid_pos=(grid_y, grid_x)
+    )
+    return jsonify(res)
+
+@app.route('/api/ultrasound/beampattern', methods=['GET'])
+def ultrasound_beampattern():
+    steer = float(request.args.get('steer', 0.0))
+    apod = request.args.get('apodization', 'hamming')
+    pattern = us_pipeline.transducer.compute_beampattern(steer_angle_deg=steer, apodization=apod)
+    return jsonify(pattern)
+
 @app.after_request
 def set_secure_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -157,11 +216,13 @@ def set_secure_headers(response):
     return response
 
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', os.environ.get('FLASK_RUN_PORT', 5050)))
     print("\n" + "="*50)
     print("      NEUROMORPH PROSTATE ROBOT - V2.4")
     print("="*50)
     print(" [SEC] CYBERSECURITY PROTOCOL:    ACTIVE")
     print(" [PWR] GREEN FOOTPRINT:           ENSURED (Eco-Mode)")
     print(" [NET] NVQ LINK:                  READY")
+    print(f" [URL] http://localhost:{port}")
     print("="*50 + "\n")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=False)
