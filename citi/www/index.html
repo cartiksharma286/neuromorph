@@ -156,7 +156,10 @@
                         ⚖️ Balanced (γ=2.5)
                     </button>
                     <button class="risk-btn" id="risk-btn-high_risk" onclick="selectRiskProfile('high_risk')" style="padding:0.5rem 1rem; border-radius:20px; border:1px solid #f59e0b; background:rgba(245,158,11,0.15); color:#f59e0b; cursor:pointer; font-weight:600; transition:all 0.2s;">
-                        🚀 High Risk / High Reward (γ=0.8)
+                        🚀 High Risk (γ=0.8)
+                    </button>
+                    <button class="risk-btn" id="risk-btn-aggressive_growth" onclick="selectRiskProfile('aggressive_growth')" style="padding:0.5rem 1rem; border-radius:20px; border:1px solid #ef4444; background:rgba(239,68,68,0.15); color:#f87171; cursor:pointer; font-weight:600; transition:all 0.2s;">
+                        🔥 Aggressive Growth (γ=0.5, CF Boost)
                     </button>
                 </div>
 
@@ -529,7 +532,7 @@
 
             function selectRiskProfile(profile) {
                 selectedRiskProfile = profile;
-                ['conservative', 'balanced', 'high_risk'].forEach(p => {
+                ['conservative', 'balanced', 'high_risk', 'aggressive_growth'].forEach(p => {
                     const btn = document.getElementById(`risk-btn-${p}`);
                     if (btn) {
                         if (p === profile) {

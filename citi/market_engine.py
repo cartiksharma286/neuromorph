@@ -163,7 +163,7 @@ def optimize_dividend_portfolio(assets, capital=100000.0, risk_free_rate=0.047,
         )
 
     # Risk Profile Adjusted Scoring based on Gamma Parameter (HJB Merton Control)
-    gamma_map = {'conservative': 6.0, 'balanced': 2.5, 'high_risk': 0.8}
+    gamma_map = {'conservative': 6.0, 'balanced': 2.5, 'high_risk': 0.8, 'aggressive_growth': 0.5}
     gamma = gamma_map.get(risk_profile.lower(), 2.5)
 
     scores = []
@@ -172,6 +172,9 @@ def optimize_dividend_portfolio(assets, capital=100000.0, risk_free_rate=0.047,
         if risk_profile.lower() == 'conservative':
             # Strong volatility penalty & cash flow stability priority
             score = max(pi_yield, 0.0) / (vol ** 1.4) * (1.0 - min(vol, 0.8) * 0.5)
+        elif risk_profile.lower() == 'aggressive_growth':
+            # Maximum growth & volatility harvesting leverage
+            score = (max(pi_yield, 0.0) ** 1.6) / (vol ** 0.25)
         elif risk_profile.lower() == 'high_risk':
             # High yield & growth focus with relaxed volatility penalty
             score = (max(pi_yield, 0.0) ** 1.3) / (vol ** 0.5)
@@ -215,7 +218,9 @@ def simulate_sec_investment_banker_audit(portfolio_results, risk_profile='balanc
     arr = np.array(yield_vals)
 
     # 1. Dividend Coverage Ratio (DCR)
-    dcr_base = 2.45 if risk_profile.lower() == 'conservative' else (1.85 if risk_profile.lower() == 'balanced' else 1.42)
+    dcr_base = (2.45 if risk_profile.lower() == 'conservative'
+                else (1.85 if risk_profile.lower() == 'balanced'
+                      else (1.42 if risk_profile.lower() == 'high_risk' else 1.38)))
     dcr_score = round(dcr_base + float(np.random.normal(0, 0.03)), 2)
 
     # 2. Kolmogorov-Smirnov Goodness-of-Fit Test against Log-Normal Benchmark
@@ -230,7 +235,9 @@ def simulate_sec_investment_banker_audit(portfolio_results, risk_profile='balanc
         p_value = 0.8942
 
     # 3. 3-Sigma Stress Test Survival Rate
-    stress_survival = 99.4 if risk_profile.lower() == 'conservative' else (96.8 if risk_profile.lower() == 'balanced' else 91.2)
+    stress_survival = (99.4 if risk_profile.lower() == 'conservative'
+                       else (96.8 if risk_profile.lower() == 'balanced'
+                             else (91.2 if risk_profile.lower() == 'high_risk' else 89.5)))
     stress_survival = round(stress_survival + float(np.random.normal(0, 0.2)), 1)
 
     # 4. SEC Institutional Audit Status
@@ -256,13 +263,15 @@ def compute_hjb_optimal_trajectory(risk_profile='balanced', periods=12):
     Computes Hamilton-Jacobi-Bellman (HJB) optimal dynamic portfolio trajectory
     under time-varying drift and risk aversion.
     """
-    gamma_map = {'conservative': 6.0, 'balanced': 2.5, 'high_risk': 0.8}
-    target_vol_map = {'conservative': 0.08, 'balanced': 0.15, 'high_risk': 0.35}
+    gamma_map = {'conservative': 6.0, 'balanced': 2.5, 'high_risk': 0.8, 'aggressive_growth': 0.5}
+    target_vol_map = {'conservative': 0.08, 'balanced': 0.15, 'high_risk': 0.35, 'aggressive_growth': 0.45}
     gamma = gamma_map.get(risk_profile.lower(), 2.5)
     target_vol = target_vol_map.get(risk_profile.lower(), 0.15)
 
     trajectory = []
-    w_equity = 0.40 if risk_profile.lower() == 'conservative' else (0.65 if risk_profile.lower() == 'balanced' else 0.85)
+    w_equity = (0.40 if risk_profile.lower() == 'conservative'
+                else (0.65 if risk_profile.lower() == 'balanced'
+                      else (0.85 if risk_profile.lower() == 'high_risk' else 0.92)))
 
     for t in range(periods):
         drift = 0.08 + 0.02 * math.sin(t * 0.5)

@@ -300,20 +300,18 @@ def generate_mineral_strategy():
 @app.route('/api/feynman/optimize', methods=['POST'])
 def feynman_optimize():
     """
-    Feynman path-integral (combinatorial projection state) yield optimizer:
-    replaces Black-Scholes with a discrete binomial-lattice path sum, then
-    layers a QML-sized volatility overlay to push total portfolio yield
-    above 30%, reporting the combinatorial-vs-Black-Scholes convergence and
-    Monte-Carlo VaR/CVaR risk instruments for the overlay notional.
+    Feynman path-integral & Continued Fraction Euler-Wallis volatility optimizer.
     """
     try:
         data = request.json or {}
         capital = float(data.get('capital', 100000.0))
+        risk_profile = data.get('risk_profile', 'balanced')
         snapshot = market_engine.snapshot()
         result = optimize_yield_with_feynman_qml(
             capital=capital,
             risk_free_rate=snapshot['characteristics']['10y_treasury'] / 100.0,
             equity_risk_premium=snapshot['characteristics']['equity_risk_premium'] / 100.0,
+            risk_profile=risk_profile,
         )
         result['generated_at'] = snapshot['generated_at']
         return jsonify({'status': 'success', **result})
