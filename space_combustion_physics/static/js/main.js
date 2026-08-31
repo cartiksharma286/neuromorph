@@ -1,22 +1,4 @@
-// ═══════════════════════════════════════════════
-// 10. DEMENTIA CURE WITH DEEP BRAIN STIMULATION (DBS)
-// ═══════════════════════════════════════════════
-document.getElementById('btn-dbs-run')?.addEventListener('click', runDBS);
-async function runDBS() {
-  const amp = parseFloat(document.getElementById('inp-dbs-amp').value);
-  const width = parseFloat(document.getElementById('inp-dbs-width').value);
-  const freq = parseFloat(document.getElementById('inp-dbs-freq').value);
-  const region = document.getElementById('inp-dbs-region').value;
-  const r = await fetch('/api/dbs', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({amplitude:amp, width, freq, region})
-  });
-  const d = await r.json();
-  setKPI('kpi-dbs-efficacy', d.efficacy.toFixed(1));
-  setKPI('kpi-dbs-repair', d.repair_score);
-  setKPI('kpi-dbs-asymptote', d.asymptote);
-  setHTML('dbs-log', d.log);
-}
+
 // ── Global Error Handling & Starfield ─────────────────
 window.onerror=(msg,url,ln)=>console.error('JS Error:',msg,'at',url,':',ln);
 

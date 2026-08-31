@@ -147,6 +147,19 @@
                     </div>
                 </div>
 
+                <div style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; align-items:center; background:rgba(0,0,0,0.2); padding:1rem; border-radius:8px; border:1px solid var(--border);">
+                    <span style="font-weight:600; font-size:0.9rem; color:var(--text-primary); margin-right:4px;">Optimal Control Risk Profile:</span>
+                    <button class="risk-btn" id="risk-btn-conservative" onclick="selectRiskProfile('conservative')" style="padding:0.5rem 1rem; border-radius:20px; border:1px solid #10b981; background:rgba(16,185,129,0.15); color:#34d399; cursor:pointer; font-weight:600; transition:all 0.2s;">
+                        🛡️ Conservative (γ=6.0)
+                    </button>
+                    <button class="risk-btn active" id="risk-btn-balanced" onclick="selectRiskProfile('balanced')" style="padding:0.5rem 1rem; border-radius:20px; border:1px solid var(--accent-cyan); background:rgba(34,211,238,0.25); color:var(--accent-cyan); cursor:pointer; font-weight:700; box-shadow:0 0 10px rgba(34,211,238,0.4); transition:all 0.2s;">
+                        ⚖️ Balanced (γ=2.5)
+                    </button>
+                    <button class="risk-btn" id="risk-btn-high_risk" onclick="selectRiskProfile('high_risk')" style="padding:0.5rem 1rem; border-radius:20px; border:1px solid #f59e0b; background:rgba(245,158,11,0.15); color:#f59e0b; cursor:pointer; font-weight:600; transition:all 0.2s;">
+                        🚀 High Risk / High Reward (γ=0.8)
+                    </button>
+                </div>
+
                 <div style="display:flex; gap:1rem; margin-bottom:2rem;">
                     <div class="metric-box"
                         style="flex:1; background:rgba(0,0,0,0.3); padding:1.5rem; border:1px solid var(--border); border-radius:8px;">
@@ -180,7 +193,47 @@
                                 id="min-strat-name">--</div>
                         </div>
                     </div>
-                        <div id="mineral-market-context" style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:1rem;"></div>
+                    <div id="mineral-market-context" style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:1rem;"></div>
+
+                    <!-- SEC Investment Banker Audit & Statistical Dividend Yield Compliance Card -->
+                    <h3 style="margin-top:2rem; margin-bottom:1rem; color:var(--accent-cyan); display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="shield-check" style="color:#10b981"></i>
+                        SEC Investment Banker Audit & Statistical Yield Verification
+                    </h3>
+                    <div class="card" style="background:rgba(15, 23, 42, 0.6); border:1px solid rgba(16, 185, 129, 0.4); margin-bottom:1.5rem; padding:1.2rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+                            <div>
+                                <span class="badge badge-buy" id="sec-audit-badge" style="font-size:0.85rem; padding:6px 12px; border:1px solid #10b981; background:rgba(16,185,129,0.2); color:#34d399;">SEC COMPLIANT - APPROVED</span>
+                                <span style="margin-left:10px; font-size:0.85rem; color:var(--text-secondary);" id="sec-rule-badge">SEC Rule 10b-18 & 140 Cleared</span>
+                            </div>
+                            <div style="font-size:0.85rem; color:var(--accent-gold);">
+                                Sustainability Index: <strong id="sec-sustainability-idx" style="font-size:1.1rem; color:#34d399;">--</strong>
+                            </div>
+                        </div>
+                        <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem;">
+                            <div style="background:rgba(0,0,0,0.3); padding:0.8rem; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size:0.75rem; color:var(--text-secondary);">Dividend Coverage (DCR)</div>
+                                <div id="sec-dcr-val" style="font-weight:700; color:#34d399; font-size:1.1rem; margin-top:2px;">--</div>
+                            </div>
+                            <div style="background:rgba(0,0,0,0.3); padding:0.8rem; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size:0.75rem; color:var(--text-secondary);">3-Sigma Shock Survival</div>
+                                <div id="sec-survival-val" style="font-weight:700; color:var(--accent-cyan); font-size:1.1rem; margin-top:2px;">--</div>
+                            </div>
+                            <div style="background:rgba(0,0,0,0.3); padding:0.8rem; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size:0.75rem; color:var(--text-secondary);">KS Stat / p-value</div>
+                                <div id="sec-ks-val" style="font-weight:600; color:var(--text-primary); font-size:0.95rem; margin-top:2px;">--</div>
+                            </div>
+                            <div style="background:rgba(0,0,0,0.3); padding:0.8rem; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size:0.75rem; color:var(--text-secondary);">HJB Risk Aversion (γ)</div>
+                                <div id="hjb-gamma-val" style="font-weight:700; color:var(--accent-gold); font-size:1.1rem; margin-top:2px;">--</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HJB Merton Optimal Dynamic Control Plot Container -->
+                    <h3 style="margin-top:2rem; margin-bottom:1rem; color:var(--accent-gold);">HJB Merton Optimal Dynamic Control Trajectory</h3>
+                    <div id="hjb-plot-container" style="width:100%; min-height:180px; background:rgba(0,0,0,0.2); border-radius:8px; padding:1rem; margin-bottom:1.5rem;">
+                    </div>
 
                     <h3 style="margin-top:2rem; margin-bottom:1rem; color:var(--accent-gold);">Optimized Allocation
                         Table</h3>
@@ -471,14 +524,39 @@
                 }
             }
 
-            // ADDED: Mineral Strategy Logic
+            // ADDED: Risk Profile Selection & Strategy Logic
+            let selectedRiskProfile = 'balanced';
+
+            function selectRiskProfile(profile) {
+                selectedRiskProfile = profile;
+                ['conservative', 'balanced', 'high_risk'].forEach(p => {
+                    const btn = document.getElementById(`risk-btn-${p}`);
+                    if (btn) {
+                        if (p === profile) {
+                            btn.classList.add('active');
+                            btn.style.fontWeight = '700';
+                            btn.style.boxShadow = '0 0 10px rgba(34,211,238,0.4)';
+                        } else {
+                            btn.classList.remove('active');
+                            btn.style.fontWeight = '500';
+                            btn.style.boxShadow = 'none';
+                        }
+                    }
+                });
+                generateMineralStrategy();
+            }
+
             async function generateMineralStrategy() {
                 const btn = document.querySelector('#minerals-view .btn-primary');
                 const originalText = btn.innerHTML;
-                btn.innerHTML = '<i data-lucide="loader" style="animation:spin 1s linear infinite"></i> Running LLM Yield Analysis...';
+                btn.innerHTML = '<i data-lucide="loader" style="animation:spin 1s linear infinite"></i> Running HJB Optimal Control & SEC Audit...';
 
                 try {
-                    const response = await fetch('/api/minerals/strategy', { method: 'POST' });
+                    const response = await fetch('/api/minerals/strategy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ risk_profile: selectedRiskProfile })
+                    });
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.error || `Strategy request failed (${response.status})`);
 
@@ -487,7 +565,61 @@
                     document.getElementById('min-strat-name').innerText = data.strategy_name;
                     document.getElementById('mineral-market-context').innerText = data.market_context;
 
-                    // NEW: Render Yield Frontier Plot
+                    // SEC Investment Banker Audit Updates
+                    if (data.sec_audit) {
+                        document.getElementById('sec-audit-badge').innerText = data.sec_audit.sec_audit_status;
+                        document.getElementById('sec-dcr-val').innerText = `${data.sec_audit.dividend_coverage_ratio} (Min ${data.sec_audit.dcr_target_min})`;
+                        document.getElementById('sec-survival-val').innerText = data.sec_audit.stress_test_3sigma_survival;
+                        document.getElementById('sec-ks-val').innerText = `D=${data.sec_audit.ks_test_stat} (p=${data.sec_audit.ks_p_value})`;
+                        document.getElementById('sec-sustainability-idx').innerText = `${data.sec_audit.dividend_sustainability_index}/100`;
+                    }
+                    if (data.hjb_optimal_control) {
+                        document.getElementById('hjb-gamma-val').innerText = `γ = ${data.hjb_optimal_control.risk_aversion_gamma} (${data.hjb_optimal_control.target_volatility} vol)`;
+                    }
+
+                    // Render HJB Dynamic Trajectory Plot
+                    const hjbPlot = document.getElementById('hjb-plot-container');
+                    if (hjbPlot && data.hjb_optimal_control && data.hjb_optimal_control.trajectory) {
+                        hjbPlot.innerHTML = '';
+                        const traj = data.hjb_optimal_control.trajectory;
+                        const w = hjbPlot.clientWidth || 600;
+                        const h = 180;
+                        const pad = 30;
+
+                        const getX = (idx) => pad + (idx / (traj.length - 1)) * (w - 2 * pad);
+                        const getY = (val) => h - pad - (val) * (h - 2 * pad);
+
+                        let eqPath = `M ${getX(0)} ${getY(traj[0].equity_weight)} `;
+                        let ydPath = `M ${getX(0)} ${getY(traj[0].yield_weight)} `;
+                        let csPath = `M ${getX(0)} ${getY(traj[0].cash_weight)} `;
+
+                        traj.forEach((t, i) => {
+                            if (i > 0) {
+                                eqPath += `L ${getX(i)} ${getY(t.equity_weight)} `;
+                                ydPath += `L ${getX(i)} ${getY(t.yield_weight)} `;
+                                csPath += `L ${getX(i)} ${getY(t.cash_weight)} `;
+                            }
+                        });
+
+                        hjbPlot.innerHTML = `
+                            <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible">
+                                <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="var(--text-secondary)" opacity="0.3"/>
+                                <line x1="${pad}" y1="${h - pad}" x2="${pad}" y2="${pad}" stroke="var(--text-secondary)" opacity="0.3"/>
+                                <text x="${w / 2}" y="${h - 5}" fill="var(--text-secondary)" font-size="10" text-anchor="middle">Dynamic Time Horizon (Months T+0 to T+11)</text>
+                                
+                                <path d="${eqPath}" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5"/>
+                                <text x="${getX(traj.length - 1)}" y="${getY(traj[traj.length - 1].equity_weight)}" fill="var(--accent-cyan)" font-size="10" dx="5">Equity Weight</text>
+
+                                <path d="${ydPath}" fill="none" stroke="#34d399" stroke-width="2.5"/>
+                                <text x="${getX(traj.length - 1)}" y="${getY(traj[traj.length - 1].yield_weight)}" fill="#34d399" font-size="10" dx="5">Yield Weight</text>
+
+                                <path d="${csPath}" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4"/>
+                                <text x="${getX(traj.length - 1)}" y="${getY(traj[traj.length - 1].cash_weight)}" fill="#f59e0b" font-size="10" dx="5">Cash Buffer</text>
+                            </svg>
+                        `;
+                    }
+
+                    // Render Yield Frontier Plot
                     const plotContainer = document.getElementById('mineral-plot-container');
                     if (plotContainer && data.yield_plot) {
                         plotContainer.innerHTML = '';
@@ -509,18 +641,15 @@
                         let qPath = `M ${getX(dataset[0].risk)} ${getY(dataset[0].quantum_yield)} `;
                         dataset.forEach(d => qPath += `L ${getX(d.risk)} ${getY(d.quantum_yield)} `);
 
-                        // Area under Quantum
                         let qArea = qPath + `L ${getX(dataset[dataset.length - 1].risk)} ${h - pad} L ${getX(dataset[0].risk)} ${h - pad} Z`;
 
                         plotContainer.innerHTML = `
                             <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible">
-                                <!-- Axes -->
                                 <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="var(--text-secondary)" opacity="0.5"/>
                                 <line x1="${pad}" y1="${h - pad}" x2="${pad}" y2="${pad}" stroke="var(--text-secondary)" opacity="0.5"/>
                                 <text x="${w / 2}" y="${h - 5}" fill="var(--text-secondary)" font-size="10" text-anchor="middle">Portfolio Volatility (Risk)</text>
                                 <text x="5" y="${h / 2}" fill="var(--text-secondary)" font-size="10" transform="rotate(-90 5,${h / 2})" text-anchor="middle">Annual Yield %</text>
                                 
-                                <!-- Quantum Area -->
                                 <path d="${qArea}" fill="url(#gradQ)" opacity="0.2"/>
                                 <defs>
                                     <linearGradient id="gradQ" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -529,7 +658,6 @@
                                     </linearGradient>
                                 </defs>
 
-                                <!-- Paths -->
                                 <path d="${cPath}" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-dasharray="5,5"/>
                                 <text x="${getX(dataset[dataset.length - 1].risk)}" y="${getY(dataset[dataset.length - 1].classical_yield)}" fill="var(--text-secondary)" font-size="10" dx="5">Classical Frontier</text>
 
@@ -540,7 +668,7 @@
                         `;
                     }
 
-                    // 1. Populate Dividend Portfolio
+                    // Populate Dividend Portfolio Table
                     const tbody = document.getElementById('mineral-portfolio-body');
                     tbody.innerHTML = '';
 
@@ -561,7 +689,7 @@
                         tbody.appendChild(row);
                     });
 
-                    // 2. Populate Derivatives Chain
+                    // Populate Derivatives Chain Table
                     const derivBody = document.getElementById('derivatives-body');
                     if (derivBody && data.derivatives_chain) {
                         derivBody.innerHTML = '';

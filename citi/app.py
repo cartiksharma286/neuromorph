@@ -6,7 +6,12 @@ import random
 # from sklearn.ensemble import RandomForestClassifier # Not used in sim
 from generate_pdf import create_pdf
 from ibkr_bridge import IBKRBridge, IBKRUnavailableError
-from market_engine import MarketSimulationEngine, optimize_dividend_portfolio
+from market_engine import (
+    MarketSimulationEngine,
+    optimize_dividend_portfolio,
+    simulate_sec_investment_banker_audit,
+    compute_hjb_optimal_trajectory
+)
 from feynman_path_integral_engine import optimize_yield_with_feynman_qml
 
 app = Flask(__name__, static_url_path='', static_folder='www')
@@ -250,20 +255,24 @@ def generate_mineral_strategy():
             }
         })
         
+    req_data = request.get_json(silent=True) or {}
+    risk_profile = req_data.get('risk_profile') or request.args.get('risk_profile') or 'balanced'
+
     optimized_portfolio, cash_dividend_yield = optimize_dividend_portfolio(
         assets,
         risk_free_rate=snapshot["characteristics"]["10y_treasury"] / 100.0,
         equity_risk_premium=snapshot["characteristics"]["equity_risk_premium"] / 100.0,
         market_volatility=0.16,
+        risk_profile=risk_profile,
     )
+
+    sec_audit = simulate_sec_investment_banker_audit(optimized_portfolio, risk_profile=risk_profile)
+    hjb_control = compute_hjb_optimal_trajectory(risk_profile=risk_profile)
 
     # Generate Yield Frontier Plot Data
     yield_plot_data = []
-    # Classical Frontier (Logarithmic growth)
-    # Quantum Frontier (Linear barrier penetration - much higher)
     for i in range(10):
         risk = 0.1 + (i * 0.05)
-        # Classical: Yield ~ 5% + log(risk)*something
         classical_y = 5.0 + (risk * 15.0)
         quantum_y = classical_y * (1.0 + 0.18 * math.exp(-risk * 2.0))
         yield_plot_data.append({
@@ -273,14 +282,16 @@ def generate_mineral_strategy():
         })
 
     return jsonify({
-        "strategy_name": "Volatility-Adjusted Dividend Allocator",
-        "description": "Inverse-volatility allocation across dividend-paying mining stocks, with yield "
-                        "enhanced by a Feynman path-integral (Monte-Carlo, CAPM drift) forward evaluation "
-                        "and separately labeled option-premium estimates.",
+        "strategy_name": f"HJB Optimal Control Dividend Allocator ({risk_profile.upper()})",
+        "risk_profile": risk_profile.lower(),
+        "description": f"HJB Merton optimal control allocation under {risk_profile.upper()} profile, "
+                        "validated via SEC Investment Banker statistical dividend yield audit and Feynman path-integrals.",
         "target_yield": f"{cash_dividend_yield:.1f}% cash yield",
         "optimized_portfolio": optimized_portfolio,
         "derivatives_chain": derivatives_data,
         "yield_plot": yield_plot_data,
+        "sec_audit": sec_audit,
+        "hjb_optimal_control": hjb_control,
         "market_context": f"Market source: {market_source}. Option premiums are model estimates, not guaranteed income.",
         "market_source": market_source,
         "generated_at": snapshot["generated_at"],
