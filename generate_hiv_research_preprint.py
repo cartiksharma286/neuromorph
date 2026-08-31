@@ -10,7 +10,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import Image, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-from hiv_repair_research_app import OUTPUT_DIR, write_plots
+from hiv_research_repair.hiv_repair_research_app import OUTPUT_DIR, write_plots
 
 
 def generate_pdf() -> Path:

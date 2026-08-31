@@ -62,6 +62,9 @@
                 <button class="nav-btn" data-tab="nash-geodesic">
                     <span class="icon">📐</span> Nash Equilibria Registration
                 </button>
+                <button class="nav-btn" data-tab="tbi-ptsd">
+                    <span class="icon">🧠</span> TBI & PTSD Cure
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -1163,6 +1166,150 @@
                         <h3>Per-Session Convergence Quality</h3>
                         <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Final Nash gap &amp; Cauchy-Schwarz ratio achieved at convergence, per session.</p>
                         <div id="ng-longitudinal-quality-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── TBI & PTSD Cure Suite (BEM E-Field & Enterprise Economics) ── -->
+            <div id="tbi-ptsd-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:12px; color:#8b949e; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
+                        TBI Neuro-Regeneration &amp; PTSD Trauma Extinction · Boundary Element Solver · Enterprise Clinic ROI
+                    </span>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT PANEL: CONTROLS & ECONOMICS INPUTS -->
+                    <div class="panel glass-panel" style="flex: 0 0 320px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>TBI &amp; PTSD Clinical Controls</h3>
+                        
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Baseline PCL-5 (PTSD 0-80):</span>
+                                    <span id="label-tbi-pcl5" class="sa-slider-val" style="color:#ff7b72;">58.0</span>
+                                </div>
+                                <input type="range" id="tbi-pcl5" min="20.0" max="80.0" step="1.0" value="58.0" oninput="document.getElementById('label-tbi-pcl5').textContent=parseFloat(this.value).toFixed(1); runTbiPtsdRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Baseline RPQ (TBI 0-64):</span>
+                                    <span id="label-tbi-rpq" class="sa-slider-val" style="color:#ffb86c;">42.0</span>
+                                </div>
+                                <input type="range" id="tbi-rpq" min="10.0" max="64.0" step="1.0" value="42.0" oninput="document.getElementById('label-tbi-rpq').textContent=parseFloat(this.value).toFixed(1); runTbiPtsdRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Treatment Duration:</span>
+                                    <span id="label-tbi-weeks" class="sa-slider-val" style="color:#79c0ff;">24 Wks</span>
+                                </div>
+                                <input type="range" id="tbi-weeks" min="8" max="52" step="1" value="24" oninput="document.getElementById('label-tbi-weeks').textContent=parseInt(this.value)+' Wks'; runTbiPtsdRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Stimulation Freq:</span>
+                                    <span id="label-tbi-freq" class="sa-slider-val" style="color:#56d364;">10.0 Hz (iTBS)</span>
+                                </div>
+                                <input type="range" id="tbi-freq" min="1.0" max="20.0" step="1.0" value="10.0" oninput="document.getElementById('label-tbi-freq').textContent=parseFloat(this.value).toFixed(1)+' Hz'; runTbiPtsdRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Clinic Coil Towers:</span>
+                                    <span id="label-tbi-coils" class="sa-slider-val" style="color:#d2a8ff;">3 Units</span>
+                                </div>
+                                <input type="range" id="tbi-coils" min="1" max="10" step="1" value="3" oninput="document.getElementById('label-tbi-coils').textContent=parseInt(this.value)+' Units'; runTbiPtsdRtmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>CPT Session Price ($):</span>
+                                    <span id="label-tbi-price" class="sa-slider-val" style="color:#38bdf8;">$300</span>
+                                </div>
+                                <input type="range" id="tbi-price" min="150" max="600" step="25" value="300" oninput="document.getElementById('label-tbi-price').textContent='$'+parseInt(this.value); runTbiPtsdRtmsDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <h3>Financial &amp; Clinical Summary</h3>
+                        <div class="sa-control-box" style="margin-bottom:0;">
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Final PCL-5 Score:</span>
+                                <span id="tbi-metric-pcl5" class="sa-metric-val" style="color:#56d364;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Final RPQ Score:</span>
+                                <span id="tbi-metric-rpq" class="sa-metric-val" style="color:#79c0ff;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Patient Savings / yr:</span>
+                                <span id="tbi-metric-savings" class="sa-metric-val" style="color:#ffb86c;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">5-Yr Clinic Revenue:</span>
+                                <span id="tbi-metric-revenue" class="sa-metric-val" style="color:#38bdf8;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Enterprise NPV (@8%):</span>
+                                <span id="tbi-metric-npv" class="sa-metric-val" style="color:#d2a8ff;">...</span>
+                            </div>
+                            <div class="sa-metric-row" style="border-bottom:none;">
+                                <span class="sa-metric-lbl">CapEx Payback:</span>
+                                <span id="tbi-metric-payback" class="sa-metric-val" style="color:#34d399;">...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: MULTI-PANEL PLOTS & SCHEMATIC -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+                        <!-- Row 1: Longitudinal PCL-5 & RPQ Trajectories -->
+                        <div class="panel glass-panel">
+                            <h3>Longitudinal PTSD (PCL-5) &amp; TBI Post-Concussion (RPQ) Recovery Trajectories</h3>
+                            <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Standard of Care vs. Standalone rTMS vs. Synergistic 10Hz rTMS + CBT Neuro-Regeneration.</p>
+                            <div id="tbi-plot-trajectories" class="chart-container" style="min-height:310px;"></div>
+                        </div>
+
+                        <!-- Row 2: BEM E-Field Surface Heatmap & Depth Attenuation -->
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Boundary Element (BEM) DLPFC / vmPFC Cortical Surface Electric Field</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">BEM potential solver: Induced E-field V/m norm &amp; SAR W/kg spatial convergence.</p>
+                                <div id="tbi-plot-bem-surface" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Cortical &amp; Amygdala Tissue Depth Attenuation</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Layered conductivity decay: Scalp, Skull, CSF, Grey Matter, Deep Amygdala (40mm).</p>
+                                <div id="tbi-plot-depth" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: 5-Year Enterprise Healthcare Revenue & ROI Growth -->
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>5-Year Enterprise Clinic Healthcare Revenue &amp; Net Profit Forecast</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Annual revenue ($) and net cash flows across 5-year operating horizon.</p>
+                                <div id="tbi-plot-revenue" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Per-Patient Healthcare Cost Savings Breakdown</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Disability claims avoidance vs. Psychiatric ER / Inpatient hospitalization cost reduction.</p>
+                                <div id="tbi-plot-savings" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Technical ASCII Schematic -->
+                        <div class="panel glass-panel">
+                            <h3>🔌 Closed-Loop BEM Coil Controller &amp; Healthcare Economics Architecture</h3>
+                            <pre id="tbi-ascii-schematic" style="font-family:'Courier New', monospace; font-size:11px; line-height:1.3; white-space:pre-wrap; background:#050b14; border:1px solid rgba(56,189,248,0.3); border-radius:12px; padding:15px; color:#38bdf8; margin:0; height:340px; overflow:auto;"></pre>
+                        </div>
+
+                        <!-- Row 5: Clinical & Financial Prescription Card -->
+                        <div class="panel glass-panel" style="background: rgba(56,189,248,0.04); border: 1px solid rgba(56,189,248,0.2);">
+                            <h3>🔬 TBI &amp; PTSD Neuromodulation &amp; Enterprise Economics Prescription</h3>
+                            <div id="tbi-genai-text" style="font-size:13px; line-height:1.6; color:#c9d1d9; margin-top:10px;">Compiling TBI &amp; PTSD clinical telemetry...</div>
+                        </div>
                     </div>
                 </div>
             </div>

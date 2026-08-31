@@ -186,6 +186,7 @@ def ultrasound_simulate():
     steer_angle = float(data.get('steer_angle_deg', 0.0))
     beamformer_mode = data.get('beamformer_mode', 'das').lower()
     worsley_threshold = float(data.get('worsley_threshold', 2.2))
+    apodization = data.get('apodization', 'hamming')
     
     pos = robot.get_end_effector()
     grid_x = int(64 + (pos[0] * 2000))
@@ -197,7 +198,8 @@ def ultrasound_simulate():
         steer_angle_deg=steer_angle,
         beamformer_mode=beamformer_mode,
         worsley_threshold=worsley_threshold,
-        target_grid_pos=(grid_y, grid_x)
+        target_grid_pos=(grid_y, grid_x),
+        apodization=apodization
     )
     return jsonify(res)
 

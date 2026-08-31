@@ -26,6 +26,7 @@ from logic.depression_rtms import simulate_depression_rtms
 from logic.anxiety_millennials_rtms import simulate_anxiety_rtms
 from logic.moduli_bem_paradigm import get_moduli_bem_paradigm
 from logic.tourette_rtms import simulate_tourette_rtms
+from logic.tbi_ptsd_rtms import simulate_tbi_ptsd_rtms
 
 app = Flask(__name__)
 CORS(app)
@@ -510,6 +511,35 @@ def tourette_rtms_preprint():
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(exc)}), 500
+
+
+@app.route('/api/tbi-ptsd-rtms', methods=['GET', 'POST'])
+def api_tbi_ptsd_rtms():
+    """TBI & PTSD Neuromodulation, BEM Electric Field, and Healthcare Economics Endpoint."""
+    try:
+        data = request.get_json(silent=True) or {}
+        baseline_pcl5 = float(request.args.get('baseline_pcl5', data.get('baseline_pcl5', 58.0)))
+        baseline_rpq = float(request.args.get('baseline_rpq', data.get('baseline_rpq', 42.0)))
+        treatment_weeks = int(request.args.get('treatment_weeks', data.get('treatment_weeks', 24)))
+        rtms_freq_hz = float(request.args.get('rtms_freq_hz', data.get('rtms_freq_hz', 10.0)))
+        cbt_trauma_gain = float(request.args.get('cbt_trauma_gain', data.get('cbt_trauma_gain', 0.85)))
+        clinic_coils = int(request.args.get('clinic_coils', data.get('clinic_coils', 3)))
+        session_price = float(request.args.get('session_price', data.get('session_price', 300.0)))
+
+        result = simulate_tbi_ptsd_rtms(
+            baseline_pcl5=baseline_pcl5,
+            baseline_rpq=baseline_rpq,
+            treatment_weeks=treatment_weeks,
+            rtms_freq_hz=rtms_freq_hz,
+            cbt_trauma_gain=cbt_trauma_gain,
+            clinic_coils=clinic_coils,
+            session_price=session_price,
+        )
+        return jsonify({'status': 'success', 'data': result})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
 
 
 if __name__ == '__main__':

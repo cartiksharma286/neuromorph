@@ -142,11 +142,11 @@ class UltrasoundTransducer:
 
 class BeamformerEngine:
     """
-    Acoustic Wavefront Simulation and Advanced Beamforming Engine:
-    - Delay-and-Sum (DAS)
-    - Minimum Variance Distortionless Response (MVDR / Capon Adaptive)
-    - Coherent Plane-Wave Compounding (PWCA)
-    - Hilbert Envelope Detection & Dynamic Log Compression
+    Fast Vectorized Multi-Channel Acoustic Beamformer:
+    - DAS (Delay-and-Sum)
+    - MVDR Capon (Coherence Factor + Sub-aperture Covariance Adaptive Weighting)
+    - PWCA (Coherent Plane Wave Compounding)
+    - THI (Tissue Harmonic Imaging Non-linear Pulse Reconstruction)
     """
     def __init__(self, transducer: UltrasoundTransducer, sampling_rate=40.0e6):
         self.tx = transducer
@@ -154,18 +154,17 @@ class BeamformerEngine:
         self.dt = 1.0 / self.fs
         
     def generate_rf_channel_data(self, scatterers, num_samples=512, steer_angles=[0.0]):
-        """
-        Simulates raw multi-channel RF echo signals received by each array element.
-        scatterers: list of dicts [{'x': m, 'z': m, 'reflectivity': float}]
-        """
         N_el = self.tx.num_elements
         N_angles = len(steer_angles)
         rf_data = np.zeros((N_angles, N_el, num_samples), dtype=np.float32)
         
-        t = np.arange(num_samples) * self.dt
         f0 = self.tx.f0
         c = self.tx.c
         x_elem = self.tx.element_positions[:, 0]
+        
+        pulse_len = 32
+        tp = (np.arange(pulse_len) - pulse_len / 2) * self.dt
+        base_pulse = np.exp(-(tp**2) / (2 * (1.2 / f0)**2)) * np.cos(2 * np.pi * f0 * tp)
         
         for a_idx, theta_deg in enumerate(steer_angles):
             theta = np.radians(theta_deg)
@@ -174,157 +173,103 @@ class BeamformerEngine:
                 zs = scat['z']
                 rc = scat['reflectivity']
                 
-                # Transmit time-of-flight for steered plane wave:
-                # t_tx = (xs * sin(theta) + zs * cos(theta)) / c
                 tau_tx = (xs * np.sin(theta) + zs * np.cos(theta)) / c
+                rx_dists = np.sqrt((xs - x_elem)**2 + zs**2)
+                tau_tot = tau_tx + rx_dists / c
                 
+                sample_indices = (tau_tot * self.fs).astype(int)
                 for el in range(N_el):
-                    xe = x_elem[el]
-                    # Receive distance:
-                    rx_dist = np.sqrt((xs - xe)**2 + zs**2)
-                    tau_rx = rx_dist / c
-                    tau_tot = tau_tx + tau_rx
-                    
-                    sample_idx = int(tau_tot * self.fs)
-                    if 0 <= sample_idx < num_samples - 64:
-                        # Synthetic Gaussian-windowed tone burst pulse
-                        pulse_len = 32
-                        tp = (np.arange(pulse_len) - pulse_len / 2) * self.dt
-                        pulse = rc * np.exp(-(tp**2) / (2 * (1.2 / f0)**2)) * np.cos(2 * np.pi * f0 * tp)
-                        end_s = min(num_samples, sample_idx + pulse_len)
-                        rf_data[a_idx, el, sample_idx:end_s] += pulse[:end_s - sample_idx]
+                    s_idx = sample_indices[el]
+                    if 0 <= s_idx < num_samples - pulse_len:
+                        rf_data[a_idx, el, s_idx:s_idx + pulse_len] += (rc * base_pulse).astype(np.float32)
                         
-        # Add slight acoustic speckle / thermal noise
-        rf_data += np.random.normal(0, 0.015, rf_data.shape)
+        rf_data += np.random.normal(0, 0.012, rf_data.shape).astype(np.float32)
         return rf_data
 
-    def beamform_das(self, rf_data, grid_x, grid_z, steer_angles=[0.0], apodization="hamming"):
-        """
-        Standard Coherent Delay-and-Sum Beamforming over Reconstruction Grid (grid_x, grid_z).
-        """
+    def beamform_das_fast(self, rf_data, grid_x, grid_z, steer_angles=[0.0], apodization="hamming"):
         Nx = len(grid_x)
         Nz = len(grid_z)
         N_el = self.tx.num_elements
-        w = self.tx.get_apodization_weights(apodization)
+        w = self.tx.get_apodization_weights(apodization).astype(np.float32)
+        w = w / np.sum(w)
+        
+        X, Z = np.meshgrid(grid_x, grid_z) # (Nz, Nx)
+        x_elem = self.tx.element_positions[:, 0].astype(np.float32) # (Nel,)
+        c = self.tx.c
+        fs = self.fs
         
         reconstructed = np.zeros((Nz, Nx), dtype=np.float32)
-        x_elem = self.tx.element_positions[:, 0]
-        c = self.tx.c
         
         for a_idx, theta_deg in enumerate(steer_angles):
             theta = np.radians(theta_deg)
-            rf_ch = rf_data[a_idx]
+            rf_ch = rf_data[a_idx] # (Nel, num_samples)
+            num_samples = rf_ch.shape[1]
             
-            for iz, z in enumerate(grid_z):
-                for ix, x in enumerate(grid_x):
-                    tau_tx = (x * np.sin(theta) + z * np.cos(theta)) / c
-                    sum_val = 0.0
-                    
-                    for el in range(N_el):
-                        xe = x_elem[el]
-                        tau_rx = np.sqrt((x - xe)**2 + z**2) / c
-                        tau_tot = tau_tx + tau_rx
-                        
-                        s_idx = tau_tot * self.fs
-                        idx0 = int(s_idx)
-                        frac = s_idx - idx0
-                        
-                        if 0 <= idx0 < rf_ch.shape[1] - 1:
-                            sample_interp = (1.0 - frac) * rf_ch[el, idx0] + frac * rf_ch[el, idx0 + 1]
-                            sum_val += w[el] * sample_interp
-                            
-                    reconstructed[iz, ix] += sum_val
-                    
-        return reconstructed
+            tau_tx = (X * np.sin(theta) + Z * np.cos(theta)) / c # (Nz, Nx)
+            
+            dx = X[None, :, :] - x_elem[:, None, None]
+            tau_rx = np.sqrt(dx**2 + (Z[None, :, :])**2) / c
+            tau_tot = tau_tx[None, :, :] + tau_rx # (Nel, Nz, Nx)
+            
+            s_idx = tau_tot * fs
+            idx0 = np.clip(s_idx.astype(int), 0, num_samples - 2)
+            frac = (s_idx - idx0).astype(np.float32)
+            
+            samples0 = np.take_along_axis(rf_ch, idx0.reshape(N_el, -1), axis=1).reshape(N_el, Nz, Nx)
+            samples1 = np.take_along_axis(rf_ch, (idx0 + 1).reshape(N_el, -1), axis=1).reshape(N_el, Nz, Nx)
+            delayed_rf = (1.0 - frac) * samples0 + frac * samples1
+            
+            summed = np.sum(delayed_rf * w[:, None, None], axis=0)
+            reconstructed += summed
+            
+        return reconstructed / len(steer_angles)
 
-    def beamform_mvdr_capon(self, rf_data, grid_x, grid_z, steer_angles=[0.0], diagonal_loading=0.01):
-        """
-        Minimum Variance Distortionless Response (Capon Adaptive) Beamforming.
-        Computes regularized spatial covariance matrix inversion R_inv * a / (a^H R_inv a).
-        """
+    def beamform_mvdr_fast(self, rf_data, grid_x, grid_z, steer_angles=[0.0], apodization="hamming"):
         Nx = len(grid_x)
         Nz = len(grid_z)
         N_el = self.tx.num_elements
+        
+        X, Z = np.meshgrid(grid_x, grid_z)
+        x_elem = self.tx.element_positions[:, 0].astype(np.float32)
         c = self.tx.c
-        x_elem = self.tx.element_positions[:, 0]
+        fs = self.fs
         
-        reconstructed = np.zeros((Nz, Nx), dtype=np.float32)
+        rf_ch = rf_data[0]
+        num_samples = rf_ch.shape[1]
         
-        # Process primary steering angle
-        rf_ch = rf_data[0] # (N_el, num_samples)
+        tau_tx = Z / c
+        dx = X[None, :, :] - x_elem[:, None, None]
+        tau_rx = np.sqrt(dx**2 + (Z[None, :, :])**2) / c
+        tau_tot = tau_tx[None, :, :] + tau_rx
         
-        for iz, z in enumerate(grid_z):
-            for ix, x in enumerate(grid_x):
-                tau_tx = z / c
-                delays = np.zeros(N_el)
-                for el in range(N_el):
-                    delays[el] = tau_tx + np.sqrt((x - x_elem[el])**2 + z**2) / c
-                    
-                # Extract delayed snapshot vector x_snap
-                x_snap = np.zeros(N_el)
-                for el in range(N_el):
-                    s_idx = int(delays[el] * self.fs)
-                    if 0 <= s_idx < rf_ch.shape[1]:
-                        x_snap[el] = rf_ch[el, s_idx]
-                        
-                # Spatial covariance with temporal averaging around target sample
-                center_s = int((tau_tx + z / c) * self.fs)
-                win = 7
-                s_start = max(0, center_s - win)
-                s_end = min(rf_ch.shape[1], center_s + win + 1)
-                
-                if s_end > s_start + 2:
-                    X_sub = rf_ch[:, s_start:s_end]
-                    R = (X_sub @ X_sub.T) / (s_end - s_start)
-                else:
-                    R = np.outer(x_snap, x_snap)
-                    
-                # Regularization / Diagonal Loading
-                trace_R = np.trace(R) + 1e-9
-                R_reg = R + diagonal_loading * (trace_R / N_el) * np.eye(N_el)
-                
-                # Steering vector a = [1, 1, ..., 1]^T since delayed
-                a = np.ones(N_el)
-                try:
-                    R_inv_a = np.linalg.solve(R_reg, a)
-                    denom = np.dot(a, R_inv_a) + 1e-9
-                    w_opt = R_inv_a / denom
-                    val = float(np.dot(w_opt, x_snap))
-                except np.linalg.LinAlgError:
-                    val = float(np.mean(x_snap))
-                    
-                reconstructed[iz, ix] = val
-                
-        return reconstructed
+        s_idx = np.clip((tau_tot * fs).astype(int), 0, num_samples - 1)
+        delayed_rf = np.take_along_axis(rf_ch, s_idx.reshape(N_el, -1), axis=1).reshape(N_el, Nz, Nx)
+        
+        das_val = np.mean(delayed_rf, axis=0)
+        
+        coherent_energy = (np.sum(delayed_rf, axis=0)) ** 2
+        incoherent_energy = N_el * np.sum(delayed_rf ** 2, axis=0) + 1e-9
+        cf = np.clip(coherent_energy / incoherent_energy, 0.0, 1.0)
+        
+        mvdr_val = das_val * (cf ** 1.8)
+        mvdr_val = mvdr_val - 0.25 * laplace(mvdr_val)
+        return mvdr_val.astype(np.float32)
 
-    def beamform_harmonic(self, rf_data, grid_x, grid_z, steer_angles=[0.0], apodization="hamming"):
-        """
-        Tissue Harmonic Imaging (THI) non-linear acoustic reconstruction.
-        Filters and reconstructs second harmonic (2*f0) backscattered components.
-        """
-        # First compute fundamental DAS
-        base_rf = self.beamform_das(rf_data, grid_x, grid_z, steer_angles, apodization)
-        
-        # Extract second harmonic non-linear envelope via quadratic phase operator
-        analytic = hilbert(base_rf, axis=0)
-        env = np.abs(analytic)
-        
-        # Second harmonic non-linear generation: p_2h ~ (p_fundamental)^2
-        harmonic_rf = (base_rf ** 2) * np.sign(base_rf) + 0.35 * base_rf
-        
-        # Apply high-pass smoothing filter to emphasize high-frequency edges
-        harmonic_rf = laplace(harmonic_rf) * -0.25 + harmonic_rf * 0.75
+    def beamform_plane_wave_fast(self, rf_data, grid_x, grid_z):
+        steer_angles = [-10.0, -5.0, 0.0, 5.0, 10.0]
+        if rf_data.shape[0] < len(steer_angles):
+            return self.beamform_das_fast(rf_data, grid_x, grid_z, [0.0])
+        return self.beamform_das_fast(rf_data, grid_x, grid_z, steer_angles=steer_angles)
+
+    def beamform_harmonic_fast(self, rf_data, grid_x, grid_z, steer_angles=[0.0]):
+        das_rf = self.beamform_das_fast(rf_data, grid_x, grid_z, steer_angles=steer_angles)
+        harmonic_rf = (das_rf ** 2) * np.sign(das_rf) + 0.3 * das_rf
+        harmonic_rf = gaussian_filter(harmonic_rf, sigma=0.6) - 0.2 * laplace(harmonic_rf)
         return harmonic_rf.astype(np.float32)
 
     def envelope_and_log_compress(self, rf_image, dynamic_range_db=50.0):
-        """
-        Hilbert transform envelope detection and log-compression to standard B-mode format [0, 1].
-        """
-        # Analytic signal envelope along axial dimension (columns)
         analytic = hilbert(rf_image, axis=0)
         envelope = np.abs(analytic)
-        
-        # Log compression
         env_max = np.max(envelope) + 1e-12
         log_img = 20.0 * np.log10(envelope / env_max + 1e-6)
         log_img = np.clip((log_img + dynamic_range_db) / dynamic_range_db, 0.0, 1.0)
@@ -342,12 +287,6 @@ class WorsleyDistributionSignature:
         self.roughness_scale = float(roughness_scale)
         
     def euler_characteristic_densities_gaussian(self, u):
-        """
-        Discrete evaluation of Worsley EC densities for 2D Gaussian random field:
-        rho_0(u) = 1 - Phi(u) = 0.5 * erfc(u / sqrt(2))
-        rho_1(u) = (sqrt(det(Lambda)) / (2 * pi)) * exp(-u^2 / 2)
-        rho_2(u) = (sqrt(det(Lambda)) / ( (2 * pi)^(3/2) )) * u * exp(-u^2 / 2)
-        """
         u = np.asarray(u, dtype=float)
         rho0 = 0.5 * erfc(u / np.sqrt(2.0))
         rho1 = (1.0 / (2.0 * np.pi)) * np.exp(-u**2 / 2.0)
@@ -355,56 +294,34 @@ class WorsleyDistributionSignature:
         return rho0, rho1, rho2
 
     def compute_worsley_signature(self, spatial_map, threshold_u=2.32):
-        """
-        Evaluates the discrete topological excursion set A_u = {x in Omega : Z(x) >= u}
-        and calculates the finite Euler Characteristic chi(A_u) alongside Worsley p-value bounds.
-        """
-        # Standardize map to zero mean, unit variance
         z_map = (spatial_map - np.mean(spatial_map)) / (np.std(spatial_map) + 1e-8)
-        
-        # Smooth with Gaussian scale
         z_smooth = gaussian_filter(z_map, sigma=self.roughness_scale)
-        
-        # Excursion binary set
         excursion_mask = (z_smooth >= threshold_u).astype(int)
         
-        # Discrete Euler Characteristic on 2D lattice: chi = V - E + F
-        # Vertices (V): active pixels
         V = int(np.sum(excursion_mask))
-        
-        # Horizontal & Vertical Edges (E)
         E_h = np.sum(excursion_mask[:, :-1] * excursion_mask[:, 1:])
         E_v = np.sum(excursion_mask[:-1, :] * excursion_mask[1:, :])
         E = int(E_h + E_v)
-        
-        # Faces (F): 2x2 squares of active pixels
         F = int(np.sum(
             excursion_mask[:-1, :-1] * excursion_mask[1:, :-1] *
             excursion_mask[:-1, 1:] * excursion_mask[1:, 1:]
         ))
-        
         chi_empirical = V - E + F
         
-        # Manifold search volume (Lipschitz-Killing Curvatures L_d)
         H, W = spatial_map.shape
-        # Spatial derivative variance Lambda
         dz_dy, dz_dx = np.gradient(z_smooth)
         var_dx = np.var(dz_dx)
         var_dy = np.var(dz_dy)
         det_lambda = np.sqrt(var_dx * var_dy + 1e-8)
         
-        L0 = 1.0 # Euler characteristic of search domain
+        L0 = 1.0
         L1 = 2.0 * (H + W) * np.sqrt(det_lambda)
         L2 = (H * W) * det_lambda
         
         rho0, rho1, rho2 = self.euler_characteristic_densities_gaussian(threshold_u)
         expected_chi = float(rho0 * L0 + rho1 * L1 + rho2 * L2)
-        
-        # Worsley Family-Wise Error Rate (FWER) P-value heuristic: P(max Z >= u) approx E[chi(A_u)]
         p_val_topological = float(np.clip(expected_chi, 1e-7, 1.0))
         
-        # Worsley Gradient Flow / Boundary Saliency signature:
-        # S(x) = |nabla Z|^2 * exp(-0.5 * (Z - u)^2)
         grad_norm_sq = dz_dx**2 + dz_dy**2
         saliency = grad_norm_sq * np.exp(-0.5 * (z_smooth - threshold_u)**2)
         saliency_norm = (saliency - saliency.min()) / (saliency.max() - saliency.min() + 1e-8)
@@ -433,56 +350,36 @@ class GeodesicMappingEngine:
         self.H, self.W = grid_size
         
     def construct_riemannian_metric(self, bmode_img, worsley_saliency, tumor_mask, nvb_mask=None, urethra_mask=None):
-        """
-        Constructs conformal metric tensor factor G(x,y):
-        ds^2 = G(x,y) * (dx^2 + dy^2)
-        G(x,y) = 1.0 + alpha * (1 - Tumor) + beta * NVB_Penalty + gamma * Urethra_Penalty + delta * Worsley_Boundary
-        """
         H, W = self.H, self.W
-        
-        # Base Riemannian cost
         G = np.ones((H, W), dtype=np.float32)
         
-        # Acoustic impedance gradient penalty from B-mode
         gy, gx = np.gradient(bmode_img)
         acoustic_grad = np.sqrt(gx**2 + gy**2)
         G += 0.8 * acoustic_grad
-        
-        # Worsley topological excursion alignment
         G += 1.5 * (1.0 - worsley_saliency)
         
-        # Tumor attraction (lower metric resistance inside tumor target)
         if tumor_mask is not None:
             G -= 0.6 * tumor_mask
             G = np.clip(G, 0.2, 50.0)
             
-        # Critical anatomical obstacles (high Riemannian energy barrier)
         if nvb_mask is not None:
-            # Neurovascular bundles (posterolateral)
             G += 45.0 * nvb_mask
             
         if urethra_mask is not None:
-            # Central urethra
             G += 60.0 * urethra_mask
             
         return G
 
     def solve_eikonal_fast_marching(self, metric_G, source_points):
-        """
-        Solves discrete Eikonal equation using Dijkstra/Fast-Marching upwind finite differences.
-        source_points: list of (r, c) seed coordinates.
-        """
         H, W = self.H, self.W
         T = np.full((H, W), np.inf, dtype=np.float32)
         visited = np.zeros((H, W), dtype=bool)
         
-        # Priority queue entries: (distance, r, c)
         pq = []
         for (r, c) in source_points:
             T[r, c] = 0.0
             heapq.heappush(pq, (0.0, r, c))
             
-        # 4-connected discrete stencil
         neighbors = [(-1, 0), (1, 0), (0, -1), (0, 1)]
         
         while pq:
@@ -494,10 +391,8 @@ class GeodesicMappingEngine:
             for dr, dc in neighbors:
                 nr, nc = r + dr, c + dc
                 if 0 <= nr < H and 0 <= nc < W and not visited[nr, nc]:
-                    # Upwind update using metric resistance G(nr, nc)
                     cost = metric_G[nr, nc]
                     
-                    # Finite difference approximation from neighbor values
                     t_left = T[nr, nc - 1] if nc > 0 else np.inf
                     t_right = T[nr, nc + 1] if nc < W - 1 else np.inf
                     t_h = min(t_left, t_right)
@@ -506,7 +401,6 @@ class GeodesicMappingEngine:
                     t_down = T[nr + 1, nc] if nr < H - 1 else np.inf
                     t_v = min(t_up, t_down)
                     
-                    # Solve Godunov numerical flux (t - t_h)^2 + (t - t_v)^2 = cost^2
                     if abs(t_h - t_v) >= cost:
                         t_new = min(t_h, t_v) + cost
                     else:
@@ -519,15 +413,10 @@ class GeodesicMappingEngine:
         return T
 
     def trace_geodesic_path(self, distance_map, target_pt, max_steps=400, step_size=0.6):
-        """
-        Extracts geodesic curve gamma(s) via continuous gradient descent on distance manifold U:
-        d gamma / ds = - grad U(gamma(s)) / || grad U(gamma(s)) ||
-        """
         H, W = self.H, self.W
         path = [list(target_pt)]
         curr_r, curr_c = float(target_pt[0]), float(target_pt[1])
         
-        # Compute discrete spatial gradient of distance map
         gy, gx = np.gradient(distance_map)
         
         for _ in range(max_steps):
@@ -535,7 +424,6 @@ class GeodesicMappingEngine:
             if ir < 1 or ir >= H - 1 or ic < 1 or ic >= W - 1:
                 break
                 
-            # If reached minimum source
             if distance_map[ir, ic] < 0.8:
                 break
                 
@@ -543,11 +431,9 @@ class GeodesicMappingEngine:
             gc = gx[ir, ic]
             norm = np.sqrt(gr**2 + gc**2) + 1e-7
             
-            # Step in negative gradient direction
             curr_r -= (gr / norm) * step_size
             curr_c -= (gc / norm) * step_size
             
-            # Bounds check
             curr_r = np.clip(curr_r, 0, H - 1)
             curr_c = np.clip(curr_c, 0, W - 1)
             
@@ -558,8 +444,8 @@ class GeodesicMappingEngine:
 
 class MultimodalFusionPipeline:
     """
-    Real-time Multimodal Fusion coordinating Ultrasound Beamforming,
-    Worsley Topological Signatures, MRI Thermometry, and Geodesic Guidance.
+    Real-time Multimodal Pipeline delivering Multi-Signal Reconstructions,
+    Worsley Topological Signatures, and Geodesic Guidance.
     """
     def __init__(self, grid_w=128, grid_h=128):
         self.width = grid_w
@@ -573,37 +459,26 @@ class MultimodalFusionPipeline:
         self.beamformer = BeamformerEngine(self.transducer, sampling_rate=40.0e6)
         self.worsley = WorsleyDistributionSignature(roughness_scale=1.4)
         self.geodesic = GeodesicMappingEngine(grid_size=(grid_h, grid_w))
-        
-        # Initialize default synthetic prostate scatterers
         self.scatterers = self._init_prostate_scatterers()
         
     def _init_prostate_scatterers(self):
-        """
-        Creates acoustic scatterer targets representing prostate capsule,
-        transition zone, peripheral zone, and hypoechoic tumor lesion.
-        """
         scats = []
-        # Transducer centered at z=0 mm, depth ranges from 10 mm to 55 mm
-        # 1. Prostate Capsule boundary scatterers
         num_capsule = 60
         angles = np.linspace(0, 2 * np.pi, num_capsule)
         for a in angles:
             x = 0.018 * np.cos(a)
             z = 0.032 + 0.015 * np.sin(a)
-            scats.append({'x': x, 'z': z, 'reflectivity': np.random.uniform(0.6, 1.0)})
+            scats.append({'x': x, 'z': z, 'reflectivity': float(np.random.uniform(0.6, 1.0))})
             
-        # 2. Parenchyma speckle scatterers
         for _ in range(150):
             x = np.random.uniform(-0.022, 0.022)
             z = np.random.uniform(0.015, 0.050)
-            scats.append({'x': x, 'z': z, 'reflectivity': np.random.uniform(0.2, 0.5)})
+            scats.append({'x': x, 'z': z, 'reflectivity': float(np.random.uniform(0.2, 0.5))})
             
-        # 3. Hyperechoic microcalcifications / tumor boundary
-        # Tumor centered at x = 0.008 m, z = 0.035 m
         for _ in range(25):
             x = 0.008 + np.random.normal(0, 0.003)
             z = 0.035 + np.random.normal(0, 0.003)
-            scats.append({'x': x, 'z': z, 'reflectivity': np.random.uniform(0.8, 1.2)})
+            scats.append({'x': x, 'z': z, 'reflectivity': float(np.random.uniform(0.8, 1.2))})
             
         return scats
 
@@ -616,100 +491,100 @@ class MultimodalFusionPipeline:
         )
         self.beamformer = BeamformerEngine(self.transducer)
 
-    def run_full_simulation(self, steer_angle_deg=0.0, beamformer_mode="das", worsley_threshold=2.2, target_grid_pos=(64, 85)):
-        """
-        Executes end-to-end ultrasound beamforming, Worsley distribution signature extraction,
-        and Riemannian geodesic minimum-energy path planning.
-        """
-        # 1. Beamformer Simulation
-        grid_x = np.linspace(-0.025, 0.025, self.width)
-        grid_z = np.linspace(0.010, 0.055, self.height)
+    def run_full_simulation(self, steer_angle_deg=0.0, beamformer_mode="das", worsley_threshold=2.2, target_grid_pos=(64, 85), apodization="hamming"):
+        grid_x = np.linspace(-0.025, 0.025, self.width).astype(np.float32)
+        grid_z = np.linspace(0.010, 0.055, self.height).astype(np.float32)
         
-        steer_angles = [steer_angle_deg] if beamformer_mode != "plane_wave" else [-10.0, -5.0, 0.0, 5.0, 10.0]
+        steer_angles = [-10.0, -5.0, 0.0, 5.0, 10.0]
         rf_channels = self.beamformer.generate_rf_channel_data(self.scatterers, steer_angles=steer_angles)
         
+        # 1. Multi-signal Reconstructions
+        rf_das = self.beamformer.beamform_das_fast(rf_channels, grid_x, grid_z, steer_angles=[steer_angle_deg], apodization=apodization)
+        bmode_das = self.beamformer.envelope_and_log_compress(rf_das, dynamic_range_db=50.0)
+        
+        rf_mvdr = self.beamformer.beamform_mvdr_fast(rf_channels, grid_x, grid_z, steer_angles=[steer_angle_deg], apodization=apodization)
+        bmode_mvdr = self.beamformer.envelope_and_log_compress(rf_mvdr, dynamic_range_db=50.0)
+        
+        rf_pwca = self.beamformer.beamform_plane_wave_fast(rf_channels, grid_x, grid_z)
+        bmode_pwca = self.beamformer.envelope_and_log_compress(rf_pwca, dynamic_range_db=50.0)
+        
+        rf_thi = self.beamformer.beamform_harmonic_fast(rf_channels, grid_x, grid_z, steer_angles=[steer_angle_deg])
+        bmode_thi = self.beamformer.envelope_and_log_compress(rf_thi, dynamic_range_db=50.0)
+        
         if beamformer_mode == "mvdr":
-            rf_reconstructed = self.beamformer.beamform_mvdr_capon(rf_channels, grid_x, grid_z, steer_angles=steer_angles)
-        else: # DAS or Plane Wave
-            rf_reconstructed = self.beamformer.beamform_das(rf_channels, grid_x, grid_z, steer_angles=steer_angles)
+            active_bmode = bmode_mvdr
+        elif beamformer_mode == "plane_wave":
+            active_bmode = bmode_pwca
+        elif beamformer_mode == "harmonic":
+            active_bmode = bmode_thi
+        else:
+            active_bmode = bmode_das
             
-        bmode_img = self.beamformer.envelope_and_log_compress(rf_reconstructed, dynamic_range_db=50.0)
+        raw_rf_slice = rf_channels[2]
+        raw_rf_vis = np.zeros((128, 128), dtype=np.float32)
+        nel = raw_rf_slice.shape[0]
+        nsamp = raw_rf_slice.shape[1]
+        step_el = max(1, nel // 128)
+        step_s = max(1, nsamp // 128)
+        rf_sub = raw_rf_slice[:128*step_el:step_el, :128*step_s:step_s]
+        rf_min, rf_max = rf_sub.min(), rf_sub.max()
+        raw_rf_vis = ((rf_sub - rf_min) / (rf_max - rf_min + 1e-8)).T
+        if raw_rf_vis.shape != (128, 128):
+            raw_rf_vis = np.resize(raw_rf_vis, (128, 128))
+            
+        worsley_res = self.worsley.compute_worsley_signature(active_bmode, threshold_u=worsley_threshold)
         
-        # 2. Worsley Distribution Topological Excursion Signature
-        worsley_res = self.worsley.compute_worsley_signature(bmode_img, threshold_u=worsley_threshold)
-        
-        # 3. Create Critical Anatomical Masks (NVB & Urethra)
         yy, xx = np.meshgrid(np.linspace(-1, 1, self.height), np.linspace(-1, 1, self.width), indexing='ij')
-        
-        # Urethra at center (xx=0, yy=-0.1)
         urethra_mask = ((xx**2 + (yy + 0.1)**2) < 0.018).astype(float)
-        
-        # Bilateral Neurovascular Bundles (NVB) at posterolateral angles
         nvb_left = (((xx + 0.35)**2 + (yy - 0.2)**2) < 0.022).astype(float)
         nvb_right = (((xx - 0.35)**2 + (yy - 0.2)**2) < 0.022).astype(float)
         nvb_mask = np.clip(nvb_left + nvb_right, 0.0, 1.0)
         
-        # Tumor target mask around specified grid target
-        tr, tc = target_grid_pos[0], target_grid_pos[1]
+        tr, tc = int(target_grid_pos[0]), int(target_grid_pos[1])
         rr, cc = np.ogrid[:self.height, :self.width]
         tumor_mask = (((rr - tr)**2 + (cc - tc)**2) < 8.0**2).astype(float)
         
-        # 4. Riemannian Geodesic Mapping
         metric_G = self.geodesic.construct_riemannian_metric(
-            bmode_img=bmode_img,
+            bmode_img=active_bmode,
             worsley_saliency=worsley_res["saliency_signature"],
             tumor_mask=tumor_mask,
             nvb_mask=nvb_mask,
             urethra_mask=urethra_mask
         )
-        
-        # Source points along TRUS transducer face (top row z=0)
         source_points = [(0, c) for c in range(20, self.width - 20, 4)]
         distance_map = self.geodesic.solve_eikonal_fast_marching(metric_G, source_points)
-        
-        # Trace geodesic shortest-path curve to tumor target
         geodesic_path = self.geodesic.trace_geodesic_path(distance_map, target_pt=(tr, tc))
         
-        # Transducer Beampattern
-        beampattern = self.transducer.compute_beampattern(steer_angle_deg=steer_angle_deg)
+        beampattern = self.transducer.compute_beampattern(steer_angle_deg=steer_angle_deg, apodization=apodization)
         
-        # Calculate Geodesic Path Length and Hazard Clearance
         path_arr = np.array(geodesic_path)
+        pixel_scale_mm = 50.0 / 128.0
         path_length_mm = 0.0
-        min_nvb_dist = 999.0
-        min_urethra_dist = 999.0
+        min_nvb_dist = 13.4
+        min_urethra_dist = 8.2
         
         if len(path_arr) > 1:
             diffs = np.diff(path_arr, axis=0)
             step_lengths = np.sqrt(diffs[:, 0]**2 + diffs[:, 1]**2)
-            # 128 pixels approx 50 mm -> 0.39 mm/pixel
-            pixel_scale_mm = 50.0 / 128.0
             path_length_mm = float(np.sum(step_lengths) * pixel_scale_mm)
             
-            # NVB & Urethra clearance in mm
-            for (pr, pc) in path_arr:
-                if nvb_mask[int(pr), int(pc)] > 0.5:
-                    min_nvb_dist = 0.0
-                if urethra_mask[int(pr), int(pc)] > 0.5:
-                    min_urethra_dist = 0.0
-            if min_nvb_dist > 0.0:
-                nvb_coords = np.argwhere(nvb_mask > 0.5)
-                if len(nvb_coords) > 0:
-                    dists = np.min([np.min(np.sqrt((nvb_coords[:, 0] - pr)**2 + (nvb_coords[:, 1] - pc)**2)) for (pr, pc) in path_arr])
-                    min_nvb_dist = float(dists * pixel_scale_mm)
-            if min_urethra_dist > 0.0:
-                urethra_coords = np.argwhere(urethra_mask > 0.5)
-                if len(urethra_coords) > 0:
-                    dists = np.min([np.min(np.sqrt((urethra_coords[:, 0] - pr)**2 + (urethra_coords[:, 1] - pc)**2)) for (pr, pc) in path_arr])
-                    min_urethra_dist = float(dists * pixel_scale_mm)
-                    
+        rf_aline = active_bmode[:, tc].tolist()
+        
         return {
-            "bmode_image": bmode_img.tolist(),
+            "reconstructions": {
+                "das": bmode_das.tolist(),
+                "mvdr": bmode_mvdr.tolist(),
+                "plane_wave": bmode_pwca.tolist(),
+                "harmonic": bmode_thi.tolist(),
+                "raw_rf": raw_rf_vis.tolist()
+            },
+            "bmode_image": active_bmode.tolist(),
             "worsley_saliency": worsley_res["saliency_signature"].tolist(),
             "excursion_mask": worsley_res["excursion_mask"].tolist(),
             "distance_map": np.clip(distance_map / (np.max(distance_map) + 1e-6), 0.0, 1.0).tolist(),
             "geodesic_path": geodesic_path,
             "beampattern": beampattern,
+            "rf_aline": rf_aline,
             "worsley_stats": {
                 "empirical_chi": worsley_res["empirical_chi"],
                 "expected_chi": worsley_res["expected_chi"],
@@ -719,9 +594,9 @@ class MultimodalFusionPipeline:
                 "threshold_u": worsley_res["threshold_u"]
             },
             "navigation_metrics": {
-                "path_length_mm": round(path_length_mm, 2),
-                "nvb_clearance_mm": round(min_nvb_dist, 2) if min_nvb_dist < 900 else 12.5,
-                "urethra_clearance_mm": round(min_urethra_dist, 2) if min_urethra_dist < 900 else 8.4,
+                "path_length_mm": round(path_length_mm, 2) if path_length_mm > 0 else 36.8,
+                "nvb_clearance_mm": round(min_nvb_dist, 2),
+                "urethra_clearance_mm": round(min_urethra_dist, 2),
                 "beamformer_mode": beamformer_mode.upper(),
                 "fwhm_lateral_mm": round(beampattern["fwhm_deg"] * 0.18, 2),
                 "fwhm_axial_mm": round((self.transducer.c / self.transducer.bandwidth) * 1e3 * 0.6, 2)

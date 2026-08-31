@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const moduliBemView   = document.getElementById('moduli-bem-view');
     const touretteView    = document.getElementById('tourette-view');
     const nashGeodesicView = document.getElementById('nash-geodesic-view');
+    const tbiPtsdView      = document.getElementById('tbi-ptsd-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -60,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -143,6 +144,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Nash / Geodesic Registration',
             subtitle: 'Laser-MRI-CT Registration · Eigen Spectra · Cauchy-Schwarz Convergence Bounds',
             view:     nashGeodesicView, showRunBtn: false
+        },
+        'tbi-ptsd': {
+            title:    'TBI & PTSD rTMS Neuromodulation & Enterprise Healthcare Economics',
+            subtitle: 'BEM Electric Field Analysis · Longitudinal PCL-5 / RPQ Trajectories · 5-Year Revenue Projections',
+            view:     tbiPtsdView, showRunBtn: false
         }
     };
 
@@ -182,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'moduli-bem')                            runModuliBemParadigm();
             if (tab === 'tourette')                             runTouretteRtms();
             if (tab === 'nash-geodesic' && !nashGeodesicLoaded)   loadNashGeodesicRegistration();
+            if (tab === 'tbi-ptsd')                              runTbiPtsdRtms();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -1839,3 +1846,148 @@ document.addEventListener('DOMContentLoaded', () => {
             if (summaryEl) summaryEl.textContent = `Simulation unavailable: ${error.message}`;
         }
     };
+
+    // ── TBI & PTSD rTMS Neuromodulation ──────────────────────────
+    let _tbiDebounceTimer = null;
+    function runTbiPtsdRtmsDebounced() {
+        clearTimeout(_tbiDebounceTimer);
+        _tbiDebounceTimer = setTimeout(runTbiPtsdRtms, 350);
+    }
+    window.runTbiPtsdRtmsDebounced = runTbiPtsdRtmsDebounced;
+
+    async function runTbiPtsdRtms() {
+        const pcl5  = parseFloat(document.getElementById('tbi-pcl5')?.value  || 58);
+        const rpq   = parseFloat(document.getElementById('tbi-rpq')?.value   || 42);
+        const weeks = parseInt(document.getElementById('tbi-weeks')?.value   || 24);
+        const freq  = parseFloat(document.getElementById('tbi-freq')?.value  || 10);
+        const coils = parseInt(document.getElementById('tbi-coils')?.value   || 3);
+        const price = parseInt(document.getElementById('tbi-price')?.value   || 300);
+
+        const qs = `baseline_pcl5=${pcl5}&baseline_rpq=${rpq}&treatment_weeks=${weeks}&rtms_freq_hz=${freq}&clinic_coils=${coils}&session_price=${price}`;
+
+        try {
+            const res  = await fetch(`/api/tbi-ptsd-rtms?${qs}`);
+            const json = await res.json();
+            if (json.status !== 'success') throw new Error(json.message || 'API error');
+            const d = json.data;
+
+            const darkBg   = 'rgba(0,0,0,0)';
+            const gridClr  = 'rgba(255,255,255,0.06)';
+            const fontClr  = '#8b949e';
+            const commonLayout = {
+                paper_bgcolor: darkBg, plot_bgcolor: darkBg,
+                font: { color: fontClr, size: 11, family: 'Inter, sans-serif' },
+                margin: { l: 55, r: 25, t: 30, b: 45 },
+                legend: { orientation: 'h', y: -0.22, font: { size: 10 } },
+                xaxis: { gridcolor: gridClr, zeroline: false },
+                yaxis: { gridcolor: gridClr, zeroline: false }
+            };
+
+            // -- Metric spans --
+            const el = id => document.getElementById(id);
+            el('tbi-metric-pcl5').textContent    = d.pcl5_synergistic[d.pcl5_synergistic.length-1].toFixed(1);
+            el('tbi-metric-rpq').textContent     = d.rpq_synergistic[d.rpq_synergistic.length-1].toFixed(1);
+            el('tbi-metric-savings').textContent  = '$' + d.economics.total_savings_per_patient.toLocaleString();
+            el('tbi-metric-revenue').textContent  = '$' + d.economics.total_revenue_5yr.toLocaleString();
+            el('tbi-metric-npv').textContent      = '$' + d.economics.npv.toLocaleString();
+            el('tbi-metric-payback').textContent   = d.economics.payback_months.toFixed(1) + ' months';
+
+            // -- 1. Longitudinal Trajectories --
+            Plotly.newPlot('tbi-plot-trajectories', [
+                { x: d.weeks, y: d.pcl5_standard,     name: 'PCL-5 Standard Care',   line: { color: '#ff7b72', dash: 'dot' } },
+                { x: d.weeks, y: d.pcl5_rtms_only,     name: 'PCL-5 rTMS Only',       line: { color: '#ffa657' } },
+                { x: d.weeks, y: d.pcl5_synergistic,   name: 'PCL-5 rTMS+CBT Synergy',line: { color: '#56d364', width: 3 } },
+                { x: d.weeks, y: d.rpq_standard,       name: 'RPQ Standard Care',     line: { color: '#79c0ff', dash: 'dot' } },
+                { x: d.weeks, y: d.rpq_rtms_only,      name: 'RPQ rTMS Only',         line: { color: '#d2a8ff' } },
+                { x: d.weeks, y: d.rpq_synergistic,    name: 'RPQ rTMS+CBT Synergy',  line: { color: '#38bdf8', width: 3 } },
+                { x: d.weeks, y: d.bdnf_index,         name: 'BDNF Index (×fold)',    line: { color: '#f0883e', dash: 'dashdot' }, yaxis: 'y2' }
+            ], {
+                ...commonLayout,
+                xaxis: { ...commonLayout.xaxis, title: 'Treatment Week' },
+                yaxis: { ...commonLayout.yaxis, title: 'Symptom Score (PCL-5 / RPQ)' },
+                yaxis2: { title: 'BDNF Fold', overlaying: 'y', side: 'right', showgrid: false, titlefont: { color: '#f0883e' }, tickfont: { color: '#f0883e' } }
+            }, { responsive: true, displaylogo: false });
+
+            // -- 2. BEM Surface E-Field Heatmap --
+            Plotly.newPlot('tbi-plot-bem-surface', [{
+                z: d.bem_field.efield_norm,
+                type: 'heatmap',
+                colorscale: 'Hot',
+                colorbar: { title: 'V/m', titleside: 'right', tickfont: { size: 10 } }
+            }], {
+                ...commonLayout,
+                xaxis: { ...commonLayout.xaxis, title: 'θ (Azimuthal BEM Node)' },
+                yaxis: { ...commonLayout.yaxis, title: 'φ (Polar BEM Node)' }
+            }, { responsive: true, displaylogo: false });
+
+            // -- 3. Depth Attenuation --
+            Plotly.newPlot('tbi-plot-depth', [{
+                x: d.bem_depth.depths_mm,
+                y: d.bem_depth.field_v_m,
+                mode: 'lines+markers',
+                name: 'E-field (V/m)',
+                line: { color: '#38bdf8', width: 2 },
+                marker: { size: 4 },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(56,189,248,0.08)'
+            }], {
+                ...commonLayout,
+                xaxis: { ...commonLayout.xaxis, title: 'Tissue Depth (mm)' },
+                yaxis: { ...commonLayout.yaxis, title: 'Induced E-field (V/m)' },
+                annotations: [{
+                    x: 40, y: d.bem_depth.target_depth_amygdala_v_m,
+                    text: 'Amygdala ' + d.bem_depth.target_depth_amygdala_v_m.toFixed(1) + ' V/m',
+                    showarrow: true, arrowhead: 2, ax: -40, ay: -30,
+                    font: { color: '#ff7b72', size: 11 }
+                }]
+            }, { responsive: true, displaylogo: false });
+
+            // -- 4. 5-Year Revenue --
+            const years = ['Year 1','Year 2','Year 3','Year 4','Year 5'];
+            Plotly.newPlot('tbi-plot-revenue', [
+                { x: years, y: d.economics.revenue_5yr, type: 'bar', name: 'Revenue ($)',
+                  marker: { color: ['#38bdf8','#56d364','#d2a8ff','#ffa657','#ff7b72'] } },
+                { x: years, y: d.economics.revenue_5yr.map(r => r - d.economics.annual_opex),
+                  type: 'scatter', mode: 'lines+markers', name: 'Net Profit ($)',
+                  line: { color: '#56d364', width: 2, dash: 'dash' }, marker: { size: 7 } }
+            ], {
+                ...commonLayout,
+                xaxis: { ...commonLayout.xaxis, title: 'Fiscal Year' },
+                yaxis: { ...commonLayout.yaxis, title: 'Revenue / Profit ($)' },
+                barmode: 'group'
+            }, { responsive: true, displaylogo: false });
+
+            // -- 5. Savings Breakdown --
+            Plotly.newPlot('tbi-plot-savings', [{
+                values: [d.economics.disability_savings_per_patient, d.economics.er_cost_avoidance],
+                labels: ['Disability Claims Avoidance', 'ER / Inpatient Cost Reduction'],
+                type: 'pie',
+                hole: 0.55,
+                marker: { colors: ['#56d364','#38bdf8'] },
+                textinfo: 'label+percent',
+                textposition: 'outside',
+                textfont: { size: 11 }
+            }], {
+                ...commonLayout,
+                showlegend: false,
+                annotations: [{ text: '$' + d.economics.total_savings_per_patient.toLocaleString() + '/yr',
+                    x: 0.5, y: 0.5, font: { size: 16, color: '#56d364' }, showarrow: false }]
+            }, { responsive: true, displaylogo: false });
+
+            // -- ASCII Schematic --
+            const asciiEl = document.getElementById('tbi-ascii-schematic');
+            if (asciiEl) asciiEl.textContent = d.ascii_schematic;
+
+            // -- Clinical Prescription --
+            const rxEl = document.getElementById('tbi-genai-text');
+            if (rxEl) {
+                rxEl.innerHTML = d.clinical_prescription
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n\n/g, '<br/><br/>');
+            }
+        } catch (err) {
+            console.error('TBI/PTSD API error:', err);
+            const rxEl = document.getElementById('tbi-genai-text');
+            if (rxEl) rxEl.textContent = 'Simulation unavailable: ' + err.message;
+        }
+    }
