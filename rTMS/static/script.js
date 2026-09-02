@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const touretteView    = document.getElementById('tourette-view');
     const nashGeodesicView = document.getElementById('nash-geodesic-view');
     const tbiPtsdView      = document.getElementById('tbi-ptsd-view');
+    const rlsView          = document.getElementById('rls-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -61,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -149,6 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'TBI & PTSD rTMS Neuromodulation & Enterprise Healthcare Economics',
             subtitle: 'BEM Electric Field Analysis · Longitudinal PCL-5 / RPQ Trajectories · 5-Year Revenue Projections',
             view:     tbiPtsdView, showRunBtn: false
+        },
+        'rls': {
+            title:    'Restless Legs Syndrome rTMS Research Studio',
+            subtitle: 'Recurrent finite paradigms · experimental-design response scores · BEM target visualization · market scenario',
+            view:     rlsView, showRunBtn: false
         }
     };
 
@@ -189,6 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'tourette')                             runTouretteRtms();
             if (tab === 'nash-geodesic' && !nashGeodesicLoaded)   loadNashGeodesicRegistration();
             if (tab === 'tbi-ptsd')                              runTbiPtsdRtms();
+                        if (tab === 'rls')                                   runRlsRtms();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -1901,6 +1908,47 @@ document.addEventListener('DOMContentLoaded', () => {
         _tbiDebounceTimer = setTimeout(runTbiPtsdRtms, 350);
     }
     window.runTbiPtsdRtmsDebounced = runTbiPtsdRtmsDebounced;
+
+    let _rlsTimer = null;
+    window.rlsUpdateLabel = (id, value) => { document.getElementById(id).textContent = value; };
+    window.runRlsRtmsDebounced = () => {
+        clearTimeout(_rlsTimer);
+        _rlsTimer = setTimeout(runRlsRtms, 250);
+    };
+
+    async function runRlsRtms() {
+        const baseline = document.getElementById('rls-baseline')?.value || 28;
+        const weeks = document.getElementById('rls-weeks')?.value || 8;
+        const coils = document.getElementById('rls-coils')?.value || 2;
+        const price = document.getElementById('rls-price')?.value || 275;
+        try {
+            const response = await fetch(`/api/rls-rtms?baseline_irls=${baseline}&treatment_weeks=${weeks}&coil_towers=${coils}&session_price=${price}`);
+            const json = await response.json();
+            if (json.status !== 'success') throw new Error(json.message || 'API error');
+            const data = json.data;
+            const layout = { ...PL, margin: { l: 52, r: 24, t: 25, b: 48 }, legend: { orientation: 'h', y: -0.22, font: { color: '#c9d1d9', size: 9 } } };
+            const element = id => document.getElementById(id);
+            const economics = data.economics;
+            const design = data.experimental_design;
+            element('rls-characteristics').innerHTML = [
+                ['Design likelihood', `${design.response_likelihood_pct}%`],
+                ['Recovery at horizon', `${data.recovery_pct[data.recovery_pct.length - 1]}%`],
+                ['Finite-grid maximum', `${design.best.frequency_hz} Hz / ${design.best.intensity_pct}%`],
+                ['5-year modeled revenue', `$${Math.round(economics.total_revenue_5yr).toLocaleString()}`]
+            ].map(([label, value]) => `<div class="sa-metric-row"><span class="sa-metric-lbl">${label}</span><span class="sa-metric-val" style="color:#56d364">${value}</span></div>`).join('');
+
+            Plotly.newPlot('rls-recurrence-chart', data.recurrent_curves.map((curve, index) => ({ x: data.weeks, y: curve.values, type: 'scatter', mode: 'lines', name: curve.name, line: { width: index === 0 ? 3 : 2, color: ['#00c2a8','#58a6ff','#f1c40f','#d2a8ff','#ff7b72'][index] } })), { ...layout, xaxis: { ...PL.xaxis, title: 'Study week' }, yaxis: { ...PL.yaxis, title: 'Normalized recurrent activation', range: [0, 1.05] } }, { responsive: true, displaylogo: false });
+            Plotly.newPlot('rls-bem-chart', [{ x: data.bem_field.x, y: data.bem_field.y, z: data.bem_field.z, type: 'heatmap', colorscale: [[0, '#071b2b'], [.45, '#006d77'], [.72, '#00c2a8'], [1, '#f1c40f']], colorbar: { title: 'Normalized field' } }], { ...layout, xaxis: { ...PL.xaxis, title: 'Boundary X' }, yaxis: { ...PL.yaxis, title: 'Boundary Y' } }, { responsive: true, displaylogo: false });
+            Plotly.newPlot('rls-distribution-chart', [{ x: design.response_samples, type: 'histogram', nbinsx: 28, marker: { color: '#58a6ff', line: { color: '#b8e3ff', width: .4 } }, name: 'Synthetic response score' }], { ...layout, xaxis: { ...PL.xaxis, title: 'Response score (%)' }, yaxis: { ...PL.yaxis, title: 'Synthetic draws' }, shapes: [{ type: 'line', x0: 50, x1: 50, y0: 0, y1: 1, yref: 'paper', line: { color: '#f1c40f', dash: 'dash' } }] }, { responsive: true, displaylogo: false });
+            Plotly.newPlot('rls-recovery-chart', [{ x: data.weeks, y: data.recovery_pct, type: 'scatter', mode: 'lines+markers', line: { color: '#56d364', width: 3 }, marker: { size: 6 }, fill: 'tozeroy', fillcolor: 'rgba(86,211,100,.12)', name: 'Synthetic recovery' }], { ...layout, xaxis: { ...PL.xaxis, title: 'Study week' }, yaxis: { ...PL.yaxis, title: 'Recovery from baseline (%)', range: [0, 100] }, showlegend: false }, { responsive: true, displaylogo: false });
+            element('rls-equipment').innerHTML = data.equipment.map(item => `<div class="sa-metric-row"><span class="sa-metric-lbl"><b>${item.item}</b><br>${item.role}</span><span class="sa-metric-val">${item.quantity}</span></div>`).join('');
+            element('rls-economics').innerHTML = `<div class="sa-metric-row"><span class="sa-metric-lbl">Annual study-market courses</span><span class="sa-metric-val">${economics.annual_courses}</span></div><div class="sa-metric-row"><span class="sa-metric-lbl">Modeled savings / course</span><span class="sa-metric-val">$${economics.modeled_savings_per_course.toLocaleString()}</span></div><div class="sa-metric-row"><span class="sa-metric-lbl">Payback</span><span class="sa-metric-val">${economics.payback_months} mo</span></div>`;
+            Plotly.newPlot('rls-revenue-chart', [{ x: ['Y1','Y2','Y3','Y4','Y5'], y: economics.revenue_5yr, type: 'bar', marker: { color: ['#58a6ff','#00c2a8','#f1c40f','#d2a8ff','#ff7b72'] } }], { ...layout, margin: { l: 48, r: 10, t: 8, b: 35 }, xaxis: { ...PL.xaxis }, yaxis: { ...PL.yaxis, title: '$ revenue' }, showlegend: false }, { responsive: true, displaylogo: false });
+            element('rls-protocol-table').innerHTML = `<table class="eq-spec-table" style="width:100%"><thead><tr><th>Target</th><th>Lobe</th><th>Hz</th><th>Design weight</th><th>Allocation</th><th>Modeled equipment</th></tr></thead><tbody>${data.lobe_protocol.map(row => `<tr><td>${row.target}</td><td>${row.lobe}</td><td>${row.frequency_hz}</td><td>${row.design_weight}</td><td>${row.allocation_pct}%</td><td>${row.coil}</td></tr>`).join('')}</tbody></table>`;
+        } catch (error) {
+            console.error('RLS rTMS API error:', error);
+        }
+    }
 
     async function runTbiPtsdRtms() {
         const pcl5  = parseFloat(document.getElementById('tbi-pcl5')?.value  || 58);

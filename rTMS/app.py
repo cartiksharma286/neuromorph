@@ -27,6 +27,7 @@ from logic.anxiety_millennials_rtms import simulate_anxiety_rtms
 from logic.moduli_bem_paradigm import get_moduli_bem_paradigm
 from logic.tourette_rtms import simulate_tourette_rtms
 from logic.tbi_ptsd_rtms import simulate_tbi_ptsd_rtms
+from logic.rls_rtms import simulate_rls_rtms
 
 app = Flask(__name__)
 CORS(app)
@@ -74,6 +75,20 @@ def ocd_treatment():
         condition="ocd", freq_range=(18.0, 22.0), intensity_range=(80.0, 120.0)
     )
     return jsonify({"status": "success", "data": data})
+    
+@app.route('/api/rls-rtms', methods=['GET'])
+def rls_rtms():
+    """Research-only RLS recurrent-design simulation endpoint."""
+    try:
+        result = simulate_rls_rtms(
+            baseline_irls=float(request.args.get('baseline_irls', 28.0)),
+            treatment_weeks=int(request.args.get('treatment_weeks', 8)),
+            coil_towers=int(request.args.get('coil_towers', 2)),
+            session_price=float(request.args.get('session_price', 275.0)),
+        )
+        return jsonify({'status': 'success', 'data': result})
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
 
 @app.route('/api/jaynes-cummings', methods=['GET', 'POST'])
 def jaynes_cummings_route():

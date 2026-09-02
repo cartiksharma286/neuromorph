@@ -65,6 +65,9 @@
                 <button class="nav-btn" data-tab="tbi-ptsd">
                     <span class="icon">🧠</span> TBI & PTSD Cure
                 </button>
+                <button class="nav-btn" data-tab="rls">
+                    <span class="icon">◌</span> RLS Research
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -1192,6 +1195,15 @@
                         <div id="ng-longitudinal-quality-chart" class="chart-container" style="min-height:300px;"></div>
                     </div>
                 </div>
+            </div>
+
+            <!-- ── RLS Recurrent-Design Research Suite ── -->
+            <div id="rls-view" class="hidden">
+                <div class="notice" style="margin:0 0 18px;border-left:3px solid #f1c40f;padding:10px 12px;background:rgba(241,196,15,.08);color:#c9d1d9;font-size:12px;">Research-only synthetic model. Response likelihood is an experimental-design score, not a cure probability or treatment recommendation.</div>
+                <div class="dashboard-grid" style="margin-bottom:24px;"><div class="panel glass-panel"><h3>RLS Model Controls</h3><div class="sa-control-box"><div class="sa-slider-group"><div class="sa-slider-header"><span>Baseline IRLS index</span><span id="rls-baseline-label" class="sa-slider-val">28</span></div><input id="rls-baseline" class="sa-slider-input" type="range" min="10" max="40" value="28" oninput="rlsUpdateLabel('rls-baseline-label',this.value);runRlsRtmsDebounced()"></div><div class="sa-slider-group"><div class="sa-slider-header"><span>Study weeks</span><span id="rls-weeks-label" class="sa-slider-val">8</span></div><input id="rls-weeks" class="sa-slider-input" type="range" min="4" max="16" value="8" oninput="rlsUpdateLabel('rls-weeks-label',this.value);runRlsRtmsDebounced()"></div><div class="sa-slider-group"><div class="sa-slider-header"><span>rTMS systems</span><span id="rls-coils-label" class="sa-slider-val">2</span></div><input id="rls-coils" class="sa-slider-input" type="range" min="1" max="8" value="2" oninput="rlsUpdateLabel('rls-coils-label',this.value);runRlsRtmsDebounced()"></div><div class="sa-slider-group"><div class="sa-slider-header"><span>Modeled session price</span><span id="rls-price-label" class="sa-slider-val">$275</span></div><input id="rls-price" class="sa-slider-input" type="range" min="150" max="650" step="25" value="275" oninput="rlsUpdateLabel('rls-price-label','$'+this.value);runRlsRtmsDebounced()"></div></div><div id="rls-characteristics" style="margin-top:14px;"></div></div><div class="panel glass-panel large-panel"><h3>Recurrent Cortical-Network Paradigms</h3><p style="color:#8b949e;font-size:12px;">Finite recurrence across modeled frontal, parietal, temporal, and occipital target allocations.</p><div id="rls-recurrence-chart" class="chart-container" style="min-height:335px;"></div></div></div>
+                <div class="dashboard-grid" style="margin-bottom:24px;"><div class="panel glass-panel large-panel"><h3>Finite BEM Target Field</h3><p style="color:#8b949e;font-size:12px;">Synthetic multi-target boundary field; normalized for visualization.</p><div id="rls-bem-chart" class="chart-container" style="min-height:310px;"></div></div><div class="panel glass-panel"><h3>Experimental Design Distribution</h3><p style="color:#8b949e;font-size:12px;">Synthetic response-score draws and bounded-design likelihood.</p><div id="rls-distribution-chart" class="chart-container" style="min-height:310px;"></div></div></div>
+                <div class="dashboard-grid" style="margin-bottom:24px;"><div class="panel glass-panel"><h3>Modeled RLS Recovery</h3><div id="rls-recovery-chart" class="chart-container" style="min-height:290px;"></div></div><div class="panel glass-panel"><h3>rTMS Research Equipment</h3><div id="rls-equipment"></div></div><div class="panel glass-panel"><h3>RLS Market Scenario</h3><div id="rls-economics"></div><div id="rls-revenue-chart" class="chart-container" style="min-height:190px;"></div></div></div>
+                <div class="panel glass-panel"><h3>Finite Target Allocation</h3><div id="rls-protocol-table"></div></div>
             </div>
 
             <!-- ── TBI & PTSD Cure Suite (BEM E-Field & Enterprise Economics) ── -->
