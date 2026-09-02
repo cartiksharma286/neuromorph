@@ -208,6 +208,30 @@
             <!-- ── OCD Treatment Tab ── -->
             <div id="ocd-view" class="hidden">
                 <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel" style="grid-column: span 3;">
+                        <h3>OCD Deep-Circuit BEM Characteristics</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:12px;">Illustrative single-layer boundary-element field estimates. These modeled quantities are not patient-specific treatment recommendations.</p>
+                        <div id="ocd-bem-characteristics" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;"></div>
+                    </div>
+                </div>
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel">
+                        <h3>Protocol Stability Landscape</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Frequency and drive-intensity sweep; marker denotes the modeled stability maximum.</p>
+                        <div id="ocd-bem-stability" class="chart-container" style="min-height:330px;"></div>
+                    </div>
+                    <div class="panel glass-panel large-panel">
+                        <h3>Boundary-Element Cortical Potential</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Deformed cortical boundary mesh under a dipole coil source.</p>
+                        <div id="ocd-bem-surface" class="chart-container" style="min-height:400px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Layered Depth Attenuation</h3>
+                        <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Modeled relative field after scalp, skull, CSF, and grey-matter conductivities.</p>
+                        <div id="ocd-bem-depth" class="chart-container" style="min-height:330px;"></div>
+                    </div>
+                </div>
+                <div class="dashboard-grid" style="margin-bottom:24px;">
                     <div class="panel glass-panel">
                         <h3>Continued Fraction RF Tuning Convergence</h3>
                         <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Frequency matching for optimal OCD rTMS / DBS protocols.</p>

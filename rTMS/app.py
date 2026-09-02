@@ -69,7 +69,11 @@ def dbs_imaging_protocol():
 
 @app.route('/api/ocd-treatment', methods=['GET'])
 def ocd_treatment():
-    return jsonify({"status": "success", "data": get_ocd_fea_simulation()})
+    data = get_ocd_fea_simulation()
+    data["bem_analysis"] = get_moduli_bem_paradigm(
+        condition="ocd", freq_range=(18.0, 22.0), intensity_range=(80.0, 120.0)
+    )
+    return jsonify({"status": "success", "data": data})
 
 @app.route('/api/jaynes-cummings', methods=['GET', 'POST'])
 def jaynes_cummings_route():

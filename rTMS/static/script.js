@@ -1050,6 +1050,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await r.json();
             const data = res.data;
 
+            // 0. Boundary-element model characteristics and visualizations
+            if (data.bem_analysis) {
+                renderOcdBemAnalysis(data.bem_analysis);
+            }
+
             // 1. Continued Fractions Series
             const depths = Array.from({length: data.continued_fractions.length}, (_, i) => i+1);
             const freq_y = data.continued_fractions.map(c => c.approx_freq);
@@ -1174,6 +1179,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function renderOcdBemAnalysis(bem) {
+        const protocol = bem.optimal_protocol;
+        const attenuation = bem.bem_attenuation;
+        const heatmap = bem.bem_heatmap;
+        const finalField = attenuation.field_pct[attenuation.field_pct.length - 1];
+        const deepFieldLabel = finalField < 0.1 ? '<0.1%' : `${finalField.toFixed(1)}%`;
+        const characteristics = [
+            ['Stability', `${(protocol.stability_score * 100).toFixed(1)}%`, 'modular robustness score'],
+            ['Drive intensity', `${protocol.intensity_pct.toFixed(1)}%`, 'modeled coil output'],
+            ['Peak potential', `${heatmap.peak_potential.toFixed(2)}`, 'scaled cortical potential'],
+            ['Deep field', deepFieldLabel, `relative field at ${attenuation.depths_mm[attenuation.depths_mm.length - 1]} mm`]
+        ];
+        const card = document.getElementById('ocd-bem-characteristics');
+        if (card) {
+            card.innerHTML = characteristics.map(([label, value, detail], index) => `
+                <div style="border-top:3px solid ${['#58a6ff','#00c2a8','#f1c40f','#ff7b72'][index]};background:rgba(255,255,255,0.035);padding:14px 12px;min-height:94px;">
+                    <div style="color:#8b949e;font-size:11px;text-transform:uppercase;letter-spacing:.06em;">${label}</div>
+                    <div style="color:#f0f6fc;font-size:25px;font-weight:700;margin:5px 0 3px;">${value}</div>
+                    <div style="color:#8b949e;font-size:11px;">${detail}</div>
+                </div>`).join('');
+        }
+
+        Plotly.newPlot('ocd-bem-stability', [
+            { x: bem.moduli_grid.freq_axis, y: bem.moduli_grid.intensity_axis, z: bem.moduli_grid.stability, type: 'contour', colorscale: [[0, '#081c2c'], [.45, '#075e75'], [.75, '#00c2a8'], [1, '#f1c40f']], contours: { coloring: 'heatmap', showlabels: true }, colorbar: { title: 'Stability', tickfont: { color: '#c9d1d9' } } },
+            { x: [protocol.frequency_hz], y: [protocol.intensity_pct], type: 'scatter', mode: 'markers', marker: { size: 14, color: '#ff7b72', symbol: 'x', line: { color: '#fff', width: 1 } }, name: 'Modeled optimum' }
+        ], { ...PL, xaxis: { ...PL.xaxis, title: 'Frequency (Hz)' }, yaxis: { ...PL.yaxis, title: 'Drive intensity (% MSO)' }, legend: { font: { color: '#e6edf3' }, orientation: 'h', x: 0, y: 1.12 } }, { responsive: true });
+
+        Plotly.newPlot('ocd-bem-surface', [{
+            x: heatmap.x, y: heatmap.y, z: heatmap.z, surfacecolor: heatmap.potential, type: 'surface',
+            colorscale: [[0, '#051b2c'], [.38, '#0d7490'], [.7, '#00c2a8'], [1, '#f6c453']],
+            colorbar: { title: 'Potential', tickfont: { color: '#c9d1d9' } }, contours: { z: { show: true, usecolormap: true, project: { z: true } } }
+        }], { ...PL, margin: { t: 0, b: 0, l: 0, r: 0 }, scene: { ...PL.scene, xaxis: { ...PL.scene.xaxis, title: 'Cortical X' }, yaxis: { ...PL.scene.yaxis, title: 'Cortical Y' }, zaxis: { ...PL.scene.zaxis, title: 'Cortical Z' }, camera: { eye: { x: 1.55, y: -1.55, z: .95 } } } }, { responsive: true });
+
+        Plotly.newPlot('ocd-bem-depth', [{
+            x: attenuation.depths_mm, y: attenuation.field_pct, type: 'scatter', mode: 'lines',
+            line: { color: '#00c2a8', width: 4, shape: 'spline' }, fill: 'tozeroy', fillcolor: 'rgba(0,194,168,.16)', name: 'Relative field'
+        }], { ...PL, xaxis: { ...PL.xaxis, title: 'Modeled depth (mm)' }, yaxis: { ...PL.yaxis, title: 'Relative field (%)', rangemode: 'tozero' }, showlegend: false }, { responsive: true });
+    }
+
     function renderJaynesCummingsPlot(containerId, jc) {
         if (!jc || !document.getElementById(containerId)) return;
         Plotly.newPlot(containerId, [
@@ -1233,13 +1277,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        Plotly.newPlot(containerId, traces, {
+        const layout = {
             ...PL,
             xaxis: { ...PL.xaxis, title: 'Optimization Step / Iteration' },
             yaxis: { ...PL.yaxis, title: 'Convergence Loss / Metric' },
-            yaxis2: hasFeedback ? { ...PL.yaxis, title: 'Feedback Amplitude', overlaying: 'y', side: 'right', showgrid: false } : undefined,
             legend: { font: { color: '#e6edf3' }, orientation: 'h', x: 0, y: 1.15 }
-        }, { responsive: true });
+        };
+        if (hasFeedback) {
+            layout.yaxis2 = { ...PL.yaxis, title: 'Feedback Amplitude', overlaying: 'y', side: 'right', showgrid: false };
+        }
+        Plotly.newPlot(containerId, traces, layout, { responsive: true });
     }
 
     function renderRecommendedCard(containerId, rec) {
