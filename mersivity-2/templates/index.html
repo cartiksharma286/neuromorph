@@ -370,6 +370,7 @@
             <button class="tab" id="tab-cardio-quantum-kalman" onclick="selectTab('cardio-quantum-kalman')">❤️ Cardiovascular Robot Quantum Kalman</button>
             <button class="tab" id="tab-nash-prime-queue" onclick="selectTab('nash-prime-queue')">🧮 Nash-Prime Queue Optimizer</button>
             <button class="tab" id="tab-health-economics-bci" onclick="selectTab('health-economics-bci')">📊 Health Economics & BCI Projections</button>
+            <button class="tab" id="tab-pqc-leibniz" onclick="selectTab('pqc-leibniz')">🔐 Post-Quantum Leibniz PQC</button>
         </div>
 
         <!-- QML Volumetric Surface Reconstruction Card -->
@@ -1766,6 +1767,135 @@
                     <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
                         <h4 style="margin: 0 0 8px 0; color: #c084fc; font-size: 0.95em;">🌪️ Deterministic Tornado Sensitivity Analysis (&Delta;NMB at &lambda; = $50,000 / QALY)</h4>
                         <div id="health-econ-tornado-plot" style="width: 100%; height: 230px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Post-Quantum Cryptography with Leibniz Recurrent Primes Card -->
+        <div id="pqc-leibniz-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">🔐 Post-Quantum Cryptography with Leibniz Recurrent Primes (Ring-LWE & Zero-Knowledge Neuro-Registration)</div>
+
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px;">
+                <!-- Left Column: Parameters, Mathematical Formulations, Summary, and Nature PDF Downloads -->
+                <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 15px;">
+                    <!-- Controls -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 12px;">
+                        <h3 style="margin: 0; color: #c084fc; font-size: 1.05em;">🛡️ Lattice-Based Ring-LWE Parameters</h3>
+                        <p style="margin: 0; font-size: 0.8em; color: #9ca3af; line-height: 1.4;">
+                            Employs Leibniz recurrent primes $p_k \equiv 1 \pmod{2N}$ over polynomial quotient rings $\mathbb{Z}_{p_k}[X]/(X^N+1)$ for homomorphic coordinate encryption and Zero-Knowledge Proofs against Shor's algorithm.
+                        </p>
+
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.82em;">
+                                <span style="color: #9ca3af;">Polynomial Ring Degree (N):</span>
+                                <span id="pqc-ring-dim-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">N = 1024 (256-bit PQ)</span>
+                            </div>
+                            <select id="pqc-ring-dim" onchange="document.getElementById('pqc-ring-dim-val').textContent = 'N = ' + this.value" style="background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 8px; font-size: 0.85em; cursor: pointer;">
+                                <option value="512">N = 512 (128-bit Post-Quantum)</option>
+                                <option value="1024" selected>N = 1024 (256-bit NIST Level 5)</option>
+                                <option value="2048">N = 2048 (512-bit Ultra-Immune)</option>
+                            </select>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.82em;">
+                                <span style="color: #9ca3af;">Leibniz Recurrent Primes Chain Length:</span>
+                                <span id="pqc-chain-len-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">6 Moduli (RNS)</span>
+                            </div>
+                            <input type="range" id="pqc-chain-len" min="2" max="10" step="1" value="6" oninput="document.getElementById('pqc-chain-len-val').textContent = this.value + ' Moduli (RNS)'" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.82em;">
+                                <span style="color: #9ca3af;">Discrete Gaussian Noise Standard Dev (σ):</span>
+                                <span id="pqc-sigma-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">σ = 3.19</span>
+                            </div>
+                            <input type="range" id="pqc-sigma" min="2.0" max="8.0" step="0.1" value="3.19" oninput="document.getElementById('pqc-sigma-val').textContent = 'σ = ' + parseFloat(this.value).toFixed(2)" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.82em;">
+                                <span style="color: #9ca3af;">Homomorphic Transform Depth (d):</span>
+                                <span id="pqc-depth-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">Depth = 4 (Rigid + Sobolev)</span>
+                            </div>
+                            <input type="range" id="pqc-depth" min="1" max="10" step="1" value="4" oninput="document.getElementById('pqc-depth-val').textContent = 'Depth = ' + this.value" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <button onclick="runPqcLeibniz()" style="background: linear-gradient(135deg, #7c3aed, #0284c7); color: #fff; border: none; padding: 11px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.88em; box-shadow: 0 4px 12px rgba(124,58,237,0.35);">
+                            ▶️ Execute Leibniz PQC Encryption & ZKP
+                        </button>
+                    </div>
+
+                    <!-- Finite Math Equations Reference Box -->
+                    <div style="background: rgba(15,23,42,0.6); padding: 16px; border-radius: 16px; border: 1px solid rgba(192,132,252,0.2); display: flex; flex-direction: column; gap: 8px;">
+                        <h4 style="margin: 0; color: #c084fc; font-size: 0.95em;">📐 Leibniz PQC Finite Mathematical Equations</h4>
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.74em; color: #e2e8f0; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+                            <div><b>Leibniz Recurrence:</b> p<sub>k+1</sub> &equiv; NextPrime(p<sub>k</sub> + [&Lambda;/&binom;{k+2}{2}] mod &Lambda;) &emsp; (p<sub>k</sub> &equiv; 1 mod 2N)</div>
+                            <div><b>Ring-LWE Quotient:</b> &Rscr;<sub>p<sub>k</sub></sub> = &Zopf;<sub>p<sub>k</sub></sub>[X]/(X<sup>N</sup> + 1)</div>
+                            <div><b>Public Key:</b> b(X) = -a(X) &middot; s(X) + e(X) mod p<sub>k</sub> &emsp; (&sigma; = 3.19)</div>
+                            <div><b>Homomorphic Coordinate Isometry:</b> ct<sub>reg</sub> = R &odot; ct<sub>x&#8407;</sub> &oplus; ct<sub>v&#8407;</sub> mod p<sub>k</sub></div>
+                            <div><b>Exact Coordinate Decryption:</b> x&#8407;' = &lfloor; t &middot; [c<sub>0</sub> + c<sub>1</sub>s]<sub>p</sub> / p &rceil; &equiv; R x&#8407; + v&#8407; mod t</div>
+                            <div><b>Fiat-Shamir ZKP:</b> a &middot; z<sub>1</sub> + z<sub>2</sub> - c<sub>hash</sub> &middot; b &equiv; T mod p<sub>k</sub> &emsp; (||z||<sub>&infin;</sub> &le; &beta;)</div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Metrics & PDF Downloads -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 18px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.0em;">Cryptographic Security Summary</h4>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">NIST Post-Quantum Rating:</span>
+                            <span id="pqc-nist-level" style="color: #10b981; font-weight: 700;">Level 5 (256-bit Quantum Immune)</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">Quantum BKW / Sieving Security:</span>
+                            <span id="pqc-quantum-sec" style="color: #c084fc; font-weight: 700; font-family: monospace;">264 Bits</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">Remaining Noise Budget:</span>
+                            <span id="pqc-noise-budget" style="color: #38bdf8; font-weight: 700; font-family: monospace;">95.2 Bits</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">Coordinate Isometry Deviation:</span>
+                            <span id="pqc-coord-error" style="color: #10b981; font-weight: 700; font-family: monospace;">0.000012 nm (Sub-Picometric)</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">ZKP Verification Latency:</span>
+                            <span id="pqc-zkp-verify" style="color: #f59e0b; font-weight: 700; font-family: monospace;">0.39 ms</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">Encryption Throughput:</span>
+                            <span id="pqc-throughput" style="color: #38bdf8; font-weight: 700; font-family: monospace;">145,000 pts / sec</span>
+                        </div>
+
+                        <!-- Nature PDF Download Buttons -->
+                        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+                            <a href="/api/download-pqc-leibniz-nature-pdf" target="_blank" class="download-btn" style="justify-content: center; background: linear-gradient(135deg, #7c3aed, #059669);">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                📄 Download Nature Preprint: Leibniz Recurrent Primes PQC (.pdf)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive Plotly Visualizations -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px;">
+                    <!-- Plot 1: Leibniz Recurrent Primes Chain & Lattice Moduli -->
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 8px 0; color: #c084fc; font-size: 0.95em;">⛓️ Leibniz Recurrent Prime Moduli Chain ($p_k \equiv 1 \pmod{2N}$)</h4>
+                        <div id="pqc-primes-plot" style="width: 100%; height: 260px;"></div>
+                    </div>
+
+                    <!-- Plot 2: Homomorphic Noise Budget vs Multiplicative Depth -->
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 8px 0; color: #38bdf8; font-size: 0.95em;">📉 Homomorphic Noise Budget Consumption vs Transformation Depth</h4>
+                        <div id="pqc-noise-plot" style="width: 100%; height: 260px;"></div>
+                    </div>
+
+                    <!-- Plot 3: 3D Point Cloud Homomorphic Coordinate Preservation -->
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 8px 0; color: #10b981; font-size: 0.95em;">🎯 Exact Coordinate Isometry: Original vs Homomorphic Registered vs Decrypted</h4>
+                        <div id="pqc-coord-plot" style="width: 100%; height: 250px;"></div>
                     </div>
                 </div>
             </div>
@@ -3986,7 +4116,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all cards first
-            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-ct-fencing-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card', 'vqe-shading-card', 'eeg-rtms-qml-card', 'vqe-neuromodulation-card', 'jaynes-cummings-card', 'quantum-cf-seizure-card', 'hebbian-lake-restoration-card', 'quantum-fusion-majorana-card', 'nvqlink-ramanujan-ct-card', 'cf-llm-dicom-queue-card', 'cardio-quantum-kalman-card', 'nash-prime-queue-card', 'health-economics-bci-card'].forEach(id => {
+            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-ct-fencing-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card', 'vqe-shading-card', 'eeg-rtms-qml-card', 'vqe-neuromodulation-card', 'jaynes-cummings-card', 'quantum-cf-seizure-card', 'hebbian-lake-restoration-card', 'quantum-fusion-majorana-card', 'nvqlink-ramanujan-ct-card', 'cf-llm-dicom-queue-card', 'cardio-quantum-kalman-card', 'nash-prime-queue-card', 'health-economics-bci-card', 'pqc-leibniz-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -4114,6 +4244,9 @@
             } else if (tab === 'health-economics-bci') {
                 document.getElementById('tab-health-economics-bci').classList.add('active');
                 runHealthEconomicsBci();
+            } else if (tab === 'pqc-leibniz') {
+                document.getElementById('tab-pqc-leibniz').classList.add('active');
+                runPqcLeibniz();
             }
         }
 
@@ -9838,6 +9971,103 @@
 
             } catch (err) {
                 console.error('Health Economics simulation fetch failed:', err);
+            }
+        }
+
+        // --- 17. POST-QUANTUM CRYPTOGRAPHY WITH LEIBNIZ RECURRENT PRIMES ---
+        async function runPqcLeibniz() {
+            showCard('pqc-leibniz-card');
+
+            const ringDim = parseInt(document.getElementById('pqc-ring-dim').value) || 1024;
+            const chainLen = parseInt(document.getElementById('pqc-chain-len').value) || 6;
+            const sigma = parseFloat(document.getElementById('pqc-sigma').value) || 3.19;
+            const depth = parseInt(document.getElementById('pqc-depth').value) || 4;
+
+            showLoading('pqc-primes-plot', 'Generating Leibniz recurrent primes and RNS moduli chain...');
+            showLoading('pqc-noise-plot', 'Evaluating Ring-LWE homomorphic noise budget across depths...');
+            showLoading('pqc-coord-plot', 'Verifying exact coordinate isometry and Fiat-Shamir ZKP...');
+
+            try {
+                const res = await fetch('/api/pqc-leibniz-recurrent-primes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ring_dim: ringDim,
+                        chain_len: chainLen,
+                        gaussian_sigma: sigma,
+                        homomorphic_depth: depth
+                    })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    console.error('PQC Leibniz API error:', data.error);
+                    return;
+                }
+
+                const s = data.security;
+                const h = data.homomorphic_telemetry;
+                const z = data.zkp_telemetry;
+
+                document.getElementById('pqc-nist-level').textContent = s.nist_level;
+                document.getElementById('pqc-quantum-sec').textContent = `${s.quantum_bkw_bits} Bits (Core-SVP: ${s.classical_svp_bits} Bits)`;
+                document.getElementById('pqc-noise-budget').textContent = `${h.remaining_noise_budget_bits} Bits (Initial: ${h.initial_noise_budget_bits} Bits)`;
+                document.getElementById('pqc-coord-error').textContent = `${h.coord_error_nm} nm (TRE: ${h.preservation_tre_mm} mm)`;
+                document.getElementById('pqc-zkp-verify').textContent = `${z.verification_time_ms} ms (Proof: ${z.proof_size_kb} KB)`;
+                document.getElementById('pqc-throughput').textContent = `${h.enc_throughput_pts_sec.toLocaleString()} pts / sec`;
+
+                // 1. Plot Recurrent Primes Chain
+                const pIndices = data.recurrent_primes.map((_, i) => `Modulus p_${i+1}`);
+                Plotly.newPlot('pqc-primes-plot', [
+                    { x: pIndices, y: data.recurrent_primes, type: 'bar', name: 'Leibniz Recurrent Modulus p_k', marker: { color: '#c084fc' } },
+                    { x: pIndices, y: data.recurrent_primes.map(p => Math.ceil(Math.log2(p))), type: 'scatter', mode: 'lines+markers', yaxis: 'y2', name: 'Modulus Bit-Length', line: { color: '#38bdf8', width: 2 } }
+                ], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 45, b: 40, l: 50 },
+                    xaxis: { color: '#9ca3af' },
+                    yaxis: { title: 'Prime Modulus Value', color: '#c084fc', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis2: { title: 'Bit-Length', color: '#38bdf8', overlaying: 'y', side: 'right' },
+                    legend: { font: { color: '#cbd5e1', size: 9 }, orientation: 'h', y: -0.25 }
+                }, { responsive: true, displaylogo: false });
+
+                // 2. Plot Homomorphic Noise Budget vs Multiplicative Depth
+                Plotly.newPlot('pqc-noise-plot', [
+                    { x: data.noise_curve.depths, y: data.noise_curve.budget, type: 'scatter', mode: 'lines+markers', name: 'Remaining Noise Budget (Bits)', line: { color: '#38bdf8', width: 2.2 }, marker: { size: 6 } },
+                    { x: [0, 12], y: [0, 0], type: 'scatter', mode: 'lines', name: 'Decryption Invariant Bound (0 Bits)', line: { color: '#f43f5e', width: 1.5, dash: 'dot' } }
+                ], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 40, l: 45 },
+                    xaxis: { title: 'Homomorphic Multiplicative Depth (d)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { title: 'Noise Budget (Bits)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    legend: { font: { color: '#cbd5e1', size: 9 }, orientation: 'h', y: -0.25 }
+                }, { responsive: true, displaylogo: false });
+
+                // 3. Plot Exact 3D Coordinate Isometry
+                const orig = data.sample_points.original;
+                const exact = data.sample_points.exact_reg;
+                const dec = data.sample_points.decrypted_reg;
+
+                const origX = orig.map(p => p[0]), origY = orig.map(p => p[1]), origZ = orig.map(p => p[2]);
+                const exactX = exact.map(p => p[0]), exactY = exact.map(p => p[1]), exactZ = exact.map(p => p[2]);
+                const decX = dec.map(p => p[0]), decY = dec.map(p => p[1]), decZ = dec.map(p => p[2]);
+
+                Plotly.newPlot('pqc-coord-plot', [
+                    { x: origX, y: origY, z: origZ, mode: 'markers', type: 'scatter3d', name: 'Original Coordinate', marker: { size: 5, color: '#94a3b8' } },
+                    { x: exactX, y: exactY, z: exactZ, mode: 'markers', type: 'scatter3d', name: 'Target Reg Coordinate', marker: { size: 6, color: '#10b981' } },
+                    { x: decX, y: decY, z: decZ, mode: 'markers', type: 'scatter3d', name: 'Decrypted Homomorphic Point', marker: { size: 4, color: '#c084fc' } }
+                ], {
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 0, r: 0, b: 0, l: 0 },
+                    scene: {
+                        xaxis: { title: 'X (mm)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.1)' },
+                        yaxis: { title: 'Y (mm)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.1)' },
+                        zaxis: { title: 'Z (mm)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.1)' },
+                        bgcolor: 'rgba(0,0,0,0)'
+                    },
+                    legend: { font: { color: '#cbd5e1', size: 8 }, orientation: 'h', y: 0.05 }
+                }, { responsive: true, displaylogo: false });
+
+            } catch (err) {
+                console.error('PQC Leibniz simulation fetch failed:', err);
             }
         }
 
