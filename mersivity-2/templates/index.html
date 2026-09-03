@@ -369,6 +369,7 @@
             <button class="tab" id="tab-cf-llm-dicom-queue" onclick="selectTab('cf-llm-dicom-queue')">🧮 CF-LLM DICOM Queue & Elliptic Primes</button>
             <button class="tab" id="tab-cardio-quantum-kalman" onclick="selectTab('cardio-quantum-kalman')">❤️ Cardiovascular Robot Quantum Kalman</button>
             <button class="tab" id="tab-nash-prime-queue" onclick="selectTab('nash-prime-queue')">🧮 Nash-Prime Queue Optimizer</button>
+            <button class="tab" id="tab-health-economics-bci" onclick="selectTab('health-economics-bci')">📊 Health Economics & BCI Projections</button>
         </div>
 
         <!-- QML Volumetric Surface Reconstruction Card -->
@@ -1616,6 +1617,155 @@
                     <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
                         <h4 style="margin: 0 0 10px 0; color: #a5b4fc; font-size: 0.95em;">Queue Wait Time: Baseline vs. Nash Equilibrium</h4>
                         <div id="nash-wait-comparison-plot" style="width: 100%; height: 260px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Economics & BCI Projections Card -->
+        <div id="health-economics-bci-card" class="viewer-card" style="display: none; width: 100%; box-sizing: border-box;">
+            <div class="viewer-title">📊 Health Economics of Submillimetric QML Registration & Closed-Loop Brain-Computer Interfaces (BCI)</div>
+
+            <div style="display: flex; flex-wrap: wrap; width: 100%; gap: 20px;">
+                <!-- Left Column: Controls, Math Foundations, Summary, and Nature PDF Downloads -->
+                <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 15px;">
+                    <!-- Simulation Parameter Controls -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 12px;">
+                        <h3 style="margin: 0; color: #38bdf8; font-size: 1.05em;">⚙️ Health Economic & Microsimulation Parameters</h3>
+                        <p style="margin: 0; font-size: 0.8em; color: #9ca3af; line-height: 1.4;">
+                            Models 30-year Markov state transitions across neurosurgical and stroke rehabilitation cohorts. Submillimetric QML accuracy reduces surgical revisions, while closed-loop BCI neuroplasticity sustains independent functional living.
+                        </p>
+
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.82em;">
+                                <span style="color: #9ca3af;">Cohort Size (N):</span>
+                                <span id="he-cohort-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">100,000</span>
+                            </div>
+                            <input type="range" id="he-cohort" min="10000" max="250000" step="5000" value="100000" oninput="document.getElementById('he-cohort-val').textContent = Number(this.value).toLocaleString()" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.82em;">
+                                <span style="color: #9ca3af;">Time Horizon (Years):</span>
+                                <span id="he-horizon-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">30 Years</span>
+                            </div>
+                            <input type="range" id="he-horizon" min="5" max="30" step="1" value="30" oninput="document.getElementById('he-horizon-val').textContent = this.value + ' Years'" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.82em;">
+                                <span style="color: #9ca3af;">Annual Discount Rate (r):</span>
+                                <span id="he-discount-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">3.0%</span>
+                            </div>
+                            <input type="range" id="he-discount" min="0" max="7" step="0.5" value="3.0" oninput="document.getElementById('he-discount-val').textContent = parseFloat(this.value).toFixed(1) + '%'" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.82em;">
+                                <span style="color: #9ca3af;">QML Registration Precision (TRE):</span>
+                                <span id="he-tre-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">0.0384 mm</span>
+                            </div>
+                            <input type="range" id="he-tre" min="0.02" max="1.50" step="0.01" value="0.0384" oninput="document.getElementById('he-tre-val').textContent = parseFloat(this.value).toFixed(4) + ' mm'" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.82em;">
+                                <span style="color: #9ca3af;">BCI Neuroplasticity Efficacy Gain:</span>
+                                <span id="he-bci-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">1.45x</span>
+                            </div>
+                            <input type="range" id="he-bci" min="1.0" max="2.5" step="0.05" value="1.45" oninput="document.getElementById('he-bci-val').textContent = parseFloat(this.value).toFixed(2) + 'x'" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.82em;">
+                                <span style="color: #9ca3af;">Willingness to Pay Threshold (&lambda;):</span>
+                                <span id="he-wtp-val" style="color: #cbd5e1; font-weight: 700; font-family: monospace;">$50,000 / QALY</span>
+                            </div>
+                            <input type="range" id="he-wtp" min="20000" max="150000" step="5000" value="50000" oninput="document.getElementById('he-wtp-val').textContent = '$' + Number(this.value).toLocaleString() + ' / QALY'" style="width: 100%; cursor: pointer;">
+                        </div>
+
+                        <button onclick="runHealthEconomicsBci()" style="background: linear-gradient(135deg, #0284c7, #10b981); color: #fff; border: none; padding: 11px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.88em; box-shadow: 0 4px 12px rgba(2,132,199,0.35);">
+                            ▶️ Run Health Economics & Markov Simulation
+                        </button>
+                    </div>
+
+                    <!-- Finite Math Equations Reference Box -->
+                    <div style="background: rgba(15,23,42,0.6); padding: 16px; border-radius: 16px; border: 1px solid rgba(56,189,248,0.2); display: flex; flex-direction: column; gap: 8px;">
+                        <h4 style="margin: 0; color: #38bdf8; font-size: 0.95em;">📐 Finite Mathematical Formulations</h4>
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.76em; color: #e2e8f0; line-height: 1.5; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+                            <div><b>Discrete Markov:</b> S<sub>t+1</sub> = P<sup>T</sup> S<sub>t</sub> &emsp; (&sum;<sub>j</sub> P<sub>ij</sub> = 1)</div>
+                            <div><b>Discounted NPV:</b> &Escr;[NPV(C)] = C<sub>0</sub> + &sum;<sub>t=0</sub><sup>T</sup> [c<sup>T</sup>S<sub>t</sub>] / (1+r)<sup>t</sup></div>
+                            <div><b>Discounted QALY:</b> &Escr;[QALY] = &sum;<sub>t=0</sub><sup>T</sup> [u<sup>T</sup>S<sub>t</sub>] / (1+r)<sup>t</sup></div>
+                            <div><b>ICER:</b> &Delta;C / &Delta;QALY = [C<sub>QML+BCI</sub> - C<sub>SoC</sub>] / [QALY<sub>QML+BCI</sub> - QALY<sub>SoC</sub>]</div>
+                            <div><b>Net Monetary Benefit:</b> NMB(&lambda;) = &lambda; &middot; &Delta;QALY - &Delta;C</div>
+                            <div><b>Finite Jacobian:</b> J<sub>k</sub> &equiv; &part;ICER/&part;&theta;<sub>k</sub> &approx; [ICER(&theta;<sub>k</sub>+&delta;) - ICER(&theta;<sub>k</sub>-&delta;)] / (2&delta;)</div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Metrics & PDF Downloads -->
+                    <div style="background: rgba(255,255,255,0.02); padding: 18px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px;">
+                        <h4 style="margin: 0; color: #a5b4fc; font-size: 1.0em;">Cost-Effectiveness Summary</h4>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">ICER Status:</span>
+                            <span id="he-icer-status" style="color: #10b981; font-weight: 700;">Strictly Dominant</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">Net QALY Gain / Patient:</span>
+                            <span id="he-delta-qaly" style="color: #38bdf8; font-weight: 700; font-family: monospace;">+3.85 QALYs</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">Net Lifetime Savings / Patient:</span>
+                            <span id="he-savings-pt" style="color: #10b981; font-weight: 700; font-family: monospace;">+$48,200 USD</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">Cohort Total Lifetime Savings:</span>
+                            <span id="he-total-savings" style="color: #10b981; font-weight: 700; font-family: monospace;">$4.82 Billion</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">Net Monetary Benefit (NMB):</span>
+                            <span id="he-nmb-pt" style="color: #c084fc; font-weight: 700; font-family: monospace;">+$240,700</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">Averted Revision Surgeries:</span>
+                            <span id="he-averted-revisions" style="color: #f59e0b; font-weight: 700; font-family: monospace;">8,700 cases</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; font-size:0.86em;">
+                            <span style="color: #9ca3af;">Breakeven ROI:</span>
+                            <span id="he-breakeven" style="color: #38bdf8; font-weight: 700; font-family: monospace;">2.1 Years</span>
+                        </div>
+
+                        <!-- Nature PDF Download Buttons -->
+                        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+                            <a href="/api/download-health-economics-nature-pdf" target="_blank" class="download-btn" style="justify-content: center; background: linear-gradient(135deg, #0284c7, #059669);">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                📄 Download Nature Preprint: Health Economics & BCI (.pdf)
+                            </a>
+                            <a href="/api/download-majorana-qml-nature-pdf" target="_blank" class="download-btn" style="justify-content: center; background: linear-gradient(135deg, #7c3aed, #0284c7);">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                📄 Download Nature Preprint: Majorana QML Registration (.pdf)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive Plotly Visualizations -->
+                <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 15px;">
+                    <!-- Plot 1: 30-Year Markov State Transitions -->
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 8px 0; color: #38bdf8; font-size: 0.95em;">📈 30-Year Markov Cohort Transitions: Standard of Care vs. QML + BCI</h4>
+                        <div id="health-econ-markov-plot" style="width: 100%; height: 260px;"></div>
+                    </div>
+
+                    <!-- Plot 2: Cumulative Lifetime Cost Trajectory -->
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 8px 0; color: #10b981; font-size: 0.95em;">💰 Cumulative Discounted Lifetime Cost & Breakeven ROI</h4>
+                        <div id="health-econ-cost-plot" style="width: 100%; height: 260px;"></div>
+                    </div>
+
+                    <!-- Plot 3: Deterministic Tornado Sensitivity Diagram -->
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 16px; box-sizing: border-box;">
+                        <h4 style="margin: 0 0 8px 0; color: #c084fc; font-size: 0.95em;">🌪️ Deterministic Tornado Sensitivity Analysis (&Delta;NMB at &lambda; = $50,000 / QALY)</h4>
+                        <div id="health-econ-tornado-plot" style="width: 100%; height: 230px;"></div>
                     </div>
                 </div>
             </div>
@@ -3836,7 +3986,7 @@
             // Remove active from all tabs
             document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
             // Hide all cards first
-            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-ct-fencing-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card', 'vqe-shading-card', 'eeg-rtms-qml-card', 'vqe-neuromodulation-card', 'jaynes-cummings-card', 'quantum-cf-seizure-card', 'hebbian-lake-restoration-card', 'quantum-fusion-majorana-card', 'nvqlink-ramanujan-ct-card', 'cf-llm-dicom-queue-card', 'cardio-quantum-kalman-card', 'nash-prime-queue-card'].forEach(id => {
+            ['slice-card', 'mri-slice-card', 'surface-card', 'tetra-card', 'legendre-card', 'reg-card', 'qml-card', 'mri-to-ct-qml-card', 'mri-to-ct-fencing-card', 'mri-to-stl-qml-feynman-card', 'ct-to-stl-qml-wittek-card', 'stat-risk-card', 'qlora-card', 'feynman-card', 'geodesic-card', 'eeg-circuit-card', 'eeg-waves-card', 'eeg-cap-card', 'dbs-intervention-card', 'chirplet-card', 'reg-stats-card', 'qml-volumetric-card', 'acoustic-sim-card', 'neuroacoustic-char-card', 'bci-rtms-card', 'bci-qml-card', 'vqe-shading-card', 'eeg-rtms-qml-card', 'vqe-neuromodulation-card', 'jaynes-cummings-card', 'quantum-cf-seizure-card', 'hebbian-lake-restoration-card', 'quantum-fusion-majorana-card', 'nvqlink-ramanujan-ct-card', 'cf-llm-dicom-queue-card', 'cardio-quantum-kalman-card', 'nash-prime-queue-card', 'health-economics-bci-card'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -3961,6 +4111,9 @@
             } else if (tab === 'nash-prime-queue') {
                 document.getElementById('tab-nash-prime-queue').classList.add('active');
                 runNashPrimeQueueOptimizer();
+            } else if (tab === 'health-economics-bci') {
+                document.getElementById('tab-health-economics-bci').classList.add('active');
+                runHealthEconomicsBci();
             }
         }
 
@@ -9593,6 +9746,98 @@
                 }, { responsive: true, displaylogo: false });
             } catch (err) {
                 console.error('Nash-prime queue optimizer fetch failed:', err);
+            }
+        }
+
+        // --- 16. HEALTH ECONOMICS & BCI 30-YEAR PROJECTIONS ---
+        async function runHealthEconomicsBci() {
+            showCard('health-economics-bci-card');
+
+            const cohortSize = parseInt(document.getElementById('he-cohort').value) || 100000;
+            const horizonYears = parseInt(document.getElementById('he-horizon').value) || 30;
+            const discountRate = (parseFloat(document.getElementById('he-discount').value) || 3.0) / 100.0;
+            const tre = parseFloat(document.getElementById('he-tre').value) || 0.0384;
+            const bciGain = parseFloat(document.getElementById('he-bci').value) || 1.45;
+            const wtp = parseFloat(document.getElementById('he-wtp').value) || 50000;
+
+            showLoading('health-econ-markov-plot', 'Simulating 30-year Markov cohort state transitions...');
+            showLoading('health-econ-cost-plot', 'Computing discounted NPV lifetime costs & breakeven ROI...');
+            showLoading('health-econ-tornado-plot', 'Evaluating deterministic parameter sensitivity Jacobians...');
+
+            try {
+                const res = await fetch('/api/health-economics-bci-projections', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cohort_size: cohortSize,
+                        horizon_years: horizonYears,
+                        discount_rate: discountRate,
+                        surgical_tre_mm: tre,
+                        bci_efficacy_gain: bciGain,
+                        wtp_threshold: wtp
+                    })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    console.error('Health Economics API error:', data.error);
+                    return;
+                }
+
+                const s = data.summary;
+                document.getElementById('he-delta-qaly').textContent = `+${s.delta_qaly_per_pt} QALYs`;
+                document.getElementById('he-savings-pt').textContent = `+$${Math.abs(s.net_savings_per_pt_usd).toLocaleString()} USD`;
+                document.getElementById('he-total-savings').textContent = `$${s.total_cohort_savings_billions} Billion`;
+                document.getElementById('he-nmb-pt').textContent = `+$${Math.round(s.nmb_per_pt_usd).toLocaleString()}`;
+                document.getElementById('he-averted-revisions').textContent = `${s.averted_revisions.toLocaleString()} cases`;
+                document.getElementById('he-breakeven').textContent = `${s.breakeven_years} Years`;
+
+                // 1. Plot 30-Year Markov Transitions
+                const years = data.years;
+                Plotly.newPlot('health-econ-markov-plot', [
+                    { x: years, y: data.soc_dynamics.rehab, name: 'SoC: Active Rehab', line: { color: '#94a3b8', width: 1.5, dash: 'dot' } },
+                    { x: years, y: data.soc_dynamics.inst, name: 'SoC: Institutionalized', line: { color: '#f43f5e', width: 1.8, dash: 'dash' } },
+                    { x: years, y: data.qml_dynamics.indep, name: 'QML+BCI: Independent Functional', line: { color: '#10b981', width: 2.5 } },
+                    { x: years, y: data.qml_dynamics.mild, name: 'QML+BCI: Mild Managed', line: { color: '#38bdf8', width: 2.0 } },
+                    { x: years, y: data.qml_dynamics.inst, name: 'QML+BCI: Institutionalized', line: { color: '#f59e0b', width: 1.8 } }
+                ], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 40, l: 45 },
+                    xaxis: { title: 'Time Horizon (Years)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { title: 'Cohort Proportion', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    legend: { font: { color: '#cbd5e1', size: 9 }, orientation: 'h', y: -0.3 }
+                }, { responsive: true, displaylogo: false });
+
+                // 2. Plot Cumulative Cost Trajectory
+                Plotly.newPlot('health-econ-cost-plot', [
+                    { x: years, y: data.cost_soc_cum_k, name: 'Standard of Care ($k/pt)', line: { color: '#f43f5e', width: 2.2 } },
+                    { x: years, y: data.cost_qml_cum_k, name: 'QML + Closed-Loop BCI ($k/pt)', line: { color: '#38bdf8', width: 2.5 } }
+                ], {
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 40, l: 50 },
+                    xaxis: { title: 'Time Horizon (Years)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { title: 'Discounted Cost / Patient ($k USD)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    legend: { font: { color: '#cbd5e1', size: 9 }, orientation: 'h', y: -0.3 }
+                }, { responsive: true, displaylogo: false });
+
+                // 3. Plot Tornado Sensitivity Analysis
+                const tParams = data.tornado.map(d => d.param);
+                const tLow = data.tornado.map(d => d.low);
+                const tHigh = data.tornado.map(d => d.high);
+
+                Plotly.newPlot('health-econ-tornado-plot', [
+                    { y: tParams, x: tLow, type: 'bar', orientation: 'h', name: 'Low Value', marker: { color: '#38bdf8' } },
+                    { y: tParams, x: tHigh, type: 'bar', orientation: 'h', name: 'High Value', marker: { color: '#fbbf24' } }
+                ], {
+                    barmode: 'overlay',
+                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+                    margin: { t: 10, r: 15, b: 35, l: 230 },
+                    xaxis: { title: 'ΔNMB Deviation ($k USD)', color: '#9ca3af', gridcolor: 'rgba(255,255,255,0.05)' },
+                    yaxis: { color: '#9ca3af', tickfont: { size: 9 } },
+                    legend: { font: { color: '#cbd5e1', size: 9 }, orientation: 'h', y: -0.25 }
+                }, { responsive: true, displaylogo: false });
+
+            } catch (err) {
+                console.error('Health Economics simulation fetch failed:', err);
             }
         }
 
