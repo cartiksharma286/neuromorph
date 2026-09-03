@@ -6620,6 +6620,30 @@ def download_pqc_leibniz_nature_pdf():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/download-unified-nature-pdf', methods=['GET', 'POST'])
+def download_unified_nature_pdf():
+    try:
+        from flask import send_file
+        pdf_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Nature_Preprint_Unified_Majorana_PQC_BCI_Health_Economics.pdf')
+        if not os.path.exists(pdf_path):
+            from generate_nature_unified_publication import build_pdf
+            build_pdf()
+        
+        if not os.path.exists(pdf_path):
+            return jsonify({'error': 'PDF file not found after generation.'}), 404
+            
+        return send_file(
+            pdf_path, 
+            mimetype='application/pdf', 
+            as_attachment=True, 
+            download_name='Nature_Preprint_Unified_Majorana_PQC_BCI_Health_Economics.pdf'
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5058))
     app.run(debug=False, host='0.0.0.0', port=port, use_reloader=False)

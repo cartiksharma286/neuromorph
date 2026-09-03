@@ -32,6 +32,48 @@ from reportlab.platypus import (
 )
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib import colors
+from reportlab.pdfgen import canvas
+
+class NumberedCanvas(canvas.Canvas):
+    """Two-pass canvas for dynamic running headers and 'Page X of Y' footers."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_page_states = []
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_header_footer(num_pages)
+            super().showPage()
+        super().save()
+
+    def draw_header_footer(self, page_count):
+        self.saveState()
+        self.setFont("Helvetica-Bold", 7.5)
+        self.setFillColor(colors.HexColor(C_SLATE))
+
+        if self._pageNumber > 1:
+            self.drawString(0.5 * inch, 10.5 * inch, "NATURE CRYPTOGRAPHY & BIOMEDICAL ENGINEERING PREPRINT")
+            self.setFont("Helvetica", 7.5)
+            self.drawRightString(8.0 * inch, 10.5 * inch, "Sharma &bull; Post-Quantum Cryptography with Leibniz Recurrent Primes")
+            self.setStrokeColor(colors.HexColor('#cbd5e1'))
+            self.setLineWidth(0.5)
+            self.line(0.5 * inch, 10.42 * inch, 8.0 * inch, 10.42 * inch)
+
+        self.setStrokeColor(colors.HexColor('#cbd5e1'))
+        self.setLineWidth(0.5)
+        self.line(0.5 * inch, 0.55 * inch, 8.0 * inch, 0.55 * inch)
+        
+        self.setFont("Helvetica", 7.5)
+        self.setFillColor(colors.HexColor(C_SLATE))
+        self.drawString(0.5 * inch, 0.42 * inch, "DOI: 10.1038/s41551-026-04891-x &bull; Published September 2026 &bull; Mersivity Open Research")
+        self.drawRightString(8.0 * inch, 0.42 * inch, f"Page {self._pageNumber} of {page_count}")
+        self.restoreState()
 
 # Directory for plot outputs
 PLOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -520,7 +562,7 @@ def build_pdf():
     for r in refs:
         story.append(Paragraph(r, ParagraphStyle('Ref', fontName='Helvetica', fontSize=7.0, leading=9.0, textColor=colors.HexColor(C_SLATE))))
 
-    doc.build(story)
+    doc.build(story, canvasmaker=NumberedCanvas)
     print(f"Preprint PDF successfully compiled: {pdf_path}")
     return pdf_path
 
