@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nashGeodesicView = document.getElementById('nash-geodesic-view');
     const tbiPtsdView      = document.getElementById('tbi-ptsd-view');
     const rlsView          = document.getElementById('rls-view');
+    const schizophreniaDbsView = document.getElementById('schizophrenia-dbs-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -59,10 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let sleepapneaLoaded = false;
     let jcLoaded         = false;
     let nashGeodesicLoaded = false;
+    let schizophreniaDbsLoaded = false;
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -155,6 +157,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Restless Legs Syndrome rTMS Research Studio',
             subtitle: 'Recurrent finite paradigms · experimental-design response scores · BEM target visualization · market scenario',
             view:     rlsView, showRunBtn: false
+        },
+        'schizophrenia-dbs': {
+            title:    'Deep Brain Stimulation for Refractory Schizophrenia',
+            subtitle: 'Boundary Element Method (BEM) 3D Field Simulations · Innovators Benchmark · Optimal Long-Term Remission Paradigm',
+            view:     schizophreniaDbsView, showRunBtn: false
         }
     };
 
@@ -195,7 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'tourette')                             runTouretteRtms();
             if (tab === 'nash-geodesic' && !nashGeodesicLoaded)   loadNashGeodesicRegistration();
             if (tab === 'tbi-ptsd')                              runTbiPtsdRtms();
-                        if (tab === 'rls')                                   runRlsRtms();
+            if (tab === 'rls')                                   runRlsRtms();
+            if (tab === 'schizophrenia-dbs')                     runSchizophreniaDbs();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -2084,5 +2092,165 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('TBI/PTSD API error:', err);
             const rxEl = document.getElementById('tbi-genai-text');
             if (rxEl) rxEl.textContent = 'Simulation unavailable: ' + err.message;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SCHIZOPHRENIA DBS & BEM SIMULATION STUDIO
+    // ─────────────────────────────────────────────────────────────
+    let _schizTimer = null;
+    window.runSchizophreniaDbsDebounced = () => {
+        clearTimeout(_schizTimer);
+        _schizTimer = setTimeout(runSchizophreniaDbs, 250);
+    };
+
+    async function runSchizophreniaDbs() {
+        const panss = parseFloat(document.getElementById('schiz-panss')?.value || 104);
+        const target = document.getElementById('schiz-target')?.value || 'nucleus_accumbens_mpfc';
+        const freq  = parseFloat(document.getElementById('schiz-freq')?.value || 130);
+        const pw    = parseFloat(document.getElementById('schiz-pw')?.value || 90);
+        const amp   = parseFloat(document.getElementById('schiz-amp')?.value || 3.5);
+        const gain  = parseFloat(document.getElementById('schiz-gain')?.value || 1.45);
+
+        const qs = `baseline_panss=${panss}&target_nucleus=${target}&pulse_freq_hz=${freq}&pulse_width_us=${pw}&amplitude_ma=${amp}&closed_loop_gain=${gain}`;
+
+        try {
+            const res = await fetch(`/api/schizophrenia-dbs?${qs}`);
+            const json = await res.json();
+            if (json.status !== 'success') throw new Error(json.message || 'API error');
+            const d = json.data;
+
+            const commonLayout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#8b949e', family: 'Inter, sans-serif', size: 11 },
+                xaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.1)' },
+                yaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.1)' },
+                margin: { l: 50, r: 30, t: 30, b: 40 }
+            };
+
+            // 1. Update Metrics
+            const el = id => document.getElementById(id);
+            if (el('schiz-metric-panss')) el('schiz-metric-panss').textContent = d.summary.final_panss_score.toFixed(1);
+            if (el('schiz-metric-reduc')) el('schiz-metric-reduc').textContent = `-${d.summary.total_panss_reduction_pct.toFixed(1)}%`;
+            if (el('schiz-metric-bacs')) el('schiz-metric-bacs').textContent = `z = +${d.summary.cognitive_recovery_bacs_z.toFixed(2)}`;
+            if (el('schiz-metric-gaf')) el('schiz-metric-gaf').textContent = `${d.summary.final_gaf_functioning.toFixed(0)} / 100`;
+            if (el('schiz-metric-cure')) el('schiz-metric-cure').textContent = `${d.summary['5yr_remission_cure_rate_pct'].toFixed(1)}%`;
+
+            // 2. Trajectories Plot (PANSS & BACS)
+            const lt = d.longterm_outcomes;
+            Plotly.newPlot('schiz-plot-trajectories', [
+                { x: lt.months, y: lt.panss_pharma, name: 'Standard Pharmacotherapy', type: 'scatter', mode: 'lines', line: { color: '#64748b', width: 2, dash: 'dash' } },
+                { x: lt.months, y: lt.panss_std_dbs, name: 'Standard DBS (Open-Loop)', type: 'scatter', mode: 'lines', line: { color: '#0284c7', width: 2, dash: 'dot' } },
+                { x: lt.months, y: lt.panss_neuromorph_dbs, name: 'NeuroMorph Opto-BEM Closed-Loop', type: 'scatter', mode: 'lines', line: { color: '#7c3aed', width: 3.5 } },
+                { x: lt.months, y: lt.months.map(() => 50), name: 'Remission Threshold (PANSS ≤ 50)', type: 'scatter', mode: 'lines', line: { color: '#fbbf24', width: 1.5, dash: 'dash' } },
+                { x: lt.months, y: lt.months.map(() => 30), name: 'Asymptomatic Cure (PANSS ≤ 30)', type: 'scatter', mode: 'lines', line: { color: '#34d399', width: 1.5, dash: 'dash' } }
+            ], {
+                ...commonLayout,
+                xaxis: { ...commonLayout.xaxis, title: 'Treatment Duration (Months)' },
+                yaxis: { ...commonLayout.yaxis, title: 'PANSS Score' },
+                legend: { orientation: 'h', y: -0.22, font: { size: 10 } }
+            }, { responsive: true, displaylogo: false });
+
+            // 3. BEM Potential Heatmap
+            Plotly.newPlot('schiz-plot-bem', [{
+                z: d.bem_surface.potential_matrix,
+                type: 'heatmap',
+                colorscale: 'Inferno',
+                colorbar: { title: 'Potential (mV)', titleside: 'right' }
+            }], {
+                ...commonLayout,
+                xaxis: { ...commonLayout.xaxis, title: 'Azimuthal Boundary Node (φ)' },
+                yaxis: { ...commonLayout.yaxis, title: 'Polar Boundary Node (θ)' },
+                margin: { l: 45, r: 35, t: 25, b: 40 }
+            }, { responsive: true, displaylogo: false });
+
+            // 4. Innovators Radar Comparison
+            const radar = d.radar_comparison;
+            const radarTraces = Object.keys(radar.datasets).map((name, idx) => {
+                const colors = ['#0088cc', '#2c3e50', '#27ae60', '#7c3aed'];
+                return {
+                    type: 'scatterpolar',
+                    r: radar.datasets[name].concat([radar.datasets[name][0]]),
+                    theta: radar.categories.concat([radar.categories[0]]),
+                    fill: 'toself',
+                    fillcolor: colors[idx % colors.length] + '22',
+                    name: name,
+                    line: { color: colors[idx % colors.length], width: name.includes('NeuroMorph') ? 3 : 1.5 }
+                };
+            });
+
+            Plotly.newPlot('schiz-plot-radar', radarTraces, {
+                polar: {
+                    radialaxis: { visible: true, range: [0, 100], color: '#8b949e', gridcolor: 'rgba(255,255,255,0.06)' },
+                    angularaxis: { color: '#8b949e', gridcolor: 'rgba(255,255,255,0.06)' },
+                    bgcolor: 'rgba(0,0,0,0)'
+                },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#8b949e', family: 'Inter, sans-serif', size: 9 },
+                legend: { orientation: 'h', y: -0.25, font: { size: 9 } },
+                margin: { l: 30, r: 30, t: 25, b: 35 }
+            }, { responsive: true, displaylogo: false });
+
+            // 5. Innovators Table Render
+            const tableContainer = el('schiz-innovators-table-container');
+            if (tableContainer) {
+                let html = `
+                    <table class="eq-spec-table" style="width:100%; border-collapse:collapse; font-size:12px;">
+                        <thead>
+                            <tr style="background:rgba(2,132,199,0.15); border-bottom:1px solid rgba(255,255,255,0.1);">
+                                <th style="padding:8px; text-align:left;">Stimulator Innovator</th>
+                                <th style="padding:8px; text-align:left;">Electrode & Steering</th>
+                                <th style="padding:8px; text-align:left;">Sensing & Closed-Loop Latency</th>
+                                <th style="padding:8px; text-align:center;">Charge Density Limit</th>
+                                <th style="padding:8px; text-align:center;">5-Yr Remission</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                d.innovators_benchmark.forEach(inn => {
+                    const isNm = inn.id === 'neuromorph_opto_bem';
+                    html += `
+                        <tr style="background:${isNm ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.02)'}; border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:8px; font-weight:600; color:${inn.color};">${inn.name}</td>
+                            <td style="padding:8px; color:#cbd5e1;">${inn.electrode_design}<br/><small style="color:#94a3b8;">${inn.current_steering}</small></td>
+                            <td style="padding:8px; color:#cbd5e1;">${inn.sensing_technology}<br/><small style="color:#38bdf8;">Latency: ${inn.closed_loop_latency_ms} ms</small></td>
+                            <td style="padding:8px; text-align:center; color:#f8fafc;">${inn.charge_density_limit_uC_cm2} μC/cm²</td>
+                            <td style="padding:8px; text-align:center; font-weight:700; color:${isNm ? '#34d399' : '#38bdf8'};">${inn.panss_reduction_pct}%</td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table>`;
+                tableContainer.innerHTML = html;
+            }
+
+            // 6. Care Stages Render
+            const stagesContainer = el('schiz-care-stages-container');
+            if (stagesContainer) {
+                stagesContainer.innerHTML = d.care_stages.map(st => `
+                    <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(124,58,237,0.3); border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:6px;">
+                        <div style="font-size:11px; font-weight:700; color:#a78bfa; text-transform:uppercase;">${st.timeline}</div>
+                        <div style="font-size:13px; font-weight:600; color:#f8fafc;">${st.stage}</div>
+                        <div style="font-size:11.5px; color:#38bdf8;"><b>Target:</b> ${st.target}</div>
+                        <div style="font-size:11.5px; color:#cbd5e1;"><b>Dosing:</b> ${st.dosing}</div>
+                        <div style="font-size:11px; color:#94a3b8; margin-top:4px; font-style:italic;">${st.clinical_objective}</div>
+                    </div>
+                `).join('');
+            }
+
+            // 7. Finite Math Equations Render
+            const mathContainer = el('schiz-math-equations-container');
+            if (mathContainer) {
+                mathContainer.innerHTML = d.finite_math_equations.map(eq => `
+                    <div style="background:rgba(5,11,20,0.8); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:10px;">
+                        <div style="font-size:12px; font-weight:600; color:#38bdf8; margin-bottom:4px;">${eq.name}</div>
+                        <div style="font-family:'Courier New', monospace; font-size:11px; color:#34d399; background:rgba(0,0,0,0.5); padding:6px 10px; border-radius:4px; overflow-x:auto;">${eq.latex}</div>
+                        <div style="font-size:11px; color:#94a3b8; margin-top:4px;">${eq.description}</div>
+                    </div>
+                `).join('');
+            }
+
+        } catch (err) {
+            console.error('Schizophrenia DBS API error:', err);
         }
     }

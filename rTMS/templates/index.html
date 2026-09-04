@@ -68,6 +68,9 @@
                 <button class="nav-btn" data-tab="rls">
                     <span class="icon">◌</span> RLS Research
                 </button>
+                <button class="nav-btn" data-tab="schizophrenia-dbs">
+                    <span class="icon">⚡</span> Schizophrenia DBS (BEM)
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -1345,6 +1348,144 @@
                         <div class="panel glass-panel" style="background: rgba(56,189,248,0.04); border: 1px solid rgba(56,189,248,0.2);">
                             <h3>🔬 TBI &amp; PTSD Neuromodulation &amp; Enterprise Economics Prescription</h3>
                             <div id="tbi-genai-text" style="font-size:13px; line-height:1.6; color:#c9d1d9; margin-top:10px;">Compiling TBI &amp; PTSD clinical telemetry...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Schizophrenia Deep Brain Stimulation (DBS) & BEM Simulation Suite ── -->
+            <div id="schizophrenia-dbs-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:12px; color:#8b949e; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
+                        ⚡ Multi-Target Closed-Loop DBS for Refractory Schizophrenia · BEM 3D Electric Potential Solver · Multi-Innovator Benchmarking · Finite Math Proof
+                    </span>
+                    <a href="/api/schizophrenia-dbs-preprint" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #7c3aed, #4f46e5); padding:8px 16px; border-radius:8px;">
+                        <span>📄 Download Nature Preprint (PDF)</span>
+                    </a>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT PANEL: CONTROLS & TELEMETRY -->
+                    <div class="panel glass-panel" style="flex: 0 0 320px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Schizophrenia DBS Controls</h3>
+                        
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Baseline PANSS Total:</span>
+                                    <span id="label-schiz-panss" class="sa-slider-val" style="color:#f87171;">104.0</span>
+                                </div>
+                                <input type="range" id="schiz-panss" min="60.0" max="140.0" step="1.0" value="104.0" oninput="document.getElementById('label-schiz-panss').textContent=parseFloat(this.value).toFixed(1); runSchizophreniaDbsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Target Subcortical Nucleus:</span>
+                                </div>
+                                <select id="schiz-target" class="sa-slider-input" style="background:#0f172a; color:#f8fafc; border:1px solid rgba(255,255,255,0.2); padding:6px 10px; border-radius:6px;" onchange="runSchizophreniaDbsDebounced();">
+                                    <option value="nucleus_accumbens_mpfc" selected>Nucleus Accumbens / mPFC (ALIC)</option>
+                                    <option value="subgenual_acc">Subgenual ACC (Cg25) & Ventral Striatum</option>
+                                    <option value="ventral_tegmental">Ventral Tegmental Area (VTA) / Habenula</option>
+                                </select>
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Stimulation Freq (Hz):</span>
+                                    <span id="label-schiz-freq" class="sa-slider-val" style="color:#38bdf8;">130.0 Hz</span>
+                                </div>
+                                <input type="range" id="schiz-freq" min="20.0" max="185.0" step="5.0" value="130.0" oninput="document.getElementById('label-schiz-freq').textContent=parseFloat(this.value).toFixed(1)+' Hz'; runSchizophreniaDbsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Pulse Width (μs):</span>
+                                    <span id="label-schiz-pw" class="sa-slider-val" style="color:#a78bfa;">90.0 μs</span>
+                                </div>
+                                <input type="range" id="schiz-pw" min="30.0" max="210.0" step="10.0" value="90.0" oninput="document.getElementById('label-schiz-pw').textContent=parseFloat(this.value).toFixed(1)+' μs'; runSchizophreniaDbsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Contact Amplitude (mA):</span>
+                                    <span id="label-schiz-amp" class="sa-slider-val" style="color:#34d399;">3.5 mA</span>
+                                </div>
+                                <input type="range" id="schiz-amp" min="0.5" max="7.0" step="0.25" value="3.5" oninput="document.getElementById('label-schiz-amp').textContent=parseFloat(this.value).toFixed(2)+' mA'; runSchizophreniaDbsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Closed-Loop LFP Gain:</span>
+                                    <span id="label-schiz-gain" class="sa-slider-val" style="color:#fbbf24;">1.45x</span>
+                                </div>
+                                <input type="range" id="schiz-gain" min="0.5" max="3.0" step="0.05" value="1.45" oninput="document.getElementById('label-schiz-gain').textContent=parseFloat(this.value).toFixed(2)+'x'; runSchizophreniaDbsDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <h3>Therapeutic Remission Summary</h3>
+                        <div class="sa-control-box" style="margin-bottom:0;">
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Final PANSS Score:</span>
+                                <span id="schiz-metric-panss" class="sa-metric-val" style="color:#34d399;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">PANSS Reduction:</span>
+                                <span id="schiz-metric-reduc" class="sa-metric-val" style="color:#38bdf8;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Cognitive Recovery (BACS):</span>
+                                <span id="schiz-metric-bacs" class="sa-metric-val" style="color:#a78bfa;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">GAF Functioning:</span>
+                                <span id="schiz-metric-gaf" class="sa-metric-val" style="color:#fbbf24;">...</span>
+                            </div>
+                            <div class="sa-metric-row" style="border-bottom:none;">
+                                <span class="sa-metric-lbl">5-Yr Sustained Remission:</span>
+                                <span id="schiz-metric-cure" class="sa-metric-val" style="color:#f43f5e;">...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: MULTI-PANEL CHARTS, INNOVATOR TABLES, AND FINITE MATH -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+                        <!-- Row 1: 5-Year Trajectories (PANSS, BACS Cognitive, CGI-S) -->
+                        <div class="panel glass-panel">
+                            <h3>Longitudinal 5-Year Therapeutic Recovery & Remission Trajectories</h3>
+                            <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Standard of Care (Antipsychotics) vs. Conventional DBS (Medtronic / BS) vs. NeuroMorph Closed-Loop Opto-BEM.</p>
+                            <div id="schiz-plot-trajectories" class="chart-container" style="min-height:320px;"></div>
+                        </div>
+
+                        <!-- Row 2: BEM Potential Heatmap & Multi-Innovator Radar Comparison -->
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Boundary Element (BEM) 3D Potential Field &amp; Depth Attenuation</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Boundary integral electric potential &Phi;<sub>BEM</sub>(θ, φ) across subcortical targets.</p>
+                                <div id="schiz-plot-bem" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Leading DBS Innovators Benchmark</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Hexagonal multi-metric comparison across market leaders.</p>
+                                <div id="schiz-plot-radar" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Innovators Comparison Table -->
+                        <div class="panel glass-panel">
+                            <h3>Leading Deep Brain Stimulation Systems Comparison Table</h3>
+                            <div id="schiz-innovators-table-container" style="overflow-x:auto; margin-top:8px;"></div>
+                        </div>
+
+                        <!-- Row 4: 4-Stage Long-Term Care Paradigm -->
+                        <div class="panel glass-panel">
+                            <h3>🧬 Optimal 4-Stage Clinical Long-Term Care Paradigm for Schizophrenia Remission</h3>
+                            <div id="schiz-care-stages-container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-top:10px;"></div>
+                        </div>
+
+                        <!-- Row 5: Finite Mathematical Equations & Markov Transitions -->
+                        <div class="panel glass-panel" style="background: rgba(124,58,237,0.04); border: 1px solid rgba(124,58,237,0.2);">
+                            <h3>📐 Finite Mathematical Equations &amp; Absorbing Markov Proof of Remission</h3>
+                            <div id="schiz-math-equations-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
                         </div>
                     </div>
                 </div>

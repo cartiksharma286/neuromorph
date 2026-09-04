@@ -28,6 +28,7 @@ from logic.moduli_bem_paradigm import get_moduli_bem_paradigm
 from logic.tourette_rtms import simulate_tourette_rtms
 from logic.tbi_ptsd_rtms import simulate_tbi_ptsd_rtms
 from logic.rls_rtms import simulate_rls_rtms
+from logic.schizophrenia_dbs import simulate_schizophrenia_dbs_bem
 
 app = Flask(__name__)
 CORS(app)
@@ -555,6 +556,53 @@ def api_tbi_ptsd_rtms():
             session_price=session_price,
         )
         return jsonify({'status': 'success', 'data': result})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+def _schizophrenia_dbs_params():
+    data = request.get_json(silent=True) or {}
+    return {
+        'baseline_panss': float(request.args.get('baseline_panss', data.get('baseline_panss', 104.0))),
+        'target_nucleus': str(request.args.get('target_nucleus', data.get('target_nucleus', 'nucleus_accumbens_mpfc'))),
+        'pulse_freq_hz': float(request.args.get('pulse_freq_hz', data.get('pulse_freq_hz', 130.0))),
+        'pulse_width_us': float(request.args.get('pulse_width_us', data.get('pulse_width_us', 90.0))),
+        'amplitude_ma': float(request.args.get('amplitude_ma', data.get('amplitude_ma', 3.5))),
+        'closed_loop_gain': float(request.args.get('closed_loop_gain', data.get('closed_loop_gain', 1.45))),
+        'treatment_months': int(request.args.get('treatment_months', data.get('treatment_months', 60))),
+        'innovator': str(request.args.get('innovator', data.get('innovator', 'neuromorph_opto_bem')))
+    }
+
+
+@app.route('/api/schizophrenia-dbs', methods=['GET', 'POST'])
+def api_schizophrenia_dbs():
+    """
+    Simulate multi-target DBS for refractory schizophrenia:
+    - BEM electric field potentials
+    - Innovator comparisons (Boston Scientific, Medtronic, Abbott, NeuroMorph)
+    - 4-stage longitudinal care paradigm & 5-year recovery trajectories
+    - Finite mathematical equations & Markov chain transitions
+    """
+    try:
+        params = _schizophrenia_dbs_params()
+        result = simulate_schizophrenia_dbs_bem(**params)
+        return jsonify({'status': 'success', 'data': result})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/schizophrenia-dbs-preprint', methods=['GET'])
+def schizophrenia_dbs_preprint():
+    """Generate and stream the Nature-style preprint PDF for Schizophrenia DBS."""
+    try:
+        from generate_nature_schizophrenia_dbs import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Schizophrenia_DBS_BEM_Finite_Math.pdf')
+        build_pdf(output_path, _schizophrenia_dbs_params())
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Schizophrenia_DBS_BEM_Finite_Math.pdf')
     except Exception as exc:
         import traceback
         traceback.print_exc()
