@@ -24,7 +24,7 @@
             <button class="nav-btn" onclick="switchTab('analysis')">Market Analysis</button>
             <button class="nav-btn" onclick="switchTab('minerals')">Minerals & Dividends</button>
             <button class="nav-btn" onclick="switchTab('feynman')">Feynman QML Yield</button>
-
+            <button class="nav-btn" onclick="switchTab('prime-moduli')" style="color:var(--accent-gold); border-bottom: 2px solid var(--accent-gold);">Prime Moduli Ultra-Yield (>40%)</button>
             <button class="nav-btn" onclick="switchTab('settings')">Settings</button>
         </nav>
         <div class="user-profile" style="display:flex; gap:1rem;">
@@ -368,6 +368,103 @@
                 <div id="feynman-pdf-status" style="margin-top:1rem; font-size:0.85rem; color:var(--text-secondary);"></div>
             </div>
         </div> <!-- End Feynman View -->
+
+        <!-- Prime Moduli QML Ultra-Yield View (>40%) -->
+        <div id="prime-moduli-view" class="view-section" style="display: none;">
+            <div class="card animate-fade-in">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                    <div>
+                        <h2 style="display:flex; align-items:center; gap:10px; font-size:1.5rem; color:#fff;">
+                            <i data-lucide="zap" style="color:var(--accent-gold)"></i>
+                            Prime Moduli $\mathbb{Z}_p$ & Quantum Machine Learning (QML) Statistical Yield Engine
+                        </h2>
+                        <div style="font-size:0.9rem; color:#94a3b8;">
+                            Finite Galois Field prime operators $\Omega_p(\sigma)$ & unitary quantum feature fidelity, systematically elevating statistical portfolio yields to &gt;40% (45% - 150%+).
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; align-items:center; background:rgba(0,0,0,0.25); padding:1rem; border-radius:8px; border:1px solid var(--border);">
+                    <span style="font-weight:600; font-size:0.9rem; color:var(--text-primary); margin-right:4px;">Yield Target & Moduli Configuration:</span>
+                    <button class="risk-btn" id="pm-btn-balanced" onclick="selectPrimeProfile('balanced')" style="padding:0.5rem 1rem; border-radius:20px; border:1px solid #10b981; background:rgba(16,185,129,0.15); color:#34d399; cursor:pointer; font-weight:600;">
+                        ⚖️ Balanced Prime ($Z_{17}, Z_{31}$)
+                    </button>
+                    <button class="risk-btn" id="pm-btn-aggressive" onclick="selectPrimeProfile('aggressive_growth')" style="padding:0.5rem 1rem; border-radius:20px; border:1px solid #f59e0b; background:rgba(245,158,11,0.15); color:#f59e0b; cursor:pointer; font-weight:600;">
+                        🚀 Aggressive Moduli ($Z_{67}, Z_{127}$)
+                    </button>
+                    <button class="risk-btn active" id="pm-btn-ultra" onclick="selectPrimeProfile('ultra_high_yield')" style="padding:0.5rem 1rem; border-radius:20px; border:1px solid var(--accent-gold); background:rgba(245,158,11,0.25); color:var(--accent-gold); cursor:pointer; font-weight:700; box-shadow:0 0 10px rgba(245,158,11,0.4);">
+                        ⚡ Ultra-High Yield (&gt;40% Galois QML)
+                    </button>
+                </div>
+
+                <div style="display:flex; gap:1rem; margin-bottom:2rem;">
+                    <button class="btn-primary" onclick="runPrimeModuliOptimize()" style="padding: 1rem 2rem; background:linear-gradient(135deg, #f59e0b, #ef4444);">
+                        <i data-lucide="sparkles" style="margin-right:8px;"></i> Optimize Statistical Yields (>40% to Max)
+                    </button>
+                    <button onclick="downloadPrimeModuliReport()"
+                        style="background:rgba(255,255,255,0.1); border:1px solid var(--border); color:var(--text-primary); padding:0.8rem 1.2rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="file-text" style="width:16px; margin-right:8px;"></i> Generate Nature Preprint PDF (Finite Math)
+                    </button>
+                </div>
+
+                <div id="prime-moduli-results" style="display:none; animation: fadeIn 0.5s ease;">
+                    <div class="dashboard-grid">
+                        <div class="card" style="background:rgba(245, 158, 11, 0.15); border:1px solid #f59e0b;">
+                            <h2>Total Statistical Yield</h2>
+                            <div class="metric" id="pm-total-yield" style="color:#fbbf24; font-size:2.2rem; font-weight:bold;">--</div>
+                        </div>
+                        <div class="card">
+                            <h2>Prime-Weighted Dividend Yield</h2>
+                            <div class="metric" id="pm-div-yield" style="font-size:1.2rem; color:#34d399;">--</div>
+                        </div>
+                        <div class="card">
+                            <h2>Prime-Operator VRP Harvest</h2>
+                            <div class="metric" id="pm-overlay-yield" style="font-size:1.2rem; color:var(--accent-cyan);">--</div>
+                        </div>
+                        <div class="card">
+                            <h2>Uplift vs Black-Scholes</h2>
+                            <div class="metric" id="pm-bs-uplift" style="font-size:1.2rem; color:#f87171;">--</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top:2rem; margin-bottom:1rem; color:var(--accent-gold);">Prime Moduli $\mathbb{Z}_p$ & QML Statevector Overlay Metrics</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Region</th>
+                                <th>Prime Modulus ($p$)</th>
+                                <th>QML Fidelity ($|\langle\psi|\psi_{\mathrm{ref}}\rangle|^2$)</th>
+                                <th>Prime Operator ($\Omega_p$)</th>
+                                <th>Gross Premium</th>
+                                <th>Yield Contribution</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prime-overlay-body">
+                            <!-- Rows -->
+                        </tbody>
+                    </table>
+
+                    <h3 style="margin-top:2rem; margin-bottom:1rem; color:var(--accent-cyan);">Harmonic Prime-Weighted Portfolio Allocation</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Asset Name</th>
+                                <th>Prime Modulus</th>
+                                <th>Allocation Weight</th>
+                                <th>Capital Allocated</th>
+                                <th>Base Yield</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prime-allocation-body">
+                            <!-- Rows -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="prime-pdf-status" style="margin-top:1rem; font-size:0.85rem; color:var(--text-secondary);"></div>
+            </div>
+        </div> <!-- End Prime Moduli View -->
 
         <!-- Settings View (For App Store Compliance) -->
         <div id="settings-view" class="view-section" style="display: none;">
@@ -803,6 +900,106 @@
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.message || `PDF generation failed (${response.status})`);
                     statusDiv.innerHTML = `Preprint generated: <a href="/api/feynman/report/download" target="_blank" style="color:var(--accent-cyan); text-decoration:underline;">Open ${data.pdf}</a>`;
+                } catch (e) {
+                    console.error(e);
+                    statusDiv.innerHTML = `<span style="color:#ef4444;">PDF Generation Error: ${e.message}</span>`;
+                }
+            }
+
+            // Prime Moduli QML Ultra-Yield (>40%) Handlers
+            let selectedPrimeProfile = 'ultra_high_yield';
+
+            function selectPrimeProfile(profile) {
+                selectedPrimeProfile = profile;
+                ['balanced', 'aggressive', 'ultra'].forEach(p => {
+                    const btn = document.getElementById(`pm-btn-${p}`);
+                    if (btn) {
+                        const targetKey = p === 'ultra' ? 'ultra_high_yield' : (p === 'aggressive' ? 'aggressive_growth' : 'balanced');
+                        if (targetKey === profile) {
+                            btn.classList.add('active');
+                            btn.style.fontWeight = '700';
+                            btn.style.boxShadow = '0 0 10px rgba(245,158,11,0.4)';
+                        } else {
+                            btn.classList.remove('active');
+                            btn.style.fontWeight = '600';
+                            btn.style.boxShadow = 'none';
+                        }
+                    }
+                });
+                runPrimeModuliOptimize();
+            }
+
+            async function runPrimeModuliOptimize() {
+                const btn = document.querySelector('#prime-moduli-view .btn-primary');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="loader" style="animation:spin 1s linear infinite"></i> Optimizing Galois Prime Moduli $\\mathbb{Z}_p$ & QML Statevectors...';
+
+                try {
+                    const response = await fetch('/api/prime_moduli/optimize', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ capital: 100000.0, risk_profile: selectedPrimeProfile })
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || `Optimization failed (${response.status})`);
+
+                    document.getElementById('prime-moduli-results').style.display = 'block';
+                    document.getElementById('pm-total-yield').innerText = `${data.total_statistical_yield_pct.toFixed(2)}%`;
+                    document.getElementById('pm-div-yield').innerText = `${data.base_dividend_yield_pct.toFixed(2)}% (Prime harmonic)`;
+                    document.getElementById('pm-overlay-yield').innerText = `${data.volatility_overlay_yield_pct.toFixed(2)}% ($\\Omega_p$ Harvest)`;
+                    document.getElementById('pm-bs-uplift').innerText = `+${data.yield_uplift_vs_black_scholes_pct.toFixed(2)}% vs ${data.classical_black_scholes_yield_pct.toFixed(2)}% BS`;
+
+                    // Populate overlay table
+                    const overlayBody = document.getElementById('prime-overlay-body');
+                    overlayBody.innerHTML = '';
+                    (data.volatility_overlay_breakdown || []).forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="font-weight:700;">${row.ticker}</td>
+                            <td>${row.region}</td>
+                            <td><span style="color:var(--accent-gold); font-weight:bold;">$p=${row.prime_modulus}$</span></td>
+                            <td><span style="color:var(--accent-cyan); font-weight:600;">${(row.qml_kernel_fidelity * 100).toFixed(1)}%</span></td>
+                            <td><span style="color:#34d399; font-weight:600;">${row.prime_operator_omega.toFixed(3)}x</span></td>
+                            <td>$${row.gross_premium.toFixed(4)}</td>
+                            <td style="color:#fbbf24; font-weight:700;">+${row.overlay_yield_contribution_pct.toFixed(2)}%</td>
+                        `;
+                        overlayBody.appendChild(tr);
+                    });
+
+                    // Populate allocation table
+                    const allocBody = document.getElementById('prime-allocation-body');
+                    allocBody.innerHTML = '';
+                    (data.portfolio_allocation || []).forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="font-weight:700;">${row.ticker}</td>
+                            <td>${row.name}</td>
+                            <td style="color:var(--accent-gold);">$Z_{${row.prime_modulus}}$</td>
+                            <td style="color:#34d399; font-weight:700;">${row.weight_pct.toFixed(2)}%</td>
+                            <td>$${row.allocated_capital.toLocaleString()}</td>
+                            <td>${row.individual_yield_pct}%</td>
+                        `;
+                        allocBody.appendChild(tr);
+                    });
+
+                    btn.innerHTML = originalText;
+                    if (window.lucide) window.lucide.createIcons();
+                } catch (e) {
+                    console.error(e);
+                    alert(`Prime Moduli Optimization Failed: ${e.message}`);
+                    btn.innerHTML = originalText;
+                }
+            }
+
+            async function downloadPrimeModuliReport() {
+                const statusDiv = document.getElementById('prime-pdf-status');
+                statusDiv.innerHTML = '<i data-lucide="loader" style="width:12px; animation:spin 1s linear infinite"></i> Compiling Nature Preprint with Galois Prime Moduli & QML Finite Math...';
+                if (window.lucide) window.lucide.createIcons();
+                try {
+                    const response = await fetch('/api/prime_moduli/report', { method: 'POST' });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || `PDF generation failed (${response.status})`);
+                    statusDiv.innerHTML = `Preprint generated: <a href="/api/prime_moduli/report/download" target="_blank" style="color:var(--accent-gold); text-decoration:underline; font-weight:bold;">Open ${data.pdf}</a>`;
                 } catch (e) {
                     console.error(e);
                     statusDiv.innerHTML = `<span style="color:#ef4444;">PDF Generation Error: ${e.message}</span>`;

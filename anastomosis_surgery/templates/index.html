@@ -42,6 +42,8 @@
             <button class="tab-btn active" onclick="switchTab('cpd')">Coherent Point Drift (Wishart)</button>
             <button class="tab-btn" onclick="switchTab('pigeon')">Pigeonhole Combinatorial Manifold</button>
             <button class="tab-btn" onclick="switchTab('feynman')">Feynman Path Integral</button>
+            <button class="tab-btn" onclick="switchTab('pqc')">Post-Quantum Cryptography & Geodesic SLAM</button>
+            <button class="tab-btn" onclick="switchTab('majorana')">Majorana Prime Moduli</button>
         </div>
         
         <div class="grid">
@@ -84,6 +86,30 @@
                     </div>
                 </div>
 
+                <div id="content-pqc" class="tab-content">
+                    <button class="btn btn-pqc" onclick="runRegistration('pqc')" style="background: linear-gradient(135deg, #ff9900, #ff0077);">Run PQC Recurrent Prime Geodesic SLAM</button>
+                    <div class="stat-card">
+                        <div style="color:#8892b0; font-size:12px; text-transform:uppercase;">Lattice Cryptographic State</div>
+                        <div class="stat-value" id="status-val-pqc">Waiting</div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #ff9900;">
+                        <div style="color:#8892b0; font-size:12px; text-transform:uppercase;">Geodesic Elliptic Residual</div>
+                        <div class="stat-value" id="error-val-pqc">0.000</div>
+                    </div>
+                </div>
+
+                <div id="content-majorana" class="tab-content">
+                    <button class="btn btn-majorana" onclick="runRegistration('majorana')" style="background: linear-gradient(135deg, #00f0ff, #e000ff);">Run Majorana Prime Moduli Registration</button>
+                    <div class="stat-card">
+                        <div style="color:#8892b0; font-size:12px; text-transform:uppercase;">Topological Parity State</div>
+                        <div class="stat-value" id="status-val-majorana">Waiting</div>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #e000ff;">
+                        <div style="color:#8892b0; font-size:12px; text-transform:uppercase;">Galois Prime Residue Error</div>
+                        <div class="stat-value" id="error-val-majorana">0.000</div>
+                    </div>
+                </div>
+
                 <div class="math-panel" id="log">
                     > System Initialization Complete.<br>
                 </div>
@@ -116,11 +142,21 @@
                 log("> Initializing Wishart + Primes Surfboard Pattern...");
             } else if (mode === 'pigeon') {
                 log("> Initializing Pigeonhole Combinatorial Manifold Mapping...");
-            } else {
+            } else if (mode === 'feynman') {
                 log("> Initializing Feynman Path Integral Registration...");
+            } else if (mode === 'pqc') {
+                log("> Initializing Post-Quantum Lattice (Ring-LWE) with Recurrent Primes & Geodesic Elliptic SLAM...");
+            } else if (mode === 'majorana') {
+                log("> Initializing Topological Majorana Zero-Mode Braiding with Prime Moduli Theory...");
             }
             
-            fetch(mode === 'cpd' ? '/api/cpd' : (mode === 'pigeon' ? '/api/pigeonhole' : '/api/feynman'))
+            let endpoint = '/api/cpd';
+            if (mode === 'pigeon') endpoint = '/api/pigeonhole';
+            else if (mode === 'feynman') endpoint = '/api/feynman';
+            else if (mode === 'pqc') endpoint = '/api/pqc_geodesic';
+            else if (mode === 'majorana') endpoint = '/api/majorana_moduli';
+
+            fetch(endpoint)
             .then(r=>r.json()).then(data => {
                 traj = data.trajectory;
                 targetPts = data.target;
@@ -133,9 +169,17 @@
                 } else if (mode === 'pigeon') {
                     log("> Identifying Attractor Holes & Source Pigeons...");
                     log("> Applying Dirichlet Energy operator gradients...");
-                } else {
+                } else if (mode === 'feynman') {
                     log("> Summing over possible alignment histories...");
                     log("> Using properties of numbers for residual differential action...");
+                } else if (mode === 'pqc') {
+                    log("> Generating Recurrent Prime Ring-LWE Lattice perturbations...");
+                    log("> Computing incomplete elliptic integrals of 1st and 2nd kind for geodesic metric...");
+                    log("> Executing Simultaneous Localization and Geodesic Manifold Registration...");
+                } else if (mode === 'majorana') {
+                    log("> Initializing Majorana Non-Abelian Braiding Operators gamma_i gamma_j...");
+                    log("> Modulating displacement gradients across Galois Prime Moduli Field Z_p...");
+                    log("> Protecting incision boundary topology with Fermion Parity operators...");
                 }
                 animate(mode);
             });
@@ -167,19 +211,29 @@
             const trace1 = {
                 x: targetPts.map(p=>p[0]), y: targetPts.map(p=>p[1]),
                 mode: 'markers', type: 'scatter', name: 'Target Excision (Deformed)',
-                marker: { color: mode === 'cpd' ? '#ff0055' : (mode === 'pigeon' ? '#ffaa00' : '#00ffaa'), size: mode === 'pigeon' ? 8 : 6 }
+                marker: { 
+                    color: mode === 'cpd' ? '#ff0055' : (mode === 'pigeon' ? '#ffaa00' : (mode === 'feynman' ? '#00ffaa' : (mode === 'pqc' ? '#ff0077' : '#00f0ff'))), 
+                    size: mode === 'pigeon' ? 8 : 6 
+                }
             };
             const trace2 = {
                 x: current.map(p=>p[0]), y: current.map(p=>p[1]),
                 mode: 'lines+markers', type: 'scatter', name: 'Source Surfboard Pattern',
-                marker: { color: mode === 'cpd' ? '#00f2ff' : (mode === 'pigeon' ? '#aa00ff' : '#0055ff'), size: 6 },
-                line: { color: mode === 'cpd' ? 'rgba(0, 242, 255, 0.4)' : (mode === 'pigeon' ? 'rgba(170, 0, 255, 0.4)' : 'rgba(0, 85, 255, 0.4)') }
+                marker: { 
+                    color: mode === 'cpd' ? '#00f2ff' : (mode === 'pigeon' ? '#aa00ff' : (mode === 'feynman' ? '#0055ff' : (mode === 'pqc' ? '#00ffcc' : '#e000ff'))), 
+                    size: 6 
+                },
+                line: { 
+                    color: mode === 'cpd' ? 'rgba(0, 242, 255, 0.4)' : (mode === 'pigeon' ? 'rgba(170, 0, 255, 0.4)' : (mode === 'feynman' ? 'rgba(0, 85, 255, 0.4)' : (mode === 'pqc' ? 'rgba(0, 255, 204, 0.6)' : 'rgba(224, 0, 255, 0.6)'))) 
+                }
             };
 
             const titles = {
                 'cpd': `Non-Rigid Alignment Iteration ${frame + 1} (Residual Diff Eq)`,
                 'pigeon': `Pigeonhole Map Iteration ${frame + 1} (Combinatorial Relaxation)`,
-                'feynman': `Feynman Path Integral Iteration ${frame + 1} (Sum Over Histories)`
+                'feynman': `Feynman Path Integral Iteration ${frame + 1} (Sum Over Histories)`,
+                'pqc': `PQC Recurrent Prime Geodesic SLAM Iteration ${frame + 1} (Elliptic Integrals & Lattice Trapdoor)`,
+                'majorana': `Majorana Prime Moduli Iteration ${frame + 1} (Topological Fermion Braiding & Z_p Residues)`
             };
 
             const layout = {

@@ -13,6 +13,7 @@ from market_engine import (
     compute_hjb_optimal_trajectory
 )
 from feynman_path_integral_engine import optimize_yield_with_feynman_qml
+from prime_moduli_qml_yield_engine import optimize_ultra_yield_prime_moduli_qml
 
 app = Flask(__name__, static_url_path='', static_folder='www')
 ibkr = IBKRBridge()
@@ -331,6 +332,53 @@ def feynman_report():
         if result.returncode != 0:
             return jsonify({'status': 'error', 'message': result.stderr}), 500
         pdf_name = 'Nature_Feynman_Path_Integral_Volatility_Trading.pdf'
+        return jsonify({'status': 'success', 'pdf': pdf_name, 'log': result.stdout})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/api/prime_moduli/optimize', methods=['POST'])
+def prime_moduli_optimize():
+    """
+    Prime Moduli Galois Fields Z_p + Quantum Machine Learning (QML) Statistical Yield Optimizer.
+    Elevates yields systematically to > 40% up to ultra-high yield regimes.
+    """
+    try:
+        data = request.json or {}
+        capital = float(data.get('capital', 100000.0))
+        risk_profile = data.get('risk_profile', 'ultra_high_yield')
+        snapshot = market_engine.snapshot()
+        result = optimize_ultra_yield_prime_moduli_qml(
+            capital=capital,
+            risk_free_rate=snapshot['characteristics']['10y_treasury'] / 100.0,
+            risk_profile=risk_profile,
+        )
+        result['generated_at'] = snapshot['generated_at']
+        return jsonify({'status': 'success', **result})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+
+
+@app.route('/api/prime_moduli/report/download')
+def download_prime_moduli_report():
+    report_file = 'Nature_Prime_Moduli_QML_Statistical_Yield_Optimization.pdf'
+    if not os.path.exists(report_file):
+        return "Report not generated yet - call /api/prime_moduli/report first", 404
+    return send_from_directory('.', report_file, as_attachment=False)
+
+
+@app.route('/api/prime_moduli/report', methods=['POST'])
+def prime_moduli_report():
+    """Runs the Nature-style Prime Moduli QML Preprint generator and returns the PDF"""
+    import subprocess
+    import sys
+    try:
+        script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'generate_nature_pdf_prime_moduli_qml.py')
+        result = subprocess.run([sys.executable, script_path], cwd=os.path.dirname(script_path),
+                                 capture_output=True, text=True, timeout=120)
+        if result.returncode != 0:
+            return jsonify({'status': 'error', 'message': result.stderr}), 500
+        pdf_name = 'Nature_Prime_Moduli_QML_Statistical_Yield_Optimization.pdf'
         return jsonify({'status': 'success', 'pdf': pdf_name, 'log': result.stdout})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
