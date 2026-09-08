@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pelvic Floor Reconstruction & Intraoperative Surgical Guide</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #0b1120; color: #f1f5f9; }
+        .tab-btn.active { border-bottom: 3px solid #38bdf8; color: #38bdf8; font-weight: 600; }
+        .glass-card { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(56, 189, 248, 0.2); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/90 sticky top-0 z-50 backdrop-blur">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white shadow-lg shadow-sky-500/20">
+                    <i class="fa-solid fa-notes-medical text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                        PelviRecon 4D <span class="text-xs font-mono bg-sky-950 text-sky-400 px-2 py-0.5 rounded border border-sky-800">Surgical Acoustics Suite</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Intraoperative Navigation, Implant Polytypes, Continued Fractions Ultrasound & Post-Op Workflows</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="/api/preprint/view" target="_blank" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-file-pdf"></i> View Nature Preprint
+                </a>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Engine Active
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="max-w-7xl mx-auto px-4 flex space-x-6 border-t border-slate-800/80 text-sm overflow-x-auto">
+            <button onclick="switchTab('tab-workflow')" class="tab-btn active py-3 px-2 text-slate-300 hover:text-white transition flex items-center gap-2" id="btn-tab-workflow">
+                <i class="fa-solid fa-hospital-user text-sky-400"></i> Intraoperative Workflow & POP-Q
+            </button>
+            <button onclick="switchTab('tab-ultrasound-bmode')" class="tab-btn py-3 px-2 text-slate-400 hover:text-white transition flex items-center gap-2" id="btn-tab-ultrasound-bmode">
+                <i class="fa-solid fa-image text-teal-400"></i> Grayscale Ultrasound Slices
+            </button>
+            <button onclick="switchTab('tab-polytypes')" class="tab-btn py-3 px-2 text-slate-400 hover:text-white transition flex items-center gap-2" id="btn-tab-polytypes">
+                <i class="fa-solid fa-cubes-stacked text-purple-400"></i> Implant Polytypes & Mechanics
+            </button>
+            <button onclick="switchTab('tab-imaging')" class="tab-btn py-3 px-2 text-slate-400 hover:text-white transition flex items-center gap-2" id="btn-tab-imaging">
+                <i class="fa-solid fa-circle-nodes text-cyan-400"></i> Segmentation & Registration
+            </button>
+            <button onclick="switchTab('tab-probe')" class="tab-btn py-3 px-2 text-slate-400 hover:text-white transition flex items-center gap-2" id="btn-tab-probe">
+                <i class="fa-solid fa-wave-square text-amber-400"></i> Ultrasound Probe Design & CF Acoustics
+            </button>
+            <button onclick="switchTab('tab-postop')" class="tab-btn py-3 px-2 text-slate-400 hover:text-white transition flex items-center gap-2" id="btn-tab-postop">
+                <i class="fa-solid fa-chart-line text-emerald-400"></i> Post-Op Outcomes & Healing
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+        <!-- TAB 1: Intraoperative Workflow & POP-Q -->
+        <section id="tab-workflow" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left: POP-Q Grid Coordinates Input -->
+                <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <h2 class="text-base font-semibold text-sky-300 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders"></i> POP-Q System 9-Point Matrix
+                    </h2>
+                    <p class="text-xs text-slate-400">Anatomical landmarks relative to the hymeneal ring (cm) according to ICS/IUGA standardization.</p>
+                    
+                    <div class="grid grid-cols-3 gap-3 text-center">
+                        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                            <label class="block text-xs text-slate-400 font-mono">Aa (cm)</label>
+                            <input type="number" id="popq-Aa" step="0.5" value="1.5" class="w-full bg-slate-950 text-sky-400 font-bold text-center border border-slate-700 rounded p-1 text-sm">
+                        </div>
+                        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                            <label class="block text-xs text-slate-400 font-mono">Ba (cm)</label>
+                            <input type="number" id="popq-Ba" step="0.5" value="2.5" class="w-full bg-slate-950 text-sky-400 font-bold text-center border border-slate-700 rounded p-1 text-sm">
+                        </div>
+                        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                            <label class="block text-xs text-slate-400 font-mono">C (cm)</label>
+                            <input type="number" id="popq-C" step="0.5" value="1.0" class="w-full bg-slate-950 text-sky-400 font-bold text-center border border-slate-700 rounded p-1 text-sm">
+                        </div>
+
+                        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                            <label class="block text-xs text-slate-400 font-mono">gh (cm)</label>
+                            <input type="number" id="popq-gh" step="0.5" value="4.5" class="w-full bg-slate-950 text-emerald-400 font-bold text-center border border-slate-700 rounded p-1 text-sm">
+                        </div>
+                        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                            <label class="block text-xs text-slate-400 font-mono">pb (cm)</label>
+                            <input type="number" id="popq-pb" step="0.5" value="2.5" class="w-full bg-slate-950 text-emerald-400 font-bold text-center border border-slate-700 rounded p-1 text-sm">
+                        </div>
+                        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                            <label class="block text-xs text-slate-400 font-mono">tvl (cm)</label>
+                            <input type="number" id="popq-tvl" step="0.5" value="9.0" class="w-full bg-slate-950 text-emerald-400 font-bold text-center border border-slate-700 rounded p-1 text-sm">
+                        </div>
+
+                        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                            <label class="block text-xs text-slate-400 font-mono">Ap (cm)</label>
+                            <input type="number" id="popq-Ap" step="0.5" value="-2.0" class="w-full bg-slate-950 text-indigo-400 font-bold text-center border border-slate-700 rounded p-1 text-sm">
+                        </div>
+                        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                            <label class="block text-xs text-slate-400 font-mono">Bp (cm)</label>
+                            <input type="number" id="popq-Bp" step="0.5" value="-1.5" class="w-full bg-slate-950 text-indigo-400 font-bold text-center border border-slate-700 rounded p-1 text-sm">
+                        </div>
+                        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                            <label class="block text-xs text-slate-400 font-mono">D (cm)</label>
+                            <input type="number" id="popq-D" step="0.5" value="-8.0" class="w-full bg-slate-950 text-indigo-400 font-bold text-center border border-slate-700 rounded p-1 text-sm">
+                        </div>
+                    </div>
+
+                    <button onclick="evaluatePOPQ()" class="w-full py-2.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 font-semibold rounded-xl text-sm transition shadow-lg shadow-sky-600/30">
+                        <i class="fa-solid fa-calculator mr-1"></i> Compute Staging & Biomechanical Plan
+                    </button>
+                </div>
+
+                <!-- Middle & Right: Staging Verdict & Surgical Step Guide -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400 uppercase font-mono">Clinical Stage</span>
+                            <div id="popq-stage-display" class="text-lg font-bold text-amber-400 mt-1">Stage III (Severe)</div>
+                            <div id="popq-leading-edge" class="text-xs text-slate-400 mt-0.5">Leading Edge: +2.5 cm</div>
+                        </div>
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400 uppercase font-mono">Levator Hiatus Area</span>
+                            <div id="popq-hiatus-area" class="text-lg font-bold text-rose-400 mt-1">24.74 cm²</div>
+                            <div id="popq-ballooning-status" class="text-xs text-amber-400 mt-0.5"><i class="fa-solid fa-triangle-exclamation"></i> Moderate Ballooning</div>
+                        </div>
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400 uppercase font-mono">Recommended Pathway</span>
+                            <div id="popq-technique-summary" class="text-xs font-semibold text-sky-300 mt-1">Robotic Sacrocolpopexy + Paravaginal Repair</div>
+                        </div>
+                    </div>
+
+                    <!-- Surgical Guide Flow Steps -->
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h3 class="text-sm font-semibold text-sky-400 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check"></i> Standardized Intraoperative Surgical Protocol
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs" id="surgical-steps-container">
+                            <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 flex gap-3">
+                                <div class="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold shrink-0">1</div>
+                                <div>
+                                    <h4 class="font-semibold text-white">Anatomical Dissection & Sacral Promontory Exposure</h4>
+                                    <p class="text-slate-400 mt-0.5">Identify right ureter, common iliac bifurcation, and anterior longitudinal ligament.</p>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 flex gap-3">
+                                <div class="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold shrink-0">2</div>
+                                <div>
+                                    <h4 class="font-semibold text-white">Vesicovaginal & Rectovaginal Flap Mobilization</h4>
+                                    <p class="text-slate-400 mt-0.5">Develop avascular planes down to trigone anteriorly and perineal body posteriorly.</p>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 flex gap-3">
+                                <div class="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold shrink-0">3</div>
+                                <div>
+                                    <h4 class="font-semibold text-white">Type I Polypropylene Y-Mesh Fixation</h4>
+                                    <p class="text-slate-400 mt-0.5">Suture anterior & posterior arms with delayed absorbable 2-0 PDS stitches (tension-free).</p>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 flex gap-3">
+                                <div class="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold shrink-0">4</div>
+                                <div>
+                                    <h4 class="font-semibold text-white">Retroperitonealization & Perineal Reconstitution</h4>
+                                    <p class="text-slate-400 mt-0.5">Complete peritoneal closure over mesh to prevent small bowel adhesion & herniation.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB: Grayscale Ultrasound Slices for Surgical Guidance -->
+        <section id="tab-ultrasound-bmode" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Ultrasound Slice Selector & Acquisition Settings -->
+                <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <h2 class="text-base font-semibold text-teal-300 flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group"></i> Intraoperative B-Mode Slices
+                    </h2>
+                    <p class="text-xs text-slate-400">Standardized intraoperative ultrasound imaging planes for intraoperative real-time pelvic floor guidance.</p>
+                    
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Select Ultrasound Scan Plane</label>
+                        <select id="us-slice-select" onchange="renderSelectedUltrasoundSlice()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm text-teal-300 font-semibold">
+                            <option value="midsagittal_bmode">1. Midsagittal B-Mode Reference Slice</option>
+                            <option value="cplane_hiatal_axial">2. Rendered C-Plane Levator Hiatus (Axial)</option>
+                            <option value="mesh_implant_acoustic">3. Type I Polypropylene Mesh Localization</option>
+                            <option value="dynamic_valsalva_cineloop">4. Dynamic 4D Valsalva Strain & Vector Tracking</option>
+                        </select>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Imaging Plane:</span>
+                            <span id="us-plane-name" class="font-mono text-teal-400 font-bold">Midsagittal (2D Transperineal)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">System Dynamic Range:</span>
+                            <span id="us-plane-dr" class="font-mono text-teal-400 font-bold">74.0 dB</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Transducer Gain:</span>
+                            <span id="us-plane-gain" class="font-mono text-teal-400 font-bold">62.0 dB</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-teal-950/40 border border-teal-800/60 text-xs">
+                        <div class="font-bold text-teal-300 flex items-center gap-1.5 mb-1">
+                            <i class="fa-solid fa-stethoscope"></i> Surgical Guideline Note:
+                        </div>
+                        <p id="us-clinical-guideline" class="text-slate-300 leading-relaxed">
+                            Measure bladder neck descent relative to inferoposterior margin of symphysis pubis. Normal <15mm descent on Valsalva.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Synthetic B-Mode Grayscale Ultrasound Viewer & Landmark Canvas -->
+                <div class="lg:col-span-2 glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 id="us-slice-title" class="text-sm font-semibold text-white">Midsagittal B-Mode Reference Slice</h3>
+                            <p class="text-xs text-slate-400">Real-time 16-bit high-contrast grayscale acoustic simulation with anatomical landmarks</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded bg-slate-900 text-teal-400 border border-slate-700 text-xs font-mono">
+                            <i class="fa-solid fa-circle text-emerald-400 text-[8px] animate-pulse"></i> LIVE B-MODE
+                        </span>
+                    </div>
+
+                    <!-- Canvas Frame -->
+                    <div class="relative bg-black rounded-xl border border-slate-800 p-2 overflow-hidden flex flex-col items-center justify-center">
+                        <canvas id="bmodeCanvas" width="580" height="320" class="rounded bg-slate-950 w-full max-w-full h-auto"></canvas>
+                        <div class="w-full flex justify-between text-[11px] font-mono text-slate-500 px-2 pt-2 border-t border-slate-900">
+                            <span>Sector: 120°</span>
+                            <span>Depth: 8.0 cm</span>
+                            <span>Frame Rate: 34 Hz</span>
+                            <span>TI: 0.4 | MI: 0.9</span>
+                        </div>
+                    </div>
+
+                    <!-- Landmark Table -->
+                    <div class="space-y-2">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Identified Anatomical Echogenic Structures</h4>
+                        <div id="us-landmarks-list" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: Implant Polytypes & Mechanics -->
+        <section id="tab-polytypes" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Polytype Selector & Specifications -->
+                <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <h2 class="text-base font-semibold text-purple-300 flex items-center gap-2">
+                        <i class="fa-solid fa-cubes"></i> Polytype Microarchitecture
+                    </h2>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Implant Material Formulation</label>
+                        <select id="polytype-select" onchange="evaluateImplant()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm text-purple-300 font-semibold">
+                            <option value="polypropylene_type1">Polypropylene Type I (Macroporous Monofilament)</option>
+                            <option value="pvdf">Polyvinylidene Fluoride (PVDF)</option>
+                            <option value="eptfe">Expanded PTFE (Microporous)</option>
+                            <option value="biological_ecm">Acellular Porcine Dermal ECM / Autologous</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Stretch Ratio $\lambda$ (1.0 to 1.5)</label>
+                        <input type="range" id="implant-stretch" min="1.0" max="1.5" step="0.01" value="1.25" oninput="evaluateImplant()" class="w-full accent-purple-500">
+                        <div class="flex justify-between text-xs text-slate-400 font-mono mt-1">
+                            <span>1.0 (Rest)</span>
+                            <span id="stretch-val-display" class="text-purple-400 font-bold">1.25</span>
+                            <span>1.5 (High Strain)</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 text-xs pt-2">
+                        <div class="flex justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                            <span class="text-slate-400">Pore Diameter</span>
+                            <span id="implant-pore-size" class="font-mono text-purple-400 font-bold">1200 µm</span>
+                        </div>
+                        <div class="flex justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                            <span class="text-slate-400">Porosity Percentage</span>
+                            <span id="implant-porosity" class="font-mono text-purple-400 font-bold">82.5%</span>
+                        </div>
+                        <div class="flex justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                            <span class="text-slate-400">Suture Retention Pullout Force</span>
+                            <span id="implant-pullout" class="font-mono text-emerald-400 font-bold">34.2 N</span>
+                        </div>
+                        <div class="flex justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                            <span class="text-slate-400">Vaginal Erosion / Exposure Risk</span>
+                            <span id="implant-erosion" class="font-mono text-rose-400 font-bold">1.8%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mooney-Rivlin Hyperelastic Stress Curve -->
+                <div class="lg:col-span-2 glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-semibold text-white">Mooney-Rivlin Strain Energy & Cauchy Stress Response</h3>
+                            <p class="text-xs text-slate-400">$W = C_{10}(I_1 - 3) + C_{01}(I_2 - 3)$ under uniaxial pelvic tension</p>
+                        </div>
+                        <div class="px-3 py-1 rounded bg-purple-950 text-purple-400 border border-purple-800 font-mono text-xs">
+                            $\sigma = 2(\lambda^2 - \lambda^{-1})(C_{10} + C_{01}\lambda^{-1})$
+                        </div>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="implantStressChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: Image Acquisition & Registration -->
+        <section id="tab-imaging" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Controls for Acquisition & Registration -->
+                <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <h2 class="text-base font-semibold text-cyan-300 flex items-center gap-2">
+                        <i class="fa-solid fa-camera"></i> Grayscale Ultrasound Acquisition
+                    </h2>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Imaging Modality</label>
+                        <select id="img-modality" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm text-cyan-300 font-semibold">
+                            <option value="transperineal_4d_ultrasound">Transperineal 4D Dynamic Ultrasound</option>
+                            <option value="transvaginal_3d_ultrasound">Transvaginal 3D High-Frequency Ultrasound</option>
+                            <option value="mri_7t_pelvic">7-Tesla High-Resolution Pelvic MRI</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Speckle Noise Level ($\sigma_s$)</label>
+                        <input type="range" id="speckle-noise" min="0.05" max="0.4" step="0.05" value="0.15" class="w-full accent-cyan-500">
+                    </div>
+                    <button onclick="simulateAcquisition()" class="w-full py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 font-semibold rounded-xl text-xs transition">
+                        <i class="fa-solid fa-microchip mr-1"></i> Acquire & Segment Hiatal Ring
+                    </button>
+
+                    <hr class="border-slate-800">
+
+                    <h3 class="text-xs font-semibold text-slate-300 uppercase font-mono">Non-Rigid Coherent Point Drift (CPD)</h3>
+                    <p class="text-xs text-slate-400">Registers intraoperative deformed pelvic structures against pre-op baseline model.</p>
+                    <button onclick="runCPDRegistration()" class="w-full py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-semibold rounded-xl text-xs transition">
+                        <i class="fa-solid fa-arrows-split-up-and-left mr-1"></i> Execute CPD Alignment
+                    </button>
+                    <div id="cpd-metric-box" class="text-xs text-emerald-400 font-mono bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                        Target Registration Error (TRE): 0.42 mm
+                    </div>
+                </div>
+
+                <!-- Visual Charts for Hiatus Contour and CPD Point Clouds -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800">
+                        <h3 class="text-sm font-semibold text-white mb-2">Levator Hiatus Active Contour & CPD Point-Set Registration</h3>
+                        <div class="h-64">
+                            <canvas id="registrationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: Ultrasound Probe Design & Continued Fractions Acoustics -->
+        <section id="tab-probe" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Transducer Specifications -->
+                <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <h2 class="text-base font-semibold text-amber-300 flex items-center gap-2">
+                        <i class="fa-solid fa-microchip"></i> Acoustic Transducer Matrix
+                    </h2>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Probe Geometry</label>
+                        <select id="probe-type-select" onchange="evaluateProbeDesign()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm text-amber-300 font-semibold">
+                            <option value="transperineal_3d_convex">Transperineal 3D/4D Convex Matrix Array</option>
+                            <option value="transvaginal_endocavitary">Transvaginal Endocavitary Micro-Curved Array</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2 text-xs pt-1">
+                        <div class="flex justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                            <span class="text-slate-400">Center Frequency</span>
+                            <span id="probe-f0" class="font-mono text-amber-400 font-bold">5.0 MHz</span>
+                        </div>
+                        <div class="flex justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                            <span class="text-slate-400">Array Elements</span>
+                            <span id="probe-elements" class="font-mono text-amber-400 font-bold">192 (1.5D Matrix)</span>
+                        </div>
+                        <div class="flex justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                            <span class="text-slate-400">Azimuthal Pitch / Kerf</span>
+                            <span id="probe-pitch" class="font-mono text-amber-400 font-bold">280 µm / 30 µm</span>
+                        </div>
+                        <div class="flex justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                            <span class="text-slate-400">Axial / Lateral Resolution</span>
+                            <span id="probe-resolution" class="font-mono text-emerald-400 font-bold">0.32 mm / 0.65 mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Continued Fraction Stieltjes Acoustic Impedance Spectrum -->
+                <div class="lg:col-span-2 glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-semibold text-white">Stieltjes Continued Fraction Matching Layer Impedance & Transmission</h3>
+                            <p class="text-xs text-slate-400">$Z_{in}(f) = a_0 / (1 + a_1 / (1 + a_2 / \dots))$ acoustic ladder filter optimization</p>
+                        </div>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="acousticImpedanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: Post-Op Outcomes & Healing -->
+        <section id="tab-postop" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- PROM Predictor Inputs -->
+                <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <h2 class="text-base font-semibold text-emerald-300 flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-user"></i> Longitudinal Healing Trajectories
+                    </h2>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Baseline POP-Q Stage</label>
+                        <select id="postop-stage-select" onchange="evaluatePostOp()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm text-emerald-300 font-semibold">
+                            <option value="2">Stage II (Moderate)</option>
+                            <option value="3" selected>Stage III (Severe)</option>
+                            <option value="4">Stage IV (Procidentia)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2 text-xs pt-1">
+                        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                            <div class="text-slate-400">Expected 12-Month PGI-I</div>
+                            <div class="text-lg font-bold text-emerald-400 mt-0.5">1.25 / 7.0 (Very Much Better)</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                            <div class="text-slate-400">36-Month Anatomical Success</div>
+                            <div class="text-lg font-bold text-sky-400 mt-0.5">95.0% Recurrence-Free</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Longitudinal PROM Chart -->
+                <div class="lg:col-span-2 glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-semibold text-white">36-Month PFDI-20 & PFIQ-7 Distress Reduction & Collagen Maturation</h3>
+                            <p class="text-xs text-slate-400">Validated patient-reported outcome measures alongside Type I/III collagen remodeling</p>
+                        </div>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="postOpChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-900/80 py-4 text-center text-xs text-slate-500">
+        Pelvic Floor Reconstruction & Intraoperative Surgical Guide • Nature Computational Science Preprint Companion
+    </footer>
+
+    <!-- Scripts & Interaction Logic -->
+    <script>
+        let implantChart = null;
+        let regChart = null;
+        let acousticChart = null;
+        let postOpChart = null;
+
+        let ultrasoundSlicesData = null;
+
+        function switchTab(tabId) {
+            ['tab-workflow', 'tab-ultrasound-bmode', 'tab-polytypes', 'tab-imaging', 'tab-probe', 'tab-postop'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+                const btn = document.getElementById('btn-' + id);
+                if (btn) {
+                    btn.classList.remove('active', 'text-sky-400', 'border-b-2');
+                    btn.classList.add('text-slate-400');
+                }
+            });
+            const target = document.getElementById(tabId);
+            if (target) target.classList.remove('hidden');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'text-sky-400');
+                activeBtn.classList.remove('text-slate-400');
+            }
+
+            if (tabId === 'tab-ultrasound-bmode') loadUltrasoundSlices();
+            if (tabId === 'tab-polytypes') evaluateImplant();
+            if (tabId === 'tab-imaging') simulateAcquisition();
+            if (tabId === 'tab-probe') evaluateProbeDesign();
+            if (tabId === 'tab-postop') evaluatePostOp();
+        }
+
+        // Grayscale Ultrasound B-Mode Viewer
+        async function loadUltrasoundSlices() {
+            if (!ultrasoundSlicesData) {
+                const res = await fetch('/api/imaging/ultrasound_slices');
+                const json = await res.json();
+                if (json.success) {
+                    ultrasoundSlicesData = json.data.slices;
+                }
+            }
+            renderSelectedUltrasoundSlice();
+        }
+
+        function renderSelectedUltrasoundSlice() {
+            if (!ultrasoundSlicesData) return;
+            const selectVal = document.getElementById('us-slice-select').value;
+            const current = ultrasoundSlicesData.find(s => s.id === selectVal) || ultrasoundSlicesData[0];
+
+            document.getElementById('us-slice-title').innerText = current.title;
+            document.getElementById('us-plane-name').innerText = current.view;
+            document.getElementById('us-plane-dr').innerText = `${current.dynamic_range_db} dB`;
+            document.getElementById('us-plane-gain').innerText = `${current.gain_db} dB`;
+            document.getElementById('us-clinical-guideline').innerText = current.clinical_guidance;
+
+            // Render landmarks list
+            const lmContainer = document.getElementById('us-landmarks-list');
+            lmContainer.innerHTML = current.landmarks.map((lm, idx) => `
+                <div class="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <div class="font-bold text-teal-300 flex items-center gap-1.5">
+                        <span class="w-4 h-4 rounded-full bg-teal-500/20 text-teal-400 text-[10px] flex items-center justify-center font-mono">${idx+1}</span>
+                        ${lm.name}
+                    </div>
+                    <div class="text-[11px] text-slate-400 mt-1">${lm.echogenicity}</div>
+                </div>
+            `).join('');
+
+            // Draw Synthetic Ultrasound on Canvas
+            drawSyntheticUltrasound(current);
+        }
+
+        function drawSyntheticUltrasound(slice) {
+            const canvas = document.getElementById('bmodeCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width;
+            const H = canvas.height;
+
+            // Clear black
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, W, H);
+
+            // Draw Ultrasound Sector Cone
+            const originX = W / 2;
+            const originY = 20;
+            const radius = 280;
+            const angleSpan = (60 * Math.PI) / 180;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(originX, originY);
+            ctx.arc(originX, originY, radius, Math.PI / 2 - angleSpan, Math.PI / 2 + angleSpan);
+            ctx.closePath();
+            ctx.fillStyle = '#0f172a';
+            ctx.fill();
+            ctx.clip();
+
+            // Generate Ultrasound Speckle Noise Texture
+            const imgData = ctx.getImageData(0, 0, W, H);
+            const d = imgData.data;
+            for (let y = 0; y < H; y++) {
+                for (let x = 0; x < W; x++) {
+                    const idx = (y * W + x) * 4;
+                    if (d[idx + 3] > 0) { // Inside sector clip
+                        const dist = Math.hypot(x - originX, y - originY);
+                        const speckle = Math.random() * 45 * Math.exp(-dist / 320);
+                        d[idx] = speckle;
+                        d[idx + 1] = speckle + 5;
+                        d[idx + 2] = speckle + 8;
+                    }
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            // Draw Anatomical Echogenic Structures depending on Slice
+            if (slice.id === 'midsagittal_bmode') {
+                // Symphysis Pubis (Hyperechoic anterior crescent + acoustic shadow)
+                ctx.fillStyle = '#f8fafc';
+                ctx.beginPath();
+                ctx.ellipse(originX - 100, originY + 110, 22, 14, -0.4, 0, 2 * Math.PI);
+                ctx.fill();
+                // Acoustic Shadow
+                ctx.fillStyle = 'rgba(2, 6, 23, 0.9)';
+                ctx.beginPath();
+                ctx.moveTo(originX - 120, originY + 120);
+                ctx.lineTo(originX - 80, originY + 120);
+                ctx.lineTo(originX - 60, H);
+                ctx.lineTo(originX - 140, H);
+                ctx.closePath();
+                ctx.fill();
+
+                // Urethra / Bladder Neck (Anechoic)
+                ctx.fillStyle = '#020617';
+                ctx.beginPath();
+                ctx.ellipse(originX + 20, originY + 150, 45, 30, 0.2, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // Vaginal Stripe & Anorectal canal
+                ctx.strokeStyle = '#64748b';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(originX - 40, originY + 180);
+                ctx.quadraticCurveTo(originX + 60, originY + 220, originX + 110, originY + 260);
+                ctx.stroke();
+
+            } else if (slice.id === 'cplane_hiatal_axial') {
+                // Puborectalis Horseshoe sling (V-shaped)
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.ellipse(originX, originY + 160, 110, 75, 0, 0.2 * Math.PI, 0.8 * Math.PI);
+                ctx.stroke();
+
+                // Hiatal orifice
+                ctx.fillStyle = 'rgba(2, 6, 23, 0.85)';
+                ctx.beginPath();
+                ctx.ellipse(originX, originY + 160, 65, 45, 0, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.strokeStyle = '#06b6d4';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+            } else if (slice.id === 'mesh_implant_acoustic') {
+                // Mesh Hyperechoic dotted line with comet tails
+                ctx.fillStyle = '#ffffff';
+                for (let i = -80; i <= 80; i += 16) {
+                    const mx = originX + i;
+                    const my = originY + 170 + 0.08 * i;
+                    ctx.beginPath();
+                    ctx.arc(mx, my, 3.5, 0, 2 * Math.PI);
+                    ctx.fill();
+                    // Micro comet-tail
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(mx, my + 3);
+                    ctx.lineTo(mx, my + 22);
+                    ctx.stroke();
+                }
+            } else {
+                // Dynamic Valsalva vector lines
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([6, 6]);
+                ctx.beginPath();
+                ctx.moveTo(originX - 20, originY + 120);
+                ctx.lineTo(originX + 50, originY + 240);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                // Arrowhead
+                ctx.fillStyle = '#f43f5e';
+                ctx.beginPath();
+                ctx.arc(originX + 50, originY + 240, 6, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            // Caliper depth markers
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 1;
+            for (let d = 50; d < radius; d += 60) {
+                ctx.beginPath();
+                ctx.arc(originX, originY, d, Math.PI / 2 - angleSpan, Math.PI / 2 + angleSpan);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        // 1. POP-Q Evaluation
+        async function evaluatePOPQ() {
+            const payload = {
+                Aa: parseFloat(document.getElementById('popq-Aa').value),
+                Ba: parseFloat(document.getElementById('popq-Ba').value),
+                C: parseFloat(document.getElementById('popq-C').value),
+                D: parseFloat(document.getElementById('popq-D').value),
+                gh: parseFloat(document.getElementById('popq-gh').value),
+                pb: parseFloat(document.getElementById('popq-pb').value),
+                tvl: parseFloat(document.getElementById('popq-tvl').value),
+                Ap: parseFloat(document.getElementById('popq-Ap').value),
+                Bp: parseFloat(document.getElementById('popq-Bp').value)
+            };
+
+            const res = await fetch('/api/popq/stage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                const a = data.assessment;
+                document.getElementById('popq-stage-display').innerText = a.popq_stage;
+                document.getElementById('popq-leading-edge').innerText = `Leading Edge: ${a.leading_edge_cm > 0 ? '+' : ''}${a.leading_edge_cm} cm`;
+                document.getElementById('popq-hiatus-area').innerText = `${a.hiatal_area_cm2} cm²`;
+                document.getElementById('popq-ballooning-status').innerHTML = a.levator_ballooning ? 
+                    '<i class="fa-solid fa-triangle-exclamation text-rose-400"></i> Significant Ballooning (>25 cm²)' : 
+                    '<i class="fa-solid fa-circle-check text-emerald-400"></i> Normal Hiatal Caliber';
+                document.getElementById('popq-technique-summary').innerText = a.recommended_approach;
+            }
+        }
+
+        // 2. Implant Evaluation
+        async function evaluateImplant() {
+            const poly = document.getElementById('polytype-select').value;
+            const stretch = parseFloat(document.getElementById('implant-stretch').value);
+            document.getElementById('stretch-val-display').innerText = stretch.toFixed(2);
+
+            const res = await fetch('/api/implant/evaluate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ polytype: poly, stretch_ratio: stretch })
+            });
+            const data = await res.json();
+            if (data.success) {
+                const sp = data.single_point;
+                document.getElementById('implant-pore-size').innerText = `${sp.pore_size_um} µm`;
+                document.getElementById('implant-porosity').innerText = `${sp.porosity_pct}%`;
+                document.getElementById('implant-pullout').innerText = `${sp.suture_pullout_retention_n} N`;
+                document.getElementById('implant-erosion').innerText = `${sp.erosion_risk_pct}%`;
+
+                // Render Chart
+                const ctx = document.getElementById('implantStressChart').getContext('2d');
+                if (implantChart) implantChart.destroy();
+                implantChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.curve.stretch_ratios,
+                        datasets: [
+                            {
+                                label: 'Cauchy Stress σ (kPa)',
+                                data: data.curve.cauchy_stresses_kpa,
+                                borderColor: '#a855f7',
+                                backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                                fill: true,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Strain Energy W (kJ/m³)',
+                                data: data.curve.strain_energy_kj_m3,
+                                borderColor: '#38bdf8',
+                                borderDash: [5, 5],
+                                fill: false,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#cbd5e1' } } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 3. Image Acquisition & CPD Registration
+        async function simulateAcquisition() {
+            const modality = document.getElementById('img-modality').value;
+            const noise = parseFloat(document.getElementById('speckle-noise').value);
+
+            const res = await fetch('/api/imaging/simulate_acquisition', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ modality: modality, speckle_noise: noise })
+            });
+            const data = await res.json();
+            if (data.success) {
+                runCPDRegistration();
+            }
+        }
+
+        async function runCPDRegistration() {
+            const res = await fetch('/api/registration/cpd', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ num_points: 36, deformation_scale: 4.5 })
+            });
+            const data = await res.json();
+            if (data.success) {
+                const cpd = data.cpd_result;
+                document.getElementById('cpd-metric-box').innerText = `Target Registration Error (TRE): ${cpd.target_registration_error_mm} mm | Status: ${cpd.registration_status}`;
+
+                const ctx = document.getElementById('registrationChart').getContext('2d');
+                if (regChart) regChart.destroy();
+
+                const tgtPts = cpd.target_points.map(p => ({ x: p[0], y: p[1] }));
+                const srcPts = cpd.source_points.map(p => ({ x: p[0], y: p[1] }));
+                const regPts = cpd.registered_points.map(p => ({ x: p[0], y: p[1] }));
+
+                regChart = new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Pre-Op Reference Contour (Target)',
+                                data: tgtPts,
+                                backgroundColor: '#38bdf8',
+                                pointRadius: 5
+                            },
+                            {
+                                label: 'Intra-Op Deformed Mesh (Source)',
+                                data: srcPts,
+                                backgroundColor: '#f43f5e',
+                                pointRadius: 4
+                            },
+                            {
+                                label: 'CPD Registered Points',
+                                data: regPts,
+                                backgroundColor: '#10b981',
+                                pointRadius: 6,
+                                pointStyle: 'triangle'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#cbd5e1' } } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 4. Acoustic Probe Design
+        async function evaluateProbeDesign() {
+            const probeType = document.getElementById('probe-type-select').value;
+            const res = await fetch('/api/probe/design', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ probe_type: probeType })
+            });
+            const data = await res.json();
+            if (data.success) {
+                const s = data.probe_specification;
+                document.getElementById('probe-f0').innerText = `${s.center_frequency_mhz} MHz`;
+                document.getElementById('probe-elements').innerText = `${s.num_elements} Elements`;
+                document.getElementById('probe-pitch').innerText = `${s.azimuthal_pitch_um} µm / ${s.kerf_width_um} µm`;
+                document.getElementById('probe-resolution').innerText = `${s.spatial_resolution_axial_mm} mm / ${s.spatial_resolution_lateral_mm} mm`;
+
+                const ctx = document.getElementById('acousticImpedanceChart').getContext('2d');
+                if (acousticChart) acousticChart.destroy();
+                acousticChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: s.acoustics.frequencies_mhz.map(f => f.toFixed(1) + ' MHz'),
+                        datasets: [
+                            {
+                                label: 'Power Transmission Coefficient T(f)',
+                                data: s.acoustics.transmission_efficiency,
+                                borderColor: '#f59e0b',
+                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                fill: true,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Input Impedance Zin (MRayl)',
+                                data: s.acoustics.input_impedances_mrayl,
+                                borderColor: '#06b6d4',
+                                borderDash: [4, 4],
+                                yAxisID: 'y1',
+                                fill: false,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#cbd5e1' } } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                            y: { min: 0, max: 1.0, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                            y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#06b6d4' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 5. Post-Operative Outcomes
+        async function evaluatePostOp() {
+            const stage = parseInt(document.getElementById('postop-stage-select').value);
+            const res = await fetch('/api/postop/projections', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ polytype: 'polypropylene_type1', stage: stage })
+            });
+            const data = await res.json();
+            if (data.success) {
+                const p = data.projections;
+                const ctx = document.getElementById('postOpChart').getContext('2d');
+                if (postOpChart) postOpChart.destroy();
+                postOpChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: p.timeline_months.map(m => m + 'm'),
+                        datasets: [
+                            {
+                                label: 'PFDI-20 Distress Score',
+                                data: p.pfdi_20_scores,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                fill: true,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'PFIQ-7 Impact Score',
+                                data: p.pfiq_7_scores,
+                                borderColor: '#38bdf8',
+                                fill: false,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Collagen Maturation Index (Type I/III)',
+                                data: p.collagen_maturation_index,
+                                borderColor: '#f59e0b',
+                                yAxisID: 'y1',
+                                borderDash: [4, 4],
+                                fill: false,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#cbd5e1' } } },
+                        scales: {
+                            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                            y1: { position: 'right', min: 0, max: 6, grid: { drawOnChartArea: false }, ticks: { color: '#f59e0b' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize default view
+        window.onload = () => {
+            evaluatePOPQ();
+        };
+    </script>
+</body>
+</html>
