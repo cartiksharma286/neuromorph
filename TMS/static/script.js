@@ -40,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbiPtsdView      = document.getElementById('tbi-ptsd-view');
     const rlsView          = document.getElementById('rls-view');
     const schizophreniaDbsView = document.getElementById('schizophrenia-dbs-view');
+    const hifuTmsView      = document.getElementById('hifu-tms-view');
+    const cybersecurityPqcView = document.getElementById('cybersecurity-pqc-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -61,10 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let jcLoaded         = false;
     let nashGeodesicLoaded = false;
     let schizophreniaDbsLoaded = false;
+    let hifuTmsLoaded    = false;
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -162,6 +165,16 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Deep Brain Stimulation for Refractory Schizophrenia',
             subtitle: 'Boundary Element Method (BEM) 3D Field Simulations · Innovators Benchmark · Optimal Long-Term Remission Paradigm',
             view:     schizophreniaDbsView, showRunBtn: false
+        },
+        'hifu-tms': {
+            title:    'HIFU-rTMS Trans-BBB Dementia Cure Platform',
+            subtitle: 'Statistical Continued Fractions · Long-Term Recovery Horizons · Feynman Path Integrals · Asymmetric Prime Moduli Staging',
+            view:     hifuTmsView, showRunBtn: false
+        },
+        'cybersecurity-pqc': {
+            title:    'Cybersecurity & Post-Quantum Cryptographic Measures',
+            subtitle: 'Leibniz-Ramanujan Complete Elliptic Integrals · Jacobi Nome & Dedekind Invariants · NIST Level 5 Risk Aversion',
+            view:     cybersecurityPqcView, showRunBtn: false
         }
     };
 
@@ -204,6 +217,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'tbi-ptsd')                              runTbiPtsdRtms();
             if (tab === 'rls')                                   runRlsRtms();
             if (tab === 'schizophrenia-dbs')                     runSchizophreniaDbs();
+            if (tab === 'hifu-tms')                              runHifuTms();
+            if (tab === 'cybersecurity-pqc')                     runCybersecurityPqc();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -2252,5 +2267,351 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (err) {
             console.error('Schizophrenia DBS API error:', err);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // HIFU-rTMS Trans-BBB Dementia Cure Suite
+    // ─────────────────────────────────────────────────────────────
+    let _hifuTimer = null;
+    window.runHifuTmsDebounced = () => {
+        clearTimeout(_hifuTimer);
+        _hifuTimer = setTimeout(runHifuTms, 250);
+    };
+
+    async function runHifuTms() {
+        const pressure = parseFloat(document.getElementById('hifu-pressure')?.value || 0.85);
+        const intensity = parseFloat(document.getElementById('hifu-tms-intensity')?.value || 110.0);
+        const pharm = document.getElementById('hifu-pharm-select')?.value || 'Lecanemab + Galantamine + Memantine';
+        const weeks = parseInt(document.getElementById('hifu-weeks')?.value || 104);
+
+        const qs = `hifu_pressure_mpa=${pressure}&tms_intensity_rMT=${intensity}&pharm_agent=${encodeURIComponent(pharm)}&total_weeks=${weeks}`;
+
+        try {
+            const res = await fetch(`/api/hifu-tms-dementia?${qs}`);
+            const json = await res.json();
+            if (json.status !== 'success') throw new Error(json.message || 'API error');
+            const d = json.data;
+
+            const commonLayout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#8b949e', family: 'Inter, sans-serif', size: 11 },
+                xaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.1)' },
+                yaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.1)' },
+                margin: { l: 50, r: 30, t: 30, b: 40 }
+            };
+
+            // 1. Update Metrics
+            const el = id => document.getElementById(id);
+            if (el('hifu-metric-adas')) el('hifu-metric-adas').textContent = `+${d.kpis.adas_cog_improvement_pts.toFixed(1)} pts`;
+            if (el('hifu-metric-mmse')) el('hifu-metric-mmse').textContent = `+${d.kpis.mmse_gain_pts.toFixed(1)} pts`;
+            if (el('hifu-metric-accuracy')) el('hifu-metric-accuracy').textContent = `${d.kpis.registration_accuracy_mm.toFixed(3)} mm`;
+            if (el('hifu-metric-dice')) el('hifu-metric-dice').textContent = `${d.kpis.dice_similarity_coefficient.toFixed(3)}`;
+            if (el('hifu-metric-amyloid')) el('hifu-metric-amyloid').textContent = `-${d.kpis.amyloid_clearance_percent.toFixed(1)}%`;
+            if (el('hifu-metric-sv2a')) el('hifu-metric-sv2a').textContent = `+${d.kpis.synaptic_density_gain_percent.toFixed(1)}%`;
+            if (el('hifu-metric-entropy')) el('hifu-metric-entropy').textContent = `H = ${d.kpis.prime_moduli_entropy.toFixed(3)}`;
+            if (el('hifu-metric-pqc')) el('hifu-metric-pqc').textContent = `${((d.kpis.cybersecurity_pqc_aversion || 0.9941)*100).toFixed(2)}%`;
+
+            // 2. Trajectories Plot (ADAS-Cog & MMSE)
+            const traj = d.trajectories;
+            Plotly.newPlot('hifu-plot-trajectories', [
+                { x: d.weeks, y: traj.adas_standard, name: 'Standard Care (AChEI)', type: 'scatter', mode: 'lines', line: { color: '#94a3b8', width: 2, dash: 'dash' } },
+                { x: d.weeks, y: traj.adas_rtms_only, name: 'rTMS Monotherapy', type: 'scatter', mode: 'lines', line: { color: '#f59e0b', width: 2, dash: 'dot' } },
+                { x: d.weeks, y: traj.adas_hifu_pharm, name: 'HIFU BBB + Lecanemab', type: 'scatter', mode: 'lines', line: { color: '#0284c7', width: 2.5 } },
+                { x: d.weeks, y: traj.adas_synergistic, name: 'Tri-Modal Synergistic Paradigm', type: 'scatter', mode: 'lines', line: { color: '#10b981', width: 3.5 } },
+                { x: d.weeks, y: traj.mmse_synergistic, name: 'MMSE Cognitive Score (Tri-Modal)', yaxis: 'y2', type: 'scatter', mode: 'lines+markers', marker: { size: 4 }, line: { color: '#38bdf8', width: 2.5, dash: 'solid' } }
+            ], {
+                ...commonLayout,
+                margin: { l: 55, r: 60, t: 30, b: 70 },
+                xaxis: { ...commonLayout.xaxis, title: 'Treatment Horizon (Weeks)' },
+                yaxis: { ...commonLayout.yaxis, title: 'ADAS-Cog-13 (Lower is Better)' },
+                yaxis2: {
+                    title: 'MMSE Score (Higher is Better)',
+                    overlaying: 'y',
+                    side: 'right',
+                    color: '#38bdf8',
+                    gridcolor: 'rgba(255,255,255,0.03)'
+                },
+                legend: { orientation: 'h', x: 0, y: -0.28, font: { color: '#cbd5e1', size: 10 } }
+            }, { responsive: true, displaylogo: false });
+
+            // 3. Continued Fraction Registration Plot
+            Plotly.newPlot('hifu-plot-registration', [
+                { x: d.weeks, y: d.registration.residuals_mm, name: 'Registration Error (mm)', type: 'scatter', mode: 'lines+markers', line: { color: '#f87171', width: 2.5 } },
+                { x: d.weeks, y: d.registration.dice_overlap, name: 'Dice Similarity (Overlap)', yaxis: 'y2', type: 'scatter', mode: 'lines', line: { color: '#34d399', width: 2.5 } }
+            ], {
+                ...commonLayout,
+                margin: { l: 55, r: 55, t: 30, b: 65 },
+                xaxis: { ...commonLayout.xaxis, title: 'Timeline (Weeks)' },
+                yaxis: { ...commonLayout.yaxis, title: 'RMS Residual (mm)' },
+                yaxis2: {
+                    title: 'Dice Index (0-1)',
+                    overlaying: 'y',
+                    side: 'right',
+                    range: [0.5, 1.0],
+                    color: '#34d399'
+                },
+                legend: { orientation: 'h', x: 0, y: -0.26, font: { color: '#cbd5e1', size: 10 } }
+            }, { responsive: true, displaylogo: false });
+
+            // 4. BBB Permeability Plot
+            Plotly.newPlot('hifu-plot-permeability', [{
+                x: d.weeks,
+                y: d.registration.bbb_permeability_fold,
+                name: 'BBB Permeability Fold',
+                type: 'scatter',
+                fill: 'tozeroy',
+                fillcolor: 'rgba(2,132,199,0.2)',
+                line: { color: '#38bdf8', width: 2.5 }
+            }], {
+                ...commonLayout,
+                margin: { l: 55, r: 25, t: 30, b: 50 },
+                xaxis: { ...commonLayout.xaxis, title: 'Treatment Timeline (Weeks)' },
+                yaxis: { ...commonLayout.yaxis, title: 'Fold BBB Opening Permeability' },
+                showlegend: false
+            }, { responsive: true, displaylogo: false });
+
+            // 5. Feynman Path Integral Plot
+            const feynman = d.feynman_path_integral;
+            Plotly.newPlot('hifu-plot-feynman', [
+                { x: feynman.time_grid_ms, y: feynman.quantum_transition_probability, name: '|K(x,t)|² Transition Prob', type: 'scatter', mode: 'lines', line: { color: '#a78bfa', width: 3 } },
+                { x: feynman.time_grid_ms, y: feynman.phase_action_rad, name: 'Phase Action S/ħ (rad)', yaxis: 'y2', type: 'scatter', mode: 'lines', line: { color: '#fbbf24', width: 1.8, dash: 'dot' } }
+            ], {
+                ...commonLayout,
+                margin: { l: 55, r: 55, t: 30, b: 65 },
+                xaxis: { ...commonLayout.xaxis, title: 'Propagator Time Grid (ms)' },
+                yaxis: { ...commonLayout.yaxis, title: 'Quantum Tunneling Prob' },
+                yaxis2: {
+                    title: 'Action Phase S/ħ (rad)',
+                    overlaying: 'y',
+                    side: 'right',
+                    color: '#fbbf24'
+                },
+                legend: { orientation: 'h', x: 0, y: -0.26, font: { color: '#cbd5e1', size: 10 } }
+            }, { responsive: true, displaylogo: false });
+
+            // 6. Asymmetric Prime Moduli Plot
+            const prime = d.prime_moduli;
+            Plotly.newPlot('hifu-plot-prime', [{
+                x: prime.primes.map(p => `p=${p}`),
+                y: prime.lattice_restoration_metric,
+                name: 'Restoration Metric',
+                type: 'bar',
+                marker: { color: '#c084fc' }
+            }], {
+                ...commonLayout,
+                margin: { l: 55, r: 25, t: 30, b: 50 },
+                xaxis: { ...commonLayout.xaxis, title: 'Prime Moduli Ideals (P)' },
+                yaxis: { ...commonLayout.yaxis, title: 'Restoration Metric' },
+                showlegend: false
+            }, { responsive: true, displaylogo: false });
+
+            // 7. Staging Cards Render
+            const stagingContainer = el('hifu-staging-container');
+            if (stagingContainer) {
+                stagingContainer.innerHTML = d.staging_protocol.map(st => `
+                    <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(2,132,199,0.3); border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:6px;">
+                        <div style="font-size:11px; font-weight:700; color:#38bdf8; text-transform:uppercase;">${st.weeks}</div>
+                        <div style="font-size:13px; font-weight:600; color:#f8fafc;">${st.stage}</div>
+                        <div style="font-size:11.5px; color:#a78bfa;"><b>Modality:</b> ${st.modality}</div>
+                        <div style="font-size:11.5px; color:#34d399;"><b>Target:</b> ${st.target}</div>
+                        <div style="font-size:11.5px; color:#cbd5e1;"><b>Rx:</b> ${st.pharmacology}</div>
+                        <div style="font-size:11px; color:#94a3b8; margin-top:4px; font-style:italic;">${st.objective}</div>
+                    </div>
+                `).join('');
+            }
+
+            // 8. Finite Math Equations Render
+            const mathContainer = el('hifu-math-container');
+            if (mathContainer) {
+                const mathList = [
+                    {
+                        name: 'Statistical Continued Fraction Multi-Modal Interfacing',
+                        latex: 'J(z) = \\cfrac{a_0}{1 + \\cfrac{a_1 z}{1 + \\cfrac{a_2 z}{1 + \\ddots}}}, \\quad \\mathbf{x}_{\\text{TMS}} = \\mathbf{T}_{\\text{aff}} \\cdot \\mathbf{x}_{\\text{HIFU}} + \\sum_{k=1}^N \\cfrac{(-1)^k a_k}{\\det(\\mathbf{H}_{k-1})} \\nabla_\\theta \\Phi_{\\text{BBB}}(z)',
+                        description: 'Sub-millimeter spatial co-registration between acoustic focal ellipsoids and pulsed magnetic vector potential.'
+                    },
+                    {
+                        name: 'Feynman Path Integral Propagator for Tri-Modal Influx',
+                        latex: 'K(x_f, t_f; x_0, 0) = \\int \\mathcal{D}[x] \\exp\\left( \\frac{i}{\\hbar_{\\text{eff}}} \\int_0^{t_f} \\left[ \\frac{1}{2} m \\dot{x}^2 - V_{\\text{BBB}}(x) + F_{\\text{HIFU}} + q \\mathbf{E}_{\\text{rTMS}} + \\Gamma_{\\text{pharm}} \\right] dt \\right)',
+                        description: 'Models macro-molecular antibody tunneling across acoustic cavitational micro-pores under theta-burst electromagnetic driving.'
+                    },
+                    {
+                        name: 'Asymmetric Prime Moduli Synaptic Bio-Lattice Restoration',
+                        latex: '\\Psi_{\\text{repair}}(p) = \\prod_{p \\in \\mathbb{P}} \\left( 1 - p^{-s} \\right) \\exp\\left( i \\frac{\\pi k}{p} \\right) \\pmod{\\phi}, \\quad \\mathcal{H}_{\\text{lattice}} = \\sum_{p \\in \\mathbb{P}} \\omega_p |\\psi_p\\rangle \\langle\\psi_p|',
+                        description: 'Non-commutative bio-lattice entropy reduction and synaptic reconnection across discrete prime modulus rings.'
+                    }
+                ];
+
+                mathContainer.innerHTML = mathList.map(eq => `
+                    <div style="background:rgba(5,11,20,0.8); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:10px;">
+                        <div style="font-size:12px; font-weight:600; color:#38bdf8; margin-bottom:4px;">${eq.name}</div>
+                        <div style="font-family:'Courier New', monospace; font-size:11px; color:#34d399; background:rgba(0,0,0,0.5); padding:6px 10px; border-radius:4px; overflow-x:auto;">${eq.latex}</div>
+                        <div style="font-size:11px; color:#94a3b8; margin-top:4px;">${eq.description}</div>
+                    </div>
+                `).join('');
+            }
+
+        } catch (err) {
+            console.error('HIFU-TMS Dementia API error:', err);
+        }
+    }
+
+    // ── Cybersecurity & PQC Measures Simulation ─────────────────────
+    let _pqcTimer = null;
+    window.runCybersecurityPqcDebounced = () => {
+        clearTimeout(_pqcTimer);
+        _pqcTimer = setTimeout(runCybersecurityPqc, 250);
+    };
+
+    async function runCybersecurityPqc() {
+        const modulus = parseFloat(document.getElementById('pqc-modulus')?.value || 0.7071);
+        const threat = parseFloat(document.getElementById('pqc-threat')?.value || 1.0);
+        const weeks = parseInt(document.getElementById('pqc-weeks')?.value || 104);
+
+        const qs = `elliptic_k=${modulus}&attack_intensity=${threat}&weeks=${weeks}`;
+
+        try {
+            const res = await fetch(`/api/cybersecurity-pqc-sim?${qs}`);
+            const json = await res.json();
+            if (json.status !== 'success') throw new Error(json.message || 'API error');
+            const d = json.data;
+
+            const commonLayout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#8b949e', family: 'Inter, sans-serif', size: 11 },
+                xaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.1)' },
+                yaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.1)' },
+                margin: { l: 50, r: 30, t: 30, b: 40 }
+            };
+
+            // 1. Update Metrics
+            const el = id => document.getElementById(id);
+            if (el('pqc-metric-aversion')) el('pqc-metric-aversion').textContent = `${d.kpis.composite_risk_aversion_pct.toFixed(2)}%`;
+            if (el('pqc-metric-bits')) el('pqc-metric-bits').textContent = `${d.kpis.pqc_security_level_bits.toFixed(1)} bits`;
+            if (el('pqc-metric-K')) el('pqc-metric-K').textContent = `K = ${d.elliptic_properties.K.toFixed(4)}`;
+            if (el('pqc-metric-nome')) el('pqc-metric-nome').textContent = `q = ${d.elliptic_properties.nome_q.toFixed(5)}`;
+            if (el('pqc-metric-eta')) el('pqc-metric-eta').textContent = `η = ${d.elliptic_properties.eta_val.toFixed(5)}`;
+            if (el('pqc-metric-integrity')) el('pqc-metric-integrity').textContent = `${d.kpis.telemetry_integrity_pct.toFixed(2)}%`;
+            if (el('pqc-metric-attenuation')) el('pqc-metric-attenuation').textContent = `-${d.kpis.quantum_attack_attenuation_db.toFixed(1)} dB`;
+
+            // 2. Trajectories Plot (Telemetry Integrity)
+            const traj = d.trajectories;
+            Plotly.newPlot('pqc-plot-trajectories', [
+                { x: d.weeks, y: traj.unprotected, name: 'Unprotected Clinical Telemetry', type: 'scatter', mode: 'lines', line: { color: '#ef4444', width: 2, dash: 'dash' } },
+                { x: d.weeks, y: traj.legacy_rsa, name: 'Legacy RSA-2048 (Quantum Vulnerable)', type: 'scatter', mode: 'lines', line: { color: '#f59e0b', width: 2, dash: 'dot' } },
+                { x: d.weeks, y: traj.pqc_shielded, name: 'Leibniz-Ramanujan PQC Shield (NIST Level 5)', type: 'scatter', mode: 'lines', line: { color: '#10b981', width: 3.5 } }
+            ], {
+                ...commonLayout,
+                margin: { l: 55, r: 30, t: 30, b: 70 },
+                xaxis: { ...commonLayout.xaxis, title: 'Auditing Horizon (Weeks)' },
+                yaxis: { ...commonLayout.yaxis, title: 'Telemetry Integrity (%)', range: [0, 105] },
+                legend: { orientation: 'h', x: 0, y: -0.28, font: { color: '#cbd5e1', size: 10 } }
+            }, { responsive: true, displaylogo: false });
+
+            // 3. Multi-Vector Risk Aversion Plot
+            const vecTraces = [];
+            const colors = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#34d399'];
+            let idx = 0;
+            for (const [vName, vals] of Object.entries(traj.vector_aversions)) {
+                vecTraces.push({
+                    x: d.weeks,
+                    y: vals,
+                    name: vName.length > 22 ? vName.substring(0, 22) + '...' : vName,
+                    type: 'scatter',
+                    mode: 'lines',
+                    line: { color: colors[idx % colors.length], width: 2 }
+                });
+                idx++;
+            }
+            // Add composite
+            vecTraces.push({
+                x: d.weeks,
+                y: traj.composite_risk_aversion,
+                name: 'Composite Risk Aversion (Avg)',
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#10b981', width: 3, dash: 'solid' }
+            });
+
+            Plotly.newPlot('pqc-plot-aversion-vectors', vecTraces, {
+                ...commonLayout,
+                margin: { l: 55, r: 30, t: 30, b: 70 },
+                xaxis: { ...commonLayout.xaxis, title: 'Auditing Horizon (Weeks)' },
+                yaxis: { ...commonLayout.yaxis, title: 'Risk Aversion Probability (%)', range: [85, 101] },
+                legend: { orientation: 'h', x: 0, y: -0.28, font: { color: '#cbd5e1', size: 9 } }
+            }, { responsive: true, displaylogo: false });
+
+            // 4. Quantum Barrier Penetration Probability
+            Plotly.newPlot('pqc-plot-barrier', [{
+                x: d.weeks,
+                y: traj.penetration_prob,
+                name: 'Breach Penetration Prob %',
+                type: 'scatter',
+                mode: 'lines+markers',
+                marker: { size: 4, color: '#f87171' },
+                line: { color: '#f87171', width: 2.5 }
+            }], {
+                ...commonLayout,
+                margin: { l: 55, r: 30, t: 30, b: 50 },
+                xaxis: { ...commonLayout.xaxis, title: 'Adversarial Exposure Horizon (Weeks)' },
+                yaxis: { ...commonLayout.yaxis, title: 'P(Penetration) %', type: 'log' },
+                showlegend: false
+            }, { responsive: true, displaylogo: false });
+
+            // 5. Elliptic Modulus Spectrum
+            const kVals = [];
+            const kIntegrals = [];
+            const kpIntegrals = [];
+            for (let kv = 0.05; kv <= 0.95; kv += 0.05) {
+                kVals.push(kv.toFixed(2));
+                // Simple approx for visualization
+                const Kapprox = (Math.PI / 2) * (1 + 0.25 * kv * kv + 0.07 * Math.pow(kv, 4));
+                const Kpapprox = (Math.PI / 2) * (1 + 0.25 * (1 - kv * kv) + 0.07 * Math.pow(1 - kv * kv, 2));
+                kIntegrals.push(Kapprox);
+                kpIntegrals.push(Kpapprox);
+            }
+
+            Plotly.newPlot('pqc-plot-elliptic', [
+                { x: kVals, y: kIntegrals, name: 'Complete Elliptic K(k)', type: 'scatter', mode: 'lines', line: { color: '#38bdf8', width: 2.5 } },
+                { x: kVals, y: kpIntegrals, name: "Complementary K'(k)", type: 'scatter', mode: 'lines', line: { color: '#a78bfa', width: 2, dash: 'dash' } }
+            ], {
+                ...commonLayout,
+                margin: { l: 55, r: 30, t: 30, b: 70 },
+                xaxis: { ...commonLayout.xaxis, title: 'Elliptic Modulus k' },
+                yaxis: { ...commonLayout.yaxis, title: 'Integral Magnitude (rad)' },
+                legend: { orientation: 'h', x: 0, y: -0.28, font: { color: '#cbd5e1', size: 10 } }
+            }, { responsive: true, displaylogo: false });
+
+            // 6. Threat Matrix Render
+            const tbody = el('pqc-threat-tbody');
+            if (tbody) {
+                tbody.innerHTML = d.threat_matrix.map(row => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:8px 10px; font-weight:600; color:#f8fafc;">${row.vector}</td>
+                        <td style="padding:8px 10px; color:#f87171;">${row.raw_threat_index.toFixed(2)}</td>
+                        <td style="padding:8px 10px; color:#38bdf8;">${row.mitigation_method}</td>
+                        <td style="padding:8px 10px; color:#fbbf24; font-family:monospace;">${(row.residual_breach_pct).toFixed(4)}%</td>
+                        <td style="padding:8px 10px; color:#34d399; font-weight:700;">${row.risk_aversion_pct.toFixed(2)}%</td>
+                        <td style="padding:8px 10px; color:#a78bfa; font-weight:600;">-${row.attenuation_db.toFixed(1)} dB</td>
+                    </tr>
+                `).join('');
+            }
+
+            // 7. Math Equations Render
+            const mathContainer = el('pqc-math-container');
+            if (mathContainer) {
+                mathContainer.innerHTML = d.math_equations.map(eq => `
+                    <div style="background:rgba(5,11,20,0.8); border:1px solid rgba(16,185,129,0.15); border-radius:8px; padding:10px;">
+                        <div style="font-size:12px; font-weight:600; color:#34d399; margin-bottom:4px;">${eq.title}</div>
+                        <div style="font-family:'Courier New', monospace; font-size:11px; color:#38bdf8; background:rgba(0,0,0,0.5); padding:6px 10px; border-radius:4px; overflow-x:auto;">${eq.latex}</div>
+                        <div style="font-size:11px; color:#94a3b8; margin-top:4px;">${eq.description}</div>
+                    </div>
+                `).join('');
+            }
+
+        } catch (err) {
+            console.error('Cybersecurity PQC API error:', err);
         }
     }

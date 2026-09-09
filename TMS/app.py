@@ -1,7 +1,10 @@
 import os, io, math
 import numpy as np
 from flask import Flask, render_template, request, jsonify, send_file
-from flask_cors import CORS
+try:
+    from flask_cors import CORS
+except ImportError:
+    CORS = None
 from logic.rtms_engine import (
     run_full_simulation,
     get_equipment_list,
@@ -29,9 +32,12 @@ from logic.tourette_rtms import simulate_tourette_rtms
 from logic.tbi_ptsd_rtms import simulate_tbi_ptsd_rtms
 from logic.rls_rtms import simulate_rls_rtms
 from logic.schizophrenia_dbs import simulate_schizophrenia_dbs_bem
+from logic.hifu_tms_dementia import simulate_hifu_tms_dementia
+from logic.cybersecurity_pqc import simulate_cybersecurity_trajectories
 
 app = Flask(__name__)
-CORS(app)
+if CORS:
+    CORS(app)
 
 @app.route('/')
 def index():
@@ -603,6 +609,84 @@ def schizophrenia_dbs_preprint():
         output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Schizophrenia_DBS_BEM_Finite_Math.pdf')
         build_pdf(output_path, _schizophrenia_dbs_params())
         return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Schizophrenia_DBS_BEM_Finite_Math.pdf')
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+def _hifu_tms_params():
+    data = request.get_json(silent=True) or {}
+    return {
+        'hifu_pressure_mpa': float(request.args.get('hifu_pressure_mpa', data.get('hifu_pressure_mpa', 0.85))),
+        'tms_intensity_rMT': float(request.args.get('tms_intensity_rMT', data.get('tms_intensity_rMT', 110.0))),
+        'pharm_agent': str(request.args.get('pharm_agent', data.get('pharm_agent', 'Lecanemab + Galantamine + Memantine'))),
+        'total_weeks': int(request.args.get('total_weeks', data.get('total_weeks', 104)))
+    }
+
+
+@app.route('/api/hifu-tms-dementia', methods=['GET', 'POST'])
+def api_hifu_tms_dementia():
+    """
+    HIFU-TMS Trans-BBB Registration & Synergistic Dementia Cure:
+    - Statistical Continued Fractions for registration correspondence
+    - 104-week recovery horizons (ADAS-Cog-13, MMSE)
+    - Feynman Path Integrals for acoustic-electromagnetic-pharmacological synergy
+    - Asymmetric Prime Moduli Theory for lattice repair
+    """
+    try:
+        params = _hifu_tms_params()
+        result = simulate_hifu_tms_dementia(**params)
+        return jsonify({'status': 'success', 'data': result})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/hifu-tms-dementia-preprint', methods=['GET'])
+def hifu_tms_dementia_preprint():
+    """Generate and download the Nature-style preprint PDF for HIFU-TMS Dementia Cure."""
+    try:
+        from generate_nature_hifu_tms_dementia import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_HIFU_TMS_Dementia_Cure_Prime_Moduli.pdf')
+        build_pdf(output_path, _hifu_tms_params())
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_HIFU_TMS_Dementia_Cure_Prime_Moduli.pdf')
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/cybersecurity-pqc-sim', methods=['GET', 'POST'])
+def api_cybersecurity_pqc_sim():
+    """
+    Cybersecurity & Post-Quantum Cryptographic Measures:
+    - Leibniz-Ramanujan Complete Elliptic Integrals
+    - Jacobi Nome q & Dedekind Eta Invariant Log-Probabilities
+    - Clinical Trajectories & Threat Vector Risk Aversion
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+        k_val = float(request.args.get('elliptic_k', data.get('elliptic_k', 0.7071)))
+        atk_val = float(request.args.get('attack_intensity', data.get('attack_intensity', 1.0)))
+        weeks_val = int(request.args.get('weeks', data.get('weeks', 104)))
+        result = simulate_cybersecurity_trajectories(elliptic_k=k_val, attack_intensity=atk_val, weeks=weeks_val)
+        return jsonify({'status': 'success', 'data': result})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/cybersecurity-pqc-preprint', methods=['GET'])
+def cybersecurity_pqc_preprint():
+    """Generate and download the Nature-style preprint PDF for Post-Quantum Cybersecurity."""
+    try:
+        from generate_nature_cybersecurity_pqc import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_PQC_Cybersecurity_Leibniz_Ramanujan.pdf')
+        build_pdf(output_path)
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_PQC_Cybersecurity_Leibniz_Ramanujan.pdf')
     except Exception as exc:
         import traceback
         traceback.print_exc()

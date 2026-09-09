@@ -71,6 +71,12 @@
                 <button class="nav-btn" data-tab="schizophrenia-dbs">
                     <span class="icon">⚡</span> Schizophrenia DBS (BEM)
                 </button>
+                <button class="nav-btn" data-tab="hifu-tms">
+                    <span class="icon">🌊</span> HIFU-TMS Dementia Cure
+                </button>
+                <button class="nav-btn" data-tab="cybersecurity-pqc">
+                    <span class="icon">🛡️</span> Cybersecurity &amp; PQC Measures
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -1486,6 +1492,301 @@
                         <div class="panel glass-panel" style="background: rgba(124,58,237,0.04); border: 1px solid rgba(124,58,237,0.2);">
                             <h3>📐 Finite Mathematical Equations &amp; Absorbing Markov Proof of Remission</h3>
                             <div id="schiz-math-equations-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── HIFU-TMS Trans-BBB Registration & Synergistic Dementia Cure Suite ── -->
+            <div id="hifu-tms-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:12px; color:#8b949e; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
+                        🌊 HIFU-TMS Multimodal Trans-BBB Registration · Statistical Continued Fractions · Feynman Path Integrals · Post-Quantum Cybersecurity (PQC)
+                    </span>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <a href="/api/hifu-tms-dementia-preprint" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #0284c7, #0369a1); padding:8px 16px; border-radius:8px;">
+                            <span>📄 Nature Dementia Preprint</span>
+                        </a>
+                        <a href="/api/cybersecurity-pqc-preprint" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #10b981, #047857); padding:8px 16px; border-radius:8px;">
+                            <span>🛡️ Nature Cybersecurity Preprint</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT PANEL: CONTROLS & TELEMETRY -->
+                    <div class="panel glass-panel" style="flex: 0 0 320px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>HIFU-TMS Clinical Controls</h3>
+                        
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>HIFU Peak Pressure (MPa):</span>
+                                    <span id="label-hifu-pressure" class="sa-slider-val" style="color:#38bdf8;">0.85 MPa</span>
+                                </div>
+                                <input type="range" id="hifu-pressure" min="0.4" max="1.5" step="0.05" value="0.85" oninput="document.getElementById('label-hifu-pressure').textContent=parseFloat(this.value).toFixed(2)+' MPa'; runHifuTmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>rTMS Theta-Burst (% rMT):</span>
+                                    <span id="label-hifu-tms-intensity" class="sa-slider-val" style="color:#a78bfa;">110% rMT</span>
+                                </div>
+                                <input type="range" id="hifu-tms-intensity" min="80.0" max="130.0" step="2.0" value="110.0" oninput="document.getElementById('label-hifu-tms-intensity').textContent=parseFloat(this.value).toFixed(0)+'% rMT'; runHifuTmsDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Pharmacological Tri-Arm:</span>
+                                </div>
+                                <select id="hifu-pharm-select" class="sa-slider-input" style="background:#0f172a; color:#f8fafc; border:1px solid rgba(255,255,255,0.2); padding:6px 10px; border-radius:6px;" onchange="runHifuTmsDebounced();">
+                                    <option value="Lecanemab + Galantamine + Memantine" selected>Lecanemab + Galantamine + Memantine (Synergistic Tri-Modal)</option>
+                                    <option value="AChEI Monotherapy">Standard Care (AChEI Monotherapy)</option>
+                                    <option value="rTMS Monotherapy">rTMS Theta-Burst Monotherapy</option>
+                                    <option value="HIFU BBB + Lecanemab">HIFU BBB + Lecanemab (Acoustic Only)</option>
+                                </select>
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Recovery Horizon (Weeks):</span>
+                                    <span id="label-hifu-weeks" class="sa-slider-val" style="color:#34d399;">104 Wks</span>
+                                </div>
+                                <input type="range" id="hifu-weeks" min="24" max="156" step="8" value="104" oninput="document.getElementById('label-hifu-weeks').textContent=parseInt(this.value)+' Wks'; runHifuTmsDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <h3>Tri-Modal Clinical Telemetry</h3>
+                        <div class="sa-control-box" style="margin-bottom:0;">
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">ADAS-Cog Improvement:</span>
+                                <span id="hifu-metric-adas" class="sa-metric-val" style="color:#34d399;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">MMSE Cognitive Gain:</span>
+                                <span id="hifu-metric-mmse" class="sa-metric-val" style="color:#38bdf8;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Registration Accuracy:</span>
+                                <span id="hifu-metric-accuracy" class="sa-metric-val" style="color:#a78bfa;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Dice Co-Registration:</span>
+                                <span id="hifu-metric-dice" class="sa-metric-val" style="color:#fbbf24;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Amyloid Plaque Clearance:</span>
+                                <span id="hifu-metric-amyloid" class="sa-metric-val" style="color:#f87171;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Synaptic SV2A Density:</span>
+                                <span id="hifu-metric-sv2a" class="sa-metric-val" style="color:#4ade80;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Prime Moduli Entropy H:</span>
+                                <span id="hifu-metric-entropy" class="sa-metric-val" style="color:#c084fc;">...</span>
+                            </div>
+                            <div class="sa-metric-row" style="border-bottom:none; background:rgba(16,185,129,0.1); border-radius:4px; padding:4px 6px;">
+                                <span class="sa-metric-lbl" style="color:#34d399; font-weight:600;">PQC Risk Aversion:</span>
+                                <span id="hifu-metric-pqc" class="sa-metric-val" style="color:#34d399; font-weight:700;">99.41%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: MULTI-PANEL CHARTS, FEYNMAN INTEGRAL, AND PRIME MODULI -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+                        <!-- Row 1: Long-Term Recovery Horizons (ADAS-Cog & MMSE) -->
+                        <div class="panel glass-panel">
+                            <h3>Long-Term Recovery Horizons &amp; Convergence Characteristics (ADAS-Cog-13 &amp; MMSE)</h3>
+                            <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Comparing Standard of Care vs. rTMS Standalone vs. HIFU+Drug vs. Tri-Modal Synergistic Paradigm over 104 Weeks.</p>
+                            <div id="hifu-plot-trajectories" class="chart-container" style="min-height:320px;"></div>
+                        </div>
+
+                        <!-- Row 2: Multimodal Continued Fraction Registration & BBB Permeability -->
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Statistical Continued Fraction (Gauss-Euler-Stieltjes) Registration Convergence</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Sub-millimeter spatial correspondence interfacing HIFU acoustic focus and rTMS E-field contours.</p>
+                                <div id="hifu-plot-registration" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Trans-BBB Pharmacological Permeability Fold</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Dynamic acoustic cavitation tight-junction opening ratio during infusion windows.</p>
+                                <div id="hifu-plot-permeability" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Feynman Path Integral & Asymmetric Prime Moduli Staging -->
+                        <div class="dashboard-grid">
+                            <div class="panel glass-panel large-panel">
+                                <h3>Feynman Path Integral Propagator K(x<sub>f</sub>, t; x<sub>0</sub>, 0) &amp; Quantum Barrier Tunneling</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Wavefunction probability &amp; classical action S[x] combining acoustic force, E-field, and macromolecular influx.</p>
+                                <div id="hifu-plot-feynman" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>Asymmetric Prime Moduli Bio-Lattice Restoration</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Spectral Euler factors &prod; (1 - p<sup>-s</sup>) over primes &Pop; = {2, 3, 5, 7, 11, ..., 31}.</p>
+                                <div id="hifu-plot-prime" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: 4-Stage Clinical Stage-Gating Schedule -->
+                        <div class="panel glass-panel">
+                            <h3>🧬 Four-Stage Clinical Stage-Gating Protocol &amp; Tri-Modal Dementia Cure Paradigm</h3>
+                            <div id="hifu-staging-container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-top:10px;"></div>
+                        </div>
+
+                        <!-- Row 5: Finite Mathematical Equations & Theory -->
+                        <div class="panel glass-panel" style="background: rgba(2,132,199,0.04); border: 1px solid rgba(2,132,199,0.2);">
+                            <h3>📐 Finite Mathematical Equations: Continued Fractions, Feynman Propagators &amp; Asymmetric Moduli</h3>
+                            <div id="hifu-math-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- TAB 20: CYBERSECURITY & PQC MEASURES (LEIBNIZ-RAMANUJAN ELLIPTIC INTEGRALS) -->
+            <!-- ========================================================================= -->
+            <div id="cybersecurity-pqc-view" class="hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h2 style="font-size:24px; font-weight:700; color:#f8fafc; margin-bottom:4px;">🛡️ Cybersecurity &amp; Post-Quantum Cryptographic Measures</h2>
+                        <p style="color:#94a3b8; font-size:13px; margin:0;">
+                            Fortified clinical neuromodulation telemetry using Leibniz–Ramanujan Complete Elliptic Integrals $K(k)$, Jacobi Nome $q$, Dedekind Eta $\eta(\tau)$ Log-Probability Hardness &amp; Dynamic Risk Aversion Trajectories.
+                        </p>
+                    </div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <span style="font-size:12px; color:#34d399; background:rgba(16,185,129,0.1); padding:6px 12px; border-radius:6px; border:1px solid rgba(16,185,129,0.25);">
+                            🔒 NIST Level 5 PQC Lattice Active (512-bit Hardness)
+                        </span>
+                        <a href="/api/cybersecurity-pqc-preprint" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #10b981, #047857); padding:8px 16px; border-radius:8px;">
+                            <span>📄 Download Nature Cybersecurity Preprint (PDF)</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT PANEL: CONTROLS & TELEMETRY -->
+                    <div class="panel glass-panel" style="flex: 0 0 320px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>PQC Security Controls</h3>
+                        
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Elliptic Modulus $k$:</span>
+                                    <span id="label-pqc-modulus" class="sa-slider-val" style="color:#34d399;">k = 0.7071</span>
+                                </div>
+                                <input type="range" id="pqc-modulus" min="0.1" max="0.99" step="0.01" value="0.7071" oninput="document.getElementById('label-pqc-modulus').textContent='k = '+parseFloat(this.value).toFixed(4); runCybersecurityPqcDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Adversarial Threat Intensity:</span>
+                                    <span id="label-pqc-threat" class="sa-slider-val" style="color:#f87171;">1.00x (Severe)</span>
+                                </div>
+                                <input type="range" id="pqc-threat" min="0.2" max="3.0" step="0.1" value="1.0" oninput="document.getElementById('label-pqc-threat').textContent=parseFloat(this.value).toFixed(2)+'x'; runCybersecurityPqcDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Auditing Horizon (Weeks):</span>
+                                    <span id="label-pqc-weeks" class="sa-slider-val" style="color:#38bdf8;">104 Wks</span>
+                                </div>
+                                <input type="range" id="pqc-weeks" min="24" max="156" step="8" value="104" oninput="document.getElementById('label-pqc-weeks').textContent=parseInt(this.value)+' Wks'; runCybersecurityPqcDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <h3>Post-Quantum KPIs &amp; Risk Telemetry</h3>
+                        <div class="sa-control-box" style="margin-bottom:0;">
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Composite Risk Aversion:</span>
+                                <span id="pqc-metric-aversion" class="sa-metric-val" style="color:#34d399; font-weight:700;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">PQC Lattice Hardness:</span>
+                                <span id="pqc-metric-bits" class="sa-metric-val" style="color:#38bdf8;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Elliptic Integral $K(k)$:</span>
+                                <span id="pqc-metric-K" class="sa-metric-val" style="color:#a78bfa;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Jacobi Nome $q(k)$:</span>
+                                <span id="pqc-metric-nome" class="sa-metric-val" style="color:#fbbf24;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Dedekind $\eta(\tau)$ Invariant:</span>
+                                <span id="pqc-metric-eta" class="sa-metric-val" style="color:#c084fc;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Telemetry Integrity:</span>
+                                <span id="pqc-metric-integrity" class="sa-metric-val" style="color:#4ade80;">...</span>
+                            </div>
+                            <div class="sa-metric-row" style="border-bottom:none;">
+                                <span class="sa-metric-lbl">Quantum Attenuation:</span>
+                                <span id="pqc-metric-attenuation" class="sa-metric-val" style="color:#f43f5e;">...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: MULTI-PANEL CHARTS & THREAT MATRIX -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+                        
+                        <!-- Row 1: Clinical Telemetry Integrity Trajectories & Penetration Risk -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="panel glass-panel">
+                                <h3>🛡️ Clinical Telemetry Integrity Trajectories</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Unprotected vs Legacy RSA vs Leibniz-Ramanujan PQC Shielded (% Integrity).</p>
+                                <div id="pqc-plot-trajectories" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+
+                            <div class="panel glass-panel">
+                                <h3>📊 Multi-Vector Risk Aversion Probabilities $P_{\mathrm{aversion}}(t)$</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Dynamic aversion over time against 5 core quantum and RF attack vectors.</p>
+                                <div id="pqc-plot-aversion-vectors" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Quantum Attack Barrier & Elliptic Modulus Spectrum -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="panel glass-panel">
+                                <h3>⚡ Quantum Barrier Penetration Probability</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">$P_{\mathrm{penetrate}} = \exp(-\Lambda_{\mathrm{PQ}} / \theta)$ logarithmic security curve.</p>
+                                <div id="pqc-plot-barrier" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+
+                            <div class="panel glass-panel">
+                                <h3>♾️ Leibniz-Ramanujan Elliptic Modulus Transformation</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Complete Elliptic Integrals $K(k)$ vs Complementary $K'(k)$ and Jacobi Nome $q$.</p>
+                                <div id="pqc-plot-elliptic" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Threat Matrix Table -->
+                        <div class="panel glass-panel">
+                            <h3>🚨 Adversarial Threat Vector Matrix &amp; PQC Mitigation Performance</h3>
+                            <div style="overflow-x:auto; margin-top:10px;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:8px 10px;">Adversarial Attack Vector</th>
+                                            <th style="padding:8px 10px;">Raw Threat</th>
+                                            <th style="padding:8px 10px;">Mitigation Protocol</th>
+                                            <th style="padding:8px 10px;">Residual Breach Prob</th>
+                                            <th style="padding:8px 10px;">Risk Aversion %</th>
+                                            <th style="padding:8px 10px;">Security Margin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pqc-threat-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Finite Mathematical Formulations -->
+                        <div class="panel glass-panel" style="background: rgba(16,185,129,0.03); border: 1px solid rgba(16,185,129,0.2);">
+                            <h3>📐 Finite Mathematical Equations: Complete Elliptic Integrals &amp; Post-Quantum Log-Probabilities</h3>
+                            <div id="pqc-math-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
                         </div>
                     </div>
                 </div>
