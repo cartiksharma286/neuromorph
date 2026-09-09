@@ -1674,6 +1674,17 @@
                         <div class="sa-control-box">
                             <div class="sa-slider-group">
                                 <div class="sa-slider-header">
+                                    <span>Target Neurostimulator:</span>
+                                </div>
+                                <select id="pqc-device-filter" class="sa-slider-input" style="background:#0f172a; color:#f8fafc; border:1px solid rgba(255,255,255,0.2); padding:6px 10px; border-radius:6px;" onchange="runCybersecurityPqcDebounced();">
+                                    <option value="all" selected>All DBS Devices (Boston Scientific + Medtronic)</option>
+                                    <option value="boston_scientific_vercise">Boston Scientific Vercise™ Genus / Geviti (MICC)</option>
+                                    <option value="medtronic_percept">Medtronic Percept™ PC / RC with BrainSense™</option>
+                                </select>
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
                                     <span>Elliptic Modulus $k$:</span>
                                     <span id="label-pqc-modulus" class="sa-slider-val" style="color:#34d399;">k = 0.7071</span>
                                 </div>
@@ -1708,6 +1719,14 @@
                                 <span id="pqc-metric-bits" class="sa-metric-val" style="color:#38bdf8;">...</span>
                             </div>
                             <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">BS Vercise Aversion:</span>
+                                <span id="pqc-metric-bs-aversion" class="sa-metric-val" style="color:#38bdf8; font-weight:600;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">MDT Percept Aversion:</span>
+                                <span id="pqc-metric-mdt-aversion" class="sa-metric-val" style="color:#a78bfa; font-weight:600;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
                                 <span class="sa-metric-lbl">Elliptic Integral $K(k)$:</span>
                                 <span id="pqc-metric-K" class="sa-metric-val" style="color:#a78bfa;">...</span>
                             </div>
@@ -1724,8 +1743,8 @@
                                 <span id="pqc-metric-integrity" class="sa-metric-val" style="color:#4ade80;">...</span>
                             </div>
                             <div class="sa-metric-row" style="border-bottom:none;">
-                                <span class="sa-metric-lbl">Quantum Attenuation:</span>
-                                <span id="pqc-metric-attenuation" class="sa-metric-val" style="color:#f43f5e;">...</span>
+                                <span class="sa-metric-lbl">CVSS v4 Risk Drop:</span>
+                                <span id="pqc-metric-attenuation" class="sa-metric-val" style="color:#f43f5e; font-weight:600;">...</span>
                             </div>
                         </div>
                     </div>
@@ -1765,15 +1784,17 @@
 
                         <!-- Row 3: Threat Matrix Table -->
                         <div class="panel glass-panel">
-                            <h3>🚨 Adversarial Threat Vector Matrix &amp; PQC Mitigation Performance</h3>
+                            <h3>🚨 Deep Brain Stimulator Vulnerability Matrix (Boston Scientific Vercise™ &amp; Medtronic Percept™)</h3>
                             <div style="overflow-x:auto; margin-top:10px;">
                                 <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
                                     <thead>
                                         <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
-                                            <th style="padding:8px 10px;">Adversarial Attack Vector</th>
-                                            <th style="padding:8px 10px;">Raw Threat</th>
-                                            <th style="padding:8px 10px;">Mitigation Protocol</th>
-                                            <th style="padding:8px 10px;">Residual Breach Prob</th>
+                                            <th style="padding:8px 10px;">CVE ID</th>
+                                            <th style="padding:8px 10px;">Device Platform</th>
+                                            <th style="padding:8px 10px;">Vulnerability / Attack Vector</th>
+                                            <th style="padding:8px 10px;">Base CVSS v4</th>
+                                            <th style="padding:8px 10px;">Post-Quantum Mitigation</th>
+                                            <th style="padding:8px 10px;">Residual CVSS</th>
                                             <th style="padding:8px 10px;">Risk Aversion %</th>
                                             <th style="padding:8px 10px;">Security Margin</th>
                                         </tr>

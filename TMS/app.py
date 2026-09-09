@@ -34,6 +34,7 @@ from logic.rls_rtms import simulate_rls_rtms
 from logic.schizophrenia_dbs import simulate_schizophrenia_dbs_bem
 from logic.hifu_tms_dementia import simulate_hifu_tms_dementia
 from logic.cybersecurity_pqc import simulate_cybersecurity_trajectories
+from logic.dbs_pqc_vulnerability import optimize_dbs_pqc_vulnerability_assessment
 
 app = Flask(__name__)
 if CORS:
@@ -665,14 +666,57 @@ def api_cybersecurity_pqc_sim():
     - Leibniz-Ramanujan Complete Elliptic Integrals
     - Jacobi Nome q & Dedekind Eta Invariant Log-Probabilities
     - Clinical Trajectories & Threat Vector Risk Aversion
+    - Deep Brain Stimulation (Boston Scientific Vercise & Medtronic Percept) PQC Optimization
     """
     try:
         data = request.get_json(silent=True) or {}
         k_val = float(request.args.get('elliptic_k', data.get('elliptic_k', 0.7071)))
         atk_val = float(request.args.get('attack_intensity', data.get('attack_intensity', 1.0)))
         weeks_val = int(request.args.get('weeks', data.get('weeks', 104)))
-        result = simulate_cybersecurity_trajectories(elliptic_k=k_val, attack_intensity=atk_val, weeks=weeks_val)
-        return jsonify({'status': 'success', 'data': result})
+        device_val = str(request.args.get('device_filter', data.get('device_filter', 'all')))
+        
+        # Run general cybersecurity simulation
+        general_res = simulate_cybersecurity_trajectories(elliptic_k=k_val, attack_intensity=atk_val, weeks=weeks_val)
+        
+        # Run specialized Boston Scientific Vercise & Medtronic Percept DBS PQC vulnerability optimization
+        dbs_res = optimize_dbs_pqc_vulnerability_assessment(
+            modulus_k=k_val,
+            attack_intensity=atk_val,
+            weeks=weeks_val,
+            device_filter=device_val
+        )
+        
+        # Combine comprehensive data package
+        combined = {
+            **general_res,
+            "dbs_pqc_optimization": dbs_res
+        }
+        return jsonify({'status': 'success', 'data': combined})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/dbs-pqc-vulnerability', methods=['GET', 'POST'])
+def api_dbs_pqc_vulnerability():
+    """
+    Dedicated endpoint for Boston Scientific Vercise & Medtronic Percept DBS Vulnerability Optimization.
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+        k_val = float(request.args.get('elliptic_k', data.get('elliptic_k', 0.7071)))
+        atk_val = float(request.args.get('attack_intensity', data.get('attack_intensity', 1.0)))
+        weeks_val = int(request.args.get('weeks', data.get('weeks', 104)))
+        device_val = str(request.args.get('device_filter', data.get('device_filter', 'all')))
+        
+        res = optimize_dbs_pqc_vulnerability_assessment(
+            modulus_k=k_val,
+            attack_intensity=atk_val,
+            weeks=weeks_val,
+            device_filter=device_val
+        )
+        return jsonify({'status': 'success', 'data': res})
     except Exception as exc:
         import traceback
         traceback.print_exc()
