@@ -29,7 +29,7 @@ def api_popq_stage():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
-# 2. Implant Polytype Mechanics
+# 2. Implant Polytype Mechanics & FEA / GD&T
 @app.route("/api/implant/evaluate", methods=["POST"])
 def api_implant_evaluate():
     try:
@@ -42,6 +42,32 @@ def api_implant_evaluate():
             "single_point": result,
             "curve": result["curve"]
         })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+# 2B. Comprehensive FEA & GD&T Precision Simulation API
+@app.route("/api/implant/fea_gdt", methods=["POST"])
+def api_implant_fea_gdt():
+    try:
+        data = request.json or {}
+        polytype = data.get("polytype", "polypropylene_type1")
+        valsalva_p = float(data.get("valsalva_pressure_kpa", 12.0))
+        geometry = data.get("geometry", "sacrocolpopexy_y_mesh")
+        thickness = float(data.get("mesh_thickness_mm", 0.45))
+        sutures = int(data.get("suture_fixation_points", 6))
+        length_mm = float(data.get("mesh_length_mm", 120.0))
+        width_mm = float(data.get("mesh_width_mm", 40.0))
+
+        result = pelvic_engine.compute_pelvic_implant_fea_gdt(
+            polytype_key=polytype,
+            valsalva_pressure_kpa=valsalva_p,
+            mesh_geometry=geometry,
+            mesh_thickness_mm=thickness,
+            suture_fixation_points=sutures,
+            mesh_length_mm=length_mm,
+            mesh_width_mm=width_mm
+        )
+        return jsonify({"success": True, "data": result})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
