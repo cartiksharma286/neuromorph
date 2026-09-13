@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunnybrook Health Sciences: Quantum Neuromuscular Stroke Gait Kinematics & Neuronal Rehabilitation</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(55, 65, 81, 0.5);
+        }
+        .glass-panel-glow {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            box-shadow: 0 0 25px -5px rgba(14, 165, 233, 0.15);
+        }
+        .tab-btn.active {
+            color: #38bdf8;
+            border-bottom: 2px solid #38bdf8;
+            background: rgba(56, 189, 248, 0.08);
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030712;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-950/80 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 via-indigo-600 to-teal-400 flex items-center justify-center shadow-lg shadow-sky-500/20 text-white font-bold text-lg">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-sm sm:text-base tracking-tight text-white">SUNNYBROOK HEALTH SCIENCES CENTRE</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-sky-500/20 text-sky-400 border border-sky-500/30 font-bold">NEUROLOGY & BRAIN SCIENCES</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Point-of-Care QML Interventional Stroke Gait Restoration & Prime Moduli Neuroplasticity Platform</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    QML ENGINE ACTIVE
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-1 border-t border-slate-800/60 text-xs sm:text-sm font-semibold">
+            <button onclick="switchTab('tab-gait')" id="btn-tab-gait" class="tab-btn active px-4 py-2.5 flex items-center gap-2 text-slate-400 hover:text-slate-200 transition whitespace-nowrap">
+                <i class="fa-solid fa-person-walking text-sky-400"></i> Gait Kinematics Biomechanics
+            </button>
+            <button onclick="switchTab('tab-qml')" id="btn-tab-qml" class="tab-btn px-4 py-2.5 flex items-center gap-2 text-slate-400 hover:text-slate-200 transition whitespace-nowrap">
+                <i class="fa-solid fa-atom text-indigo-400"></i> Quantum ML (QNG Ansatz)
+            </button>
+            <button onclick="switchTab('tab-moduli')" id="btn-tab-moduli" class="tab-btn px-4 py-2.5 flex items-center gap-2 text-slate-400 hover:text-slate-200 transition whitespace-nowrap">
+                <i class="fa-solid fa-wave-square text-teal-400"></i> Prime Moduli Harmonics
+            </button>
+            <button onclick="switchTab('tab-hebbian')" id="btn-tab-hebbian" class="tab-btn px-4 py-2.5 flex items-center gap-2 text-slate-400 hover:text-slate-200 transition whitespace-nowrap">
+                <i class="fa-solid fa-network-wired text-purple-400"></i> Hebbian Amplification & STDP
+            </button>
+            <button onclick="switchTab('tab-prescribe')" id="btn-tab-prescribe" class="tab-btn px-4 py-2.5 flex items-center gap-2 text-slate-400 hover:text-slate-200 transition whitespace-nowrap">
+                <i class="fa-solid fa-sliders text-amber-400"></i> Exercise Optimization Modules
+            </button>
+            <button onclick="switchTab('tab-horizons')" id="btn-tab-horizons" class="tab-btn px-4 py-2.5 flex items-center gap-2 text-slate-400 hover:text-slate-200 transition whitespace-nowrap">
+                <i class="fa-solid fa-chart-line text-rose-400"></i> 15-Year Clinical Horizons
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- GLOBAL PATIENT STROKE PROFILE CONTROLLER -->
+        <section class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-sky-400 flex items-center gap-2">
+                        <i class="fa-solid fa-user-injured"></i> Sunnybrook Stroke Patient Clinical Demographics & Lesion Profile
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Select stroke infarct locus to configure biomechanical baseline and neuroplasticity parameters</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400">Patient ID:</span>
+                    <span class="text-xs font-mono font-bold text-slate-200 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700">SHSC-STK-9042</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                <div>
+                    <label class="text-slate-400 block mb-1 font-semibold">Stroke Infarct / Lesion Locus</label>
+                    <select id="global-lesion-select" onchange="onLesionChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sky-300 font-semibold focus:border-sky-500 outline-none">
+                        <option value="mca_cortical" selected>Middle Cerebral Artery (MCA) Cortical Infarct</option>
+                        <option value="aca_supplementary">Anterior Cerebral Artery (ACA) / Supplementary Motor</option>
+                        <option value="subcortical_lacunar">Internal Capsule / Basal Ganglia Lacunar Stroke</option>
+                        <option value="brainstem_pontine">Pontine / Cerebellar Pathway Disruption</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-slate-400 block mb-1 font-semibold">Point-of-Care Intervention Level (<span id="intervention-val" class="text-sky-400 font-bold">0.45</span>)</label>
+                    <input type="range" id="global-intervention-slider" min="0.0" max="1.0" step="0.05" value="0.45" oninput="onInterventionSliderChange()" class="w-full accent-sky-500 mt-2">
+                    <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+                        <span>0.0 (Acute Flaccid/Spastic)</span>
+                        <span>1.0 (Restored Kinematics)</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-slate-400 block mb-1 font-semibold">Cadence (Steps / Minute)</label>
+                    <input type="number" id="global-cadence-input" value="85" min="40" max="130" onchange="triggerGaitUpdate()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-slate-200 font-mono focus:border-sky-500 outline-none">
+                </div>
+                <div class="flex items-end">
+                    <button onclick="runFullRehabSuite()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-600 via-indigo-600 to-teal-500 hover:from-sky-500 hover:to-teal-400 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-900/30 transition">
+                        <i class="fa-solid fa-rotate"></i> Recalculate Neuro-Kinematic Suite
+                    </button>
+                </div>
+            </div>
+
+            <!-- Patient Baseline Telemetry Badges -->
+            <div id="patient-kpis" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-2 border-t border-slate-800 text-xs">
+                <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <div class="text-slate-500 text-[10px] uppercase">Fugl-Meyer Score</div>
+                    <div id="kpi-fugl-meyer" class="text-base font-extrabold text-sky-400 font-mono">18.0 / 34</div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <div class="text-slate-500 text-[10px] uppercase">Gait Speed</div>
+                    <div id="kpi-walking-speed" class="text-base font-extrabold text-teal-400 font-mono">0.42 m/s</div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <div class="text-slate-500 text-[10px] uppercase">Step Asymmetry</div>
+                    <div id="kpi-asymmetry" class="text-base font-extrabold text-amber-400 font-mono">48.0%</div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <div class="text-slate-500 text-[10px] uppercase">Circumduction Dev.</div>
+                    <div id="kpi-circumduction" class="text-base font-extrabold text-rose-400 font-mono">6.8 cm</div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <div class="text-slate-500 text-[10px] uppercase">Ashworth Spasticity</div>
+                    <div id="kpi-spasticity" class="text-base font-extrabold text-purple-400 font-mono">2.5 (Mod-Sev)</div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <div class="text-slate-500 text-[10px] uppercase">Stability Margin</div>
+                    <div id="kpi-stability" class="text-base font-extrabold text-emerald-400 font-mono">14.0 mm</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 1: GAIT KINEMATICS BIOMECHANICS -->
+        <section id="tab-gait" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Kinematic Waveforms (Ankle, Knee, Hip) -->
+                <div class="lg:col-span-2 glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-chart-area text-sky-400"></i> Multi-Joint Sagittal Gait Kinematics (0–100% Stride Cycle)
+                            </h3>
+                            <p class="text-xs text-slate-400">Comparing Paretic Stroke Waveforms vs Healthy Normative Reference Values</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="selectJointChart('ankle')" id="btn-joint-ankle" class="px-2.5 py-1 rounded-lg bg-sky-600 text-white text-xs font-semibold">Ankle</button>
+                            <button onclick="selectJointChart('knee')" id="btn-joint-knee" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold">Knee</button>
+                            <button onclick="selectJointChart('hip')" id="btn-joint-hip" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold">Hip</button>
+                        </div>
+                    </div>
+
+                    <div class="relative h-72 w-full">
+                        <canvas id="jointAngleChart"></canvas>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3 pt-2 border-t border-slate-800/80 text-xs text-center font-mono">
+                        <div class="p-2 rounded-lg bg-slate-950">
+                            <span class="text-slate-400 block text-[10px]">Initial Contact</span>
+                            <span id="stat-ic" class="text-sky-400 font-bold">0.0° (Dorsi/Plantar)</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-slate-950">
+                            <span class="text-slate-400 block text-[10px]">Peak Stance Load</span>
+                            <span id="stat-stance" class="text-teal-400 font-bold">+18.0° Flexion</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-slate-950">
+                            <span class="text-slate-400 block text-[10px]">Peak Swing Clearance</span>
+                            <span id="stat-swing" class="text-indigo-400 font-bold">+62.0° Sagittal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ground Reaction Force & Foot Strike Dynamics -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-shoe-prints text-teal-400"></i> Ground Reaction Force (GRF)
+                        </h3>
+                        <p class="text-xs text-slate-400">Vertical loading & propulsion impulse (% Body Weight)</p>
+                    </div>
+
+                    <div class="relative h-48 w-full">
+                        <canvas id="grfChart"></canvas>
+                    </div>
+
+                    <div class="space-y-2 text-xs pt-2">
+                        <div class="flex justify-between p-2 rounded-lg bg-slate-950 border border-slate-800">
+                            <span class="text-slate-400">Paretic Propulsion Impulse:</span>
+                            <span id="grf-impulse" class="font-mono text-teal-400 font-bold">165.0 N·s</span>
+                        </div>
+                        <div class="flex justify-between p-2 rounded-lg bg-slate-950 border border-slate-800">
+                            <span class="text-slate-400">Stance Phase Duration:</span>
+                            <span id="grf-stance-pct" class="font-mono text-sky-400 font-bold">64.2%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: QUANTUM MACHINE LEARNING (QML) INTERVENTIONAL REPAIR -->
+        <section id="tab-qml" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- QML Parameter Controls & Ansatz Configuration -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                            <i class="fa-solid fa-microchip"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Parameterized Variational Quantum Circuit</h3>
+                            <p class="text-xs text-slate-400">Quantum Natural Gradient (QNG) for Point-of-Care Interventions</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="text-slate-400 block mb-1">Qubit Count ($N$ QuBits)</label>
+                            <select id="qml-qubits" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
+                                <option value="4">4 Qubits (16 Hilbert Dim)</option>
+                                <option value="8" selected>8 Qubits (256 Hilbert Dim)</option>
+                                <option value="12">12 Qubits (4096 Hilbert Dim)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-slate-400 block mb-1">Ansatz Repetition Layers ($L$)</label>
+                            <input type="number" id="qml-layers" value="4" min="1" max="10" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                        </div>
+
+                        <div>
+                            <label class="text-slate-400 block mb-1">Entanglement Topology</label>
+                            <select id="qml-entanglement" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                                <option value="full_mesh_cnot" selected>Full-Mesh CNOT Entanglement</option>
+                                <option value="circular_cz">Circular Controlled-Z Topology</option>
+                                <option value="linear_nearest_neighbor">Linear Nearest Neighbor</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-slate-400 block mb-1">Fubini-Study QNG Learning Rate ($\eta_Q$)</label>
+                            <input type="number" id="qml-lr" value="0.045" step="0.005" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                        </div>
+
+                        <button onclick="executeQmlOptimization()" id="btn-run-qml" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/30 transition">
+                            <i class="fa-solid fa-atom"></i> Execute Quantum Circuit Optimization
+                        </button>
+                    </div>
+                </div>
+
+                <!-- QML Telemetry, Cost Convergence & Neuromodulation Correction Vector -->
+                <div class="lg:col-span-2 glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Quantum Variational Convergence & Interventional Vector</h3>
+                            <p class="text-xs text-slate-400">Energy minimizing trajectory via Quantum Fisher Information Matrix</p>
+                        </div>
+                        <span id="qml-fidelity-badge" class="px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-xs font-mono font-bold">
+                            Fidelity: 0.9842
+                        </span>
+                    </div>
+
+                    <div class="relative h-56 w-full">
+                        <canvas id="qmlCostChart"></canvas>
+                    </div>
+
+                    <!-- Calculated Point-of-Care Interventional Output Vector -->
+                    <div class="space-y-2 pt-2 border-t border-slate-800">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Point-of-Care Neuromodulation Signals</h4>
+                        <div id="qml-correction-grid" class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs font-mono">
+                            <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                                <span class="text-slate-500 block text-[10px]">Tibialis Anterior FES</span>
+                                <span id="qml-fes-val" class="text-sky-400 font-bold">310.5 µs</span>
+                            </div>
+                            <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                                <span class="text-slate-500 block text-[10px]">Quadriceps Torque</span>
+                                <span id="qml-torque-val" class="text-indigo-400 font-bold">25.4 N·m</span>
+                            </div>
+                            <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                                <span class="text-slate-500 block text-[10px]">Hamstring Damping</span>
+                                <span id="qml-damping-val" class="text-purple-400 font-bold">0.612 ratio</span>
+                            </div>
+                            <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                                <span class="text-slate-500 block text-[10px]">Gluteus Medius Gain</span>
+                                <span id="qml-abduction-val" class="text-teal-400 font-bold">1.58x</span>
+                            </div>
+                            <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                                <span class="text-slate-500 block text-[10px]">Proprioceptive Vib.</span>
+                                <span id="qml-vib-val" class="text-amber-400 font-bold">95.0 Hz</span>
+                            </div>
+                            <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                                <span class="text-slate-500 block text-[10px]">Quantum Advantage</span>
+                                <span id="qml-speedup-val" class="text-emerald-400 font-bold">4.12x</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: PRIME MODULI THEORY & MULTI-SCALE HARMONIC RESONANCES -->
+        <section id="tab-moduli" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Prime Basis Selector & CRT Configuration -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 rounded-lg bg-teal-500/20 text-teal-400 border border-teal-500/30">
+                            <i class="fa-solid fa-infinity"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Prime Moduli Arithmetic Basis</h3>
+                            <p class="text-xs text-slate-400">Multi-Scale Harmonic Neural Band Oscillators</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="text-slate-400 block mb-1">Selected Coprime Moduli Basis ($\mathbb{Z}/p\mathbb{Z}$)</label>
+                            <input type="text" id="moduli-primes-input" value="3, 7, 13, 29, 61" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-teal-300 font-mono font-bold">
+                            <span class="text-[10px] text-slate-500 mt-1 block">Comma separated prime integers $p \in \mathbb{P}$</span>
+                        </div>
+
+                        <div>
+                            <label class="text-slate-400 block mb-1">Rehabilitation Horizon (Weeks)</label>
+                            <input type="number" id="moduli-weeks-input" value="12" min="4" max="52" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">CRT Ring Modulus $\prod p_i$:</span>
+                                <span id="moduli-crt-prod" class="font-mono text-teal-400 font-bold">7,917</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Predicted Recovery Plateau:</span>
+                                <span id="moduli-plateau-pct" class="font-mono text-emerald-400 font-bold">88.5%</span>
+                            </div>
+                        </div>
+
+                        <button onclick="computePrimeModuliHarmonics()" class="w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-teal-900/30 transition">
+                            <i class="fa-solid fa-wave-square"></i> Synthesize Harmonic Trajectories
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Multi-Scale Harmonic Resonances Chart -->
+                <div class="lg:col-span-2 glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Prime Moduli Resonant Coherence & Clinical Trajectory</h3>
+                            <p class="text-xs text-slate-400">Theta, Alpha, Beta, and Gamma cross-frequency phase-locking</p>
+                        </div>
+                    </div>
+
+                    <div class="relative h-64 w-full">
+                        <canvas id="primeModuliChart"></canvas>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800 text-xs">
+                        <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span class="text-slate-400 block text-[10px]">Projected Week-12 Fugl-Meyer:</span>
+                            <span id="proj-fm-12" class="text-sky-400 font-bold font-mono text-sm">29.4 / 34</span>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span class="text-slate-400 block text-[10px]">Projected Week-12 Gait Speed:</span>
+                            <span id="proj-speed-12" class="text-teal-400 font-bold font-mono text-sm">1.18 m/s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: HEBBIAN SYNAPTIC AMPLIFICATION & CORTICOSPINAL REMAPPING -->
+        <section id="tab-hebbian" class="space-y-6 hidden">
+            <!-- Top Controls and Summary -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Hebbian Learning Rate & STDP Controls -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 rounded-lg bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                            <i class="fa-solid fa-network-wired"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Hebbian Synaptic Plasticity & STDP</h3>
+                            <p class="text-xs text-slate-400">Peri-Lesional Corticospinal Sprouting Engine</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="text-slate-400 block mb-1">Target Interventional Modality</label>
+                            <select id="hebbian-modality" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-purple-300 font-semibold focus:border-purple-500 outline-none">
+                                <option value="coupled_robotic_fes" selected>Coupled Lokomat + Closed-Loop FES (1.45x Gain)</option>
+                                <option value="split_belt_adaptation">Split-Belt Treadmill Sensorimotor Adaptation (1.30x Gain)</option>
+                                <option value="proprioceptive_vibration">Focal Proprioceptive Vibration Stimulation (1.20x Gain)</option>
+                                <option value="standard_gait">Conventional Physical Therapy (1.05x Gain)</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400 block mb-1">Simulated Neurons</label>
+                                <select id="hebbian-neurons" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                                    <option value="16" selected>16 Nodes (4 Tiers)</option>
+                                    <option value="12">12 Nodes (3 Tiers)</option>
+                                    <option value="8">8 Nodes (2 Tiers)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-slate-400 block mb-1">STDP Time Constant $\tau$ (ms)</label>
+                                <input type="number" id="hebbian-stdp-tau" value="20.0" step="2.0" min="5" max="50" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400 block mb-1">Hebbian Rate ($\eta$)</label>
+                                <input type="number" id="hebbian-rate" value="0.09" step="0.01" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                            </div>
+                            <div>
+                                <label class="text-slate-400 block mb-1">Pruning Decay ($\gamma$)</label>
+                                <input type="number" id="hebbian-pruning" value="0.015" step="0.005" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400 block mb-1">QML Boost ($\xi$)</label>
+                                <input type="number" id="hebbian-qml-gain" value="1.25" step="0.1" min="0.5" max="3.0" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                            </div>
+                            <div>
+                                <label class="text-slate-400 block mb-1">Epochs</label>
+                                <input type="number" id="hebbian-epochs" value="40" min="10" max="100" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                            </div>
+                        </div>
+
+                        <button onclick="runHebbianSimulation()" id="btn-run-hebbian" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-900/30 transition">
+                            <i class="fa-solid fa-bolt"></i> Simulate Synaptic Amplification & Long-Term Horizons
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Synaptic Potentiation & Conduction Velocity Chart -->
+                <div class="lg:col-span-2 glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Synaptic Weight Potentiation & Tract Velocity</h3>
+                            <p class="text-xs text-slate-400">Restoring Corticospinal Conduction (m/s) & Potentiation (%)</p>
+                        </div>
+                        <span id="hebbian-sprouting-status" class="px-2.5 py-1 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-mono font-bold">
+                            High Plastic Consolidation
+                        </span>
+                    </div>
+
+                    <div class="relative h-64 w-full">
+                        <canvas id="hebbianChart"></canvas>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-800 text-xs font-mono text-center">
+                        <div class="p-2 rounded bg-slate-950">
+                            <span class="text-slate-500 block text-[10px]">Conduction Velocity</span>
+                            <span id="stat-conduction-vel" class="text-purple-400 font-bold">72.0 m/s</span>
+                        </div>
+                        <div class="p-2 rounded bg-slate-950">
+                            <span class="text-slate-500 block text-[10px]">Synaptic Efficiency</span>
+                            <span id="stat-synaptic-eff" class="text-emerald-400 font-bold">98.2%</span>
+                        </div>
+                        <div class="p-2 rounded bg-slate-950">
+                            <span class="text-slate-500 block text-[10px]">Peri-Lesional Remapping</span>
+                            <span id="stat-remapping-eff" class="text-sky-400 font-bold">96.5%</span>
+                        </div>
+                        <div class="p-2 rounded bg-slate-950">
+                            <span class="text-slate-500 block text-[10px]">Active Synaptic Edges</span>
+                            <span id="stat-active-syn" class="text-amber-400 font-bold">54 Edges</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Row: STDP Spike Dynamics Raster & Long-Term Horizon Neuroplastic Retention (1-15 Years) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- STDP Spike Timing Dynamics Chart -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-bolt-lightning text-amber-400"></i> STDP Millisecond Spike Synchronization
+                            </h3>
+                            <p class="text-xs text-slate-400">Pre- vs. Post-Synaptic Phase-Locked Spike Rates across 200ms Locomotor Cycles</p>
+                        </div>
+                        <span class="text-xs font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Optimal $\Delta t$: +6.5 ms</span>
+                    </div>
+
+                    <div class="relative h-56 w-full">
+                        <canvas id="stdpSpikeChart"></canvas>
+                    </div>
+
+                    <p class="text-[11px] text-slate-400">
+                        <strong class="text-slate-300">STDP Bi-Phasic Rule:</strong> Pre-synaptic arrival prior to post-synaptic firing ($\Delta t > 0$) induces Long-Term Potentiation (LTP); anti-causal firing triggers structural depression and pruning.
+                    </p>
+                </div>
+
+                <!-- Hebbian Long-Term Horizon Care (1-15 Years Projection) -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-rose-400"></i> 15-Year Neuroplastic Retention & Tract Integrity
+                            </h3>
+                            <p class="text-xs text-slate-400">Long-term corticospinal tract maintenance under continuous exercise care</p>
+                        </div>
+                        <span class="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">15-Yr Stability: 84.6%</span>
+                    </div>
+
+                    <div class="relative h-56 w-full">
+                        <canvas id="hebbianHorizonChart"></canvas>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+                        <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                            <span class="text-slate-500 block text-[10px]">5-Yr Synaptic Retention</span>
+                            <span id="hz-heb-5yr" class="text-purple-400 font-bold">92.4%</span>
+                        </div>
+                        <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                            <span class="text-slate-500 block text-[10px]">10-Yr Tract Integrity</span>
+                            <span id="hz-heb-10yr" class="text-teal-400 font-bold">81.5% FA</span>
+                        </div>
+                        <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                            <span class="text-slate-500 block text-[10px]">15-Yr Locomotor Score</span>
+                            <span id="hz-heb-15yr" class="text-sky-400 font-bold">89.0 / 100</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Row: 2D Corticospinal Weight Matrix Heatmap & Active Synaptic Circuit Pathways -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 2D Synaptic Weight Heatmap -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 lg:col-span-2">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-table-cells text-sky-400"></i> Corticospinal Synaptic Weight Matrix $W_{ij}$ ($N \times N$)
+                            </h3>
+                            <p class="text-xs text-slate-400">Visualizing Contralesional, Peri-Lesional, Descending Tract, and Spinal Motoneuron Cross-Talk</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] font-mono text-slate-400">
+                            <span class="inline-block w-3 h-3 bg-slate-900 border border-slate-700"></span> 0.0 (Silent)
+                            <span class="inline-block w-3 h-3 bg-indigo-900"></span> 0.3
+                            <span class="inline-block w-3 h-3 bg-purple-600"></span> 0.6
+                            <span class="inline-block w-3 h-3 bg-amber-400"></span> 1.0 (LTP Peak)
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Heatmap Table Container -->
+                    <div class="overflow-x-auto">
+                        <div id="synaptic-matrix-heatmap" class="min-w-[600px] grid gap-1 p-2 bg-slate-950/80 rounded-xl border border-slate-800 text-[9px] font-mono">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Collateral Synaptic Pathways Stream -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-sitemap text-teal-400"></i> Active Synaptic Projections
+                        </h3>
+                        <span id="active-edges-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-teal-500/20 text-teal-300 border border-teal-500/30">Top 12 Edges</span>
+                    </div>
+                    <div id="active-synapses-list" class="space-y-2 max-h-72 overflow-y-auto pr-1 text-xs">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: MULTI-OBJECTIVE EXERCISE PRESCRIPTION OPTIMIZATION -->
+        <section id="tab-prescribe" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Optimization Settings -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                            <i class="fa-solid fa-sliders"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Rehabilitation Optimization</h3>
+                            <p class="text-xs text-slate-400">Pareto Multi-Objective Goal Scheduler</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="text-slate-400 block mb-1">Primary Clinical Objective</label>
+                            <select id="opt-goal" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-amber-300 font-semibold">
+                                <option value="maximum_speed_and_symmetry" selected>Maximum Speed & Symmetry Restitution</option>
+                                <option value="spasticity_reduction">Spasticity & Extensor Synergy Reduction</option>
+                                <option value="endurance_efficiency">Cardiorespiratory Endurance & Efficiency</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-slate-400 block mb-1">Patient Fatigue Ceiling (METs)</label>
+                            <input type="number" id="opt-fatigue" value="3.8" step="0.2" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                        </div>
+
+                        <div>
+                            <label class="text-slate-400 block mb-1">Daily Session Duration (Minutes)</label>
+                            <input type="number" id="opt-duration" value="60" min="20" max="120" step="10" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                        </div>
+
+                        <button onclick="runExerciseOptimization()" class="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-900/30 transition">
+                            <i class="fa-solid fa-gears"></i> Optimize Exercise Prescription
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Prescribed Protocol Output Cards -->
+                <div class="lg:col-span-2 glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Personalized Sunnybrook Locomotor Prescription</h3>
+                            <p class="text-xs text-slate-400">Synthesized robotic, functional, and electrical stimulation protocol</p>
+                        </div>
+                        <span id="opt-score-badge" class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-mono font-bold">
+                            Pareto Score: 142.8
+                        </span>
+                    </div>
+
+                    <div id="exercise-prescriptions-list" class="space-y-2.5">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: 15-YEAR LONG-TERM HEALTHCARE HORIZONS -->
+        <section id="tab-horizons" class="space-y-6 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Horizon Demographics & Risk Configuration -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                            <i class="fa-solid fa-heart-pulse"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Long-Term Prognostic Horizon</h3>
+                            <p class="text-xs text-slate-400">15-Year Neuroplastic Retention & Survival</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="text-slate-400 block mb-1">Patient Age at Stroke Onset</label>
+                            <input type="number" id="hz-age" value="62" min="25" max="95" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-rose-300 font-mono">
+                        </div>
+
+                        <div>
+                            <label class="text-slate-400 block mb-1">Exercise Adherence Compliance (<span id="hz-adherence-val" class="text-rose-400 font-bold">85%</span>)</label>
+                            <input type="range" id="hz-adherence-slider" min="0.30" max="1.0" step="0.05" value="0.85" oninput="document.getElementById('hz-adherence-val').innerText = Math.round(this.value*100)+'%'" class="w-full accent-rose-500 mt-1">
+                        </div>
+
+                        <div>
+                            <label class="text-slate-400 block mb-1">Cardiovascular Risk Tier</label>
+                            <select id="hz-cv-risk" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+                                <option value="low">Low Risk (Optimized BP & Lipid Profile)</option>
+                                <option value="moderate" selected>Moderate Risk (Controlled Comorbidities)</option>
+                                <option value="high">High Risk (Atrial Fibrillation / Diabetes)</option>
+                            </select>
+                        </div>
+
+                        <button onclick="computeLongTermHorizons()" class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-900/30 transition">
+                            <i class="fa-solid fa-chart-line"></i> Project 15-Year Trajectories
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 15-Year Horizon Chart & Milestones -->
+                <div class="lg:col-span-2 glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold text-white">15-Year Ambulation Independence & Recurrence-Free Survival</h3>
+                            <p class="text-xs text-slate-400">Perry Ambulation Classification, EQ-5D Quality of Life & mRS</p>
+                        </div>
+                    </div>
+
+                    <div class="relative h-64 w-full">
+                        <canvas id="horizonsChart"></canvas>
+                    </div>
+
+                    <div id="horizons-milestones-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2 pt-2 border-t border-slate-800 text-xs font-mono">
+                        <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                            <span class="text-slate-500 block text-[10px]">5-Yr Independence</span>
+                            <span id="hz-5yr-indep" class="text-sky-400 font-bold">86.2%</span>
+                        </div>
+                        <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                            <span class="text-slate-500 block text-[10px]">10-Yr Stroke-Free</span>
+                            <span id="hz-10yr-surv" class="text-emerald-400 font-bold">78.4%</span>
+                        </div>
+                        <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                            <span class="text-slate-500 block text-[10px]">15-Yr EQ-5D Score</span>
+                            <span id="hz-15yr-qol" class="text-rose-400 font-bold">76.0 / 100</span>
+                        </div>
+                        <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                            <span class="text-slate-500 block text-[10px]">Final mRS Score</span>
+                            <span id="hz-final-mrs" class="text-amber-400 font-bold">mRS 1.4</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-950/80 py-4 text-center text-xs text-slate-500">
+        <p>Sunnybrook Health Sciences Centre • Department of Clinical Neurosciences & Institute for Biomedical Engineering</p>
+        <p class="text-[10px] text-slate-600 mt-0.5">Point-of-Care QML Interventions, Prime Moduli Resonances & Hebbian Amplification for Stroke Kinematics</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Global Chart Handles
+        let jointAngleChart = null;
+        let grfChart = null;
+        let qmlCostChart = null;
+        let primeModuliChart = null;
+        let hebbianChart = null;
+        let stdpSpikeChart = null;
+        let hebbianHorizonChart = null;
+        let horizonsChart = null;
+
+        let activeJointType = 'ankle';
+        let latestGaitData = null;
+
+        function switchTab(tabId) {
+            ['tab-gait', 'tab-qml', 'tab-moduli', 'tab-hebbian', 'tab-prescribe', 'tab-horizons'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).classList.add('active');
+
+            if (tabId === 'tab-qml' && !qmlCostChart) executeQmlOptimization();
+            if (tabId === 'tab-moduli' && !primeModuliChart) computePrimeModuliHarmonics();
+            if (tabId === 'tab-hebbian' && !hebbianChart) runHebbianSimulation();
+            if (tabId === 'tab-prescribe') runExerciseOptimization();
+            if (tabId === 'tab-horizons' && !horizonsChart) computeLongTermHorizons();
+        }
+
+        function onInterventionSliderChange() {
+            const val = document.getElementById('global-intervention-slider').value;
+            document.getElementById('intervention-val').innerText = parseFloat(val).toFixed(2);
+            triggerGaitUpdate();
+        }
+
+        function onLesionChange() {
+            triggerGaitUpdate();
+        }
+
+        async function triggerGaitUpdate() {
+            const lesion = document.getElementById('global-lesion-select').value;
+            const intervention = parseFloat(document.getElementById('global-intervention-slider').value);
+            const cadence = parseFloat(document.getElementById('global-cadence-input').value || '85');
+
+            try {
+                const res = await fetch('/api/gait/kinematics', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        lesion_type: lesion,
+                        intervention_level: intervention,
+                        cadence: cadence
+                    })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    latestGaitData = json.data;
+                    updatePatientKPIs(json.data);
+                    renderJointAngleChart();
+                    renderGRFChart(json.data);
+                }
+            } catch (err) {
+                console.error("Gait kinematics error:", err);
+            }
+        }
+
+        function updatePatientKPIs(data) {
+            const sp = data.spatiotemporal_metrics;
+            const lesion = data.stroke_lesion;
+            document.getElementById('kpi-fugl-meyer').innerText = `${sp.fugl_meyer_le_score} / 34`;
+            document.getElementById('kpi-walking-speed').innerText = `${sp.walking_speed_ms} m/s`;
+            document.getElementById('kpi-asymmetry').innerText = `${sp.step_length_asymmetry_pct}%`;
+            document.getElementById('kpi-circumduction').innerText = `${sp.circumduction_elevation_cm} cm`;
+            document.getElementById('kpi-spasticity').innerText = `${lesion.spasticity_modified_ashworth} (${lesion.hemiparesis_severity})`;
+            document.getElementById('kpi-stability').innerText = `${sp.dynamic_stability_margin_mm} mm`;
+
+            document.getElementById('grf-impulse').innerText = `${sp.paretic_propulsion_impulse_ns} N·s`;
+            document.getElementById('grf-stance-pct').innerText = `${sp.stance_phase_duration_pct}%`;
+        }
+
+        function selectJointChart(type) {
+            activeJointType = type;
+            ['ankle', 'knee', 'hip'].forEach(t => {
+                const btn = document.getElementById(`btn-joint-${t}`);
+                if (t === type) {
+                    btn.className = 'px-2.5 py-1 rounded-lg bg-sky-600 text-white text-xs font-semibold';
+                } else {
+                    btn.className = 'px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold';
+                }
+            });
+            renderJointAngleChart();
+        }
+
+        function renderJointAngleChart() {
+            if (!latestGaitData) return;
+            const ctx = document.getElementById('jointAngleChart').getContext('2d');
+            const d = latestGaitData.joint_angles;
+            const strides = latestGaitData.stride_percent.map(v => Math.round(v));
+
+            let healthyData = [];
+            let pareticData = [];
+            let labelTitle = '';
+
+            if (activeJointType === 'ankle') {
+                healthyData = d.ankle_healthy_deg;
+                pareticData = d.ankle_paretic_deg;
+                labelTitle = 'Ankle Dorsi(+)/Plantar(-)flexion (deg)';
+                document.getElementById('stat-ic').innerText = '0.0° (Dorsi/Plantar)';
+                document.getElementById('stat-stance').innerText = '+10.2° Mid-Stance';
+                document.getElementById('stat-swing').innerText = '-18.4° Toe-Off';
+            } else if (activeJointType === 'knee') {
+                healthyData = d.knee_healthy_deg;
+                pareticData = d.knee_paretic_deg;
+                labelTitle = 'Knee Sagittal Flexion (deg)';
+                document.getElementById('stat-ic').innerText = '+5.0° Initial Contact';
+                document.getElementById('stat-stance').innerText = '+18.5° Loading Response';
+                document.getElementById('stat-swing').innerText = '+62.0° Peak Swing';
+            } else {
+                healthyData = d.hip_healthy_deg;
+                pareticData = d.hip_paretic_deg;
+                labelTitle = 'Hip Flexion(+)/Extension(-) (deg)';
+                document.getElementById('stat-ic').innerText = '+30.0° Contact Flexion';
+                document.getElementById('stat-stance').innerText = '-10.5° Terminal Extension';
+                document.getElementById('stat-swing').innerText = '+32.0° Swing Flexion';
+            }
+
+            if (jointAngleChart) jointAngleChart.destroy();
+            jointAngleChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: strides,
+                    datasets: [
+                        {
+                            label: `Healthy Reference: ${labelTitle}`,
+                            data: healthyData,
+                            borderColor: '#38bdf8',
+                            borderWidth: 2.5,
+                            borderDash: [5, 5],
+                            tension: 0.3,
+                            pointRadius: 0
+                        },
+                        {
+                            label: `Post-Stroke Paretic: ${labelTitle}`,
+                            data: pareticData,
+                            borderColor: '#f43f5e',
+                            backgroundColor: 'rgba(244, 63, 94, 0.12)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Gait Stride Cycle (% 0–100)', color: '#94a3b8' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#64748b' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Joint Angle (Degrees °)', color: '#94a3b8' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#64748b' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#cbd5e1', font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        function renderGRFChart(data) {
+            const ctx = document.getElementById('grfChart').getContext('2d');
+            const grf = data.ground_reaction_force_bw_pct;
+            const strides = data.stride_percent.map(v => Math.round(v));
+
+            if (grfChart) grfChart.destroy();
+            grfChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: strides,
+                    datasets: [
+                        {
+                            label: 'Healthy Normal GRF (% BW)',
+                            data: grf.healthy,
+                            borderColor: '#2dd4bf',
+                            borderWidth: 2,
+                            borderDash: [4, 4],
+                            tension: 0.3,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Paretic Stroke GRF (% BW)',
+                            data: grf.paretic,
+                            borderColor: '#a855f7',
+                            backgroundColor: 'rgba(168, 85, 247, 0.15)',
+                            borderWidth: 2.5,
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Stride %', color: '#94a3b8' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#64748b' }
+                        },
+                        y: {
+                            title: { display: true, text: '% Body Weight', color: '#94a3b8' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#64748b' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#cbd5e1', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        async function executeQmlOptimization() {
+            const btn = document.getElementById('btn-run-qml');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Running Quantum Circuit...';
+
+            const qubits = parseInt(document.getElementById('qml-qubits').value);
+            const layers = parseInt(document.getElementById('qml-layers').value);
+            const entanglement = document.getElementById('qml-entanglement').value;
+            const lr = parseFloat(document.getElementById('qml-lr').value);
+
+            try {
+                const res = await fetch('/api/qml/ansatz', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        n_qubits: qubits,
+                        n_layers: layers,
+                        entanglement: entanglement,
+                        learning_rate: lr
+                    })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    const q = json.data;
+                    document.getElementById('qml-fidelity-badge').innerText = `Fidelity: ${q.final_quantum_fidelity}`;
+                    
+                    const sigs = q.neuromodulation_correction_vector;
+                    document.getElementById('qml-fes-val').innerText = `${sigs.tibialis_anterior_fes_pulse_width_us} µs`;
+                    document.getElementById('qml-torque-val').innerText = `${sigs.quadriceps_assist_torque_nm} N·m`;
+                    document.getElementById('qml-damping-val').innerText = `${sigs.hamstring_spasticity_damping_ratio} ratio`;
+                    document.getElementById('qml-abduction-val').innerText = `${sigs.gluteus_medius_abduction_gain}x`;
+                    document.getElementById('qml-vib-val').innerText = `${sigs.proprioceptive_vibration_freq_hz} Hz`;
+                    document.getElementById('qml-speedup-val').innerText = `${sigs.qml_quantum_advantage_ratio}x`;
+
+                    // Render Cost Convergence Chart
+                    const ctx = document.getElementById('qmlCostChart').getContext('2d');
+                    if (qmlCostChart) qmlCostChart.destroy();
+                    qmlCostChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: Array.from({length: q.cost_convergence_curve.length}, (_, i) => `Iter ${i+1}`),
+                            datasets: [
+                                {
+                                    label: 'Variational Cost ⟨H_QML⟩',
+                                    data: q.cost_convergence_curve,
+                                    borderColor: '#6366f1',
+                                    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                                    borderWidth: 2.5,
+                                    fill: true,
+                                    tension: 0.3
+                                },
+                                {
+                                    label: 'Quantum State Fidelity',
+                                    data: q.fidelity_curve,
+                                    borderColor: '#10b981',
+                                    borderWidth: 2,
+                                    borderDash: [4, 4],
+                                    tension: 0.3
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }
+                            },
+                            plugins: {
+                                legend: { labels: { color: '#cbd5e1', font: { size: 11 } } }
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("QML error:", err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-atom"></i> Execute Quantum Circuit Optimization';
+            }
+        }
+
+        async function computePrimeModuliHarmonics() {
+            const primesRaw = document.getElementById('moduli-primes-input').value;
+            const primes = primesRaw.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+            const weeks = parseInt(document.getElementById('moduli-weeks-input').value || '12');
+            const lesion = document.getElementById('global-lesion-select').value;
+
+            try {
+                const res = await fetch('/api/moduli/trajectories', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        lesion_type: lesion,
+                        prime_basis: primes,
+                        session_weeks: weeks
+                    })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    const m = json.data;
+                    document.getElementById('moduli-crt-prod').innerText = m.crt_modulus_product.toLocaleString();
+                    document.getElementById('moduli-plateau-pct').innerText = `${m.asymptotic_recovery_plateau_pct}%`;
+                    document.getElementById('proj-fm-12').innerText = `${m.projected_fugl_meyer_le[m.projected_fugl_meyer_le.length - 1]} / 34`;
+                    document.getElementById('proj-speed-12').innerText = `${m.projected_gait_speed_ms[m.projected_gait_speed_ms.length - 1]} m/s`;
+
+                    const ctx = document.getElementById('primeModuliChart').getContext('2d');
+                    if (primeModuliChart) primeModuliChart.destroy();
+
+                    const datasets = [
+                        {
+                            label: 'Composite Prime Attractor Coherence',
+                            data: m.composite_attractor_coherence,
+                            borderColor: '#2dd4bf',
+                            backgroundColor: 'rgba(45, 212, 191, 0.15)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Normalized Fugl-Meyer Recovery Path',
+                            data: m.projected_fugl_meyer_le.map(v => v / 34.0),
+                            borderColor: '#38bdf8',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.2
+                        }
+                    ];
+
+                    primeModuliChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: m.timeline_weeks.map(w => `Week ${w}`),
+                            datasets: datasets
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                                y: {
+                                    title: { display: true, text: 'Coherence Index (0.0 to 1.0)', color: '#94a3b8' },
+                                    grid: { color: 'rgba(255,255,255,0.05)' },
+                                    ticks: { color: '#64748b' }
+                                }
+                            },
+                            plugins: {
+                                legend: { labels: { color: '#cbd5e1', font: { size: 11 } } }
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Prime moduli error:", err);
+            }
+        }
+
+        async function runHebbianSimulation() {
+            const btn = document.getElementById('btn-run-hebbian');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Simulating Plasticity & Remapping...';
+            }
+
+            const neurons = parseInt(document.getElementById('hebbian-neurons').value);
+            const modality = document.getElementById('hebbian-modality').value;
+            const tau = parseFloat(document.getElementById('hebbian-stdp-tau').value || '20.0');
+            const rate = parseFloat(document.getElementById('hebbian-rate').value);
+            const pruning = parseFloat(document.getElementById('hebbian-pruning').value);
+            const qmlGain = parseFloat(document.getElementById('hebbian-qml-gain').value || '1.25');
+            const epochs = parseInt(document.getElementById('hebbian-epochs').value);
+            const lesion = document.getElementById('global-lesion-select').value;
+
+            try {
+                const res = await fetch('/api/hebbian/synaptic', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        lesion_type: lesion,
+                        n_neurons: neurons,
+                        training_epochs: epochs,
+                        hebbian_rate: rate,
+                        anti_hebbian_pruning: pruning,
+                        stdp_tau_ms: tau,
+                        qml_reinforcement_gain: qmlGain,
+                        target_rehab_modality: modality
+                    })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    const h = json.data;
+                    
+                    // Update Top KPIs
+                    document.getElementById('stat-conduction-vel').innerText = `${h.conduction_velocity_trajectory_ms[h.conduction_velocity_trajectory_ms.length-1]} m/s`;
+                    document.getElementById('stat-synaptic-eff').innerText = `${h.synaptic_density_efficiency_pct[h.synaptic_density_efficiency_pct.length-1]}%`;
+                    document.getElementById('stat-remapping-eff').innerText = `${h.peri_lesional_remapping_efficacy[h.peri_lesional_remapping_efficacy.length-1]}%`;
+                    document.getElementById('stat-active-syn').innerText = `${h.final_weight_matrix_summary.total_active_synapses} Edges`;
+                    document.getElementById('hebbian-sprouting-status').innerText = h.long_term_horizon_care.long_term_sprouting_stability;
+
+                    // 1. Render Hebbian Potentiation & Conduction Chart
+                    const ctx = document.getElementById('hebbianChart').getContext('2d');
+                    if (hebbianChart) hebbianChart.destroy();
+                    hebbianChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: Array.from({length: h.training_epochs}, (_, i) => `Ep ${i+1}`),
+                            datasets: [
+                                {
+                                    label: 'Synaptic Potentiation Efficiency (%)',
+                                    data: h.synaptic_density_efficiency_pct,
+                                    borderColor: '#a855f7',
+                                    backgroundColor: 'rgba(168, 85, 247, 0.15)',
+                                    borderWidth: 2.5,
+                                    fill: true,
+                                    tension: 0.3
+                                },
+                                {
+                                    label: 'Corticospinal Conduction Velocity (m/s)',
+                                    data: h.conduction_velocity_trajectory_ms,
+                                    borderColor: '#38bdf8',
+                                    borderWidth: 2,
+                                    borderDash: [4, 4],
+                                    tension: 0.3
+                                },
+                                {
+                                    label: 'Peri-Lesional Remapping Efficacy (%)',
+                                    data: h.peri_lesional_remapping_efficacy,
+                                    borderColor: '#34d399',
+                                    borderWidth: 2,
+                                    tension: 0.25
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }
+                            },
+                            plugins: {
+                                legend: { labels: { color: '#cbd5e1', font: { size: 10 } } }
+                            }
+                        }
+                    });
+
+                    // 2. Render STDP Millisecond Spike Synchronization Chart
+                    const ctxSpike = document.getElementById('stdpSpikeChart').getContext('2d');
+                    if (stdpSpikeChart) stdpSpikeChart.destroy();
+                    stdpSpikeChart = new Chart(ctxSpike, {
+                        type: 'line',
+                        data: {
+                            labels: h.stdp_spike_dynamics.time_bins_ms.map(t => `${t}ms`),
+                            datasets: [
+                                {
+                                    label: 'Pre-Synaptic Motor Command Spike Train',
+                                    data: h.stdp_spike_dynamics.pre_synaptic_spike_rate,
+                                    borderColor: '#fbbf24',
+                                    borderWidth: 2,
+                                    tension: 0.35,
+                                    pointRadius: 0
+                                },
+                                {
+                                    label: 'Post-Synaptic Target Spike Train (Locked +6.5ms)',
+                                    data: h.stdp_spike_dynamics.post_synaptic_spike_rate,
+                                    borderColor: '#f43f5e',
+                                    borderWidth: 2,
+                                    borderDash: [3, 3],
+                                    tension: 0.35,
+                                    pointRadius: 0
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    title: { display: true, text: 'Time Window (ms)', color: '#94a3b8' },
+                                    grid: { color: 'rgba(255,255,255,0.05)' },
+                                    ticks: { color: '#64748b', maxTicksLimit: 8 }
+                                },
+                                y: {
+                                    title: { display: true, text: 'Normalized Spike Probability', color: '#94a3b8' },
+                                    grid: { color: 'rgba(255,255,255,0.05)' },
+                                    ticks: { color: '#64748b' }
+                                }
+                            },
+                            plugins: {
+                                legend: { labels: { color: '#cbd5e1', font: { size: 10 } } }
+                            }
+                        }
+                    });
+
+                    // 3. Render 15-Year Long-Term Horizon Neuroplastic Retention Chart
+                    const lth = h.long_term_horizon_care;
+                    document.getElementById('hz-heb-5yr').innerText = `${lth.synaptic_retention_index_pct[4]}%`;
+                    document.getElementById('hz-heb-10yr').innerText = `${lth.corticospinal_tract_integrity_fa[9]}% FA`;
+                    document.getElementById('hz-heb-15yr').innerText = `${lth.locomotor_independence_score[14]} / 100`;
+
+                    const ctxHz = document.getElementById('hebbianHorizonChart').getContext('2d');
+                    if (hebbianHorizonChart) hebbianHorizonChart.destroy();
+                    hebbianHorizonChart = new Chart(ctxHz, {
+                        type: 'line',
+                        data: {
+                            labels: lth.horizon_years.map(y => `Yr ${y}`),
+                            datasets: [
+                                {
+                                    label: 'Plastic Synaptic Retention Index (%)',
+                                    data: lth.synaptic_retention_index_pct,
+                                    borderColor: '#c084fc',
+                                    backgroundColor: 'rgba(192, 132, 252, 0.12)',
+                                    borderWidth: 2.5,
+                                    fill: true,
+                                    tension: 0.3
+                                },
+                                {
+                                    label: 'Corticospinal Tract Integrity (% FA)',
+                                    data: lth.corticospinal_tract_integrity_fa,
+                                    borderColor: '#2dd4bf',
+                                    borderWidth: 2,
+                                    borderDash: [4, 4],
+                                    tension: 0.3
+                                },
+                                {
+                                    label: 'Locomotor Independence Score',
+                                    data: lth.locomotor_independence_score,
+                                    borderColor: '#38bdf8',
+                                    borderWidth: 2,
+                                    tension: 0.3
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                                y: {
+                                    title: { display: true, text: 'Index Score (0–100%)', color: '#94a3b8' },
+                                    grid: { color: 'rgba(255,255,255,0.05)' },
+                                    ticks: { color: '#64748b' }
+                                }
+                            },
+                            plugins: {
+                                legend: { labels: { color: '#cbd5e1', font: { size: 10 } } }
+                            }
+                        }
+                    });
+
+                    // 4. Render 2D Synaptic Weight Heatmap Matrix
+                    renderSynapticHeatmap(h.weight_matrix_2d, h.neuron_labels);
+
+                    // 5. Render Active Collateral Projections Stream
+                    renderActiveSynapses(h.connectivity_graph_edges);
+                }
+            } catch (err) {
+                console.error("Hebbian simulation error:", err);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Simulate Synaptic Amplification & Long-Term Horizons';
+                }
+            }
+        }
+
+        function renderSynapticHeatmap(matrix, labels) {
+            const container = document.getElementById('synaptic-matrix-heatmap');
+            const n = matrix.length;
+            container.style.gridTemplateColumns = `repeat(${n + 1}, minmax(0, 1fr))`;
+
+            let html = '<div class="p-1 text-slate-500 font-bold text-center">Nodes</div>';
+            for (let c = 0; c < n; c++) {
+                html += `<div class="p-1 text-slate-400 font-bold text-center truncate" title="${labels[c] || 'N' + c}">N${c}</div>`;
+            }
+
+            for (let r = 0; r < n; r++) {
+                html += `<div class="p-1 text-slate-400 font-bold truncate" title="${labels[r] || 'N' + r}">N${r}</div>`;
+                for (let c = 0; c < n; c++) {
+                    const val = matrix[r][c];
+                    let bgColor = 'rgba(15, 23, 42, 0.9)'; // Silent
+                    let textColor = '#64748b';
+                    if (val > 0.75) {
+                        bgColor = 'rgba(251, 191, 36, 0.85)'; // Amber/Gold LTP
+                        textColor = '#0f172a';
+                    } else if (val > 0.50) {
+                        bgColor = 'rgba(168, 85, 247, 0.75)'; // Purple High Potentiation
+                        textColor = '#ffffff';
+                    } else if (val > 0.25) {
+                        bgColor = 'rgba(99, 102, 241, 0.55)'; // Indigo Moderate
+                        textColor = '#e2e8f0';
+                    }
+
+                    html += `<div class="p-1 text-center rounded border border-slate-900 transition hover:scale-110 cursor-pointer font-bold" 
+                                style="background-color: ${bgColor}; color: ${textColor};" 
+                                title="Synapse N${r} (${labels[r]}) -> N${c} (${labels[c]}): W = ${val}">
+                                ${val.toFixed(2)}
+                             </div>`;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        function renderActiveSynapses(edges) {
+            const container = document.getElementById('active-synapses-list');
+            document.getElementById('active-edges-badge').innerText = `${edges.length} Active Edges`;
+            container.innerHTML = edges.slice(0, 15).map(e => `
+                <div class="p-2 rounded-lg bg-slate-950 border border-slate-800 flex justify-between items-center text-xs">
+                    <div>
+                        <div class="font-bold text-slate-200">${e.source_name} <span class="text-purple-400">→</span> ${e.target_name}</div>
+                        <span class="text-[10px] text-slate-400">${e.type}</span>
+                    </div>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        W: ${e.weight}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        async function runExerciseOptimization() {
+            const goal = document.getElementById('opt-goal').value;
+            const fatigue = parseFloat(document.getElementById('opt-fatigue').value);
+            const duration = parseInt(document.getElementById('opt-duration').value);
+            const lesion = document.getElementById('global-lesion-select').value;
+
+            try {
+                const res = await fetch('/api/optimization/prescription', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        lesion_type: lesion,
+                        rehab_goal: goal,
+                        fatigue_threshold_mets: fatigue,
+                        max_minutes: duration
+                    })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    const opt = json.data;
+                    document.getElementById('opt-score-badge').innerText = `Pareto Score: ${opt.pareto_optimization_score}`;
+                    
+                    const listContainer = document.getElementById('exercise-prescriptions-list');
+                    listContainer.innerHTML = opt.prescribed_exercise_protocol.map((ex, idx) => `
+                        <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/40 transition space-y-1.5">
+                            <div class="flex justify-between items-start">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 font-bold font-mono text-xs flex items-center justify-center">${idx+1}</span>
+                                    <h4 class="font-bold text-slate-200 text-xs">${ex.exercise_name}</h4>
+                                </div>
+                                <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-amber-300 font-mono font-bold">${ex.duration_minutes} Mins • ${ex.intensity_mets} METs</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
+                                <span><strong class="text-slate-300">Category:</strong> ${ex.category}</span>
+                                <span><strong class="text-slate-300">Target Synergy:</strong> ${ex.target_synergy}</span>
+                                <span><strong class="text-teal-400">Hebbian Gain:</strong> +${ex.modality_hebbian_score}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error("Optimization error:", err);
+            }
+        }
+
+        async function computeLongTermHorizons() {
+            const age = parseInt(document.getElementById('hz-age').value);
+            const adherence = parseFloat(document.getElementById('hz-adherence-slider').value);
+            const cvRisk = document.getElementById('hz-cv-risk').value;
+            const lesion = document.getElementById('global-lesion-select').value;
+
+            try {
+                const res = await fetch('/api/horizons/projections', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        lesion_type: lesion,
+                        patient_age: age,
+                        adherence_rate: adherence,
+                        cv_risk_tier: cvRisk
+                    })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    const hz = json.data;
+                    const m = hz['15yr_summary_milestones'];
+                    document.getElementById('hz-5yr-indep').innerText = m['5yr_community_ambulation_rate'];
+                    document.getElementById('hz-10yr-surv').innerText = m['10yr_stroke_free_survival_probability'];
+                    document.getElementById('hz-15yr-qol').innerText = m['15yr_qol_score'];
+                    document.getElementById('hz-final-mrs').innerText = m['final_projected_mrs'];
+
+                    const ctx = document.getElementById('horizonsChart').getContext('2d');
+                    if (horizonsChart) horizonsChart.destroy();
+                    horizonsChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: hz.timeline_years.map(y => `Yr ${y}`),
+                            datasets: [
+                                {
+                                    label: 'Community Ambulation Independence (%)',
+                                    data: hz.community_independence_pct,
+                                    borderColor: '#38bdf8',
+                                    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                                    borderWidth: 2.5,
+                                    fill: true,
+                                    tension: 0.3
+                                },
+                                {
+                                    label: 'Recurrent Stroke-Free Survival (%)',
+                                    data: hz.stroke_free_survival_pct,
+                                    borderColor: '#10b981',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5],
+                                    tension: 0.3
+                                },
+                                {
+                                    label: 'Health Quality of Life (EQ-5D 0–100)',
+                                    data: hz.health_qol_eq5d_scores,
+                                    borderColor: '#f43f5e',
+                                    borderWidth: 2,
+                                    tension: 0.3
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                                y: {
+                                    title: { display: true, text: 'Percentage / Index (0–100)', color: '#94a3b8' },
+                                    grid: { color: 'rgba(255,255,255,0.05)' },
+                                    ticks: { color: '#64748b' }
+                                }
+                            },
+                            plugins: {
+                                legend: { labels: { color: '#cbd5e1', font: { size: 11 } } }
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Horizons error:", err);
+            }
+        }
+
+        function runFullRehabSuite() {
+            triggerGaitUpdate();
+            if (!document.getElementById('tab-qml').classList.contains('hidden')) executeQmlOptimization();
+            if (!document.getElementById('tab-moduli').classList.contains('hidden')) computePrimeModuliHarmonics();
+            if (!document.getElementById('tab-hebbian').classList.contains('hidden')) runHebbianSimulation();
+            if (!document.getElementById('tab-prescribe').classList.contains('hidden')) runExerciseOptimization();
+            if (!document.getElementById('tab-horizons').classList.contains('hidden')) computeLongTermHorizons();
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            triggerGaitUpdate();
+        });
+    </script>
+</body>
+</html>
