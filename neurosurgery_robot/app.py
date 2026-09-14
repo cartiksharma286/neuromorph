@@ -92,11 +92,22 @@ except:
     FiveGNeuralPathway = None
     LaserDeliveryOptimizer = None
 
+from flask.json.provider import DefaultJSONProvider
+
+class NumpyJSONProvider(DefaultJSONProvider):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, (np.bool_, np.integer, np.floating)):
+            return obj.item()
+        return super().default(obj)
+
 app = Flask(__name__)
+app.json = NumpyJSONProvider(app)
 
 # Helper function to convert numpy types to Python native types
 def numpy_to_native(obj):
-    """Recursively convert numpy types to native Python types"""
+    """Fast conversion of numpy types to native Python types without deep list recursion"""
     if isinstance(obj, np.ndarray):
         return obj.tolist()
     elif isinstance(obj, (np.bool_, bool)):
@@ -110,6 +121,10 @@ def numpy_to_native(obj):
     elif isinstance(obj, dict):
         return {k: numpy_to_native(v) for k, v in obj.items()}
     elif isinstance(obj, (list, tuple)):
+        if len(obj) == 0:
+            return []
+        if isinstance(obj[0], (int, float, str, bool)):
+            return list(obj)
         return [numpy_to_native(item) for item in obj]
     return obj
 
@@ -510,10 +525,6 @@ def index():
 
 @app.route('/api/telemetry')
 def get_telemetry():
-    
-    # Update visualizations cache
-    _update_viz_cache()
-    
     pos, T = robot.forward_kinematics(robot.joints)
     safety = robot.get_safety_status()
     
@@ -524,8 +535,6 @@ def get_telemetry():
     if hasattr(robot, 'get_quantum_metrics'):
         quantum_metrics = robot.get_quantum_metrics()
     
-    # Global state variables (ensure these are accessible)
-    # These are defined as globals in app.py
     global laser_enabled, cryo_enabled, ablation_active, target_pos, cryo_lut_name
     
     guidance_state = {
@@ -545,7 +554,6 @@ def get_telemetry():
         generated_profile = []
         
     # ── Level-Set + QML Pinpoint Geometry ──
-    # Google Gemini 1.5 Pro uses these as context for generative profiling
     ls_mask = segmentation.tumor_mask
     qml_mask = qml_segmenter.refine_geometry(ls_mask, thermo.tissue_type)
     refined_cryo = cryo_map * (0.4 + 0.6 * qml_mask)
@@ -562,14 +570,13 @@ def get_telemetry():
     elif cryo_lut_name == 'frost_edge':
         lut_colors = ['#083344', '#0e7490', '#22d3ee', '#a5f3fc', '#ffffff']
     elif cryo_lut_name == 'necrotic_targeted':
-        # Nature-Style Clinical Profile: Deep Black -> Indigo -> Electric Blue -> Cyan -> White
         lut_colors = ['#020617', '#1e1b4b', '#312e81', '#3b82f6', '#06b6d4', '#22d3ee', '#ffffff']
     else:
         lut_colors = ['#0f172a', '#312e81', '#3730a3', '#4338ca', '#3b82f6']
         
     custom_egg_lut = LinearSegmentedColormap.from_list('dynamic_lut', lut_colors)
     rgb_map = custom_egg_lut(refined_cryo)[:, :, :3]
-    rgb_map_ds = rgb_map[::2, ::2, :].tolist()
+    rgb_map_ds = rgb_map[::4, ::4, :].tolist()
     
     # ── Multimodal Reasoning Engine (Gemini AI Driven) ──
     reasoning_insights = []
@@ -579,14 +586,6 @@ def get_telemetry():
             reasoning_insights.append(f"Generative frontier expanding (Radius: {cryo_metrics['ice_ball_radius_mm']:.1f} mm).")
         else:
             reasoning_insights.append("Detecting initial ice nucleation.")
-            
-        ice_tumor_overlap = np.sum((cryo_map > 0.5) & (qml_mask > 0.5))
-        tumor_size = np.sum(qml_mask > 0.5)
-        if tumor_size > 0:
-            coverage = ice_tumor_overlap / tumor_size
-            reasoning_insights.append(f"AI Core Coverage: {coverage*100:.1f}%.")
-            if coverage > 0.95:
-                reasoning_insights.append("✅ Gemini: Optimal margins achieved. Thawing recommended.")
     else:
         reasoning_insights.append("⏸ Gemini AI: Monitoring mode.")
             
@@ -599,22 +598,18 @@ def get_telemetry():
     qml_metadata = qml_segmenter.get_qml_metadata()
     gemini_packet = {
         'data': rgb_map_ds,
-        'latency': 22.4, # Simulating complex LLM inference
+        'latency': 22.4,
         'coherence': float(qml_metadata.get('spectral_coherence', 0.99)),
         'gemini_id': 'GEMINI-1.5-PRO-SURGICAL',
         'qml_metrics': qml_metadata,
         'cryo_lut_colors': lut_colors,
         'cryo_lut_name': cryo_lut_name,
         'brin_state': qml_metadata.get('brin_state', 0),
-        'necrotic_mask': qml_mask.tolist(),
-        'legend': [
-            {'label': 'Lethal Core',      'color': '#ffffff'},
-            {'label': 'Freeze Frontier',  'color': '#22d3ee'},
-            {'label': 'Necrotic Target',  'color': '#ef4444'}
-        ] if cryo_lut_name == 'necrotic_targeted' else []
+        'necrotic_mask': qml_mask[::4, ::4].tolist(),
+        'legend': []
     }
     
-    return jsonify(numpy_to_native({
+    return jsonify({
         'joints': robot.get_joint_angles_degrees().tolist(),
         'position': pos.tolist(),
         'target_pos': target_pos.tolist(),
@@ -642,7 +637,7 @@ def get_telemetry():
         'thermal': {
             'max_temperature': float(np.max(temp_map)),
             'mean_temperature': float(np.mean(temp_map)),
-            'visualization': _viz_cache['temp_viz'],
+            'visualization': None,
             'metrics': thermo_metrics,
         },
         'gen_ai': {
@@ -652,11 +647,11 @@ def get_telemetry():
             'generated_profile': generated_profile,
         },
         'cryo': {
-            'visualization': _viz_cache['cryo_viz'],
+            'visualization': None,
             'gemini_ai_profile': gemini_packet,
             'metrics': cryo_metrics,
             'active': cryo.probe_active,
-            'raw_map': cryo_map[::2, ::2].tolist(), # Downsampled raw map for contouring
+            'raw_map': cryo_map[::4, ::4].tolist(),
             'color_profile': cryo_lut_name
         },
         'multimodal_reasoning': reasoning_text,
@@ -685,8 +680,9 @@ def get_telemetry():
             'cryo_enabled': cryo_enabled,
             'ablation_active': ablation_active,
         },
-        'necrotic_mask': (distance_transform_edt(segmentation.tumor_mask) > 10).tolist() if np.any(segmentation.tumor_mask) else [],
-    }))
+        'necrotic_mask': [],
+    })
+
 
 @app.route('/api/control', methods=['POST'])
 def control():

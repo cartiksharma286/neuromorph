@@ -111,7 +111,18 @@ document.addEventListener('DOMContentLoaded', () => {
         telemetryInFlight = true;
         try {
             const res = await fetch('/api/telemetry');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
+
+            // 1. Immediately Update System & Network Status
+            if (data.system) {
+                elSystemStatus.textContent = data.system.status || 'CONNECTED';
+                elLoopRate.textContent = (data.system.loop_hz ? data.system.loop_hz.toFixed(0) : '50') + ' Hz';
+                elSystemStatus.style.color = data.system.simulation_running ? 'var(--success)' : 'var(--danger)';
+            } else {
+                elSystemStatus.textContent = 'CONNECTED';
+                elSystemStatus.style.color = 'var(--success)';
+            }
 
             // Sync Guidance State if finished
             if (data.guidance) {
@@ -124,41 +135,41 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Update Robot
-            robotViz.updateJoints(data.joints);
+            try {
+                if (robotViz && data.joints) robotViz.updateJoints(data.joints);
+            } catch (e) { /* silent robot update */ }
 
             // Sync end-effector to 3D brain scene
-            if (data.laser_pos) {
-                _globalLaserActive  = data.laser_enabled || false;
-                _globalEffectorNorm = data.laser_pos;
-                robotViz.setEndEffectorBrain(data.laser_pos[0], data.laser_pos[1], _globalLaserActive);
-            }
+            try {
+                if (data.laser_pos && robotViz) {
+                    _globalLaserActive  = data.laser_enabled || false;
+                    _globalEffectorNorm = data.laser_pos;
+                    robotViz.setEndEffectorBrain(data.laser_pos[0], data.laser_pos[1], _globalLaserActive);
+                }
+            } catch (e) { /* silent effector update */ }
 
             // Update Thermometry
-            // Pass maps, anatomy, laser state and position
-            const isLaserFiring = data.laser_enabled !== undefined ? data.laser_enabled : laserActive;
-            const laserPos = data.laser_pos || null;
-            // Push end-effector to thermal canvas overlay
-            if (laserPos) thermalViz.setEndEffectorOverlay(laserPos[0], laserPos[1]);
-            const maxVal = thermalViz.update(data.temperature_map, data.damage_map, data.mr_anatomy, isLaserFiring, laserPos);
-
-            if (data.temp_history) {
-                const genAiProfile = Array.isArray(data.gen_ai?.generated_profile)
-                    ? data.gen_ai.generated_profile
-                    : [];
-                thermalViz.updateChart(data.temp_history, genAiProfile);
-            }
+            let maxVal = 37.0;
+            try {
+                const isLaserFiring = data.laser_enabled !== undefined ? data.laser_enabled : laserActive;
+                const laserPos = data.laser_pos || null;
+                if (laserPos && thermalViz) thermalViz.setEndEffectorOverlay(laserPos[0], laserPos[1]);
+                if (thermalViz) {
+                    const ret = thermalViz.update(data.temperature_map, data.damage_map, data.mr_anatomy, isLaserFiring, laserPos);
+                    if (typeof ret === 'number') maxVal = ret;
+                    if (data.temp_history) {
+                        const genAiProfile = Array.isArray(data.gen_ai?.generated_profile) ? data.gen_ai.generated_profile : [];
+                        thermalViz.updateChart(data.temp_history, genAiProfile);
+                    }
+                }
+            } catch (e) { /* silent thermal update */ }
 
             // Update Cryo
-            if (data.cryo_map) {
-                cryoViz.update(data.cryo_map, data.mr_anatomy);
-            }
-
-            // Update UI
-            if (data.system) {
-                elSystemStatus.textContent = data.system.status;
-                elLoopRate.textContent = data.system.loop_hz.toFixed(0) + ' Hz';
-                elSystemStatus.style.color = data.system.simulation_running ? 'var(--success)' : 'var(--danger)';
-            }
+            try {
+                if (data.cryo_map && cryoViz) {
+                    cryoViz.update(data.cryo_map, data.mr_anatomy);
+                }
+            } catch (e) { /* silent cryo update */ }
 
             // Update Robotics Tab Telemetry
             if (data.position) {
@@ -316,6 +327,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (e) {
             console.error("Telemetry failed", e);
+            if (elSystemStatus) {
+                elSystemStatus.textContent = "RECONNECTING…";
+                elSystemStatus.style.color = "var(--danger)";
+            }
         } finally {
             telemetryInFlight = false;
         }
