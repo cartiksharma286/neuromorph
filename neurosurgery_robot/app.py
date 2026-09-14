@@ -1382,6 +1382,48 @@ def generate_preprint_pdf_endpoint():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/preprint/ultrasound/download', methods=['GET'])
+@app.route('/api/preprint/ultrasound/view', methods=['GET'])
+def get_ultrasound_preprint():
+    """Serves the Nature Ultrasound Ablation & QML Stieltjes Preprint PDF."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'Nature_Ultrasound_Ablation_QML_Stieltjes_Preprint.pdf')
+    if not os.path.exists(pdf_path):
+        try:
+            from generate_nature_ultrasound_ablation_preprint import build_ultrasound_ablation_preprint_pdf
+            build_ultrasound_ablation_preprint_pdf(pdf_path)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+            
+    as_att = request.path.endswith('/download')
+    return send_file(
+        pdf_path,
+        as_attachment=as_att,
+        mimetype='application/pdf',
+        download_name='Nature_Ultrasound_Ablation_QML_Stieltjes_Preprint.pdf'
+    )
+
+
+@app.route('/api/preprint/cryo_laser/download', methods=['GET'])
+@app.route('/api/preprint/cryo_laser/view', methods=['GET'])
+def get_cryo_laser_preprint():
+    """Serves the Nature Cryo & Laser Observable Finite Math Preprint PDF."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'Nature_Cryo_Laser_Observable_Finite_Math_Preprint.pdf')
+    if not os.path.exists(pdf_path):
+        try:
+            from generate_nature_cryo_laser_preprint import build_cryo_laser_preprint_pdf
+            build_cryo_laser_preprint_pdf(pdf_path)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+            
+    as_att = request.path.endswith('/download')
+    return send_file(
+        pdf_path,
+        as_attachment=as_att,
+        mimetype='application/pdf',
+        download_name='Nature_Cryo_Laser_Observable_Finite_Math_Preprint.pdf'
+    )
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('FLASK_RUN_PORT', 5002))
     host = os.environ.get('FLASK_RUN_HOST', '0.0.0.0')
