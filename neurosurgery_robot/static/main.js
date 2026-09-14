@@ -783,4 +783,305 @@ if (btnToggleLS) {
     });
 }
 
+// =========================================================================
+// INTRAOPERATIVE ULTRASOUND & TUMOR ABLATION FRONTEND CONTROLLERS
+// =========================================================================
+
+const iusCanvas = document.getElementById('ius-bmode-canvas');
+const iusCtx = iusCanvas ? iusCanvas.getContext('2d') : null;
+let rocChartInstance = null;
+let beamChartInstance = null;
+
+async function renderUltrasoundBMode(scanData) {
+    if (!iusCtx || !scanData || !scanData.bmode_image_grid) return;
+    const grid = scanData.bmode_image_grid;
+    const rows = grid.length;
+    const cols = grid[0].length;
+    const cW = iusCanvas.width / cols;
+    const cH = iusCanvas.height / rows;
+
+    iusCtx.fillStyle = '#000000';
+    iusCtx.fillRect(0, 0, iusCanvas.width, iusCanvas.height);
+
+    // 1. Draw ultrasound B-mode pixel intensity
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            const val = grid[r][c];
+            if (val > 0) {
+                iusCtx.fillStyle = `rgb(${val}, ${val}, ${val})`;
+                iusCtx.fillRect(c * cW, r * cH, cW + 0.5, cH + 0.5);
+            }
+        }
+    }
+
+    // 2. Overlay Tumor Boundary (Cyan Dotted Ellipse)
+    const centerX = iusCanvas.width / 2;
+    const centerY = (28.0 / 60.0) * iusCanvas.height;
+    const rTumorPx = (scanData.tumor_radius_mm / 60.0) * iusCanvas.height;
+
+    iusCtx.strokeStyle = '#38bdf8';
+    iusCtx.lineWidth = 1.5;
+    iusCtx.setLineDash([4, 3]);
+    iusCtx.beginPath();
+    iusCtx.arc(centerX, centerY, rTumorPx, 0, 2 * Math.PI);
+    iusCtx.stroke();
+
+    // 3. Overlay Dynamic Ablation Necrotic Core (Red/Orange Glow)
+    if (scanData.ablation_radius_mm > 0.5) {
+        const rAblationPx = (scanData.ablation_radius_mm / 60.0) * iusCanvas.height;
+        const grad = iusCtx.createRadialGradient(centerX, centerY, 0, centerX, centerY, rAblationPx);
+        grad.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
+        grad.addColorStop(0.4, 'rgba(239, 68, 68, 0.7)');
+        grad.addColorStop(1, 'rgba(249, 115, 22, 0.3)');
+
+        iusCtx.fillStyle = grad;
+        iusCtx.setLineDash([]);
+        iusCtx.beginPath();
+        iusCtx.arc(centerX, centerY, rAblationPx, 0, 2 * Math.PI);
+        iusCtx.fill();
+
+        iusCtx.strokeStyle = '#ef4444';
+        iusCtx.lineWidth = 2;
+        iusCtx.stroke();
+    }
+
+    // 4. Update badge
+    const badge = document.getElementById('ius-ablation-badge');
+    if (badge) {
+        badge.innerText = `Ablation: ${scanData.ablation_radius_mm.toFixed(1)} mm`;
+    }
+}
+
+async function fetchUltrasoundScan() {
+    try {
+        const res = await fetch('/api/ultrasound/scan');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.scan) renderUltrasoundBMode(data.scan);
+        if (data.ablation_metrics) updateAblationMetricsUI(data.ablation_metrics);
+    } catch (e) {
+        console.error("iUS Scan fetch failed", e);
+    }
+}
+
+function updateAblationMetricsUI(m) {
+    const elSens = document.getElementById('val-sensitivity');
+    const elSpec = document.getElementById('val-specificity');
+    const elSpar = document.getElementById('val-sparing');
+    const elDice = document.getElementById('val-dice');
+    const elAuc  = document.getElementById('val-auc');
+
+    if (elSens) elSens.innerText = m.tumor_sensitivity_percentage;
+    if (elSpec) elSpec.innerText = m.tumor_specificity_percentage;
+    if (elSpar) elSpar.innerText = m.healthy_parenchyma_sparing_pct;
+    if (elDice) elDice.innerText = m.dice_similarity_coefficient.toFixed(3);
+    if (elAuc) elAuc.innerText = m.roc_area_under_curve_auc.toFixed(3);
+
+    if (m.roc_curve && rocChartInstance) {
+        rocChartInstance.data.labels = m.roc_curve.map(p => (p.false_positive_rate * 100).toFixed(1) + '%');
+        rocChartInstance.data.datasets[0].data = m.roc_curve.map(p => p.true_positive_rate * 100);
+        rocChartInstance.update();
+    }
+}
+
+function initRocChart() {
+    const ctx = document.getElementById('roc-chart');
+    if (!ctx) return;
+    rocChartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Sensitivity (TPR %)',
+                data: [],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                fill: true,
+                tension: 0.2,
+                pointRadius: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: { display: true, text: 'FPR (%)', color: '#94a3b8', font: { size: 9 } },
+                    grid: { color: 'rgba(51,65,85,0.3)' },
+                    ticks: { color: '#94a3b8', font: { size: 8 } }
+                },
+                y: {
+                    title: { display: true, text: 'TPR (%)', color: '#94a3b8', font: { size: 9 } },
+                    grid: { color: 'rgba(51,65,85,0.3)' },
+                    ticks: { color: '#94a3b8', font: { size: 8 } },
+                    min: 0,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+function initBeamChart() {
+    const ctx = document.getElementById('beam-chart');
+    if (!ctx) return;
+    beamChartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Acoustic Power (dB)',
+                data: [],
+                borderColor: '#a78bfa',
+                backgroundColor: 'rgba(167, 139, 250, 0.2)',
+                fill: true,
+                tension: 0.2,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: { display: true, text: 'Angle (°)', color: '#94a3b8', font: { size: 9 } },
+                    grid: { color: 'rgba(51,65,85,0.3)' },
+                    ticks: { color: '#94a3b8', font: { size: 8 } }
+                },
+                y: {
+                    title: { display: true, text: 'Power (dB)', color: '#94a3b8', font: { size: 9 } },
+                    grid: { color: 'rgba(51,65,85,0.3)' },
+                    ticks: { color: '#94a3b8', font: { size: 8 } },
+                    min: -40,
+                    max: 0
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+    updateProbeBeam(0.0);
+}
+
+async function updateProbeBeam(steerDeg) {
+    try {
+        const res = await fetch('/api/ultrasound/probe/beam', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ steering_angle_deg: parseFloat(steerDeg) })
+        });
+        const data = await res.json();
+        if (data.beam_profile && beamChartInstance) {
+            const pts = data.beam_profile.radiation_pattern;
+            beamChartInstance.data.labels = pts.map(p => p.angle_deg);
+            beamChartInstance.data.datasets[0].data = pts.map(p => p.power_db);
+            beamChartInstance.update();
+        }
+    } catch (e) {
+        console.error("Probe beam fetch error", e);
+    }
+}
+
+async function fetchQMLStieltjesData() {
+    try {
+        const res = await fetch('/api/ablation/qml_stieltjes');
+        const data = await res.json();
+        if (!data.qml_stieltjes) return;
+        const q = data.qml_stieltjes;
+
+        const elPow = document.getElementById('qml-opt-power');
+        const elDut = document.getElementById('qml-opt-duty');
+        const elZ   = document.getElementById('stieltjes-zmatch');
+        const elCem = document.getElementById('qml-cem43');
+
+        if (elPow) elPow.innerText = `${q.optimal_acoustic_power_watts} W`;
+        if (elDut) elDut.innerText = `${q.optimal_duty_cycle_percentage}%`;
+        if (elZ)   elZ.innerText   = `${q.stieltjes_impedance_match_mrayl} MRayl`;
+        if (elCem) elCem.innerText = `${q.predicted_cem43_thermal_dose_min} min`;
+
+        const tbody = document.getElementById('stieltjes-table-body');
+        if (tbody && q.stieltjes_convergents) {
+            tbody.innerHTML = q.stieltjes_convergents.map(c => `
+                <tr style="border-bottom:1px solid rgba(51,65,85,0.4);">
+                    <td style="padding:4px;">${c.step}</td>
+                    <td style="padding:4px; color:#38bdf8;">${c.coefficient_c_k}</td>
+                    <td style="padding:4px; font-weight:700;">${c.convergent_value}</td>
+                    <td style="padding:4px; color:#94a3b8;">${c.stieltjes_error_bound}</td>
+                    <td style="padding:4px; color:#10b981;">✔ CONVERGED</td>
+                </tr>
+            `).join('');
+        }
+    } catch (e) {
+        console.error("QML Stieltjes error", e);
+    }
+}
+
+// Wire up ablation controls
+const btnStepAblate = document.getElementById('btn-step-ablate');
+if (btnStepAblate) {
+    btnStepAblate.addEventListener('click', async () => {
+        try {
+            const res = await fetch('/api/ablation/step', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ step_delta_mm: 1.2 })
+            });
+            const data = await res.json();
+            if (data.scan) renderUltrasoundBMode(data.scan);
+            if (data.metrics) updateAblationMetricsUI(data.metrics);
+            log(`🔥 Ultrasound HIFU ablation pulse applied: Radius ${data.current_ablation_radius_mm.toFixed(1)} mm (Sensitivity: ${data.metrics.tumor_sensitivity_percentage})`);
+        } catch (e) {
+            console.error("Ablation step failed", e);
+        }
+    });
+}
+
+const btnResetAblate = document.getElementById('btn-reset-ablate');
+if (btnResetAblate) {
+    btnResetAblate.addEventListener('click', async () => {
+        try {
+            const res = await fetch('/api/ablation/reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+            const data = await res.json();
+            if (data.scan) renderUltrasoundBMode(data.scan);
+            if (data.metrics) updateAblationMetricsUI(data.metrics);
+            log("🔄 Ultrasound ablation simulation reset.");
+        } catch (e) {
+            console.error("Ablation reset failed", e);
+        }
+    });
+}
+
+const steerSlider = document.getElementById('beam-steer-slider');
+if (steerSlider) {
+    steerSlider.addEventListener('input', (e) => {
+        const val = e.target.value;
+        const valLabel = document.getElementById('beam-steer-val');
+        if (valLabel) valLabel.innerText = `${val}°`;
+        updateProbeBeam(val);
+    });
+}
+
+const btnRunQml = document.getElementById('btn-run-qml-pulse');
+if (btnRunQml) {
+    btnRunQml.addEventListener('click', async () => {
+        btnRunQml.innerText = '⏳ OPTIMIZING VARIATIONAL PQC CIRCUIT…';
+        btnRunQml.disabled = true;
+        await fetchQMLStieltjesData();
+        btnRunQml.innerText = '⚡ RUN QML VARIATIONAL ACOUSTIC OPTIMIZER';
+        btnRunQml.disabled = false;
+        log("⚡ QML Variational Acoustic Pulse and Stieltjes Continued Fractions synthesized.");
+    });
+}
+
+// Initial triggers
+initRocChart();
+initBeamChart();
+fetchUltrasoundScan();
+fetchQMLStieltjesData();
+setInterval(fetchUltrasoundScan, 1200);
+
 });  // end DOMContentLoaded

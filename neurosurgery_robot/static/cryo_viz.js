@@ -70,12 +70,21 @@ class CryoViz {
         }
 
         // 2. Draw Colorized Cryo (Smoothed via Screen Blending)
+        const gridData = Array.isArray(packet) ? packet : (packet && packet.data ? packet.data : []);
         const pixels = this.imageData.data;
         let p = 0;
         let hasIce = false;
         for (let y = 0; y < 64; y++) {
             for (let x = 0; x < 64; x++) {
-                const rgb = packet.data[y] ? packet.data[y][x] : [0,0,0];
+                let rgb = [0, 0, 0];
+                if (gridData[y] && gridData[y][x]) {
+                    const cell = gridData[y][x];
+                    if (Array.isArray(cell)) {
+                        rgb = cell;
+                    } else if (typeof cell === 'number') {
+                        rgb = [0, cell / 100.0, 1.0];
+                    }
+                }
                 pixels[p++] = Math.round(rgb[0] * 255);
                 pixels[p++] = Math.round(rgb[1] * 255);
                 pixels[p++] = Math.round(rgb[2] * 255);

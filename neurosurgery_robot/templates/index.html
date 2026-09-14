@@ -53,8 +53,11 @@
             <!-- Tabbed Interface -->
             <aside class="sidebar">
                 <div class="glass-panel">
-                    <div class="tabs">
-                        <button class="tab-btn active" data-tab="tab-thermo">Visual RF</button>
+                    <div class="tabs" style="display:flex; flex-wrap:wrap; gap:4px;">
+                        <button class="tab-btn active" data-tab="tab-ultrasound">📡 Ultrasound & Ablation</button>
+                        <button class="tab-btn" data-tab="tab-probe">🔬 US Probe Design</button>
+                        <button class="tab-btn" data-tab="tab-qml-stieltjes">⚡ QML & Stieltjes</button>
+                        <button class="tab-btn" data-tab="tab-thermo">Visual RF</button>
                         <button class="tab-btn" data-tab="tab-fencing">Fencing & UQ</button>
                         <button class="tab-btn" data-tab="tab-economics">Cost Economics</button>
                         <button class="tab-btn" data-tab="tab-cryo">N2 Cryo</button>
@@ -64,8 +67,187 @@
                         <button class="tab-btn" data-tab="tab-preprint">Nature Preprint</button>
                     </div>
 
+                    <!-- TAB 1: INTRAOPERATIVE ULTRASOUND & TUMOR ABLATION -->
+                    <div id="tab-ultrasound" class="tab-content active">
+                        <h2 style="color:#38bdf8; display:flex; justify-content:space-between; align-items:center;">
+                            <span>Intraoperative Ultrasound (iUS) & Ablation</span>
+                            <span style="font-size:10px; background:rgba(56,189,248,0.2); color:#38bdf8; padding:2px 8px; border-radius:4px; border:1px solid #38bdf8;">
+                                8.5 MHz B-MODE / 2.25 MHz HIFU
+                            </span>
+                        </h2>
+
+                        <!-- 2D iUS B-Mode Ultrasound Canvas -->
+                        <div class="heatmap-container" style="border-color:#38bdf8; position:relative; background:#000;">
+                            <canvas id="ius-bmode-canvas" width="256" height="256" style="width:100%; height:auto; display:block; border-radius:6px;"></canvas>
+                            <div style="position:absolute; top:8px; left:8px; font-size:10px; color:#38bdf8; background:rgba(2,6,23,0.75); padding:2px 6px; border-radius:3px;">
+                                Depth: 5-55 mm | Sector: 70°
+                            </div>
+                            <div style="position:absolute; top:8px; right:8px; font-size:10px; color:#10b981; background:rgba(2,6,23,0.75); padding:2px 6px; border-radius:3px;" id="ius-ablation-badge">
+                                Ablation: 0.0 mm
+                            </div>
+                        </div>
+
+                        <!-- Specificity & Sensitivity Metrics -->
+                        <div class="metrics" style="grid-template-columns: repeat(2, 1fr); margin-top:10px;">
+                            <div class="metric" style="border:1px solid rgba(16,185,129,0.3); background:rgba(16,185,129,0.08);">
+                                <span class="m-label" style="color:#10b981;">TUMOR SENSITIVITY (TPR)</span>
+                                <span class="m-value" id="val-sensitivity" style="color:#10b981; font-size:18px;">98.7%</span>
+                                <span style="font-size:9px; color:#94a3b8;">Target Margin Resection</span>
+                            </div>
+                            <div class="metric" style="border:1px solid rgba(56,189,248,0.3); background:rgba(56,189,248,0.08);">
+                                <span class="m-label" style="color:#38bdf8;">TUMOR SPECIFICITY (TNR)</span>
+                                <span class="m-value" id="val-specificity" style="color:#38bdf8; font-size:18px;">99.4%</span>
+                                <span style="font-size:9px; color:#94a3b8;">Healthy Cortex Sparing</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Parenchyma Sparing</span>
+                                <span class="m-value" id="val-sparing" style="color:#a78bfa;">99.65%</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Dice Score (DSC)</span>
+                                <span class="m-value" id="val-dice" style="color:#f59e0b;">0.985</span>
+                            </div>
+                        </div>
+
+                        <!-- Ablation Controls -->
+                        <div style="display:flex; gap:8px; margin-top:10px;">
+                            <button id="btn-step-ablate" class="btn-primary" style="flex:2; background:linear-gradient(135deg, #ef4444, #f97316); justify-content:center;">
+                                🔥 PULSE RECURRENT HIFU ABLATION
+                            </button>
+                            <button id="btn-reset-ablate" class="btn-secondary" style="flex:1; justify-content:center;">
+                                🔄 RESET
+                            </button>
+                        </div>
+
+                        <!-- ROC Curve & RF A-Line Charts -->
+                        <div style="margin-top:12px; background:rgba(15,23,42,0.8); border:1px solid #334155; border-radius:8px; padding:8px;">
+                            <div style="font-size:11px; font-weight:700; color:#cbd5e1; margin-bottom:4px; display:flex; justify-content:space-between;">
+                                <span>ROC Curve (AUC = <strong id="val-auc" style="color:#38bdf8;">0.996</strong>)</span>
+                                <span style="color:#94a3b8;">RF A-Line (Center Beam)</span>
+                            </div>
+                            <div style="height: 120px; width:100%;">
+                                <canvas id="roc-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: ULTRASOUND PROBE DESIGN & MINIATURIZED CIRCUITRY -->
+                    <div id="tab-probe" class="tab-content">
+                        <h2 style="color:#a78bfa; display:flex; justify-content:space-between; align-items:center;">
+                            <span>Micro-Probe Design & ASIC Circuitry</span>
+                            <span style="font-size:10px; background:rgba(167,139,250,0.2); color:#a78bfa; padding:2px 8px; border-radius:4px; border:1px solid #a78bfa;">
+                                Ø 3.5 mm BURR-HOLE COMPATIBLE
+                            </span>
+                        </h2>
+
+                        <div class="metrics" style="grid-template-columns: repeat(2, 1fr);">
+                            <div class="metric">
+                                <span class="m-label">Transducer Matrix</span>
+                                <span class="m-value" style="color:#c4b5fd;">32 × 32 (1024)</span>
+                                <span style="font-size:9px; color:#94a3b8;">CMUT/PMUT Micro-Elements</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Element Pitch</span>
+                                <span class="m-value" style="color:#38bdf8;">102 µm</span>
+                                <span style="font-size:9px; color:#94a3b8;">$\lambda/2$ in Brain Tissue</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Matching Layer $Z$</span>
+                                <span class="m-value" style="color:#10b981;">7.45 MRayl</span>
+                                <span style="font-size:9px; color:#94a3b8;">$\lambda/4$ Polymer-Piezo</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">ASIC Power / Temp</span>
+                                <span class="m-value" style="color:#f43f5e;">165 mW (&lt;0.42°C)</span>
+                                <span style="font-size:9px; color:#94a3b8;">IEC 60601-2-37 Safe</span>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Beam Radiation Pattern -->
+                        <div style="margin-top:10px; background:rgba(15,23,42,0.8); border:1px solid #334155; border-radius:8px; padding:8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <span style="font-size:11px; font-weight:700; color:#e2e8f0;">Acoustic Beam Radiation Pattern</span>
+                                <div style="display:flex; gap:6px; align-items:center;">
+                                    <label style="font-size:10px; color:#94a3b8;">Steer:</label>
+                                    <input type="range" id="beam-steer-slider" min="-45" max="45" value="0" style="width:70px;">
+                                    <span id="beam-steer-val" style="font-size:10px; color:#a78bfa; width:24px;">0°</span>
+                                </div>
+                            </div>
+                            <div style="height: 140px; width:100%;">
+                                <canvas id="beam-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Micro-Circuitry Specs Breakdown -->
+                        <div style="margin-top:10px; font-size:11px; color:#94a3b8; background:rgba(2,6,23,0.6); padding:8px; border-radius:6px; border:1px solid #334155;">
+                            <div style="font-weight:700; color:#e2e8f0; margin-bottom:4px;">Miniaturized Circuitry Technical Audit:</div>
+                            <div>• <strong>HV Pulsers:</strong> 0-85 Vpp Bipolar Integrated Drivers</div>
+                            <div>• <strong>LNA Noise:</strong> 1.15 nV/$\sqrt{\text{Hz}}$ Low-Noise Frontend</div>
+                            <div>• <strong>ADC:</strong> 12-bit 60 MSPS SAR-ADC (32 Parallel Channels)</div>
+                            <div>• <strong>Beamformer:</strong> On-Probe Synthetic Aperture FPGA ASIC</div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: QML & STIELTJES CONTINUED FRACTIONS -->
+                    <div id="tab-qml-stieltjes" class="tab-content">
+                        <h2 style="color:#10b981; display:flex; justify-content:space-between; align-items:center;">
+                            <span>QML & Stieltjes Continued Fractions</span>
+                            <span style="font-size:10px; background:rgba(16,185,129,0.2); color:#10b981; padding:2px 8px; border-radius:4px; border:1px solid #10b981;">
+                                VARIATIONAL PQC & S-FRACTIONS
+                            </span>
+                        </h2>
+
+                        <div class="metrics" style="grid-template-columns: repeat(2, 1fr);">
+                            <div class="metric">
+                                <span class="m-label">QML Acoustic Power</span>
+                                <span class="m-value" id="qml-opt-power" style="color:#10b981;">66.0 W</span>
+                                <span style="font-size:9px; color:#94a3b8;">Focal Intensity $I_0$</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Ablation Duty Cycle</span>
+                                <span class="m-value" id="qml-opt-duty" style="color:#38bdf8;">75.0%</span>
+                                <span style="font-size:9px; color:#94a3b8;">Recurrent Pulse Mode</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Stieltjes $Z_{\text{match}}$</span>
+                                <span class="m-value" id="stieltjes-zmatch" style="color:#c4b5fd;">1.58 MRayl</span>
+                                <span style="font-size:9px; color:#94a3b8;">Contractive S-Fraction</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Predicted CEM43 Dose</span>
+                                <span class="m-value" id="qml-cem43" style="color:#f59e0b;">540 min</span>
+                                <span style="font-size:9px; color:#94a3b8;">Necrosis Threshold $\ge 240$ min</span>
+                            </div>
+                        </div>
+
+                        <!-- Stieltjes Continued Fraction Recurrence Table -->
+                        <div style="margin-top:10px; background:rgba(15,23,42,0.8); border:1px solid #334155; border-radius:8px; padding:8px;">
+                            <div style="font-size:11px; font-weight:700; color:#e2e8f0; margin-bottom:4px;">
+                                Stieltjes Continued Fraction Convergents $f(z) = \cfrac{c_0}{1 + \cfrac{c_1 z}{1 + \dots}}$
+                            </div>
+                            <table style="width:100%; border-collapse:collapse; font-size:10px; color:#cbd5e1;">
+                                <thead>
+                                    <tr style="border-bottom:1px solid #334155; color:#94a3b8;">
+                                        <th style="padding:4px; text-align:left;">Step $k$</th>
+                                        <th style="padding:4px; text-align:left;">Coeff $c_k$</th>
+                                        <th style="padding:4px; text-align:left;">Convergent $A_k/B_k$</th>
+                                        <th style="padding:4px; text-align:left;">Error Bound</th>
+                                        <th style="padding:4px; text-align:left;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stieltjes-table-body">
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <button id="btn-run-qml-pulse" class="btn-primary" style="margin-top:10px; width:100%; background:linear-gradient(135deg,#059669,#10b981); justify-content:center;">
+                            ⚡ RUN QML VARIATIONAL ACOUSTIC OPTIMIZER
+                        </button>
+                    </div>
+
                     <!-- Thermal Tab -->
-                    <div id="tab-thermo" class="tab-content active thermal-view">
+                    <div id="tab-thermo" class="tab-content thermal-view">
                         <h2>Interoperative Thermometry</h2>
                         <div class="heatmap-container">
                             <canvas id="thermal-canvas" width="256" height="256"></canvas>

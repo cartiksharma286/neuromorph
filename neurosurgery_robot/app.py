@@ -32,6 +32,14 @@ from thermometric_fencing_uq import (
     NumberTheoreticUQ,
     EnhancedEndEffectorLocalization
 )
+from ultrasound_ablation_engine import (
+    IntraoperativeUltrasoundSimulator,
+    MiniaturizedUltrasoundProbe,
+    QuantumAblationOptimizer,
+    TumorAblationSpecificityEvaluator,
+    RoboticKinematicsQKF,
+    StieltjesContinuedFraction
+)
 
 nvqlink = NVQLinkBridge()
 qml_segmenter = QuantumMLSegmenter()
@@ -39,6 +47,19 @@ cost_economics_engine = RobotCostEconomics()
 thermometric_fencing = CombinatorialThermometricFencing(grid_size=128, voxel_size_mm=0.5)
 number_theoretic_uq = NumberTheoreticUQ(num_samples=256)
 enhanced_localization = EnhancedEndEffectorLocalization()
+
+# Ultrasound & Ablation Engine Instances
+us_simulator = IntraoperativeUltrasoundSimulator(grid_w=128, grid_h=128)
+us_probe = MiniaturizedUltrasoundProbe()
+qml_ablation_opt = QuantumAblationOptimizer(num_qubits=4)
+tumor_evaluator = TumorAblationSpecificityEvaluator(tumor_radius_mm=9.5, margin_mm=2.0)
+robot_qkf_kinematics = RoboticKinematicsQKF()
+
+# Interactive US & Ablation Global State
+current_ablation_radius_mm = 0.0
+us_gain_db = 48.0
+us_frequency_mhz = 8.5
+probe_steering_deg = 0.0
 
 # Try to import optional modules
 
@@ -1178,6 +1199,173 @@ def get_thermometric_fencing():
         'fencing': fencing_data,
         'uq': uq_data,
         'fencing_chart': 'data:image/png;base64,' + img_b64
+    })
+
+
+# =========================================================================
+# ULTRASOUND, PROBE DESIGN, TUMOR ABLATION & QML STIELTJES ROUTES
+# =========================================================================
+
+@app.route('/api/ultrasound/scan', methods=['GET', 'POST'])
+def get_ultrasound_scan():
+    """Returns intraoperative ultrasound (iUS) B-mode and RF sector scan data."""
+    global current_ablation_radius_mm, us_gain_db, us_frequency_mhz
+    
+    if request.method == 'POST':
+        data = request.json or {}
+        if 'ablation_radius_mm' in data:
+            current_ablation_radius_mm = float(data['ablation_radius_mm'])
+        if 'gain_db' in data:
+            us_gain_db = float(data['gain_db'])
+        if 'frequency_mhz' in data:
+            us_frequency_mhz = float(data['frequency_mhz'])
+            
+    tumor_r = 9.5
+    scan_data = us_simulator.generate_ius_bmode_scan(
+        tumor_radius_mm=tumor_r,
+        ablation_radius_mm=current_ablation_radius_mm,
+        gain_db=us_gain_db,
+        frequency_mhz=us_frequency_mhz
+    )
+    
+    # Specificity & sensitivity evaluation
+    spec_data = tumor_evaluator.evaluate_ablation_performance(current_ablation_radius_mm)
+    
+    return jsonify({
+        'status': 'ok',
+        'scan': scan_data,
+        'ablation_metrics': spec_data
+    })
+
+
+@app.route('/api/ultrasound/probe/specs', methods=['GET'])
+def get_probe_specs():
+    """Returns 2D matrix CMUT/PMUT array and ASIC micro-circuitry specifications."""
+    specs = us_probe.get_circuitry_specifications()
+    return jsonify({
+        'status': 'ok',
+        'specifications': specs
+    })
+
+
+@app.route('/api/ultrasound/probe/beam', methods=['GET', 'POST'])
+def get_probe_beam_pattern():
+    """Calculates acoustic beam radiation pattern and grating lobe suppression."""
+    global probe_steering_deg
+    if request.method == 'POST':
+        data = request.json or {}
+        probe_steering_deg = float(data.get('steering_angle_deg', probe_steering_deg))
+        focus_mm = float(data.get('focus_mm', 25.0))
+    else:
+        focus_mm = float(request.args.get('focus_mm', 25.0))
+        probe_steering_deg = float(request.args.get('steering_angle_deg', 0.0))
+
+    beam_data = us_probe.compute_beam_radiation_pattern(
+        steering_angle_deg=probe_steering_deg,
+        focus_mm=focus_mm
+    )
+    return jsonify({
+        'status': 'ok',
+        'beam_profile': beam_data
+    })
+
+
+@app.route('/api/ablation/specificity', methods=['GET', 'POST'])
+def get_ablation_specificity():
+    """Returns Tumor Sensitivity, Specificity, ROC/AUC, and Healthy Brain Parenchyma Sparing."""
+    global current_ablation_radius_mm
+    if request.method == 'POST':
+        data = request.json or {}
+        if 'ablation_radius_mm' in data:
+            current_ablation_radius_mm = float(data['ablation_radius_mm'])
+            
+    metrics = tumor_evaluator.evaluate_ablation_performance(current_ablation_radius_mm)
+    return jsonify({
+        'status': 'ok',
+        'metrics': metrics
+    })
+
+
+@app.route('/api/ablation/qml_stieltjes', methods=['GET', 'POST'])
+def get_qml_stieltjes_ablation():
+    """Runs QML Parameterized Quantum Circuit and Stieltjes Continued Fractions."""
+    data = request.json if request.method == 'POST' else {}
+    tumor_depth = float(data.get('tumor_depth_mm', 28.0))
+    tumor_vol = float(data.get('tumor_volume_cm3', 3.6))
+    perfusion = float(data.get('perfusion', 55.0))
+    margin = float(data.get('margin_mm', 2.0))
+
+    qml_result = qml_ablation_opt.optimize_ablation_pulse(
+        tumor_depth_mm=tumor_depth,
+        tumor_volume_cm3=tumor_vol,
+        tissue_perfusion_ml_min_100g=perfusion,
+        target_margin_mm=margin
+    )
+    return jsonify({
+        'status': 'ok',
+        'qml_stieltjes': qml_result
+    })
+
+
+@app.route('/api/robot/kinematics_qkf', methods=['GET', 'POST'])
+def get_robot_kinematics_qkf():
+    """Computes 7-DOF DH Forward Kinematics and Quantum Kalman Filter tool-tip estimation."""
+    angles = None
+    if request.method == 'POST':
+        data = request.json or {}
+        if 'joint_angles' in data:
+            angles = [float(a) for a in data['joint_angles']]
+            
+    kinematics = robot_qkf_kinematics.forward_kinematics(joint_angles=angles)
+    return jsonify({
+        'status': 'ok',
+        'kinematics': kinematics
+    })
+
+
+@app.route('/api/ablation/step', methods=['POST'])
+def step_ablation():
+    """Executes an incremental recurrent ultrasound ablation pulse."""
+    global current_ablation_radius_mm
+    data = request.json or {}
+    step_delta_mm = float(data.get('step_delta_mm', 0.8))
+    max_radius_mm = float(data.get('max_radius_mm', 10.5))
+
+    current_ablation_radius_mm = min(max_radius_mm, current_ablation_radius_mm + step_delta_mm)
+    
+    scan_data = us_simulator.generate_ius_bmode_scan(
+        tumor_radius_mm=9.5,
+        ablation_radius_mm=current_ablation_radius_mm,
+        gain_db=us_gain_db,
+        frequency_mhz=us_frequency_mhz
+    )
+    spec_data = tumor_evaluator.evaluate_ablation_performance(current_ablation_radius_mm)
+
+    return jsonify({
+        'status': 'ok',
+        'current_ablation_radius_mm': current_ablation_radius_mm,
+        'scan': scan_data,
+        'metrics': spec_data
+    })
+
+
+@app.route('/api/ablation/reset', methods=['POST'])
+def reset_ablation():
+    """Resets the ultrasound ablation simulation."""
+    global current_ablation_radius_mm
+    current_ablation_radius_mm = 0.0
+    scan_data = us_simulator.generate_ius_bmode_scan(
+        tumor_radius_mm=9.5,
+        ablation_radius_mm=0.0,
+        gain_db=us_gain_db,
+        frequency_mhz=us_frequency_mhz
+    )
+    spec_data = tumor_evaluator.evaluate_ablation_performance(0.0)
+    return jsonify({
+        'status': 'ok',
+        'current_ablation_radius_mm': 0.0,
+        'scan': scan_data,
+        'metrics': spec_data
     })
 
 
