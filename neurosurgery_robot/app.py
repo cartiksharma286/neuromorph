@@ -38,7 +38,9 @@ from ultrasound_ablation_engine import (
     QuantumAblationOptimizer,
     TumorAblationSpecificityEvaluator,
     RoboticKinematicsQKF,
-    StieltjesContinuedFraction
+    StieltjesContinuedFraction,
+    DynamicMRUSPhantomEngine,
+    FormalVerifiabilityGroundTruthStudy
 )
 
 nvqlink = NVQLinkBridge()
@@ -54,6 +56,8 @@ us_probe = MiniaturizedUltrasoundProbe()
 qml_ablation_opt = QuantumAblationOptimizer(num_qubits=4)
 tumor_evaluator = TumorAblationSpecificityEvaluator(tumor_radius_mm=9.5, margin_mm=2.0)
 robot_qkf_kinematics = RoboticKinematicsQKF()
+mrus_phantom_engine = DynamicMRUSPhantomEngine(grid_dim=128)
+phantom_gt_study = FormalVerifiabilityGroundTruthStudy()
 
 # Interactive US & Ablation Global State
 current_ablation_radius_mm = 0.0
@@ -1362,6 +1366,39 @@ def reset_ablation():
         'current_ablation_radius_mm': 0.0,
         'scan': scan_data,
         'metrics': spec_data
+    })
+
+
+@app.route('/api/phantom/mrus_scan', methods=['GET', 'POST'])
+def get_phantom_mrus_scan():
+    """Generates 4D dynamic MR magnitude and synchronized iUS B-mode phantom scan slice."""
+    data = request.json if request.method == 'POST' else {}
+    phase = float(data.get('phase_rad', request.args.get('phase_rad', 0.0)))
+    amp = float(data.get('deformation_amp_mm', request.args.get('deformation_amp_mm', 1.2)))
+
+    pair = mrus_phantom_engine.generate_4d_mrus_pair(phase_rad=phase, deformation_amp_mm=amp)
+    metrics = phantom_gt_study.evaluate_ground_truth_metrics()
+
+    return jsonify({
+        'status': 'ok',
+        'phantom_scan': pair,
+        'ground_truth_metrics': metrics
+    })
+
+
+@app.route('/api/phantom/ground_truth_study', methods=['GET', 'POST'])
+def run_ground_truth_study():
+    """Runs 256-trial statistical ground truth Monte Carlo study and formal verifiability proof."""
+    data = request.json if request.method == 'POST' else {}
+    seed = int(data.get('seed', request.args.get('seed', 1009)))
+
+    study_results = phantom_gt_study.run_256_trial_monte_carlo_study(seed=seed)
+    proof_metrics = phantom_gt_study.evaluate_ground_truth_metrics()
+
+    return jsonify({
+        'status': 'ok',
+        'study': study_results,
+        'formal_verification': proof_metrics
     })
 
 
