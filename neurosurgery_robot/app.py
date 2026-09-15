@@ -89,12 +89,21 @@ except:
     AutomatedGuidanceSystem = None
 
 try:
-    from five_g_guidance import FiveGNeuralPathway, LaserDeliveryOptimizer
+    from five_g_guidance import (
+        FiveGNeuralPathway,
+        LaserDeliveryOptimizer,
+        ntt_engine,
+        network_queue_manager,
+        ge_pacs_server
+    )
     HAS_5G_GUIDANCE = True
 except:
     HAS_5G_GUIDANCE = False
     FiveGNeuralPathway = None
     LaserDeliveryOptimizer = None
+    ntt_engine = None
+    network_queue_manager = None
+    ge_pacs_server = None
 
 from flask.json.provider import DefaultJSONProvider
 
@@ -1025,59 +1034,139 @@ def thermal_history():
         'simulation_time_s': thermo.accumulated_time,
     }))
 
-@app.route('/api/prostate_snr')
-def prostate_snr():
-    import base64
-    import io
-    from scipy.fft import fft2, ifft2, fftshift
+# ---------------------------------------------------------------------
+# 5G URLLC NETWORK & GE PACS SERVER INTRAOPERATIVE RADIOLOGY ROUTES
+# ---------------------------------------------------------------------
 
-    # 1. Create a simulated prostate mask (ellipse)
-    x = np.linspace(-1, 1, 256)
-    y = np.linspace(-1, 1, 256)
-    X, Y = np.meshgrid(x, y)
+@app.route('/api/5g/network/telemetry', methods=['GET'])
+def get_5g_network_telemetry():
+    """Get real-time 5G URLLC network QoS, worker threads, and queue depth telemetry."""
+    if not network_queue_manager:
+        return jsonify({'error': '5G Network engine not initialized'}), 503
+    return jsonify(numpy_to_native(network_queue_manager.get_telemetry()))
+
+
+@app.route('/api/5g/network/slice', methods=['POST'])
+def configure_5g_slice():
+    """Configure 5G network slicing and multi-threaded worker settings."""
+    if not network_queue_manager:
+        return jsonify({'error': '5G Network engine not initialized'}), 503
+    data = request.json or {}
+    slice_mode = data.get('slice_mode')
+    if slice_mode:
+        network_queue_manager.slice_mode = str(slice_mode)
+        network_queue_manager.log_event(f"5G Network Slice switched to: {slice_mode}", level="NOTICE")
+    return jsonify({
+        'status': 'ok',
+        'slice_mode': network_queue_manager.slice_mode,
+        'workers': network_queue_manager.num_workers
+    })
+
+
+@app.route('/api/5g/ntt/benchmark', methods=['GET', 'POST'])
+def run_ntt_benchmark():
+    """Run Number Theoretic Transform (NTT) high-throughput benchmark on ultrasound frame."""
+    if not ntt_engine:
+        return jsonify({'error': 'NTT Engine not initialized'}), 503
     
-    # Peripheral zone and central zone
-    prostate_base = 1.0 * np.exp(-(X**2)/0.3 - (Y**2)/0.4)
-    tumor = 0.8 * np.exp(-((X-0.3)**2 + (Y-0.2)**2)/0.02)
-    noise = np.random.normal(0, 0.4, X.shape)
+    # Use real ultrasound simulation RF matrix or test frame
+    try:
+        sample_img = us_simulator.bmode_image
+    except:
+        sample_img = np.random.rand(64, 64)
+        
+    spectrum_2d, metrics = ntt_engine.transform_2d(sample_img)
+    recon = ntt_engine.inverse_transform_2d(spectrum_2d)
     
-    # Original image heavily degraded by noise
-    original = prostate_base + tumor + noise
+    # Quantify bit-exactness & spectral fidelity
+    error = float(np.max(np.abs(recon - (np.clip(sample_img[:64, :64], 0, 1) if sample_img.shape[0] >= 64 else sample_img))))
+    metrics['max_reconstruction_error'] = round(error, 6)
     
-    # 2. Convert to k-space
-    k_space = fftshift(fft2(original))
-    k_mag = np.log(np.abs(k_space) + 1)
+    return jsonify(numpy_to_native({
+        'status': 'ok',
+        'metrics': metrics,
+        'spectrum_sample': spectrum_2d[:8, :8].tolist()
+    }))
+
+
+@app.route('/api/5g/pacs/status', methods=['GET'])
+def get_pacs_status():
+    """Get GE PACS Server state, AET associations, and archived study counts."""
+    if not ge_pacs_server:
+        return jsonify({'error': 'GE PACS Server not initialized'}), 503
+    return jsonify(numpy_to_native(ge_pacs_server.get_status()))
+
+
+@app.route('/api/5g/pacs/cstore', methods=['POST'])
+def pacs_cstore():
+    """C-STORE SCP/SCU: Store live ultrasound frame into GE PACS with NTT encoding."""
+    if not ge_pacs_server:
+        return jsonify({'error': 'GE PACS Server not initialized'}), 503
+    data = request.json or {}
+    patient_id = data.get('patient_id', 'NM-2026-9041')
+    study_desc = data.get('study_desc', 'Intraoperative 8.5MHz B-Mode Resection Scan')
     
-    # 3. Apply Phi DCI SNR reconstruction filter
-    # Golden ratio convergents: 1.618
-    phi_filter = np.exp(-1.618 * (X**2 + Y**2) * 5)
+    # Get current live ultrasound image
+    try:
+        current_us = us_simulator.bmode_image
+    except:
+        current_us = np.random.rand(64, 64)
+        
+    res = ge_pacs_server.c_store_ultrasound_frame(current_us, patient_id=patient_id, study_desc=study_desc)
+    return jsonify(numpy_to_native(res))
+
+
+@app.route('/api/5g/pacs/csend', methods=['POST'])
+def pacs_csend():
+    """C-SEND: Push study / series to remote GE Centricity PACS destination."""
+    if not ge_pacs_server:
+        return jsonify({'error': 'GE PACS Server not initialized'}), 503
+    data = request.json or {}
+    study_uid = data.get('study_uid')
+    dest_aet = data.get('destination_aet', 'GE_CENTRICITY')
     
-    k_space_recon = k_space * phi_filter
-    k_mag_recon = np.log(np.abs(k_space_recon) + 1)
-    
-    # Back to spatial domain
-    recon = np.abs(ifft2(fftshift(k_space_recon)))
-    
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    axes[0].imshow(original, cmap='bone')
-    axes[0].set_title('Raw Degraded Signal')
-    axes[0].axis('off')
-    
-    axes[1].imshow(k_mag, cmap='viridis')
-    axes[1].set_title('K-Space')
-    axes[1].axis('off')
-    
-    axes[2].imshow(recon, cmap='bone')
-    axes[2].set_title('Prostate Phi-DCI SNR Recon')
-    axes[2].axis('off')
-    
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png', bbox_inches='tight', facecolor='#0f172a', dpi=150)
-    buf.seek(0)
-    plt.close(fig)
-    
-    b64_img = base64.b64encode(buf.read()).decode('utf-8')
-    return jsonify({"success": True, "image": r"data:image/png;base64," + b64_img})
+    if not study_uid:
+        studies = list(ge_pacs_server.studies.keys())
+        if studies:
+            study_uid = studies[-1]
+        else:
+            return jsonify({'error': 'No studies available to send'}), 400
+            
+    res = ge_pacs_server.c_send_to_remote(study_uid, destination_aet=dest_aet)
+    return jsonify(numpy_to_native(res))
+
+
+@app.route('/api/5g/pacs/cfind', methods=['GET', 'POST'])
+def pacs_cfind():
+    """C-FIND: Query/Retrieve studies and series from the GE PACS archive."""
+    if not ge_pacs_server:
+        return jsonify({'error': 'GE PACS Server not initialized'}), 503
+    data = request.json if request.is_json else request.args
+    query_params = {
+        'patient_id': data.get('patient_id', ''),
+        'modality': data.get('modality', 'ALL'),
+        'study_desc': data.get('study_desc', '')
+    }
+    results = ge_pacs_server.c_find_query(query_params)
+    return jsonify(numpy_to_native({
+        'status': '0x0000 (SUCCESS)',
+        'count': len(results),
+        'studies': results
+    }))
+
+
+@app.route('/api/5g/pacs/cmove', methods=['POST'])
+def pacs_cmove():
+    """C-MOVE: Retrieve pre-op MR or prior intraoperative US series to local cache."""
+    if not ge_pacs_server:
+        return jsonify({'error': 'GE PACS Server not initialized'}), 503
+    data = request.json or {}
+    study_uid = data.get('study_uid')
+    if not study_uid:
+        return jsonify({'error': 'study_uid is required'}), 400
+    dest_aet = data.get('destination_aet', ge_pacs_server.local_aet)
+    res = ge_pacs_server.c_move_retrieve(study_uid, destination_aet=dest_aet)
+    return jsonify(numpy_to_native(res))
 
 
 @app.route('/api/economics/simulate', methods=['GET', 'POST'])
@@ -1458,6 +1547,27 @@ def get_cryo_laser_preprint():
         as_attachment=as_att,
         mimetype='application/pdf',
         download_name='Nature_Cryo_Laser_Observable_Finite_Math_Preprint.pdf'
+    )
+
+
+@app.route('/api/grant/nih/download', methods=['GET'])
+@app.route('/api/grant/nih/view', methods=['GET'])
+def get_nih_grant_proposal():
+    """Serves the NIH R01/U01 Grant Proposal PDF."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'NIH_Grant_Proposal_Ultrasound_QML_NTT_Neurosurgery.pdf')
+    if not os.path.exists(pdf_path):
+        try:
+            from generate_nih_grant_proposal import build_nih_grant_pdf
+            build_nih_grant_pdf(pdf_path)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+            
+    as_att = request.path.endswith('/download')
+    return send_file(
+        pdf_path,
+        as_attachment=as_att,
+        mimetype='application/pdf',
+        download_name='NIH_Grant_Proposal_Ultrasound_QML_NTT_Neurosurgery.pdf'
     )
 
 

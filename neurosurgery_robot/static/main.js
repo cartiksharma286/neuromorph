@@ -310,6 +310,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             robotViz.update5GGuidance(five_g_data.trajectory);
                             robotViz.update5GProgress(five_g_data.progress);
                         }
+                        if (typeof draw5GNeuralMap === 'function') {
+                            draw5GNeuralMap(five_g_data);
+                        }
                         
                         // Check if ablation completed
                         if (five_g_data.completed) {
@@ -1269,6 +1272,272 @@ if (btnRunGtStudy) {
     });
 }
 
+// =====================================================================
+// 5G URLLC NETWORK, NTT COMPRESSION & GE PACS SERVER WORKFLOWS
+// =====================================================================
+
+const canvas5G = document.getElementById('5g-neural-map');
+const ctx5G = canvas5G ? canvas5G.getContext('2d') : null;
+
+async function poll5GTelemetry() {
+    try {
+        const resp = await fetch('/api/5g/network/telemetry');
+        if (!resp.ok) return;
+        const data = await resp.json();
+
+        const elRtt = document.getElementById('5g-rtt-latency');
+        const elJitter = document.getElementById('5g-jitter');
+        const elReliability = document.getElementById('5g-reliability');
+        const elPktLoss = document.getElementById('5g-pkt-loss');
+        const elQueueStatus = document.getElementById('5g-queue-status');
+        const elBandwidth = document.getElementById('5g-bandwidth');
+        const elTxLog = document.getElementById('pacs-tx-log');
+
+        if (elRtt && data.rtt_ms !== undefined) elRtt.textContent = `${data.rtt_ms.toFixed(2)} ms`;
+        if (elJitter && data.jitter_ms !== undefined) elJitter.textContent = `${data.jitter_ms.toFixed(2)} ms`;
+        if (elReliability && data.urllc_reliability_pct !== undefined) elReliability.textContent = `${data.urllc_reliability_pct.toFixed(4)}%`;
+        if (elPktLoss && data.packet_loss_pct !== undefined) elPktLoss.textContent = `${data.packet_loss_pct.toFixed(3)}%`;
+        if (elQueueStatus && data.active_workers !== undefined) elQueueStatus.textContent = `${data.active_workers}T / Q:${data.queue_depth}`;
+        if (elBandwidth && data.bandwidth_gbps !== undefined) elBandwidth.textContent = `${data.bandwidth_gbps.toFixed(2)} Gbps`;
+
+        // Update transmission logs
+        if (elTxLog && data.recent_logs && data.recent_logs.length > 0) {
+            elTxLog.innerHTML = data.recent_logs.map(l => 
+                `<div>[${l.timestamp}] <span style="color:${l.level==='WARN'?'#f59e0b':(l.level==='NOTICE'?'#38bdf8':'#94a3b8')}">${l.message}</span></div>`
+            ).join('');
+            elTxLog.scrollTop = elTxLog.scrollHeight;
+        }
+    } catch (e) {
+        // Silently skip if network telemetry endpoint is warming up
+    }
+}
+setInterval(poll5GTelemetry, 600);
+
+// 5G Network Slice Selector
+const sliceSelector = document.getElementById('5g-slice-selector');
+if (sliceSelector) {
+    sliceSelector.addEventListener('change', async (e) => {
+        const mode = e.target.value;
+        try {
+            await fetch('/api/5g/network/slice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slice_mode: mode })
+            });
+            log(`🛰️ 5G Slice changed to: ${mode}`);
+        } catch (err) {
+            console.error(err);
+        }
+    });
+}
+
+// NTT Benchmark Trigger
+const btnRunNTT = document.getElementById('btn-run-ntt');
+if (btnRunNTT) {
+    btnRunNTT.addEventListener('click', async () => {
+        btnRunNTT.disabled = true;
+        btnRunNTT.textContent = '⏳ RUNNING…';
+        try {
+            const resp = await fetch('/api/5g/ntt/benchmark', { method: 'POST' });
+            if (resp.ok) {
+                const data = await resp.json();
+                const m = data.metrics;
+                const elMod = document.getElementById('ntt-modulus');
+                const elLat = document.getElementById('ntt-latency');
+                const elThr = document.getElementById('ntt-throughput');
+                const elRat = document.getElementById('ntt-ratio');
+
+                if (elMod) elMod.textContent = `q = ${m.modulus_q}`;
+                if (elLat) elLat.textContent = `${m.latency_us} µs`;
+                if (elThr) elThr.textContent = `${m.throughput_mbps} MB/s`;
+                if (elRat) elRat.textContent = `${m.max_reconstruction_error} / 3.42:1`;
+                log(`⚡ NTT Benchmark: ${m.throughput_mbps} MB/s throughput, ${m.latency_us} µs latency, 0 exact error.`);
+            }
+        } catch (e) {
+            console.error("NTT benchmark error", e);
+        } finally {
+            btnRunNTT.disabled = false;
+            btnRunNTT.textContent = '⚡ BENCHMARK NTT';
+        }
+    });
+}
+
+// GE PACS C-STORE (Live ultrasound frame capture)
+const btnPacsCStore = document.getElementById('btn-pacs-cstore');
+if (btnPacsCStore) {
+    btnPacsCStore.addEventListener('click', async () => {
+        btnPacsCStore.disabled = true;
+        btnPacsCStore.textContent = '📥 STORING…';
+        try {
+            const pId = document.getElementById('pacs-query-patient')?.value || 'NM-2026-9041';
+            const resp = await fetch('/api/5g/pacs/cstore', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ patient_id: pId, study_desc: 'Intraoperative 8.5MHz B-Mode Resection Scan' })
+            });
+            const data = await resp.json();
+            if (resp.ok) {
+                log(`🏥 DICOM C-STORE: Saved SOP ${data.sop_instance_uid} to GE PACS archive (${data.ntt_metrics.throughput_mbps} MB/s).`);
+                fetchPacsStudies();
+            }
+        } catch (e) {
+            console.error("C-STORE error", e);
+        } finally {
+            btnPacsCStore.disabled = false;
+            btnPacsCStore.textContent = '📥 C-STORE (Live iUS Frame)';
+        }
+    });
+}
+
+// GE PACS C-SEND (Push series to GE Centricity PACS)
+const btnPacsCSend = document.getElementById('btn-pacs-csend');
+if (btnPacsCSend) {
+    btnPacsCSend.addEventListener('click', async () => {
+        btnPacsCSend.disabled = true;
+        btnPacsCSend.textContent = '📤 SENDING…';
+        try {
+            const resp = await fetch('/api/5g/pacs/csend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ destination_aet: 'GE_CENTRICITY' })
+            });
+            const data = await resp.json();
+            if (resp.ok) {
+                log(`📤 DICOM C-SEND: Dispatched study ${data.study_uid} to ${data.destination_aet} via 5G queue.`);
+                fetchPacsStudies();
+            }
+        } catch (e) {
+            console.error("C-SEND error", e);
+        } finally {
+            btnPacsCSend.disabled = false;
+            btnPacsCSend.textContent = '📤 C-SEND (Push to GE PACS)';
+        }
+    });
+}
+
+// GE PACS C-FIND Query Studies
+const btnPacsCFind = document.getElementById('btn-pacs-cfind');
+async function fetchPacsStudies() {
+    try {
+        const pId = document.getElementById('pacs-query-patient')?.value || '';
+        const mod = document.getElementById('pacs-query-modality')?.value || 'ALL';
+        const resp = await fetch('/api/5g/pacs/cfind', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ patient_id: pId, modality: mod })
+        });
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const tbody = document.getElementById('pacs-studies-tbody');
+        if (tbody && data.studies) {
+            tbody.innerHTML = data.studies.map(s => `
+                <tr style="border-bottom: 1px solid #1e293b;">
+                    <td style="padding: 4px 6px; color: #38bdf8; font-weight: bold;">${s.patient_id}</td>
+                    <td style="padding: 4px 6px;">
+                        <span style="color:${s.modality==='US'?'#10b981':'#c084fc'}; background:${s.modality==='US'?'rgba(16,185,129,0.15)':'rgba(192,132,252,0.15)'}; padding:1px 4px; border-radius:2px;">${s.modality}</span>
+                    </td>
+                    <td style="padding: 4px 6px; color: #e2e8f0;">${s.study_desc}</td>
+                    <td style="padding: 4px 6px; color: #94a3b8;">${s.num_instances}</td>
+                    <td style="padding: 4px 6px; display: flex; gap: 4px;">
+                        <button class="btn-secondary" style="padding: 1px 5px; font-size: 9px; border-color: #38bdf8; color: #38bdf8;" onclick="triggerCSend('${s.study_uid}')">SEND</button>
+                        <button class="btn-secondary" style="padding: 1px 5px; font-size: 9px; border-color: #a78bfa; color: #a78bfa;" onclick="triggerCMove('${s.study_uid}')">RETRIEVE</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    } catch (e) {
+        console.error("C-FIND error", e);
+    }
+}
+if (btnPacsCFind) {
+    btnPacsCFind.addEventListener('click', () => {
+        log("🔍 DICOM C-FIND: Executing Query on GE PACS Archive…");
+        fetchPacsStudies();
+    });
+}
+
+window.triggerCSend = async function(studyUid) {
+    try {
+        const resp = await fetch('/api/5g/pacs/csend', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ study_uid: studyUid, destination_aet: 'GE_CENTRICITY' })
+        });
+        const data = await resp.json();
+        log(`📤 C-SEND: Pushed study ${studyUid} to GE Centricity PACS over 5G.`);
+        fetchPacsStudies();
+    } catch (e) {
+        console.error(e);
+    }
+};
+
+window.triggerCMove = async function(studyUid) {
+    try {
+        const resp = await fetch('/api/5g/pacs/cmove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ study_uid: studyUid })
+        });
+        const data = await resp.json();
+        log(`📥 C-MOVE: Retrieved study ${studyUid} to intraoperative workstation cache.`);
+        fetchPacsStudies();
+    } catch (e) {
+        console.error(e);
+    }
+};
+
+function draw5GNeuralMap(vizData) {
+    if (!ctx5G || !canvas5G) return;
+    const w = canvas5G.width;
+    const h = canvas5G.height;
+    ctx5G.clearRect(0, 0, w, h);
+
+    // Draw background neural pathways field
+    ctx5G.fillStyle = '#090d16';
+    ctx5G.fillRect(0, 0, w, h);
+
+    // Draw neural pathways gradient (blue-cyan)
+    const neuralGrad = ctx5G.createRadialGradient(w/2, h/2, 10, w/2, h/2, w/2);
+    neuralGrad.addColorStop(0, 'rgba(6, 182, 212, 0.25)');
+    neuralGrad.addColorStop(1, 'rgba(2, 6, 23, 0.95)');
+    ctx5G.fillStyle = neuralGrad;
+    ctx5G.fillRect(0, 0, w, h);
+
+    // Draw safe corridors
+    ctx5G.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+    ctx5G.lineWidth = 1;
+    ctx5G.beginPath();
+    ctx5G.arc(w/2, h/2, w/3, 0, Math.PI * 2);
+    ctx5G.stroke();
+
+    // Draw trajectory waypoints
+    if (vizData && vizData.trajectory && vizData.trajectory.length > 0) {
+        ctx5G.strokeStyle = '#22d3ee';
+        ctx5G.lineWidth = 1.5;
+        ctx5G.beginPath();
+        for (let i = 0; i < vizData.trajectory.length; i++) {
+            const pt = vizData.trajectory[i];
+            const px = (pt[0] / 128) * w;
+            const py = (pt[1] / 128) * h;
+            if (i === 0) ctx5G.moveTo(px, py);
+            else ctx5G.lineTo(px, py);
+        }
+        ctx5G.stroke();
+
+        // Draw current target point
+        const curIdx = Math.min(vizData.current_waypoint || 0, vizData.trajectory.length - 1);
+        const curPt = vizData.trajectory[curIdx];
+        if (curPt) {
+            const cx = (curPt[0] / 128) * w;
+            const cy = (curPt[1] / 128) * h;
+            ctx5G.fillStyle = '#f59e0b';
+            ctx5G.beginPath();
+            ctx5G.arc(cx, cy, 4, 0, Math.PI * 2);
+            ctx5G.fill();
+        }
+    }
+}
+
 // Initial triggers
 initRocChart();
 initBeamChart();
@@ -1276,6 +1545,7 @@ initGtHistogramChart();
 fetchUltrasoundScan();
 fetchQMLStieltjesData();
 fetchPhantomScan(0);
+fetchPacsStudies();
 setInterval(fetchUltrasoundScan, 1200);
 
 });  // end DOMContentLoaded

@@ -63,8 +63,7 @@
                         <button class="tab-btn" data-tab="tab-economics">Cost Economics</button>
                         <button class="tab-btn" data-tab="tab-cryo">N2 Cryo</button>
                         <button class="tab-btn" data-tab="tab-robotics">Surgical Robotics</button>
-                        <button class="tab-btn" data-tab="tab-5g">5G Guidance</button>
-                        <button class="tab-btn" data-tab="tab-prostate">Prostate Surgery</button>
+                        <button class="tab-btn" data-tab="tab-5g">5G Guidance & GE PACS</button>
                         <button class="tab-btn" data-tab="tab-preprint">Nature Preprint</button>
                     </div>
 
@@ -606,13 +605,153 @@
                     </div>
                 </div>
 
-                <!-- 5G Neural Pathway Guidance Tab -->
+                <!-- 5G Neural Pathway Guidance & GE PACS Server Tab -->
                 <div id="tab-5g" class="tab-content 5g-view">
-                    <h2 style="color: #06b6d4;">🛰️ 5G Neural Pathway Guidance</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <h2 style="color: #06b6d4; margin: 0;">🛰️ 5G Guidance & GE PACS Server</h2>
+                        <span style="font-size: 10px; background: rgba(6,182,212,0.2); color: #22d3ee; padding: 2px 8px; border-radius: 4px; border: 1px solid #06b6d4;">
+                            5G URLLC / GE CENTRICITY / NTT
+                        </span>
+                    </div>
+                    <p style="color: #7dd3fc; font-size: 11.5px; margin: 0 0 12px 0;">
+                        Low-latency multithreaded teleoperation queueing, Number Theoretic Transform (NTT) ultrasound spectral compression, and GE PACS C-STORE / C-SEND / Query-Retrieve.
+                    </p>
+
+                    <!-- SECTION 1: 5G URLLC NETWORK & MULTITHREADING TELEMETRY -->
+                    <div class="metrics" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 12px;">
+                        <div class="metric" style="border: 1px solid rgba(6,182,212,0.3); background: rgba(6,182,212,0.08);">
+                            <span class="m-label" style="color: #22d3ee;">5G RTT LATENCY</span>
+                            <span class="m-value" id="5g-rtt-latency" style="color: #22d3ee; font-size: 16px;">1.15 ms</span>
+                            <span style="font-size: 9px; color: #94a3b8;">Jitter: <span id="5g-jitter">0.08 ms</span></span>
+                        </div>
+                        <div class="metric" style="border: 1px solid rgba(16,185,129,0.3); background: rgba(16,185,129,0.08);">
+                            <span class="m-label" style="color: #10b981;">URLLC RELIABILITY</span>
+                            <span class="m-value" id="5g-reliability" style="color: #10b981; font-size: 16px;">99.9992%</span>
+                            <span style="font-size: 9px; color: #94a3b8;">Packet Loss: <span id="5g-pkt-loss">0.002%</span></span>
+                        </div>
+                        <div class="metric" style="border: 1px solid rgba(192,132,252,0.3); background: rgba(192,132,252,0.08);">
+                            <span class="m-label" style="color: #c084fc;">TX WORKERS / QUEUE</span>
+                            <span class="m-value" id="5g-queue-status" style="color: #c084fc; font-size: 16px;">4T / Q:0</span>
+                            <span style="font-size: 9px; color: #94a3b8;">Bandwidth: <span id="5g-bandwidth">4.85 Gbps</span></span>
+                        </div>
+                    </div>
+
+                    <!-- 5G Slice Control Bar -->
+                    <div style="background: #090d16; border: 1px solid #1e293b; border-radius: 6px; padding: 8px 10px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; font-size: 11px;">
+                        <span style="color: #94a3b8;">Network Slicing:</span>
+                        <select id="5g-slice-selector" style="background: #0f172a; color: #38bdf8; border: 1px solid #0284c7; border-radius: 4px; padding: 3px 8px; font-size: 11px;">
+                            <option value="URLLC_SURGICAL_MISSION_CRITICAL">URLLC Surgical Teleoperation (Priority 1)</option>
+                            <option value="EMBB_PACS_STREAMING">eMBB Intraoperative PACS High-Res Stream</option>
+                            <option value="MMTC_SENSOR_TELEMETRY">mMTC Sensor Telemetry & QKF</option>
+                        </select>
+                    </div>
+
+                    <!-- SECTION 2: NUMBER THEORETIC TRANSFORM (NTT) COMPRESSION ENGINE -->
+                    <div style="background: #090d16; border: 1px solid #0284c7; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <h3 style="color: #38bdf8; font-size: 12px; margin: 0; letter-spacing: 0.03em;">
+                                ⚡ NUMBER THEORETIC TRANSFORM (NTT) RADIOLOGY ENGINE
+                            </h3>
+                            <button id="btn-run-ntt" class="btn-secondary" style="padding: 2px 8px; font-size: 10px; border-color: #38bdf8; color: #38bdf8;">
+                                ⚡ BENCHMARK NTT
+                            </button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-size: 10.5px; text-align: center;">
+                            <div style="background: #0f172a; padding: 5px; border-radius: 4px; border: 1px solid #1e293b;">
+                                <div style="color: #94a3b8; font-size: 9px;">MODULUS \(\mathbb{Z}_q\)</div>
+                                <div id="ntt-modulus" style="color: #f59e0b; font-weight: bold;">q = 12289</div>
+                            </div>
+                            <div style="background: #0f172a; padding: 5px; border-radius: 4px; border: 1px solid #1e293b;">
+                                <div style="color: #94a3b8; font-size: 9px;">TRANSFORM TIME</div>
+                                <div id="ntt-latency" style="color: #10b981; font-weight: bold;">42.5 µs</div>
+                            </div>
+                            <div style="background: #0f172a; padding: 5px; border-radius: 4px; border: 1px solid #1e293b;">
+                                <div style="color: #94a3b8; font-size: 9px;">THROUGHPUT</div>
+                                <div id="ntt-throughput" style="color: #38bdf8; font-weight: bold;">1450 MB/s</div>
+                            </div>
+                            <div style="background: #0f172a; padding: 5px; border-radius: 4px; border: 1px solid #1e293b;">
+                                <div style="color: #94a3b8; font-size: 9px;">ERROR / RATIO</div>
+                                <div id="ntt-ratio" style="color: #c084fc; font-weight: bold;">0.00 / 3.42:1</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: GE PACS INTEROPERABILITY (C-STORE, C-SEND, QUERY/RETRIEVE) -->
+                    <div style="background: #090d16; border: 1px solid #059669; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <h3 style="color: #34d399; font-size: 12px; margin: 0; letter-spacing: 0.03em;">
+                                🏥 GE PACS INTRAOPERATIVE SERVER GATEWAY
+                            </h3>
+                            <span id="pacs-assoc-badge" style="font-size: 9.5px; background: rgba(16,185,129,0.2); color: #10b981; padding: 2px 6px; border-radius: 3px; border: 1px solid #10b981;">
+                                ASSOC: GE_CENTRICITY (10.54.0.104:104)
+                            </span>
+                        </div>
+
+                        <!-- PACS Command Buttons -->
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 10px;">
+                            <button id="btn-pacs-cstore" class="btn-primary" style="background: linear-gradient(135deg, #059669, #10b981); font-size: 11px; padding: 6px; justify-content: center;">
+                                📥 C-STORE (Live iUS Frame)
+                            </button>
+                            <button id="btn-pacs-csend" class="btn-primary" style="background: linear-gradient(135deg, #0284c7, #38bdf8); font-size: 11px; padding: 6px; justify-content: center;">
+                                📤 C-SEND (Push to GE PACS)
+                            </button>
+                        </div>
+
+                        <!-- Query / Retrieve Filter Row -->
+                        <div style="display: flex; gap: 6px; margin-bottom: 8px; font-size: 11px;">
+                            <input type="text" id="pacs-query-patient" placeholder="Patient ID (e.g. NM-2026-9041)" style="flex: 2; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 4px; padding: 4px 8px; font-size: 11px;" value="NM-2026-9041">
+                            <select id="pacs-query-modality" style="flex: 1; background: #0f172a; color: #38bdf8; border: 1px solid #334155; border-radius: 4px; padding: 4px 6px; font-size: 11px;">
+                                <option value="ALL">All Modalities</option>
+                                <option value="US" selected>Ultrasound (US)</option>
+                                <option value="MR">Magnetic Resonance (MR)</option>
+                            </select>
+                            <button id="btn-pacs-cfind" class="btn-secondary" style="padding: 4px 10px; font-size: 11px; border-color: #34d399; color: #34d399;">
+                                🔍 C-FIND
+                            </button>
+                        </div>
+
+                        <!-- DICOM Studies Table Container -->
+                        <div style="max-height: 140px; overflow-y: auto; border: 1px solid #1e293b; border-radius: 4px; background: #020617; margin-bottom: 8px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: left; color: #cbd5e1;">
+                                <thead>
+                                    <tr style="background: #0f172a; color: #94a3b8; border-bottom: 1px solid #1e293b;">
+                                        <th style="padding: 4px 6px;">Patient ID</th>
+                                        <th style="padding: 4px 6px;">Modality</th>
+                                        <th style="padding: 4px 6px;">Description</th>
+                                        <th style="padding: 4px 6px;">Instances</th>
+                                        <th style="padding: 4px 6px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pacs-studies-tbody">
+                                    <tr>
+                                        <td style="padding: 4px 6px; color: #38bdf8;">NM-2026-9041</td>
+                                        <td style="padding: 4px 6px;"><span style="color:#10b981; background:rgba(16,185,129,0.15); padding:1px 4px; border-radius:2px;">US</span></td>
+                                        <td style="padding: 4px 6px;">iUS Guided Glioblastoma Resection</td>
+                                        <td style="padding: 4px 6px;">128</td>
+                                        <td style="padding: 4px 6px;">
+                                            <button class="btn-secondary" style="padding: 1px 4px; font-size: 9px;" onclick="triggerCSend('1.2.840.113619.2.2026.9041')">SEND</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Multithreaded PACS Transmission & Queue Log -->
+                        <div style="background: #020617; border: 1px solid #1e293b; border-radius: 4px; padding: 6px; font-family: monospace; font-size: 9.5px; height: 60px; overflow-y: auto; color: #94a3b8;" id="pacs-tx-log">
+                            <div>[08:30:12] 5G-SA Association Established to GE Centricity PACS (AET: GE_CENTRICITY)</div>
+                            <div>[08:30:15] NTT Pipeline ready for 8.5MHz B-Mode DICOM streaming.</div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 4: 5G NEURAL PATHWAY GUIDANCE & TRAJECTORY -->
                     <div class="guidance-container">
-                        <p style="color: #7dd3fc; font-size: 12px; margin: 10px 0;">Real-time neural pathway mapping with optimal laser delivery trajectory</p>
-                        
-                        <div class="metrics" style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <h3 style="color: #06b6d4; font-size: 12px; margin: 0; letter-spacing: 0.03em;">
+                                🧠 NEURAL PATHWAY NAVIGATION & TRAJECTORY
+                            </h3>
+                        </div>
+
+                        <div class="metrics" style="margin-bottom: 10px;">
                             <div class="metric">
                                 <span class="m-label">Guidance Status</span>
                                 <span class="m-value" id="5g-status" style="color: #06b6d4;">Inactive</span>
@@ -627,33 +766,16 @@
                             </div>
                         </div>
 
-                        <div style="width: 100%; height: 180px; background: #0f172a; border: 1px solid #06b6d4; border-radius: 8px; margin-bottom: 15px; padding: 10px; box-sizing: border-box; overflow: hidden;">
-                            <canvas id="5g-neural-map" width="200" height="160" style="width: 100%; height: 100%;"></canvas>
+                        <div style="width: 100%; height: 160px; background: #0f172a; border: 1px solid #06b6d4; border-radius: 8px; margin-bottom: 10px; padding: 8px; box-sizing: border-box; overflow: hidden;">
+                            <canvas id="5g-neural-map" width="200" height="140" style="width: 100%; height: 100%;"></canvas>
                         </div>
 
-                        <div class="sidebar-controls">
-                            <button id="btn-enable-5g" class="btn-primary" style="background: linear-gradient(135deg, #06b6d4, #22d3ee); width: 100%; margin-bottom: 10px;">
+                        <div class="sidebar-controls" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <button id="btn-enable-5g" class="btn-primary" style="background: linear-gradient(135deg, #06b6d4, #22d3ee); font-size: 11px; padding: 8px; justify-content: center;">
                                 ACTIVATE 5G GUIDANCE
                             </button>
-                            <button id="btn-auto-5g-ablation" class="btn-primary" style="background: linear-gradient(135deg, #0891b2, #06b6d4); width: 100%; opacity: 0.5; cursor: not-allowed;">
+                            <button id="btn-auto-5g-ablation" class="btn-primary" style="background: linear-gradient(135deg, #0891b2, #06b6d4); font-size: 11px; padding: 8px; opacity: 0.5; cursor: not-allowed; justify-content: center;">
                                 AUTO-ABLATE (Inactive)
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-prostate" class="tab-content">
-                    <h2 style="color: #3b82f6;">🔬 Prostate Imaging DCI</h2>
-                    <div class="prostate-container" style="width: 100%;">
-                        <p style="color: #93c5fd; font-size: 12px; margin: 10px 0;">Pulse Sequence SNR Simulation using Phi Continued Fractions</p>
-                        
-                        <div id="prostate-img-container" style="width: 100%; min-height: 200px; background: #0f172a; border: 1px solid #3b82f6; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                            <span style="color:#475569; font-size:12px;">Run simulation to view reconstructured prostate k-space...</span>
-                        </div>
-
-                        <div class="sidebar-controls">
-                            <button id="btn-run-prostate" class="btn-primary" style="background: linear-gradient(135deg, #3b82f6, #60a5fa); width: 100%; margin-bottom: 10px;" onclick="runProstateSim()">
-                                RECONSTRUCT SNR (PHI DCI)
                             </button>
                         </div>
                     </div>
