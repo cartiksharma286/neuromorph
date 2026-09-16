@@ -277,59 +277,59 @@ def _should_update_viz():
 def _update_viz_cache():
     """Update cached visualizations"""
     global _viz_cache
-    
+
     if not _should_update_viz():
         return
-    
+
     try:
         temp_map = thermo.get_map()
         damage_map = thermo.get_damage_map()
         cryo_map = cryo.get_ice_map()
         seg_data = segmentation.get_visualization_data()
-        
+
         # Create thermal visualization
         fig, axes = plt.subplots(1, 2, figsize=(10, 4))
         fig.patch.set_facecolor('#0f172a')
-        
+
         ax1 = axes[0]
         im1 = ax1.imshow(temp_map, cmap='hot', vmin=20, vmax=80)
         ax1.set_title('Temperature (°C)', color='white', fontsize=9, fontweight='bold')
         ax1.axis('off')
         plt.colorbar(im1, ax=ax1, label='°C')
-        
+
         ax2 = axes[1]
         ax2.imshow(temp_map, cmap='gray', alpha=0.7)
         ax2.contour(seg_data['tumor_mask'], levels=[0.5], colors='red', linewidths=2)
         ax2.contour(seg_data['safe_zone'], levels=[0.5], colors='yellow', linewidths=1, linestyles='--')
         ax2.set_title('Tumor & Safety', color='white', fontsize=9, fontweight='bold')
         ax2.axis('off')
-        
+
         plt.tight_layout()
         buf = io.BytesIO()
         fig.savefig(buf, format='png', facecolor='#0f172a', dpi=80)
         buf.seek(0)
         plt.close(fig)
         _viz_cache['temp_viz'] = base64.b64encode(buf.getvalue()).decode()
-        
+
         # Create cryo visualization with custom Egg-shell LUT
         fig, ax = plt.subplots(figsize=(5, 5))
         fig.patch.set_facecolor('#0f172a')
-        
+
         lut_colors = ['#0f172a', '#312e81', '#3730a3', '#4338ca', '#3b82f6', '#0ea5e9', '#22d3ee', '#67e8f9'] # Deep blue -> Indigo -> Vibrant Cyan
         custom_egg_lut = LinearSegmentedColormap.from_list('egg_lut', lut_colors)
-        
+
         im = ax.imshow(cryo_map, cmap=custom_egg_lut, vmin=0, vmax=1)
         ax.set_title('Cryo Ice Ball', color='white', fontsize=9, fontweight='bold')
         ax.axis('off')
         plt.colorbar(im, ax=ax, label='Ice Fraction')
-        
+
         plt.tight_layout()
         buf = io.BytesIO()
         fig.savefig(buf, format='png', facecolor='#0f172a', dpi=80)
         buf.seek(0)
         plt.close(fig)
         _viz_cache['cryo_viz'] = base64.b64encode(buf.getvalue()).decode()
-        
+
         _viz_cache['cache_time'] = time.time()
     except Exception as e:
         print(f"Visualization cache error: {e}")
@@ -358,12 +358,12 @@ def simulation_loop():
     global simulation_running, laser_enabled, cryo_enabled, ablation_active, target_pos
     global guidance, five_g_guidance, _qkf_snapshot, _mr_seg_snapshot, _thermal_morph_snapshot, _ls_snapshot
     global _fencing_snapshot, _uq_snapshot, _localization_snapshot
-    
+
     loop_count = 0
-    
+
     while simulation_running:
         loop_count += 1
-        
+
         # 1. Robot Control - Update towards target
         robot.update_control(target_pos)
         current_pos, current_T = robot.forward_kinematics(robot.joints)
@@ -401,12 +401,12 @@ def simulation_loop():
             elif guidance.completed:
                 laser_enabled = False
                 ablation_active = False
-        
+
         # 2. Map robot position to thermal grid
         tx = np.clip(current_pos[0], 0, 1.0)
         ty = np.clip(current_pos[1] + 0.5, 0, 1.0)  # Offset for centered coordinate system
         tz = np.clip(current_pos[2], 0, 1.0)
-        
+
         # 3. Update level-set and MR-thermometry segmentation periodically
         if loop_count % 5 == 0:
             segmentation.evolve(thermo.get_map(), iterations=2)
@@ -424,7 +424,7 @@ def simulation_loop():
                 'solidity':        float(_ls_qual['solidity']),
                 'boundary_length': int(_ls_qual['boundary_length']),
             }
-        
+
         if loop_count % 10 == 0:
             seg_result = mr_thermo_seg.segment_from_thermometry(
                 thermo.get_map(), thermo.get_damage_map()
@@ -488,10 +488,10 @@ def simulation_loop():
                 current_pos, qkf_pos, [tx, tz]
             )
             _localization_snapshot = loc_res
-        
+
         # Get tumor location from segmentation
         tumor_center = segmentation.get_center_of_mass()
-        
+
         # 4. Apply laser heating – use QKF-corrected position for precision targeting
         # Map QKF estimated position to thermal grid
         qkf_tx = np.clip(qkf_pos[0], 0, 1.0)
@@ -499,22 +499,22 @@ def simulation_loop():
         if laser_enabled and ablation_active:
             # Dynamic power based on temperature
             current_temp = thermo.T[int(tz * 128), int(tx * 128)]
-            
+
             # Use adaptive laser power if 5G optimizer is available
             if laser_optimizer and five_g_guidance and five_g_guidance.active:
                 power_watts = laser_optimizer.compute_optimal_power(current_temp)
             else:
                 power_watts = 60.0 if current_temp < 50 else 30.0
-            
+
             # Deliver laser at QKF-estimated position for sub-mm accuracy
             thermo.apply_heat_source(qkf_tx, qkf_tz, power_watts=power_watts, radius_mm=2.5)
-        
+
         # 5. Apply cryo-ablation
         if cryo_enabled:
             cryo.activate_cryoprobe(tx, tz, power_pct=80.0)
         else:
             cryo.deactivate_cryoprobe()
-        
+
         # 6. Update thermal physics
         # Update cryo with necrotic mask from segmentation (inner core of tumor)
         if np.any(segmentation.tumor_mask):
@@ -525,7 +525,7 @@ def simulation_loop():
 
         cryo.update()
         thermo.update()
-        
+
         time.sleep(1.0 / CONTROL_LOOP_HZ)
 
 
@@ -543,22 +543,22 @@ def index():
 def get_telemetry():
     pos, T = robot.forward_kinematics(robot.joints)
     safety = robot.get_safety_status()
-    
+
     temp_map = thermo.get_map()
     damage_map = thermo.get_damage_map()
     cryo_map = cryo.get_ice_map()
     quantum_metrics = {}
     if hasattr(robot, 'get_quantum_metrics'):
         quantum_metrics = robot.get_quantum_metrics()
-    
+
     global laser_enabled, cryo_enabled, ablation_active, target_pos, cryo_lut_name
-    
+
     guidance_state = {
         'active': guidance.active if guidance else False,
         'completed': guidance.completed if guidance else False,
     }
     vasculature_analysis = vasculature.get_analysis() if vasculature else {}
-    
+
     cryo_metrics = cryo.get_damage_metrics()
     thermo_metrics = thermo.get_performance_metrics()
     current_max_temp = float(np.max(temp_map))
@@ -568,7 +568,7 @@ def get_telemetry():
         generated_profile = generated_profile.tolist()
     elif generated_profile is None:
         generated_profile = []
-        
+
     # ── Level-Set + QML Pinpoint Geometry ──
     ls_mask = segmentation.tumor_mask
     qml_mask = qml_segmenter.refine_geometry(ls_mask, thermo.tissue_type)
@@ -589,11 +589,11 @@ def get_telemetry():
         lut_colors = ['#020617', '#1e1b4b', '#312e81', '#3b82f6', '#06b6d4', '#22d3ee', '#ffffff']
     else:
         lut_colors = ['#0f172a', '#312e81', '#3730a3', '#4338ca', '#3b82f6']
-        
+
     custom_egg_lut = LinearSegmentedColormap.from_list('dynamic_lut', lut_colors)
     rgb_map = custom_egg_lut(refined_cryo)[:, :, :3]
     rgb_map_ds = rgb_map[::4, ::4, :].tolist()
-    
+
     # ── Multimodal Reasoning Engine (Gemini AI Driven) ──
     reasoning_insights = []
     if cryo.probe_active:
@@ -604,10 +604,10 @@ def get_telemetry():
             reasoning_insights.append("Detecting initial ice nucleation.")
     else:
         reasoning_insights.append("⏸ Gemini AI: Monitoring mode.")
-            
+
     if qml_segmenter and qml_segmenter.get_qml_metadata()['spectral_coherence'] > 0.98:
         reasoning_insights.append("⚛ Geometric parity locked via Fermat descent.")
-        
+
     reasoning_text = " ".join(reasoning_insights)
 
     # Gemini Generative AI Telemetry Packet
@@ -624,7 +624,7 @@ def get_telemetry():
         'necrotic_mask': qml_mask[::4, ::4].tolist(),
         'legend': []
     }
-    
+
     return jsonify({
         'joints': robot.get_joint_angles_degrees().tolist(),
         'position': pos.tolist(),
@@ -704,9 +704,9 @@ def get_telemetry():
 def control():
     """Control robot, laser, and cryo"""
     global laser_enabled, cryo_enabled, ablation_active, target_pos, cryo_lut_name
-    
+
     data = request.json or {}
-    
+
     if 'target_pos' in data:
         target_pos = np.array([
             data['target_pos']['x'],
@@ -719,18 +719,18 @@ def control():
             float(data['target'].get('y', 0.0)),
             float(data['target']['z'])
         ])
-    
+
     if 'laser' in data:
         laser_enabled = bool(data['laser'])
         if 'ablation' not in data:
             ablation_active = laser_enabled
-    
+
     if 'cryo' in data:
         cryo_enabled = bool(data['cryo'])
-        
+
     if 'cryo_color_profile' in data:
         cryo_lut_name = str(data['cryo_color_profile'])
-    
+
     if 'ablation' in data:
         ablation_active = bool(data['ablation'])
 
@@ -745,10 +745,10 @@ def control():
             duration_steps=160,
             mode=mode_map.get(requested_mode, 'STANDARD')
         )
-    
+
     if 'home' in data and data['home']:
         robot.home()
-    
+
     return jsonify({'status': 'ok', 'updated': True})
 
 @app.route('/api/laser/precision_target', methods=['POST'])
@@ -810,19 +810,19 @@ def toggle_guidance():
 def toggle_5g_guidance():
     """Toggle 5G neural pathway guided ablation system."""
     global five_g_guidance, laser_enabled, ablation_active
-    
+
     if not HAS_5G_GUIDANCE:
         return jsonify({'status': 'unavailable', 'enabled': False}), 501
-    
+
     data = request.json or {}
     enabled = bool(data.get('enabled', False))
-    
+
     if enabled:
         # Get segmentation and anatomy data
         seg_data = segmentation.get_visualization_data()
         tumor_mask = seg_data.get('tumor_mask', np.zeros((128, 128)))
         anatomy_map = thermo.tissue_type
-        
+
         # Initialize 5G guidance system
         five_g_guidance = FiveGNeuralPathway(
             anatomy_map=anatomy_map,
@@ -832,7 +832,7 @@ def toggle_5g_guidance():
         )
         five_g_guidance.active = True
         five_g_guidance.current_idx = 0
-        
+
         laser_enabled = False  # Will be controlled by 5G system
         ablation_active = False
     else:
@@ -840,7 +840,7 @@ def toggle_5g_guidance():
             five_g_guidance.active = False
         laser_enabled = False
         ablation_active = False
-    
+
     return jsonify({
         'status': 'ok',
         'enabled': enabled,
@@ -862,9 +862,9 @@ def get_5g_guidance_status():
             'neural_pathways': [],
             'safe_corridors': [],
         })
-    
+
     viz_data = five_g_guidance.get_visualization_data()
-    
+
     return jsonify(numpy_to_native({
         'active': bool(five_g_guidance.active),
         'completed': five_g_guidance.completed,
@@ -932,9 +932,9 @@ def plan_trajectory():
     target = np.array([data['x'], data['y'], data['z']])
     duration = data.get('duration', 5.0)
     path_type = data.get('path_type', 'linear')
-    
+
     trajectory = robot.plan_trajectory(target, duration=duration, path_type=path_type)
-    
+
     return jsonify({
         'planned': len(trajectory) > 0,
         'waypoints': len(trajectory),
@@ -945,7 +945,7 @@ def plan_trajectory():
 def segmentation_quality():
     """Get segmentation quality metrics"""
     metrics = segmentation.evaluate_segmentation_quality()
-    
+
     return jsonify(numpy_to_native({
         'quality': 'excellent' if metrics['circularity'] > 0.7 else 'good',
         'metrics': metrics,
@@ -957,10 +957,10 @@ def plan_ablation():
     """Plan ablation trajectory for tumor"""
     data = request.json or {}
     method = data.get('method', 'sequential')  # sequential, concentric, spiral
-    
+
     tumor_center = segmentation.get_center_of_mass()
     ablation_region = segmentation.get_ablation_region()
-    
+
     # Get ablation waypoints
     if method == 'sequential':
         # Simple center targeting
@@ -982,7 +982,7 @@ def plan_ablation():
             x = center[0] + r * np.cos(t)
             z = center[1] + r * np.sin(t)
             waypoints.append([np.clip(x, 0, 1), np.clip(z, 0, 1)])
-    
+
     return jsonify(numpy_to_native({
         'method': method,
         'waypoints': waypoints,
@@ -1031,7 +1031,7 @@ def thermal_neuro_morphometry():
 def thermal_history():
     """Get thermal history for plotting"""
     history = thermo.get_history()
-    
+
     return jsonify(numpy_to_native({
         'max_temps': history[-100:] if len(history) > 100 else history,
         'simulation_time_s': thermo.accumulated_time,
@@ -1071,20 +1071,20 @@ def run_ntt_benchmark():
     """Run Number Theoretic Transform (NTT) high-throughput benchmark on ultrasound frame."""
     if not ntt_engine:
         return jsonify({'error': 'NTT Engine not initialized'}), 503
-    
+
     # Use real ultrasound simulation RF matrix or test frame
     try:
         sample_img = us_simulator.bmode_image
     except:
         sample_img = np.random.rand(64, 64)
-        
+
     spectrum_2d, metrics = ntt_engine.transform_2d(sample_img)
     recon = ntt_engine.inverse_transform_2d(spectrum_2d)
-    
+
     # Quantify bit-exactness & spectral fidelity
     error = float(np.max(np.abs(recon - (np.clip(sample_img[:64, :64], 0, 1) if sample_img.shape[0] >= 64 else sample_img))))
     metrics['max_reconstruction_error'] = round(error, 6)
-    
+
     return jsonify(numpy_to_native({
         'status': 'ok',
         'metrics': metrics,
@@ -1108,13 +1108,13 @@ def pacs_cstore():
     data = request.json or {}
     patient_id = data.get('patient_id', 'NM-2026-9041')
     study_desc = data.get('study_desc', 'Intraoperative 8.5MHz B-Mode Resection Scan')
-    
+
     # Get current live ultrasound image
     try:
         current_us = us_simulator.bmode_image
     except:
         current_us = np.random.rand(64, 64)
-        
+
     res = ge_pacs_server.c_store_ultrasound_frame(current_us, patient_id=patient_id, study_desc=study_desc)
     return jsonify(numpy_to_native(res))
 
@@ -1127,14 +1127,14 @@ def pacs_csend():
     data = request.json or {}
     study_uid = data.get('study_uid')
     dest_aet = data.get('destination_aet', 'GE_CENTRICITY')
-    
+
     if not study_uid:
         studies = list(ge_pacs_server.studies.keys())
         if studies:
             study_uid = studies[-1]
         else:
             return jsonify({'error': 'No studies available to send'}), 400
-            
+
     res = ge_pacs_server.c_send_to_remote(study_uid, destination_aet=dest_aet)
     return jsonify(numpy_to_native(res))
 
@@ -1172,51 +1172,145 @@ def pacs_cmove():
     return jsonify(numpy_to_native(res))
 
 
-@app.route('/api/economics/simulate', methods=['GET', 'POST'])
-def economics_simulate():
-    """Simulates 10-year robot capital economics, revenue streams, and monetization horizon."""
-    params = request.get_json(silent=True) or request.args
-    fin_result = cost_economics_engine.simulate_financial_horizon(params)
-    
-    # Render financial chart
-    fig, axes = plt.subplots(1, 3, figsize=(19, 4.2))
-    fig.patch.set_facecolor('#0f172a')
-    
+_econ_chart_cache = {}
+
+def render_economics_3yr_chart(fin_result: dict) -> str:
+    """Renders fast, thread-safe, high-resolution 3-Panel 3-Year Commercial Horizon charts."""
+    three_yr = fin_result['three_year_horizon']
+    quarters = three_yr['quarters']
+    q_indices = np.arange(1, 13)
+    market_revenue = three_yr['market_revenue_projection']
+    arrhythmia = np.array(market_revenue['quarterly_by_market']['cardiac_arrhythmia']) / 1e6
+    hifu = np.array(market_revenue['quarterly_by_market']['hifu_therapy']) / 1e6
+    neurosurgery = np.array(market_revenue['quarterly_by_market']['neurosurgery']) / 1e6
+    enabled_revenue = np.array(market_revenue['quarterly_enabled_revenue']) / 1e6
+    conventional_revenue = np.array(market_revenue['quarterly_conventional_revenue']) / 1e6
+    qml_llm_increment = np.array(market_revenue['quarterly_qml_llm_increment']) / 1e6
+
+    from matplotlib.figure import Figure
+    fig = Figure(figsize=(15, 3.6), facecolor='#0f172a', dpi=90)
+    axes = fig.subplots(1, 3)
+
+    # Panel 1: Three-market clinical revenue ramp.
+    ax1 = axes[0]
+    ax1.bar(q_indices, arrhythmia, label='Cardiac Arrhythmia', color='#38bdf8', alpha=0.88, width=0.65)
+    ax1.bar(q_indices, hifu, bottom=arrhythmia, label='HIFU Therapy', color='#10b981', alpha=0.88, width=0.65)
+    ax1.bar(q_indices, neurosurgery, bottom=arrhythmia + hifu, label='Neurosurgery', color='#c084fc', alpha=0.88, width=0.65)
+
+    # Mark Year Boundaries
+    ax1.axvline(4.5, color='#475569', linestyle='--', alpha=0.5)
+    ax1.axvline(8.5, color='#475569', linestyle='--', alpha=0.5)
+    max_top = max(enabled_revenue) * 0.93 if len(enabled_revenue) else 1.0
+    ax1.text(2.5, max_top, 'Year 1 (KOL)', color='#94a3b8', fontsize=7.5, ha='center')
+    ax1.text(6.5, max_top, 'Year 2 (Scale)', color='#94a3b8', fontsize=7.5, ha='center')
+    ax1.text(10.5, max_top, 'Year 3 (Dominance)', color='#94a3b8', fontsize=7.5, ha='center')
+
+    ax1.set_title('3-Year Clinical Market Revenue Ramp (Q1-Q12)', color='#e2e8f0', fontsize=9.5, fontweight='bold')
+    ax1.set_xlabel('Commercial Launch Timeline (Quarters)', color='#94a3b8', fontsize=8.5)
+    ax1.set_ylabel('$ Millions / Quarter', color='#94a3b8', fontsize=8.5)
+    ax1.set_xticks(q_indices)
+    ax1.set_xticklabels(quarters)
+    ax1.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=7, loc='upper left')
+    ax1.grid(True, color='#334155', alpha=0.3)
+    ax1.set_facecolor('#0f172a')
+
+    # Panel 2: Conventional versus QML/LLM-enabled commercial trajectory.
+    ax2 = axes[1]
+    cumulative_conventional = np.cumsum(conventional_revenue)
+    cumulative_enabled = np.cumsum(enabled_revenue)
+    cumulative_increment = np.cumsum(qml_llm_increment)
+    ax2.plot(q_indices, cumulative_conventional, 's-', color='#94a3b8', lw=2.0, label='Conventional Revenue')
+    ax2.plot(q_indices, cumulative_enabled, 'o-', color='#fbbf24', lw=2.3, label='QML + LLM Enabled')
+    ax2.fill_between(q_indices, cumulative_conventional, cumulative_enabled, color='#38bdf8', alpha=0.18, label='AI-Enabled Increment')
+    ax2.annotate(
+        f"AI-enabled = ${cumulative_enabled[-1]:.0f}M\nIncrement = ${cumulative_increment[-1]:.0f}M",
+        xy=(12, cumulative_enabled[-1]), xytext=(-8, 8), textcoords='offset points',
+        color='#fbbf24', fontsize=8, fontweight='bold', ha='right'
+    )
+    ax2.set_title('Conventional vs. QML + LLM Revenue Trajectory', color='#e2e8f0', fontsize=9.5, fontweight='bold')
+    ax2.set_xlabel('Clinical Commercialization Timeline (Quarters)', color='#94a3b8', fontsize=8.5)
+    ax2.set_ylabel('Cumulative Revenue ($M)', color='#94a3b8', fontsize=8.5)
+    ax2.set_xticks(q_indices)
+    ax2.set_xticklabels(quarters)
+    ax2.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=7.0, loc='upper left')
+    ax2.grid(True, color='#334155', alpha=0.3)
+    ax2.set_facecolor('#0f172a')
+
+    # Panel 3: Hospital 3-Year Unit ROI & Breakeven Procedure Payback
+    ax3 = axes[2]
+    hosp = three_yr['hospital_unit_economics_3yr']
+    months = np.arange(1, 37)
+    monthly_margin = hosp['annual_net_cash_flow'] / 12.0
+    hosp_cum_cash = (months * monthly_margin) / 1e6
+    hosp_capex = hosp['robot_capex'] / 1e6
+
+    ax3.plot(months, hosp_cum_cash, color='#10b981', lw=2.2, label='Hospital Net Margin ($M)')
+    ax3.axhline(hosp_capex, color='#ef4444', linestyle='--', lw=1.6, label=f"Robot CapEx (${hosp_capex:.2f}M)")
+
+    payback_m = hosp['breakeven_months']
+    ax3.axvline(payback_m, color='#fbbf24', linestyle=':', lw=1.8)
+    ax3.scatter([payback_m], [hosp_capex], color='#fbbf24', s=50, zorder=5)
+    ax3.annotate(f"Payback: {payback_m:.1f} Mo\n({hosp['breakeven_procedures']} procs)",
+                 xy=(payback_m, hosp_capex), xytext=(8, -20), textcoords='offset points',
+                 color='#fbbf24', fontsize=7.5, fontweight='bold',
+                 arrowprops=dict(arrowstyle='->', color='#fbbf24', lw=1.0))
+
+    ax3.set_title('Hospital 3-Year Procedure Unit Economics & Payback', color='#e2e8f0', fontsize=9.5, fontweight='bold')
+    ax3.set_xlabel('Hospital Operational Timeline (Months 1–36)', color='#94a3b8', fontsize=8.5)
+    ax3.set_ylabel('$ Millions Cumulative Net Margin', color='#94a3b8', fontsize=8.5)
+    ax3.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=7.5, loc='upper left')
+    ax3.grid(True, color='#334155', alpha=0.3)
+    ax3.set_facecolor('#0f172a')
+
+    for ax in [ax1, ax2, ax3]:
+        ax.tick_params(colors='#e2e8f0', labelsize=7.5)
+        for spine in ax.spines.values():
+            spine.set_color('#334155')
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', bbox_inches='tight', dpi=90, facecolor=fig.get_facecolor())
+    return 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode('utf-8')
+
+
+def render_economics_10yr_chart(fin_result: dict) -> str:
+    """Renders fast, thread-safe, high-resolution 3-Panel 10-Year Long-Term Horizon charts."""
+    from matplotlib.figure import Figure
+    fig = Figure(figsize=(15, 3.6), facecolor='#0f172a', dpi=90)
+    axes = fig.subplots(1, 3)
+
     years = fin_result['years']
     rev = np.array(fin_result['revenue_breakdown']['total_revenue']) / 1e6
     ebitda = np.array(fin_result['profitability']['ebitda']) / 1e6
     cum_fcf = np.array(fin_result['profitability']['cumulative_free_cash_flow']) / 1e6
-    
+
     ax1 = axes[0]
     ax1.plot(years, rev, 's-', color='#38bdf8', lw=2, label='Revenue ($M)')
     ax1.plot(years, ebitda, 'o--', color='#10b981', lw=2, label='EBITDA ($M)')
     ax1.plot(years, cum_fcf, '^-', color='#c084fc', lw=2, label='Cum. FCF ($M)')
     ax1.axhline(0, color='#64748b', linestyle=':', alpha=0.7)
-    ax1.set_title('10-Year Long-Term Capital Horizon Projections', color='#e2e8f0', fontsize=10.5, fontweight='bold')
-    ax1.set_xlabel('Horizon Timeline (Years)', color='#94a3b8', fontsize=9)
-    ax1.set_ylabel('$ Millions', color='#94a3b8', fontsize=9)
-    ax1.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=8)
+    ax1.set_title('10-Year Long-Term Capital Horizon Projections', color='#e2e8f0', fontsize=9.5, fontweight='bold')
+    ax1.set_xlabel('Horizon Timeline (Years)', color='#94a3b8', fontsize=8.5)
+    ax1.set_ylabel('$ Millions', color='#94a3b8', fontsize=8.5)
+    ax1.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=7.5)
     ax1.grid(True, color='#334155', alpha=0.3)
     ax1.set_facecolor('#0f172a')
-    
+
     ax2 = axes[1]
     hw = np.array(fin_result['revenue_breakdown']['hardware_sales']) / 1e6
     disp = np.array(fin_result['revenue_breakdown']['disposables']) / 1e6
     saas = np.array(fin_result['revenue_breakdown']['saas_and_service']) / 1e6
-    
+
     ax2.bar(years, hw, label='Capital Hardware', color='#38bdf8', alpha=0.85)
     ax2.bar(years, disp, bottom=hw, label='Sterile Disposables', color='#10b981', alpha=0.85)
     ax2.bar(years, saas, bottom=hw+disp, label='SaaS & Service', color='#f59e0b', alpha=0.85)
-    ax2.set_title('Revenue Streams Breakdown ($M)', color='#e2e8f0', fontsize=10.5, fontweight='bold')
-    ax2.set_xlabel('Horizon Timeline (Years)', color='#94a3b8', fontsize=9)
-    ax2.set_ylabel('Stream Contribution ($M)', color='#94a3b8', fontsize=9)
-    ax2.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=8)
+    ax2.set_title('Revenue Streams Breakdown ($M)', color='#e2e8f0', fontsize=9.5, fontweight='bold')
+    ax2.set_xlabel('Horizon Timeline (Years)', color='#94a3b8', fontsize=8.5)
+    ax2.set_ylabel('Stream Contribution ($M)', color='#94a3b8', fontsize=8.5)
+    ax2.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=7.5)
     ax2.grid(True, color='#334155', alpha=0.3)
     ax2.set_facecolor('#0f172a')
 
     # Panel 3: 10-Year Discounted Cash Flow (DCF) Analysis
-    # Bars = discounted FCF per year; Line = cumulative discounted FCF (NPV convergence),
-    # anchored at the Year-0 capital outlay so the curve terminates at project NPV.
     ax3 = axes[2]
     dfcf = np.array(fin_result['profitability']['discounted_fcf']) / 1e6
     cum_dfcf_full = np.array(fin_result['profitability']['cumulative_discounted_fcf']) / 1e6
@@ -1225,32 +1319,58 @@ def economics_simulate():
 
     bar_colors = ['#10b981' if v >= 0 else '#ef4444' for v in dfcf]
     ax3.bar(years, dfcf, color=bar_colors, alpha=0.85, label='Discounted FCF ($M)')
-    ax3.plot(dcf_years, cum_dfcf_full, 'o-', color='#fbbf24', lw=2.2, label='Cumulative Disc. FCF / NPV ($M)')
+    ax3.plot(dcf_years, cum_dfcf_full, 'o-', color='#fbbf24', lw=2.0, label='Cumulative Disc. FCF / NPV ($M)')
     ax3.axhline(0, color='#64748b', linestyle=':', alpha=0.8)
     ax3.axhline(npv_m, color='#fbbf24', linestyle='--', alpha=0.5, lw=1)
     ax3.annotate(f'NPV = ${npv_m:.1f}M', xy=(dcf_years[-1], cum_dfcf_full[-1]),
                  xytext=(-6, 10), textcoords='offset points', color='#fbbf24',
-                 fontsize=9, fontweight='bold', ha='right')
-    ax3.set_title('10-Year Discounted Cash Flow (DCF) Analysis', color='#e2e8f0', fontsize=10.5, fontweight='bold')
-    ax3.set_xlabel('Horizon Timeline (Years, Yr 0 = Capital Outlay)', color='#94a3b8', fontsize=9)
-    ax3.set_ylabel('$ Millions (Discounted)', color='#94a3b8', fontsize=9)
-    ax3.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=8)
+                 fontsize=8, fontweight='bold', ha='right')
+    ax3.set_title('10-Year Discounted Cash Flow (DCF) Analysis', color='#e2e8f0', fontsize=9.5, fontweight='bold')
+    ax3.set_xlabel('Horizon Timeline (Years, Yr 0 = Capital Outlay)', color='#94a3b8', fontsize=8.5)
+    ax3.set_ylabel('$ Millions (Discounted)', color='#94a3b8', fontsize=8.5)
+    ax3.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=7.5)
     ax3.grid(True, color='#334155', alpha=0.3)
     ax3.set_facecolor('#0f172a')
-    
+
     for ax in [ax1, ax2, ax3]:
-        ax.tick_params(colors='#e2e8f0', labelsize=8)
+        ax.tick_params(colors='#e2e8f0', labelsize=7.5)
         for spine in ax.spines.values():
             spine.set_color('#334155')
-            
+
     buf = io.BytesIO()
-    plt.savefig(buf, format='png', bbox_inches='tight', dpi=130, facecolor=fig.get_facecolor())
-    plt.close(fig)
-    img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-    
+    fig.savefig(buf, format='png', bbox_inches='tight', dpi=90, facecolor=fig.get_facecolor())
+    return 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode('utf-8')
+
+
+@app.route('/api/economics/simulate', methods=['GET', 'POST'])
+def economics_simulate():
+    """Simulates 3-year commercial horizon and 10-year capital economics, revenue streams, and monetization horizon with in-memory caching."""
+    params = request.get_json(silent=True) or request.args
+    fin_result = cost_economics_engine.simulate_financial_horizon(params)
+    horizon_view = str(params.get('horizon_view', '3yr')).lower()
+
+    cache_key = (
+        float(params.get('base_robot_cost', 1450000)),
+        int(params.get('procedures_per_year_per_unit', 180)),
+        float(params.get('disposable_sale_price', 4200)),
+        float(params.get('procedure_charge', 14500))
+    )
+
+    if cache_key in _econ_chart_cache:
+        chart_3yr, chart_10yr = _econ_chart_cache[cache_key]
+    else:
+        chart_3yr = render_economics_3yr_chart(fin_result)
+        chart_10yr = render_economics_10yr_chart(fin_result)
+        _econ_chart_cache[cache_key] = (chart_3yr, chart_10yr)
+
+    active_chart = chart_3yr if horizon_view.startswith('3') else chart_10yr
+
     return jsonify({
-        'financials': fin_result,
-        'chart': 'data:image/png;base64,' + img_b64
+        'financials': numpy_to_native(fin_result),
+        'chart': active_chart,
+        'chart_3yr': chart_3yr,
+        'chart_10yr': chart_10yr,
+        'horizon_view': horizon_view
     })
 
 
@@ -1263,11 +1383,11 @@ def get_thermometric_fencing():
     uq_data = number_theoretic_uq.evaluate_thermal_uq(
         thermo.get_map(), thermo.get_damage_map()
     )
-    
+
     # Generate combinatorial fencing visualization
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
     fig.patch.set_facecolor('#0f172a')
-    
+
     # Panel 1: Temperature Map with Fences & Isotherms
     ax1 = axes[0]
     t_map = thermo.get_map()
@@ -1275,22 +1395,22 @@ def get_thermometric_fencing():
     cbar1 = fig.colorbar(im1, ax=ax1, fraction=0.046, pad=0.04)
     cbar1.ax.tick_params(colors='#e2e8f0', labelsize=8)
     cbar1.set_label('Temp (°C)', color='#e2e8f0', fontsize=8.5)
-    
+
     for struct in thermometric_fencing.eloquent_structures:
         pts = struct['points_mm']
         hull_pts = np.vstack([pts, pts[0]])
         ax1.plot(hull_pts[:, 0], hull_pts[:, 1], color=struct['color'], lw=2, label=struct['name'][:14])
         ax1.fill(hull_pts[:, 0], hull_pts[:, 1], color=struct['color'], alpha=0.25)
-        
+
     ax1.contour(np.linspace(0, 64, 128), np.linspace(0, 64, 128), t_map, levels=[43.0], colors=['#38bdf8'], linewidths=[1.5], linestyles=['--'])
     ax1.contour(np.linspace(0, 64, 128), np.linspace(0, 64, 128), t_map, levels=[50.0], colors=['#ffffff'], linewidths=[1.5])
-    
+
     ax1.set_title('Combinatorial Safety Fences & Isotherms', color='#e2e8f0', fontsize=10, fontweight='bold')
     ax1.set_xlabel('Lateral X (mm)', color='#94a3b8', fontsize=8.5)
     ax1.set_ylabel('Axial Z (mm)', color='#94a3b8', fontsize=8.5)
     ax1.legend(loc='lower left', fontsize=7, facecolor='#1e293b', labelcolor='#e2e8f0')
     ax1.set_facecolor('#0f172a')
-    
+
     # Panel 2: Ramanujan Harmonics
     ax2 = axes[1]
     q_vals = list(range(1, len(uq_data['ramanujan_harmonics']) + 1))
@@ -1300,17 +1420,17 @@ def get_thermometric_fencing():
     ax2.set_ylabel('Harmonic Amplitude', color='#94a3b8', fontsize=8.5)
     ax2.grid(True, color='#334155', alpha=0.3)
     ax2.set_facecolor('#0f172a')
-    
+
     for ax in [ax1, ax2]:
         ax.tick_params(colors='#e2e8f0', labelsize=8)
         for spine in ax.spines.values():
             spine.set_color('#334155')
-            
+
     buf = io.BytesIO()
     plt.savefig(buf, format='png', bbox_inches='tight', dpi=130, facecolor=fig.get_facecolor())
     plt.close(fig)
     img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-    
+
     return jsonify({
         'fencing': fencing_data,
         'uq': uq_data,
@@ -1326,7 +1446,7 @@ def get_thermometric_fencing():
 def get_ultrasound_scan():
     """Returns intraoperative ultrasound (iUS) B-mode and RF sector scan data."""
     global current_ablation_radius_mm, us_gain_db, us_frequency_mhz
-    
+
     if request.method == 'POST':
         data = request.json or {}
         if 'ablation_radius_mm' in data:
@@ -1335,7 +1455,7 @@ def get_ultrasound_scan():
             us_gain_db = float(data['gain_db'])
         if 'frequency_mhz' in data:
             us_frequency_mhz = float(data['frequency_mhz'])
-            
+
     tumor_r = 9.5
     scan_data = us_simulator.generate_ius_bmode_scan(
         tumor_radius_mm=tumor_r,
@@ -1343,10 +1463,10 @@ def get_ultrasound_scan():
         gain_db=us_gain_db,
         frequency_mhz=us_frequency_mhz
     )
-    
+
     # Specificity & sensitivity evaluation
     spec_data = tumor_evaluator.evaluate_ablation_performance(current_ablation_radius_mm)
-    
+
     return jsonify({
         'status': 'ok',
         'scan': scan_data,
@@ -1394,7 +1514,7 @@ def get_ablation_specificity():
         data = request.json or {}
         if 'ablation_radius_mm' in data:
             current_ablation_radius_mm = float(data['ablation_radius_mm'])
-            
+
     metrics = tumor_evaluator.evaluate_ablation_performance(current_ablation_radius_mm)
     return jsonify({
         'status': 'ok',
@@ -1431,7 +1551,7 @@ def get_robot_kinematics_qkf():
         data = request.json or {}
         if 'joint_angles' in data:
             angles = [float(a) for a in data['joint_angles']]
-            
+
     kinematics = robot_qkf_kinematics.forward_kinematics(joint_angles=angles)
     return jsonify({
         'status': 'ok',
@@ -1448,7 +1568,7 @@ def step_ablation():
     max_radius_mm = float(data.get('max_radius_mm', 10.5))
 
     current_ablation_radius_mm = min(max_radius_mm, current_ablation_radius_mm + step_delta_mm)
-    
+
     scan_data = us_simulator.generate_ius_bmode_scan(
         tumor_radius_mm=9.5,
         ablation_radius_mm=current_ablation_radius_mm,
@@ -1597,7 +1717,7 @@ def get_ultrasound_preprint():
             build_ultrasound_ablation_preprint_pdf(pdf_path)
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-            
+
     as_att = request.path.endswith('/download')
     return send_file(
         pdf_path,
@@ -1618,7 +1738,7 @@ def get_cryo_laser_preprint():
             build_cryo_laser_preprint_pdf(pdf_path)
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-            
+
     as_att = request.path.endswith('/download')
     return send_file(
         pdf_path,
@@ -1639,7 +1759,7 @@ def get_nih_grant_proposal():
             build_nih_grant_pdf(pdf_path)
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-            
+
     as_att = request.path.endswith('/download')
     return send_file(
         pdf_path,

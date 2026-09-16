@@ -971,9 +971,15 @@
 
                 <!-- Cost Economics & Monetization Tab -->
                 <div id="tab-economics" class="tab-content">
-                    <h2 style="color: #38bdf8;">💼 Robot Cost Economics & Monetization Horizon</h2>
-                    <p style="color: #94a3b8; font-size: 11.5px; margin: 4px 0 12px 0;">
-                        10-Year Long-Term Capital Horizon Projections, CapEx / OpEx Modeling, and Hospital Unit Economics.
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <h2 style="color: #38bdf8; margin:0;">💼 Robot Cost Economics & Monetization Horizon</h2>
+                        <div style="display:flex; gap:6px;">
+                            <button id="btn-horizon-3yr" class="btn-primary" style="padding:4px 10px; font-size:10px; background:linear-gradient(135deg, #0284c7, #38bdf8);" onclick="setEconomicsHorizon('3yr')">📅 3-YEAR COMMERCIAL</button>
+                            <button id="btn-horizon-10yr" class="btn-secondary" style="padding:4px 10px; font-size:10px;" onclick="setEconomicsHorizon('10yr')">📈 10-YEAR CAPITAL</button>
+                        </div>
+                    </div>
+                    <p id="econ-horizon-desc" style="color: #94a3b8; font-size: 11.5px; margin: 0 0 12px 0;">
+                        $300M 3-Year Clinical Commercialization Horizon across Cardiac Arrhythmia, HIFU Therapy, and Neurosurgery, with conventional and QML/LLM-enabled revenue scenarios.
                     </p>
 
                     <!-- Interactive Parameter Sliders -->
@@ -1004,42 +1010,47 @@
                         </button>
                     </div>
 
-                    <!-- Economics KPI Summary -->
-                    <div class="metrics" style="margin-bottom: 12px;">
+                    <!-- Economics Dynamic KPI Summary -->
+                    <div id="econ-kpi-container" class="metrics" style="margin-bottom: 12px;">
                         <div class="metric">
-                            <span class="m-label">10-Yr NPV (@8%)</span>
-                            <span class="m-value" id="econ-npv" style="color: #10b981;">$24.8M</span>
+                            <span class="m-label" id="lbl-econ-npv">3-Yr NPV (@8%)</span>
+                            <span class="m-value" id="econ-npv" style="color: #10b981;">$38.9M</span>
                         </div>
                         <div class="metric">
-                            <span class="m-label">Internal Rate (IRR)</span>
-                            <span class="m-value" id="econ-irr" style="color: #38bdf8;">34.2%</span>
+                            <span class="m-label" id="lbl-econ-irr">QML + LLM Revenue Increment</span>
+                            <span class="m-value" id="econ-irr" style="color: #38bdf8;">$60M</span>
                         </div>
                         <div class="metric">
-                            <span class="m-label">Payback Timeline</span>
-                            <span class="m-value" id="econ-payback" style="color: #fbbf24;">3 Years</span>
+                            <span class="m-label" id="lbl-econ-payback">Clinical Market Coverage</span>
+                            <span class="m-value" id="econ-payback" style="color: #fbbf24;">3 Markets</span>
                         </div>
                         <div class="metric">
-                            <span class="m-label">Discounted Payback</span>
-                            <span class="m-value" id="econ-disc-payback" style="color: #f59e0b;">4 Years</span>
+                            <span class="m-label" id="lbl-econ-disc-payback">Year 3 Revenue</span>
+                            <span class="m-value" id="econ-disc-payback" style="color: #f59e0b;">$150M</span>
                         </div>
                         <div class="metric">
-                            <span class="m-label">10-Yr Cum. Revenue</span>
-                            <span class="m-value" id="econ-tot-rev" style="color: #c084fc;">$182.4M</span>
+                            <span class="m-label" id="lbl-econ-tot-rev">3-Yr Cum. Revenue</span>
+                            <span class="m-value" id="econ-tot-rev" style="color: #c084fc;">$121.8M</span>
                         </div>
                         <div class="metric">
-                            <span class="m-label">10-Yr Cum. Disc. FCF</span>
-                            <span class="m-value" id="econ-cum-dfcf" style="color: #34d399;">$31.3M</span>
+                            <span class="m-label" id="lbl-econ-cum-dfcf">Conventional Revenue</span>
+                            <span class="m-value" id="econ-cum-dfcf" style="color: #34d399;">$240M</span>
                         </div>
                     </div>
 
-                    <!-- Hospital Unit Margins -->
-                    <div class="quantum-metrics-box" style="border:1px solid #10b981; border-radius:8px; padding:10px; margin-bottom:12px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="color:#a7f3d0; font-size:11px; font-weight:bold;">HOSPITAL PROCEDURE MARGIN:</span>
-                            <span id="econ-hosp-margin" style="color:#10b981; font-size:13px; font-weight:bold;">$7,657 (52.8%)</span>
+                    <!-- Hospital Unit Margins & 3-Year ROI Box -->
+                    <div class="quantum-metrics-box" style="border:1px solid #10b981; border-radius:8px; padding:10px; margin-bottom:12px; background:rgba(6,78,59,0.15);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="color:#a7f3d0; font-size:11px; font-weight:bold;">HOSPITAL 3-YEAR UNIT ROI &amp; PAYBACK:</span>
+                            <span id="econ-hosp-margin" style="color:#10b981; font-size:13px; font-weight:bold;">$7,500 / Proc (51.7%)</span>
                         </div>
-                        <p style="color:#64748b; font-size:10px; margin:4px 0 0 0;">
-                            Net profit per MRgLITT case after disposable probe kit, clinical specialist staff, and amortized robotic CapEx.
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; font-size:10.5px; margin-top:6px; color:#cbd5e1;">
+                            <div><strong style="color:#38bdf8;">CapEx Payback:</strong> <span id="econ-hosp-payback-months">14.8 Months</span> (<span id="econ-hosp-breakeven-procs">142</span> procs)</div>
+                            <div><strong style="color:#34d399;">Annual Cash Flow:</strong> <span id="econ-hosp-annual-flow">$1.35M / year</span></div>
+                            <div><strong style="color:#fbbf24;">3-Yr Net Profit:</strong> <span id="econ-hosp-3yr-profit">$2.60M</span> (<span id="econ-hosp-3yr-roi">179.3% ROI</span>)</div>
+                        </div>
+                        <p style="color:#64748b; font-size:10px; margin:6px 0 0 0;">
+                            Hospital economics calculated per robotic system after disposable probe kit ($4,200), specialist team ($2,800), and $14,500 reimbursement billing.
                         </p>
                     </div>
 
@@ -1048,8 +1059,56 @@
                         <span style="color:#64748b; font-size:11px;">Generating financial horizon charts...</span>
                     </div>
 
+                    <!-- 3-Year Annual Milestones Table -->
+                    <div id="econ-3yr-table-box" class="quantum-metrics-box" style="border:1px solid #38bdf8; border-radius:8px; padding:10px; margin-bottom:12px;">
+                        <h3 style="color:#7dd3fc; font-size:11.5px; margin:0 0 8px 0; letter-spacing:0.04em;">
+                            📅 3-YEAR CLINICAL REVENUE &amp; COMMERCIALIZATION TRAJECTORY
+                        </h3>
+                        <div style="overflow-x:auto;">
+                            <table style="width:100%; border-collapse:collapse; font-size:10.5px;">
+                                <thead>
+                                    <tr style="color:#94a3b8; border-bottom:1px solid #334155;">
+                                        <th style="text-align:left; padding:4px 6px;">Commercial Year</th>
+                                        <th style="text-align:right; padding:4px 6px;">Cardiac Arrhythmia ($M)</th>
+                                        <th style="text-align:right; padding:4px 6px;">HIFU Therapy ($M)</th>
+                                        <th style="text-align:right; padding:4px 6px;">Neurosurgery ($M)</th>
+                                        <th style="text-align:right; padding:4px 6px;">Conventional ($M)</th>
+                                        <th style="text-align:right; padding:4px 6px;">QML + LLM Increment ($M)</th>
+                                        <th style="text-align:right; padding:4px 6px;">Enabled Revenue ($M)</th>
+                                        <th style="text-align:right; padding:4px 6px;">EBITDA ($M)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="econ-3yr-table-body">
+                                    <tr><td colspan="8" style="text-align:center; color:#64748b; padding:8px;">Loading 3-year clinical revenue projection trajectory...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 3-Year Strategic Characteristics Matrix -->
+                    <div id="econ-3yr-characteristics-box" class="quantum-metrics-box" style="border:1px solid #c084fc; border-radius:8px; padding:10px; margin-bottom:12px;">
+                        <h3 style="color:#e9d5ff; font-size:11.5px; margin:0 0 8px 0; letter-spacing:0.04em;">
+                            🏆 3-YEAR STRATEGIC &amp; COMMERCIAL CHARACTERISTICS
+                        </h3>
+                        <div style="overflow-x:auto;">
+                            <table style="width:100%; border-collapse:collapse; font-size:10.5px;">
+                                <thead>
+                                    <tr style="color:#c084fc; border-bottom:1px solid #334155;">
+                                        <th style="text-align:left; padding:4px 6px; width:28%;">Operational Dimension</th>
+                                        <th style="text-align:left; padding:4px 6px; width:24%; color:#38bdf8;">Year 1 (KOL Centers)</th>
+                                        <th style="text-align:left; padding:4px 6px; width:24%; color:#34d399;">Year 2 (Scale &amp; Breakeven)</th>
+                                        <th style="text-align:left; padding:4px 6px; width:24%; color:#fbbf24;">Year 3 (Market Dominance)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="econ-3yr-characteristics-body">
+                                    <tr><td colspan="4" style="text-align:center; color:#64748b; padding:8px;">Loading 3-year commercial characteristics...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <!-- 10-Year Discounted Cash Flow (DCF) Table -->
-                    <div class="quantum-metrics-box" style="border:1px solid #f59e0b; border-radius:8px; padding:10px; margin-bottom:12px;">
+                    <div id="econ-10yr-dcf-box" class="quantum-metrics-box" style="border:1px solid #f59e0b; border-radius:8px; padding:10px; margin-bottom:12px; display:none;">
                         <h3 style="color:#fbbf24; font-size:11.5px; margin:0 0 8px 0; letter-spacing:0.04em;">
                             10-YEAR DISCOUNTED CASH FLOW (DCF) SCHEDULE
                         </h3>
@@ -1078,7 +1137,7 @@
                 <!-- Nature Preprint Tab -->
                 <div id="tab-preprint" class="tab-content">
                     <h2 style="color: #fbbf24;">📄 Nature Publication Preprints & Finite Math Editions</h2>
-                    
+
                     <!-- Preprint 1: Ultrasound Ablation, QML & Stieltjes -->
                     <div class="quantum-metrics-box" style="border: 1px solid #38bdf8; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: rgba(15,23,42,0.85);">
                         <h3 style="color: #38bdf8; font-size: 12px; margin: 0 0 4px 0;">
@@ -1130,7 +1189,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <script>
                     function runProstateSim() {
                         const container = document.getElementById('prostate-img-container');
@@ -1178,41 +1237,148 @@
                             });
                     }
 
-                    function runEconomicsSim() {
-                        const container = document.getElementById('econ-chart-container');
-                        container.innerHTML = '<span style="color:#38bdf8;">Computing 10-year discounted cash flows & monetization models...</span>';
-                        
-                        const payload = {
-                            base_robot_cost: parseFloat(document.getElementById('econ-robot-cost').value) || 1450000,
-                            procedures_per_year_per_unit: parseInt(document.getElementById('econ-procs-unit').value) || 180,
-                            disposable_sale_price: parseFloat(document.getElementById('econ-disp-price').value) || 4200,
-                            procedure_charge: parseFloat(document.getElementById('econ-proc-charge').value) || 14500
-                        };
+                    let currentEconHorizon = '3yr';
+                    let cachedEconData = null;
 
-                        fetch('/api/economics/simulate', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        })
-                        .then(r => r.json())
-                        .then(data => {
-                            if(data.chart) {
-                                container.innerHTML = `<img src="${data.chart}" style="width:100%; height:auto; display:block; border-radius:6px;">`;
+                    function setEconomicsHorizon(h) {
+                        currentEconHorizon = h;
+                        const btn3 = document.getElementById('btn-horizon-3yr');
+                        const btn10 = document.getElementById('btn-horizon-10yr');
+                        const desc = document.getElementById('econ-horizon-desc');
+                        const box3yrTable = document.getElementById('econ-3yr-table-box');
+                        const box3yrChar = document.getElementById('econ-3yr-characteristics-box');
+                        const box10yrDcf = document.getElementById('econ-10yr-dcf-box');
+
+                        if (h === '3yr') {
+                            if (btn3) { btn3.className = 'btn-primary'; btn3.style.background = 'linear-gradient(135deg, #0284c7, #38bdf8)'; }
+                            if (btn10) { btn10.className = 'btn-secondary'; btn10.style.background = ''; }
+                            if (desc) desc.textContent = '$300M 3-Year Clinical Commercialization Horizon across Cardiac Arrhythmia, HIFU Therapy, and Neurosurgery, with conventional and QML/LLM-enabled revenue scenarios.';
+                            if (box3yrTable) box3yrTable.style.display = 'block';
+                            if (box3yrChar) box3yrChar.style.display = 'block';
+                            if (box10yrDcf) box10yrDcf.style.display = 'none';
+                        } else {
+                            if (btn10) { btn10.className = 'btn-primary'; btn10.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)'; }
+                            if (btn3) { btn3.className = 'btn-secondary'; btn3.style.background = ''; }
+                            if (desc) desc.textContent = '10-Year Long-Term Capital Horizon: Multi-Year CapEx / OpEx Projections, Terminal Value, and 10-Year Discounted Cash Flow (DCF) Schedule.';
+                            if (box3yrTable) box3yrTable.style.display = 'none';
+                            if (box3yrChar) box3yrChar.style.display = 'none';
+                            if (box10yrDcf) box10yrDcf.style.display = 'block';
+                        }
+
+                        if (cachedEconData) {
+                            renderEconomicsView(cachedEconData);
+                        } else {
+                            runEconomicsSim();
+                        }
+                    }
+
+                    function renderEconomicsView(data) {
+                        const container = document.getElementById('econ-chart-container');
+                        if (currentEconHorizon === '3yr' && data.chart_3yr) {
+                            container.innerHTML = `<img src="${data.chart_3yr}" style="width:100%; height:auto; display:block; border-radius:6px;">`;
+                        } else if (data.chart_10yr || data.chart) {
+                            container.innerHTML = `<img src="${data.chart_10yr || data.chart}" style="width:100%; height:auto; display:block; border-radius:6px;">`;
+                        }
+
+                        const fin = data.financials;
+                        if (!fin) return;
+
+                        // Render Dynamic KPI Cards
+                        if (currentEconHorizon === '3yr' && fin.three_year_horizon) {
+                            const k3 = fin.three_year_horizon.summary_kpis_3yr;
+                            document.getElementById('lbl-econ-npv').textContent = '3-Yr Enabled Revenue';
+                            document.getElementById('econ-npv').textContent = '$' + k3.three_year_enabled_revenue_m + 'M';
+
+                            document.getElementById('lbl-econ-irr').textContent = 'QML + LLM Revenue Increment';
+                            document.getElementById('econ-irr').textContent = '+$' + k3.three_year_qml_llm_increment_m + 'M';
+
+                            document.getElementById('lbl-econ-payback').textContent = 'Clinical Market Coverage';
+                            document.getElementById('econ-payback').textContent = '3 Markets';
+
+                            document.getElementById('lbl-econ-disc-payback').textContent = 'Year 3 Revenue';
+                            document.getElementById('econ-disc-payback').textContent = '$150M';
+
+                            document.getElementById('lbl-econ-tot-rev').textContent = '3-Yr Cum. Revenue';
+                            document.getElementById('econ-tot-rev').textContent = '$' + k3.three_year_cumulative_revenue_m + 'M';
+
+                            document.getElementById('lbl-econ-cum-dfcf').textContent = 'Conventional Revenue';
+                            document.getElementById('econ-cum-dfcf').textContent = '$' + k3.three_year_conventional_revenue_m + 'M';
+                        } else if (fin.summary_kpis) {
+                            const k10 = fin.summary_kpis;
+                            document.getElementById('lbl-econ-npv').textContent = '10-Yr NPV (@8%)';
+                            document.getElementById('econ-npv').textContent = '$' + k10.npv_millions + 'M';
+
+                            document.getElementById('lbl-econ-irr').textContent = 'Internal Rate (IRR)';
+                            document.getElementById('econ-irr').textContent = k10.irr_pct + '%';
+
+                            document.getElementById('lbl-econ-payback').textContent = 'Payback Timeline';
+                            document.getElementById('econ-payback').textContent = k10.payback_years + ' Years';
+
+                            document.getElementById('lbl-econ-disc-payback').textContent = 'Discounted Payback';
+                            document.getElementById('econ-disc-payback').textContent = k10.discounted_payback_years + ' Years';
+
+                            document.getElementById('lbl-econ-tot-rev').textContent = '10-Yr Cum. Revenue';
+                            document.getElementById('econ-tot-rev').textContent = '$' + k10.ten_year_cumulative_revenue_m + 'M';
+
+                            document.getElementById('lbl-econ-cum-dfcf').textContent = '10-Yr Cum. Disc. FCF';
+                            document.getElementById('econ-cum-dfcf').textContent = '$' + k10.ten_year_cumulative_discounted_fcf_m + 'M';
+                        }
+
+                        // Hospital 3-Year ROI & Unit Economics
+                        if (fin.three_year_horizon && fin.three_year_horizon.hospital_unit_economics_3yr) {
+                            const h = fin.three_year_horizon.hospital_unit_economics_3yr;
+                            document.getElementById('econ-hosp-margin').textContent = '$' + h.per_procedure_net_margin.toLocaleString() + ' / Case (' + ((h.per_procedure_net_margin / h.procedure_billing)*100).toFixed(1) + '%)';
+                            document.getElementById('econ-hosp-payback-months').textContent = h.breakeven_months + ' Months';
+                            document.getElementById('econ-hosp-breakeven-procs').textContent = h.breakeven_procedures;
+                            document.getElementById('econ-hosp-annual-flow').textContent = '$' + (h.annual_net_cash_flow / 1e6).toFixed(2) + 'M / year';
+                            document.getElementById('econ-hosp-3yr-profit').textContent = '$' + (h.three_year_cumulative_net_profit / 1e6).toFixed(2) + 'M';
+                            document.getElementById('econ-hosp-3yr-roi').textContent = h.three_year_hospital_roi_pct + '% ROI';
+                        }
+
+                        // Populate 3-Year Annual Milestones Table
+                        if (fin.three_year_horizon && fin.three_year_horizon.annual_metrics && fin.three_year_horizon.market_revenue_projection) {
+                            const annual = fin.three_year_horizon.annual_metrics;
+                            const marketRows = fin.three_year_horizon.market_revenue_projection.clinical_market_table;
+                            const t3Body = document.getElementById('econ-3yr-table-body');
+                            if (t3Body) {
+                                t3Body.innerHTML = annual.map((a, index) => {
+                                    const market = marketRows;
+                                    return `<tr style="border-bottom:1px solid #1e293b;">
+                                        <td style="padding:5px 6px; color:#38bdf8; font-weight:bold;">Year ${a.year}</td>
+                                        <td style="text-align:right; padding:5px 6px; color:#38bdf8;">$${(market[0][`year_${index + 1}_revenue`] / 1e6).toFixed(2)}M</td>
+                                        <td style="text-align:right; padding:5px 6px; color:#10b981;">$${(market[1][`year_${index + 1}_revenue`] / 1e6).toFixed(2)}M</td>
+                                        <td style="text-align:right; padding:5px 6px; color:#c084fc;">$${(market[2][`year_${index + 1}_revenue`] / 1e6).toFixed(2)}M</td>
+                                        <td style="text-align:right; padding:5px 6px; color:#94a3b8;">$${(a.conventional_revenue / 1e6).toFixed(2)}M</td>
+                                        <td style="text-align:right; padding:5px 6px; color:#fbbf24;">+$${(a.qml_llm_revenue_increment / 1e6).toFixed(2)}M</td>
+                                        <td style="text-align:right; padding:5px 6px; color:#c084fc; font-weight:bold;">$${(a.total_revenue / 1e6).toFixed(2)}M</td>
+                                        <td style="text-align:right; padding:5px 6px; color:#10b981; font-weight:bold;">$${(a.ebitda / 1e6).toFixed(2)}M</td>
+                                    </tr>`;
+                                }).join('');
                             }
-                            if(data.financials && data.financials.summary_kpis) {
-                                const k = data.financials.summary_kpis;
-                                document.getElementById('econ-npv').textContent = '$' + k.npv_millions + 'M';
-                                document.getElementById('econ-irr').textContent = k.irr_pct + '%';
-                                document.getElementById('econ-payback').textContent = k.payback_years + ' Years';
-                                document.getElementById('econ-disc-payback').textContent = k.discounted_payback_years + ' Years';
-                                document.getElementById('econ-tot-rev').textContent = '$' + k.ten_year_cumulative_revenue_m + 'M';
-                                document.getElementById('econ-cum-dfcf').textContent = '$' + k.ten_year_cumulative_discounted_fcf_m + 'M';
-                                document.getElementById('econ-hosp-margin').textContent = '$' + k.hospital_per_procedure_margin.toLocaleString() + ' (' + k.hospital_margin_pct + '%)';
+                        }
+
+                        // Populate 3-Year Characteristics Matrix
+                        if (fin.three_year_horizon && fin.three_year_horizon.characteristics_matrix) {
+                            const matrix = fin.three_year_horizon.characteristics_matrix;
+                            const charBody = document.getElementById('econ-3yr-characteristics-body');
+                            if (charBody) {
+                                charBody.innerHTML = matrix.map(m => {
+                                    return `<tr style="border-bottom:1px solid #1e293b;">
+                                        <td style="padding:5px 6px; color:#e2e8f0; font-weight:bold;">${m.characteristic}</td>
+                                        <td style="padding:5px 6px; color:#7dd3fc; font-size:10px;">${m.year_1}</td>
+                                        <td style="padding:5px 6px; color:#6ee7b7; font-size:10px;">${m.year_2}</td>
+                                        <td style="padding:5px 6px; color:#fde047; font-size:10px; font-weight:bold;">${m.year_3}</td>
+                                    </tr>`;
+                                }).join('');
                             }
-                            if(data.financials && data.financials.dcf_table) {
-                                const rows = data.financials.dcf_table;
-                                const fmt = (n) => '$' + Math.round(n).toLocaleString();
-                                const tbody = document.getElementById('econ-dcf-table-body');
+                        }
+
+                        // Populate 10-Year DCF Table
+                        if (fin.dcf_table) {
+                            const rows = fin.dcf_table;
+                            const fmt = (n) => '$' + Math.round(n).toLocaleString();
+                            const tbody = document.getElementById('econ-dcf-table-body');
+                            if (tbody) {
                                 tbody.innerHTML = rows.map(r => {
                                     const fcfColor = r.free_cash_flow >= 0 ? '#e2e8f0' : '#f87171';
                                     const dfcfColor = r.discounted_fcf >= 0 ? '#34d399' : '#f87171';
@@ -1227,6 +1393,30 @@
                                     `</tr>`;
                                 }).join('');
                             }
+                        }
+                    }
+
+                    function runEconomicsSim() {
+                        const container = document.getElementById('econ-chart-container');
+                        container.innerHTML = '<span style="color:#38bdf8;">Computing 3-year commercial horizon &amp; 10-year monetization models...</span>';
+
+                        const payload = {
+                            base_robot_cost: parseFloat(document.getElementById('econ-robot-cost').value) || 1450000,
+                            procedures_per_year_per_unit: parseInt(document.getElementById('econ-procs-unit').value) || 180,
+                            disposable_sale_price: parseFloat(document.getElementById('econ-disp-price').value) || 4200,
+                            procedure_charge: parseFloat(document.getElementById('econ-proc-charge').value) || 14500,
+                            horizon_view: currentEconHorizon
+                        };
+
+                        fetch('/api/economics/simulate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            cachedEconData = data;
+                            renderEconomicsView(data);
                         })
                         .catch(err => {
                             container.innerHTML = `<span style="color:#ef4444;">Economics simulation error: ${err}</span>`;
