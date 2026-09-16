@@ -99,6 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadFencingData();
             } else if (targetId === 'tab-economics' && typeof runEconomicsSim === 'function') {
                 runEconomicsSim();
+            } else if (targetId === 'tab-mrus-fusion' && typeof runMRUSFusion === 'function') {
+                runMRUSFusion();
             }
         });
     });

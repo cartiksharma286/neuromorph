@@ -5,6 +5,7 @@ import time
 import os
 import io
 import base64
+import math
 from scipy.ndimage import distance_transform_edt
 
 # Set matplotlib to use non-interactive backend BEFORE importing pyplot
@@ -42,6 +43,7 @@ from ultrasound_ablation_engine import (
     DynamicMRUSPhantomEngine,
     FormalVerifiabilityGroundTruthStudy
 )
+from mrus_fusion_engine import MRUSFusionEngine
 
 nvqlink = NVQLinkBridge()
 qml_segmenter = QuantumMLSegmenter()
@@ -58,6 +60,7 @@ tumor_evaluator = TumorAblationSpecificityEvaluator(tumor_radius_mm=9.5, margin_
 robot_qkf_kinematics = RoboticKinematicsQKF()
 mrus_phantom_engine = DynamicMRUSPhantomEngine(grid_dim=128)
 phantom_gt_study = FormalVerifiabilityGroundTruthStudy()
+mrus_fusion_engine = MRUSFusionEngine(num_terms=14, seed_modulus=0.15, max_energy_j=6.0, dt_s=0.75, grid_dim=128)
 
 # Interactive US & Ablation Global State
 current_ablation_radius_mm = 0.0
@@ -1176,7 +1179,7 @@ def economics_simulate():
     fin_result = cost_economics_engine.simulate_financial_horizon(params)
     
     # Render financial chart
-    fig, axes = plt.subplots(1, 2, figsize=(13, 4.2))
+    fig, axes = plt.subplots(1, 3, figsize=(19, 4.2))
     fig.patch.set_facecolor('#0f172a')
     
     years = fin_result['years']
@@ -1210,8 +1213,32 @@ def economics_simulate():
     ax2.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=8)
     ax2.grid(True, color='#334155', alpha=0.3)
     ax2.set_facecolor('#0f172a')
+
+    # Panel 3: 10-Year Discounted Cash Flow (DCF) Analysis
+    # Bars = discounted FCF per year; Line = cumulative discounted FCF (NPV convergence),
+    # anchored at the Year-0 capital outlay so the curve terminates at project NPV.
+    ax3 = axes[2]
+    dfcf = np.array(fin_result['profitability']['discounted_fcf']) / 1e6
+    cum_dfcf_full = np.array(fin_result['profitability']['cumulative_discounted_fcf']) / 1e6
+    dcf_years = [0] + years
+    npv_m = fin_result['summary_kpis']['npv_millions']
+
+    bar_colors = ['#10b981' if v >= 0 else '#ef4444' for v in dfcf]
+    ax3.bar(years, dfcf, color=bar_colors, alpha=0.85, label='Discounted FCF ($M)')
+    ax3.plot(dcf_years, cum_dfcf_full, 'o-', color='#fbbf24', lw=2.2, label='Cumulative Disc. FCF / NPV ($M)')
+    ax3.axhline(0, color='#64748b', linestyle=':', alpha=0.8)
+    ax3.axhline(npv_m, color='#fbbf24', linestyle='--', alpha=0.5, lw=1)
+    ax3.annotate(f'NPV = ${npv_m:.1f}M', xy=(dcf_years[-1], cum_dfcf_full[-1]),
+                 xytext=(-6, 10), textcoords='offset points', color='#fbbf24',
+                 fontsize=9, fontweight='bold', ha='right')
+    ax3.set_title('10-Year Discounted Cash Flow (DCF) Analysis', color='#e2e8f0', fontsize=10.5, fontweight='bold')
+    ax3.set_xlabel('Horizon Timeline (Years, Yr 0 = Capital Outlay)', color='#94a3b8', fontsize=9)
+    ax3.set_ylabel('$ Millions (Discounted)', color='#94a3b8', fontsize=9)
+    ax3.legend(facecolor='#1e293b', edgecolor='#334155', labelcolor='#e2e8f0', fontsize=8)
+    ax3.grid(True, color='#334155', alpha=0.3)
+    ax3.set_facecolor('#0f172a')
     
-    for ax in [ax1, ax2]:
+    for ax in [ax1, ax2, ax3]:
         ax.tick_params(colors='#e2e8f0', labelsize=8)
         for spine in ax.spines.values():
             spine.set_color('#334155')
@@ -1491,6 +1518,57 @@ def run_ground_truth_study():
     })
 
 
+@app.route('/api/mrus/fusion', methods=['GET', 'POST'])
+def get_mrus_fusion():
+    """
+    MR/US Fusion analysis using Recurrent Prime-Moduli Elliptic Integral Signatures.
+    Derives a rigorously bounded ablation/registration energy safety corridor from the
+    classical inequality 1 <= E(k) <= pi/2 on the complete elliptic integral of the
+    second kind, indexed by a recurrent prime-moduli modulus sequence.
+    """
+    data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        return jsonify({
+            'status': 'error',
+            'error': 'The MR/US fusion request body must be a JSON object.'
+        }), 400
+
+    try:
+        phase = float(data.get('phase_rad', request.args.get('phase_rad', 0.4)))
+        amp = float(data.get('deformation_amp_mm', request.args.get('deformation_amp_mm', 1.2)))
+        max_energy = float(data.get('max_energy_j', request.args.get('max_energy_j', 6.0)))
+    except (TypeError, ValueError):
+        return jsonify({
+            'status': 'error',
+            'error': 'phase_rad, deformation_amp_mm, and max_energy_j must be numeric.'
+        }), 400
+
+    if not 0.0 <= phase <= 2.0 * math.pi:
+        return jsonify({
+            'status': 'error',
+            'error': 'phase_rad must be within [0, 2π].'
+        }), 400
+    if not 0.0 <= amp <= 5.0:
+        return jsonify({
+            'status': 'error',
+            'error': 'deformation_amp_mm must be within [0, 5].'
+        }), 400
+    if not 1.0 <= max_energy <= 25.0:
+        return jsonify({
+            'status': 'error',
+            'error': 'max_energy_j must be within [1, 25].'
+        }), 400
+
+    result = MRUSFusionEngine(
+        num_terms=14,
+        seed_modulus=0.15,
+        max_energy_j=max_energy,
+        dt_s=0.75,
+        grid_dim=128
+    ).run_fusion_analysis(phase_rad=phase, deformation_amp_mm=amp)
+    return jsonify(numpy_to_native(result))
+
+
 @app.route('/api/generate-preprint-pdf', methods=['GET', 'POST'])
 def generate_preprint_pdf_endpoint():
     """Compiles and downloads the Nature Preprint PDF."""
@@ -1582,4 +1660,3 @@ if __name__ == '__main__':
     print(f"{'='*60}\n")
     # Enable threaded mode to handle multiple concurrent telemetry requests from the UI
     app.run(host=host, port=port, debug=False, threaded=True)
-

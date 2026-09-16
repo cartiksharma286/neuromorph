@@ -129,7 +129,8 @@ class RobotCostEconomics:
             free_cash_flow.append(fcf)
 
             # Discounted FCF
-            dfcf = fcf / ((1.0 + params['discount_rate'])**y)
+            discount_factor = 1.0 / ((1.0 + params['discount_rate'])**y)
+            dfcf = fcf * discount_factor
             discounted_fcf.append(dfcf)
 
         # Initial R&D & regulatory capital investment (Capex year 0)
@@ -145,7 +146,7 @@ class RobotCostEconomics:
         except Exception:
             irr_val = 0.342
 
-        # Payback period calculation
+        # Payback period calculation (undiscounted)
         cum_fcf = np.cumsum([initial_investment] + free_cash_flow)
         payback_year = None
         for idx, val in enumerate(cum_fcf):
@@ -155,6 +156,22 @@ class RobotCostEconomics:
         if payback_year is None:
             payback_year = params['horizon_years']
 
+        # Discount factors and cumulative discounted FCF (NPV convergence curve),
+        # anchored at the Year-0 initial capital investment so the series
+        # terminates at the project NPV.
+        discount_factors = [1.0 / ((1.0 + params['discount_rate'])**y) for y in years]
+        cumulative_discounted_fcf = np.cumsum([initial_investment] + discounted_fcf).tolist()
+
+        # Discounted payback period: first year the cumulative *discounted*
+        # cash flow (including Year-0 capital outlay) turns non-negative.
+        discounted_payback_year = None
+        for idx, val in enumerate(cumulative_discounted_fcf):
+            if val >= 0:
+                discounted_payback_year = idx
+                break
+        if discounted_payback_year is None:
+            discounted_payback_year = params['horizon_years']
+
         # Hospital Unit Economics per Procedure
         hospital_proc_revenue = params['procedure_charge']
         hospital_kit_cost = params['disposable_sale_price']
@@ -162,6 +179,25 @@ class RobotCostEconomics:
         hospital_staff_operating_cost = 2_800.0
         hospital_gross_margin = hospital_proc_revenue - (hospital_kit_cost + hospital_amortized_robot + hospital_staff_operating_cost)
         hospital_margin_pct = (hospital_gross_margin / hospital_proc_revenue) * 100.0
+
+        # Year-by-year Discounted Cash Flow (DCF) table: Year 0 capital outlay
+        # followed by each horizon year's FCF, discount factor, discounted FCF,
+        # and the running cumulative discounted FCF (NPV convergence).
+        dcf_table = [{
+            'year': 0,
+            'free_cash_flow': round(initial_investment, 2),
+            'discount_factor': 1.0,
+            'discounted_fcf': round(initial_investment, 2),
+            'cumulative_discounted_fcf': round(cumulative_discounted_fcf[0], 2)
+        }]
+        for i, y in enumerate(years):
+            dcf_table.append({
+                'year': y,
+                'free_cash_flow': round(free_cash_flow[i], 2),
+                'discount_factor': round(discount_factors[i], 4),
+                'discounted_fcf': round(discounted_fcf[i], 2),
+                'cumulative_discounted_fcf': round(cumulative_discounted_fcf[i + 1], 2)
+            })
 
         return {
             'years': years,
@@ -185,14 +221,20 @@ class RobotCostEconomics:
                 'ebitda': ebitda,
                 'free_cash_flow': free_cash_flow,
                 'cumulative_free_cash_flow': np.cumsum(free_cash_flow).tolist(),
-                'discounted_fcf': discounted_fcf
+                'discount_factors': discount_factors,
+                'discounted_fcf': discounted_fcf,
+                'cumulative_discounted_fcf': cumulative_discounted_fcf
             },
+            'dcf_table': dcf_table,
             'summary_kpis': {
                 'npv_millions': round(npv / 1e6, 2),
                 'irr_pct': round(irr_val * 100, 1),
                 'payback_years': payback_year,
+                'discounted_payback_years': discounted_payback_year,
                 'ten_year_cumulative_revenue_m': round(sum(total_revenue) / 1e6, 2),
                 'ten_year_cumulative_ebitda_m': round(sum(ebitda) / 1e6, 2),
+                'ten_year_cumulative_discounted_fcf_m': round(sum(discounted_fcf) / 1e6, 2),
+                'initial_investment_m': round(initial_investment / 1e6, 2),
                 'terminal_year_margin_pct': round((ebitda[-1] / max(total_revenue[-1], 1)) * 100, 1),
                 'hospital_per_procedure_margin': round(hospital_gross_margin, 2),
                 'hospital_margin_pct': round(hospital_margin_pct, 1),
