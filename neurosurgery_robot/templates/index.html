@@ -58,11 +58,9 @@
                         <button class="tab-btn" data-tab="tab-probe">🔬 US Probe Design</button>
                         <button class="tab-btn" data-tab="tab-qml-stieltjes">⚡ QML & Stieltjes</button>
                         <button class="tab-btn" data-tab="tab-phantoms">🧪 4D MRUS Phantoms</button>
-                        <button class="tab-btn" data-tab="tab-mrus-fusion">🧬 MR/US Fusion</button>
                         <button class="tab-btn" data-tab="tab-thermo">Visual RF</button>
                         <button class="tab-btn" data-tab="tab-fencing">Fencing & UQ</button>
                         <button class="tab-btn" data-tab="tab-economics">Cost Economics</button>
-                        <button class="tab-btn" data-tab="tab-cryo">N2 Cryo</button>
                         <button class="tab-btn" data-tab="tab-robotics">Surgical Robotics</button>
                         <button class="tab-btn" data-tab="tab-5g">5G Guidance & GE PACS</button>
                         <button class="tab-btn" data-tab="tab-preprint">Nature Preprint</button>
@@ -349,129 +347,6 @@
                         </button>
                     </div>
 
-                    <!-- MR/US Fusion: Recurrent Prime-Moduli Elliptic Integral Signatures -->
-                    <div id="tab-mrus-fusion" class="tab-content">
-                        <h2 style="color: #34d399;">🧬 MR/US Fusion — Recurrent Prime-Moduli Elliptic Signatures</h2>
-                        <p style="color: #94a3b8; font-size: 11.5px; margin: 4px 0 12px 0;">
-                            Fuses pre-operative structural MRI and real-time intraoperative Ultrasound (iUS) with a recurrent prime-moduli
-                            elliptic sequence k<sub>n</sub> = (k<sub>n-1</sub> + 1/p<sub>n</sub>) mod 1. The complete elliptic integral
-                            satisfies 1 &le; E(k) &le; π/2, providing provably bounded ablation/registration energy safety envelopes for neurosurgery.
-                        </p>
-
-                        <!-- Fusion Simulation Parameters -->
-                        <div class="quantum-metrics-box" style="border:1px solid #059669; border-radius:8px; padding:10px; margin-bottom:12px; background:rgba(6,78,59,0.15);">
-                            <h3 style="color:#6ee7b7; font-size:11.5px; margin:0 0 8px 0; letter-spacing:0.04em;">
-                                DUAL-MODALITY FUSION &amp; ENERGY PARAMETERS
-                            </h3>
-                            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; font-size:11px;">
-                                <div>
-                                    <label style="color:#94a3b8; font-size:10px;">Brain Shift (mm)</label>
-                                    <input type="number" id="fusion-amp" value="1.2" step="0.1" min="0" max="5" style="width:100%; background:#090d16; border:1px solid #334155; color:#fff; padding:4px 6px; border-radius:4px; font-size:11px;">
-                                </div>
-                                <div>
-                                    <label style="color:#94a3b8; font-size:10px;">Pulsatile Phase (rad)</label>
-                                    <input type="number" id="fusion-phase" value="0.4" step="0.1" min="0" max="6.28" style="width:100%; background:#090d16; border:1px solid #334155; color:#fff; padding:4px 6px; border-radius:4px; font-size:11px;">
-                                </div>
-                                <div>
-                                    <label style="color:#94a3b8; font-size:10px;">Max Energy E_max (J)</label>
-                                    <input type="number" id="fusion-max-energy" value="6.0" step="0.5" min="1" max="25" style="width:100%; background:#090d16; border:1px solid #334155; color:#fff; padding:4px 6px; border-radius:4px; font-size:11px;">
-                                </div>
-                            </div>
-                            <button class="btn-primary" style="background: linear-gradient(135deg, #059669, #34d399); width: 100%; margin-top: 10px; padding: 6px; justify-content:center;" onclick="runMRUSFusion()">
-                                🧬 RUN MR/US FUSION ANALYSIS
-                            </button>
-                        </div>
-
-                        <!-- Fusion KPIs -->
-                        <div class="metrics" style="margin-bottom: 12px;">
-                            <div class="metric">
-                                <span class="m-label">Fusion TRE</span>
-                                <span class="m-value" id="fusion-tre" style="color: #10b981;">0.18 mm</span>
-                            </div>
-                            <div class="metric">
-                                <span class="m-label">Dice Similarity</span>
-                                <span class="m-value" id="fusion-dice" style="color: #38bdf8;">0.992</span>
-                            </div>
-                            <div class="metric">
-                                <span class="m-label">Brain Shift (Δr)</span>
-                                <span class="m-value" id="fusion-shift" style="color: #c084fc;">1.18 mm</span>
-                            </div>
-                            <div class="metric">
-                                <span class="m-label">CST Clearance</span>
-                                <span class="m-value" id="fusion-cst" style="color: #f43f5e;">1.10 mm</span>
-                            </div>
-                            <div class="metric">
-                                <span class="m-label">Legendre Residual</span>
-                                <span class="m-value" id="fusion-legendre" style="color: #fbbf24;">8.88e-16</span>
-                            </div>
-                            <div class="metric">
-                                <span class="m-label">Safety Ceiling Util.</span>
-                                <span class="m-value" id="fusion-ceiling-util" style="color: #34d399;">88.0%</span>
-                            </div>
-                        </div>
-
-                        <!-- Dual-Modality Anatomy Description Box -->
-                        <div class="quantum-metrics-box" style="border:1px solid #334155; border-radius:8px; padding:10px; margin-bottom:12px; background:rgba(15,23,42,0.7);">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                <span style="color:#6ee7b7; font-size:11px; font-weight:bold;">ANATOMY CO-REGISTRATION (2 MODALITIES):</span>
-                                <span style="color:#94a3b8; font-size:10px;">Craniotomy Transducer (8.5 MHz)</span>
-                            </div>
-                            <div style="font-size:10px; color:#cbd5e1; line-height:1.45;">
-                                <div>• <strong style="color:#38bdf8;">Modality 1 (Pre-op MRI T2):</strong> Cerebral cortex sulci, ventricular horn (cyan dashed), Glioblastoma margin (blue dashed), and Corticospinal Tract (magenta).</div>
-                                <div>• <strong style="color:#10b981;">Modality 2 (Real-time iUS):</strong> 70° sector scan acoustic speckle, anechoic CSF cavity, hyperechoic tumor margin (green solid), and brain shift vectors.</div>
-                                <div>• <strong style="color:#f59e0b;">Fused Form:</strong> Coregistered color overlay with conformal Prime-Moduli Elliptic Energy Rings bounding acoustic/thermal dose.</div>
-                            </div>
-                        </div>
-
-                        <!-- Fusion Chart Display -->
-                        <div id="fusion-chart-container" style="width: 100%; min-height: 200px; background: #0f172a; border: 1px solid #10b981; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                            <span style="color:#64748b; font-size:11px;">Computing recurrent prime-moduli elliptic signature &amp; bounded energy corridor...</span>
-                        </div>
-
-                        <!-- Recurrent Prime-Moduli Elliptic Signature Table -->
-                        <div class="quantum-metrics-box" style="border:1px solid #34d399; border-radius:8px; padding:10px; margin-bottom:12px;">
-                            <h3 style="color:#6ee7b7; font-size:11.5px; margin:0 0 8px 0; letter-spacing:0.04em;">
-                                RECURRENT PRIME-MODULI ELLIPTIC INTEGRAL SIGNATURE
-                            </h3>
-                            <div style="overflow-x:auto;">
-                                <table style="width:100%; border-collapse:collapse; font-size:10.5px;">
-                                    <thead>
-                                        <tr style="color:#94a3b8; border-bottom:1px solid #334155;">
-                                            <th style="text-align:left; padding:4px 6px;">n</th>
-                                            <th style="text-align:right; padding:4px 6px;">Prime p<sub>n</sub></th>
-                                            <th style="text-align:right; padding:4px 6px;">Modulus k<sub>n</sub></th>
-                                            <th style="text-align:right; padding:4px 6px;">K(k<sub>n</sub>)</th>
-                                            <th style="text-align:right; padding:4px 6px;">E(k<sub>n</sub>)</th>
-                                            <th style="text-align:right; padding:4px 6px;">Energy Bound e<sub>n</sub> (J)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="fusion-signature-table-body">
-                                        <tr><td colspan="6" style="text-align:center; color:#64748b; padding:8px;">Run the fusion analysis to populate the elliptic signature schedule.</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Formal Certificates -->
-                        <div style="background:rgba(2,6,23,0.6); border:1px solid #334155; border-radius:6px; padding:8px; margin-bottom:10px; font-size:10px; color:#94a3b8;">
-                            <div style="font-weight:700; color:#e2e8f0; margin-bottom:4px;">Formal Bound Certificates (Elliptic Integral Inequalities):</div>
-                            <div id="fusion-certificates-list">
-                                <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-                                    <span>• <strong>Legendre Relation:</strong> $E(k)K(k') + E(k')K(k) - K(k)K(k') = \pi/2$</span>
-                                    <span style="color:#10b981; font-weight:700;">✔ VERIFIED</span>
-                                </div>
-                                <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-                                    <span>• <strong>Energy Bound:</strong> $1 \le E(k) \le \pi/2 \Rightarrow (2/\pi)E_{\max} \le e_n \le E_{\max}$</span>
-                                    <span style="color:#10b981; font-weight:700;">✔ VERIFIED</span>
-                                </div>
-                                <div style="display:flex; justify-content:space-between;">
-                                    <span>• <strong>Cumulative Safety Ceiling:</strong> $\sum e_i \le E_{\max} \cdot n$</span>
-                                    <span style="color:#10b981; font-weight:700;">✔ VERIFIED</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Thermal Tab -->
                     <div id="tab-thermo" class="tab-content thermal-view">
                         <h2>Interoperative Thermometry</h2>
@@ -578,28 +453,6 @@
                                 style="margin-top:6px;width:100%;padding:6px 0;background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;">
                                 HIDE LEVEL-SET
                             </button>
-                        </div>
-                    </div>
-
-                    <!-- Cryo Tab -->
-                    <div id="tab-cryo" class="tab-content cryo-view">
-                        <h2 style="color: #60a5fa;">Cryo-Ablation (Argon)</h2>
-                        <div class="heatmap-container" style="border-color: #60a5fa;">
-                            <canvas id="cryo-canvas" width="256" height="256"></canvas>
-                        </div>
-                        <div class="metrics">
-                            <div class="metric">
-                                <span class="m-label">Joule-Thomson PSI</span>
-                                <span class="m-value" style="color: #93c5fd;">3000</span>
-                            </div>
-                            <div class="metric">
-                                <span class="m-label">Min Temp</span>
-                                <span class="m-value" style="color: #60a5fa;">-100°C</span>
-                            </div>
-                        </div>
-                        <div class="sidebar-controls">
-                            <button id="btn-enable-cryo" class="btn-primary"
-                                style="background: linear-gradient(135deg, #3b82f6, #93c5fd);">ACTIVATE CRYO</button>
                         </div>
                     </div>
 
@@ -1138,10 +991,28 @@
                 <div id="tab-preprint" class="tab-content">
                     <h2 style="color: #fbbf24;">📄 Nature Publication Preprints & Finite Math Editions</h2>
 
-                    <!-- Preprint 1: Ultrasound Ablation, QML & Stieltjes -->
+                    <!-- Preprint 1: Probe Schematics & ASIC Micro-Circuitry -->
+                    <div class="quantum-metrics-box" style="border: 1px solid #10b981; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: rgba(15,23,42,0.85);">
+                        <h3 style="color: #34d399; font-size: 12px; margin: 0 0 4px 0;">
+                            🔬 Miniaturized Ultrasound Probe Schematics, 2D CMUT/PMUT Arrays &amp; ASIC Micro-Circuitry
+                        </h3>
+                        <p style="color: #cbd5e1; font-size: 10px; line-height: 1.4; margin-bottom: 8px;">
+                            biosono.com design schematics: 32×32 (1024-element) micro-transducer matrix array, 0.18 µm BCD SOI CMOS ASIC front-end, synthetic aperture beamforming, Stieltjes continued fraction acoustic impedance matching, and IEC 60601-2-37 thermal safety compliance.
+                        </p>
+                        <div style="display:flex; gap:8px;">
+                            <a href="/api/preprint/probe_schematics/view" target="_blank" class="btn-primary" style="flex:1; text-align:center; text-decoration:none; background: linear-gradient(135deg, #059669, #10b981); padding:6px; font-size:11px; justify-content:center;">
+                                📖 VIEW PDF
+                            </a>
+                            <a href="/api/preprint/probe_schematics/download" class="btn-secondary" style="flex:1; text-align:center; text-decoration:none; padding:6px; font-size:11px; justify-content:center;" download>
+                                📥 DOWNLOAD PDF
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Preprint 2: Ultrasound Ablation, QML & Stieltjes -->
                     <div class="quantum-metrics-box" style="border: 1px solid #38bdf8; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: rgba(15,23,42,0.85);">
                         <h3 style="color: #38bdf8; font-size: 12px; margin: 0 0 4px 0;">
-                            📐 Ultrasound Tumor Ablation, QML & Stieltjes Continued Fractions
+                            📐 Ultrasound Tumor Ablation, QML &amp; Stieltjes Continued Fractions
                         </h3>
                         <p style="color: #cbd5e1; font-size: 10px; line-height: 1.4; margin-bottom: 8px;">
                             Complete derivations of Rayleigh-Sommerfeld acoustic diffraction, Pennes bioheat radiation force PDEs, variational PQC pulse optimization, Stieltjes S-fractions, and volumetric tumor sensitivity/specificity bounds (>99.4%).
@@ -1524,7 +1395,6 @@
                     window.addEventListener('DOMContentLoaded', () => {
                         loadFencingData();
                         runEconomicsSim();
-                        runMRUSFusion();
                     });
                 </script>
 

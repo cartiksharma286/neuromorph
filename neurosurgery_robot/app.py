@@ -1727,6 +1727,27 @@ def get_ultrasound_preprint():
     )
 
 
+@app.route('/api/preprint/probe_schematics/download', methods=['GET'])
+@app.route('/api/preprint/probe_schematics/view', methods=['GET'])
+def get_probe_schematics_preprint():
+    """Serves the Nature Miniaturized Ultrasound Probe Schematics Preprint PDF."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Miniaturized_Ultrasound_Probe_Schematics.pdf')
+    if not os.path.exists(pdf_path):
+        try:
+            from generate_nature_probe_schematics_preprint import build_probe_schematics_preprint_pdf
+            build_probe_schematics_preprint_pdf(pdf_path)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    as_att = request.path.endswith('/download')
+    return send_file(
+        pdf_path,
+        as_attachment=as_att,
+        mimetype='application/pdf',
+        download_name='Nature_Preprint_Miniaturized_Ultrasound_Probe_Schematics.pdf'
+    )
+
+
 @app.route('/api/preprint/cryo_laser/download', methods=['GET'])
 @app.route('/api/preprint/cryo_laser/view', methods=['GET'])
 def get_cryo_laser_preprint():

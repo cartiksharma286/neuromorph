@@ -2,7 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Init Visualizations
     const robotViz = new RobotViz('canvas-3d');
     const thermalViz = new ThermalViz('thermal-canvas');
-    const cryoViz = new CryoViz('cryo-canvas');
+    const cryoCanvasEl = document.getElementById('cryo-canvas');
+    const cryoViz = cryoCanvasEl ? new CryoViz('cryo-canvas') : null;
 
     // UI Elements
     const elSystemStatus = document.getElementById('system-status');
@@ -99,8 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadFencingData();
             } else if (targetId === 'tab-economics' && typeof runEconomicsSim === 'function') {
                 runEconomicsSim();
-            } else if (targetId === 'tab-mrus-fusion' && typeof runMRUSFusion === 'function') {
-                runMRUSFusion();
             }
         });
     });
