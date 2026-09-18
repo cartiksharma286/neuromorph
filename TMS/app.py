@@ -35,6 +35,7 @@ from logic.schizophrenia_dbs import simulate_schizophrenia_dbs_bem
 from logic.hifu_tms_dementia import simulate_hifu_tms_dementia
 from logic.cybersecurity_pqc import simulate_cybersecurity_trajectories
 from logic.dbs_pqc_vulnerability import optimize_dbs_pqc_vulnerability_assessment
+from logic.clinical_trajectories_benchmark import simulate_clinical_trajectories_benchmark
 
 app = Flask(__name__)
 if CORS:
@@ -731,6 +732,62 @@ def cybersecurity_pqc_preprint():
         output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_PQC_Cybersecurity_Leibniz_Ramanujan.pdf')
         build_pdf(output_path)
         return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_PQC_Cybersecurity_Leibniz_Ramanujan.pdf')
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/clinical-trajectories-benchmark', methods=['GET', 'POST'])
+def api_clinical_trajectories_benchmark():
+    """
+    Simulate Multi-Horizon Clinical Trajectories & Benchmark Performance Advantage
+    of Transcranial Magnetic Stimulators vs Deep Brain Stimulators.
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+        variant = str(request.args.get('variant', data.get('variant', 'neurodegenerative')))
+        weeks = int(request.args.get('weeks', data.get('weeks', 104)))
+        modulus = int(request.args.get('galois_modulus', data.get('galois_modulus', 17)))
+        gain = float(request.args.get('closed_loop_gain', data.get('closed_loop_gain', 1.85)))
+        cf_depth = int(request.args.get('ramanujan_depth', data.get('ramanujan_depth', 6)))
+
+        res = simulate_clinical_trajectories_benchmark(
+            horizon_variant=variant,
+            horizon_weeks=weeks,
+            galois_modulus=modulus,
+            closed_loop_gain=gain,
+            ramanujan_depth=cf_depth
+        )
+        return jsonify({'status': 'success', 'data': res})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/clinical-trajectories-preprint', methods=['GET'])
+def clinical_trajectories_preprint():
+    """Generate and download the Nature-style preprint PDF for Superoptimal Clinical Staging."""
+    try:
+        from generate_nature_clinical_trajectories_preprint import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Clinical_Trajectories_Superoptimal_Staging.pdf')
+        
+        variant = str(request.args.get('variant', 'neurodegenerative'))
+        weeks = int(request.args.get('weeks', 104))
+        modulus = int(request.args.get('galois_modulus', 17))
+        gain = float(request.args.get('closed_loop_gain', 1.85))
+        cf_depth = int(request.args.get('ramanujan_depth', 6))
+
+        sim_params = {
+            'horizon_variant': variant,
+            'horizon_weeks': weeks,
+            'galois_modulus': modulus,
+            'closed_loop_gain': gain,
+            'ramanujan_depth': cf_depth
+        }
+        build_pdf(output_path, sim_params=sim_params)
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Clinical_Trajectories_Superoptimal_Staging.pdf')
     except Exception as exc:
         import traceback
         traceback.print_exc()

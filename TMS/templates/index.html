@@ -77,6 +77,9 @@
                 <button class="nav-btn" data-tab="cybersecurity-pqc">
                     <span class="icon">🛡️</span> Cybersecurity &amp; PQC Measures
                 </button>
+                <button class="nav-btn" data-tab="clinical-trajectories">
+                    <span class="icon">📊</span> Superoptimal Trajectories &amp; Benchmark
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -1808,6 +1811,172 @@
                         <div class="panel glass-panel" style="background: rgba(16,185,129,0.03); border: 1px solid rgba(16,185,129,0.2);">
                             <h3>📐 Finite Mathematical Equations: Complete Elliptic Integrals &amp; Post-Quantum Log-Probabilities</h3>
                             <div id="pqc-math-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Clinical Trajectories & Superoptimal DBS/TMS Benchmark Suite ── -->
+            <div id="clinical-trajectories-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <span style="font-size:12px; color:#8b949e; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
+                        Long-Term Clinical Trajectories · Multi-Platform DBS vs TMS Benchmark · Galois $\mathbb{F}_p$ Superoptimal Staging
+                    </span>
+                    <a id="ct-preprint-btn" href="/api/clinical-trajectories-preprint" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #10b981, #047857); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600;">
+                        <span>📥 Download Nature Benchmark Preprint (PDF)</span>
+                    </a>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT COLUMN: CONTROLS & STAGING TELEMETRY -->
+                    <div class="panel glass-panel" style="flex: 0 0 340px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Clinical Horizon &amp; Finite Math Controls</h3>
+                        
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Disease Horizon Variant:</span>
+                                </div>
+                                <select id="ct-variant" class="sa-slider-input" style="background:rgba(15,23,42,0.8); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); border-radius:4px; padding:6px 8px; width:100%;" onchange="runClinicalTrajectoriesBenchmarkDebounced();">
+                                    <option value="neurodegenerative">Neurodegenerative (Parkinson's / UPDRS-III)</option>
+                                    <option value="neuropsychiatric">Refractory Depression (TRD / MADRS)</option>
+                                    <option value="ocd_circuitry">Obsessive-Compulsive (OCD / Y-BOCS)</option>
+                                    <option value="epilepsy_neurorepair">Corticothalamic Epilepsy &amp; Neurorepair</option>
+                                </select>
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Longitudinal Horizon:</span>
+                                    <span id="label-ct-weeks" class="sa-slider-val" style="color:#38bdf8;">104 Wks</span>
+                                </div>
+                                <input type="range" id="ct-weeks" min="24" max="260" step="8" value="104" oninput="document.getElementById('label-ct-weeks').textContent=parseInt(this.value)+' Wks'; runClinicalTrajectoriesBenchmarkDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Galois Prime Modulus ($p$):</span>
+                                    <span id="label-ct-modulus" class="sa-slider-val" style="color:#34d399;">p = 17</span>
+                                </div>
+                                <input type="range" id="ct-modulus" min="5" max="31" step="2" value="17" oninput="document.getElementById('label-ct-modulus').textContent='p = '+parseInt(this.value); runClinicalTrajectoriesBenchmarkDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Closed-Loop Staging Gain ($\gamma$):</span>
+                                    <span id="label-ct-gain" class="sa-slider-val" style="color:#fbbf24;">1.85</span>
+                                </div>
+                                <input type="range" id="ct-gain" min="0.5" max="3.0" step="0.05" value="1.85" oninput="document.getElementById('label-ct-gain').textContent=parseFloat(this.value).toFixed(2); runClinicalTrajectoriesBenchmarkDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Ramanujan Continued Fraction Depth:</span>
+                                    <span id="label-ct-cf-depth" class="sa-slider-val" style="color:#c084fc;">6 Terms</span>
+                                </div>
+                                <input type="range" id="ct-cf-depth" min="3" max="10" step="1" value="6" oninput="document.getElementById('label-ct-cf-depth').textContent=parseInt(this.value)+' Terms'; runClinicalTrajectoriesBenchmarkDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <h3>Superoptimal Staging Telemetry</h3>
+                        <div class="sa-control-box" style="margin-bottom:0;">
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">NeuroMorph Remission Rate:</span>
+                                <span id="ct-metric-remission" class="sa-metric-val" style="color:#34d399; font-weight:700;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Advantage vs Medtronic:</span>
+                                <span id="ct-metric-advantage" class="sa-metric-val" style="color:#38bdf8; font-weight:700;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Battery Longevity:</span>
+                                <span id="ct-metric-battery" class="sa-metric-val" style="color:#fbbf24; font-weight:600;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">VTA Specificity:</span>
+                                <span id="ct-metric-vta" class="sa-metric-val" style="color:#4ade80; font-weight:600;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Side-Effect Entropy Drop:</span>
+                                <span id="ct-metric-entropy" class="sa-metric-val" style="color:#f43f5e; font-weight:600;">...</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Ramanujan Convergents:</span>
+                                <span id="ct-metric-cf" class="sa-metric-val" style="color:#c084fc; font-size:11px;">...</span>
+                            </div>
+                            <div class="sa-metric-row" style="border-bottom:none;">
+                                <span class="sa-metric-lbl">Lifetime QALY Gain:</span>
+                                <span id="ct-metric-qaly" class="sa-metric-val" style="color:#2dd4bf; font-weight:700;">...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: MULTI-PANEL CHARTS & BENCHMARK MATRIX -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+                        
+                        <!-- Row 1: Long-Term Symptom Trajectories & Galois Lyapunov Decay -->
+                        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
+                            <div class="panel glass-panel">
+                                <h3>📈 Longitudinal Clinical Symptom Trajectories</h3>
+                                <p id="ct-trajectory-subtitle" style="color:#8b949e; font-size:12px; margin-bottom:8px;">7-Platform comparison across multi-year horizon vs Sham/Natural Progression.</p>
+                                <div id="ct-plot-trajectories" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+
+                            <div class="panel glass-panel">
+                                <h3>🧮 Superoptimal Galois $\mathbb{F}_p$ Staging &amp; Lyapunov Decay</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Discrete stage transitions $s_k \in \mathbb{F}_p$ and Lyapunov energy contraction $\mathcal{V}(s_k)$.</p>
+                                <div id="ct-plot-galois-lyapunov" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Radar Benchmark & Pareto Frontier -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="panel glass-panel">
+                                <h3>🕸️ 6-Axis Multi-Platform Operational Benchmark</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Remission, VTA Selectivity, Battery Life, Low Side-Effects, Speed, Durability.</p>
+                                <div id="ct-plot-radar" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+
+                            <div class="panel glass-panel">
+                                <h3>🎯 VTA Steering Selectivity vs Power Dissipation (Pareto Frontier)</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Micro-watt power consumption versus volume of tissue activated (VTA) specificity %.</p>
+                                <div id="ct-plot-pareto" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Comprehensive Multi-Innovator Benchmark Table -->
+                        <div class="panel glass-panel">
+                            <h3>🏆 Comprehensive Device Benchmark: Transcranial Magnetic vs Deep Brain Stimulators</h3>
+                            <div style="overflow-x:auto; margin-top:10px;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:8px 10px;">Platform Name</th>
+                                            <th style="padding:8px 10px;">Device Class</th>
+                                            <th style="padding:8px 10px;">Remission Rate %</th>
+                                            <th style="padding:8px 10px;">Score Reduction %</th>
+                                            <th style="padding:8px 10px;">VTA Selectivity %</th>
+                                            <th style="padding:8px 10px;">Battery Life</th>
+                                            <th style="padding:8px 10px;">Side-Effect Entropy</th>
+                                            <th style="padding:8px 10px;">Speed (Wks)</th>
+                                            <th style="padding:8px 10px;">QALY Gain</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ct-benchmark-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Finite Mathematical Formulations & Derivations -->
+                        <div class="panel glass-panel" style="background: rgba(16,185,129,0.03); border: 1px solid rgba(16,185,129,0.2);">
+                            <h3>📐 Finite Mathematical Formulations for Superoptimal Staging</h3>
+                            <div id="ct-math-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+                        </div>
+
+                        <!-- Row 5: Closed-Loop Architecture Schematic -->
+                        <div class="panel glass-panel">
+                            <h3>⚙️ Closed-Loop Superoptimal Staging Architecture &amp; Telemetry</h3>
+                            <pre id="ct-ascii-schematic" style="font-family:monospace; font-size:11px; color:#38bdf8; background:rgba(0,0,0,0.6); padding:12px; border-radius:6px; overflow-x:auto; line-height:1.3;"></pre>
                         </div>
                     </div>
                 </div>

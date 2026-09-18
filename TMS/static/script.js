@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const schizophreniaDbsView = document.getElementById('schizophrenia-dbs-view');
     const hifuTmsView      = document.getElementById('hifu-tms-view');
     const cybersecurityPqcView = document.getElementById('cybersecurity-pqc-view');
+    const clinicalTrajectoriesView = document.getElementById('clinical-trajectories-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -67,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -175,6 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Cybersecurity & Post-Quantum Cryptographic Measures',
             subtitle: 'Leibniz-Ramanujan Complete Elliptic Integrals · Jacobi Nome & Dedekind Invariants · NIST Level 5 Risk Aversion',
             view:     cybersecurityPqcView, showRunBtn: false
+        },
+        'clinical-trajectories': {
+            title:    'Long-Term Clinical Trajectories & Superoptimal Staging Benchmark',
+            subtitle: 'Galois Field F_p Dynamic Programming · 7-Platform DBS/TMS Benchmark · Ramanujan Phase Coupling & Lyapunov Decay',
+            view:     clinicalTrajectoriesView, showRunBtn: false
         }
     };
 
@@ -219,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'schizophrenia-dbs')                     runSchizophreniaDbs();
             if (tab === 'hifu-tms')                              runHifuTms();
             if (tab === 'cybersecurity-pqc')                     runCybersecurityPqc();
+            if (tab === 'clinical-trajectories')                runClinicalTrajectoriesBenchmark();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -2632,4 +2639,206 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('Cybersecurity PQC API error:', err);
         }
-    }
+    };
+
+    // ─────────────────────────────────────────────────────────────
+    // Clinical Trajectories & Superoptimal DBS/TMS Benchmark Suite
+    // ─────────────────────────────────────────────────────────────
+    let ctDebounceTimer = null;
+    window.runClinicalTrajectoriesBenchmarkDebounced = function() {
+        clearTimeout(ctDebounceTimer);
+        ctDebounceTimer = setTimeout(runClinicalTrajectoriesBenchmark, 40);
+    };
+
+    window.runClinicalTrajectoriesBenchmark = async function() {
+        const variantEl = document.getElementById('ct-variant');
+        if (!variantEl) return;
+
+        const params = new URLSearchParams({
+            variant: variantEl.value,
+            weeks: document.getElementById('ct-weeks').value,
+            galois_modulus: document.getElementById('ct-modulus').value,
+            closed_loop_gain: document.getElementById('ct-gain').value,
+            ramanujan_depth: document.getElementById('ct-cf-depth').value
+        });
+
+        const preprintBtn = document.getElementById('ct-preprint-btn');
+        if (preprintBtn) {
+            preprintBtn.href = `/api/clinical-trajectories-preprint?${params.toString()}`;
+        }
+
+        try {
+            const response = await fetch(`/api/clinical-trajectories-benchmark?${params.toString()}`);
+            const result = await response.json();
+            if (!response.ok || result.error) throw new Error(result.error || `HTTP ${response.status}`);
+            const d = result.data;
+            const kpis = d.kpis;
+
+            // 1. Update Subtitle and KPI Telemetry
+            const trajSub = document.getElementById('ct-trajectory-subtitle');
+            if (trajSub) {
+                trajSub.textContent = `${d.variant.name} · Target: ${d.variant.target_nucleus} (${d.variant.metric_name})`;
+            }
+
+            const el = id => document.getElementById(id);
+            if (el('ct-metric-remission')) el('ct-metric-remission').textContent = `${kpis.neuromorph_remission_rate_pct.toFixed(1)}% (2-Yr)`;
+            if (el('ct-metric-advantage')) el('ct-metric-advantage').textContent = `+${kpis.remission_advantage_pct.toFixed(1)}% vs MDT`;
+            if (el('ct-metric-battery')) el('ct-metric-battery').textContent = `${kpis.battery_longevity_yr.toFixed(1)} yr (${kpis.battery_multiplier}x)`;
+            if (el('ct-metric-vta')) el('ct-metric-vta').textContent = `${kpis.vta_specificity_pct.toFixed(1)}% Specificity`;
+            if (el('ct-metric-entropy')) el('ct-metric-entropy').textContent = `-${kpis.side_effect_entropy_reduction_pct.toFixed(1)}% Entropy`;
+            if (el('ct-metric-cf')) el('ct-metric-cf').textContent = `[${kpis.cf_convergents_str}]`;
+            if (el('ct-metric-qaly')) el('ct-metric-qaly').textContent = `+${kpis.qaly_gain.toFixed(2)} QALYs`;
+
+            const commonLayout = {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                margin: { t: 28, b: 46, l: 50, r: 24 },
+                font: { color: '#c9d1d9', family: 'Inter' },
+                xaxis: { title: 'Treatment Horizon (Weeks)', gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e' },
+                yaxis: { gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e' },
+                legend: { orientation: 'h', x: 0, y: -0.26, font: { size: 9.5 } }
+            };
+
+            // 2. Trajectories Plot
+            const tr = d.trajectories;
+            Plotly.react('ct-plot-trajectories', [
+                { x: d.weeks, y: tr.natural_history_sham, name: 'Sham / Natural History', type: 'scatter', mode: 'lines', line: { color: '#64748b', dash: 'dot', width: 1.5 } },
+                { x: d.weeks, y: tr.neurostar_tms, name: 'NeuroStar® TMS', type: 'scatter', mode: 'lines', line: { color: '#ef4444', dash: 'dash', width: 1.5 } },
+                { x: d.weeks, y: tr.magventure_magpro, name: 'MagVenture® MagPro', type: 'scatter', mode: 'lines', line: { color: '#f97316', dash: 'dash', width: 1.5 } },
+                { x: d.weeks, y: tr.brainsway_dtms, name: 'BrainsWay® Deep TMS', type: 'scatter', mode: 'lines', line: { color: '#ec4899', dash: 'dashdot', width: 1.8 } },
+                { x: d.weeks, y: tr.abbott_infinity, name: 'Abbott Infinity™ DBS', type: 'scatter', mode: 'lines', line: { color: '#f59e0b', width: 1.8 } },
+                { x: d.weeks, y: tr.medtronic_percept, name: 'Medtronic Percept™ (BrainSense)', type: 'scatter', mode: 'lines', line: { color: '#8b5cf6', width: 2.2 } },
+                { x: d.weeks, y: tr.boston_sci_vercise, name: 'Boston Sci Vercise™ (MICC)', type: 'scatter', mode: 'lines', line: { color: '#0284c7', width: 2.2 } },
+                { x: d.weeks, y: tr.neuromorph_dbs, name: 'NeuroMorph Superoptimal DBS', type: 'scatter', mode: 'lines+markers', marker: { size: 4 }, line: { color: '#10b981', width: 3.5 } }
+            ], {
+                ...commonLayout,
+                yaxis: { ...commonLayout.yaxis, title: d.variant.metric_name }
+            }, { responsive: true, displaylogo: false });
+
+            // 3. Superoptimal Galois Staging & Lyapunov Energy Decay Plot
+            const fs = d.finite_states;
+            Plotly.react('ct-plot-galois-lyapunov', [
+                { x: d.weeks, y: fs.galois_states, name: `Galois Stage s_k (mod ${kpis.galois_modulus})`, type: 'scatter', mode: 'lines', line: { color: '#10b981', shape: 'hv', width: 2.2 }, yaxis: 'y' },
+                { x: d.weeks, y: fs.lyapunov_energy, name: 'Lyapunov Potential V(s_k)', type: 'scatter', mode: 'lines', line: { color: '#fbbf24', dash: 'dot', width: 2 }, yaxis: 'y2' }
+            ], {
+                ...commonLayout,
+                yaxis: { ...commonLayout.yaxis, title: `Galois State s_k mod ${kpis.galois_modulus}`, color: '#10b981' },
+                yaxis2: { title: 'Lyapunov V(s_k)', overlaying: 'y', side: 'right', color: '#fbbf24', gridcolor: 'rgba(251,191,36,0.08)' }
+            }, { responsive: true, displaylogo: false });
+
+            // 4. 6-Axis Radar Benchmark Plot
+            const radarTraces = [];
+            const rCats = d.radar_categories;
+            const colorMap = {
+                neuromorph_dbs: '#10b981',
+                boston_sci_vercise: '#0284c7',
+                medtronic_percept: '#8b5cf6',
+                abbott_infinity: '#f59e0b',
+                brainsway_dtms: '#ec4899',
+                magventure_magpro: '#f97316',
+                neurostar_tms: '#ef4444'
+            };
+
+            for (const [devId, rdata] of Object.entries(d.radar_data)) {
+                const isNM = devId === 'neuromorph_dbs';
+                radarTraces.push({
+                    type: 'scatterpolar',
+                    r: rdata.values.concat([rdata.values[0]]),
+                    theta: rCats.concat([rCats[0]]),
+                    name: rdata.name,
+                    fill: isNM ? 'toself' : 'none',
+                    fillcolor: isNM ? 'rgba(16,185,129,0.15)' : 'transparent',
+                    line: { color: colorMap[devId] || '#94a3b8', width: isNM ? 3 : 1.5 }
+                });
+            }
+
+            Plotly.react('ct-plot-radar', radarTraces, {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                margin: { t: 30, b: 50, l: 50, r: 50 },
+                font: { color: '#c9d1d9', family: 'Inter', size: 10 },
+                polar: {
+                    radialaxis: { visible: true, range: [0, 100], gridcolor: 'rgba(255,255,255,0.08)', color: '#8b949e' },
+                    angularaxis: { gridcolor: 'rgba(255,255,255,0.08)', color: '#cbd5e1' },
+                    bgcolor: 'transparent'
+                },
+                legend: { orientation: 'h', x: 0, y: -0.32, font: { size: 9 } }
+            }, { responsive: true, displaylogo: false });
+
+            // 5. Pareto Frontier Plot (VTA Selectivity vs Power Dissipation)
+            const paretoPoints = d.pareto_points;
+            const paretoTraces = [
+                {
+                    x: paretoPoints.map(p => p.power_uW),
+                    y: paretoPoints.map(p => p.vta),
+                    text: paretoPoints.map(p => p.name),
+                    mode: 'markers+text',
+                    type: 'scatter',
+                    textposition: 'top right',
+                    textfont: { color: '#cbd5e1', size: 9.5 },
+                    marker: {
+                        size: paretoPoints.map(p => p.marker_size * 1.3),
+                        color: paretoPoints.map(p => p.color),
+                        line: { color: '#ffffff', width: 1 }
+                    },
+                    name: 'Stimulator Platforms'
+                },
+                {
+                    x: [12.4, 44.0, 52.0, 65.0, 160.0],
+                    y: [96.8, 81.2, 76.4, 72.8, 64.2],
+                    mode: 'lines',
+                    type: 'scatter',
+                    line: { color: '#10b981', dash: 'dot', width: 1.5 },
+                    name: 'Superoptimal Pareto Frontier'
+                }
+            ];
+
+            Plotly.react('ct-plot-pareto', paretoTraces, {
+                ...commonLayout,
+                xaxis: { ...commonLayout.xaxis, title: 'Power Dissipation (μW)' },
+                yaxis: { ...commonLayout.yaxis, title: 'VTA Steering Selectivity (%)', range: [50, 102] }
+            }, { responsive: true, displaylogo: false });
+
+            // 6. Benchmark Matrix Table Render
+            const tbody = el('ct-benchmark-tbody');
+            if (tbody) {
+                const rows = d.benchmark_table || [];
+                tbody.innerHTML = rows.map(r => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06); ${r.is_neuromorph ? 'background:rgba(16,185,129,0.12); font-weight:600;' : ''}">
+                        <td style="padding:8px 10px; color:${r.is_neuromorph ? '#34d399' : '#f8fafc'}; font-weight:${r.is_neuromorph ? '700' : '500'};">${r.name}</td>
+                        <td style="padding:8px 10px; color:#94a3b8;">${r.device_class}</td>
+                        <td style="padding:8px 10px; color:${r.is_neuromorph ? '#34d399' : '#38bdf8'}; font-weight:700;">${r.remission_rate_pct.toFixed(1)}%</td>
+                        <td style="padding:8px 10px; color:#4ade80;">-${r.reduction_pct.toFixed(1)}%</td>
+                        <td style="padding:8px 10px; color:#a78bfa;">${r.vta_specificity_pct.toFixed(1)}%</td>
+                        <td style="padding:8px 10px; color:#fbbf24;">${r.battery_longevity_yr.toFixed(1)} yr</td>
+                        <td style="padding:8px 10px; color:#f87171;">${r.side_effect_entropy.toFixed(2)}</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">${r.latency_wks.toFixed(1)} wks</td>
+                        <td style="padding:8px 10px; color:#2dd4bf; font-weight:700;">+${r.qaly_gain.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // 7. Math Equations Render
+            const mathContainer = el('ct-math-container');
+            if (mathContainer) {
+                const equations = d.math_equations || [];
+                mathContainer.innerHTML = equations.map(eq => `
+                    <div style="background:rgba(5,11,20,0.8); border:1px solid rgba(16,185,129,0.15); border-radius:8px; padding:10px;">
+                        <div style="font-size:12px; font-weight:600; color:#34d399; margin-bottom:4px;">${eq.title}</div>
+                        <div style="font-family:'Courier New', monospace; font-size:11px; color:#38bdf8; background:rgba(0,0,0,0.5); padding:6px 10px; border-radius:4px; overflow-x:auto;">${eq.latex}</div>
+                        <div style="font-size:11px; color:#94a3b8; margin-top:4px;">${eq.description}</div>
+                    </div>
+                `).join('');
+            }
+
+            // 8. ASCII Architecture Schematic Render
+            const asciiEl = el('ct-ascii-schematic');
+            if (asciiEl) {
+                asciiEl.textContent = d.ascii_schematic;
+            }
+
+        } catch (err) {
+            console.error('Clinical Trajectories Benchmark API error:', err);
+        }
+    };
+
