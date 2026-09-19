@@ -542,7 +542,7 @@ def build_pdf(output_path=None):
 
     # Figure 1: Budget Breakdown and Spend Trajectory
     story.append(figure_budget_allocation_and_burn_rate(bdata))
-    story.append(Paragraph(f"<b>Figure 1 | Budget Optimization & 20-Quarter Spend Burn-Rate Trajectory.</b> (Left) Category breakdown of the ${bdata['total_direct_budget']/1000.0:.0f}k direct budget. (Right) Quarterly expenditure burn rate with $\pm 5\%$ variance corridors and annual milestone gating checkpoints ensuring sub-$1M federal fiscal compliance.", st["caption"]))
+    story.append(Paragraph(f"<b>Figure 1 | Budget Optimization &amp; 20-Quarter Spend Burn-Rate Trajectory.</b> (Left) Category breakdown of the ${bdata['total_direct_budget']/1000.0:.0f}k direct budget. (Right) Quarterly expenditure burn rate with &plusmn;5% variance corridors and annual milestone gating checkpoints ensuring sub-$1M federal fiscal compliance.", st["caption"]))
     story.append(Spacer(1, 4))
 
     # Figure 2: Utility Curves and Gantt Chart
@@ -560,7 +560,7 @@ def build_pdf(output_path=None):
     # ── SECTION 5: HUMAN SUBJECTS & PROTECTION ────────────────────
     story.append(Paragraph("5. Protection of Human Subjects & Inclusion", st["heading_1"]))
     p_hs = (
-        "The proposed clinical studies (<i>N</i> = 120) will be conducted under Institutional Review Board (IRB) approval with full informed consent. All rTMS and DBS stimulation protocols adhere to Wassermann safety guidelines and charge density limits ($D_Q \\leq 30.0\\,\\mu\\mathrm{C}/\\mathrm{cm}^2$). Inclusion criteria encompass adults aged 18–75 with DSM-5 TRD, severe OCD, or idiopathic Parkinson's disease. Female and minority recruitment is actively tracked to reflect US demographic diversity."
+        "The proposed clinical studies (<i>N</i> = 120) will be conducted under Institutional Review Board (IRB) approval with full informed consent. All rTMS and DBS stimulation protocols adhere to Wassermann safety guidelines and charge density limits (<i>D<sub>Q</sub></i> &le; 30.0 &mu;C/cm<sup>2</sup>). Inclusion criteria encompass adults aged 18–75 with DSM-5 TRD, severe OCD, or idiopathic Parkinson's disease. Female and minority recruitment is actively tracked to reflect US demographic diversity."
     )
     story.append(Paragraph(p_hs, st["body"]))
     story.append(Spacer(1, 4))
