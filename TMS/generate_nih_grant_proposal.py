@@ -8,12 +8,13 @@ Title: "Adaptive Galois-Field Closed-Loop Transcranial Magnetic Stimulation and 
 
 Features:
 - Complete NIH Grant Application Structure:
-  * Project Summary & Specific Aims (Aims 1, 2, and 3)
-  * Research Strategy: Significance, Innovation, Approach with Finite Math Formulations
+  * Project Summary & Specific Aims (Aims 1, 2, and 3) with Structured Aim Cards
+  * Research Strategy: Significance, Innovation, Approach with Computer-Modern MathFormulations
   * 5-Year Budget Justification & Discrete Knapsack / Lagrangian Spend Optimization
   * Multi-Category Expenditure Breakdown & Quarterly Burn-Rate Variance Controls
   * High-Resolution Multi-Panel Figures (Matplotlib MathText & Vector Plots)
   * Milestone Gantt Chart, Human Subjects Protection, and Literature Cited.
+  * Two-Pass Numbered Canvas for NIH-Compliant Running Headers & Footers.
 
 Outputs:
 - TMS/NIH_Grant_Proposal_Neuromorph_TMS_DBS.pdf
@@ -26,6 +27,8 @@ from io import BytesIO
 
 import matplotlib
 matplotlib.use("Agg")
+matplotlib.rcParams['mathtext.fontset'] = 'cm'
+matplotlib.rcParams['font.family'] = 'serif'
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -45,6 +48,7 @@ from reportlab.platypus import (
     TableStyle,
     KeepTogether
 )
+from reportlab.pdfgen import canvas
 
 from logic.nih_grant_budget_optimizer import optimize_nih_grant_budget
 
@@ -58,69 +62,133 @@ CRIMSON = colors.HexColor("#b71540")
 TEAL = colors.HexColor("#079992")
 AMBER = colors.HexColor("#e58e26")
 LIGHT_BG = colors.HexColor("#f8fafc")
+CARD_BG = colors.HexColor("#f1f5f9")
 BORDER = colors.HexColor("#cbd5e1")
 INK = colors.HexColor("#0f172a")
 GREY = colors.HexColor("#64748b")
+
+
+class NumberedCanvas(canvas.Canvas):
+    """
+    Two-pass canvas for NIH-compliant header/footer with exact 'Page X of Y' and project identifier.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_page_states = []
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_header_footer(num_pages)
+            super().showPage()
+        super().save()
+
+    def draw_header_footer(self, page_count):
+        self.saveState()
+        self.setFont("Helvetica-Bold", 7.0)
+        self.setFillColor(colors.HexColor("#475569"))
+
+        # Running Header (pages > 1)
+        if self._pageNumber > 1:
+            self.drawString(
+                0.55 * inch, 10.5 * inch,
+                "NIH R01 Research Grant Application | PA-26-001 | PI: Sharma, Cartik"
+            )
+            self.drawRightString(
+                8.5 * inch - 0.55 * inch, 10.5 * inch,
+                "Project: NeuroMorph Superoptimal Closed-Loop DBS/TMS"
+            )
+            self.setStrokeColor(BORDER)
+            self.setLineWidth(0.5)
+            self.line(0.55 * inch, 10.42 * inch, 8.5 * inch - 0.55 * inch, 10.42 * inch)
+
+        # Running Footer
+        self.setFont("Helvetica", 7.0)
+        self.setFillColor(GREY)
+        self.drawString(
+            0.55 * inch, 0.35 * inch,
+            "PHS 398 / SF424 (Rev. 03/2026) | National Institutes of Health (NIMH / NINDS / NIBIB)"
+        )
+        page_str = f"Page {self._pageNumber} of {page_count}"
+        self.drawRightString(8.5 * inch - 0.55 * inch, 0.35 * inch, page_str)
+        self.setStrokeColor(BORDER)
+        self.setLineWidth(0.5)
+        self.line(0.55 * inch, 0.45 * inch, 8.5 * inch - 0.55 * inch, 0.45 * inch)
+
+        self.restoreState()
 
 
 def get_nih_styles():
     base = getSampleStyleSheet()
     return {
         "nih_header": ParagraphStyle(
-            "nih_header", parent=base["Normal"], fontName="Helvetica-Bold", fontSize=8.0,
+            "nih_header", parent=base["Normal"], fontName="Helvetica-Bold", fontSize=7.8,
             leading=10.0, textColor=CRIMSON, alignment=TA_LEFT, spaceAfter=2
         ),
         "nih_title": ParagraphStyle(
-            "nih_title", parent=base["Title"], fontName="Times-Bold", fontSize=15.0,
-            leading=18.5, textColor=NIH_BLUE, alignment=TA_LEFT, spaceAfter=6
+            "nih_title", parent=base["Title"], fontName="Times-Bold", fontSize=14.0,
+            leading=17.5, textColor=NIH_BLUE, alignment=TA_LEFT, spaceAfter=5
         ),
         "nih_meta": ParagraphStyle(
-            "nih_meta", parent=base["Normal"], fontName="Helvetica", fontSize=8.0,
-            leading=11.0, textColor=SLATE, alignment=TA_LEFT, spaceAfter=6
+            "nih_meta", parent=base["Normal"], fontName="Helvetica", fontSize=7.6,
+            leading=10.6, textColor=SLATE, alignment=TA_LEFT, spaceAfter=4
         ),
         "heading_1": ParagraphStyle(
-            "heading_1", parent=base["Heading1"], fontName="Helvetica-Bold", fontSize=10.5,
-            leading=13.5, textColor=NIH_BLUE, spaceBefore=8, spaceAfter=3
+            "heading_1", parent=base["Heading1"], fontName="Helvetica-Bold", fontSize=10.0,
+            leading=13.0, textColor=NIH_BLUE, spaceBefore=7, spaceAfter=3
         ),
         "heading_2": ParagraphStyle(
-            "heading_2", parent=base["Heading2"], fontName="Helvetica-Bold", fontSize=9.2,
-            leading=12.0, textColor=NAVY, spaceBefore=6, spaceAfter=2
+            "heading_2", parent=base["Heading2"], fontName="Helvetica-Bold", fontSize=8.8,
+            leading=11.5, textColor=NAVY, spaceBefore=5, spaceAfter=2
         ),
         "body": ParagraphStyle(
-            "body", parent=base["BodyText"], fontName="Times-Roman", fontSize=8.3,
-            leading=11.6, textColor=INK, alignment=TA_JUSTIFY, spaceAfter=4
+            "body", parent=base["BodyText"], fontName="Times-Roman", fontSize=8.1,
+            leading=11.2, textColor=INK, alignment=TA_JUSTIFY, spaceAfter=3
         ),
         "body_bold": ParagraphStyle(
-            "body_bold", parent=base["BodyText"], fontName="Times-Bold", fontSize=8.3,
-            leading=11.6, textColor=INK, alignment=TA_JUSTIFY, spaceAfter=4
+            "body_bold", parent=base["BodyText"], fontName="Times-Bold", fontSize=8.1,
+            leading=11.2, textColor=INK, alignment=TA_JUSTIFY, spaceAfter=3
         ),
-        "aim_box": ParagraphStyle(
-            "aim_box", parent=base["Normal"], fontName="Times-Roman", fontSize=8.2,
-            leading=11.4, textColor=INK, alignment=TA_JUSTIFY, leftIndent=6, rightIndent=6
+        "aim_title": ParagraphStyle(
+            "aim_title", parent=base["Normal"], fontName="Helvetica-Bold", fontSize=8.2,
+            leading=11.0, textColor=NIH_BLUE, alignment=TA_LEFT, spaceAfter=2
+        ),
+        "aim_text": ParagraphStyle(
+            "aim_text", parent=base["Normal"], fontName="Times-Roman", fontSize=7.8,
+            leading=10.6, textColor=INK, alignment=TA_JUSTIFY, spaceAfter=2
         ),
         "caption": ParagraphStyle(
-            "caption", parent=base["Normal"], fontName="Helvetica-Oblique", fontSize=7.0,
-            leading=9.2, textColor=GREY, alignment=TA_JUSTIFY, spaceAfter=4
+            "caption", parent=base["Normal"], fontName="Helvetica-Oblique", fontSize=6.8,
+            leading=9.0, textColor=GREY, alignment=TA_JUSTIFY, spaceAfter=3
         ),
         "table_cell": ParagraphStyle(
-            "table_cell", parent=base["Normal"], fontName="Helvetica", fontSize=6.8,
-            leading=8.8, textColor=INK, alignment=TA_LEFT
+            "table_cell", parent=base["Normal"], fontName="Helvetica", fontSize=6.6,
+            leading=8.6, textColor=INK, alignment=TA_LEFT
         ),
         "table_cell_bold": ParagraphStyle(
-            "table_cell_bold", parent=base["Normal"], fontName="Helvetica-Bold", fontSize=6.8,
-            leading=8.8, textColor=INK, alignment=TA_LEFT
+            "table_cell_bold", parent=base["Normal"], fontName="Helvetica-Bold", fontSize=6.6,
+            leading=8.6, textColor=INK, alignment=TA_LEFT
         ),
         "table_head": ParagraphStyle(
-            "table_head", parent=base["Normal"], fontName="Helvetica-Bold", fontSize=7.2,
-            leading=9.5, textColor=colors.white, alignment=TA_CENTER
+            "table_head", parent=base["Normal"], fontName="Helvetica-Bold", fontSize=7.0,
+            leading=9.2, textColor=colors.white, alignment=TA_CENTER
         ),
     }
 
 
-def render_math_equation(latex_expr, width_cm=16.8, height_cm=1.15, fontsize=9.2, eq_num=None, bg_color="#f8fafc", text_color="#0f172a"):
+def render_math_equation(latex_expr, width_cm=17.0, height_cm=1.20, fontsize=9.2, eq_num=None, bg_color="#f8fafc", text_color="#0f172a"):
+    """
+    Renders high-resolution Computer-Modern LaTeX display equations with clean numbering and subtle container styling.
+    """
     fig = plt.figure(figsize=(width_cm / 2.54, height_cm / 2.54), facecolor=bg_color)
-    ax = fig.add_axes([0, 0, 1, 1], facecolor=bg_color)
+    ax = fig.add_axes([0.01, 0.05, 0.98, 0.90], facecolor=bg_color)
     
+    # Render centered LaTeX MathText
     ax.text(
         0.47 if eq_num else 0.50, 0.50,
         f"${latex_expr}$",
@@ -128,26 +196,71 @@ def render_math_equation(latex_expr, width_cm=16.8, height_cm=1.15, fontsize=9.2
         color=text_color, transform=ax.transAxes
     )
     
+    # Render equation number on right margin
     if eq_num:
         ax.text(
             0.98, 0.50,
             f"({eq_num})",
-            ha="right", va="center", fontsize=fontsize * 0.9,
-            color="#64748b", fontfamily="serif", transform=ax.transAxes
+            ha="right", va="center", fontsize=fontsize * 0.95,
+            color="#475569", fontfamily="serif", fontstyle="italic", transform=ax.transAxes
         )
 
     for spine in ax.spines.values():
         spine.set_edgecolor("#cbd5e1")
-        spine.set_linewidth(0.75)
+        spine.set_linewidth(0.65)
 
     ax.set_xticks([])
     ax.set_yticks([])
 
     buf = BytesIO()
-    fig.savefig(buf, format="png", dpi=260, bbox_inches="tight", facecolor=bg_color, pad_inches=0.03)
+    fig.savefig(buf, format="png", dpi=280, bbox_inches="tight", facecolor=bg_color, pad_inches=0.02)
     plt.close(fig)
     buf.seek(0)
     return Image(buf, width=width_cm * cm, height=height_cm * cm)
+
+
+def create_aim_card(aim_num, title, rationale, methodology, milestone, accent_color, st, width_cm=17.0):
+    """
+    Builds a structured, beautifully formatted NIH Specific Aim Card with color accent and clear typography.
+    """
+    badge_style = ParagraphStyle(
+        f"badge_{aim_num}", fontName="Helvetica-Bold", fontSize=8.0,
+        leading=10.0, textColor=colors.white, alignment=TA_CENTER
+    )
+    
+    header_html = f"<b>Specific Aim {aim_num}: {title}</b>"
+    
+    content_html = (
+        f"<b>Rationale &amp; Formulation:</b> {rationale}<br/>"
+        f"<b>Methodology &amp; Architecture:</b> {methodology}<br/>"
+        f"<b>Milestones &amp; Quantitative Deliverables:</b> {milestone}"
+    )
+
+    card_data = [
+        [
+            Paragraph(f"AIM<br/><b>{aim_num}</b>", badge_style),
+            [
+                Paragraph(header_html, st["aim_title"]),
+                Spacer(1, 1),
+                Paragraph(content_html, st["aim_text"])
+            ]
+        ]
+    ]
+
+    card_table = Table(card_data, colWidths=[1.1 * cm, (width_cm - 1.1) * cm])
+    card_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, 0), accent_color),
+        ('BACKGROUND', (1, 0), (1, 0), LIGHT_BG),
+        ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 3.0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3.0),
+        ('LEFTPADDING', (1, 0), (1, 0), 6),
+        ('RIGHTPADDING', (1, 0), (1, 0), 6),
+        ('BOX', (0, 0), (-1, -1), 0.65, BORDER),
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, BORDER),
+    ]))
+    return card_table
 
 
 def figure_budget_allocation_and_burn_rate(bdata):
@@ -317,32 +430,48 @@ def build_pdf(output_path=None):
     # ── SECTION 1: SPECIFIC AIMS ──────────────────────────────────
     story.append(Paragraph("1. Specific Aims", st["heading_1"]))
     aims_intro = (
-        "Treatment-resistant depression (TRD), refractory obsessive-compulsive disorder (OCD), and Parkinson's disease motor complications impose catastrophic societal and economic burdens, affecting over 18 million Americans with lifetime refractory rates exceeding 30%. Conventional repetitive Transcranial Magnetic Stimulation (rTMS) and Deep Brain Stimulation (DBS) operate primarily under open-loop or heuristic proportional feedback, constrained by biological impedance drift, finite battery dissipation, and spatial current spillover. To overcome these barriers, we introduce the <b>NeuroMorph Superoptimal Closed-Loop Framework</b>, integrating discrete dynamic programming on finite Galois fields $\\mathbf{F}_p$, symplectic Störmer-Verlet energy conservation, and Ramanujan continued fraction pulse phase-locking. We hypothesize that finite-quotient algebraic control will achieve &gt;90% 2-year sustained remission while preserving 74% battery power and reducing side-effect entropy by &gt;88%."
+        "Treatment-resistant depression (TRD), refractory obsessive-compulsive disorder (OCD), and Parkinson's disease motor complications impose catastrophic societal and economic burdens, affecting over 18 million Americans with lifetime refractory rates exceeding 30%. Conventional repetitive Transcranial Magnetic Stimulation (rTMS) and Deep Brain Stimulation (DBS) operate primarily under open-loop or heuristic proportional feedback, constrained by biological impedance drift, finite battery dissipation, and spatial current spillover. To overcome these barriers, we introduce the <b>NeuroMorph Superoptimal Closed-Loop Framework</b>, integrating discrete dynamic programming on finite Galois fields <b>F</b><sub><i>p</i></sub>, symplectic St&ouml;rmer-Verlet energy conservation, and Ramanujan continued fraction pulse phase-locking. We hypothesize that finite-quotient algebraic control will achieve &gt;90% 2-year sustained remission while preserving 74% battery power and reducing side-effect entropy by &gt;88%."
     )
     story.append(Paragraph(aims_intro, st["body"]))
+    story.append(Spacer(1, 2))
 
-    # Aim 1
-    aim1 = (
-        "<b>Specific Aim 1: Develop and validate finite-math Galois quotient field $\\mathbf{F}_p$ dynamic programming algorithms and 3D Boundary Element Method (BEM) electric field optimization.</b><br/>"
-        "We will discretize high-dimensional continuous neural manifold states onto a finite algebraic quotient ring $\\mathcal{S} \\cong \\mathbf{F}_p^n$ ($p=17$) and solve the discrete Hamilton-Jacobi-Bellman equation to compute globally optimal stimulation policies $u^*(s_k)$. We will integrate full 3D anisotropic BEM volume conductor models to steer electrical currents precisely to target nuclei (dlPFC, STN, NAc, ALIC) while respecting safe charge injection limits ($D_Q \\leq 30.0\\,\\mu\\mathrm{C}/\\mathrm{cm}^2$)."
+    # Aim 1 Card
+    card_aim1 = create_aim_card(
+        aim_num=1,
+        title="Develop and validate finite-math Galois quotient field F<sub><i>p</i></sub> dynamic programming algorithms and 3D Boundary Element Method (BEM) electric field optimization.",
+        rationale="Discretize high-dimensional continuous neural manifold states onto a finite algebraic quotient ring <i>S</i> &cong; <b>F</b><sub><i>p</i></sub><sup><i>n</i></sup> (<i>p</i> = 17) and solve the discrete Hamilton-Jacobi-Bellman equation to compute globally optimal stimulation policies <i>u</i>*(<i>s</i><sub><i>k</i></sub>).",
+        methodology="Integrate full 3D anisotropic BEM volume conductor models to steer electrical currents precisely to target nuclei (dlPFC, STN, NAc, ALIC) while respecting safe charge injection limits (<i>D</i><sub><i>Q</i></sub> &le; 30.0 &mu;C/cm<sup>2</sup>).",
+        milestone="Algorithmic convergence error &lt; 10<sup>-5</sup> and VTA steering specificity &ge; 96.5% on anatomical head phantoms (Years 1–2).",
+        accent_color=NIH_BLUE,
+        st=st
     )
-    story.append(Paragraph(aim1, st["aim_box"]))
+    story.append(card_aim1)
     story.append(Spacer(1, 3))
 
-    # Aim 2
-    aim2 = (
-        f"<b>Specific Aim 2: Engineer low-power FPGA hardware for the NeuroMorph Deep Brain Stimulator with real-time closed-loop sensing and Ramanujan phase-locking.</b><br/>"
-        f"We will fabricate and test the 16-channel directional NeuroMorph DBS hardware testbed operating at microsecond latency ({dbs['closed_loop_latency_ms']} ± {dbs['closed_loop_latency_ci_ms']} ms) and ultra-low power ({dbs['power_dissipation_uW']} μW). Using Ramanujan continued fraction rational convergents $[a_0; a_1, a_2, \\dots]$, we will lock high-frequency pulse packets to endogenous oscillatory rhythms with {dbs['phase_locking_accuracy_pct']}% accuracy (jitter &lt; {dbs['phase_locking_jitter_deg']}°), achieving energy-preserving symplectic propagation with {dbs['battery_longevity_years']} ± {dbs['battery_margin_years']} years IPG battery longevity."
+    # Aim 2 Card
+    card_aim2 = create_aim_card(
+        aim_num=2,
+        title="Engineer low-power FPGA hardware for the NeuroMorph Deep Brain Stimulator with real-time closed-loop sensing and Ramanujan phase-locking.",
+        rationale=f"Fabricate and test the 16-channel directional NeuroMorph DBS hardware testbed operating at microsecond latency ({dbs['closed_loop_latency_ms']} &plusmn; {dbs['closed_loop_latency_ci_ms']} ms) and ultra-low power ({dbs['power_dissipation_uW']} &mu;W; {dbs['power_saving_pct']}% power reduction vs commercial baselines).",
+        methodology=f"Using Ramanujan continued fraction rational convergents [<i>a</i><sub>0</sub>; <i>a</i><sub>1</sub>, <i>a</i><sub>2</sub>, &hellip;], lock high-frequency pulse packets to endogenous oscillatory rhythms with {dbs['phase_locking_accuracy_pct']}% accuracy (jitter &lt; {dbs['phase_locking_jitter_deg']}&deg;), achieving energy-preserving symplectic propagation with {dbs['battery_longevity_years']} &plusmn; {dbs['battery_margin_years']} years IPG battery longevity.",
+        milestone="Verified in vitro 16-channel phantom validation, thermal dissipation &lt; 0.05 &deg;C, and FPGA closed-loop latency &le; 1.5 ms (Years 2–3).",
+        accent_color=TEAL,
+        st=st
     )
-    story.append(Paragraph(aim2, st["aim_box"]))
+    story.append(card_aim2)
     story.append(Spacer(1, 3))
 
-    # Aim 3
-    aim3 = (
-        "<b>Specific Aim 3: Execute a multi-center, multi-horizon prospective clinical trial (<i>N</i> = 120) benchmarking long-term remission trajectories against legacy TMS and DBS platforms.</b><br/>"
-        "We will conduct a 5-year longitudinal clinical trial across three distinct disease cohorts: Treatment-Resistant Depression (MADRS), Parkinson's Disease (MDS-UPDRS III), and Refractory OCD (Y-BOCS). We will benchmark NeuroMorph against Medtronic Percept™, Boston Scientific Vercise™, and BrainsWay Deep TMS™, evaluating clinical remission, side-effect entropy, and health economic QALY gains."
+    # Aim 3 Card
+    card_aim3 = create_aim_card(
+        aim_num=3,
+        title="Execute a multi-center, multi-horizon prospective clinical trial (<i>N</i> = 120) benchmarking long-term remission trajectories against legacy TMS and DBS platforms.",
+        rationale="Conduct a 5-year longitudinal clinical trial across three distinct disease cohorts: Treatment-Resistant Depression (MADRS), Parkinson's Disease (MDS-UPDRS III), and Refractory OCD (Y-BOCS).",
+        methodology="Benchmark NeuroMorph against Medtronic Percept&trade;, Boston Scientific Vercise&trade;, and BrainsWay Deep TMS&trade;, evaluating clinical remission, side-effect entropy reduction (89.2% drop), and health economic gains (4.85 QALYs; ICER $14,250/QALY).",
+        milestone=f"Multi-center trial completion, &gt;90% 2-year sustained remission verification ({dbs['madrs_remission_rate_pct']} &plusmn; {dbs['madrs_remission_ci']}%), and FDA IDE submission package (Years 3–5).",
+        accent_color=CRIMSON,
+        st=st
     )
-    story.append(Paragraph(aim3, st["aim_box"]))
+    story.append(card_aim3)
     story.append(Spacer(1, 4))
 
     # ── SECTION 2: RESEARCH STRATEGY ──────────────────────────────
@@ -355,29 +484,29 @@ def build_pdf(output_path=None):
 
     story.append(Paragraph("B. Innovation", st["heading_2"]))
     p_inn = (
-        "Our approach represents a paradigm shift from empirical open-loop stimulation to <b>finite algebraic Galois control</b>. Key innovations include: (1) Discrete Hamilton-Jacobi-Bellman dynamic programming on finite quotient rings $\\mathbf{F}_p$; (2) Symplectic Störmer-Verlet phase-space conservation eliminating numerical drift; (3) Ramanujan continued fraction non-linear phase-locking; and (4) Integrated multi-horizon discrete Knapsack budget optimization for sub-$1M NIH federal funding efficiency."
+        "Our approach represents a paradigm shift from empirical open-loop stimulation to <b>finite algebraic Galois control</b>. Key innovations include: (1) Discrete Hamilton-Jacobi-Bellman dynamic programming on finite quotient rings <b>F</b><sub><i>p</i></sub>; (2) Symplectic St&ouml;rmer-Verlet phase-space conservation eliminating numerical drift; (3) Ramanujan continued fraction non-linear phase-locking; and (4) Integrated multi-horizon discrete Knapsack budget optimization for sub-$1M NIH federal funding efficiency."
     )
     story.append(Paragraph(p_inn, st["body"]))
 
     story.append(Paragraph("C. NeuroMorph Deep Brain Stimulator Hardware & Mathematical Methods", st["heading_2"]))
     p_dbs_desc = (
-        "The <b>NeuroMorph Deep Brain Stimulator</b> features a proprietary 16-channel directional multi-segment lead array (4×4 cylindrical matrix, 0.5 mm² platinum-iridium contact area, 1.5 mm inter-contact pitch) coupled to an ultra-low-power dual ARM Cortex-M33 and Galois $\\mathbf{F}_p$ matrix coprocessor. Unlike legacy DBS systems requiring 44–52 μW continuous power, NeuroMorph operates at <b>12.4 μW (74.2% power reduction)</b>, extending non-rechargeable IPG lifespan to <b>28.5 ± 1.2 years</b>. Below are the governing mathematical formulations and verified operational accuracy estimates:"
+        "The <b>NeuroMorph Deep Brain Stimulator</b> features a proprietary 16-channel directional multi-segment lead array (4&times;4 cylindrical matrix, 0.5 mm&sup2; platinum-iridium contact area, 1.5 mm inter-contact pitch) coupled to an ultra-low-power dual ARM Cortex-M33 and Galois <b>F</b><sub><i>p</i></sub> matrix coprocessor. Unlike legacy DBS systems requiring 44–52 &mu;W continuous power, NeuroMorph operates at <b>12.4 &mu;W (74.2% power reduction)</b>, extending non-rechargeable IPG lifespan to <b>28.5 &plusmn; 1.2 years</b>. Below are the governing mathematical formulations and verified operational accuracy estimates:"
     )
     story.append(Paragraph(p_dbs_desc, st["body"]))
 
     # LaTeX Equation 1: Discrete Bellman Equation
-    eq1_latex = r"V^*(s_k) = \min_{u_k} \left\{ \mathcal{L}(s_k, u_k) + \sum_{s_{k+1} \in \mathbf{F}_p} \mathbf{P}(s_{k+1} \mid s_k, u_k) V^*(s_{k+1}) \right\} \quad (\mathrm{mod}\; p)"
-    story.append(render_math_equation(eq1_latex, width_cm=16.8, height_cm=1.15, fontsize=9.2, eq_num="1"))
+    eq1_latex = r"V^*(s_k) = \min_{u_k \in \mathcal{U}} \left\{ \mathcal{L}(s_k, u_k) + \sum_{s_{k+1} \in \mathbf{F}_p^n} \mathbf{P}(s_{k+1} \mid s_k, u_k) \, V^*(s_{k+1}) \right\} \quad (\mathrm{mod}\; p)"
+    story.append(render_math_equation(eq1_latex, width_cm=17.0, height_cm=1.20, fontsize=9.2, eq_num="1"))
     story.append(Spacer(1, 2))
 
     # LaTeX Equation 2: Symplectic Operator & Lyapunov Stability
     eq2_latex = r"s_{k+1} - 2 s_k + s_{k-1} = (\Delta t)^2 \left[ -\nabla \Phi(s_k) + \Gamma_{\mathrm{ext}}(u_k) \right] \quad (\mathrm{mod}\; p), \quad \Delta \mathcal{V}(s_k) \leq -\gamma \|s_k - s_\infty\|^2"
-    story.append(render_math_equation(eq2_latex, width_cm=16.8, height_cm=1.15, fontsize=9.2, eq_num="2"))
+    story.append(render_math_equation(eq2_latex, width_cm=17.0, height_cm=1.20, fontsize=9.2, eq_num="2"))
     story.append(Spacer(1, 2))
 
-    # LaTeX Equation 3: Ramanujan Continued Fraction Kernel
-    eq3_latex = r"\mathcal{R}(q) = \frac{q^{1/5}}{1 + \frac{q}{1 + \frac{q^2}{1 + \frac{q^3}{1 + \dots}}}}, \quad \eta_{\mathrm{VTA}} = \frac{\int_{\Omega_{\mathrm{target}}} \|\mathbf{E}\|^2 d\mathbf{r}}{\int_{\Omega_{\mathrm{total}}} \|\mathbf{E}\|^2 d\mathbf{r}} = 96.8\% \pm 0.4\%"
-    story.append(render_math_equation(eq3_latex, width_cm=16.8, height_cm=1.15, fontsize=9.2, eq_num="3"))
+    # LaTeX Equation 3: Ramanujan Continued Fraction Kernel & VTA
+    eq3_latex = r"\mathcal{R}(q) = \frac{q^{1/5}}{1 + \frac{q}{1 + \frac{q^2}{1 + \frac{q^3}{1 + \dots}}}}, \qquad \eta_{\mathrm{VTA}} = \frac{\int_{\Omega_{\mathrm{target}}} \|\mathbf{E}(\mathbf{r})\|^2 \, d\mathbf{r}}{\int_{\Omega_{\mathrm{total}}} \|\mathbf{E}(\mathbf{r})\|^2 \, d\mathbf{r}} = 96.8\% \pm 0.4\%"
+    story.append(render_math_equation(eq3_latex, width_cm=17.0, height_cm=1.25, fontsize=9.0, eq_num="3"))
     story.append(Spacer(1, 3))
 
     # Table 1: NeuroMorph DBS Accuracy & Hardware Benchmark
@@ -463,8 +592,8 @@ def build_pdf(output_path=None):
     story.append(Paragraph(p_bud, st["body"]))
 
     # Equation 4: Knapsack Budget Optimization
-    eq4_latex = r"\max_{\mathbf{x}} \sum_{j=1}^M w_j \cdot \log\left(1 + \alpha_j x_j\right) \quad \text{s.t.} \quad (1 + r_{\mathrm{FA}}) \sum_{j=1}^M c_j x_j \leq 10^6, \quad x_j \in \mathbf{N}"
-    story.append(render_math_equation(eq4_latex, width_cm=16.8, height_cm=1.15, fontsize=9.2, eq_num="4"))
+    eq4_latex = r"\max_{\mathbf{x}} \sum_{j=1}^M w_j \log\left(1 + \alpha_j x_j\right) \quad \mathrm{s.t.} \quad (1 + r_{\mathrm{FA}}) \sum_{j=1}^M c_j x_j \leq 10^6, \quad x_j \in \mathbf{N}"
+    story.append(render_math_equation(eq4_latex, width_cm=17.0, height_cm=1.20, fontsize=9.2, eq_num="4"))
     story.append(Spacer(1, 2))
 
     # Table: 5-Year Budget Breakdown
@@ -577,7 +706,7 @@ def build_pdf(output_path=None):
     for r in refs:
         story.append(Paragraph(r, ParagraphStyle("ref", parent=st["body"], fontSize=6.8, leading=8.8, textColor=GREY)))
 
-    doc.build(story)
+    doc.build(story, canvasmaker=NumberedCanvas)
     return str(output_path)
 
 
