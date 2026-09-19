@@ -36,6 +36,7 @@ from logic.hifu_tms_dementia import simulate_hifu_tms_dementia
 from logic.cybersecurity_pqc import simulate_cybersecurity_trajectories
 from logic.dbs_pqc_vulnerability import optimize_dbs_pqc_vulnerability_assessment
 from logic.clinical_trajectories_benchmark import simulate_clinical_trajectories_benchmark
+from logic.nih_grant_budget_optimizer import optimize_nih_grant_budget
 
 app = Flask(__name__)
 if CORS:
@@ -788,6 +789,43 @@ def clinical_trajectories_preprint():
         }
         build_pdf(output_path, sim_params=sim_params)
         return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Clinical_Trajectories_Superoptimal_Staging.pdf')
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/nih-grant-budget-optimizer', methods=['GET', 'POST'])
+def api_nih_grant_budget_optimizer():
+    """Simulate and optimize NIH grant multi-year direct/indirect budget and spend burn rates."""
+    try:
+        data = request.get_json(silent=True) or {}
+        direct_budget = float(request.args.get('direct_budget', data.get('direct_budget', 2500000.0)))
+        fa_rate = float(request.args.get('fa_rate', data.get('fa_rate', 0.545)))
+        n_years = int(request.args.get('n_years', data.get('n_years', 5)))
+        contingency = float(request.args.get('contingency_pct', data.get('contingency_pct', 5.0)))
+
+        res = optimize_nih_grant_budget(
+            total_direct_budget=direct_budget,
+            fa_rate=fa_rate,
+            n_years=n_years,
+            contingency_reserve_pct=contingency
+        )
+        return jsonify({'status': 'success', 'data': res})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/nih-grant-proposal-pdf', methods=['GET'])
+def nih_grant_proposal_pdf():
+    """Generate and stream the complete NIH Grant Proposal PDF."""
+    try:
+        from generate_nih_grant_proposal import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'NIH_Grant_Proposal_Neuromorph_TMS_DBS.pdf')
+        build_pdf(output_path)
+        return send_file(output_path, as_attachment=True, download_name='NIH_Grant_Proposal_Neuromorph_TMS_DBS.pdf')
     except Exception as exc:
         import traceback
         traceback.print_exc()
