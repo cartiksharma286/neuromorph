@@ -80,6 +80,9 @@
                 <button class="nav-btn" data-tab="clinical-trajectories">
                     <span class="icon">📊</span> Superoptimal Trajectories &amp; Benchmark
                 </button>
+                <button class="nav-btn" data-tab="nih-grant">
+                    <span class="icon">🏛️</span> NIH Grant &amp; rTMS Staging
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -1680,9 +1683,11 @@
                                     <span>Target Neurostimulator:</span>
                                 </div>
                                 <select id="pqc-device-filter" class="sa-slider-input" style="background:#0f172a; color:#f8fafc; border:1px solid rgba(255,255,255,0.2); padding:6px 10px; border-radius:6px;" onchange="runCybersecurityPqcDebounced();">
-                                    <option value="all" selected>All DBS Devices (Boston Scientific + Medtronic)</option>
+                                    <option value="all" selected>All DBS Devices (Boston Sci, Medtronic, Abbott, NeuroMorph)</option>
                                     <option value="boston_scientific_vercise">Boston Scientific Vercise™ Genus / Geviti (MICC)</option>
                                     <option value="medtronic_percept">Medtronic Percept™ PC / RC with BrainSense™</option>
+                                    <option value="abbott_infinity">Abbott Infinity™ &amp; St. Jude Directional DBS</option>
+                                    <option value="neuromorph_dbs">NeuroMorph Superoptimal Closed-Loop DBS</option>
                                 </select>
                             </div>
 
@@ -1779,15 +1784,21 @@
                             </div>
 
                             <div class="panel glass-panel">
-                                <h3>♾️ Leibniz-Ramanujan Elliptic Modulus Transformation</h3>
-                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Complete Elliptic Integrals $K(k)$ vs Complementary $K'(k)$ and Jacobi Nome $q$.</p>
-                                <div id="pqc-plot-elliptic" class="chart-container" style="min-height:280px;"></div>
+                                <h3>🌊 Non-Linear Evolutionary Wavefront Damping PDE</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Reaction-diffusion tissue penetration $\frac{\partial u}{\partial t} = \mathcal{D}\nabla^2 u + cu(1-u/K) - \gamma_{\mathrm{PQC}} u$.</p>
+                                <div id="pqc-plot-wavefront" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+
+                            <div class="panel glass-panel">
+                                <h3>♾️ Asymmetric Prime Moduli $\mathbb{F}_p$ Lattice Hardness &amp; QVC Fidelity</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Shortest Vector Problem (SVP) bit security across $p \in \{17, 31, 127, 257, 521\}$.</p>
+                                <div id="pqc-plot-prime-moduli" class="chart-container" style="min-height:280px;"></div>
                             </div>
                         </div>
 
                         <!-- Row 3: Threat Matrix Table -->
                         <div class="panel glass-panel">
-                            <h3>🚨 Deep Brain Stimulator Vulnerability Matrix (Boston Scientific Vercise™ &amp; Medtronic Percept™)</h3>
+                            <h3>🚨 Deep Brain Stimulator Vulnerability Matrix (Boston Scientific, Medtronic, Abbott &amp; NeuroMorph)</h3>
                             <div style="overflow-x:auto; margin-top:10px;">
                                 <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
                                     <thead>
@@ -1981,9 +1992,188 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ── NIH Grant, rTMS Characteristics & Optimal Finite Staging Suite ── -->
+            <div id="nih-grant-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <span style="font-size:12px; color:#8b949e; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
+                        NIH R01 Grant Proposal · PHS 398 / SF424 · rTMS BEM Characteristics &amp; Finite Math Optimal Staging
+                    </span>
+                    <a id="nih-proposal-btn" href="/api/nih-grant-proposal-pdf" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #0a3d62, #1e3799); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600;">
+                        <span>📥 Download NIH Grant Proposal (PDF)</span>
+                    </a>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT COLUMN: CONTROLS & GRANT TELEMETRY -->
+                    <div class="panel glass-panel" style="flex: 0 0 340px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Grant &amp; Staging Parameters</h3>
+                        
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Direct Costs Budget:</span>
+                                    <span id="label-nih-direct" class="sa-slider-val" style="color:#38bdf8;">$640k</span>
+                                </div>
+                                <input type="range" id="nih-direct" min="300000" max="800000" step="20000" value="640000" oninput="document.getElementById('label-nih-direct').textContent='$'+Math.round(this.value/1000)+'k'; runNihGrantStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>F&amp;A Indirect Rate:</span>
+                                    <span id="label-nih-fa" class="sa-slider-val" style="color:#34d399;">54.5%</span>
+                                </div>
+                                <input type="range" id="nih-fa" min="40" max="65" step="0.5" value="54.5" oninput="document.getElementById('label-nih-fa').textContent=parseFloat(this.value).toFixed(1)+'%'; runNihGrantStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Project Duration:</span>
+                                    <span id="label-nih-years" class="sa-slider-val" style="color:#fbbf24;">5 Years</span>
+                                </div>
+                                <input type="range" id="nih-years" min="3" max="5" step="1" value="5" oninput="document.getElementById('label-nih-years').textContent=parseInt(this.value)+' Years'; runNihGrantStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Lean Contingency Buffer:</span>
+                                    <span id="label-nih-contingency" class="sa-slider-val" style="color:#c084fc;">4.0%</span>
+                                </div>
+                                <input type="range" id="nih-contingency" min="2" max="10" step="0.5" value="4.0" oninput="document.getElementById('label-nih-contingency').textContent=parseFloat(this.value).toFixed(1)+'%'; runNihGrantStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <h3>Federal Grant KPIs</h3>
+                        <div class="sa-control-box" style="margin-bottom:0;">
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Total Project Cost:</span>
+                                <span id="nih-metric-total" class="sa-metric-val" style="color:#34d399; font-weight:700;">$988,800</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Under $1M Bound:</span>
+                                <span id="nih-metric-status" class="sa-metric-val" style="color:#38bdf8; font-weight:700;">✓ Sub-$1M Lean</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Cost Savings vs R01:</span>
+                                <span id="nih-metric-savings" class="sa-metric-val" style="color:#fbbf24; font-weight:600;">74.4% Savings</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">2-Yr Sustained Remission:</span>
+                                <span id="nih-metric-remission" class="sa-metric-val" style="color:#4ade80; font-weight:600;">92.4% ± 1.8%</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">rTMS Peak E-Field:</span>
+                                <span id="nih-metric-efield" class="sa-metric-val" style="color:#f43f5e; font-weight:600;">158.2 V/m</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Closed-Loop Latency:</span>
+                                <span id="nih-metric-latency" class="sa-metric-val" style="color:#c084fc; font-weight:600;">1.42 ± 0.15 ms</span>
+                            </div>
+                            <div class="sa-metric-row" style="border-bottom:none;">
+                                <span class="sa-metric-lbl">Galois Field Modulus:</span>
+                                <span id="nih-metric-galois" class="sa-metric-val" style="color:#2dd4bf; font-weight:700;">F_17 Dynamic Prog</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: MULTI-PANEL PLOTS & PROTOCOLS -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+                        
+                        <!-- Row 1: Budget Allocation Donut & 20-Quarter Burn-Rate Trajectory -->
+                        <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 20px;">
+                            <div class="panel glass-panel">
+                                <h3>💰 5-Year Direct Cost Category Allocation</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Discrete knapsack category breakdown with sub-$1M federal constraint.</p>
+                                <div id="nih-plot-budget-pie" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+
+                            <div class="panel glass-panel">
+                                <h3>📈 20-Quarter Spend Burn-Rate &amp; Milestone Gating</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Cumulative expenditure trajectory with &plusmn;5% variance bounds and annual gates.</p>
+                                <div id="nih-plot-burn-rate" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: rTMS BEM Depth Profile & Finite Math Optimal Staging Trajectories -->
+                        <div style="display: grid; grid-template-columns: 1.1fr 1.3fr; gap: 20px;">
+                            <div class="panel glass-panel">
+                                <h3>⚡ rTMS BEM Electric Field &amp; Current Density Depth Decay</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Boundary Element Method (BEM) 3D cortical field attenuation vs tissue depth (mm).</p>
+                                <div id="nih-plot-bem-profile" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+
+                            <div class="panel glass-panel">
+                                <h3>🎯 Finite Math 3-Stage Optimal Trajectory vs Standard Care</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Induction $\to$ Consolidation $\to$ Maintenance staging on Galois field $\mathbb{F}_{17}$.</p>
+                                <div id="nih-plot-staging-trajectory" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: rTMS Modalities & Characteristics Matrix Table -->
+                        <div class="panel glass-panel">
+                            <h3>⚡ Specific Aims rTMS Characteristics &amp; Clinical Protocols</h3>
+                            <div style="overflow-x:auto; margin-top:10px;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:8px 10px;">rTMS Protocol</th>
+                                            <th style="padding:8px 10px;">Target Indication</th>
+                                            <th style="padding:8px 10px;">Frequency</th>
+                                            <th style="padding:8px 10px;">Intensity (% rMT)</th>
+                                            <th style="padding:8px 10px;">Train / ITI</th>
+                                            <th style="padding:8px 10px;">Daily Pulses</th>
+                                            <th style="padding:8px 10px;">Target Coordinate</th>
+                                            <th style="padding:8px 10px;">Peak E-Field</th>
+                                            <th style="padding:8px 10px;">Remission %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="nih-rtms-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: 3-Stage Optimal Staging Protocol Cards -->
+                        <div class="panel glass-panel">
+                            <h3>🧩 3-Stage Finite Math Optimal Staging Architecture</h3>
+                            <div id="nih-staging-cards-container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px; margin-top:10px;"></div>
+                        </div>
+
+                        <!-- Row 5: 5-Year Budget Breakdown Table -->
+                        <div class="panel glass-panel">
+                            <h3>🏛️ 5-Year NIH Grant Multi-Category Direct &amp; Indirect Budget Matrix</h3>
+                            <div style="overflow-x:auto; margin-top:10px;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:8px 10px;">Category</th>
+                                            <th style="padding:8px 10px;">Description</th>
+                                            <th style="padding:8px 10px;">Y1 ($)</th>
+                                            <th style="padding:8px 10px;">Y2 ($)</th>
+                                            <th style="padding:8px 10px;">Y3 ($)</th>
+                                            <th style="padding:8px 10px;">Y4 ($)</th>
+                                            <th style="padding:8px 10px;">Y5 ($)</th>
+                                            <th style="padding:8px 10px;">5-Yr Total ($)</th>
+                                            <th style="padding:8px 10px;">Share %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="nih-budget-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 6: Finite Math Formulations -->
+                        <div class="panel glass-panel" style="background: rgba(10,61,98,0.08); border: 1px solid rgba(56,189,248,0.25);">
+                            <h3>📐 Finite Mathematical Formulations &amp; Governing Equations</h3>
+                            <div id="nih-math-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 
 </body>
 </html>
+

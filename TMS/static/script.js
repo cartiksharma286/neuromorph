@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hifuTmsView      = document.getElementById('hifu-tms-view');
     const cybersecurityPqcView = document.getElementById('cybersecurity-pqc-view');
     const clinicalTrajectoriesView = document.getElementById('clinical-trajectories-view');
+    const nihGrantView = document.getElementById('nih-grant-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -68,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, nihGrantView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -181,6 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Long-Term Clinical Trajectories & Superoptimal Staging Benchmark',
             subtitle: 'Galois Field F_p Dynamic Programming · 7-Platform DBS/TMS Benchmark · Ramanujan Phase Coupling & Lyapunov Decay',
             view:     clinicalTrajectoriesView, showRunBtn: false
+        },
+        'nih-grant': {
+            title:    'NIH R01 Grant Proposal & rTMS Staging Studio',
+            subtitle: 'PHS 398 / SF424 · Sub-$1M Knapsack Budget Optimization · rTMS BEM Characteristics & Galois F_17 Optimal Staging',
+            view:     nihGrantView, showRunBtn: false
         }
     };
 
@@ -226,6 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'hifu-tms')                              runHifuTms();
             if (tab === 'cybersecurity-pqc')                     runCybersecurityPqc();
             if (tab === 'clinical-trajectories')                runClinicalTrajectoriesBenchmark();
+            if (tab === 'nih-grant')                            runNihGrantStudio();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -2508,20 +2515,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el('pqc-metric-integrity')) el('pqc-metric-integrity').textContent = `${(kpis.telemetry_integrity_pct || d.kpis.telemetry_integrity_pct).toFixed(2)}%`;
             if (el('pqc-metric-attenuation')) el('pqc-metric-attenuation').textContent = kpis.cvss_v4_reduction || `-92.4%`;
 
-            // 2. Trajectories Plot (Telemetry Integrity & DBS Fortification)
+            // 2. Trajectories Plot (Telemetry Integrity & DBS Fortification across 4 platforms)
             const dbsTraj = dbs.trajectories || {};
             Plotly.newPlot('pqc-plot-trajectories', [
-                { x: d.weeks, y: dbsTraj.bs_unprotected || d.trajectories.unprotected, name: 'BS Vercise (Unprotected)', type: 'scatter', mode: 'lines', line: { color: '#ef4444', width: 2, dash: 'dash' } },
-                { x: d.weeks, y: dbsTraj.mdt_unprotected || d.trajectories.unprotected, name: 'MDT Percept (Unprotected)', type: 'scatter', mode: 'lines', line: { color: '#f97316', width: 2, dash: 'dot' } },
-                { x: d.weeks, y: dbsTraj.legacy_rsa || d.trajectories.legacy_rsa, name: 'Legacy RSA-2048 (Quantum Break)', type: 'scatter', mode: 'lines', line: { color: '#f59e0b', width: 2, dash: 'dot' } },
-                { x: d.weeks, y: dbsTraj.bs_pqc_fortified || d.trajectories.pqc_shielded, name: 'BS Vercise + PQC (Kyber-1024)', type: 'scatter', mode: 'lines', line: { color: '#0284c7', width: 3 } },
-                { x: d.weeks, y: dbsTraj.mdt_pqc_fortified || d.trajectories.pqc_shielded, name: 'MDT Percept + PQC (Dilithium-5)', type: 'scatter', mode: 'lines', line: { color: '#10b981', width: 3.5 } }
+                { x: d.weeks, y: dbsTraj.bs_unprotected || d.trajectories.unprotected, name: 'BS Vercise (Unprotected)', type: 'scatter', mode: 'lines', line: { color: '#ef4444', width: 1.5, dash: 'dash' } },
+                { x: d.weeks, y: dbsTraj.mdt_unprotected || d.trajectories.unprotected, name: 'MDT Percept (Unprotected)', type: 'scatter', mode: 'lines', line: { color: '#f97316', width: 1.5, dash: 'dot' } },
+                { x: d.weeks, y: dbsTraj.abt_unprotected || d.trajectories.unprotected, name: 'Abbott Infinity (Unprotected)', type: 'scatter', mode: 'lines', line: { color: '#eab308', width: 1.5, dash: 'dashdot' } },
+                { x: d.weeks, y: dbsTraj.legacy_rsa || d.trajectories.legacy_rsa, name: 'Legacy RSA-2048 (Shor Break)', type: 'scatter', mode: 'lines', line: { color: '#64748b', width: 2, dash: 'dot' } },
+                { x: d.weeks, y: dbsTraj.bs_pqc_fortified || d.trajectories.pqc_shielded, name: 'BS Vercise + PQC (Kyber-1024)', type: 'scatter', mode: 'lines', line: { color: '#0284c7', width: 2.5 } },
+                { x: d.weeks, y: dbsTraj.mdt_pqc_fortified || d.trajectories.pqc_shielded, name: 'MDT Percept + PQC (Dilithium-5)', type: 'scatter', mode: 'lines', line: { color: '#8b5cf6', width: 2.5 } },
+                { x: d.weeks, y: dbsTraj.abt_pqc_fortified || d.trajectories.pqc_shielded, name: 'Abbott Infinity + PQC (SPHINCS+)', type: 'scatter', mode: 'lines', line: { color: '#f59e0b', width: 2.5 } },
+                { x: d.weeks, y: dbsTraj.nm_pqc_fortified || d.trajectories.pqc_shielded, name: 'NeuroMorph DBS (Galois F_p)', type: 'scatter', mode: 'lines+markers', marker: { size: 4 }, line: { color: '#10b981', width: 3.2 } }
             ], {
                 ...commonLayout,
-                margin: { l: 55, r: 30, t: 30, b: 70 },
+                margin: { l: 55, r: 30, t: 30, b: 75 },
                 xaxis: { ...commonLayout.xaxis, title: 'Auditing Horizon (Weeks)' },
                 yaxis: { ...commonLayout.yaxis, title: 'DBS Telemetry Integrity (%)', range: [0, 105] },
-                legend: { orientation: 'h', x: 0, y: -0.28, font: { color: '#cbd5e1', size: 9.5 } }
+                legend: { orientation: 'h', x: 0, y: -0.32, font: { color: '#cbd5e1', size: 9.0 } }
             }, { responsive: true, displaylogo: false });
 
             // 3. Multi-Vector Risk Aversion Plot
@@ -2533,7 +2543,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: 'Boston Scientific Vercise (MICC)',
                     type: 'scatter',
                     mode: 'lines',
-                    line: { color: '#38bdf8', width: 2.5 }
+                    line: { color: '#38bdf8', width: 2.2 }
                 });
             }
             if (dbsTraj.mdt_risk_aversion) {
@@ -2543,7 +2553,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: 'Medtronic Percept (BrainSense)',
                     type: 'scatter',
                     mode: 'lines',
-                    line: { color: '#a78bfa', width: 2.5 }
+                    line: { color: '#a78bfa', width: 2.2 }
+                });
+            }
+            if (dbsTraj.abt_risk_aversion) {
+                vecTraces.push({
+                    x: d.weeks,
+                    y: dbsTraj.abt_risk_aversion,
+                    name: 'Abbott Infinity (iOS BLE)',
+                    type: 'scatter',
+                    mode: 'lines',
+                    line: { color: '#fbbf24', width: 2.2 }
+                });
+            }
+            if (dbsTraj.nm_risk_aversion) {
+                vecTraces.push({
+                    x: d.weeks,
+                    y: dbsTraj.nm_risk_aversion,
+                    name: 'NeuroMorph DBS (Galois Coprocessor)',
+                    type: 'scatter',
+                    mode: 'lines',
+                    line: { color: '#10b981', width: 2.8 }
                 });
             }
             if (dbsTraj.composite_dbs_aversion) {
@@ -2553,16 +2583,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: 'Composite DBS Risk Aversion (Avg)',
                     type: 'scatter',
                     mode: 'lines',
-                    line: { color: '#10b981', width: 3.5, dash: 'solid' }
+                    line: { color: '#34d399', width: 3.5, dash: 'dot' }
                 });
             }
 
             Plotly.newPlot('pqc-plot-aversion-vectors', vecTraces, {
                 ...commonLayout,
-                margin: { l: 55, r: 30, t: 30, b: 70 },
+                margin: { l: 55, r: 30, t: 30, b: 75 },
                 xaxis: { ...commonLayout.xaxis, title: 'Auditing Horizon (Weeks)' },
-                yaxis: { ...commonLayout.yaxis, title: 'Risk Aversion Probability (%)', range: [90, 100.5] },
-                legend: { orientation: 'h', x: 0, y: -0.28, font: { color: '#cbd5e1', size: 10 } }
+                yaxis: { ...commonLayout.yaxis, title: 'Risk Aversion Probability (%)', range: [92, 100.2] },
+                legend: { orientation: 'h', x: 0, y: -0.32, font: { color: '#cbd5e1', size: 9.0 } }
             }, { responsive: true, displaylogo: false });
 
             // 4. Quantum Barrier Penetration Probability
@@ -2582,28 +2612,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 showlegend: false
             }, { responsive: true, displaylogo: false });
 
-            // 5. Elliptic Modulus Spectrum
-            const kVals = [];
-            const kIntegrals = [];
-            const kpIntegrals = [];
-            for (let kv = 0.05; kv <= 0.95; kv += 0.05) {
-                kVals.push(kv.toFixed(2));
-                const Kapprox = (Math.PI / 2) * (1 + 0.25 * kv * kv + 0.07 * Math.pow(kv, 4));
-                const Kpapprox = (Math.PI / 2) * (1 + 0.25 * (1 - kv * kv) + 0.07 * Math.pow(1 - kv * kv, 2));
-                kIntegrals.push(Kapprox);
-                kpIntegrals.push(Kpapprox);
+            // 5. Evolutionary Wavefront PDE Plot
+            const wf = dbs.wavefront || {};
+            if (wf.x_grid_mm) {
+                Plotly.newPlot('pqc-plot-wavefront', [
+                    { x: wf.x_grid_mm, y: wf.wave_unmitigated_t0, name: 'Wavefront (t=0s)', type: 'scatter', mode: 'lines', line: { color: '#64748b', dash: 'dot', width: 1.5 } },
+                    { x: wf.x_grid_mm, y: wf.wave_unmitigated_t10, name: 'Unmitigated Intrusion (t=10s)', type: 'scatter', mode: 'lines', line: { color: '#ef4444', width: 2 } },
+                    { x: wf.x_grid_mm, y: wf.wave_pqc_attenuated, name: `PQC Damped (v=${wf.wave_speed_mm_s} mm/s)`, type: 'scatter', mode: 'lines', line: { color: '#10b981', width: 3 } }
+                ], {
+                    ...commonLayout,
+                    margin: { l: 55, r: 30, t: 30, b: 70 },
+                    xaxis: { ...commonLayout.xaxis, title: 'Tissue Propagation Depth x (mm)' },
+                    yaxis: { ...commonLayout.yaxis, title: 'Intrusion Amplitude u(x,t)' },
+                    legend: { orientation: 'h', x: 0, y: -0.28, font: { color: '#cbd5e1', size: 9.5 } }
+                }, { responsive: true, displaylogo: false });
             }
 
-            Plotly.newPlot('pqc-plot-elliptic', [
-                { x: kVals, y: kIntegrals, name: 'Complete Elliptic K(k)', type: 'scatter', mode: 'lines', line: { color: '#38bdf8', width: 2.5 } },
-                { x: kVals, y: kpIntegrals, name: "Complementary K'(k)", type: 'scatter', mode: 'lines', line: { color: '#a78bfa', width: 2, dash: 'dash' } }
-            ], {
-                ...commonLayout,
-                margin: { l: 55, r: 30, t: 30, b: 70 },
-                xaxis: { ...commonLayout.xaxis, title: 'Elliptic Modulus k' },
-                yaxis: { ...commonLayout.yaxis, title: 'Integral Magnitude (rad)' },
-                legend: { orientation: 'h', x: 0, y: -0.28, font: { color: '#cbd5e1', size: 10 } }
-            }, { responsive: true, displaylogo: false });
+            // 6. Prime Moduli & QVC Hardness Bar Chart
+            const pm = dbs.prime_moduli || [];
+            if (pm.length > 0) {
+                Plotly.newPlot('pqc-plot-prime-moduli', [
+                    {
+                        x: pm.map(m => `p=${m.prime_p}`),
+                        y: pm.map(m => m.svp_hardness_bits),
+                        name: 'SVP Hardness (Bits)',
+                        type: 'bar',
+                        marker: { color: ['#0a3d62', '#1e3799', '#0284c7', '#10b981', '#6941c6'] }
+                    }
+                ], {
+                    ...commonLayout,
+                    margin: { l: 55, r: 30, t: 30, b: 50 },
+                    xaxis: { ...commonLayout.xaxis, title: 'Prime Modulus Ring Ideal R_p' },
+                    yaxis: { ...commonLayout.yaxis, title: 'Lattice Security (Bits)', range: [0, 450] },
+                    shapes: [{
+                        type: 'line',
+                        x0: -0.5,
+                        x1: pm.length - 0.5,
+                        y0: 256,
+                        y1: 256,
+                        line: { color: '#ef4444', width: 1.5, dash: 'dash' }
+                    }]
+                }, { responsive: true, displaylogo: false });
+            }
 
             // 6. Threat Matrix Render (DBS Optimized Table)
             const tbody = el('pqc-threat-tbody');
@@ -2839,6 +2889,192 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (err) {
             console.error('Clinical Trajectories Benchmark API error:', err);
+        }
+    };
+
+    // ── NIH Grant, rTMS Characteristics & Optimal Staging Studio ────
+    let nihDebounceTimer = null;
+    window.runNihGrantStudioDebounced = function() {
+        clearTimeout(nihDebounceTimer);
+        nihDebounceTimer = setTimeout(runNihGrantStudio, 50);
+    };
+
+    window.runNihGrantStudio = async function() {
+        const directEl = document.getElementById('nih-direct');
+        if (!directEl) return;
+
+        const directBudget = parseFloat(directEl.value || 640000.0);
+        const faRate = parseFloat(document.getElementById('nih-fa')?.value || 54.5) / 100.0;
+        const nYears = parseInt(document.getElementById('nih-years')?.value || 5);
+        const contingency = parseFloat(document.getElementById('nih-contingency')?.value || 4.0);
+
+        const params = new URLSearchParams({
+            direct_budget: directBudget,
+            fa_rate: faRate,
+            n_years: nYears,
+            contingency_pct: contingency
+        });
+
+        try {
+            const res = await fetch(`/api/nih-grant-budget-optimizer?${params.toString()}`);
+            const result = await res.json();
+            if (!res.ok || result.status !== 'success') throw new Error(result.message || 'Error fetching NIH grant data');
+            const d = result.data;
+            const rtms = d.rtms_specs;
+            const stg = d.staging_data;
+            const dbs = d.dbs_specs;
+
+            const el = id => document.getElementById(id);
+            if (el('nih-metric-total')) el('nih-metric-total').textContent = `$${Math.round(d.total_budget).toLocaleString()}`;
+            if (el('nih-metric-status')) el('nih-metric-status').textContent = d.is_under_1m ? '✓ Sub-$1M Lean' : '⚠️ > $1M Bound';
+            if (el('nih-metric-savings')) el('nih-metric-savings').textContent = `${d.cost_savings_pct.toFixed(1)}% vs R01`;
+            if (el('nih-metric-remission')) el('nih-metric-remission').textContent = `${dbs.madrs_remission_rate_pct.toFixed(1)}% ± ${dbs.madrs_remission_ci.toFixed(1)}%`;
+            if (el('nih-metric-efield')) el('nih-metric-efield').textContent = `158.2 V/m (iTBS)`;
+            if (el('nih-metric-latency')) el('nih-metric-latency').textContent = `${dbs.closed_loop_latency_ms.toFixed(2)} ± ${dbs.closed_loop_latency_ci_ms.toFixed(2)} ms`;
+            if (el('nih-metric-galois')) el('nih-metric-galois').textContent = `F_17 Dynamic Prog`;
+
+            const commonLayout = {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                margin: { t: 28, b: 46, l: 50, r: 24 },
+                font: { color: '#c9d1d9', family: 'Inter' },
+                xaxis: { gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e' },
+                yaxis: { gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e' },
+                legend: { orientation: 'h', x: 0, y: -0.26, font: { size: 9.5 } }
+            };
+
+            // 1. Budget Donut Pie Chart
+            const catNames = d.categories.map(c => c.name.split('&')[0].trim());
+            const catPcts = d.categories.map(c => c.base_pct);
+            const pieColors = ['#0a3d62', '#38bdf8', '#079992', '#a78bfa', '#f59e0b', '#e58e26', '#94a3b8'];
+
+            Plotly.react('nih-plot-budget-pie', [{
+                values: catPcts,
+                labels: catNames,
+                type: 'pie',
+                hole: 0.5,
+                marker: { colors: pieColors },
+                textinfo: 'label+percent',
+                textposition: 'outside',
+                automargin: true,
+                textfont: { size: 9.5, color: '#cbd5e1' }
+            }], {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                margin: { t: 20, b: 20, l: 20, r: 20 },
+                showlegend: false,
+                font: { color: '#c9d1d9', family: 'Inter' }
+            }, { responsive: true, displaylogo: false });
+
+            // 2. 20-Quarter Burn-Rate Trajectory Chart
+            const qLabels = d.quarterly_labels;
+            const plannedCostsK = d.planned_cum_spend.map(v => v / 1000.0);
+            const upperK = d.upper_variance_band.map(v => v / 1000.0);
+            const lowerK = d.lower_variance_band.map(v => v / 1000.0);
+
+            Plotly.react('nih-plot-burn-rate', [
+                { x: qLabels, y: upperK, name: '+5% Upper Band', type: 'scatter', mode: 'lines', line: { color: 'rgba(56,189,248,0.2)', width: 0 }, showlegend: false },
+                { x: qLabels, y: lowerK, name: '-5% Lower Band', type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(56,189,248,0.12)', line: { color: 'rgba(56,189,248,0.2)', width: 0 }, showlegend: false },
+                { x: qLabels, y: plannedCostsK, name: 'Planned Direct Spend ($k)', type: 'scatter', mode: 'lines+markers', line: { color: '#38bdf8', width: 3 }, marker: { size: 4 } }
+            ], {
+                ...commonLayout,
+                xaxis: { ...commonLayout.xaxis, title: 'Quarterly Project Horizon (20 Quarters)' },
+                yaxis: { ...commonLayout.yaxis, title: 'Cumulative Direct Cost ($k)' }
+            }, { responsive: true, displaylogo: false });
+
+            // 3. rTMS BEM Electric Field & Current Density Depth Decay
+            Plotly.react('nih-plot-bem-profile', [
+                { x: d.depths_mm, y: d.e_field_bem, name: 'Peak E-Field (V/m)', type: 'scatter', mode: 'lines', line: { color: '#f43f5e', width: 2.5 } },
+                { x: d.depths_mm, y: d.current_density, name: 'Current Density J (A/m²)', type: 'scatter', mode: 'lines', line: { color: '#38bdf8', width: 2, dash: 'dot' }, yaxis: 'y2' }
+            ], {
+                ...commonLayout,
+                xaxis: { ...commonLayout.xaxis, title: 'Cortical Tissue Depth (mm)' },
+                yaxis: { ...commonLayout.yaxis, title: 'E-Field (V/m)', color: '#f43f5e' },
+                yaxis2: { title: 'J (A/m²)', overlaying: 'y', side: 'right', color: '#38bdf8', gridcolor: 'rgba(56,189,248,0.08)' }
+            }, { responsive: true, displaylogo: false });
+
+            // 4. Finite Math 3-Stage Optimal Trajectory vs Standard Care
+            Plotly.react('nih-plot-staging-trajectory', [
+                { x: stg.sessions, y: stg.score_phq9_sham, name: 'Sham Control', type: 'scatter', mode: 'lines', line: { color: '#64748b', dash: 'dot', width: 1.5 } },
+                { x: stg.sessions, y: stg.score_phq9_standard, name: 'Standard 10Hz rTMS', type: 'scatter', mode: 'lines', line: { color: '#f59e0b', dash: 'dash', width: 2 } },
+                { x: stg.sessions, y: stg.score_phq9_optimal_galois, name: 'Galois F_17 Optimal Staging', type: 'scatter', mode: 'lines+markers', marker: { size: 4 }, line: { color: '#10b981', width: 3.5 } },
+                { x: stg.sessions, y: stg.lyapunov_energy, name: 'Lyapunov Energy V(s_k) %', type: 'scatter', mode: 'lines', line: { color: '#c084fc', dash: 'dot', width: 1.8 }, yaxis: 'y2' }
+            ], {
+                ...commonLayout,
+                xaxis: { ...commonLayout.xaxis, title: 'Treatment Session (30 Sessions)' },
+                yaxis: { ...commonLayout.yaxis, title: 'PHQ-9 Symptom Score (0-27)', color: '#10b981' },
+                yaxis2: { title: 'Lyapunov Energy %', overlaying: 'y', side: 'right', color: '#c084fc', gridcolor: 'rgba(192,132,252,0.08)' }
+            }, { responsive: true, displaylogo: false });
+
+            // 5. rTMS Modalities Table Render
+            const rtmsTbody = el('nih-rtms-tbody');
+            if (rtmsTbody && rtms.modalities) {
+                rtmsTbody.innerHTML = rtms.modalities.map(m => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:8px 10px; font-weight:700; color:#38bdf8;">${m.protocol}</td>
+                        <td style="padding:8px 10px; color:#f8fafc;">${m.indication}</td>
+                        <td style="padding:8px 10px; color:#34d399; font-weight:600;">${m.frequency_hz} Hz</td>
+                        <td style="padding:8px 10px; color:#fbbf24;">${m.intensity_pct_rmt}% rMT</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">${m.train_duration_s}s / ${m.inter_train_interval_s}s</td>
+                        <td style="padding:8px 10px; color:#a78bfa; font-weight:600;">${m.total_pulses_session.toLocaleString()}</td>
+                        <td style="padding:8px 10px; font-size:11px; color:#94a3b8;">${m.target_coordinates}</td>
+                        <td style="padding:8px 10px; color:#f43f5e; font-weight:700;">${m.focal_e_field_vm.toFixed(1)} V/m</td>
+                        <td style="padding:8px 10px; color:#10b981; font-weight:700;">${m.remission_rate_pct.toFixed(1)}%</td>
+                    </tr>
+                `).join('');
+            }
+
+            // 6. 3-Stage Optimal Staging Cards Render
+            const cardsContainer = el('nih-staging-cards-container');
+            if (cardsContainer && stg.stages_breakdown) {
+                const borderColors = ['#38bdf8', '#34d399', '#fbbf24'];
+                cardsContainer.innerHTML = stg.stages_breakdown.map((sb, idx) => `
+                    <div style="background:rgba(15,23,42,0.85); border:1px solid ${borderColors[idx] || '#38bdf8'}; border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:11px; font-weight:700; color:${borderColors[idx]}; text-transform:uppercase;">Stage ${sb.stage_idx}: ${sb.sessions}</span>
+                            <span style="font-size:10px; background:rgba(255,255,255,0.08); padding:3px 8px; border-radius:4px; color:#cbd5e1;">${sb.dosage_pulses}</span>
+                        </div>
+                        <div style="font-size:14px; font-weight:700; color:#f8fafc;">${sb.name}</div>
+                        <div style="font-size:12px; color:#38bdf8;"><b>Frequency &amp; Pattern:</b> ${sb.frequency_hz}</div>
+                        <div style="font-size:12px; color:#34d399;"><b>Galois Target:</b> <code>${sb.galois_state_target}</code></div>
+                        <div style="font-size:11.5px; color:#94a3b8; font-style:italic; line-height:1.3;">${sb.objective}</div>
+                        <div style="font-size:12px; color:#fbbf24; font-weight:600; margin-top:4px;">Target Symptom Reduction: ≥ ${sb.symptom_reduction_target_pct}%</div>
+                    </div>
+                `).join('');
+            }
+
+            // 7. 5-Year Budget Table Render
+            const budgetTbody = el('nih-budget-tbody');
+            if (budgetTbody && d.category_rows) {
+                budgetTbody.innerHTML = d.category_rows.map(r => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:8px 10px; font-weight:700; color:#38bdf8;">${r.name}</td>
+                        <td style="padding:8px 10px; font-size:11px; color:#94a3b8;">${r.description}</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">$${Math.round(r.y1).toLocaleString()}</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">$${Math.round(r.y2).toLocaleString()}</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">$${Math.round(r.y3).toLocaleString()}</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">$${Math.round(r.y4).toLocaleString()}</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">$${Math.round(r.y5).toLocaleString()}</td>
+                        <td style="padding:8px 10px; color:#34d399; font-weight:700;">$${Math.round(r.total_direct).toLocaleString()}</td>
+                        <td style="padding:8px 10px; color:#fbbf24; font-weight:600;">${r.pct_of_direct.toFixed(1)}%</td>
+                    </tr>
+                `).join('');
+            }
+
+            // 8. Math Equations Render
+            const mathContainer = el('nih-math-container');
+            if (mathContainer && d.math_equations) {
+                mathContainer.innerHTML = d.math_equations.map(eq => `
+                    <div style="background:rgba(5,11,20,0.8); border:1px solid rgba(56,189,248,0.2); border-radius:8px; padding:10px;">
+                        <div style="font-size:12px; font-weight:600; color:#38bdf8; margin-bottom:4px;">${eq.title}</div>
+                        <div style="font-family:'Courier New', monospace; font-size:11px; color:#34d399; background:rgba(0,0,0,0.5); padding:6px 10px; border-radius:4px; overflow-x:auto;">${eq.latex}</div>
+                        <div style="font-size:11px; color:#94a3b8; margin-top:4px;">${eq.description}</div>
+                    </div>
+                `).join('');
+            }
+
+        } catch (err) {
+            console.error('NIH Grant Studio API error:', err);
         }
     };
 
