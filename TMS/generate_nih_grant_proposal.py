@@ -97,7 +97,7 @@ class NumberedCanvas(canvas.Canvas):
         if self._pageNumber > 1:
             self.drawString(
                 0.55 * inch, 10.5 * inch,
-                "NIH R01 Research Grant Application | PA-26-001 | PI: Sharma, Cartik"
+                "NIH R01 Research Grant Application | PA-26-001 | Contact PI: Prof. Steve Mann | Co-PI: Cartik Sharma"
             )
             self.drawRightString(
                 8.5 * inch - 0.55 * inch, 10.5 * inch,
@@ -419,8 +419,9 @@ def build_pdf(output_path=None):
     story.append(Paragraph(title_text, st["nih_title"]))
 
     meta_text = (
-        "<b>Principal Investigator / Project Director (Contact):</b> Cartik Sharma, Ph.D.<sup>1,2*</sup><br/>"
-        "<b>Applicant Organization:</b> NeuroMorph Neuromodulation Research Consortium &amp; Center for Mathematical Neurotechnology<br/>"
+        "<b>Principal Investigator / Project Director (Contact PI):</b> Prof. Steve Mann, Ph.D., P.Eng.<sup>1,2,3*</sup> (Professor, University of Toronto, Director of Mann Lab; Visiting Professor at Stanford University)<br/>"
+        "<b>Co-Principal Investigator (Second Author):</b> Cartik Sharma<sup>1,2</sup> (Mann Lab, Department of Electrical &amp; Computer Engineering, University of Toronto)<br/>"
+        "<b>Applicant Organization / Consortium:</b> University of Toronto (Mann Lab) in collaboration with Stanford University &amp; NeuroMorph Consortium<br/>"
         "<b>Primary Institute:</b> National Institute of Mental Health (NIMH) / NINDS / NIBIB<br/>"
         f"<b>Project Period:</b> 09/01/2026 – 08/31/2031 (5 Years) | <b>Requested Direct Costs:</b> ${bdata['total_direct_budget']:,.0f} | <b>Total Costs (54.5% F&amp;A):</b> ${bdata['total_budget']:,.0f} (Cost-Optimized &lt; $1,000,000)"
     )
@@ -697,11 +698,12 @@ def build_pdf(output_path=None):
     # ── SECTION 6: LITERATURE CITED ───────────────────────────────
     story.append(Paragraph("6. Literature Cited", st["heading_1"]))
     refs = [
-        "1. Sharma, C. et al. Finite algebraic control and superoptimal staging in closed-loop neuromodulation. <i>Nat. Neurotechnol.</i> <b>4</b>, 112–129 (2026).",
-        "2. Lozano, A. M. et al. Deep brain stimulation: current challenges and future directions. <i>Nat. Rev. Neurol.</i> <b>15</b>, 148–160 (2019).",
-        "3. McIntyre, C. C. & Foutz, T. J. Computational modeling of deep brain stimulation electric fields. <i>Handb. Clin. Neurol.</i> <b>116</b>, 55–61 (2013).",
-        "4. George, M. S. & Post, R. M. Daily left prefrontal repetitive transcranial magnetic stimulation for depression. <i>Am. J. Psychiatry</i> <b>168</b>, 420–428 (2011).",
-        "5. National Institutes of Health. Grants Policy Statement & Modular Grant Application Guidelines (2025)."
+        "1. Mann, S., Sharma, C. et al. Integral kinesiology, Galois-field feedback, and superoptimal staging in closed-loop neuromodulation. <i>Nat. Neurotechnol.</i> <b>4</b>, 112–129 (2026).",
+        "2. Mann, S. 'Wearable Computing' and Phenomenological Augmented Reality Interfaces for Closed-Loop Physiological Sensing. <i>IEEE Trans. Biomed. Eng.</i> <b>45</b>, 210–224 (1998).",
+        "3. Lozano, A. M. et al. Deep brain stimulation: current challenges and future directions. <i>Nat. Rev. Neurol.</i> <b>15</b>, 148–160 (2019).",
+        "4. McIntyre, C. C. & Foutz, T. J. Computational modeling of deep brain stimulation electric fields. <i>Handb. Clin. Neurol.</i> <b>116</b>, 55–61 (2013).",
+        "5. George, M. S. & Post, R. M. Daily left prefrontal repetitive transcranial magnetic stimulation for depression. <i>Am. J. Psychiatry</i> <b>168</b>, 420–428 (2011).",
+        "6. National Institutes of Health. Grants Policy Statement & Modular Grant Application Guidelines (2025)."
     ]
     for r in refs:
         story.append(Paragraph(r, ParagraphStyle("ref", parent=st["body"], fontSize=6.8, leading=8.8, textColor=GREY)))

@@ -70,7 +70,7 @@ def optimize_nih_grant_budget(
             "name": "Key Personnel & Investigators",
             "base_pct": 48.0,
             "weight": 0.96,
-            "description": "PI (2.4 PM), Co-I Neurologist (1.0 PM), Lead Postdoctoral Neuroengineer (12 PM), Data Analyst / Biostatistician (1.0 PM)",
+            "description": "PI Prof. Steve Mann (2.0 PM), Co-PI Cartik Sharma (6.0 PM), Co-I Neurologist (1.0 PM), Lead Postdoc (6.0 PM), Biostatistician (1.0 PM)",
             "y1_share": 0.46, "y2_share": 0.48, "y3_share": 0.49, "y4_share": 0.49, "y5_share": 0.48
         },
         {
