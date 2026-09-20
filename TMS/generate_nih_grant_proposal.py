@@ -97,7 +97,7 @@ class NumberedCanvas(canvas.Canvas):
         if self._pageNumber > 1:
             self.drawString(
                 0.55 * inch, 10.5 * inch,
-                "NIH R01 Research Grant Application | PA-26-001 | Contact PI: Prof. Steve Mann | Co-PI: Cartik Sharma"
+                "NIH R01 Research Grant | PA-26-001 | 1st Author & Contact PI: Dr. Steve Mann (UofT/Stanford) | 2nd Author: Cartik Sharma (Mann Lab)"
             )
             self.drawRightString(
                 8.5 * inch - 0.55 * inch, 10.5 * inch,
@@ -419,9 +419,9 @@ def build_pdf(output_path=None):
     story.append(Paragraph(title_text, st["nih_title"]))
 
     meta_text = (
-        "<b>Principal Investigator / Project Director (Contact PI):</b> Prof. Steve Mann, Ph.D., P.Eng.<sup>1,2,3*</sup> (Professor, University of Toronto, Director of Mann Lab; Visiting Professor at Stanford University)<br/>"
+        "<b>Principal Investigator / Project Director (First Author &amp; Contact PI):</b> Dr. Steve Mann, Ph.D., P.Eng.<sup>1,2,3*</sup> (University of Toronto Professor, Director of Mann Lab; Visiting Professor at Stanford University)<br/>"
         "<b>Co-Principal Investigator (Second Author):</b> Cartik Sharma<sup>1,2</sup> (Mann Lab, Department of Electrical &amp; Computer Engineering, University of Toronto)<br/>"
-        "<b>Applicant Organization / Consortium:</b> University of Toronto (Mann Lab) in collaboration with Stanford University &amp; NeuroMorph Consortium<br/>"
+        "<b>Applicant Organization &amp; Environment:</b> University of Toronto (Mann Lab / Dept. of Electrical &amp; Computer Engineering) in collaboration with Stanford University &amp; NeuroMorph Consortium<br/>"
         "<b>Primary Institute:</b> National Institute of Mental Health (NIMH) / NINDS / NIBIB<br/>"
         f"<b>Project Period:</b> 09/01/2026 – 08/31/2031 (5 Years) | <b>Requested Direct Costs:</b> ${bdata['total_direct_budget']:,.0f} | <b>Total Costs (54.5% F&amp;A):</b> ${bdata['total_budget']:,.0f} (Cost-Optimized &lt; $1,000,000)"
     )
@@ -483,9 +483,9 @@ def build_pdf(output_path=None):
     )
     story.append(Paragraph(p_sig, st["body"]))
 
-    story.append(Paragraph("B. Innovation", st["heading_2"]))
+    story.append(Paragraph("B. Innovation &amp; Investigative Leadership", st["heading_2"]))
     p_inn = (
-        "Our approach represents a paradigm shift from empirical open-loop stimulation to <b>finite algebraic Galois control</b>. Key innovations include: (1) Discrete Hamilton-Jacobi-Bellman dynamic programming on finite quotient rings <b>F</b><sub><i>p</i></sub>; (2) Symplectic St&ouml;rmer-Verlet phase-space conservation eliminating numerical drift; (3) Ramanujan continued fraction non-linear phase-locking; and (4) Integrated multi-horizon discrete Knapsack budget optimization for sub-$1M NIH federal funding efficiency."
+        "Our approach represents a paradigm shift from empirical open-loop stimulation to <b>finite algebraic Galois closed-loop control</b>, led by <b>Dr. Steve Mann</b> (University of Toronto Professor, Director of Mann Lab, Visiting Professor at Stanford University; First Author &amp; Contact PI) and <b>Cartik Sharma</b> (Mann Lab, University of Toronto; Second Author &amp; Co-PI). Leveraging Dr. Mann's seminal foundational breakthroughs in human-in-the-loop cybernetic feedback, integral kinesiology, and phenomenological physiological sensing alongside Cartik Sharma's finite discrete mathematics and 3D Boundary Element Method (BEM) electric field formulations, this proposal delivers: (1) Discrete Hamilton-Jacobi-Bellman dynamic programming on finite quotient rings <b>F</b><sub><i>p</i></sub>; (2) Symplectic St&ouml;rmer-Verlet phase-space conservation eliminating numerical drift; (3) Ramanujan continued fraction non-linear phase-locking; and (4) Integrated multi-horizon discrete Knapsack budget optimization for sub-$1M NIH federal funding efficiency."
     )
     story.append(Paragraph(p_inn, st["body"]))
 
