@@ -44,6 +44,15 @@ from ultrasound_ablation_engine import (
     FormalVerifiabilityGroundTruthStudy
 )
 from mrus_fusion_engine import MRUSFusionEngine
+from litt_cryo_ablation import (
+    LITTAblationEngine,
+    CryoAblationClinicalEngine,
+    UltrasoundGuidedAblationPrecision,
+    optimal_slam_trajectory,
+    clinical_outcome_trajectories,
+    classical_equations_reference,
+    full_modality_comparison,
+)
 
 nvqlink = NVQLinkBridge()
 qml_segmenter = QuantumMLSegmenter()
@@ -61,6 +70,26 @@ robot_qkf_kinematics = RoboticKinematicsQKF()
 mrus_phantom_engine = DynamicMRUSPhantomEngine(grid_dim=128)
 phantom_gt_study = FormalVerifiabilityGroundTruthStudy()
 mrus_fusion_engine = MRUSFusionEngine(num_terms=14, seed_modulus=0.15, max_energy_j=6.0, dt_s=0.75, grid_dim=128)
+
+# LITT / Cryoablation / US-Guided Millimetric Ablation Engines
+litt_engine = LITTAblationEngine(width=96, height=96, voxel_mm=0.6)
+cryo_clinical_engine = CryoAblationClinicalEngine(width=96, height=96, voxel_mm=0.6)
+us_precision_engine = UltrasoundGuidedAblationPrecision(width=96, height=96, voxel_mm=0.6)
+
+# Cache for ablation simulation results (invalidates every 5 minutes)
+_ablation_cache = {}
+_ablation_cache_time = 0
+_ablation_cache_ttl_s = 300  # 5 minute TTL
+
+def get_ablation_modalities_cached():
+    """Get ablation modalities with caching to avoid recomputation."""
+    global _ablation_cache, _ablation_cache_time
+    now = time.time()
+    if _ablation_cache and (now - _ablation_cache_time) < _ablation_cache_ttl_s:
+        return _ablation_cache
+    _ablation_cache = full_modality_comparison()
+    _ablation_cache_time = now
+    return _ablation_cache
 
 # Interactive US & Ablation Global State
 current_ablation_radius_mm = 0.0
@@ -1766,6 +1795,118 @@ def get_cryo_laser_preprint():
         as_attachment=as_att,
         mimetype='application/pdf',
         download_name='Nature_Cryo_Laser_Observable_Finite_Math_Preprint.pdf'
+    )
+
+
+@app.route('/api/ablation-modalities/litt', methods=['GET', 'POST'])
+def get_litt_ablation():
+    """Runs the nonlinear Pennes bioheat LITT simulation."""
+    try:
+        params = request.get_json(silent=True) or {}
+        result = litt_engine.simulate(
+            power_w=float(params.get('power_w', 12.0)),
+            exposure_s=float(params.get('exposure_s', 90.0)),
+            mu_a=float(params.get('mu_a', 35.0)),
+            mu_s_prime=float(params.get('mu_s_prime', 900.0)),
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ablation-modalities/cryo', methods=['GET', 'POST'])
+def get_cryo_ablation():
+    """Runs the Stefan-front cryoablation clinical simulation."""
+    try:
+        params = request.get_json(silent=True) or {}
+        result = cryo_clinical_engine.simulate(
+            pressure_psi=float(params.get('pressure_psi', 2400.0)),
+            freeze_s=float(params.get('freeze_s', 480.0)),
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ablation-modalities/us_precision', methods=['GET', 'POST'])
+def get_us_precision_ablation():
+    """Runs the millimetric-precision US-guided HIFU ablation simulation."""
+    try:
+        params = request.get_json(silent=True) or {}
+        result = us_precision_engine.simulate(
+            acoustic_power_w=float(params.get('acoustic_power_w', 65.0)),
+            exposure_s=float(params.get('exposure_s', 20.0)),
+            alpha_np_per_m=float(params.get('alpha_np_per_m', 6.5)),
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ablation-modalities/slam_trajectory', methods=['GET', 'POST'])
+def get_ablation_slam_trajectory():
+    """Stieltjes-continued-fraction SLAM optimal insertion trajectory."""
+    try:
+        params = request.get_json(silent=True) or {}
+        result = optimal_slam_trajectory(
+            target_mm=params.get('target_mm'),
+            waypoints=int(params.get('waypoints', 12)),
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ablation-modalities/clinical_outcomes', methods=['GET', 'POST'])
+def get_ablation_clinical_outcomes():
+    """Long-horizon clinical outcome trajectories (Weibull/Gompertz/KPS)."""
+    try:
+        params = request.get_json(silent=True) or {}
+        result = clinical_outcome_trajectories(
+            horizon_months=int(params.get('horizon_months', 60)),
+            step_months=int(params.get('step_months', 3)),
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ablation-modalities/equations', methods=['GET'])
+def get_ablation_equations():
+    """Classical governing equations for the LITT/Cryo/US ablation tab."""
+    try:
+        return jsonify({'equations': classical_equations_reference()})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/ablation-modalities/summary', methods=['GET', 'POST'])
+def get_ablation_modalities_summary():
+    """Combined LITT + Cryo + US + SLAM + clinical-outcomes dashboard payload (cached)."""
+    try:
+        return jsonify(get_ablation_modalities_cached())
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/preprint/litt_cryo/download', methods=['GET'])
+@app.route('/api/preprint/litt_cryo/view', methods=['GET'])
+def get_litt_cryo_preprint():
+    """Serves the Nature LITT/Cryo/US Tumour Ablation Preprint PDF (l.pdf)."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'l.pdf')
+    if not os.path.exists(pdf_path):
+        try:
+            from generate_nature_litt_cryo_preprint import build_pdf
+            build_pdf(pdf_path)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    as_att = request.path.endswith('/download')
+    return send_file(
+        pdf_path,
+        as_attachment=as_att,
+        mimetype='application/pdf',
+        download_name='l.pdf'
     )
 
 

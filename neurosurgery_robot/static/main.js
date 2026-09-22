@@ -100,6 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadFencingData();
             } else if (targetId === 'tab-economics' && typeof runEconomicsSim === 'function') {
                 runEconomicsSim();
+            } else if (targetId === 'tab-ablation-modalities' && typeof loadAblationModalities === 'function') {
+                loadAblationModalities();
             }
         });
     });
@@ -1548,5 +1550,277 @@ fetchQMLStieltjesData();
 fetchPhantomScan(0);
 fetchPacsStudies();
 setInterval(fetchUltrasoundScan, 1200);
+
+// =========================================================================
+// LITT / CRYO / US-GUIDED ABLATION MODALITIES TAB
+// =========================================================================
+
+let slamChartInstance = null;
+let clinicalLocalControlChart = null;
+let clinicalSurvivalChart = null;
+let clinicalKpsChart = null;
+let ablationModalitiesLoaded = false;
+
+// Precompute thermal LUT for fast rendering (Blue->Cyan->Yellow->Red)
+const thermalLUT = new Uint8ClampedArray(256 * 4);
+for (let i = 0; i < 256; i++) {
+    const v = i / 255.0;
+    let r, g, b;
+    if (v < 0.33) {
+        const t = v / 0.33;
+        r = 0; g = Math.round(255 * t); b = 255;
+    } else if (v < 0.66) {
+        const t = (v - 0.33) / 0.33;
+        r = Math.round(255 * t); g = 255; b = Math.round(255 * (1 - t));
+    } else {
+        const t = (v - 0.66) / 0.34;
+        r = 255; g = Math.round(255 * (1 - t)); b = 0;
+    }
+    thermalLUT[i * 4] = r;
+    thermalLUT[i * 4 + 1] = g;
+    thermalLUT[i * 4 + 2] = b;
+    thermalLUT[i * 4 + 3] = 255;
+}
+
+function renderHeatOverlayToCanvas(canvasCtx, grid, canvasWidth, canvasHeight) {
+    if (!canvasCtx || !grid || !grid.length) return;
+    const rows = grid.length;
+    const cols = grid[0].length;
+    const pixPerCol = Math.ceil(canvasHeight / rows);
+    const pixPerRow = Math.ceil(canvasWidth / cols);
+    
+    const imageData = canvasCtx.createImageData(canvasWidth, canvasHeight);
+    const data = imageData.data;
+    
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            const v = Math.max(0, Math.min(255, Math.round(grid[r][c])));
+            const lutIdx = v * 4;
+            const r_val = thermalLUT[lutIdx];
+            const g_val = thermalLUT[lutIdx + 1];
+            const b_val = thermalLUT[lutIdx + 2];
+            
+            for (let pr = 0; pr < pixPerCol; pr++) {
+                for (let pc = 0; pc < pixPerRow; pc++) {
+                    const pidx = ((r * pixPerCol + pr) * canvasWidth + (c * pixPerRow + pc)) * 4;
+                    if (pidx + 3 < data.length) {
+                        data[pidx] = r_val;
+                        data[pidx + 1] = g_val;
+                        data[pidx + 2] = b_val;
+                        data[pidx + 3] = 255;
+                    }
+                }
+            }
+        }
+    }
+    canvasCtx.putImageData(imageData, 0, 0);
+}
+
+const littGrayCanvas = document.getElementById('litt-gray-canvas');
+const littHeatCanvas = document.getElementById('litt-heat-canvas');
+const cryoGrayCanvas = document.getElementById('cryo-gray-canvas');
+const cryoHeatCanvas = document.getElementById('cryo-heat-canvas');
+const usGrayCanvas = document.getElementById('us-gray-canvas');
+const usHeatCanvas = document.getElementById('us-heat-canvas');
+
+function initSlamTrajectoryChart(waypointsData) {
+    const ctx = document.getElementById('slam-trajectory-chart');
+    if (!ctx) return;
+    if (slamChartInstance) slamChartInstance.destroy();
+    slamChartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: waypointsData.map(w => w.waypoint),
+            datasets: [{
+                label: 'SLAM Tracking Error (mm)',
+                data: waypointsData.map(w => w.slam_tracking_error_mm),
+                borderColor: '#c4b5fd',
+                backgroundColor: 'rgba(196,181,253,0.15)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                x: { ticks: { color: '#94a3b8' }, title: { display: true, text: 'Waypoint', color: '#94a3b8' } },
+                y: { ticks: { color: '#94a3b8' }, title: { display: true, text: 'mm', color: '#94a3b8' } }
+            },
+            plugins: { legend: { labels: { color: '#e2e8f0' } } }
+        }
+    });
+}
+
+function initClinicalOutcomeCharts(clin) {
+    const months = clin.months;
+    const modalities = Object.keys(clin).filter(k => k !== 'months');
+    const colors = { 'LITT': '#f87171', 'Cryoablation': '#60a5fa', 'US-Guided HIFU': '#34d399' };
+
+    const ctxLc = document.getElementById('clinical-local-control-chart');
+    if (ctxLc) {
+        if (clinicalLocalControlChart) clinicalLocalControlChart.destroy();
+        clinicalLocalControlChart = new Chart(ctxLc.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: modalities.map(m => ({
+                    label: m + ' Local Control %',
+                    data: clin[m].local_control_pct,
+                    borderColor: colors[m] || '#e2e8f0',
+                    backgroundColor: 'transparent',
+                    tension: 0.3
+                }))
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: '#94a3b8' }, title: { display: true, text: 'Months', color: '#94a3b8' } },
+                    y: { ticks: { color: '#94a3b8' }, title: { display: true, text: 'Local Control %', color: '#94a3b8' } }
+                },
+                plugins: { legend: { labels: { color: '#e2e8f0', font: { size: 9 } } } }
+            }
+        });
+    }
+
+    const ctxSurv = document.getElementById('clinical-survival-chart');
+    if (ctxSurv) {
+        if (clinicalSurvivalChart) clinicalSurvivalChart.destroy();
+        clinicalSurvivalChart = new Chart(ctxSurv.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: modalities.map(m => ({
+                    label: m + ' Overall Survival %',
+                    data: clin[m].overall_survival_pct,
+                    borderColor: colors[m] || '#e2e8f0',
+                    backgroundColor: 'transparent',
+                    tension: 0.3
+                }))
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: '#94a3b8' }, title: { display: true, text: 'Months', color: '#94a3b8' } },
+                    y: { ticks: { color: '#94a3b8' }, title: { display: true, text: 'Survival %', color: '#94a3b8' } }
+                },
+                plugins: { legend: { labels: { color: '#e2e8f0', font: { size: 9 } } } }
+            }
+        });
+    }
+
+    const ctxKps = document.getElementById('clinical-kps-chart');
+    if (ctxKps) {
+        if (clinicalKpsChart) clinicalKpsChart.destroy();
+        clinicalKpsChart = new Chart(ctxKps.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: modalities.map(m => ({
+                    label: m + ' KPS',
+                    data: clin[m].kps_trajectory,
+                    borderColor: colors[m] || '#e2e8f0',
+                    backgroundColor: 'transparent',
+                    tension: 0.3
+                }))
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: '#94a3b8' }, title: { display: true, text: 'Months', color: '#94a3b8' } },
+                    y: { ticks: { color: '#94a3b8' }, title: { display: true, text: 'KPS', color: '#94a3b8' } }
+                },
+                plugins: { legend: { labels: { color: '#e2e8f0', font: { size: 9 } } } }
+            }
+        });
+    }
+}
+
+function renderAblationEquations(equations) {
+    const el = document.getElementById('ablation-equations-list');
+    if (!el || !equations) return;
+    el.innerHTML = equations.map(eq => (
+        `<div style="margin-bottom:10px;">
+            <div style="color:#fde68a; font-weight:600; font-size:10.5px;">${eq.title}</div>
+            <div class="mathjax-eq" style="margin:2px 0;">$$${eq.latex}$$</div>
+            <div style="color:#94a3b8; font-size:9.5px;">${eq.description}</div>
+        </div>`
+    )).join('');
+    // Defer MathJax rendering to next frame for better responsiveness
+    requestAnimationFrame(() => {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            window.MathJax.typesetPromise([el]).catch(() => {});
+        }
+    });
+}
+
+async function loadAblationModalities() {
+    try {
+        const res = await fetch('/api/ablation-modalities/summary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({}),
+            signal: AbortSignal.timeout(60000) // 60 second timeout for full simulation
+        });
+        
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.error) { console.error(data.error); return; }
+
+        // Render canvases and metrics first (fastest path)
+        if (data.litt) {
+            renderGridToCanvas(littGrayCanvas.getContext('2d'), data.litt.anatomy_grid, littGrayCanvas.width, littGrayCanvas.height, 'gray');
+            renderHeatOverlayToCanvas(littHeatCanvas.getContext('2d'), data.litt.heatmap_grid, littHeatCanvas.width, littHeatCanvas.height);
+            document.getElementById('litt-necrotic-radius').innerText = data.litt.necrotic_radius_mm.toFixed(2) + ' mm';
+            document.getElementById('litt-max-temp').innerText = data.litt.max_temperature_c.toFixed(1) + ' °C';
+        }
+        if (data.cryo) {
+            renderGridToCanvas(cryoGrayCanvas.getContext('2d'), data.cryo.anatomy_grid, cryoGrayCanvas.width, cryoGrayCanvas.height, 'gray');
+            renderHeatOverlayToCanvas(cryoHeatCanvas.getContext('2d'), data.cryo.heatmap_grid, cryoHeatCanvas.width, cryoHeatCanvas.height);
+            document.getElementById('cryo-ice-radius').innerText = data.cryo.ice_ball_radius_mm.toFixed(2) + ' mm';
+            document.getElementById('cryo-min-temp').innerText = data.cryo.min_temperature_c.toFixed(1) + ' °C';
+        }
+        if (data.us_ablation) {
+            renderGridToCanvas(usGrayCanvas.getContext('2d'), data.us_ablation.anatomy_grid, usGrayCanvas.width, usGrayCanvas.height, 'gray');
+            renderHeatOverlayToCanvas(usHeatCanvas.getContext('2d'), data.us_ablation.heatmap_grid, usHeatCanvas.width, usHeatCanvas.height);
+            document.getElementById('us-necrotic-radius').innerText = data.us_ablation.necrotic_radius_mm.toFixed(2) + ' mm';
+            document.getElementById('us-tre').innerText = data.us_ablation.target_registration_error_mm.toFixed(3) + ' mm';
+        }
+
+        // Render charts and equations asynchronously (deferred rendering)
+        requestAnimationFrame(() => {
+            // SLAM trajectory
+            if (data.slam_trajectory) {
+                initSlamTrajectoryChart(data.slam_trajectory.waypoints);
+                document.getElementById('slam-final-tre').innerText = data.slam_trajectory.final_target_registration_error_mm.toFixed(3) + ' mm';
+                document.getElementById('slam-waypoints').innerText = data.slam_trajectory.waypoints.length;
+            }
+
+            // Clinical outcomes
+            if (data.clinical_outcomes) {
+                initClinicalOutcomeCharts(data.clinical_outcomes);
+            }
+
+            // Equations (with MathJax deferred to next frame)
+            if (data.equations) {
+                renderAblationEquations(data.equations);
+            }
+        });
+
+        ablationModalitiesLoaded = true;
+    } catch (e) {
+        console.error("Ablation modalities load error", e);
+        // Don't show alert - simulation might still be running on server
+    }
+}
+
+const btnRunAblationModalities = document.getElementById('btn-run-ablation-modalities');
+if (btnRunAblationModalities) {
+    btnRunAblationModalities.addEventListener('click', () => {
+        btnRunAblationModalities.textContent = '⏳ RUNNING SIMULATION…';
+        loadAblationModalities().finally(() => {
+            btnRunAblationModalities.textContent = '▶ RUN LITT / CRYO / US SIMULATION';
+        });
+    });
+}
 
 });  // end DOMContentLoaded

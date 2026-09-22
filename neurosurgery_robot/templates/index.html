@@ -11,6 +11,17 @@
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MathJax (scoped to .mathjax-eq elements only) -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+            options: {
+                processHtmlClass: 'mathjax-eq',
+                ignoreHtmlClass: '.*'
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
 </head>
 
 <body>
@@ -63,6 +74,7 @@
                         <button class="tab-btn" data-tab="tab-economics">Cost Economics</button>
                         <button class="tab-btn" data-tab="tab-robotics">Surgical Robotics</button>
                         <button class="tab-btn" data-tab="tab-5g">5G Guidance & GE PACS</button>
+                        <button class="tab-btn" data-tab="tab-ablation-modalities">🔥❄️ LITT &amp; Cryo Ablation</button>
                         <button class="tab-btn" data-tab="tab-preprint">Nature Preprint</button>
                     </div>
 
@@ -984,6 +996,130 @@
                         <p style="color:#64748b; font-size:10px; margin:6px 0 0 0;">
                             Year 0 reflects the initial R&amp;D and regulatory capital outlay. Discount factor = 1 / (1 + WACC)<sup>t</sup> at the model's discount rate. The cumulative discounted FCF column converges to the project's Net Present Value (NPV) by Year 10.
                         </p>
+                    </div>
+                </div>
+
+                <!-- LITT & Cryo Ablation Tab -->
+                <div id="tab-ablation-modalities" class="tab-content">
+                    <h2 style="color:#fca5a5;">🔥❄️ LITT, Cryo &amp; US-Guided Tumour Ablation</h2>
+
+                    <!-- Modality Controls -->
+                    <div style="display:flex; gap:8px; margin-bottom:10px;">
+                        <button id="btn-run-ablation-modalities" class="btn-primary" style="flex:1; background: linear-gradient(135deg, #dc2626, #f59e0b);">
+                            ▶ RUN LITT / CRYO / US SIMULATION
+                        </button>
+                    </div>
+
+                    <!-- Grayscale + Heatmap Canvases -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                        <div class="heatmap-container" style="padding:4px;">
+                            <p style="color:#fca5a5; font-size:10px; margin:0 0 4px 0; text-align:center;">LITT (Laser)</p>
+                            <canvas id="litt-gray-canvas" width="128" height="128" style="width:100%; background:#000;"></canvas>
+                            <canvas id="litt-heat-canvas" width="128" height="128" style="width:100%; background:#000; margin-top:4px;"></canvas>
+                        </div>
+                        <div class="heatmap-container" style="padding:4px;">
+                            <p style="color:#93c5fd; font-size:10px; margin:0 0 4px 0; text-align:center;">Cryoablation</p>
+                            <canvas id="cryo-gray-canvas" width="128" height="128" style="width:100%; background:#000;"></canvas>
+                            <canvas id="cryo-heat-canvas" width="128" height="128" style="width:100%; background:#000; margin-top:4px;"></canvas>
+                        </div>
+                        <div class="heatmap-container" style="padding:4px;">
+                            <p style="color:#6ee7b7; font-size:10px; margin:0 0 4px 0; text-align:center;">US-Guided HIFU</p>
+                            <canvas id="us-gray-canvas" width="128" height="128" style="width:100%; background:#000;"></canvas>
+                            <canvas id="us-heat-canvas" width="128" height="128" style="width:100%; background:#000; margin-top:4px;"></canvas>
+                        </div>
+                    </div>
+                    <p style="color:#64748b; font-size:10px; margin:4px 0 8px 0;">Top row = grayscale B-mode/MR anatomy &middot; Bottom row = thermal heatmap overlay (blue&rarr;red, 37&deg;C&rarr;peak)</p>
+
+                    <!-- Modality Metrics -->
+                    <div class="metrics">
+                        <div class="metric">
+                            <span class="m-label">LITT Necrotic Radius</span>
+                            <span class="m-value" id="litt-necrotic-radius">-- mm</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-label">LITT Peak Temp</span>
+                            <span class="m-value" id="litt-max-temp">-- °C</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-label">Cryo Ice-Ball Radius</span>
+                            <span class="m-value" id="cryo-ice-radius">-- mm</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-label">Cryo Min Temp</span>
+                            <span class="m-value" id="cryo-min-temp">-- °C</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-label">US Necrotic Radius</span>
+                            <span class="m-value" id="us-necrotic-radius">-- mm</span>
+                        </div>
+                        <div class="metric">
+                            <span class="m-label">US Target Reg. Error</span>
+                            <span class="m-value success" id="us-tre">-- mm</span>
+                        </div>
+                    </div>
+
+                    <!-- SLAM / Stieltjes Trajectory Panel -->
+                    <div class="quantum-metrics-box" style="margin-top:14px; border:1px solid #c4b5fd; border-radius:8px; padding:12px;">
+                        <h3 style="color:#c4b5fd; margin:0 0 8px 0; font-size:13px; letter-spacing:0.05em;">
+                            🧭 STIELTJES-SLAM OPTIMAL INSERTION TRAJECTORY
+                        </h3>
+                        <div class="chart-container" style="width:100%; height:140px;">
+                            <canvas id="slam-trajectory-chart"></canvas>
+                        </div>
+                        <div class="metrics" style="margin-top:8px;">
+                            <div class="metric">
+                                <span class="m-label">Final Target Reg. Error</span>
+                                <span class="m-value" id="slam-final-tre" style="color:#c4b5fd;">-- mm</span>
+                            </div>
+                            <div class="metric">
+                                <span class="m-label">Waypoints</span>
+                                <span class="m-value" id="slam-waypoints" style="color:#c4b5fd;">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Long-Term Clinical Outcome Trajectories -->
+                    <div class="quantum-metrics-box" style="margin-top:14px; border:1px solid #34d399; border-radius:8px; padding:12px;">
+                        <h3 style="color:#6ee7b7; margin:0 0 8px 0; font-size:13px; letter-spacing:0.05em;">
+                            📈 LONG-TERM CLINICAL OUTCOME TRAJECTORIES (60-MONTH HORIZON)
+                        </h3>
+                        <div class="chart-container" style="width:100%; height:170px;">
+                            <canvas id="clinical-local-control-chart"></canvas>
+                        </div>
+                        <div class="chart-container" style="width:100%; height:170px; margin-top:8px;">
+                            <canvas id="clinical-survival-chart"></canvas>
+                        </div>
+                        <div class="chart-container" style="width:100%; height:170px; margin-top:8px;">
+                            <canvas id="clinical-kps-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Governing Equations -->
+                    <div class="quantum-metrics-box" style="margin-top:14px; border:1px solid #fbbf24; border-radius:8px; padding:12px;">
+                        <h3 style="color:#fde68a; margin:0 0 8px 0; font-size:13px; letter-spacing:0.05em;">
+                            ∑ GOVERNING EQUATIONS &amp; FINITE MATH
+                        </h3>
+                        <div id="ablation-equations-list" style="font-size:11px; color:#e2e8f0; line-height:1.8;">
+                            Loading equations…
+                        </div>
+                    </div>
+
+                    <!-- Preprint Link -->
+                    <div class="quantum-metrics-box" style="margin-top:14px; border:1px solid #f87171; border-radius:8px; padding:12px; background: rgba(15,23,42,0.85);">
+                        <h3 style="color:#fca5a5; font-size:12px; margin:0 0 4px 0;">
+                            📄 Nature Preprint: LITT, Cryo &amp; US-Guided Tumour Ablation
+                        </h3>
+                        <p style="color:#cbd5e1; font-size:10px; line-height:1.4; margin-bottom:8px;">
+                            Nonlinear Pennes bioheat/Stefan/HIFU thermometric finite-element formulations, Stieltjes-continued-fraction SLAM trajectories, and long-term clinical outcome modelling (l.pdf).
+                        </p>
+                        <div style="display:flex; gap:8px;">
+                            <a href="/api/preprint/litt_cryo/view" target="_blank" class="btn-primary" style="flex:1; text-align:center; text-decoration:none; background: linear-gradient(135deg, #b91c1c, #f87171); padding:6px; font-size:11px; justify-content:center;">
+                                📖 VIEW PDF
+                            </a>
+                            <a href="/api/preprint/litt_cryo/download" class="btn-secondary" style="flex:1; text-align:center; text-decoration:none; padding:6px; font-size:11px; justify-content:center;" download>
+                                📥 DOWNLOAD PDF
+                            </a>
+                        </div>
                     </div>
                 </div>
 
