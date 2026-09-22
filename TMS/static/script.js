@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hifuTmsView      = document.getElementById('hifu-tms-view');
     const cybersecurityPqcView = document.getElementById('cybersecurity-pqc-view');
     const clinicalTrajectoriesView = document.getElementById('clinical-trajectories-view');
+    const pharmacologicalEquivalenceView = document.getElementById('pharmacological-equivalence-view');
     const nihGrantView = document.getElementById('nih-grant-view');
 
     // Sim result spans
@@ -69,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, nihGrantView];
+    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -137,6 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Millennial Anxiety rTMS & Pharmacological Optimization',
             subtitle: 'BEM/FEA Cortical Surfaces · EEG Waveforms (FAA) · Multi-Arm Trials · Long-Term Markov Horizon',
             view:     anxietyView, showRunBtn: false
+        },
+        'pharmacological-equivalence': {
+            title:    'Pharmacological Equivalence & Trial Management',
+            subtitle: 'Generative AI drug discovery for rTMS-equivalent therapeutics · long-horizon clinical modeling',
+            view:     pharmacologicalEquivalenceView, showRunBtn: false
         },
         'moduli-bem': {
             title:    'Moduli-Theoretic Treatment Paradigm & BEM Simulation',
@@ -232,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'hifu-tms')                              runHifuTms();
             if (tab === 'cybersecurity-pqc')                     runCybersecurityPqc();
             if (tab === 'clinical-trajectories')                runClinicalTrajectoriesBenchmark();
+            if (tab === 'pharmacological-equivalence')          loadPharmacologicalEquivalenceData();
             if (tab === 'nih-grant')                            runNihGrantStudio();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
@@ -570,6 +577,119 @@ document.addEventListener('DOMContentLoaded', () => {
                 colorbar: { title: 'Field Intensity', titlefont: { color: '#e6edf3' }, tickfont: { color: '#e6edf3' }, thickness: 18 } }
         }], { ...PL, margin: { l: 0, r: 0, t: 0, b: 0 },
             scene: { ...PL.scene, xaxis: { ...PL.scene.xaxis, title: 'x (MNI)' }, yaxis: { ...PL.scene.yaxis, title: 'y (MNI)' }, zaxis: { ...PL.scene.zaxis, title: 'z (MNI)' } }
+        }, { responsive: true });
+    }
+
+    async function loadPharmacologicalEquivalenceData() {
+        try {
+            const res = await fetch('/api/pharmacological-equivalence');
+            const payload = await res.json();
+            if (payload.status !== 'success') return;
+            renderPharmacologicalEquivalenceTab(payload.data);
+        } catch (error) {
+            console.error('Pharmacological equivalence error:', error);
+        }
+    }
+
+    function renderPharmacologicalEquivalenceTab(data) {
+        const eqs = data.equations || [];
+        const pharmEqContainer = document.getElementById('pharm-equation-list');
+        if (pharmEqContainer) {
+            pharmEqContainer.innerHTML = eqs.map(eq => `
+                <div style="background:rgba(15,23,42,0.72); border:1px solid rgba(56,189,248,0.18); border-radius:10px; padding:10px 12px;">
+                    <div style="font-weight:700; color:#58a6ff; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px;">${eq.title}</div>
+                    <div style="font-family:'Courier New', monospace; font-size:11px; color:#a7f3d0; background:rgba(0,0,0,0.3); border-radius:6px; padding:8px; overflow:auto;">${eq.latex}</div>
+                    <div style="font-size:11px; color:#94a3b8; margin-top:5px;">${eq.description}</div>
+                </div>
+            `).join('');
+        }
+
+        const candidates = data.candidates || [];
+        const trialManagement = data.trial_management || {};
+        const table = document.getElementById('pharm-candidate-table');
+        if (table) {
+            table.innerHTML = `
+                <table class="eq-spec-table" style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:rgba(56,189,248,0.1);">
+                            <th style="padding:8px 10px; text-align:left; color:#e6edf3;">Candidate</th>
+                            <th style="padding:8px 10px; text-align:left; color:#e6edf3;">Mechanism</th>
+                            <th style="padding:8px 10px; text-align:left; color:#e6edf3;">Eq. Index</th>
+                            <th style="padding:8px 10px; text-align:left; color:#e6edf3;">Clinical Horizon</th>
+                            <th style="padding:8px 10px; text-align:left; color:#e6edf3;">Risk</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${candidates.map(c => `
+                            <tr style="border-top:1px solid rgba(255,255,255,0.06);">
+                                <td style="padding:8px 10px; color:#f8fafc; font-weight:600;">${c.name}</td>
+                                <td style="padding:8px 10px; color:#8b949e;">${c.mechanism}</td>
+                                <td style="padding:8px 10px; color:#34d399; font-weight:700;">${c.equivalence_index.toFixed(2)}</td>
+                                <td style="padding:8px 10px; color:#38bdf8;">${c.horizon_months} mo</td>
+                                <td style="padding:8px 10px; color:${c.risk_level === 'Low' ? '#34d399' : c.risk_level === 'Moderate' ? '#fbbf24' : '#f87171'}; font-weight:600;">${c.risk_level}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        if (document.getElementById('pharm-trial-mgmt')) {
+            document.getElementById('pharm-trial-mgmt').innerHTML = `
+                <div class="sa-control-box" style="margin:0; background:rgba(14,116,144,0.08); border-color:rgba(14,116,144,0.3);">
+                    <div class="sa-metric-row"><span class="sa-metric-lbl">Trial sites</span><span class="sa-metric-val">${trialManagement.sites || 12}</span></div>
+                    <div class="sa-metric-row"><span class="sa-metric-lbl">Active patients</span><span class="sa-metric-val">${trialManagement.active_patients || 420}</span></div>
+                    <div class="sa-metric-row"><span class="sa-metric-lbl">Enrollment goal</span><span class="sa-metric-val">${trialManagement.enrollment_goal || 1200}</span></div>
+                    <div class="sa-metric-row"><span class="sa-metric-lbl">Completion</span><span class="sa-metric-val">${trialManagement.completion_pct || 76}%</span></div>
+                    <div class="sa-metric-row"><span class="sa-metric-lbl">Adverse event rate</span><span class="sa-metric-val">${trialManagement.ae_rate || 1.8}%</span></div>
+                    <div class="sa-metric-row" style="border-bottom:none;"><span class="sa-metric-lbl">Protocol status</span><span class="sa-metric-val">${trialManagement.status || 'Active / DSMB review'}</span></div>
+                </div>
+            `;
+        }
+
+        const dispersion = data.molecular_dispersion || { x: [], y: [] };
+        Plotly.newPlot('pharm-dispersion-chart', [{
+            x: dispersion.x,
+            y: dispersion.y,
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#58a6ff', width: 3 },
+            marker: { size: 6, color: '#a78bfa' },
+            name: 'Molecular Dispersion'
+        }], {
+            ...PL,
+            xaxis: { ...PL.xaxis, title: 'Longitudinal Horizon (mo)' },
+            yaxis: { ...PL.yaxis, title: 'Dispersion / Equivalence Score' },
+            title: { text: 'Molecular Dispersion Under rTMS-Equivalent Discovery', font: { color: '#e6edf3' } }
+        }, { responsive: true });
+
+        const arms = data.clinical_horizon || [];
+        Plotly.newPlot('pharm-horizon-chart', [{
+            x: arms.map(a => a.month),
+            y: arms.map(a => a.equivalence_score),
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#34d399', width: 3 },
+            marker: { size: 7, color: '#10b981' },
+            name: 'Equivalent therapeutic signal'
+        }], {
+            ...PL,
+            xaxis: { ...PL.xaxis, title: 'Clinical Horizon (months)' },
+            yaxis: { ...PL.yaxis, title: 'Equivalent Effect Score' }
+        }, { responsive: true });
+
+        Plotly.newPlot('pharm-benchmark-chart', [{
+            x: candidates.map(c => c.name),
+            y: candidates.map(c => c.equivalence_index),
+            type: 'bar',
+            marker: { color: ['#58a6ff', '#a78bfa', '#34d399', '#fbbf24', '#f87171'] },
+            text: candidates.map(c => c.equivalence_index.toFixed(2)),
+            textposition: 'outside'
+        }], {
+            ...PL,
+            xaxis: { ...PL.xaxis, title: 'Candidate', type: 'category' },
+            yaxis: { ...PL.yaxis, title: 'rTMS-Equivalent Index' },
+            margin: { l: 40, r: 20, t: 30, b: 120 }
         }, { responsive: true });
     }
 

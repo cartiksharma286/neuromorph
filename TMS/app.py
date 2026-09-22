@@ -36,6 +36,7 @@ from logic.hifu_tms_dementia import simulate_hifu_tms_dementia
 from logic.cybersecurity_pqc import simulate_cybersecurity_trajectories
 from logic.dbs_pqc_vulnerability import optimize_dbs_pqc_vulnerability_assessment
 from logic.clinical_trajectories_benchmark import simulate_clinical_trajectories_benchmark
+from logic.pharmacological_equivalence import simulate_pharmacological_equivalence
 from logic.nih_grant_budget_optimizer import optimize_nih_grant_budget
 
 app = Flask(__name__)
@@ -812,6 +813,32 @@ def api_nih_grant_budget_optimizer():
             contingency_reserve_pct=contingency
         )
         return jsonify({'status': 'success', 'data': res})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/pharmacological-equivalence', methods=['GET'])
+def pharmacological_equivalence():
+    """Serve the generative-AI pharmacological equivalence model for rTMS-equivalent discovery."""
+    try:
+        data = simulate_pharmacological_equivalence()
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/pharmacological-equivalence-publication', methods=['GET'])
+def pharmacological_equivalence_publication():
+    """Generate and stream the Nature-style pharmacological equivalence PDF."""
+    try:
+        from generate_nature_pharmacological_equivalence import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Pharmacological_Equivalence_rTMS.pdf')
+        build_pdf(output_path)
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Pharmacological_Equivalence_rTMS.pdf')
     except Exception as exc:
         import traceback
         traceback.print_exc()

@@ -53,6 +53,9 @@
                 <button class="nav-btn" data-tab="anxiety">
                     <span class="icon">⚡</span> Anxiety in Millennials
                 </button>
+                <button class="nav-btn" data-tab="pharmacological-equivalence">
+                    <span class="icon">🧪</span> Pharmacological Equivalence
+                </button>
                 <button class="nav-btn" data-tab="moduli-bem">
                     <span class="icon">🧮</span> Moduli-BEM Paradigm
                 </button>
@@ -1989,6 +1992,63 @@
                             <h3>⚙️ Closed-Loop Superoptimal Staging Architecture &amp; Telemetry</h3>
                             <pre id="ct-ascii-schematic" style="font-family:monospace; font-size:11px; color:#38bdf8; background:rgba(0,0,0,0.6); padding:12px; border-radius:6px; overflow-x:auto; line-height:1.3;"></pre>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Pharmacological Equivalence & Trial Management Suite ── -->
+            <div id="pharmacological-equivalence-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#58a6ff; font-weight:700; margin-bottom:6px;">Generative AI discovery</div>
+                        <h3 style="margin:0;">Pharmacological Equivalence for rTMS-Like Clinical Effect</h3>
+                    </div>
+                    <a href="/api/pharmacological-equivalence-publication" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #0e7490, #155e75); padding:10px 18px; border-radius:8px; font-weight:600;">
+                        <span>📥 Download Nature Pharmacology PDF</span>
+                    </a>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel" style="display:flex; flex-direction:column; gap:16px;">
+                        <h3>Clinical Trial Management</h3>
+                        <div id="pharm-trial-mgmt"></div>
+                        <div style="display:grid; gap:10px;">
+                            <div class="sa-control-box" style="margin:0; background:rgba(56,189,248,0.06); border-color:rgba(56,189,248,0.2);">
+                                <div class="sa-metric-row"><span class="sa-metric-lbl">Trial phase</span><span class="sa-metric-val">Ph IIb / III adaptive</span></div>
+                                <div class="sa-metric-row"><span class="sa-metric-lbl">Lead biomarker</span><span class="sa-metric-val">frontal alpha asymmetry</span></div>
+                                <div class="sa-metric-row"><span class="sa-metric-lbl">Primary endpoint</span><span class="sa-metric-val">GAD-7 / MADRS reduction</span></div>
+                                <div class="sa-metric-row" style="border-bottom:none;"><span class="sa-metric-lbl">Data capture</span><span class="sa-metric-val">FHIR R4 + REDCap</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel glass-panel" style="display:flex; flex-direction:column; gap:12px;">
+                        <h3>Equivalence Formulation</h3>
+                        <div id="pharm-equation-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Molecular Dispersion Under Generative Discovery</h3>
+                        <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">D(t) = D₀ exp(-γt) + λ∫_0^t exp(-γ(t-s)) · Φ(s) ds</p>
+                        <div id="pharm-dispersion-chart" class="chart-container" style="min-height:310px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Candidate Ranking</h3>
+                        <div id="pharm-benchmark-chart" class="chart-container" style="min-height:310px;"></div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="panel glass-panel large-panel">
+                        <h3>Long-Term Clinical Horizon Trajectory</h3>
+                        <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Adaptive clinical horizon signal for rTMS-equivalent molecules versus sham and usual care.</p>
+                        <div id="pharm-horizon-chart" class="chart-container" style="min-height:300px;"></div>
+                    </div>
+                    <div class="panel glass-panel">
+                        <h3>Clinical Candidate Portfolio</h3>
+                        <div id="pharm-candidate-table"></div>
                     </div>
                 </div>
             </div>
