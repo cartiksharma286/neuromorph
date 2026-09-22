@@ -1,3 +1,243 @@
+// Stem Cell Therapy & QML Functions (GLOBAL SCOPE - called from HTML onclick)
+async function loadStemCellTherapy() {
+    const btnRun = document.getElementById('btn-run-stem-cell');
+    if (!btnRun) return;
+
+    btnRun.textContent = '⏳ RUNNING STEM CELL SIMULATION…';
+    btnRun.disabled = true;
+
+    try {
+        const payload = {
+            stem_cell_count: 1e6,
+            us_energy_kj: 50.0,
+            litt_power_w: 12.0,
+            litt_duration_s: 90.0,
+            tumor_cells_ml: 5e6
+        };
+
+        const response = await fetch('/api/stem-cell-therapy/summary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            timeout: 60000
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+            return;
+        }
+
+        // Render BBB state distribution
+        renderBBBStateChart(data.bbb_states || {});
+
+        // Render phenotype timeline
+        renderPhenotypeChart(data.phenotype_timeline || []);
+
+        // Display clinical metrics
+        document.getElementById('metric-bbb-perm').textContent = 
+            ((data.bbb_permeability || 0) * 100).toFixed(1) + '%';
+        document.getElementById('metric-targeting').textContent = 
+            ((data.targeting_efficiency || 0) * 100).toFixed(1) + '%';
+        document.getElementById('metric-apoptosis').textContent = 
+            ((data.apoptosis_rate || 0) * 100).toFixed(1) + '%';
+        document.getElementById('metric-synergy').textContent = 
+            (data.synergy_factor || 1.0).toFixed(2) + '×';
+
+        // Update quantum fidelity & boost
+        const fidelity = data.quantum_fidelity || 0.85;
+        const boost = 0.5 + 2 * (fidelity * fidelity);
+        
+        document.getElementById('fidelity-bar').style.width = (fidelity * 100) + '%';
+        document.getElementById('fidelity-value').textContent = fidelity.toFixed(3);
+        document.getElementById('boost-bar').style.width = Math.min(boost * 50, 100) + '%';
+        document.getElementById('boost-value').textContent = boost.toFixed(2) + '×';
+
+        // Render equations via requestAnimationFrame to avoid blocking
+        requestAnimationFrame(() => {
+            if (data.equations) {
+                renderStemCellEquations(data.equations);
+            }
+        });
+
+    } catch (e) {
+        console.error('Stem cell therapy load error:', e);
+    } finally {
+        btnRun.textContent = '▶ RUN SIMULATION';
+        btnRun.disabled = false;
+    }
+}
+
+function renderBBBStateChart(states) {
+    const canvas = document.getElementById('canvas-bbb-state');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.fillStyle = '#0f1729';
+    ctx.fillRect(0, 0, w, h);
+
+    // BBB state labels and colors
+    const stateInfo = [
+        { name: 'Intact', color: '#34d399', value: states.intact || 0.8 },
+        { name: 'Permeabilized', color: '#fbbf24', value: states.permeabilized || 0.15 },
+        { name: 'Leaky', color: '#f87171', value: states.leaky || 0.04 },
+        { name: 'Restored', color: '#10b981', value: states.restored || 0.01 }
+    ];
+
+    // Draw stacked bar
+    let x = 40;
+    const barH = 20;
+    const barY = h / 2 - barH / 2;
+    const barW = w - 80;
+
+    stateInfo.forEach(s => {
+        const segW = barW * s.value;
+        ctx.fillStyle = s.color;
+        ctx.fillRect(x, barY, segW, barH);
+        x += segW;
+    });
+
+    // Draw border
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(40, barY, barW, barH);
+
+    // Labels
+    ctx.font = '10px monospace';
+    ctx.fillStyle = '#94a3b8';
+    stateInfo.forEach((s, i) => {
+        ctx.fillText(`${s.name}: ${(s.value * 100).toFixed(1)}%`, 10, 30 + i * 14);
+    });
+}
+
+function renderPhenotypeChart(timeline) {
+    const canvas = document.getElementById('canvas-phenotype');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.fillStyle = '#0f1729';
+    ctx.fillRect(0, 0, w, h);
+
+    if (!timeline || timeline.length === 0) {
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('No phenotype data', w / 2, h / 2);
+        return;
+    }
+
+    // Draw stacked area chart for phenotype evolution
+    const margin = 40;
+    const chartW = w - 2 * margin;
+    const chartH = h - 2 * margin;
+
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(margin, h - margin);
+    ctx.lineTo(w - margin, h - margin);
+    ctx.stroke();
+
+    // Phenotype colors
+    const colors = ['#8b5cf6', '#3b82f6', '#ef4444', '#6b7280'];
+    const phenotypes = ['undiff', 'diff', 'targeting', 'apoptotic'];
+
+    const nPoints = Math.min(timeline.length, Math.floor(chartW / 2));
+    const step = Math.max(1, Math.floor(timeline.length / nPoints));
+
+    // Simple line chart for now
+    phenotypes.forEach((ptype, idx) => {
+        ctx.strokeStyle = colors[idx];
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+
+        for (let i = 0; i < timeline.length; i += step) {
+            const pt = timeline[i][ptype] || 0;
+            const xPos = margin + (i / timeline.length) * chartW;
+            const yPos = h - margin - (pt * chartH);
+            if (i === 0) ctx.moveTo(xPos, yPos);
+            else ctx.lineTo(xPos, yPos);
+        }
+        ctx.stroke();
+    });
+
+    // Legend
+    ctx.font = '9px monospace';
+    phenotypes.forEach((ptype, idx) => {
+        ctx.fillStyle = colors[idx];
+        ctx.fillRect(margin + idx * 80, margin - 20, 8, 8);
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'left';
+        ctx.fillText(ptype.substring(0, 12), margin + idx * 80 + 12, margin - 13);
+    });
+}
+
+function renderStemCellEquations(eqDict) {
+    const eqDiv = document.getElementById('equations-stem-cell');
+    if (!eqDiv) return;
+
+    let html = `
+<div style="font-family:'Courier New', monospace; line-height:1.8;">
+<b style="color:#34d399;">Eq. 1: BBB Finite-State Automaton</b>
+<div style="margin:4px 0; color:#cbd5e1;">
+  dp_BBB/dt = K^T · p_BBB(t)
+  <br/>where K_ij = α·E_us / (1 + β·E_us)  [s^-1]
+  <br/>E_us: ultrasound energy [kJ], α≈0.001, β≈0.02
+</div>
+
+<b style="color:#3b82f6; margin-top:8px; display:block;">Eq. 2: NSC Phenotype Markov Chain</b>
+<div style="margin:4px 0; color:#cbd5e1;">
+  dp_NSC/dt = M(T,F_bbb)^T · p_NSC(t)
+  <br/>where M transitions couple thermal dose T, BBB state F_bbb
+  <br/>4 states: CD133+ → Differentiating → Tumor-Targeting → Apoptotic
+</div>
+
+<b style="color:#10b981; margin-top:8px; display:block;">Eq. 3: Thermal Intensity & Phenotype Coupling</b>
+<div style="margin:4px 0; color:#cbd5e1;">
+  A_eff = A_LITT · [1 + 0.5·(c_targeting/c_total)] / [1 + 0.5·(c_tumor/10^6)]
+  <br/>Synergy factor models tumor burden suppression (denominator)
+  <br/>c_targeting, c_tumor: cell counts [cells/mL]
+</div>
+
+<b style="color:#f87171; margin-top:8px; display:block;">Eq. 4: Quantum ML Targeting Boost</b>
+<div style="margin:4px 0; color:#cbd5e1;">
+  B_q(F_q) = 0.5 + 2·F_q²
+  <br/>F_q = 0.85 + 0.10·(1 - f_thermal)  [circuit fidelity]
+  <br/>Quadratic F_q² term: disruptive QML advantage
+</div>
+
+<b style="color:#8b5cf6; margin-top:8px; display:block;">Eq. 5: Cumulative Apoptosis Induction</b>
+<div style="margin:4px 0; color:#cbd5e1;">
+  C_apop(t) = ∫₀^t A_eff · B_q · M_apop(τ) dτ
+  <br/>M_apop(τ): apoptotic phenotype abundance
+  <br/>Numerical integration: Runge-Kutta 4th order [Δt=0.1 s]
+</div>
+
+<b style="color:#fbbf24; margin-top:8px; display:block;">Eq. 6: Clinical Efficacy (3-Month & 12-Month)</b>
+<div style="margin:4px 0; color:#cbd5e1;">
+  E_clinical = C_apop · (1 + 0.3·Synergy) / (1 + 0.05·c_tumor)
+  <br/>6-month and 12-month progression modeled with exponential decay
+  <br/>Long-term horizon: 60-month tumor recurrence risk = 1 - E_clinical·e^-0.1t
+</div>
+</div>
+`;
+
+    eqDiv.innerHTML = html;
+
+    // Typeset with MathJax if available
+    if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+        MathJax.typesetPromise([eqDiv]).catch(e => console.log('MathJax error:', e));
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Init Visualizations
     const robotViz = new RobotViz('canvas-3d');

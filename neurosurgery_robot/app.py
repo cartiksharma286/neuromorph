@@ -53,6 +53,7 @@ from litt_cryo_ablation import (
     classical_equations_reference,
     full_modality_comparison,
 )
+from stem_cell_therapy import stem_cell_therapy_summary
 
 nvqlink = NVQLinkBridge()
 qml_segmenter = QuantumMLSegmenter()
@@ -1907,6 +1908,43 @@ def get_litt_cryo_preprint():
         as_attachment=as_att,
         mimetype='application/pdf',
         download_name='l.pdf'
+    )
+
+
+@app.route('/api/stem-cell-therapy/summary', methods=['GET', 'POST'])
+def get_stem_cell_therapy_summary():
+    """QML-enhanced stem cell therapy with BBB disruption dashboard."""
+    try:
+        result = stem_cell_therapy_summary(
+            stem_cell_count=int(request.json.get('stem_cell_count', 1e6)) if request.is_json else int(1e6),
+            us_energy_kj=float(request.json.get('us_energy_kj', 50.0)) if request.is_json else 50.0,
+            litt_power_w=float(request.json.get('litt_power_w', 12.0)) if request.is_json else 12.0,
+            litt_duration_s=float(request.json.get('litt_duration_s', 90.0)) if request.is_json else 90.0,
+            tumor_cells_ml=float(request.json.get('tumor_cells_ml', 5e6)) if request.is_json else 5e6,
+        )
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/preprint/stem_cell/download', methods=['GET'])
+@app.route('/api/preprint/stem_cell/view', methods=['GET'])
+def get_stem_cell_preprint():
+    """Serves the Nature Stem Cell Therapy Preprint PDF (stem_cell.pdf)."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'stem_cell.pdf')
+    if not os.path.exists(pdf_path):
+        try:
+            from generate_nature_stem_cell_preprint import build_pdf
+            build_pdf(pdf_path)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    as_att = request.path.endswith('/download')
+    return send_file(
+        pdf_path,
+        as_attachment=as_att,
+        mimetype='application/pdf',
+        download_name='stem_cell.pdf'
     )
 
 

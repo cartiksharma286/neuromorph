@@ -75,6 +75,7 @@
                         <button class="tab-btn" data-tab="tab-robotics">Surgical Robotics</button>
                         <button class="tab-btn" data-tab="tab-5g">5G Guidance & GE PACS</button>
                         <button class="tab-btn" data-tab="tab-ablation-modalities">🔥❄️ LITT &amp; Cryo Ablation</button>
+                        <button class="tab-btn" data-tab="tab-stem-cell">🧬 QML Stem Cell Therapy</button>
                         <button class="tab-btn" data-tab="tab-preprint">Nature Preprint</button>
                     </div>
 
@@ -1119,6 +1120,105 @@
                             <a href="/api/preprint/litt_cryo/download" class="btn-secondary" style="flex:1; text-align:center; text-decoration:none; padding:6px; font-size:11px; justify-content:center;" download>
                                 📥 DOWNLOAD PDF
                             </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stem Cell Therapy Tab with QML & BBB Disruption -->
+                <div id="tab-stem-cell" class="tab-content">
+                    <h2 style="color: #10b981; margin-bottom:8px;">🧬 Quantum ML Stem Cell Therapy & Blood-Brain Barrier Disruption</h2>
+                    <p style="color: #94a3b8; font-size:11px; margin:0 0 12px 0;">
+                        Finite-state automaton model of BBB disruption × four-state phenotype Markov chain × quantum ML targeting boost with clinical synergy modeling.
+                    </p>
+                    
+                    <div style="display:flex; gap:12px; margin-bottom:12px;">
+                        <button id="btn-run-stem-cell" class="btn-primary" onclick="loadStemCellTherapy()">▶ RUN SIMULATION</button>
+                        <a href="/api/preprint/stem_cell/view" target="_blank" class="btn-secondary" style="text-decoration:none; text-align:center; flex:1; padding:6px;">
+                            👁️ VIEW PREPRINT
+                        </a>
+                        <a href="/api/preprint/stem_cell/download" class="btn-secondary" style="flex:1; text-align:center; text-decoration:none; padding:6px; font-size:11px; justify-content:center;" download>
+                            📥 DOWNLOAD PDF
+                        </a>
+                    </div>
+
+                    <!-- BBB Disruption State Chart -->
+                    <div class="quantum-metrics-box" style="border:1px solid #10b981; border-radius:8px; padding:10px; margin-bottom:12px;">
+                        <h3 style="color:#34d399; font-size:11.5px; margin:0 0 8px 0; letter-spacing:0.04em;">
+                            BLOOD-BRAIN BARRIER (BBB) FINITE-STATE MACHINE
+                        </h3>
+                        <canvas id="canvas-bbb-state" style="width:100%; max-height:180px; background:#0f1729; border-radius:4px; border:1px solid #1e293b;"></canvas>
+                        <p style="color:#64748b; font-size:10px; margin:6px 0 0 0; line-height:1.4;">
+                            4-state automaton: <b style="color:#34d399;">Intact</b> → <b style="color:#fbbf24;">Permeabilized</b> → <b style="color:#f87171;">Leaky</b> → <b style="color:#10b981;">Restored</b>.
+                            Transition rates scale with ultrasound energy: k_ij = α E_us / (1 + β E_us).
+                        </p>
+                    </div>
+
+                    <!-- Phenotype Distribution Timeline -->
+                    <div class="quantum-metrics-box" style="border:1px solid #34d399; border-radius:8px; padding:10px; margin-bottom:12px;">
+                        <h3 style="color:#34d399; font-size:11.5px; margin:0 0 8px 0; letter-spacing:0.04em;">
+                            STEM CELL PHENOTYPE EVOLUTION (4-STATE MARKOV CHAIN)
+                        </h3>
+                        <canvas id="canvas-phenotype" style="width:100%; max-height:200px; background:#0f1729; border-radius:4px; border:1px solid #1e293b;"></canvas>
+                        <p style="color:#64748b; font-size:10px; margin:6px 0 0 0; line-height:1.4;">
+                            States: <b style="color:#8b5cf6;">Undifferentiated (CD133+)</b> → <b style="color:#3b82f6;">Differentiating</b> → <b style="color:#ef4444;">Tumor-Targeting</b> → <b style="color:#6b7280;">Apoptotic</b>.
+                        </p>
+                    </div>
+
+                    <!-- Clinical Metrics Panel -->
+                    <div class="quantum-metrics-box" style="border:1px solid #0ea5e9; border-radius:8px; padding:10px; margin-bottom:12px;">
+                        <h3 style="color:#7dd3fc; font-size:11.5px; margin:0 0 8px 0; letter-spacing:0.04em;">
+                            CLINICAL EFFICACY METRICS
+                        </h3>
+                        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; font-size:10px;">
+                            <div style="background:#0f1729; border:1px solid #1e293b; border-radius:4px; padding:8px;">
+                                <div style="color:#7dd3fc; font-weight:bold; font-size:11px; margin-bottom:2px;">BBB Permeability (%)</div>
+                                <div id="metric-bbb-perm" style="color:#06b6d4; font-size:12px; font-weight:bold;">—</div>
+                            </div>
+                            <div style="background:#0f1729; border:1px solid #1e293b; border-radius:4px; padding:8px;">
+                                <div style="color:#34d399; font-weight:bold; font-size:11px; margin-bottom:2px;">Targeting Eff. (%)</div>
+                                <div id="metric-targeting" style="color:#10b981; font-size:12px; font-weight:bold;">—</div>
+                            </div>
+                            <div style="background:#0f1729; border:1px solid #1e293b; border-radius:4px; padding:8px;">
+                                <div style="color:#f87171; font-weight:bold; font-size:11px; margin-bottom:2px;">Apoptosis Rate (%)</div>
+                                <div id="metric-apoptosis" style="color:#ef4444; font-size:12px; font-weight:bold;">—</div>
+                            </div>
+                            <div style="background:#0f1729; border:1px solid #1e293b; border-radius:4px; padding:8px;">
+                                <div style="color:#fbbf24; font-weight:bold; font-size:11px; margin-bottom:2px;">Synergy Boost</div>
+                                <div id="metric-synergy" style="color:#f59e0b; font-size:12px; font-weight:bold;">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quantum ML Fidelity Gauge -->
+                    <div class="quantum-metrics-box" style="border:1px solid #8b5cf6; border-radius:8px; padding:10px; margin-bottom:12px;">
+                        <h3 style="color:#a78bfa; font-size:11.5px; margin:0 0 8px 0; letter-spacing:0.04em;">
+                            QUANTUM CIRCUIT FIDELITY & TARGETING BOOST
+                        </h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div>
+                                <div style="color:#a78bfa; font-size:10px; margin-bottom:4px;">Circuit Fidelity F_q:</div>
+                                <div style="width:100%; height:16px; background:#0f1729; border:1px solid #1e293b; border-radius:8px; overflow:hidden;">
+                                    <div id="fidelity-bar" style="height:100%; width:0%; background:linear-gradient(90deg, #8b5cf6, #a78bfa); transition:width 0.3s;"></div>
+                                </div>
+                                <div id="fidelity-value" style="color:#c4b5fd; font-size:11px; margin-top:2px; font-weight:bold;">0.00</div>
+                            </div>
+                            <div>
+                                <div style="color:#10b981; font-size:10px; margin-bottom:4px;">Targeting Boost B_q(F_q²):</div>
+                                <div style="width:100%; height:16px; background:#0f1729; border:1px solid #1e293b; border-radius:8px; overflow:hidden;">
+                                    <div id="boost-bar" style="height:100%; width:0%; background:linear-gradient(90deg, #34d399, #10b981); transition:width 0.3s;"></div>
+                                </div>
+                                <div id="boost-value" style="color:#6ee7b7; font-size:11px; margin-top:2px; font-weight:bold;">0.00×</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Finite-Math Equations Section -->
+                    <div class="quantum-metrics-box" style="border:1px solid #f97316; border-radius:8px; padding:10px; margin-bottom:12px;">
+                        <h3 style="color:#fb923c; font-size:11.5px; margin:0 0 8px 0; letter-spacing:0.04em;">
+                            FINITE-MATH FOUNDATION: STATE TRANSITIONS & SYNERGY
+                        </h3>
+                        <div id="equations-stem-cell" style="color:#cbd5e1; font-size:10px; line-height:1.6; font-family:'Courier New', monospace; background:#0f1729; border:1px solid #1e293b; border-radius:4px; padding:8px; max-height:280px; overflow-y:auto;">
+                            <div style="color:#94a3b8; text-align:center; padding:40px 0;">Loading finite-math equations...</div>
                         </div>
                     </div>
                 </div>
