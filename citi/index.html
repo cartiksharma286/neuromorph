@@ -23,6 +23,7 @@
             <button class="nav-btn active" onclick="switchTab('portfolio')">Multi-Asset Portfolio</button>
             <button class="nav-btn" onclick="switchTab('analysis')">Market Analysis</button>
             <button class="nav-btn" onclick="switchTab('minerals')">Minerals & Dividends</button>
+            <button class="nav-btn" onclick="switchTab('brent-crude')">🛢️ Brent Crude Oil</button>
             <button class="nav-btn" onclick="switchTab('models')">Optimization Models</button>
             <button class="nav-btn" onclick="switchTab('settings')">IBKR Integration</button>
         </nav>
@@ -223,6 +224,146 @@
                 </div>
             </div>
         </div> <!-- End Minerals View -->
+
+        <!-- Brent Crude Oil QML Trading View -->
+        <div id="brent-crude-view" class="view-section" style="display: none;">
+            <div class="card animate-fade-in">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                    <div>
+                        <h2 style="display:flex; align-items:center; gap:10px; font-size:1.5rem; color:#fff;">
+                            <span style="font-size:1.8rem;">🛢️</span>
+                            Brent Crude Oil QML Trading Engine
+                        </h2>
+                        <div style="font-size:0.9rem; color:#94a3b8;">Quantum Machine Learning for Optimal Oil Signatures & Mineral Ore Trading</div>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; margin-bottom:2rem;">
+                    <div class="card" style="background:rgba(245, 158, 11, 0.1); border:1px solid #f59e0b;">
+                        <h3 style="font-size:0.9rem; color:var(--text-secondary); margin:0 0 0.5rem 0;">Current Price (WTI Ref)</h3>
+                        <div class="metric" id="brent-price" style="color:#f59e0b; font-size:1.8rem;">--</div>
+                    </div>
+                    <div class="card" style="background:rgba(34, 211, 238, 0.1); border:1px solid #22d3ee;">
+                        <h3 style="font-size:0.9rem; color:var(--text-secondary); margin:0 0 0.5rem 0;">Volatility (Annualized)</h3>
+                        <div class="metric" id="brent-vol" style="color:#22d3ee; font-size:1.8rem;">--</div>
+                    </div>
+                    <div class="card" style="background:rgba(59, 130, 246, 0.1); border:1px solid #3b82f6;">
+                        <h3 style="font-size:0.9rem; color:var(--text-secondary); margin:0 0 0.5rem 0;">Trading Signal</h3>
+                        <div class="metric" id="brent-signal" style="color:#3b82f6; font-size:1.3rem;">--</div>
+                    </div>
+                    <div class="card" style="background:rgba(16, 185, 129, 0.1); border:1px solid #10b981;">
+                        <h3 style="font-size:0.9rem; color:var(--text-secondary); margin:0 0 0.5rem 0;">QML Confidence</h3>
+                        <div class="metric" id="brent-confidence" style="color:#10b981; font-size:1.3rem;">--</div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:1rem; margin-bottom:2rem;">
+                    <button class="btn-primary" onclick="loadBrentMarketSnapshot()" style="flex:1; padding:0.8rem;">
+                        <i data-lucide="refresh-cw" style="margin-right:8px;"></i> Load Market Snapshot
+                    </button>
+                    <button class="btn-primary" onclick="loadBrentOptions()" style="flex:1; padding:0.8rem; background:linear-gradient(135deg, var(--accent-cyan), #06b6d4);">
+                        <i data-lucide="zap" style="margin-right:8px;"></i> View Options Chain
+                    </button>
+                    <button class="btn-primary" onclick="loadHighYieldStocks()" style="flex:1; padding:0.8rem; background:linear-gradient(135deg, #10b981, #34d399);">
+                        <i data-lucide="trending-up" style="margin-right:8px;"></i> High Yield Stocks >40%
+                    </button>
+                </div>
+
+                <!-- Price Simulation Chart -->
+                <div class="card">
+                    <h3 style="display:flex; align-items:center; gap:8px; color:var(--accent-gold); margin:0 0 1rem 0;">
+                        <i data-lucide="trending-up"></i> 60-Day Price Simulation with QML
+                    </h3>
+                    <div id="brent-price-chart" style="height:300px; display:flex; align-items:flex-end; gap:2px; padding:20px 10px; background:rgba(0,0,0,0.2); border-radius:6px; overflow-x:auto;">
+                        <p style="color:var(--text-secondary); margin:auto;">Loading simulation...</p>
+                    </div>
+                </div>
+
+                <!-- Options Chain Table -->
+                <div class="card" style="margin-top:2rem; display:none;" id="brent-options-section">
+                    <h3 style="display:flex; align-items:center; gap:8px; color:var(--accent-cyan); margin:0 0 1rem 0;">
+                        <i data-lucide="layers"></i> Options Chain (30-Day Expiry)
+                    </h3>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Strike</th>
+                                    <th style="color:var(--accent-green);">Call Price</th>
+                                    <th style="color:var(--accent-green);">Call IV%</th>
+                                    <th style="color:var(--accent-green);">Call Delta</th>
+                                    <th style="color:var(--accent-red);">Put Price</th>
+                                    <th style="color:var(--accent-red);">Put IV%</th>
+                                    <th style="color:var(--accent-red);">Put Delta</th>
+                                    <th>Volume (C+P)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="brent-options-body">
+                                <tr><td colspan="8" style="text-align:center; color:var(--text-secondary);">Loading options chain...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- High Yield Dividend Stocks -->
+                <div class="card" style="margin-top:2rem; display:none;" id="brent-yield-section">
+                    <h3 style="display:flex; align-items:center; gap:8px; color:var(--accent-cyan); margin:0 0 1rem 0;">
+                        <i data-lucide="award"></i> Dividend-Yielding Stocks with Oil Correlation
+                    </h3>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th>Sector</th>
+                                    <th style="color:#34d399;">Dividend Yield</th>
+                                    <th style="color:var(--accent-gold);">Oil Correlation</th>
+                                    <th style="color:var(--accent-cyan);">QML Score</th>
+                                    <th>Recommendation</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody id="brent-yield-body">
+                                <tr><td colspan="7" style="text-align:center; color:var(--text-secondary);">Loading high-yield stocks...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Mineral Correlations -->
+                <div class="card" style="margin-top:2rem;">
+                    <h3 style="display:flex; align-items:center; gap:8px; color:var(--accent-cyan); margin:0 0 1rem 0;">
+                        <i data-lucide="layers"></i> Oil-Mineral Price Correlations
+                    </h3>
+                    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem;">
+                        <div class="metric-box" style="background:rgba(0,0,0,0.3); padding:1rem; border-radius:6px;">
+                            <div style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.5rem;">Gold</div>
+                            <div style="font-size:1.5rem; color:var(--accent-gold);" id="corr-gold">--</div>
+                        </div>
+                        <div class="metric-box" style="background:rgba(0,0,0,0.3); padding:1rem; border-radius:6px;">
+                            <div style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.5rem;">Lithium</div>
+                            <div style="font-size:1.5rem; color:#a78bfa;" id="corr-lithium">--</div>
+                        </div>
+                        <div class="metric-box" style="background:rgba(0,0,0,0.3); padding:1rem; border-radius:6px;">
+                            <div style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.5rem;">Cobalt</div>
+                            <div style="font-size:1.5rem; color:#f472b6;" id="corr-cobalt">--</div>
+                        </div>
+                        <div class="metric-box" style="background:rgba(0,0,0,0.3); padding:1rem; border-radius:6px;">
+                            <div style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.5rem;">Nickel</div>
+                            <div style="font-size:1.5rem; color:#06b6d4;" id="corr-nickel">--</div>
+                        </div>
+                        <div class="metric-box" style="background:rgba(0,0,0,0.3); padding:1rem; border-radius:6px;">
+                            <div style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.5rem;">Copper</div>
+                            <div style="font-size:1.5rem; color:#ff6b6b;" id="corr-copper">--</div>
+                        </div>
+                        <div class="metric-box" style="background:rgba(0,0,0,0.3); padding:1rem; border-radius:6px;">
+                            <div style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.5rem;">Uranium</div>
+                            <div style="font-size:1.5rem; color:#fbbf24;" id="corr-uranium">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End Brent Crude View -->
 
         <!-- Optimization Models View -->
         <div id="models-view" class="view-section" style="display: none;">
@@ -540,6 +681,165 @@
                 }
             }
 
+            // Brent Crude Oil QML Trading Functions
+            async function loadBrentMarketSnapshot() {
+                try {
+                    const response = await fetch('/api/brent-crude/market-snapshot');
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        const data = result.data;
+                        document.getElementById('brent-price').innerText = `$${data.current_price}/bbl`;
+                        document.getElementById('brent-vol').innerText = `${data.volatility}%`;
+                        
+                        const signals = data.trading_signals;
+                        document.getElementById('brent-signal').innerText = signals.recommendation;
+                        document.getElementById('brent-confidence').innerText = `${(signals.quantum_confidence * 100).toFixed(1)}%`;
+                        
+                        // Load price simulation
+                        loadBrentPriceSimulation();
+                    }
+                } catch (e) {
+                    console.error('Error loading Brent snapshot:', e);
+                }
+            }
+
+            async function loadBrentPriceSimulation() {
+                try {
+                    const response = await fetch('/api/brent-crude/price-simulation');
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        const prices = result.data.prices;
+                        const chartDiv = document.getElementById('brent-price-chart');
+                        
+                        if (!prices || prices.length === 0) return;
+                        
+                        const minPrice = Math.min(...prices);
+                        const maxPrice = Math.max(...prices);
+                        const range = maxPrice - minPrice;
+                        const chartHeight = 250;
+                        
+                        chartDiv.innerHTML = '';
+                        prices.forEach((price, idx) => {
+                            const normalized = (price - minPrice) / (range || 1);
+                            const height = normalized * chartHeight;
+                            const bar = document.createElement('div');
+                            bar.style.cssText = `
+                                flex: 1; 
+                                min-width: 3px;
+                                background: linear-gradient(180deg, var(--accent-gold) 0%, #d97706 100%);
+                                height: ${height}px;
+                                border-radius: 2px 2px 0 0;
+                                cursor: pointer;
+                                opacity: 0.8;
+                                transition: all 0.2s;
+                            `;
+                            bar.title = `Day ${idx}: $${price.toFixed(2)}`;
+                            bar.onmouseover = () => {
+                                bar.style.opacity = '1';
+                                bar.style.background = 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)';
+                            };
+                            bar.onmouseout = () => {
+                                bar.style.opacity = '0.8';
+                                bar.style.background = 'linear-gradient(180deg, var(--accent-gold) 0%, #d97706 100%)';
+                            };
+                            chartDiv.appendChild(bar);
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error loading price simulation:', e);
+                }
+            }
+
+            async function loadBrentOptions() {
+                try {
+                    document.getElementById('brent-options-section').style.display = 'block';
+                    const response = await fetch('/api/brent-crude/options-chain');
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        const options = result.data;
+                        const tbody = document.getElementById('brent-options-body');
+                        tbody.innerHTML = '';
+                        
+                        options.forEach(opt => {
+                            const row = document.createElement('tr');
+                            const callColor = opt.call_price > 3 ? 'var(--accent-green)' : '#94a3b8';
+                            const putColor = opt.put_price > 3 ? 'var(--accent-red)' : '#94a3b8';
+                            
+                            row.innerHTML = `
+                                <td style="font-weight:600;">$${opt.strike}</td>
+                                <td style="color:${callColor};">$${opt.call_price}</td>
+                                <td style="color:${callColor};">${opt.call_iv}%</td>
+                                <td style="color:var(--text-secondary);">${opt.call_delta}</td>
+                                <td style="color:${putColor};">$${opt.put_price}</td>
+                                <td style="color:${putColor};">${opt.put_iv}%</td>
+                                <td style="color:var(--text-secondary);">${opt.put_delta}</td>
+                                <td style="color:var(--text-secondary);">${(opt.call_volume + opt.put_volume).toLocaleString()}</td>
+                            `;
+                            tbody.appendChild(row);
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error loading options:', e);
+                }
+            }
+
+            async function loadHighYieldStocks() {
+                try {
+                    document.getElementById('brent-yield-section').style.display = 'block';
+                    const response = await fetch('/api/brent-crude/high-yield-stocks?min_yield=0.04');
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        const stocks = result.data;
+                        const tbody = document.getElementById('brent-yield-body');
+                        tbody.innerHTML = '';
+                        
+                        stocks.forEach(stock => {
+                            const row = document.createElement('tr');
+                            const recColor = stock.recommendation === 'STRONG BUY' ? 'var(--accent-green)' 
+                                           : stock.recommendation === 'BUY' ? '#10b981'
+                                           : 'var(--text-secondary)';
+                            
+                            row.innerHTML = `
+                                <td style="font-weight:600;">${stock.ticker}</td>
+                                <td>${stock.sector}</td>
+                                <td style="color:#34d399; font-weight:600;">${stock.dividend_yield}%</td>
+                                <td style="color:var(--accent-gold);">${stock.oil_correlation}</td>
+                                <td style="color:var(--accent-cyan);">${stock.qml_score}</td>
+                                <td style="color:${recColor}; font-weight:600;">${stock.recommendation}</td>
+                                <td>$${stock.price}</td>
+                            `;
+                            tbody.appendChild(row);
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error loading high-yield stocks:', e);
+                }
+            }
+
+            // Initialize correlations when tab loads
+            async function loadBrentCorrelations() {
+                try {
+                    const response = await fetch('/api/brent-crude/mineral-correlations');
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        const corrs = result.data;
+                        document.getElementById('corr-gold').innerText = corrs.gold;
+                        document.getElementById('corr-lithium').innerText = corrs.lithium;
+                        document.getElementById('corr-cobalt').innerText = corrs.cobalt;
+                        document.getElementById('corr-nickel').innerText = corrs.nickel;
+                        document.getElementById('corr-copper').innerText = corrs.copper;
+                        document.getElementById('corr-uranium').innerText = corrs.uranium;
+                    }
+                } catch (e) {
+                    console.error('Error loading correlations:', e);
+                }
+            }
+
             async function loadPortfolio() {
                 // ... (existing loadPortfolio logic, mostly unchanged, just handling new types) ...
                 try {
@@ -745,6 +1045,9 @@
                     // Load Data for specific tabs
                     if (tabName === 'analysis') {
                         loadMarketData();
+                    } else if (tabName === 'brent-crude') {
+                        loadBrentMarketSnapshot();
+                        loadBrentCorrelations();
                     }
 
                     // Re-init icons if needed

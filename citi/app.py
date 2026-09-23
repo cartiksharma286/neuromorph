@@ -14,10 +14,12 @@ from market_engine import (
 )
 from feynman_path_integral_engine import optimize_yield_with_feynman_qml
 from prime_moduli_qml_yield_engine import optimize_ultra_yield_prime_moduli_qml
+from brent_crude_qml_engine import BrentCrudeQMLEngine
 
 app = Flask(__name__, static_url_path='', static_folder='www')
 ibkr = IBKRBridge()
 market_engine = MarketSimulationEngine()
+brent_crude_engine = BrentCrudeQMLEngine()
 
 # Mock Data for Canadian, N. Ontario & Greenland Mineral Ores
 # Mock Data for NASDAQ Stocks and Forex Pairs
@@ -602,6 +604,94 @@ def place_order():
         return jsonify({"error": str(exc)}), 403
     except IBKRUnavailableError as exc:
         return jsonify({"error": str(exc), "status": ibkr.status()}), 503
+
+
+# Brent Crude Oil QML Trading Endpoints
+@app.route('/api/brent-crude/market-snapshot', methods=['GET'])
+def brent_market_snapshot():
+    """Get Brent crude market snapshot with QML analysis."""
+    try:
+        snapshot = brent_crude_engine.get_market_snapshot()
+        return jsonify({'status': 'success', 'data': snapshot})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/brent-crude/trading-signals', methods=['GET'])
+def brent_trading_signals():
+    """Get QML-based trading signals for Brent crude."""
+    try:
+        signals = brent_crude_engine.generate_trading_signals()
+        return jsonify({'status': 'success', 'data': signals})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/brent-crude/options-chain', methods=['GET'])
+def brent_options_chain():
+    """Get Brent crude options chain."""
+    try:
+        options = brent_crude_engine.options_data
+        # Return all options or filter by strike if requested
+        strike_filter = request.args.get('strike')
+        if strike_filter:
+            options = [o for o in options if abs(o['strike'] - float(strike_filter)) < 2]
+        return jsonify({'status': 'success', 'data': options})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/brent-crude/high-yield-stocks', methods=['GET'])
+def brent_high_yield_stocks():
+    """Get dividend-yielding stocks with oil correlation > 40%."""
+    try:
+        min_yield = float(request.args.get('min_yield', 0.04))
+        stocks = brent_crude_engine.optimize_yield_with_dividends(min_yield=min_yield)
+        return jsonify({'status': 'success', 'data': stocks})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/brent-crude/price-simulation', methods=['GET'])
+def brent_price_simulation():
+    """Simulate Brent crude price with QML for 60 days."""
+    try:
+        prices, quantum_amps = brent_crude_engine.simulate_price_with_qml(days=60)
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'prices': [round(p, 2) for p in prices],
+                'quantum_amplitudes': [round(q, 3) for q in quantum_amps],
+                'days': len(prices)
+            }
+        })
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/brent-crude/mineral-correlations', methods=['GET'])
+def brent_mineral_correlations():
+    """Get correlations between Brent crude and mineral prices."""
+    try:
+        correlations = {}
+        for mineral in ['gold', 'lithium', 'cobalt', 'nickel', 'copper', 'uranium']:
+            correlations[mineral] = round(brent_crude_engine.compute_oil_mineral_correlation(mineral), 3)
+        return jsonify({'status': 'success', 'data': correlations})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)
