@@ -1969,6 +1969,27 @@ def get_nih_grant_proposal():
     )
 
 
+@app.route('/api/grant/nih-r01-stem-cell/download', methods=['GET'])
+@app.route('/api/grant/nih-r01-stem-cell/view', methods=['GET'])
+def get_nih_r01_stem_cell_grant():
+    """Serves the NIH R01 Grant Proposal for Quantum ML Stem Cell Therapy PDF."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'nih_r01_stem_cell_therapy.pdf')
+    if not os.path.exists(pdf_path):
+        try:
+            from generate_nih_r01_stem_cell_grant import build_nih_r01_pdf
+            build_nih_r01_pdf()
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    as_att = request.path.endswith('/download')
+    return send_file(
+        pdf_path,
+        as_attachment=as_att,
+        mimetype='application/pdf',
+        download_name='nih_r01_stem_cell_therapy.pdf'
+    )
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('FLASK_RUN_PORT', 5002))
     host = os.environ.get('FLASK_RUN_HOST', '0.0.0.0')
