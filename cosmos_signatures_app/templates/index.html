@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101914">
+  <title>Horizon Atlas | Cosmological Signatures</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Horizon Atlas home">
+      <span class="brand-mark" aria-hidden="true">H</span>
+      <span><strong>HORIZON ATLAS</strong><small>RELATIVISTIC SIGNATURES LAB</small></span>
+    </a>
+    <div class="topbar-right">
+      <span class="model-state"><i></i> EXPLORATORY MODEL</span>
+      <a class="pdf-link" href="/preprint.pdf" title="Download the Cosmological Modular Preprint PDF" aria-label="Download preprint PDF">
+        <span aria-hidden="true">↓</span><span>COSMO PREPRINT PDF</span>
+      </a>
+      <a class="pdf-link hifu-link" href="/hifu-preprint.pdf" title="Download the Nature HIFU Dementia Preprint PDF" aria-label="Download HIFU preprint PDF">
+        <span aria-hidden="true">↓</span><span>HIFU DEMENTIA PDF</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="intro-row">
+      <div>
+        <p class="eyebrow">COSMOLOGY / GRAVITATION / MODULAR FORMS</p>
+        <h1>Signatures at the <em>horizon</em></h1>
+        <p class="intro-copy">A parameter sandbox for comparing familiar relativistic baselines with a deliberately hypothetical modular-harmonic perturbation.</p>
+      </div>
+      <div class="notice"><span class="notice-icon" aria-hidden="true">!</span><span><b>Interpret with care</b><br>Modular branch is a toy ansatz, not established physics.</span></div>
+    </section>
+
+    <nav class="view-tabs" aria-label="Model views" role="tablist">
+      <button class="view-tab active" id="tab-hole" role="tab" aria-selected="true" aria-controls="view-hole" data-view="hole"><span>01</span> Black hole</button>
+      <button class="view-tab" id="tab-fork" role="tab" aria-selected="false" aria-controls="view-fork" data-view="fork"><span>02</span> Fork comparison</button>
+      <button class="view-tab" id="tab-modular" role="tab" aria-selected="false" aria-controls="view-modular" data-view="modular"><span>03</span> Modular harmonics</button>
+      <button class="view-tab" id="tab-invariant" role="tab" aria-selected="false" aria-controls="view-invariant" data-view="invariant"><span>04</span> Invariant imaging</button>
+      <button class="view-tab" id="tab-reconstruction" role="tab" aria-selected="false" aria-controls="view-reconstruction" data-view="reconstruction"><span>05</span> Image reconstruction</button>
+      <button class="view-tab" id="tab-hifu" role="tab" aria-selected="false" aria-controls="view-hifu" data-view="hifu"><span>06</span> HIFU dementia care</button>
+    </nav>
+
+    <section class="workspace" id="view-hole" role="tabpanel" aria-labelledby="tab-hole">
+      <aside class="controls">
+        <div class="section-heading"><span>MODEL INPUTS</span><button id="reset-button" class="text-button" type="button">Reset</button></div>
+        <div class="control-group">
+          <label for="mass">Black-hole mass <output id="mass-value">10</output></label>
+          <input id="mass" type="range" min="1" max="80" step="1" value="10">
+          <div class="range-ends"><span>1 M☉</span><span>80 M☉</span></div>
+        </div>
+        <div class="control-group">
+          <label for="spin">Dimensionless spin <output id="spin-value">0.72</output></label>
+          <input id="spin" type="range" min="0" max="0.98" step="0.01" value="0.72">
+          <div class="range-ends"><span>0</span><span>0.98</span></div>
+        </div>
+        <div class="control-group">
+          <label for="inclination">Viewing inclination <output id="inclination-value">55°</output></label>
+          <input id="inclination" type="range" min="5" max="85" step="1" value="55">
+          <div class="range-ends"><span>5° face-on</span><span>85° edge-on</span></div>
+        </div>
+        <div class="control-divider"></div>
+        <div class="control-group">
+          <label for="modulus">Elliptic modulus <output id="modulus-value">0.68</output></label>
+          <input id="modulus" type="range" min="0.05" max="0.95" step="0.01" value="0.68">
+          <div class="range-ends"><span>k = 0.05</span><span>k = 0.95</span></div>
+        </div>
+        <div class="control-group">
+          <label for="coupling">Toy-branch amplitude <output id="coupling-value">0.35</output></label>
+          <input id="coupling" type="range" min="0" max="1" step="0.01" value="0.35">
+          <div class="range-ends"><span>off</span><span>unitless</span></div>
+        </div>
+        <div class="control-group">
+          <label for="redshift">Source redshift <output id="redshift-value">0.8</output></label>
+          <input id="redshift" type="range" min="0" max="8" step="0.1" value="0.8">
+          <div class="range-ends"><span>z = 0</span><span>z = 8</span></div>
+        </div>
+        <div class="control-divider"></div>
+        <div class="control-group">
+          <label for="ergodic_mixing">Ergodic mixing (M) <output id="ergodic_mixing-value">0.65</output></label>
+          <input id="ergodic_mixing" type="range" min="0.05" max="0.95" step="0.01" value="0.65">
+          <div class="range-ends"><span>M = 0.05 (turbulent)</span><span>M = 0.95 (ergodic)</span></div>
+        </div>
+        <div class="control-group">
+          <label for="combinatorial_budget">Interferometer budget (B) <output id="combinatorial_budget-value">45</output></label>
+          <input id="combinatorial_budget" type="range" min="10" max="100" step="1" value="45">
+          <div class="range-ends"><span>10 baselines</span><span>100 baselines</span></div>
+        </div>
+        <div class="control-group">
+          <label for="game_weight">Game weight (w: Res/Ent) <output id="game_weight-value">0.50</output></label>
+          <input id="game_weight" type="range" min="0" max="1" step="0.01" value="0.50">
+          <div class="range-ends"><span>0 (max entropy)</span><span>1 (max resolution)</span></div>
+        </div>
+        <div class="control-divider"></div>
+        <div class="section-subheading"><span>HIFU APPLIED IMAGING PHYSICS</span></div>
+        <div class="control-group">
+          <label for="hifu_freq">Transducer freq (f₀) <output id="hifu_freq-value">1.25 MHz</output></label>
+          <input id="hifu_freq" type="range" min="0.5" max="2.5" step="0.05" value="1.25">
+          <div class="range-ends"><span>0.5 MHz</span><span>2.5 MHz</span></div>
+        </div>
+        <div class="control-group">
+          <label for="hifu_pressure">Acoustic pressure (Pₙₑg) <output id="hifu_pressure-value">0.85 MPa</output></label>
+          <input id="hifu_pressure" type="range" min="0.2" max="2.5" step="0.05" value="0.85">
+          <div class="range-ends"><span>0.2 MPa</span><span>2.5 MPa</span></div>
+        </div>
+        <div class="control-group">
+          <label for="hifu_skull_comp">Skull phase compensation <output id="hifu_skull_comp-value">0.75</output></label>
+          <input id="hifu_skull_comp" type="range" min="0.0" max="1.0" step="0.05" value="0.75">
+          <div class="range-ends"><span>0 (uncorrected)</span><span>1.0 (CF-Padé optimal)</span></div>
+        </div>
+        <div class="control-group">
+          <label for="hifu_cycles">Sonication pulse cycles <output id="hifu_cycles-value">100</output></label>
+          <input id="hifu_cycles" type="range" min="10" max="500" step="10" value="100">
+          <div class="range-ends"><span>10 cycles</span><span>500 cycles</span></div>
+        </div>
+        <p class="control-footnote">Sliders feed the displayed toy model only. No observational data are fitted.</p>
+      </aside>
+
+      <div class="visual-column">
+        <div class="figure-head"><div><span class="figure-index">FIG. 01</span><h2>Accretion flow / shadow proxy</h2></div><span class="live-state"><i></i> LIVE</span></div>
+        <div class="visual-frame"><canvas id="black-hole" role="img" aria-label="Illustrative accretion disk and black hole shadow visualization"></canvas><div class="frame-caption"><span>SYNTHETIC RENDER · NOT NUMERICAL RAY TRACING</span><button id="export-button" class="icon-button" type="button" title="Export image as PNG" aria-label="Export visualization as PNG">⇩</button></div></div>
+        <div class="metrics-row">
+          <div class="metric"><span>GR SHADOW RADIUS</span><strong id="gr-shadow">—</strong><small>geometric units · GM/c²</small></div>
+          <div class="metric accent-metric"><span>MODULAR TOY BRANCH</span><strong id="toy-shadow">—</strong><small>same units · ansatz only</small></div>
+          <div class="metric"><span>ELLIPTIC NOME</span><strong id="elliptic-nome">—</strong><small>q = exp[−π K(k′)/K(k)]</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace secondary-view" id="view-fork" role="tabpanel" aria-labelledby="tab-fork" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 02</span><h2>Cosmological fork: baseline vs toy residual</h2></div><span class="unit-label">Δμ · mag</span></div>
+        <p class="chart-intro">The comparison shows a constructed residual that vanishes when the coupling is zero. It is not a fit, forecast, or proposed measurement.</p>
+        <canvas class="plot-canvas" id="fork-chart" role="img" aria-label="Chart comparing a zero general relativity baseline with a hypothetical modular toy residual over redshift"></canvas>
+        <div class="legend"><span><i class="legend-line baseline-line"></i>Reference baseline</span><span><i class="legend-line toy-line"></i>Modular toy branch</span></div>
+        <div class="fork-readout"><div><span>AT SELECTED REDSHIFT</span><strong id="delta-mu">—</strong></div><p>Magnitude offset from the unperturbed reference curve, under the illustrative parameterization in the preprint.</p></div>
+      </div>
+    </section>
+
+    <section class="workspace secondary-view" id="view-modular" role="tabpanel" aria-labelledby="tab-modular" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 03</span><h2>Ramanujan Δ-series harmonic</h2></div><span class="unit-label">NORMALIZED · DIMENSIONLESS</span></div>
+        <p class="chart-intro">A truncated q-expansion of the weight-12 cusp form Δ(τ) is sampled over phase. The elliptic nome comes from the selected modulus; the normalization is for display.</p>
+        <canvas class="plot-canvas" id="modular-chart" role="img" aria-label="Normalized Ramanujan delta q-series sampled across phase"></canvas>
+        <div class="equation-band"><span>Δ(τ) = q ∏<sub>n≥1</sub>(1 − q<sup>n</sup>)<sup>24</sup> = ∑ τ(n) q<sup>n</sup></span><small>q from elliptic nome · finite display truncation</small></div>
+        <div class="disclaimer-band"><b>Mathematical object, not a gravity theory.</b> No coupling of Δ to Einstein’s equations is derived or empirically supported here.</div>
+      </div>
+    </section>
+
+    <section class="workspace secondary-view" id="view-invariant" role="tabpanel" aria-labelledby="tab-invariant" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 04</span><h2>Statistically invariant black hole imaging & ergodic game theory</h2></div><span class="unit-label">DISTRIBUTION-BASED PHYSICS</span></div>
+        <p class="chart-intro">Black hole accretion flows exhibit stochastic turbulent fluctuations, but the time-averaged stationary measure converges to an invariant distribution. In parallel, interferometric baseline allocation represents a bimatrix game between information entropy (coverage robustness) and Fisher resolution (photon ring sharpness).</p>
+        
+        <div class="dual-grid">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>STATIONARY INTENSITY DENSITY P(I)</span><small>Wasserstein-1 discrepancy</small></div>
+            <canvas class="plot-canvas compact-canvas" id="invariant-density-chart" role="img" aria-label="Probability density comparison between invariant measure and snapshot state"></canvas>
+            <div class="legend"><span><i class="legend-line baseline-line"></i>Invariant distribution P<sub>inv</sub>(I)</span><span><i class="legend-line toy-line"></i>Turbulent snapshot P<sub>turb</sub>(I)</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>PHOTON SUBRING HIERARCHY I(r)</span><small>Lyapunov factor e<sup>−γ</sup></small></div>
+            <canvas class="plot-canvas compact-canvas" id="subrings-chart" role="img" aria-label="Photon subring radial profile demonstrating self-similar exponential narrowing"></canvas>
+            <div class="legend"><span><i class="legend-line baseline-line"></i>Time-averaged profile (n=0, 1, 2)</span><span><i class="legend-line toy-line"></i>Turbulent fluctuation</span></div>
+          </div>
+        </div>
+
+        <div class="game-theory-card">
+          <div class="chart-subhead"><span>COMBINATORIAL PARETO FRONTIER & NASH EQUILIBRIUM</span><small>Player 1 (Entropy H) vs Player 2 (Resolution F)</small></div>
+          <canvas class="plot-canvas" id="pareto-chart" role="img" aria-label="Combinatorial Pareto frontier between Information Entropy and Fisher Resolution metric with Nash Equilibrium"></canvas>
+          <div class="legend"><span><i class="legend-line baseline-line"></i>Pareto Tradeoff Frontier</span><span><i class="legend-line toy-line"></i>Nash Equilibrium (H*, F*)</span></div>
+        </div>
+
+        <div class="invariant-metrics-strip">
+          <div class="inv-metric"><span>LYAPUNOV EXPONENT (γ)</span><strong id="inv-lyapunov">—</strong><small>γ = π / √(1 − a*² cos² i)</small></div>
+          <div class="inv-metric"><span>SUBRING RATIO e<sup>−γ</sup></span><strong id="inv-subring-ratio">—</strong><small>Geometric peak scale factor</small></div>
+          <div class="inv-metric"><span>WASSERSTEIN DISTANCE (W₁)</span><strong id="inv-wasserstein">—</strong><small>W₁(P<sub>inv</sub>, P<sub>turb</sub>)</small></div>
+          <div class="inv-metric"><span>AZIMUTHAL HAAR MOMENT (μ₁)</span><strong id="inv-haar-moment">—</strong><small>Dipolar asymmetry invariant</small></div>
+          <div class="inv-metric"><span>NASH EQUILIBRIUM VALUE (V*)</span><strong id="inv-nash-value">—</strong><small>Equilibrium payoff</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace secondary-view" id="view-reconstruction" role="tabpanel" aria-labelledby="tab-reconstruction" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 05</span><h2>Black hole image reconstruction & continued fractions</h2></div><span class="unit-label">PADÉ REGULARIZATION & FOURIER (U,V) SAMPLING</span></div>
+        <p class="chart-intro">Interferometric sparse baseline sampling leaves unmeasured Fourier holes, generating dirty sidelobes. Gauss-Ramanujan continued-fraction Padé regularizers approximate the visibility boundary rationally, super-resolving the photon subring beyond the diffraction limit.</p>
+
+        <div class="dual-grid">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>FOURIER SPACE (U, V) BASELINE COVERAGE</span><small>Earth-rotation baseline tracks</small></div>
+            <canvas class="plot-canvas compact-canvas" id="uv-coverage-chart" role="img" aria-label="Fourier domain UV baseline tracks"></canvas>
+            <div class="legend"><span><i class="legend-line baseline-line"></i>Interferometric (u,v) tracks</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>DIRTY IMAGE VS CONTINUED-FRACTION RESTORATION</span><small>Side-by-side 2D aperture synthesis</small></div>
+            <canvas class="plot-canvas compact-canvas" id="reconstructed-image-chart" role="img" aria-label="Comparison between raw dirty image and Padé regularized reconstruction"></canvas>
+            <div class="legend"><span><i class="legend-line toy-line"></i>Dirty beam aliased</span><span><i class="legend-line baseline-line"></i>CF-Padé restored ring</span></div>
+          </div>
+        </div>
+
+        <div class="game-theory-card">
+          <div class="chart-subhead"><span>RADIAL SLICE: GROUND TRUTH VS DIRTY VS CONTINUED FRACTION</span><small>Resolution enhancement across event horizon shadow edge</small></div>
+          <canvas class="plot-canvas" id="reconstruction-cross-section-chart" role="img" aria-label="Radial cross section comparing ground truth Kerr profile with dirty image and continued fraction filter"></canvas>
+          <div class="legend"><span><i class="legend-line" style="background:#4ade80"></i>Ground truth Kerr profile</span><span><i class="legend-line toy-line"></i>Raw dirty synthesis</span><span><i class="legend-line baseline-line"></i>Continued-fraction Padé restoration</span></div>
+        </div>
+
+        <div class="invariant-metrics-strip">
+          <div class="inv-metric"><span>RECONSTRUCTION SNR GAIN</span><strong id="recon-snr-gain">—</strong><small>Padé rational filter</small></div>
+          <div class="inv-metric"><span>STRUCTURAL SIMILARITY</span><strong id="recon-ssim">—</strong><small>SSIM index [0, 1]</small></div>
+          <div class="inv-metric"><span>SIDELOBE SUPPRESSION</span><strong id="recon-sidelobe-sup">—</strong><small>Rejection ratio (dB)</small></div>
+          <div class="inv-metric"><span>ANGULAR RESOLUTION</span><strong id="recon-resolution">—</strong><small>Sub-diffraction recovery</small></div>
+          <div class="inv-metric"><span>CF CONVERGENT ORDER</span><strong id="recon-cf-order">—</strong><small>p_k / q_k Padé degree</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace secondary-view" id="view-hifu" role="tabpanel" aria-labelledby="tab-hifu" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 06</span><h2>HIFU neuromodulation & superoptimal dementia care</h2></div><span class="unit-label">TRANSCRANIAL APPLIED ACOUSTICS & BIOMARKER DYNAMICS</span></div>
+        <p class="chart-intro">Translating cosmological continued-fraction and ergodic algorithms to high-frequency ultrasound. Acoustic bone aberration is corrected by Gauss-Ramanujan continued fractions, focusing energy through the cranium onto the hippocampus for targeted, safe blood-brain barrier opening and microglial amyloid/tau clearance.</p>
+
+        <div class="dual-grid">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>TRANSCRANIAL ACOUSTIC FOCAL FIELD P(x, y)</span><small>Target: Hippocampus (d = 0.7 cm bone)</small></div>
+            <canvas class="plot-canvas compact-canvas" id="hifu-focus-chart" role="img" aria-label="Acoustic pressure focal profile through calvarium"></canvas>
+            <div class="legend"><span><i class="legend-line baseline-line"></i>Continued-fraction focused beam</span><span><i class="legend-line toy-line"></i>Aberrated skull sidelobe</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>MICROBUBBLE CAVITATION SPECTRUM</span><small>Subharmonic f₀/2 vs Broadband noise</small></div>
+            <canvas class="plot-canvas compact-canvas" id="hifu-spectrum-chart" role="img" aria-label="RF acoustic cavitation frequency spectrum"></canvas>
+            <div class="legend"><span><i class="legend-line baseline-line"></i>Stable cavitation (f₀/2)</span><span><i class="legend-line toy-line"></i>Inertial threshold</span></div>
+          </div>
+        </div>
+
+        <div class="game-theory-card">
+          <div class="chart-subhead"><span>DEMENTIA CARE: MULTI-SESSION CLEARANCE TRAJECTORY</span><small>Amyloid-β plaque burden, Tau tangles, and Cognitive retention gain</small></div>
+          <canvas class="plot-canvas" id="hifu-clearance-chart" role="img" aria-label="Biomarker reduction trajectory over 8 sonication sessions"></canvas>
+          <div class="legend"><span><i class="legend-line toy-line"></i>Amyloid-β Plaque Burden (%)</span><span><i class="legend-line" style="background:#f43f5e"></i>Hyperphosphorylated Tau (%)</span><span><i class="legend-line baseline-line"></i>Cognitive Retention Score</span></div>
+        </div>
+
+        <div class="invariant-metrics-strip">
+          <div class="inv-metric"><span>FOCAL ACOUSTIC PRESSURE</span><strong id="hifu-focal-pressure">—</strong><small>Transcranial target (MPa)</small></div>
+          <div class="inv-metric"><span>MECHANICAL INDEX (MI)</span><strong id="hifu-mechanical-index">—</strong><small>MI ≤ 0.45 safety bound</small></div>
+          <div class="inv-metric"><span>BBB PERMEABILITY RATIO</span><strong id="hifu-bbb-ratio">—</strong><small>Transient opening multiplier</small></div>
+          <div class="inv-metric"><span>AMYLOID-β CLEARANCE</span><strong id="hifu-amyloid-clearance">—</strong><small>8-session cumulative</small></div>
+          <div class="inv-metric"><span>REGIMEN SAFETY STATUS</span><strong id="hifu-regime-status">—</strong><small>Continuous feedback control</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="law-strip" aria-label="Black hole thermodynamic reference values">
+      <div class="law-heading"><span class="figure-index">REFERENCE</span><h2>Black-hole laws</h2></div>
+      <div class="law-metric"><span>HAWKING TEMPERATURE</span><strong id="hawking-temperature">—</strong><small>K · Kerr approximation</small></div>
+      <div class="law-metric"><span>BEKENSTEIN–HAWKING ENTROPY</span><strong id="entropy">—</strong><small>S / k<sub>B</sub> · area-law scaling</small></div>
+      <p class="law-note">Standard semiclassical reference relations; rendered here for scale context. They are not modified by the toy branch.</p>
+    </section>
+
+    <footer class="page-footer"><span>HORIZON ATLAS · RESEARCH SANDBOX</span><span>PREPRINT STATUS: UNREVIEWED CONCEPT NOTE</span><a href="/preprint.pdf">Read the local preprint ↗</a></footer>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>
