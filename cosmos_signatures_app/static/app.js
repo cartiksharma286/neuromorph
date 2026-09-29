@@ -1,12 +1,16 @@
 const controlIds = [
   "mass", "spin", "inclination", "redshift", "modulus", "coupling",
   "ergodic_mixing", "combinatorial_budget", "game_weight",
-  "hifu_freq", "hifu_pressure", "hifu_skull_comp", "hifu_cycles"
+  "hifu_freq", "hifu_pressure", "hifu_skull_comp", "hifu_cycles",
+  "sr_energy", "sr_fork_gev", "sr_liv_coupling", "cbct_kvp", "cbct_cone_angle", "cf_order",
+  "bb_prime_modulus", "bb_inflation_efolds", "bb_pbh_mass_log", "bb_pbh_fraction", "bb_quantum_coherence"
 ];
 const defaults = {
   mass: 10, spin: 0.72, inclination: 55, redshift: 0.8, modulus: 0.68, coupling: 0.35,
   ergodic_mixing: 0.65, combinatorial_budget: 45, game_weight: 0.50,
-  hifu_freq: 1.25, hifu_pressure: 0.85, hifu_skull_comp: 0.75, hifu_cycles: 100
+  hifu_freq: 1.25, hifu_pressure: 0.85, hifu_skull_comp: 0.75, hifu_cycles: 100,
+  sr_energy: 45.0, sr_fork_gev: 50.0, sr_liv_coupling: 0.35, cbct_kvp: 120, cbct_cone_angle: 14, cf_order: 6,
+  bb_prime_modulus: 17, bb_inflation_efolds: 60, bb_pbh_mass_log: 11.0, bb_pbh_fraction: 0.04, bb_quantum_coherence: 0.65
 };
 const canvases = {
   hole: document.querySelector("#black-hole"),
@@ -21,6 +25,14 @@ const canvases = {
   hifuFocus: document.querySelector("#hifu-focus-chart"),
   hifuSpectrum: document.querySelector("#hifu-spectrum-chart"),
   hifuClearance: document.querySelector("#hifu-clearance-chart"),
+  srFork: document.querySelector("#sr-fork-chart"),
+  cbctProfile: document.querySelector("#cbct-profile-chart"),
+  maxwellJuttner: document.querySelector("#maxwell-juttner-chart"),
+  stieltjesConvergence: document.querySelector("#stieltjes-convergence-chart"),
+  bbCosmic: document.querySelector("#bb-cosmic-evolution-chart"),
+  bbHawking: document.querySelector("#bb-hawking-radiation-chart"),
+  bbPrimeModuli: document.querySelector("#bb-prime-moduli-chart"),
+  bbQuantum: document.querySelector("#bb-quantum-spectrum-chart"),
 };
 let latestModel = null;
 let requestToken = 0;
@@ -57,6 +69,39 @@ function updateLabels(parameters) {
   }
   if (document.querySelector("#hifu_cycles-value")) {
     document.querySelector("#hifu_cycles-value").textContent = String(Math.round(parameters.hifu_cycles));
+  }
+  if (document.querySelector("#sr_energy-value")) {
+    document.querySelector("#sr_energy-value").textContent = `${parameters.sr_energy.toFixed(1)} GeV`;
+  }
+  if (document.querySelector("#sr_fork_gev-value")) {
+    document.querySelector("#sr_fork_gev-value").textContent = `${parameters.sr_fork_gev.toFixed(1)} GeV`;
+  }
+  if (document.querySelector("#sr_liv_coupling-value")) {
+    document.querySelector("#sr_liv_coupling-value").textContent = parameters.sr_liv_coupling.toFixed(2);
+  }
+  if (document.querySelector("#cbct_kvp-value")) {
+    document.querySelector("#cbct_kvp-value").textContent = `${Math.round(parameters.cbct_kvp)} kVp`;
+  }
+  if (document.querySelector("#cbct_cone_angle-value")) {
+    document.querySelector("#cbct_cone_angle-value").textContent = `${parameters.cbct_cone_angle.toFixed(1)}°`;
+  }
+  if (document.querySelector("#cf_order-value")) {
+    document.querySelector("#cf_order-value").textContent = String(Math.round(parameters.cf_order));
+  }
+  if (document.querySelector("#bb_prime_modulus-value")) {
+    document.querySelector("#bb_prime_modulus-value").textContent = `p = ${parameters.bb_prime_modulus}`;
+  }
+  if (document.querySelector("#bb_inflation_efolds-value")) {
+    document.querySelector("#bb_inflation_efolds-value").textContent = `${Math.round(parameters.bb_inflation_efolds)} N`;
+  }
+  if (document.querySelector("#bb_pbh_mass_log-value")) {
+    document.querySelector("#bb_pbh_mass_log-value").textContent = `10^${parameters.bb_pbh_mass_log.toFixed(1)} g`;
+  }
+  if (document.querySelector("#bb_pbh_fraction-value")) {
+    document.querySelector("#bb_pbh_fraction-value").textContent = parameters.bb_pbh_fraction.toFixed(3);
+  }
+  if (document.querySelector("#bb_quantum_coherence-value")) {
+    document.querySelector("#bb_quantum_coherence-value").textContent = parameters.bb_quantum_coherence.toFixed(2);
   }
 }
 
@@ -758,6 +803,579 @@ function drawHifuClearance(model) {
   ctx.fillText("Weekly Treatment Sessions (Targeted Transcranial BBB Openings)", plot.x + plot.w / 2, height - 8);
 }
 
+function drawSrFork(model) {
+  if (!canvases.srFork || !model.special_relativity_conebeam) return;
+  const fitted = fitCanvas(canvases.srFork, 1.55);
+  if (!fitted) return;
+  const { ctx, width, height } = fitted;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#111c16";
+  ctx.fillRect(0, 0, width, height);
+
+  const margin = { left: 45, right: 18, top: 18, bottom: 32 };
+  const plot = { x: margin.left, y: margin.top, w: width - margin.left - margin.right, h: height - margin.top - margin.bottom };
+  const pts = model.special_relativity_conebeam.fork_in_the_road.spectrum_points;
+  const eFork = model.special_relativity_conebeam.fork_in_the_road.fork_threshold_gev;
+  const minBeta = 0.70;
+  const maxBeta = 1.0005;
+
+  // Grid
+  ctx.strokeStyle = "rgba(166, 190, 170, .12)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = plot.y + plot.h * i / 3;
+    ctx.beginPath();
+    ctx.moveTo(plot.x, y); ctx.lineTo(plot.x + plot.w, y);
+    ctx.stroke();
+  }
+
+  // Vertical Fork in the Road line at E_fork
+  const forkFrac = Math.max(0, Math.min(1.0, (eFork - 0.5) / (500.0 - 0.5)));
+  const xFork = plot.x + plot.w * forkFrac;
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(xFork, plot.y); ctx.lineTo(xFork, plot.y + plot.h);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#829386";
+  ctx.font = "8px SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(`FORK: ${eFork} GeV`, xFork, plot.y - 4);
+
+  // 1. Einstein SR baseline (Mint #a8d8bb)
+  ctx.strokeStyle = "#a8d8bb";
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  pts.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (pts.length - 1);
+    const norm = Math.max(0, Math.min(1.0, (pt.beta_einstein - minBeta) / (maxBeta - minBeta)));
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 2. Superluminal branch (Sky-blue #38bdf8)
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  pts.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (pts.length - 1);
+    const norm = Math.max(0, Math.min(1.0, (pt.beta_superluminal - minBeta) / (maxBeta - minBeta)));
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 3. Subluminal LIV branch (Orange #f28b54)
+  ctx.strokeStyle = "#f28b54";
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  pts.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (pts.length - 1);
+    const norm = Math.max(0, Math.min(1.0, (pt.beta_subluminal - minBeta) / (maxBeta - minBeta)));
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Mark current operating point
+  const curE = model.special_relativity_conebeam.kinematics.kinetic_energy_gev;
+  const curFrac = Math.max(0, Math.min(1.0, (curE - 0.5) / (500.0 - 0.5)));
+  const curX = plot.x + plot.w * curFrac;
+  const curBeta = model.special_relativity_conebeam.kinematics.beta;
+  const curY = plot.y + plot.h * (1.0 - Math.max(0, Math.min(1.0, (curBeta - minBeta) / (maxBeta - minBeta))));
+  ctx.fillStyle = "#ffedd5";
+  ctx.beginPath();
+  ctx.arc(curX, curY, 4.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Labels
+  ctx.fillStyle = "#829386";
+  ctx.font = "9px SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "right";
+  ctx.fillText("1.000 c", plot.x - 6, plot.y + 6);
+  ctx.fillText("0.700 c", plot.x - 6, plot.y + plot.h + 2);
+  ctx.textAlign = "center";
+  ctx.fillText("Particle Kinetic Energy (GeV) [0.5 to 500 GeV]", plot.x + plot.w / 2, height - 8);
+}
+
+function drawCbctProfile(model) {
+  if (!canvases.cbctProfile || !model.special_relativity_conebeam) return;
+  const fitted = fitCanvas(canvases.cbctProfile, 1.55);
+  if (!fitted) return;
+  const { ctx, width, height } = fitted;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#111c16";
+  ctx.fillRect(0, 0, width, height);
+
+  const margin = { left: 45, right: 18, top: 18, bottom: 32 };
+  const plot = { x: margin.left, y: margin.top, w: width - margin.left - margin.right, h: height - margin.top - margin.bottom };
+  const data = model.special_relativity_conebeam.conebeam_ct.spatial_line_profile;
+  const minHU = -250.0;
+  const maxHU = 1100.0;
+
+  // Grid
+  ctx.strokeStyle = "rgba(166, 190, 170, .12)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = plot.y + plot.h * i / 3;
+    ctx.beginPath();
+    ctx.moveTo(plot.x, y); ctx.lineTo(plot.x + plot.w, y);
+    ctx.stroke();
+  }
+
+  // 1. Ground Truth (Green #4ade80)
+  ctx.strokeStyle = "#4ade80";
+  ctx.lineWidth = 2.0;
+  ctx.beginPath();
+  data.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (data.length - 1);
+    const norm = Math.max(0, Math.min(1.0, (pt.ground_truth_hu - minHU) / (maxHU - minHU)));
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 2. Uncorrected Cupping Artifact (Orange #f28b54)
+  ctx.strokeStyle = "#f28b54";
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  data.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (data.length - 1);
+    const norm = Math.max(0, Math.min(1.0, (pt.uncorrected_hu - minHU) / (maxHU - minHU)));
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 3. Stieltjes Continued Fraction Restored (Cyan #80c9cb)
+  ctx.strokeStyle = "#80c9cb";
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  data.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (data.length - 1);
+    const norm = Math.max(0, Math.min(1.0, (pt.stieltjes_restored_hu - minHU) / (maxHU - minHU)));
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = "#829386";
+  ctx.font = "9px SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "right";
+  ctx.fillText("1000 HU", plot.x - 6, plot.y + 6);
+  ctx.fillText("0 HU", plot.x - 6, plot.y + plot.h * (1.0 - (0 - minHU) / (maxHU - minHU)));
+  ctx.fillText("-200 HU", plot.x - 6, plot.y + plot.h + 2);
+  ctx.textAlign = "center";
+  ctx.fillText("Detector Spatial Channel Position across Phantom (mm)", plot.x + plot.w / 2, height - 8);
+}
+
+function drawMaxwellJuttner(model) {
+  if (!canvases.maxwellJuttner || !model.special_relativity_conebeam) return;
+  const fitted = fitCanvas(canvases.maxwellJuttner, 1.55);
+  if (!fitted) return;
+  const { ctx, width, height } = fitted;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#111c16";
+  ctx.fillRect(0, 0, width, height);
+
+  const margin = { left: 45, right: 18, top: 18, bottom: 32 };
+  const plot = { x: margin.left, y: margin.top, w: width - margin.left - margin.right, h: height - margin.top - margin.bottom };
+  const pdf = model.special_relativity_conebeam.statistical_distribution.maxwell_juttner_pdf;
+  const maxP = Math.max(...pdf.map(p => p.probability_density), 0.05);
+
+  // Grid
+  ctx.strokeStyle = "rgba(166, 190, 170, .12)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = plot.y + plot.h * i / 3;
+    ctx.beginPath();
+    ctx.moveTo(plot.x, y); ctx.lineTo(plot.x + plot.w, y);
+    ctx.stroke();
+  }
+
+  // Shaded area under curve
+  ctx.fillStyle = "rgba(128, 201, 203, 0.18)";
+  ctx.beginPath();
+  ctx.moveTo(plot.x, plot.y + plot.h);
+  pdf.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (pdf.length - 1);
+    const y = plot.y + plot.h * (1.0 - pt.probability_density / maxP);
+    ctx.lineTo(x, y);
+  });
+  ctx.lineTo(plot.x + plot.w, plot.y + plot.h);
+  ctx.closePath();
+  ctx.fill();
+
+  // Curve
+  ctx.strokeStyle = "#80c9cb";
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  pdf.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (pdf.length - 1);
+    const y = plot.y + plot.h * (1.0 - pt.probability_density / maxP);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Mean gamma vertical dashed line
+  const meanGamma = model.special_relativity_conebeam.statistical_distribution.mean_gamma;
+  const gMin = pdf[0].gamma;
+  const gMax = pdf[pdf.length - 1].gamma;
+  const mFrac = Math.max(0, Math.min(1.0, (meanGamma - gMin) / (gMax - gMin)));
+  const mX = plot.x + plot.w * mFrac;
+  ctx.strokeStyle = "#f28b54";
+  ctx.setLineDash([3, 3]);
+  ctx.beginPath();
+  ctx.moveTo(mX, plot.y); ctx.lineTo(mX, plot.y + plot.h);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#f28b54";
+  ctx.font = "8px SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(`⟨γ⟩ = ${meanGamma}`, mX, plot.y - 4);
+
+  // Labels
+  ctx.fillStyle = "#829386";
+  ctx.font = "9px SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "right";
+  ctx.fillText(maxP.toFixed(2), plot.x - 6, plot.y + 6);
+  ctx.fillText("0", plot.x - 6, plot.y + plot.h + 2);
+  ctx.textAlign = "center";
+  ctx.fillText("Lorentz Factor γ (Dimensionless)", plot.x + plot.w / 2, height - 8);
+}
+
+function drawStieltjesConvergence(model) {
+  if (!canvases.stieltjesConvergence || !model.special_relativity_conebeam) return;
+  const fitted = fitCanvas(canvases.stieltjesConvergence, 1.55);
+  if (!fitted) return;
+  const { ctx, width, height } = fitted;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#111c16";
+  ctx.fillRect(0, 0, width, height);
+
+  const margin = { left: 45, right: 18, top: 18, bottom: 32 };
+  const plot = { x: margin.left, y: margin.top, w: width - margin.left - margin.right, h: height - margin.top - margin.bottom };
+  const series = model.special_relativity_conebeam.statistical_distribution.cf_convergence;
+
+  // Log error range: 0 down to -6
+  const logMax = 0.0;
+  const logMin = -6.0;
+
+  // Grid
+  ctx.strokeStyle = "rgba(166, 190, 170, .12)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = plot.y + plot.h * i / 3;
+    ctx.beginPath();
+    ctx.moveTo(plot.x, y); ctx.lineTo(plot.x + plot.w, y);
+    ctx.stroke();
+  }
+
+  // 1. Taylor polynomial error (Orange #f28b54)
+  ctx.strokeStyle = "#f28b54";
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  series.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (series.length - 1);
+    const logErr = Math.log10(Math.max(1e-7, pt.polynomial_taylor_error));
+    const norm = Math.max(0, Math.min(1.0, (logErr - logMin) / (logMax - logMin)));
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 2. Stieltjes continued fraction error (Cyan #80c9cb)
+  ctx.strokeStyle = "#80c9cb";
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  series.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (series.length - 1);
+    const logErr = Math.log10(Math.max(1e-7, pt.stieltjes_cf_error));
+    const norm = Math.max(0, Math.min(1.0, (logErr - logMin) / (logMax - logMin)));
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Dots for Stieltjes
+  ctx.fillStyle = "#80c9cb";
+  series.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (series.length - 1);
+    const logErr = Math.log10(Math.max(1e-7, pt.stieltjes_cf_error));
+    const norm = Math.max(0, Math.min(1.0, (logErr - logMin) / (logMax - logMin)));
+    const y = plot.y + plot.h * (1.0 - norm);
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Labels
+  ctx.fillStyle = "#829386";
+  ctx.font = "9px SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "right";
+  ctx.fillText("10⁰", plot.x - 6, plot.y + 6);
+  ctx.fillText("10⁻³", plot.x - 6, plot.y + plot.h / 2 + 3);
+  ctx.fillText("10⁻⁶", plot.x - 6, plot.y + plot.h + 2);
+  ctx.textAlign = "center";
+  ctx.fillText("Approximation Order (Degree k = 1 to 10)", plot.x + plot.w / 2, height - 8);
+}
+
+function drawBbCosmic(model) {
+  if (!canvases.bbCosmic || !model.big_bang) return;
+  const fitted = fitCanvas(canvases.bbCosmic, 1.55);
+  if (!fitted) return;
+  const { ctx, width, height } = fitted;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#111c16";
+  ctx.fillRect(0, 0, width, height);
+
+  const margin = { left: 45, right: 18, top: 18, bottom: 32 };
+  const plot = { x: margin.left, y: margin.top, w: width - margin.left - margin.right, h: height - margin.top - margin.bottom };
+  const timeline = model.big_bang.cosmic_timeline;
+
+  // Grid
+  ctx.strokeStyle = "rgba(166, 190, 170, .12)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = plot.y + plot.h * i / 3;
+    ctx.beginPath();
+    ctx.moveTo(plot.x, y); ctx.lineTo(plot.x + plot.w, y);
+    ctx.stroke();
+  }
+
+  // 1. Log scale factor log_a (-35 to 10) (Mint #a8d8bb)
+  const minA = -35.0, maxA = 10.0;
+  ctx.strokeStyle = "#a8d8bb";
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  timeline.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (timeline.length - 1);
+    const norm = Math.max(0, Math.min(1.0, (pt.log_a - minA) / (maxA - minA)));
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 2. Log radiation temp log_temp_k (2 to 32 K) (Orange #f28b54)
+  const minT = 2.0, maxT = 32.0;
+  ctx.strokeStyle = "#f28b54";
+  ctx.lineWidth = 2.0;
+  ctx.beginPath();
+  timeline.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (timeline.length - 1);
+    const norm = Math.max(0, Math.min(1.0, (pt.log_temp_k - minT) / (maxT - minT)));
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = "#829386";
+  ctx.font = "9px SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "right";
+  ctx.fillText("10³² K", plot.x - 6, plot.y + 6);
+  ctx.fillText("3000 K", plot.x - 6, plot.y + plot.h - 4);
+  ctx.textAlign = "center";
+  ctx.fillText("Cosmic Time log₁₀(t / s) [10⁻⁴³ s Planck to 10¹³ s Recombination]", plot.x + plot.w / 2, height - 8);
+}
+
+function drawBbHawking(model) {
+  if (!canvases.bbHawking || !model.big_bang) return;
+  const fitted = fitCanvas(canvases.bbHawking, 1.55);
+  if (!fitted) return;
+  const { ctx, width, height } = fitted;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#111c16";
+  ctx.fillRect(0, 0, width, height);
+
+  const margin = { left: 45, right: 18, top: 18, bottom: 32 };
+  const plot = { x: margin.left, y: margin.top, w: width - margin.left - margin.right, h: height - margin.top - margin.bottom };
+  const timeline = model.big_bang.cosmic_timeline;
+
+  // Grid
+  ctx.strokeStyle = "rgba(166, 190, 170, .12)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = plot.y + plot.h * i / 3;
+    ctx.beginPath();
+    ctx.moveTo(plot.x, y); ctx.lineTo(plot.x + plot.w, y);
+    ctx.stroke();
+  }
+
+  // 1. PBH Mass fraction M(t)/M0 (Sky blue #38bdf8)
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  timeline.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (timeline.length - 1);
+    const y = plot.y + plot.h * (1.0 - pt.pbh_mass_frac);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 2. Hawking burst power log10 P(t) (Rose #f43f5e)
+  const maxLogP = 30.0;
+  ctx.strokeStyle = "#f43f5e";
+  ctx.lineWidth = 2.0;
+  ctx.beginPath();
+  timeline.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (timeline.length - 1);
+    const norm = Math.max(0, Math.min(1.0, pt.p_hawking_log_w / maxLogP));
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = "#829386";
+  ctx.font = "9px SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "right";
+  ctx.fillText("1.0 M₀", plot.x - 6, plot.y + 6);
+  ctx.fillText("0 M₀", plot.x - 6, plot.y + plot.h + 2);
+  ctx.textAlign = "center";
+  ctx.fillText("Cosmic Evolution toward Final PBH Evaporation Epoch", plot.x + plot.w / 2, height - 8);
+}
+
+function drawBbPrimeModuli(model) {
+  if (!canvases.bbPrimeModuli || !model.big_bang) return;
+  const fitted = fitCanvas(canvases.bbPrimeModuli, 1.55);
+  if (!fitted) return;
+  const { ctx, width, height } = fitted;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#111c16";
+  ctx.fillRect(0, 0, width, height);
+
+  const margin = { left: 45, right: 18, top: 18, bottom: 32 };
+  const plot = { x: margin.left, y: margin.top, w: width - margin.left - margin.right, h: height - margin.top - margin.bottom };
+  const lattice = model.big_bang.prime_moduli.lattice;
+  const p = model.big_bang.prime_moduli.prime_p;
+
+  // Grid
+  ctx.strokeStyle = "rgba(166, 190, 170, .12)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = plot.y + plot.h * i / 3;
+    ctx.beginPath();
+    ctx.moveTo(plot.x, y); ctx.lineTo(plot.x + plot.w, y);
+    ctx.stroke();
+  }
+
+  // Horizontal singularity boundary line (Yellow #fcd34d) at p - 1
+  const yBound = plot.y + plot.h * (1.0 - (p - 1) / p);
+  ctx.strokeStyle = "rgba(252, 211, 77, 0.45)";
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(plot.x, yBound); ctx.lineTo(plot.x + plot.w, yBound);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#fcd34d";
+  ctx.font = "8px SFMono-Regular, Consolas, monospace";
+  ctx.fillText(`BOUND: p − 1 = ${p - 1}`, plot.x + plot.w - 80, yBound - 4);
+
+  // Bars for modular curvature K_k mod p
+  const barW = Math.max(3, (plot.w / lattice.length) * 0.65);
+  lattice.forEach((pt, i) => {
+    const x = plot.x + (plot.w / lattice.length) * (i + 0.5) - barW / 2;
+    const barH = plot.h * (pt.curvature_mod_p / p);
+    const y = plot.y + plot.h - barH;
+    ctx.fillStyle = pt.legendre >= 0 ? "rgba(168, 216, 187, 0.85)" : "rgba(242, 139, 84, 0.85)";
+    ctx.fillRect(x, y, barW, barH);
+  });
+
+  // Gauss sum component line
+  ctx.strokeStyle = "#80c9cb";
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  lattice.forEach((pt, i) => {
+    const x = plot.x + (plot.w / lattice.length) * (i + 0.5);
+    const norm = (pt.gauss_re + 1.0) / 2.0;
+    const y = plot.y + plot.h * (1.0 - norm);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = "#829386";
+  ctx.font = "9px SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "right";
+  ctx.fillText(`p = ${p}`, plot.x - 6, plot.y + 6);
+  ctx.fillText("0", plot.x - 6, plot.y + plot.h + 2);
+  ctx.textAlign = "center";
+  ctx.fillText(`Discrete Element k ∈ ℤ_${p} [Galois Curvature Lattice]`, plot.x + plot.w / 2, height - 8);
+}
+
+function drawBbQuantum(model) {
+  if (!canvases.bbQuantum || !model.big_bang) return;
+  const fitted = fitCanvas(canvases.bbQuantum, 1.55);
+  if (!fitted) return;
+  const { ctx, width, height } = fitted;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#111c16";
+  ctx.fillRect(0, 0, width, height);
+
+  const margin = { left: 45, right: 18, top: 18, bottom: 32 };
+  const plot = { x: margin.left, y: margin.top, w: width - margin.left - margin.right, h: height - margin.top - margin.bottom };
+  const wf = model.big_bang.quantum_signatures.wavefunction;
+  const spec = model.big_bang.quantum_signatures.hawking_spectrum;
+
+  // Grid
+  ctx.strokeStyle = "rgba(166, 190, 170, .12)";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = plot.y + plot.h * i / 3;
+    ctx.beginPath();
+    ctx.moveTo(plot.x, y); ctx.lineTo(plot.x + plot.w, y);
+    ctx.stroke();
+  }
+
+  // 1. Wheeler-DeWitt |Psi(a)|^2 (Mint #a8d8bb with shaded area)
+  const maxPsi = Math.max(...wf.map(w => w.psi_squared), 0.05);
+  ctx.fillStyle = "rgba(168, 216, 187, 0.16)";
+  ctx.beginPath();
+  ctx.moveTo(plot.x, plot.y + plot.h);
+  wf.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (wf.length - 1);
+    const y = plot.y + plot.h * (1.0 - pt.psi_squared / maxPsi);
+    ctx.lineTo(x, y);
+  });
+  ctx.lineTo(plot.x + plot.w, plot.y + plot.h);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = "#a8d8bb";
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  wf.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (wf.length - 1);
+    const y = plot.y + plot.h * (1.0 - pt.psi_squared / maxPsi);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // 2. Hawking particle burst emission spectrum dN/dE (Orange #fb923c)
+  ctx.strokeStyle = "#fb923c";
+  ctx.lineWidth = 2.0;
+  ctx.beginPath();
+  spec.forEach((pt, i) => {
+    const x = plot.x + plot.w * i / (spec.length - 1);
+    const y = plot.y + plot.h * (1.0 - pt.emission_rate);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = "#829386";
+  ctx.font = "9px SFMono-Regular, Consolas, monospace";
+  ctx.textAlign = "right";
+  ctx.fillText("1.0", plot.x - 6, plot.y + 6);
+  ctx.fillText("0.0", plot.x - 6, plot.y + plot.h + 2);
+  ctx.textAlign = "center";
+  ctx.fillText("Quantum Minisuperspace Amplitude & Hawking Emission Modes", plot.x + plot.w / 2, height - 8);
+}
+
 function renderMetrics(model) {
   document.querySelector("#gr-shadow").textContent = `${model.shadow_radius_gr_rg.toFixed(3)} r_g`;
   document.querySelector("#toy-shadow").textContent = `${model.shadow_radius_modular_toy_rg.toFixed(3)} r_g`;
@@ -791,6 +1409,26 @@ function renderMetrics(model) {
     document.querySelector("#hifu-regime-status").textContent = model.hifu_dementia.safety_status;
   }
 
+  if (document.querySelector("#sr-gamma") && model.special_relativity_conebeam) {
+    const sr = model.special_relativity_conebeam;
+    document.querySelector("#sr-gamma").textContent = sr.kinematics.lorentz_gamma.toFixed(2);
+    document.querySelector("#sr-speed-deficit").textContent = `${sr.kinematics.speed_deficit_ms.toLocaleString(undefined, { maximumFractionDigits: 1 })} m/s`;
+    document.querySelector("#sr-fork-threshold").textContent = `${sr.fork_in_the_road.fork_threshold_gev.toFixed(1)} GeV`;
+    document.querySelector("#cbct-hu-error").textContent = `${sr.conebeam_ct.max_cupping_artifact_hu.toFixed(1)} HU`;
+    document.querySelector("#sr-cf-order").textContent = `Padé [${sr.conebeam_ct.cf_order}/${sr.conebeam_ct.cf_order}]`;
+    document.querySelector("#sr-bifurcation-delta").textContent = `${sr.fork_in_the_road.bifurcation_split_ms.toFixed(3)} m/s`;
+  }
+
+  if (document.querySelector("#bb-planck-density") && model.big_bang) {
+    const bb = model.big_bang;
+    document.querySelector("#bb-planck-density").textContent = bb.metrics.planck_finite_curvature;
+    document.querySelector("#bb-hawking-temp").textContent = bb.metrics.hawking_burst_temp_gev;
+    document.querySelector("#bb-pbh-lifetime").textContent = bb.metrics.pbh_lifetime_s;
+    document.querySelector("#bb-inflation-expansion").textContent = bb.metrics.inflation_expansion;
+    document.querySelector("#bb-recombination-z").textContent = bb.metrics.recombination_z;
+    document.querySelector("#bb-entropy-bound").textContent = bb.metrics.quantum_entropy;
+  }
+
   drawBlackHole(model);
   if (activeView === "fork") drawFork(model);
   if (activeView === "modular") drawModular(model);
@@ -808,6 +1446,18 @@ function renderMetrics(model) {
     drawHifuFocus(model);
     drawHifuSpectrum(model);
     drawHifuClearance(model);
+  }
+  if (activeView === "relativity") {
+    drawSrFork(model);
+    drawCbctProfile(model);
+    drawMaxwellJuttner(model);
+    drawStieltjesConvergence(model);
+  }
+  if (activeView === "bigbang") {
+    drawBbCosmic(model);
+    drawBbHawking(model);
+    drawBbPrimeModuli(model);
+    drawBbQuantum(model);
   }
 }
 
@@ -858,6 +1508,18 @@ function switchView(view) {
     drawHifuFocus(latestModel);
     drawHifuSpectrum(latestModel);
     drawHifuClearance(latestModel);
+  }
+  if (latestModel && view === "relativity") {
+    drawSrFork(latestModel);
+    drawCbctProfile(latestModel);
+    drawMaxwellJuttner(latestModel);
+    drawStieltjesConvergence(latestModel);
+  }
+  if (latestModel && view === "bigbang") {
+    drawBbCosmic(latestModel);
+    drawBbHawking(latestModel);
+    drawBbPrimeModuli(latestModel);
+    drawBbQuantum(latestModel);
   }
 }
 

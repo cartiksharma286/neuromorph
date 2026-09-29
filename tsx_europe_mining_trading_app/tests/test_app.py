@@ -1,9 +1,10 @@
+import math
 import unittest
 from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from app import ROOT, app, simulate
+from app import ROOT, _compute_stieltjes_fractions, app, simulate
 
 
 class TransatlanticTradingAppTests(unittest.TestCase):
@@ -66,6 +67,15 @@ class TransatlanticTradingAppTests(unittest.TestCase):
         self.assertEqual(p["volatility"], 0.95)
         self.assertEqual(p["gamma_damping"], 0.05)
         self.assertEqual(p["prime_order"], 20)
+
+    def test_stieltjes_depth_curve_handles_zero_intermediate_denominator(self):
+        stieltjes = _compute_stieltjes_fractions(volatility=0.75, ore_momentum=0.1)
+
+        self.assertEqual(len(stieltjes["depth_curve"]), 61)
+        self.assertTrue(all(
+            math.isfinite(point["stieltjes_beyond_auction"])
+            for point in stieltjes["depth_curve"]
+        ))
 
     def test_preprint_pdf_endpoint(self):
         response = self.client.get("/preprint.pdf")

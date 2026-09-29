@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vector Field | Infectious Disease Convergence &amp; Health Economics Lab</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">V</span><span><strong>VECTOR FIELD</strong><small>INFECTIOUS DISEASE &amp; HEALTH ECONOMICS LAB</small></span></div>
+    <nav class="nav-tabs">
+      <button class="tab-btn active" id="tab-btn-progression" type="button">Disease Progression &amp; Convergence</button>
+      <button class="tab-btn" id="tab-btn-economics" type="button">Health Economics &amp; Statistical Learning</button>
+    </nav>
+    <div class="status"><i></i> SYNTHETIC SCENARIO</div>
+    <a class="pdf" href="/preprint.pdf" title="Download Nature Preprint">Download preprint</a>
+  </header>
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow" id="hero-eyebrow">FINITE MATHEMATICS / POPULATION STATE MODELS</p>
+        <h1 id="hero-title">Progression signals, <em>made inspectable.</em></h1>
+        <p id="hero-desc">Scenario exploration using combinatoric capacity checks, Leibniz recurrent-prime signatures, elliptic projections, interferometric diffusion and phase sifting.</p>
+      </div>
+      <div class="disclaimer">SYNTHETIC RESEARCH VISUALIZATION<br><span>Not medical advice, diagnosis, or commercial investment recommendations.</span></div>
+    </section>
+    <section class="workbench">
+      <aside class="controls">
+        <div class="panel-title"><span id="controls-title">Scenario controls</span> <button id="reset" title="Reset scenario controls">↺</button></div>
+
+        <!-- Disease Progression Controls -->
+        <div id="controls-progression" class="control-group active">
+          <label>Transmission ($R_0$) <output id="transmission-output">1.35</output><input id="transmission" type="range" min="0.55" max="2.4" step="0.01" value="1.35"></label>
+          <label>Intervention coverage <output id="intervention-output">48%</output><input id="intervention" type="range" min="0" max="0.9" step="0.01" value="0.48"></label>
+          <label>Diffusion coupling <output id="diffusion-output">0.42</output><input id="diffusion" type="range" min="0.05" max="1" step="0.01" value="0.42"></label>
+          <label>Phase offset <output id="phase_shift-output">1.20</output><input id="phase_shift" type="range" min="0" max="3.14" step="0.01" value="1.2"></label>
+          <label>Repair capacity <output id="repair_capacity-output">58%</output><input id="repair_capacity" type="range" min="0.1" max="1" step="0.01" value="0.58"></label>
+          <div class="equation">$\mathbf{x}_{t+1}=\mathbf{P}_{\theta}\mathbf{x}_t+\mathbf{d}_{\phi}$<br><small>finite state propagation</small></div>
+        </div>
+
+        <!-- Health Economics & Statistical Learning Controls -->
+        <div id="controls-economics" class="control-group">
+          <label>Target Population Cohort <output id="cohort_size-output">250,000</output><input id="cohort_size" type="range" min="25000" max="1000000" step="25000" value="250000"></label>
+          <label>Horizon (Years) <output id="horizon_years-output">5 yrs</output><input id="horizon_years" type="range" min="3" max="10" step="1" value="5"></label>
+          <label>Intervention Cost / Member <output id="intervention_cost-output">$350</output><input id="intervention_cost" type="range" min="50" max="1200" step="25" value="350"></label>
+          <label>Averted Hospitalization Cost <output id="hospitalization_cost-output">$18,500</output><input id="hospitalization_cost" type="range" min="5000" max="40000" step="500" value="18500"></label>
+          <label>Payer Shared Savings Share <output id="reimbursement_rate-output">65%</output><input id="reimbursement_rate" type="range" min="0.2" max="0.95" step="0.01" value="0.65"></label>
+          <label>Ridge Regularizer ($\lambda$) <output id="learning_regularizer-output">0.25</output><input id="learning_regularizer" type="range" min="0.01" max="2.0" step="0.01" value="0.25"></label>
+          <label>Bioremediation Adoption <output id="bioremediation_adoption-output">45%</output><input id="bioremediation_adoption" type="range" min="0.1" max="0.9" step="0.01" value="0.45"></label>
+          <div class="equation">$\hat{\beta}=(\mathbf{X}^T\mathbf{X}+\lambda\mathbf{I})^{-1}\mathbf{X}^T\mathbf{y}$<br><small>regularized statistical learning</small></div>
+        </div>
+
+        <button class="run" id="run" type="button">Recompute scenario</button>
+      </aside>
+
+      <div class="dashboard">
+        <!-- View 1: Disease Progression & Convergence -->
+        <div id="view-progression" class="tab-view active">
+          <section class="metric-grid">
+            <article><small>EFFECTIVE R</small><strong id="effective-r">--</strong><span id="r-note">phase-sifted transmission</span></article>
+            <article><small>PEAK INFECTIOUS</small><strong id="peak-infectious">--</strong><span>synthetic population share</span></article>
+            <article><small>CONVERGENCE</small><strong id="residual">--</strong><span>terminal residual</span></article>
+            <article><small>GOVERNANCE</small><strong id="readiness">--</strong><span>readiness index</span></article>
+          </section>
+          <section class="charts">
+            <article class="chart-card wide"><div class="chart-head"><h2>Clinical trajectory proxy</h2><span>42-day state progression</span></div><canvas id="trajectory-chart" aria-label="State transition trajectory"></canvas><div class="legend"><i class="s"></i> Susceptible <i class="e"></i> Exposed <i class="i"></i> Infectious <i class="r"></i> Recovered</div></article>
+            <article class="chart-card"><div class="chart-head"><h2>Convergence residual</h2><span>finite iteration</span></div><canvas id="convergence-chart"></canvas></article>
+            <article class="chart-card"><div class="chart-head"><h2>Phase sifting</h2><span>interferometric diffusion</span></div><canvas id="phase-chart"></canvas></article>
+          </section>
+          <section class="lower-grid">
+            <article class="table-card"><div class="chart-head"><h2>Finite-math signatures</h2><span id="elliptic"></span></div><div id="math-content"></div></article>
+            <article class="table-card"><div class="chart-head"><h2>Progression graph</h2><span>state transitions</span></div><div id="transitions"></div></article>
+            <article class="table-card"><div class="chart-head"><h2>Interventional repair governance</h2><span>digital bioremediation</span></div><div id="governance"></div></article>
+          </section>
+        </div>
+
+        <!-- View 2: Health Economics & Statistical Learning -->
+        <div id="view-economics" class="tab-view">
+          <section class="metric-grid">
+            <article><small>CUMULATIVE GROSS REVENUE</small><strong id="econ-gross-rev">--</strong><span id="econ-gross-sub">value-based &amp; shared savings</span></article>
+            <article><small>NET PRESENT VALUE (NPV)</small><strong id="econ-npv">--</strong><span>discounted cash flow @ 3.5%</span></article>
+            <article><small>STATISTICAL LEARNING R²</small><strong id="econ-r2">--</strong><span>ridge regularized fit (λ=0.25)</span></article>
+            <article><small>ICER / QALY GAINED</small><strong id="econ-icer">--</strong><span>cost per QALY threshold</span></article>
+          </section>
+          <section class="charts">
+            <article class="chart-card wide">
+              <div class="chart-head"><h2>Revenue Projections &amp; Statistical Confidence</h2><span id="econ-horizon-span">Multi-Year Ridge Estimator</span></div>
+              <canvas id="revenue-chart" aria-label="Multi-Year Revenue Projections"></canvas>
+              <div class="legend"><i class="g"></i> Gross Rev ($M) <i class="b"></i> 95% CI Band <i class="m"></i> Net Margin ($M) <i class="y"></i> Shared Savings ($M)</div>
+            </article>
+            <article class="chart-card"><div class="chart-head"><h2>Payer Mix Distribution</h2><span>channel allocation</span></div><canvas id="payer-chart"></canvas></article>
+            <article class="chart-card"><div class="chart-head"><h2>Operational Learning Curve</h2><span>Wright's unit cost law</span></div><canvas id="learning-chart"></canvas></article>
+          </section>
+          <section class="lower-grid">
+            <article class="table-card"><div class="chart-head"><h2>Statistical Estimator Specs</h2><span id="econ-cond-num"></span></div><div id="econ-model-specs"></div></article>
+            <article class="table-card"><div class="chart-head"><h2>Annual Cash Flow Ledger</h2><span>projections</span></div><div id="econ-ledger" style="overflow-x:auto;"></div></article>
+            <article class="table-card"><div class="chart-head"><h2>Value-Based Governance</h2><span>reimbursement readiness</span></div><div id="econ-governance"></div></article>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
