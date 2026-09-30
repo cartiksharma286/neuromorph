@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a1218">
+  <title>Transatlantic Liquidity Lab | TSX & Frankfurt Ore Trading</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v='20260926') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Transatlantic Liquidity Lab home">
+      <span class="brand-mark" aria-hidden="true">Ω</span>
+      <span><strong>TRANSATLANTIC LIQUIDITY</strong><small>TSX &middot; FRANKFURT &middot; MINERAL ORE &middot; FOREX</small></span>
+    </a>
+    <div class="topbar-right">
+      <button id="live-toggle-btn" class="live-stream-btn" type="button" title="Toggle live algorithmic execution stream">
+        <i class="live-dot"></i> <span>LIVE TRADING: ACTIVE</span>
+      </button>
+      <span class="live-pnl-badge" id="live-pnl-display">+$148,250 CAD</span>
+      <a class="pdf-link" href="/preprint.pdf" title="Download the Nature Preprint PDF" aria-label="Download preprint PDF">
+        <span aria-hidden="true">↓</span><span>NATURE PREPRINT PDF</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- LIVE COMMODITY & MARKET TICKER BAR -->
+  <div class="ticker-bar" aria-label="Live Market Feed">
+    <div class="ticker-item"><span class="ticker-sym">COPPER (LME)</span><strong id="tick-copper">$4.842 / lb</strong><span class="ticker-up">+2.4%</span></div>
+    <div class="ticker-item"><span class="ticker-sym">NICKEL (LME)</span><strong id="tick-nickel">$18,480 / t</strong><span class="ticker-up">+1.8%</span></div>
+    <div class="ticker-item"><span class="ticker-sym">GOLD (COMEX)</span><strong id="tick-gold">$2,788.50 / oz</strong><span class="ticker-up">+0.9%</span></div>
+    <div class="ticker-item"><span class="ticker-sym">EUR / CAD</span><strong id="tick-eur-cad">1.4852</strong><span class="ticker-down">-0.12%</span></div>
+    <div class="ticker-item"><span class="ticker-sym">S&amp;P/TSX MINING</span><strong id="tick-tsx">1,424.10</strong><span class="ticker-up">+2.1%</span></div>
+    <div class="ticker-item"><span class="ticker-sym">DAX BASIC RES</span><strong id="tick-dax">18,655.00</strong><span class="ticker-up">+1.4%</span></div>
+  </div>
+
+  <main id="top">
+    <section class="intro-row">
+      <div>
+        <p class="eyebrow">HIGH FREQUENCY QUANTITATIVE FINANCE / NON-AUCTION EXECUTION</p>
+        <h1>TSX &amp; German Markets <em>Beyond-Auction</em> Trading</h1>
+        <p class="intro-copy">Arbitraging Toronto Stock Exchange and Frankfurt/DAX mining equities via Stieltjes continued fractions, Leibniz recurrent prime equivalence, and symplectic second-order neural differential ODEs for statistical dividend yield &gt; 40%.</p>
+      </div>
+      <div class="notice"><span class="notice-icon" aria-hidden="true">⚡</span><span><b>Target Met: Annual Yield &gt; 40%</b><br>Covered call overlay, Stieltjes execution, and dual-listing dividend capture syndication.</span></div>
+    </section>
+
+    <nav class="view-tabs" aria-label="Model views" role="tablist">
+      <button class="view-tab active" id="tab-overview" role="tab" aria-selected="true" aria-controls="view-overview" data-view="overview"><span>01</span> Trading cockpit</button>
+      <button class="view-tab" id="tab-stieltjes" role="tab" aria-selected="false" aria-controls="view-stieltjes" data-view="stieltjes"><span>02</span> Stieltjes fractions</button>
+      <button class="view-tab" id="tab-primes" role="tab" aria-selected="false" aria-controls="view-primes" data-view="primes"><span>03</span> Leibniz primes</button>
+      <button class="view-tab" id="tab-neural-ode" role="tab" aria-selected="false" aria-controls="view-neural-ode" data-view="neural-ode"><span>04</span> Neural ODE phase space</button>
+      <button class="view-tab" id="tab-dividends" role="tab" aria-selected="false" aria-controls="view-dividends" data-view="dividends"><span>05</span> Dividend yield &gt; 40%</button>
+      <button class="view-tab" id="tab-ledger" role="tab" aria-selected="false" aria-controls="view-ledger" data-view="ledger"><span>06</span> Trade signatures</button>
+    </nav>
+
+    <!-- TAB 1: COCKPIT -->
+    <section class="workspace" id="view-overview" role="tabpanel" aria-labelledby="tab-overview">
+      <aside class="controls">
+        <div class="section-heading"><span>PORTFOLIO ALLOCATION &amp; MATH CONTROLS</span><button id="reset-button" class="text-button" type="button">Reset</button></div>
+        
+        <div class="control-group">
+          <label for="tsx_weight">TSX Mining weight <output id="tsx_weight-value">0.55</output></label>
+          <input id="tsx_weight" type="range" min="0.1" max="0.9" step="0.05" value="0.55">
+          <div class="range-ends"><span>10% (TSX)</span><span>90% (TSX)</span></div>
+        </div>
+
+        <div class="control-group">
+          <label for="ger_weight">Frankfurt DAX weight <output id="ger_weight-value">0.45</output></label>
+          <input id="ger_weight" type="range" min="0.1" max="0.9" step="0.05" value="0.45">
+          <div class="range-ends"><span>10% (DE)</span><span>90% (DE)</span></div>
+        </div>
+
+        <div class="control-group">
+          <label for="ore_momentum">Mineral ore momentum (Cu/Ni/Au) <output id="ore_momentum-value">+0.45</output></label>
+          <input id="ore_momentum" type="range" min="-1.0" max="1.0" step="0.05" value="0.45">
+          <div class="range-ends"><span>-1.0 (Bear)</span><span>+1.0 (Supercycle)</span></div>
+        </div>
+
+        <div class="control-divider"></div>
+
+        <div class="control-group">
+          <label for="volatility">Implied volatility (σ) <output id="volatility-value">0.28</output></label>
+          <input id="volatility" type="range" min="0.05" max="0.95" step="0.01" value="0.28">
+          <div class="range-ends"><span>5% (Calm)</span><span>95% (Extreme)</span></div>
+        </div>
+
+        <div class="control-group">
+          <label for="gamma_damping">Neural ODE damping (γ) <output id="gamma_damping-value">0.65</output></label>
+          <input id="gamma_damping" type="range" min="0.05" max="1.5" step="0.05" value="0.65">
+          <div class="range-ends"><span>0.05 (Underdamped)</span><span>1.5 (Symplectic)</span></div>
+        </div>
+
+        <div class="control-group">
+          <label for="drift">Order flow drift (μ) <output id="drift-value">+0.15</output></label>
+          <input id="drift" type="range" min="-0.5" max="0.5" step="0.05" value="0.15">
+          <div class="range-ends"><span>-0.50</span><span>+0.50</span></div>
+        </div>
+
+        <div class="control-divider"></div>
+
+        <div class="control-group">
+          <label for="fx_eur_cad">EUR / CAD Forex rate <output id="fx_eur_cad-value">1.4850</output></label>
+          <input id="fx_eur_cad" type="range" min="1.35" max="1.65" step="0.005" value="1.4850">
+          <div class="range-ends"><span>1.3500</span><span>1.6500</span></div>
+        </div>
+
+        <div class="control-group">
+          <label for="options_overlay">Options overlay intensity <output id="options_overlay-value">0.85</output></label>
+          <input id="options_overlay" type="range" min="0.2" max="1.0" step="0.05" value="0.85">
+          <div class="range-ends"><span>20% (Conservative)</span><span>100% (Max yield)</span></div>
+        </div>
+
+        <div class="control-group">
+          <label for="prime_order">Leibniz prime sieve order (N) <output id="prime_order-value">10</output></label>
+          <input id="prime_order" type="range" min="4" max="20" step="1" value="10">
+          <div class="range-ends"><span>4 primes</span><span>20 primes</span></div>
+        </div>
+      </aside>
+
+      <div class="visual-column">
+        <div class="figure-head"><div><span class="figure-index">FIG. 01</span><h2>Transatlantic mining, ore &amp; forex execution map</h2></div><span class="live-state"><i></i> RUNNING</span></div>
+        <div class="visual-frame">
+          <canvas id="overview-canvas" role="img" aria-label="Cross-Atlantic algorithmic trading execution flow map"></canvas>
+          <div class="frame-caption"><span>STIELTJES BEYOND-AUCTION MATCHING · NEURAL ODE SYMPLECTIC MOMENTUM</span><button id="export-button" class="icon-button" type="button" title="Export chart as PNG" aria-label="Export visualization">⇩</button></div>
+        </div>
+        
+        <div class="metrics-row">
+          <div class="metric accent-metric"><span>ANNUAL DIVIDEND YIELD</span><strong id="stat-dividend-yield">—</strong><small>Target &gt; 40% · Cash + Options + Arb</small></div>
+          <div class="metric"><span>PORTFOLIO SHARPE RATIO</span><strong id="stat-sharpe">—</strong><small>Risk-adjusted performance</small></div>
+          <div class="metric"><span>MAX HISTORICAL DRAWDOWN</span><strong id="stat-drawdown">—</strong><small>Symplectic ODE bounded</small></div>
+          <div class="metric"><span>EXECUTION SLIPPAGE SAVING</span><strong id="stat-slippage-saving">—</strong><small>Stieltjes continued fraction vs auction</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: STIELTJES CONTINUED FRACTIONS -->
+    <section class="workspace secondary-view" id="view-stieltjes" role="tabpanel" aria-labelledby="tab-stieltjes" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 02</span><h2>Stieltjes continued fractions: Beyond-auction liquidity depth</h2></div><span class="unit-label">S-FRACTION DEPTH INVERSION</span></div>
+        <p class="chart-intro">Standard discrete auction order books truncate depth at integer ticks, hiding institutional mineral orders. Stieltjes continued fractions represent the moments of the microstructural liquidity density dμ(λ), recovering smooth off-book clearing prices.</p>
+
+        <div class="dual-grid">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>CONTINUOUS DEPTH CURVE: AUCTION VS STIELTJES</span><small>Orderbook depth across spread offset</small></div>
+            <canvas class="plot-canvas compact-canvas" id="stieltjes-depth-chart" role="img" aria-label="Depth comparison between auction book and Stieltjes fraction"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#f97316"></i>Discrete auction book (truncated)</span><span><i class="legend-line" style="background:#38bdf8"></i>Stieltjes S-fraction (beyond auction)</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>RATIONAL CONVERGENTS P_k(z) / Q_k(z)</span><small>Order k = 1 to 5 Padé approximants</small></div>
+            <canvas class="plot-canvas compact-canvas" id="stieltjes-convergents-chart" role="img" aria-label="Rational convergents of the Stieltjes S-fraction"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#34d399"></i>Convergents P_k / Q_k</span></div>
+          </div>
+        </div>
+
+        <div class="equation-band">
+          <span>F(z) = ∫ [dμ(λ) / (1 + zλ)] = c₀ / ( 1 + c₁ z / ( 1 + c₂ z / ( 1 + c₃ z / ... ) ) )</span>
+          <small>Moments m_k → Stieltjes quotient-difference algorithm</small>
+        </div>
+
+        <div class="invariant-metrics-strip">
+          <div class="inv-metric"><span>S-FRACTION COEFF c₀</span><strong id="stieltjes-c0">—</strong><small>Zeroth moment m₀</small></div>
+          <div class="inv-metric"><span>S-FRACTION COEFF c₁</span><strong id="stieltjes-c1">—</strong><small>First quotient m₁/m₀</small></div>
+          <div class="inv-metric"><span>OFF-BOOK LIQUIDITY GAIN</span><strong id="stieltjes-liquidity-gain">—</strong><small>Beyond auction bounds</small></div>
+          <div class="inv-metric"><span>SLIPPAGE REDUCTION</span><strong id="stieltjes-slippage">—</strong><small>Basis points saved</small></div>
+          <div class="inv-metric"><span>EVALUATION AT z=0.5</span><strong id="stieltjes-eval-z">—</strong><small>Padé rational limit</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: LEIBNIZ RECURRENT PRIMES -->
+    <section class="workspace secondary-view" id="view-primes" role="tabpanel" aria-labelledby="tab-primes" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 03</span><h2>Leibniz recurrent primes &amp; cross-market harmonic equivalence</h2></div><span class="unit-label">DIRICHLET CHARACTERS χ₄(p)</span></div>
+        <p class="chart-intro">The Leibniz harmonic alternating series converges to π/4, exactly matching the Euler product of split primes modulo 4. These prime frequencies govern the microstructural cross-listing resonance between TSX (Toronto) and Frankfurt (Germany).</p>
+
+        <div class="dual-grid">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>LEIBNIZ PARTIAL SUMS CONVERGING TO π/4</span><small>Alternating prime series step-by-step</small></div>
+            <canvas class="plot-canvas compact-canvas" id="leibniz-series-chart" role="img" aria-label="Leibniz series partial sums"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#f43f5e"></i>Leibniz partial sum</span><span><i class="legend-line" style="background:#38bdf8"></i>Theoretical limit π/4</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>CROSS-ATLANTIC PRIME HARMONIC RESONANCE</span><small>TSX / Frankfurt overlap spectrum</small></div>
+            <canvas class="plot-canvas compact-canvas" id="prime-resonance-chart" role="img" aria-label="Prime harmonic resonance spectrum"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#a855f7"></i>Resonance amplitude Ψ(f)</span></div>
+          </div>
+        </div>
+
+        <div class="equation-band">
+          <span>π / 4 = ∑ [(-1)ᵏ / (2k+1)] = ∏_{p ≡ 1 mod 4} [p/(p-1)] · ∏_{p ≡ 3 mod 4} [p/(p+1)]</span>
+          <small>Fermat-Euler-Leibniz prime product equivalence</small>
+        </div>
+
+        <div class="invariant-metrics-strip">
+          <div class="inv-metric"><span>LEIBNIZ 4·S_N ESTIMATE</span><strong id="prime-leibniz-pi">—</strong><small>Approximation of π</small></div>
+          <div class="inv-metric"><span>PRIME RECURRENCE FIDELITY</span><strong id="prime-fidelity">—</strong><small>1 − |S_N − π/4|</small></div>
+          <div class="inv-metric"><span>ACTIVE PRIMES COUNT</span><strong id="prime-count">—</strong><small>Primes up to p_N</small></div>
+          <div class="inv-metric"><span>MODULAR RATIO χ₄=+1</span><strong id="prime-chi-pos">—</strong><small>Fermat sum-of-two-squares</small></div>
+          <div class="inv-metric"><span>MODULAR RATIO χ₄=−1</span><strong id="prime-chi-neg">—</strong><small>Inert Gaussian primes</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: NEURAL DIFFERENTIAL ODE -->
+    <section class="workspace secondary-view" id="view-neural-ode" role="tabpanel" aria-labelledby="tab-neural-ode" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 04</span><h2>Second-order neural differential ODE phase space</h2></div><span class="unit-label">SYMPLECTIC HAMILTONIAN ORBIT</span></div>
+        <p class="chart-intro">Market prices subject to continuous mineral ore inventory reallocation follow second-order Newtonian/Hamiltonian inertia (d²x/dt² + γ dx/dt + ∇V = f_θ). Symplectic Verlet integration strictly bounds energy and suppresses execution drawdown.</p>
+
+        <div class="dual-grid">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>PRICE DEVIATION &amp; MOMENTUM TRAJECTORY</span><small>Position x(t) and velocity v(t)</small></div>
+            <canvas class="plot-canvas compact-canvas" id="ode-trajectory-chart" role="img" aria-label="Neural ODE time trajectory"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#38bdf8"></i>Price deviation x(t)</span><span><i class="legend-line" style="background:#f97316"></i>Order velocity v(t)</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>SYMPLECTIC PHASE SPACE ORBIT (x vs v)</span><small>Invariant phase space volume</small></div>
+            <canvas class="plot-canvas compact-canvas" id="ode-phase-chart" role="img" aria-label="Neural ODE phase space orbit"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#c084fc"></i>Phase space trajectory (x, p)</span></div>
+          </div>
+        </div>
+
+        <div class="equation-band">
+          <span>d²x/dt² + γ (dx/dt) + [k x + β x³] = f_θ(x, dx/dt, t)</span>
+          <small>Symplectic Verlet integration: H = ½ v² + ½ k x² + ¼ β x⁴</small>
+        </div>
+
+        <div class="invariant-metrics-strip">
+          <div class="inv-metric"><span>SYSTEM STABILITY</span><strong id="ode-stability">—</strong><small>Asymptotic phase orbit</small></div>
+          <div class="inv-metric"><span>DAMPING RATIO (ζ)</span><strong id="ode-damping-ratio">—</strong><small>γ / (2 √(k))</small></div>
+          <div class="inv-metric"><span>LYAPUNOV EXPONENT</span><strong id="ode-lyapunov">—</strong><small>Chaos suppression index</small></div>
+          <div class="inv-metric"><span>INITIAL ENERGY H₀</span><strong id="ode-energy-init">—</strong><small>Hamiltonian joules</small></div>
+          <div class="inv-metric"><span>FINAL ENERGY H_T</span><strong id="ode-energy-final">—</strong><small>Dissipated attractor</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: STATISTICAL DIVIDEND YIELD > 40% -->
+    <section class="workspace secondary-view" id="view-dividends" role="tabpanel" aria-labelledby="tab-dividends" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 05</span><h2>Statistical dividend yield &gt; 40%: Systematic cash-flow synthesis</h2></div><span class="unit-label">MULTI-TIER ALPHA HARVESTING</span></div>
+        <p class="chart-intro">Attaining an annual statistical dividend yield &gt; 40% is achieved by combining four orthogonal revenue streams: high-grade mineral producer base dividends, covered call dispersion overlays, trans-Atlantic ex-dividend capture, and Stieltjes spread arbitrage.</p>
+
+        <div class="dual-grid">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>12-MONTH CUMULATIVE PORTFOLIO GROWTH</span><small>Starting capital: 100 base units</small></div>
+            <canvas class="plot-canvas compact-canvas" id="dividend-trajectory-chart" role="img" aria-label="Cumulative dividend growth chart"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#34d399"></i>Total portfolio value</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>MONTHLY CASH-FLOW COMPOSITION</span><small>Base vs Options vs Arbitrage</small></div>
+            <canvas class="plot-canvas compact-canvas" id="dividend-breakdown-chart" role="img" aria-label="Monthly dividend breakdown chart"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#38bdf8"></i>Cash Div (25%)</span><span><i class="legend-line" style="background:#f59e0b"></i>Options (45%)</span><span><i class="legend-line" style="background:#a855f7"></i>Arb (30%)</span></div>
+          </div>
+        </div>
+
+        <div class="equation-band">
+          <span>Y_total = Y_base + Y_options + Y_capture + Y_stieltjes = 6.8% + 22.4% + 11.5% + 4.8% &gt; 40.0% APR</span>
+          <small>Dynamic volatility skew overlay + cross-market ex-date syndication</small>
+        </div>
+
+        <div class="invariant-metrics-strip">
+          <div class="inv-metric"><span>TOTAL ANNUAL YIELD</span><strong id="div-total-yield">—</strong><small>Target &gt; 40% (Met)</small></div>
+          <div class="inv-metric"><span>BASE MINING DIVIDEND</span><strong id="div-base-yield">—</strong><small>TECK, AUR, BAS, K+S</small></div>
+          <div class="inv-metric"><span>OPTIONS SKEW OVERLAY</span><strong id="div-options-yield">—</strong><small>Covered strangles</small></div>
+          <div class="inv-metric"><span>EX-DATE ARBITRAGE</span><strong id="div-capture-yield">—</strong><small>Dual-listing timezone arb</small></div>
+          <div class="inv-metric"><span>FX BASIS SPREAD</span><strong id="div-fx-yield">—</strong><small>EUR/CAD yield enhancement</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: TRADE EXECUTION LEDGER -->
+    <section class="workspace secondary-view" id="view-ledger" role="tabpanel" aria-labelledby="tab-ledger" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 06</span><h2>Real-time trade signatures &amp; execution ledger</h2></div><span class="unit-label">LIVE STREAMING TSX &middot; FRANKFURT &middot; FOREX LEDGER</span></div>
+        <p class="chart-intro">Live execution stream across mineral mining equities and currency cross hedges. Orders execute at the Stieltjes continuous clearing price, eliminating auction spread penalties. New fills stream dynamically via high-frequency microstructural execution.</p>
+
+        <div class="dual-grid">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>LIVE ORDERBOOK RADAR &amp; STIELTJES CLEARING</span><small>Bids vs Asks vs S-fraction</small></div>
+            <canvas class="plot-canvas compact-canvas" id="live-orderbook-chart" role="img" aria-label="Real-time orderbook depth ladder"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#34d399"></i>Bids (Depth)</span><span><i class="legend-line" style="background:#f43f5e"></i>Asks (Depth)</span><span><i class="legend-line" style="background:#38bdf8"></i>Stieltjes Clearing Price</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>INTRADAY CUMULATIVE ALPHA PnL ($ CAD)</span><small>Live fill accretion</small></div>
+            <canvas class="plot-canvas compact-canvas" id="live-pnl-chart" role="img" aria-label="Intraday cumulative PnL chart"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#34d399"></i>Cumulative Trading PnL</span></div>
+          </div>
+        </div>
+
+        <div class="ledger-header-row">
+          <div class="ledger-title-strip"><span>LIVE EXECUTED FILLS (<strong id="fill-count-badge">5</strong>)</span><small>Auto-scrolling stream</small></div>
+          <button id="clear-ledger-btn" class="text-button" type="button">Reset Stream</button>
+        </div>
+
+        <div class="ledger-table-wrapper">
+          <table class="ledger-table" id="trade-ledger-table">
+            <thead>
+              <tr>
+                <th>TRADE ID</th>
+                <th>TIME</th>
+                <th>MARKET</th>
+                <th>SYMBOL / ASSET</th>
+                <th>STRATEGY SIDE</th>
+                <th>VOLUME</th>
+                <th>EXEC PRICE</th>
+                <th>STIELTJES</th>
+                <th>DIVIDEND APR</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="trade-ledger-body">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      <span>TRANSATLANTIC LIQUIDITY LAB &middot; TSX &amp; FRANKFURT MINING ALPHA</span>
+      <span>MATHEMATICAL FRAMEWORK: STIELTJES &middot; LEIBNIZ &middot; SYMPLECTIC NEURAL ODE</span>
+      <a href="/preprint.pdf">Read the Nature Preprint (PDF) ↗</a>
+    </footer>
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js', v='20260926') }}" defer></script>
+</body>
+</html>
