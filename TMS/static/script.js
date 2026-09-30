@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Views
     const simulationView  = document.getElementById('simulation-view');
+    const strokeRepairView = document.getElementById('stroke-repair-view');
     const tremorView      = document.getElementById('tremor-view');
     const ocdView         = document.getElementById('ocd-view');
     const jcView          = document.getElementById('jc-view');
@@ -70,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView];
+    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -83,6 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Stroke Rehabilitation Optimization',
             subtitle: 'Dynamic rTMS Parameter Optimization via FEA/BEM for Motor Cortex',
             view:     simulationView, showRunBtn: true
+        },
+        'stroke-repair': {
+            title:    'Stroke Repair rTMS Staging Studio',
+            subtitle: 'Statistical recovery distributions · Continued-fraction synchronization · Finite long-term trajectories',
+            view:     strokeRepairView, showRunBtn: false
         },
         dementia: {
             title:    'Dementia Cognitive Enhancement',
@@ -221,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Lazy-load data
             if (tab === 'tremor'    && !tremorLoaded)          loadTremorData();
+            if (tab === 'stroke-repair')                       runStrokeRepair();
             if (tab === 'equipment' && !equipmentLoaded)       loadEquipment();
             if (tab === 'dementia-lt' && !dementiaLtLoaded)     loadDementiaLt();
             if (tab === 'dementia-dbs' && !dementiaDbsLoaded)   loadDementiaDbs();
@@ -2808,6 +2815,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (err) {
             console.error('Cybersecurity PQC API error:', err);
+        }
+    };
+
+    // ─────────────────────────────────────────────────────────────
+    // Stroke Repair rTMS Statistical Staging Suite
+    // ─────────────────────────────────────────────────────────────
+    let srDebounceTimer = null;
+    window.runStrokeRepairDebounced = function() {
+        clearTimeout(srDebounceTimer);
+        srDebounceTimer = setTimeout(runStrokeRepair, 60);
+    };
+
+    window.runStrokeRepair = async function() {
+        const baselineEl = document.getElementById('sr-baseline');
+        if (!baselineEl) return;
+        const params = new URLSearchParams({
+            baseline_fugl_meyer: baselineEl.value,
+            horizon_weeks: document.getElementById('sr-weeks').value,
+            galois_modulus: document.getElementById('sr-modulus').value,
+            cf_depth: document.getElementById('sr-depth').value,
+            closed_loop_gain: document.getElementById('sr-gain').value
+        });
+        const preprintBtn = document.getElementById('sr-preprint-btn');
+        if (preprintBtn) preprintBtn.href = `/api/stroke-repair-preprint?${params.toString()}`;
+
+        try {
+            const response = await fetch(`/api/stroke-repair-rtms?${params.toString()}`);
+            const result = await response.json();
+            if (!response.ok || result.status !== 'success') throw new Error(result.message || `HTTP ${response.status}`);
+            const d = result.data;
+            const el = id => document.getElementById(id);
+            el('sr-metric-final').textContent = `${d.kpis.final_adaptive_fugl_meyer.toFixed(1)} / 66`;
+            el('sr-metric-gain').textContent = `+${d.kpis.gain_vs_usual_care.toFixed(1)} points`;
+            el('sr-metric-error').textContent = d.kpis.cf_error.toExponential(2);
+
+            const layout = { paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', margin: { t: 24, b: 48, l: 52, r: 24 }, font: { color: '#c9d1d9', family: 'Inter' }, xaxis: { gridcolor: 'rgba(255,255,255,0.06)' }, yaxis: { gridcolor: 'rgba(255,255,255,0.06)' }, legend: { orientation: 'h', x: 0, y: -0.24, font: { size: 10 } } };
+            Plotly.react('sr-trajectory-chart', [
+                { x: d.weeks, y: d.trajectories.usual_care, name: 'Usual care', mode: 'lines', line: { color: '#64748b', dash: 'dot' } },
+                { x: d.weeks, y: d.trajectories.fixed_rtms, name: 'Fixed rTMS', mode: 'lines', line: { color: '#f97316' } },
+                { x: d.weeks, y: d.trajectories.adaptive_rtms, name: 'Adaptive staged rTMS', mode: 'lines', line: { color: '#34d399', width: 3 } },
+                { x: d.weeks.concat(d.weeks.slice().reverse()), y: d.distribution.adaptive_upper.concat(d.distribution.adaptive_lower.slice().reverse()), name: '95% model interval', mode: 'lines', fill: 'toself', fillcolor: 'rgba(52,211,153,0.14)', line: { color: 'transparent' }, hoverinfo: 'skip' }
+            ], { ...layout, xaxis: { ...layout.xaxis, title: 'Weeks after index event' }, yaxis: { ...layout.yaxis, title: 'Fugl-Meyer motor score' } }, { responsive: true, displaylogo: false });
+
+            Plotly.react('sr-stage-chart', [{ x: d.weeks, y: d.finite_states.stage_state, name: `Stage state mod ${d.finite_states.galois_modulus}`, mode: 'lines+markers', line: { color: '#38bdf8', shape: 'hv' }, marker: { size: 4 } }], { ...layout, xaxis: { ...layout.xaxis, title: 'Weeks' }, yaxis: { ...layout.yaxis, title: 'Finite state s(t)' } }, { responsive: true, displaylogo: false });
+
+            el('sr-stage-table').innerHTML = `<table style="width:100%; border-collapse:collapse; font-size:12px;"><thead><tr style="color:#94a3b8; border-bottom:1px solid rgba(255,255,255,0.15);"><th style="padding:8px; text-align:left;">Stage</th><th style="padding:8px;">Weeks</th><th style="padding:8px;">Hz</th><th style="padding:8px;">% MSO</th><th style="padding:8px;">Sessions/wk</th><th style="padding:8px;">CF sync</th></tr></thead><tbody>${d.stage_protocol.map(row => `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:8px; color:#34d399;">${row.stage}</td><td style="padding:8px; text-align:center;">${row.duration_weeks}</td><td style="padding:8px; text-align:center;">${row.frequency_hz}</td><td style="padding:8px; text-align:center;">${row.intensity_pct_mso}</td><td style="padding:8px; text-align:center;">${row.sessions_per_week}</td><td style="padding:8px; text-align:center; color:#c084fc;">${row.sync_fraction}</td></tr>`).join('')}</tbody></table>`;
+            el('sr-region-table').innerHTML = `<table style="width:100%; border-collapse:collapse; font-size:12px;"><thead><tr style="color:#94a3b8; border-bottom:1px solid rgba(255,255,255,0.15);"><th style="padding:8px; text-align:left;">Stage</th><th style="padding:8px; text-align:left;">Candidate region(s)</th><th style="padding:8px; text-align:left;">Neurovascular signature</th><th style="padding:8px; text-align:left;">Vascular readout</th><th style="padding:8px;">Elliptic gate</th></tr></thead><tbody>${d.stage_protocol.map(row => `<tr style="border-bottom:1px solid rgba(255,255,255,0.06);"><td style="padding:8px; color:#34d399;">${row.stage}</td><td style="padding:8px; color:#f8fafc;">${row.regions}</td><td style="padding:8px; color:#cbd5e1;">${row.signature}</td><td style="padding:8px; color:#38bdf8;">${row.vascular_marker}</td><td style="padding:8px; text-align:center; color:#fbbf24;">${row.elliptic_gate.toFixed(3)}</td></tr>`).join('')}</tbody></table>`;
+            const moduli = d.elliptic_moduli;
+            el('sr-moduli-card').innerHTML = `<div class="sa-metric-row"><span class="sa-metric-lbl">Modulus m</span><span class="sa-metric-val" style="color:#34d399;">${moduli.m.toFixed(3)}</span></div><div class="sa-metric-row"><span class="sa-metric-lbl">K(m)</span><span class="sa-metric-val">${moduli.K_m.toFixed(4)}</span></div><div class="sa-metric-row"><span class="sa-metric-lbl">Complement K(1-m)</span><span class="sa-metric-val">${moduli.K_1_minus_m.toFixed(4)}</span></div><div class="sa-metric-row"><span class="sa-metric-lbl">Elliptic nome q</span><span class="sa-metric-val" style="color:#c084fc;">${moduli.nome_q.toFixed(5)}</span></div><div class="sa-metric-row" style="border-bottom:none;"><span class="sa-metric-lbl">Base gate score</span><span class="sa-metric-val" style="color:#fbbf24;">${moduli.gate_score.toFixed(3)}</span></div>`;
+            el('sr-checkpoint-list').innerHTML = d.trajectory_checkpoints.map(point => `<div class="sa-metric-row"><span class="sa-metric-lbl">Week ${point.week} · ${point.stage}</span><span class="sa-metric-val" style="color:#38bdf8;">${point.adaptive_score.toFixed(1)} · gate ${point.vascular_gate.toFixed(2)}</span></div>`).join('');
+            el('sr-math-container').innerHTML = d.math_equations.map(eq => `<div style="background:rgba(5,11,20,0.8); border:1px solid rgba(16,185,129,0.15); border-radius:8px; padding:10px;"><div style="font-size:12px; font-weight:600; color:#34d399; margin-bottom:4px;">${eq.title}</div><div style="font-family:'Courier New', monospace; font-size:11px; color:#38bdf8; background:rgba(0,0,0,0.5); padding:6px 10px; border-radius:4px; overflow-x:auto;">${eq.latex}</div></div>`).join('');
+        } catch (err) {
+            console.error('Stroke repair rTMS API error:', err);
         }
     };
 

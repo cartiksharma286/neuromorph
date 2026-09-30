@@ -36,6 +36,7 @@ from logic.hifu_tms_dementia import simulate_hifu_tms_dementia
 from logic.cybersecurity_pqc import simulate_cybersecurity_trajectories
 from logic.dbs_pqc_vulnerability import optimize_dbs_pqc_vulnerability_assessment
 from logic.clinical_trajectories_benchmark import simulate_clinical_trajectories_benchmark
+from logic.stroke_repair_rtms import simulate_stroke_repair_rtms
 from logic.pharmacological_equivalence import simulate_pharmacological_equivalence
 from logic.nih_grant_budget_optimizer import optimize_nih_grant_budget
 
@@ -790,6 +791,46 @@ def clinical_trajectories_preprint():
         }
         build_pdf(output_path, sim_params=sim_params)
         return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Clinical_Trajectories_Superoptimal_Staging.pdf')
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/stroke-repair-rtms', methods=['GET', 'POST'])
+def api_stroke_repair_rtms():
+    """Return a research-only statistical stroke-repair rTMS staging simulation."""
+    try:
+        data = request.get_json(silent=True) or {}
+        result = simulate_stroke_repair_rtms(
+            baseline_fugl_meyer=float(request.args.get('baseline_fugl_meyer', data.get('baseline_fugl_meyer', 32.0))),
+            horizon_weeks=int(request.args.get('horizon_weeks', data.get('horizon_weeks', 52))),
+            galois_modulus=int(request.args.get('galois_modulus', data.get('galois_modulus', 13))),
+            cf_depth=int(request.args.get('cf_depth', data.get('cf_depth', 6))),
+            target_sync_ratio=float(request.args.get('target_sync_ratio', data.get('target_sync_ratio', 1.6180339887))),
+            closed_loop_gain=float(request.args.get('closed_loop_gain', data.get('closed_loop_gain', 1.35))),
+        )
+        return jsonify({'status': 'success', 'data': result})
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+
+
+@app.route('/api/stroke-repair-preprint', methods=['GET'])
+def stroke_repair_preprint():
+    """Generate and download the research-only stroke-repair rTMS preprint PDF."""
+    try:
+        from generate_nature_stroke_repair_preprint import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Stroke_Repair_rTMS_Finite_Staging.pdf')
+        sim_params = {
+            'baseline_fugl_meyer': float(request.args.get('baseline_fugl_meyer', 32.0)),
+            'horizon_weeks': int(request.args.get('horizon_weeks', 52)),
+            'galois_modulus': int(request.args.get('galois_modulus', 13)),
+            'cf_depth': int(request.args.get('cf_depth', 6)),
+            'target_sync_ratio': float(request.args.get('target_sync_ratio', 1.6180339887)),
+            'closed_loop_gain': float(request.args.get('closed_loop_gain', 1.35)),
+        }
+        build_pdf(output_path, sim_params=sim_params)
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Stroke_Repair_rTMS_Finite_Staging.pdf')
     except Exception as exc:
         import traceback
         traceback.print_exc()

@@ -60,6 +60,10 @@ a { color: inherit; }
 .pdf-link:hover { background: rgba(242, 139, 84, .12); }
 .hifu-link { border-color: rgba(45, 212, 191, .55); color: var(--cyan); }
 .hifu-link:hover { background: rgba(45, 212, 191, .15); }
+.relativity-link { border-color: rgba(56, 189, 248, .55); color: #7dd3fc; }
+.relativity-link:hover { background: rgba(56, 189, 248, .15); }
+.bigbang-link { border-color: rgba(251, 146, 60, .55); color: #fed7aa; }
+.bigbang-link:hover { background: rgba(251, 146, 60, .15); }
 .section-subheading { margin: 16px 0 10px; color: var(--cyan); font: 10px var(--mono); letter-spacing: .5px; }
 .pdf-link span:first-child { font-size: 15px; }
 

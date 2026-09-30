@@ -21,6 +21,12 @@
       <a class="pdf-link hifu-link" href="/hifu-preprint.pdf" title="Download the Nature HIFU Dementia Preprint PDF" aria-label="Download HIFU preprint PDF">
         <span aria-hidden="true">↓</span><span>HIFU DEMENTIA PDF</span>
       </a>
+      <a class="pdf-link relativity-link" href="/relativity-preprint.pdf" title="Download Special Relativity & CT Conebeam Preprint PDF" aria-label="Download Special Relativity Preprint PDF">
+        <span aria-hidden="true">↓</span><span>RELATIVITY PREPRINT PDF</span>
+      </a>
+      <a class="pdf-link bigbang-link" href="/big-bang-preprint.pdf" title="Download Big Bang Prime Moduli & Radiation Preprint PDF" aria-label="Download Big Bang Preprint PDF">
+        <span aria-hidden="true">↓</span><span>BIG BANG PREPRINT PDF</span>
+      </a>
     </div>
   </header>
 
@@ -41,6 +47,8 @@
       <button class="view-tab" id="tab-invariant" role="tab" aria-selected="false" aria-controls="view-invariant" data-view="invariant"><span>04</span> Invariant imaging</button>
       <button class="view-tab" id="tab-reconstruction" role="tab" aria-selected="false" aria-controls="view-reconstruction" data-view="reconstruction"><span>05</span> Image reconstruction</button>
       <button class="view-tab" id="tab-hifu" role="tab" aria-selected="false" aria-controls="view-hifu" data-view="hifu"><span>06</span> HIFU dementia care</button>
+      <button class="view-tab" id="tab-relativity" role="tab" aria-selected="false" aria-controls="view-relativity" data-view="relativity"><span>07</span> Relativity &amp; CT conebeam</button>
+      <button class="view-tab" id="tab-bigbang" role="tab" aria-selected="false" aria-controls="view-bigbang" data-view="bigbang"><span>08</span> Big bang &amp; prime moduli</button>
     </nav>
 
     <section class="workspace" id="view-hole" role="tabpanel" aria-labelledby="tab-hole">
@@ -114,6 +122,65 @@
           <label for="hifu_cycles">Sonication pulse cycles <output id="hifu_cycles-value">100</output></label>
           <input id="hifu_cycles" type="range" min="10" max="500" step="10" value="100">
           <div class="range-ends"><span>10 cycles</span><span>500 cycles</span></div>
+        </div>
+        <div class="control-divider"></div>
+        <div class="section-subheading"><span>SPECIAL RELATIVITY &amp; CT CONEBEAM</span></div>
+        <div class="control-group">
+          <label for="sr_energy">Particle kinetic energy <output id="sr_energy-value">45.0 GeV</output></label>
+          <input id="sr_energy" type="range" min="0.1" max="1000" step="0.5" value="45.0">
+          <div class="range-ends"><span>0.1 GeV</span><span>1000 GeV</span></div>
+        </div>
+        <div class="control-group">
+          <label for="sr_fork_gev">Fork threshold energy (E<sub>fork</sub>) <output id="sr_fork_gev-value">50.0 GeV</output></label>
+          <input id="sr_fork_gev" type="range" min="1.0" max="500" step="1.0" value="50.0">
+          <div class="range-ends"><span>1.0 GeV</span><span>500 GeV</span></div>
+        </div>
+        <div class="control-group">
+          <label for="sr_liv_coupling">Stieltjes LIV coupling (ξ) <output id="sr_liv_coupling-value">0.35</output></label>
+          <input id="sr_liv_coupling" type="range" min="0.0" max="1.0" step="0.01" value="0.35">
+          <div class="range-ends"><span>0 (pure SR)</span><span>1.0 (maximal fork)</span></div>
+        </div>
+        <div class="control-group">
+          <label for="cbct_kvp">Conebeam tube potential <output id="cbct_kvp-value">120 kVp</output></label>
+          <input id="cbct_kvp" type="range" min="60" max="160" step="1" value="120">
+          <div class="range-ends"><span>60 kVp</span><span>160 kVp</span></div>
+        </div>
+        <div class="control-group">
+          <label for="cbct_cone_angle">Cone beam half-angle (α) <output id="cbct_cone_angle-value">14°</output></label>
+          <input id="cbct_cone_angle" type="range" min="5" max="25" step="0.5" value="14">
+          <div class="range-ends"><span>5°</span><span>25°</span></div>
+        </div>
+        <div class="control-group">
+          <label for="cf_order">Stieltjes CF truncation (k) <output id="cf_order-value">6</output></label>
+          <input id="cf_order" type="range" min="2" max="10" step="1" value="6">
+          <div class="range-ends"><span>k = 2</span><span>k = 10</span></div>
+        </div>
+        <div class="control-divider"></div>
+        <div class="section-subheading"><span>BIG BANG &amp; QUANTUM PRIME MODULI</span></div>
+        <div class="control-group">
+          <label for="bb_prime_modulus">Prime modulus (p ∈ ℙ) <output id="bb_prime_modulus-value">p = 17</output></label>
+          <input id="bb_prime_modulus" type="range" min="2" max="61" step="1" value="17">
+          <div class="range-ends"><span>p = 2</span><span>p = 61</span></div>
+        </div>
+        <div class="control-group">
+          <label for="bb_inflation_efolds">Inflation scale (N e-folds) <output id="bb_inflation_efolds-value">60 N</output></label>
+          <input id="bb_inflation_efolds" type="range" min="40" max="80" step="1" value="60">
+          <div class="range-ends"><span>40 e-folds</span><span>80 e-folds</span></div>
+        </div>
+        <div class="control-group">
+          <label for="bb_pbh_mass_log">PBH mass log₁₀(M / g) <output id="bb_pbh_mass_log-value">11.0</output></label>
+          <input id="bb_pbh_mass_log" type="range" min="6" max="16" step="0.5" value="11">
+          <div class="range-ends"><span>10⁶ g</span><span>10¹⁶ g</span></div>
+        </div>
+        <div class="control-group">
+          <label for="bb_pbh_fraction">PBH abundance fraction (β) <output id="bb_pbh_fraction-value">0.04</output></label>
+          <input id="bb_pbh_fraction" type="range" min="0.001" max="0.15" step="0.005" value="0.04">
+          <div class="range-ends"><span>0.001</span><span>0.15</span></div>
+        </div>
+        <div class="control-group">
+          <label for="bb_quantum_coherence">Quantum coherence (ξ_Q) <output id="bb_quantum_coherence-value">0.65</output></label>
+          <input id="bb_quantum_coherence" type="range" min="0.1" max="1.0" step="0.05" value="0.65">
+          <div class="range-ends"><span>0.1 (decoherent)</span><span>1.0 (coherent)</span></div>
         </div>
         <p class="control-footnote">Sliders feed the displayed toy model only. No observational data are fitted.</p>
       </aside>
@@ -247,6 +314,90 @@
           <div class="inv-metric"><span>BBB PERMEABILITY RATIO</span><strong id="hifu-bbb-ratio">—</strong><small>Transient opening multiplier</small></div>
           <div class="inv-metric"><span>AMYLOID-β CLEARANCE</span><strong id="hifu-amyloid-clearance">—</strong><small>8-session cumulative</small></div>
           <div class="inv-metric"><span>REGIMEN SAFETY STATUS</span><strong id="hifu-regime-status">—</strong><small>Continuous feedback control</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace secondary-view" id="view-relativity" role="tabpanel" aria-labelledby="tab-relativity" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 07</span><h2>Special relativity speed of light, GeV fork &amp; CT conebeam reconstruction</h2></div><span class="unit-label">EXACT SOLUTIONS &amp; STIELTJES CONTINUED FRACTIONS</span></div>
+        <p class="chart-intro">Finite mathematical framework combining Special Relativity Lorentz boosts, solutions to Einstein's field equations, and high-energy dispersion bifurcations ("the fork in the road" in GeV). In parallel, poly-energetic CT conebeam (CBCT) projections are linearized and reconstructed using Stieltjes and Ramanujan continued fractions, eliminating beam hardening and cone-angle cupping artifacts.</p>
+
+        <div class="dual-grid">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>SPECIAL RELATIVISTIC SPEED &amp; GEV FORK IN THE ROAD</span><small>v/c vs Energy: Einstein SR baseline vs Stieltjes LIV bifurcation</small></div>
+            <canvas class="plot-canvas compact-canvas" id="sr-fork-chart" role="img" aria-label="Relativistic velocity and bifurcation fork in terms of GeV"></canvas>
+            <div class="legend"><span><i class="legend-line baseline-line"></i>Einstein SR baseline v(E)</span><span><i class="legend-line" style="background:#38bdf8"></i>Superluminal branch</span><span><i class="legend-line toy-line"></i>Subluminal LIV fork</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>CT CONEBEAM LINE PROFILE &amp; STIELTJES RESTORATION</span><small>20 cm phantom Hounsfield Units across detector channels</small></div>
+            <canvas class="plot-canvas compact-canvas" id="cbct-profile-chart" role="img" aria-label="Conebeam CT radial profile showing beam hardening cupping versus Stieltjes continued fraction restoration"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#4ade80"></i>Ground truth (0 HU / 950 HU)</span><span><i class="legend-line toy-line"></i>Uncorrected cupping artifact</span><span><i class="legend-line baseline-line"></i>Stieltjes-Ramanujan CF restored</span></div>
+          </div>
+        </div>
+
+        <div class="dual-grid" style="margin-top:14px;">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>RELATIVISTIC MAXWELL-JÜTTNER STATISTICAL DISTRIBUTION</span><small>Dimensionless energy density f(γ) with finite moments</small></div>
+            <canvas class="plot-canvas compact-canvas" id="maxwell-juttner-chart" role="img" aria-label="Relativistic Maxwell-Juttner probability distribution"></canvas>
+            <div class="legend"><span><i class="legend-line baseline-line"></i>f(γ) density</span><span><i class="legend-line toy-line"></i>Mean energy ⟨γ⟩</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>STIELTJES CONTINUED FRACTION ERROR REDUCTION</span><small>Asymptotic convergence rate: Padé CF vs Taylor polynomial</small></div>
+            <canvas class="plot-canvas compact-canvas" id="stieltjes-convergence-chart" role="img" aria-label="Logarithmic error convergence of Stieltjes continued fractions compared to standard polynomials"></canvas>
+            <div class="legend"><span><i class="legend-line baseline-line"></i>Stieltjes CF error</span><span><i class="legend-line toy-line"></i>Standard Taylor error</span></div>
+          </div>
+        </div>
+
+        <div class="invariant-metrics-strip">
+          <div class="inv-metric"><span>LORENTZ FACTOR γ(E)</span><strong id="sr-gamma">—</strong><small>E_tot / m₀c²</small></div>
+          <div class="inv-metric"><span>SPEED DEFICIT (c − v)</span><strong id="sr-speed-deficit">—</strong><small>m/s below lightspeed</small></div>
+          <div class="inv-metric"><span>GEV FORK THRESHOLD</span><strong id="sr-fork-threshold">—</strong><small>Bifurcation energy E_fork</small></div>
+          <div class="inv-metric"><span>CBCT CUPPING ARTIFACT</span><strong id="cbct-hu-error">—</strong><small>Peak uncorrected ΔHU</small></div>
+          <div class="inv-metric"><span>STIELTJES ORDER (k)</span><strong id="sr-cf-order">—</strong><small>Continued fraction depth</small></div>
+          <div class="inv-metric"><span>BIFURCATION SPLIT (Δv)</span><strong id="sr-bifurcation-delta">—</strong><small>v_sup − v_sub (m/s)</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace secondary-view" id="view-bigbang" role="tabpanel" aria-labelledby="tab-bigbang" hidden>
+      <div class="chart-section">
+        <div class="figure-head"><div><span class="figure-index">FIG. 08</span><h2>Big bang emergence, prime moduli regularization &amp; black hole radiation</h2></div><span class="unit-label">FINITE GALOIS ARITHMETIC &amp; QUANTUM COSMOLOGY</span></div>
+        <p class="chart-intro">Finite mathematical framework resolving the initial Big Bang singularity through Galois fields ℤ<sub>p</sub> indexed by prime moduli p ∈ ℙ. Singular infinite curvature is regularized into discrete bounded residue classes K<sub>k</sub> ≡ (k³ + 7k + 5) (mod p). The quantum cosmic inception is governed by the Wheeler-DeWitt wavefunction |Ψ(a)|², coupled to the primordial black hole (PBH) Hawking radiation evaporation burst dM/dt = −α/M² across cosmic history from Planck time to recombination.</p>
+
+        <div class="dual-grid">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>COSMIC EXPANSION &amp; AMBIENT RADIATION TEMPERATURE</span><small>Scale factor a(t) and cooling T<sub>γ</sub>(t) from Planck era (10⁻⁴³ s) to Recombination (10¹³ s)</small></div>
+            <canvas class="plot-canvas compact-canvas" id="bb-cosmic-evolution-chart" role="img" aria-label="Cosmic evolution timeline showing scale factor expansion and ambient radiation temperature cooling"></canvas>
+            <div class="legend"><span><i class="legend-line baseline-line"></i>Log scale factor log₁₀ a(t)</span><span><i class="legend-line toy-line"></i>Radiation temp log₁₀ T<sub>γ</sub> (K)</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>PRIMORDIAL BLACK HOLE HAWKING RADIATION EVAPORATION</span><small>Normalized mass decay M(t)/M₀ and explosive burst luminosity P(t)</small></div>
+            <canvas class="plot-canvas compact-canvas" id="bb-hawking-radiation-chart" role="img" aria-label="PBH Hawking mass decay and explosive runaway luminosity burst"></canvas>
+            <div class="legend"><span><i class="legend-line" style="background:#38bdf8"></i>PBH mass fraction M(t)/M₀</span><span><i class="legend-line" style="background:#f43f5e"></i>Hawking burst power log₁₀ P(t)</span></div>
+          </div>
+        </div>
+
+        <div class="dual-grid" style="margin-top:14px;">
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>FINITE MATH PRIME MODULI SINGULARITY REGULARIZATION</span><small>Discrete curvature invariant K<sub>k</sub> ≡ (k³ + 7k + 5) (mod p) across Galois field ℤ<sub>p</sub></small></div>
+            <canvas class="plot-canvas compact-canvas" id="bb-prime-moduli-chart" role="img" aria-label="Discrete prime modular curvature lattice avoiding continuum singularity"></canvas>
+            <div class="legend"><span><i class="legend-line baseline-line"></i>Curvature residue K<sub>k</sub> mod p</span><span><i class="legend-line" style="background:#fcd34d"></i>Singularity bound p−1</span></div>
+          </div>
+          <div class="dual-chart-card">
+            <div class="chart-subhead"><span>WHEELER-DEWITT QUANTUM WAVEFUNCTION &amp; HAWKING SPECTRUM</span><small>Wavefunction probability |Ψ(a)|² and particle burst energy distribution</small></div>
+            <canvas class="plot-canvas compact-canvas" id="bb-quantum-spectrum-chart" role="img" aria-label="Wheeler-DeWitt quantum probability density and Hawking burst emission energy spectrum"></canvas>
+            <div class="legend"><span><i class="legend-line baseline-line"></i>Wavefunction |Ψ(a)|²</span><span><i class="legend-line" style="background:#fb923c"></i>Hawking emission spectrum dN/dE</span></div>
+          </div>
+        </div>
+
+        <div class="invariant-metrics-strip">
+          <div class="inv-metric"><span>PLANCK FINITE CURVATURE</span><strong id="bb-planck-density">—</strong><small>K₀ (mod p) bounded</small></div>
+          <div class="inv-metric"><span>HAWKING BURST TEMP</span><strong id="bb-hawking-temp">—</strong><small>T_H peak (GeV)</small></div>
+          <div class="inv-metric"><span>PBH LIFETIME (τ)</span><strong id="bb-pbh-lifetime">—</strong><small>Evaporation epoch</small></div>
+          <div class="inv-metric"><span>INFLATION EXPANSION</span><strong id="bb-inflation-expansion">—</strong><small>Scale factor e^N</small></div>
+          <div class="inv-metric"><span>RECOMBINATION EPOCH</span><strong id="bb-recombination-z">—</strong><small>CMB decoupling</small></div>
+          <div class="inv-metric"><span>QUANTUM ENTROPY</span><strong id="bb-entropy-bound">—</strong><small>Horizon Bekenstein bound</small></div>
         </div>
       </div>
     </section>

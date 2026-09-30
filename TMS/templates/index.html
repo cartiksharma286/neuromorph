@@ -20,6 +20,9 @@
                 <button class="nav-btn active" data-tab="stroke">
                     <span class="icon">🧠</span> Stroke Care
                 </button>
+                <button class="nav-btn" data-tab="stroke-repair">
+                    <span class="icon">📈</span> Stroke Repair rTMS
+                </button>
                 <button class="nav-btn" data-tab="dementia">
                     <span class="icon">🌀</span> Dementia Care
                 </button>
@@ -1828,6 +1831,45 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- ── Stroke Repair rTMS Statistical Staging Suite ── -->
+            <div id="stroke-repair-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <span style="font-size:12px; color:#8b949e; background:rgba(255,255,255,0.05); padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">
+                        Research simulation only · Statistical distributions · Continued-fraction staging · Long-term trajectory
+                    </span>
+                    <a id="sr-preprint-btn" href="/api/stroke-repair-preprint" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #0f766e, #155e75); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600;">
+                        <span>📥 Download Stroke Repair Nature Preprint (PDF)</span>
+                    </a>
+                </div>
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel" style="display:flex; flex-direction:column; gap:16px;">
+                        <h3>Staging Parameters</h3>
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group"><div class="sa-slider-header"><span>Baseline Fugl-Meyer Score</span><span id="label-sr-baseline" class="sa-slider-val" style="color:#38bdf8;">32</span></div><input type="range" id="sr-baseline" min="10" max="60" step="1" value="32" oninput="document.getElementById('label-sr-baseline').textContent=this.value; runStrokeRepairDebounced();" class="sa-slider-input"></div>
+                            <div class="sa-slider-group"><div class="sa-slider-header"><span>Longitudinal Horizon</span><span id="label-sr-weeks" class="sa-slider-val" style="color:#34d399;">52 Wks</span></div><input type="range" id="sr-weeks" min="12" max="104" step="4" value="52" oninput="document.getElementById('label-sr-weeks').textContent=this.value+' Wks'; runStrokeRepairDebounced();" class="sa-slider-input"></div>
+                            <div class="sa-slider-group"><div class="sa-slider-header"><span>Finite Modulus p</span><span id="label-sr-modulus" class="sa-slider-val" style="color:#fbbf24;">p = 13</span></div><input type="range" id="sr-modulus" min="3" max="31" step="2" value="13" oninput="document.getElementById('label-sr-modulus').textContent='p = '+this.value; runStrokeRepairDebounced();" class="sa-slider-input"></div>
+                            <div class="sa-slider-group"><div class="sa-slider-header"><span>Continued Fraction Depth</span><span id="label-sr-depth" class="sa-slider-val" style="color:#c084fc;">6 Terms</span></div><input type="range" id="sr-depth" min="3" max="10" step="1" value="6" oninput="document.getElementById('label-sr-depth').textContent=this.value+' Terms'; runStrokeRepairDebounced();" class="sa-slider-input"></div>
+                            <div class="sa-slider-group"><div class="sa-slider-header"><span>Closed-loop Gain</span><span id="label-sr-gain" class="sa-slider-val" style="color:#fb7185;">1.35</span></div><input type="range" id="sr-gain" min="0.4" max="2.5" step="0.05" value="1.35" oninput="document.getElementById('label-sr-gain').textContent=parseFloat(this.value).toFixed(2); runStrokeRepairDebounced();" class="sa-slider-input"></div>
+                        </div>
+                        <div class="sa-control-box">
+                            <div class="sa-metric-row"><span class="sa-metric-lbl">Final adaptive score</span><span id="sr-metric-final" class="sa-metric-val" style="color:#34d399;">...</span></div>
+                            <div class="sa-metric-row"><span class="sa-metric-lbl">Gain vs usual care</span><span id="sr-metric-gain" class="sa-metric-val" style="color:#38bdf8;">...</span></div>
+                            <div class="sa-metric-row" style="border-bottom:none;"><span class="sa-metric-lbl">CF approximation error</span><span id="sr-metric-error" class="sa-metric-val" style="color:#c084fc;">...</span></div>
+                        </div>
+                    </div>
+                    <div class="panel glass-panel large-panel"><h3>Distributional Motor-Recovery Trajectories</h3><p style="color:#8b949e; font-size:12px;">Illustrative mean and 95% model interval; not patient-specific confidence intervals.</p><div id="sr-trajectory-chart" class="chart-container" style="min-height:360px;"></div></div>
+                </div>
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel"><h3>Finite Stage State and Continued-Fraction Sync</h3><div id="sr-stage-chart" class="chart-container" style="min-height:300px;"></div></div>
+                    <div class="panel glass-panel"><h3>Optimal Staging Protocol</h3><div id="sr-stage-table" style="overflow-x:auto;"></div></div>
+                </div>
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel large-panel"><h3>Neurovascular Target Map</h3><p style="color:#8b949e; font-size:12px;">Stage targets are hypothesis-generating regions to review against individual MRI, ASL-CBF, MRA and cerebrovascular-reactivity findings.</p><div id="sr-region-table" style="overflow-x:auto;"></div></div>
+                    <div class="panel glass-panel"><h3>Elliptic-Moduli Gate</h3><div id="sr-moduli-card" class="sa-control-box"></div><h3 style="margin-top:16px;">Long-Term Repair Checkpoints</h3><div id="sr-checkpoint-list"></div></div>
+                </div>
+                <div class="panel glass-panel" style="background:rgba(16,185,129,0.03); border:1px solid rgba(16,185,129,0.2);"><h3>Finite Mathematical Equations</h3><div id="sr-math-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div><p style="font-size:11px;color:#fbbf24;margin-top:12px;">Model outputs are hypothesis-generating and require clinical validation. They are not treatment instructions.</p></div>
             </div>
 
             <!-- ── Clinical Trajectories & Superoptimal DBS/TMS Benchmark Suite ── -->

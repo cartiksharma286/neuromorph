@@ -74,7 +74,11 @@ def _compute_stieltjes_fractions(volatility: float, ore_momentum: float) -> dict
     for bp in range(-30, 31):
         s = bp / 10.0
         # Stieltjes impedance function
-        denom = 1.0 + coeffs[1] * s / (1.0 + coeffs[2] * s / (1.0 + max(0.01, coeffs[3]) * abs(s)))
+        innermost_denom = 1.0 + max(0.01, coeffs[3]) * abs(s)
+        intermediate_denom = 1.0 + coeffs[2] * s / innermost_denom
+        if abs(intermediate_denom) < 1e-6:
+            intermediate_denom = math.copysign(1e-6, intermediate_denom or 1.0)
+        denom = 1.0 + coeffs[1] * s / intermediate_denom
         stieltjes_liquidity = coeffs[0] / max(0.05, abs(denom))
         # Standard auction orderbook depth (cuts off outside auction tick bounds)
         auction_depth = max(0.0, 1.0 - abs(bp) / 22.0)
