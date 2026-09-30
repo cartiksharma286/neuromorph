@@ -28,6 +28,7 @@ from dental_robot_surgery.kinematics_biomarkers import DentalArchKinematicsAndBi
 from dental_robot_surgery.generate_nature_pdf import generate_dental_robot_nature_pdf
 from dental_robot_surgery.quantum_kalman_slam import QuantumKalmanSLAM
 from dental_robot_surgery.implant_fea_robotics import ImplantFEAAndRoboticsEngine
+from dental_robot_surgery.health_economics import HealthEconomicsAndRevenueEngine
 
 app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'), static_folder=os.path.join(BASE_DIR, 'static'))
 
@@ -39,6 +40,7 @@ implant_designer = GenAIImplantAbutmentDesigner()
 biomarkers_engine = DentalArchKinematicsAndBiomarkers()
 qkf_slam_engine = QuantumKalmanSLAM()
 fea_robotics_engine = ImplantFEAAndRoboticsEngine()
+health_econ_engine = HealthEconomicsAndRevenueEngine()
 
 PDF_PATH = os.path.join(PARENT_DIR, 'Nature_Dental_Image_Guided_Surgery_Robot_Preprint.pdf')
 
@@ -59,6 +61,7 @@ def get_system_status():
             "genai_chamfers": "LOADED (ISO 14801 Verified)",
             "implant_fea": "ACTIVE (Frost Mechanostat & Multi-Thread FEA)",
             "manipulators_serial_parallel": "READY (Serial 6-DOF & Parallel Hexapod Sim)",
+            "health_economics": "OPTIMIZED (Valuation >$1B at Month 21, Revenue >$1B at Month 64)",
             "dental_arch_kinematics": "TRACKING (ISQ: 78.0)"
         },
         "pdf_available": os.path.exists(PDF_PATH)
@@ -112,6 +115,15 @@ def get_implant_fea():
     angle_deg = float(payload.get('load_angle_deg', 15.0))
     fea_data = fea_robotics_engine.compute_implant_fea(design_key=design_key, load_n=load_n, load_angle_deg=angle_deg)
     return jsonify(fea_data)
+
+@app.route('/api/economics/projections', methods=['POST', 'GET'])
+def get_health_economics_projections():
+    if request.method == 'POST':
+        payload = request.get_json() or {}
+    else:
+        payload = {}
+    data = health_econ_engine.simulate_10_year_trajectory(custom_inputs=payload)
+    return jsonify(data)
 
 @app.route('/api/robot/joints', methods=['GET'])
 def get_robot_joints():

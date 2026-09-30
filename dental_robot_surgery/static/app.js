@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     generateImplantModel();
     loadImplantFea();
     loadManipulatorSim();
+    loadHealthEconomics();
     loadBiomarkers();
 });
 
@@ -887,7 +888,198 @@ function renderManipulatorCanvas(data) {
     ctx.fillText(`Deflect: ${data.parallel_hexapod.tooltip_deflection_um} μm (5.1× Stiff)`, rightOffset + 70, h - 10);
 }
 
-// --- 6. PDF Generation & Toast ---
+// --- 6. Health Economics & >$1B Enterprise Valuation ---
+async function loadHealthEconomics() {
+    const procsMonth = parseFloat(document.getElementById('econProcsPerMonth').value) || 18.0;
+    const sysPriceK = parseFloat(document.getElementById('econSystemPrice').value) || 280.0;
+
+    try {
+        const res = await fetch('/api/economics/projections', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                avg_procedures_per_robot_month: procsMonth,
+                initial_system_price: sysPriceK * 1000.0
+            })
+        });
+        const d = await res.json();
+
+        // Practice & Clinical Level
+        document.getElementById('econPayback').innerText = `${d.practice_level_roi.payback_period_months} Months`;
+        document.getElementById('econPractice5Yr').innerText = `$${(d.practice_level_roi['5_year_practice_net_benefit_usd'] / 1000.0).toFixed(0)}k`;
+        
+        const yr10Clinical = d.inflection_points.year_10_terminal_state;
+        document.getElementById('econPayerSavings').innerText = `$${(d.annual_projections.reduce((acc, y) => acc + y.clinical_outcomes.payer_savings_m, 0)).toFixed(1)}M`;
+        document.getElementById('econIcer').innerText = `$${d.annual_projections[4].clinical_outcomes.icer_usd_per_qaly.toFixed(0)} / QALY`;
+
+        // Inflection Points
+        const valInf = d.inflection_points.valuation_inflection_point;
+        const revInf = d.inflection_points.revenue_inflection_point;
+        document.getElementById('inflectionValTime').innerText = `${valInf.display}`;
+        document.getElementById('inflectionRevTime').innerText = `${revInf.display}`;
+
+        // Enterprise Valuations
+        document.getElementById('year10Valuation').innerText = `$${yr10Clinical.year_10_enterprise_valuation_b} Billion`;
+        document.getElementById('dcfValuation').innerText = `$${d.dcf_valuation.total_dcf_enterprise_value_b} Billion`;
+        document.getElementById('cum10YrRev').innerText = `$${yr10Clinical.cumulative_10yr_revenue_b} Billion`;
+        document.getElementById('cumQalys').innerText = yr10Clinical.year_10_cumulative_qalys_gained.toLocaleString();
+
+        renderRevenueStreamsChart(d.annual_projections);
+        renderValuationCurveChart(d.annual_projections, valInf, revInf);
+    } catch (err) {
+        console.error("Health economics load error:", err);
+    }
+}
+
+function renderRevenueStreamsChart(annualData) {
+    const canvas = document.getElementById('revenueStreamsCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#060910';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const n = annualData.length;
+    const barWidth = 26;
+    const maxRev = annualData[n - 1].gross_revenue_m; // Peak revenue ~3800M
+
+    // Draw grid
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 0.5;
+    for (let y = 25; y < h - 35; y += 30) {
+        ctx.beginPath();
+        ctx.moveTo(35, y);
+        ctx.lineTo(w - 15, y);
+        ctx.stroke();
+    }
+
+    // Stacked Bars per Year
+    annualData.forEach((item, idx) => {
+        const x = 45 + (idx / (n - 1)) * (w - 90);
+        const totalHeight = (item.gross_revenue_m / maxRev) * (h - 70);
+        let curY = (h - 35);
+
+        // Hardware (Blue)
+        const hwH = (item.revenue_streams.hardware_m / maxRev) * (h - 70);
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(x - barWidth/2, curY - hwH, barWidth, hwH);
+        curY -= hwH;
+
+        // Consumables / Kits (Emerald)
+        const kitH = (item.revenue_streams.kits_consumables_m / maxRev) * (h - 70);
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(x - barWidth/2, curY - kitH, barWidth, kitH);
+        curY -= kitH;
+
+        // SaaS & AI CAD (Purple)
+        const saasH = ((item.revenue_streams.saas_cloud_slam_m + item.revenue_streams.genai_abutment_m) / maxRev) * (h - 70);
+        ctx.fillStyle = '#a855f7';
+        ctx.fillRect(x - barWidth/2, curY - saasH, barWidth, saasH);
+        curY -= saasH;
+
+        // Service & Warranty (Amber)
+        const servH = (item.revenue_streams.service_warranty_m / maxRev) * (h - 70);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(x - barWidth/2, curY - servH, barWidth, servH);
+
+        // Year label
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '9px JetBrains Mono';
+        ctx.fillText(`Y${item.year}`, x - 8, h - 18);
+        if (item.year % 2 === 0 || item.year === 1) {
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText(`$${(item.gross_revenue_m / 1000).toFixed(1)}B`, x - 12, h - 38 - totalHeight);
+        }
+    });
+
+    // Legend
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillStyle = '#0284c7'; ctx.fillText('■ Hardware', 40, 15);
+    ctx.fillStyle = '#10b981'; ctx.fillText('■ Consumables', 125, 15);
+    ctx.fillStyle = '#a855f7'; ctx.fillText('■ SaaS/AI', 225, 15);
+    ctx.fillStyle = '#f59e0b'; ctx.fillText('■ Service', 300, 15);
+}
+
+function renderValuationCurveChart(annualData, valInflection, revInflection) {
+    const canvas = document.getElementById('valuationCurveCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#060910';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const n = annualData.length;
+    const maxValB = annualData[n - 1].enterprise_valuation_b; // Peak valuation ~$49B
+
+    // Draw horizontal $1 Billion Benchmark line
+    const y1B = (h - 35) - (1.0 / maxValB) * (h - 65);
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.7)';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(35, y1B);
+    ctx.lineTo(w - 15, y1B);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#ef4444';
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText('$1.0 Billion Inflection Threshold', 45, y1B - 4);
+
+    // 1. Enterprise Valuation Curve (Emerald Green)
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    annualData.forEach((item, idx) => {
+        const x = 45 + (idx / (n - 1)) * (w - 90);
+        const y = (h - 35) - (item.enterprise_valuation_b / maxValB) * (h - 65);
+        if (idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // 2. Annual Gross Revenue Curve (Cyan)
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    annualData.forEach((item, idx) => {
+        const x = 45 + (idx / (n - 1)) * (w - 90);
+        const y = (h - 35) - ((item.gross_revenue_m / 1000.0) / maxValB) * (h - 65);
+        if (idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Inflection Point Markers
+    // Point 1: $1B Valuation (Year ~1.77)
+    const xValInf = 45 + ((valInflection.year_fraction - 1) / (n - 1)) * (w - 90);
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath();
+    ctx.arc(xValInf, y1B, 5.5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillText('★ $1B EV (Mo 21)', xValInf - 35, y1B + 16);
+
+    // Point 2: $1B Revenue (Year ~5.35)
+    const xRevInf = 45 + ((revInflection.year_fraction - 1) / (n - 1)) * (w - 90);
+    ctx.fillStyle = '#a855f7';
+    ctx.beginPath();
+    ctx.arc(xRevInf, y1B, 5.5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillText('★ $1B Rev (Mo 64)', xRevInf - 35, y1B + 28);
+
+    // Axis labels
+    annualData.forEach((item, idx) => {
+        const x = 45 + (idx / (n - 1)) * (w - 90);
+        ctx.fillStyle = '#64748b';
+        ctx.font = '9px JetBrains Mono';
+        ctx.fillText(`Y${item.year}`, x - 8, h - 18);
+    });
+
+    ctx.fillStyle = '#10b981'; ctx.fillText('■ Enterprise Valuation ($B)', 40, 15);
+    ctx.fillStyle = '#38bdf8'; ctx.fillText('■ Annual Revenue ($B)', 240, 15);
+}
+
+// --- 7. PDF Generation & Toast ---
 async function generatePdf() {
     showToast("Recompiling Nature Preprint PDF...");
     try {

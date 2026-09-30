@@ -48,7 +48,8 @@
             <button class="tab-btn" onclick="switchTab('genai')">4. GenAI Chamfers &amp; Abutment</button>
             <button class="tab-btn" onclick="switchTab('fea_robotics')">5. FEA &amp; Serial/Parallel Arms</button>
             <button class="tab-btn" onclick="switchTab('biomarkers')">6. Arch Kinematics &amp; Biomarkers</button>
-            <button class="tab-btn" onclick="switchTab('preprint')">7. Nature Preprint Overview</button>
+            <button class="tab-btn" onclick="switchTab('health_economics')">7. Health Economics &amp; >$1B Valuation</button>
+            <button class="tab-btn" onclick="switchTab('preprint')">8. Nature Preprint Overview</button>
         </nav>
 
         <!-- Main Content Grid -->
@@ -506,7 +507,106 @@ L_p(t) = ∑ [(-1)^k / (2k+1)] · exp(-γt / p_k) · cos(2π·p_k·t / 13)</pre>
                 </div>
             </section>
 
-            <!-- TAB 6: Nature Preprint Overview -->
+            <!-- TAB 7: Health Economics & >$1B Valuation Inflection -->
+            <section id="tab-health_economics" class="tab-content">
+                <div class="panel-row">
+                    <!-- Left: Spend Economics, Revenue Streams, & Practice Payback -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Clinical Spend Economics &amp; Practice Payback Model</h2>
+                            <div class="controls-row">
+                                <label>Procedures/Month:
+                                    <input type="number" id="econProcsPerMonth" value="18" min="5" max="60" step="1" onchange="loadHealthEconomics()">
+                                </label>
+                                <label>System Price ($k):
+                                    <input type="number" id="econSystemPrice" value="280" min="150" max="450" step="10" onchange="loadHealthEconomics()">
+                                </label>
+                            </div>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Practice Payback Period</span>
+                                <span class="metric-val text-success" id="econPayback">9.4 Months</span>
+                                <span class="metric-sub">Net Monthly Gain: $10,845</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">5-Year Practice Net ROI</span>
+                                <span class="metric-val text-info" id="econPractice5Yr">$684,000</span>
+                                <span class="metric-sub">Net Margin: +244%</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Hospital Payer Savings (10-Yr)</span>
+                                <span class="metric-val text-purple" id="econPayerSavings">$428.5M</span>
+                                <span class="metric-sub">IAN Paresthesia Avoided: 98.2%</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">ICER Cost / QALY</span>
+                                <span class="metric-val text-success" id="econIcer">-$840 / QALY</span>
+                                <span class="metric-sub">Dominant (Cost-Saving &amp; Efficacious)</span>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>10-Year Annual Revenue Stream Disaggregation ($M)</h4>
+                            <canvas id="revenueStreamsCanvas" width="500" height="190"></canvas>
+                        </div>
+                        <div class="info-card mt-2">
+                            <h4>Manufacturing Learning Curve &amp; Wright's Law Formulation</h4>
+                            <pre class="code-block">C(N) = C_1 · N^(log_2(r_learning)),   r = 0.82 (18% drop / doubling)
+COGS decreases from $115,000 (unit #1) to $63,250 (unit #3,000+)</pre>
+                        </div>
+                    </div>
+
+                    <!-- Right: >$1 Billion Enterprise Valuation & Dual Inflection Points -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Enterprise Valuation &gt;$1 Billion &amp; Dual Inflection Points</h2>
+                            <button class="btn btn-sm btn-primary" onclick="loadHealthEconomics()">Recompute Valuations</button>
+                        </div>
+                        <div class="inflection-highlight-box mb-2">
+                            <div class="inflection-badge-row">
+                                <div class="badge-card highlight-glow">
+                                    <span class="badge-title">★ INFLECTION POINT 1: $1 BILLION VALUATION</span>
+                                    <span class="badge-big text-success" id="inflectionValTime">Month 21 (Year 1.77)</span>
+                                    <span class="badge-desc">Installed Base: <strong>450 Robots</strong> | EV Multiple: 11.5×</span>
+                                </div>
+                                <div class="badge-card highlight-purple-glow">
+                                    <span class="badge-title">★ INFLECTION POINT 2: $1 BILLION REVENUE</span>
+                                    <span class="badge-big text-purple" id="inflectionRevTime">Month 64 (Year 5.35)</span>
+                                    <span class="badge-desc">Installed Base: <strong>3,289 Robots</strong> | EV: <strong>$11.50 Billion</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metrics-grid mt-2">
+                            <div class="metric-card">
+                                <span class="metric-label">Year 10 Enterprise Value</span>
+                                <span class="metric-val text-success" id="year10Valuation">$49.03 Billion</span>
+                                <span class="metric-sub">Annual Revenue: $3.80 Billion</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">DCF Enterprise Valuation</span>
+                                <span class="metric-val text-info" id="dcfValuation">$9.13 Billion</span>
+                                <span class="metric-sub">WACC: 10.5% | Perpetuity g: 3.5%</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">10-Year Cumulative Revenue</span>
+                                <span class="metric-val text-purple" id="cum10YrRev">$14.33 Billion</span>
+                                <span class="metric-sub">Razor-and-Blade Consumables: 62%</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Cumulative QALYs Gained</span>
+                                <span class="metric-val text-success" id="cumQalys">1,975,509</span>
+                                <span class="metric-sub">Revisions Avoided: 572,212</span>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>Enterprise Valuation ($B) vs. Annual Gross Revenue ($B) Trajectory</h4>
+                            <canvas id="valuationCurveCanvas" width="500" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 8: Nature Preprint Overview -->
             <section id="tab-preprint" class="tab-content">
                 <div class="preprint-preview-card">
                     <div class="preprint-header">
