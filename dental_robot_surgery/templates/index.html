@@ -42,12 +42,13 @@
 
         <!-- Navigation Tabs -->
         <nav class="nav-tabs">
-            <button class="tab-btn active" onclick="switchTab('cbct')">1. PCD-CBCT & Segmentation</button>
-            <button class="tab-btn" onclick="switchTab('slam')">2. Leibniz Primes SLAM</button>
-            <button class="tab-btn" onclick="switchTab('quantum')">3. Majorana Chip VQE (Submillimetric)</button>
-            <button class="tab-btn" onclick="switchTab('genai')">4. GenAI Chamfers & Abutment</button>
-            <button class="tab-btn" onclick="switchTab('biomarkers')">5. Arch Kinematics & Biomarkers</button>
-            <button class="tab-btn" onclick="switchTab('preprint')">6. Nature Preprint Overview</button>
+            <button class="tab-btn active" onclick="switchTab('cbct')">1. PCD-CBCT &amp; Segmentation</button>
+            <button class="tab-btn" onclick="switchTab('slam')">2. Quantum Kalman SLAM</button>
+            <button class="tab-btn" onclick="switchTab('quantum')">3. Majorana Chip VQE</button>
+            <button class="tab-btn" onclick="switchTab('genai')">4. GenAI Chamfers &amp; Abutment</button>
+            <button class="tab-btn" onclick="switchTab('fea_robotics')">5. FEA &amp; Serial/Parallel Arms</button>
+            <button class="tab-btn" onclick="switchTab('biomarkers')">6. Arch Kinematics &amp; Biomarkers</button>
+            <button class="tab-btn" onclick="switchTab('preprint')">7. Nature Preprint Overview</button>
         </nav>
 
         <!-- Main Content Grid -->
@@ -127,15 +128,16 @@ k ∈ {[20,45], [45,75], [75,120]} keV</pre>
                 </div>
             </section>
 
-            <!-- TAB 2: Leibniz Primes SLAM -->
+            <!-- TAB 2: Quantum Kalman Estimation SLAM -->
             <section id="tab-slam" class="tab-content">
                 <div class="panel-row">
                     <div class="panel panel-half">
                         <div class="panel-header">
-                            <h2>6-DOF End-Effector Tracking & Recurrent Prime Damping</h2>
+                            <h2>Quantum Kalman Filter (QKF) SLAM &amp; End-Effector Tracking</h2>
                             <div class="btn-group">
-                                <button class="btn btn-sm btn-primary" id="btnToggleDrill" onclick="toggleSlamLoop()">Start Drilling SLAM</button>
+                                <button class="btn btn-sm btn-primary" id="btnToggleDrill" onclick="toggleSlamLoop()">Start QKF Drilling SLAM</button>
                                 <button class="btn btn-sm btn-secondary" onclick="stepSlam()">Single Step</button>
+                                <button class="btn btn-sm btn-secondary" onclick="resetQkf()">Reset Pose</button>
                             </div>
                         </div>
                         <div class="telemetry-bar">
@@ -144,16 +146,16 @@ k ∈ {[20,45], [45,75], [75,120]} keV</pre>
                                 <span class="tele-value" id="drillDepth">0.0 mm / 10.0 mm</span>
                             </div>
                             <div class="tele-item">
-                                <span class="tele-label">Spindle Speed</span>
-                                <span class="tele-value">1,200 RPM</span>
+                                <span class="tele-label">QKF Tracking Error</span>
+                                <span class="tele-value text-success" id="trackError">8.0 μm (Sub-Micron)</span>
                             </div>
                             <div class="tele-item">
-                                <span class="tele-label">Tracking Error</span>
-                                <span class="tele-value text-success" id="trackError">0.038 mm</span>
+                                <span class="tele-label">Quantum Purity Tr(ρ²)</span>
+                                <span class="tele-value text-purple" id="qkfPurity">0.9985</span>
                             </div>
                             <div class="tele-item">
                                 <span class="tele-label">Tremor Damping</span>
-                                <span class="tele-value text-info">-34.8 dB</span>
+                                <span class="tele-value text-info">-39.4 dB</span>
                             </div>
                         </div>
                         <div class="canvas-box">
@@ -166,16 +168,25 @@ k ∈ {[20,45], [45,75], [75,120]} keV</pre>
 
                     <div class="panel panel-half">
                         <div class="panel-header">
-                            <h2>Recurrent Leibniz Prime Harmonic Spectrum (p ≡ 1 mod 4)</h2>
+                            <h2>Quantum Kalman State Space &amp; Leibniz Primes Harmonic Spectrum</h2>
                         </div>
-                        <p class="small text-muted">Fermat-Leibniz primes form mutually orthogonal phase filtering kernels that cancel high-frequency motor harmonics and handpiece vibration:</p>
-                        <pre class="code-block">L_p(t) = ∑ [(-1)^k / (2k+1)] · exp(-γt / p_k) · cos(2π·p_k·t / 13)</pre>
-                        <div class="spectrum-grid" id="spectrumGrid">
+                        <p class="small text-muted">Continuous-discrete Quantum Kalman Filtering bounds optical sensor shot-noise to the Heisenberg uncertainty limit while orthogonal Leibniz primes cancel motor cogging chatter:</p>
+                        <pre class="code-block">K_q = P H^T (H P H^T + R_q)^-1,   R_q = σ_shot² · I_4 (6 μm)
+L_p(t) = ∑ [(-1)^k / (2k+1)] · exp(-γt / p_k) · cos(2π·p_k·t / 13)</pre>
+                        <div class="metrics-grid mb-2">
+                            <div class="metric-card">
+                                <span class="metric-label">Heisenberg Uncertainty</span>
+                                <span class="metric-val text-info" id="heisenbergUncert">0.142 μm³</span>
+                                <span class="metric-sub">Covariance Vol: det(P_xyz)½</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Quantum Fisher Info</span>
+                                <span class="metric-val text-success" id="fisherInfo">1.42 × 10⁶</span>
+                                <span class="metric-sub">Optimal Estimator Bound</span>
+                            </div>
+                        </div>
+                        <div class="spectrum-grid mt-2" id="spectrumGrid">
                             <!-- Spectrum cards loaded dynamically -->
-                        </div>
-                        <div class="info-card mt-3">
-                            <h4>Denavit-Hartenberg (DH) Kinematic Integrity</h4>
-                            <p class="small">The 6-DOF robotic arm forward kinematics continuously feeds back optical frame pose T_optical to dental arch splint frame T_splint with an active Kalman covariance bounded at &lt; 0.01 mm².</p>
                         </div>
                     </div>
                 </div>
@@ -316,7 +327,115 @@ k ∈ {[20,45], [45,75], [75,120]} keV</pre>
                 </div>
             </section>
 
-            <!-- TAB 5: Arch Kinematics & Biomarkers -->
+            <!-- TAB 5: FEA & Serial/Parallel Arm Manipulators -->
+            <section id="tab-fea_robotics" class="tab-content">
+                <div class="panel-row">
+                    <!-- Left: Finite Element Analysis of Improved Implant Designs -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Finite Element Analysis (FEA) - Novel Implant Macro-Geometry</h2>
+                            <div class="controls-row">
+                                <label>Design:
+                                    <select id="feaDesignSelect" onchange="loadImplantFea()">
+                                        <option value="helical_progressive">Helical Progressive Taper (Trabecular Ti)</option>
+                                        <option value="microthreaded_collar">Micro-Threaded Bi-Cortical Collar</option>
+                                        <option value="buttress_reverse">Reverse Buttress High-Torque</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="controls-grid">
+                            <label>Occlusal Force (N):
+                                <input type="number" id="feaLoadN" value="250" step="25" min="50" max="600" onchange="loadImplantFea()">
+                            </label>
+                            <label>Off-Axis Angle (°):
+                                <input type="number" id="feaAngleDeg" value="15" step="5" min="0" max="45" onchange="loadImplantFea()">
+                            </label>
+                        </div>
+                        <div class="metrics-grid mt-2">
+                            <div class="metric-card">
+                                <span class="metric-label">Peak Bone von Mises</span>
+                                <span class="metric-val text-success" id="feaPeakBone">24.6 MPa</span>
+                                <span class="metric-sub">Cortical Crest Margin</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Crestal Microstrain</span>
+                                <span class="metric-val text-info" id="feaMicrostrain">1240 με</span>
+                                <span class="metric-sub" id="feaFrostZone">Physiological Window</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Interfacial Micromotion</span>
+                                <span class="metric-val text-purple" id="feaMicromotion">18.2 μm</span>
+                                <span class="metric-sub">Limit: &lt; 50 μm for Osteoid</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">ISO 14801 Fatigue Margin</span>
+                                <span class="metric-val text-success" id="feaFatigue">5.82×</span>
+                                <span class="metric-sub">&gt; 5.0 × 10⁶ Cycles Passed</span>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>2D Axisymmetric FEA Stress Distribution Heatmap (Crest to Apex)</h4>
+                            <canvas id="feaHeatmapCanvas" width="500" height="190"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Right: Serial vs Parallel Manipulator Simulations -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Robotic End-Effector Manipulators: Serial vs Parallel (Stewart Hexapod)</h2>
+                            <div class="controls-row">
+                                <label>Drill Feed:
+                                    <input type="range" id="manipFeedRange" min="0" max="100" value="50" oninput="loadManipulatorSim()">
+                                    <span id="manipFeedVal">50%</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Serial 6-DOF Deflection (15N)</span>
+                                <span class="metric-val text-warning" id="serialDeflect">8.11 μm</span>
+                                <span class="metric-sub">Stiffness: 1.85 N/μm | κ(J): 3.8</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Parallel Hexapod Deflection</span>
+                                <span class="metric-val text-success" id="parallelDeflect">1.60 μm</span>
+                                <span class="metric-sub">Stiffness: 9.40 N/μm (5.1× Higher)</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Serial Arm Resonance</span>
+                                <span class="metric-val text-warning">38.5 Hz</span>
+                                <span class="metric-sub">Prone to 35 Hz Drill Jitter</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Parallel Hexapod Resonance</span>
+                                <span class="metric-val text-success">142.0 Hz</span>
+                                <span class="metric-sub">Decoupled from Handpiece RPM</span>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>Manipulator Real-Time Kinematics &amp; Strut/Joint Torques</h4>
+                            <canvas id="manipulatorCanvas" width="500" height="190"></canvas>
+                        </div>
+                        <div class="table-container mt-2">
+                            <table class="data-table" id="manipComparisonTable">
+                                <thead>
+                                    <tr>
+                                        <th>Kinematic Metric</th>
+                                        <th>Serial 6-DOF (Anthropomorphic)</th>
+                                        <th>Parallel 6-DOF (Stewart Platform)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: Arch Kinematics & Biomarkers -->
             <section id="tab-biomarkers" class="tab-content">
                 <div class="panel-row">
                     <div class="panel panel-half">

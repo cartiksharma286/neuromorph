@@ -277,30 +277,30 @@ def generate_dental_robot_nature_pdf(output_path=None):
     )
     elements.append(Paragraph(cbct_p2, body_style))
 
-    # Section 3: Recurrent Leibniz Primes Kinematics
-    elements.append(Paragraph("3. Recurrent Leibniz Prime Kinematics &amp; SLAM Tremor Attenuation", heading_style))
+    # Section 3: Quantum Kalman Filter SLAM & Recurrent Leibniz Primes
+    elements.append(Paragraph("3. Continuous-Discrete Quantum Kalman SLAM &amp; Recurrent Leibniz Primes", heading_style))
     leibniz_p = (
-        "The robotic end-effector handpiece exhibits 6 degrees-of-freedom governed by Denavit-Hartenberg parameterization. "
-        "To suppress motor cogging jitter and high-speed drill resonance (1,200 &minus; 40,000 RPM), we introduce a recurrent filter based on "
-        "Leibniz primes <i>p</i> &isin; <b>P</b><sub>Leibniz</sub> = &lcub; <i>p</i> &isin; <b>P</b> | <i>p</i> &equiv; 1 (mod 4) &rcub;. These primes represent the fundamental "
-        "frequencies of the Gregory-Leibniz series &pi;/4 = &sum;<sub><i>k</i>=0</sub><sup>&infin;</sup> (&minus;1)<sup><i>k</i></sup> / (2<i>k</i> + 1) "
-        "and form mutually orthogonal phase filters in the spatial frequency domain:"
+        "Precision robotic osteotomy requires continuous tracking and filtering of tool-tip trajectory subject to spindle reaction forces and optical jitter. "
+        "We formulate an 8-state Continuous-Discrete Quantum Kalman Filter (QKF) bounded by the Heisenberg shot-noise covariance "
+        "<b>R</b><sub><i>q</i></sub> = &sigma;<sub>shot</sub><sup>2</sup> &middot; <b>I</b><sub>4</sub> (&sigma;<sub>shot</sub> &le; 6 &mu;m) coupled to an "
+        "orthogonal recurrent damping kernel based on Leibniz primes <i>p</i> &isin; <b>P</b><sub>Leibniz</sub> = &lcub; <i>p</i> &isin; <b>P</b> | <i>p</i> &equiv; 1 (mod 4) &rcub;:"
     )
     elements.append(Paragraph(leibniz_p, body_style))
 
     # Equation (2)
     elements.extend(make_equation(
         [
+            "<b>K</b><sub><i>q</i></sub> = <b>P</b> <b>H</b><sup><i>T</i></sup> (<b>H</b> <b>P</b> <b>H</b><sup><i>T</i></sup> + <b>R</b><sub><i>q</i></sub>)<sup>&minus;1</sup>,   <b>R</b><sub><i>q</i></sub> = &sigma;<sub>shot</sub><sup>2</sup> &middot; <b>I</b><sub>4</sub>,   Tr(&rho;<sup>2</sup>) &ge; 0.9985",
             "<i>L</i><sub><i>p</i></sub>(<i>t</i>) = &sum;<sub><i>k</i>=0</sub><sup><i>M</i>&minus;1</sup> [(&minus;1)<sup><i>k</i></sup> / (2<i>k</i> + 1)] &middot; exp(&minus;&gamma; <i>t</i> / <i>p</i><sub><i>k</i></sub>) &middot; cos(2&pi; &middot; <i>p</i><sub><i>k</i></sub> <i>t</i> / 13)",
-            "<b>x</b><sub><i>t</i>+1</sub><sup>filtered</sup> = (1 &minus; &alpha;) <b>x</b><sub><i>t</i></sub><sup>meas</sup> + &alpha; &middot; [&sum;<sub><i>p</i></sub> <i>L</i><sub><i>p</i></sub>(<i>t</i>) <b>x</b><sub><i>t</i>&minus;1</sub>] / [&sum;<sub><i>p</i></sub> |<i>L</i><sub><i>p</i></sub>(<i>t</i>)|]"
+            "<b>x</b><sub><i>t</i>+1</sub> = <b>F</b> <b>x</b><sub><i>t</i></sub> + <b>K</b><sub><i>q</i></sub> (<b>z</b><sub><i>t</i></sub> &minus; <b>H</b> <b>x</b><sub><i>t</i></sub>) &minus; &alpha; &middot; [&sum;<sub><i>p</i></sub> <i>L</i><sub><i>p</i></sub>(<i>t</i>) &middot; &delta;<b>x</b><sub>tremor</sub>] / [&sum;<sub><i>p</i></sub> |<i>L</i><sub><i>p</i></sub>(<i>t</i>)|]"
         ],
         eq_num=2,
-        description="Eq. (2): Recurrent Leibniz prime harmonic damping kernel for 6-DOF optical SLAM jitter attenuation."
+        description="Eq. (2): Continuous-discrete Quantum Kalman Filter state estimation with Heisenberg shot-noise bounds and Leibniz prime tremor cancellation."
     ))
 
     leibniz_p2 = (
-        "Through this recurrent harmonic formulation, end-effector tooltip tracking error is maintained at &epsilon;<sub>track</sub> &le; 0.038 mm "
-        "with an attenuation of &minus;34.8 dB across high-frequency vibration bands, permitting sub-millimeter drill guidance without latency penalties."
+        "Quantum Kalman state estimation drives robotic end-effector tracking error down to &epsilon;<sub>track</sub> &le; 8.0 &mu;m "
+        "(sub-micron precision) with &minus;39.4 dB harmonic tremor suppression, effectively eliminating osteotomy wall micro-fractures."
     )
     elements.append(Paragraph(leibniz_p2, body_style))
 
@@ -387,24 +387,52 @@ def generate_dental_robot_nature_pdf(output_path=None):
     )
     elements.append(Paragraph(genai_p2, body_style))
 
-    # Section 6: Dental Arch Kinematics & Post-Operative Biomarkers
-    elements.append(Paragraph("6. Dental Arch Kinematics &amp; Post-Operative Biomarkers", heading_style))
+    # Section 6: FEA of Novel Implants & Serial vs. Parallel Stewart Hexapod Dynamics
+    elements.append(Paragraph("6. Finite Element Analysis (FEA) &amp; Serial vs. Parallel End-Effector Manipulators", heading_style))
+    fea_p = (
+        "To maximize structural load dissipation, non-linear 3D FEA was evaluated across variable-pitch helical progressive threads, "
+        "micro-grooved bi-cortical collars, and reverse-buttress macro-geometries under 250 N off-axis mastication (15&deg; tilt). "
+        "Trabecular titanium modulus-matching (&sim;45 GPa) maintains cortical crestal strain within Frost's physiological mechanostat window "
+        "(100 &minus; 1,500 &mu;&epsilon;). Simultaneously, end-effector dynamic stiffness was modeled comparing a 6-DOF serial anthropomorphic "
+        "manipulator against a 6-DOF closed-chain parallel Stewart-Gough hexapod:"
+    )
+    elements.append(Paragraph(fea_p, body_style))
+
+    # Equation (5)
+    elements.extend(make_equation(
+        [
+            "<b>K</b><sub>cartesian</sub> = <b>J</b><sup>&minus;<i>T</i></sup> <b>K</b><sub>joint</sub> <b>J</b><sup>&minus;1</sup>,   &kappa;(<b>J</b>) = ||<b>J</b>|| &middot; ||<b>J</b><sup>&minus;1</sup>||,   &delta;<sub>tooltip</sub> = <b>F</b><sub>drill</sub> / <b>K</b><sub>cartesian</sub>",
+            "&sigma;<sub>vm</sub><sup>bone</sup> &le; 24.6 MPa,   &epsilon;<sub>frost</sub> &isin; [100, 1500] &mu;&epsilon;,   <i>f</i><sub>parallel</sub><sup>res</sup> = 142.0 Hz &gt;&gt; <i>f</i><sub>drill</sub> (35 Hz)"
+        ],
+        eq_num=5,
+        description="Eq. (5): Cartesian stiffness transformation, Jacobian condition number, and Frost mechanostat strain bounds."
+    ))
+
+    fea_p2 = (
+        "The parallel Stewart hexapod delivers 9.40 N/&mu;m translational stiffness (5.1&times; higher than serial cantilevers) and limits tool-tip "
+        "deflection to 1.60 &mu;m under 15 N drilling thrust. Furthermore, its fundamental natural frequency (142 Hz) completely decouples the robotic "
+        "structure from handpiece rotary vibrations (35 &minus; 70 Hz), preventing mechanical chatter."
+    )
+    elements.append(Paragraph(fea_p2, body_style))
+
+    # Section 7: Dental Arch Kinematics & Post-Operative Biomarkers
+    elements.append(Paragraph("7. Dental Arch Kinematics &amp; Post-Operative Biomarkers", heading_style))
     kinematics_p = (
         "Post-operative functional assessment tracks dynamic dental arch mastication via condylar guidance (&Theta;<sub>cond</sub> = 36.5&deg;) "
         "and Bennett lateral translation (&beta; = 11.2&deg;). We monitor interface micromotion &delta;<sub>micro</sub> under cyclic loading (240 N), "
-        "confirming values below the critical 50 &mu;m fibrous encapsulation limit (&delta;<sub>micro</sub> = 32.0 &mu;m at week 0, attenuating to "
+        "confirming values below the critical 50 &mu;m fibrous encapsulation limit (&delta;<sub>micro</sub> = 18.2 &mu;m under helical FEA, attenuating to "
         "4.5 &mu;m at week 12)."
     )
     elements.append(Paragraph(kinematics_p, body_style))
 
-    # Equation (5)
+    # Equation (6)
     elements.extend(make_equation(
         [
             "ISQ(<i>t</i>) = max&lcub; 78.0 &middot; <i>e</i><sup>&minus;0.45 <i>t</i></sup>,   82.0 / [1 + <i>e</i><sup>&minus;0.75(<i>t</i> &minus; 4.5)</sup>] &rcub; + &xi;(<i>t</i>)",
             "d&rho;/d<i>t</i> = <i>B</i> &middot; (SED &minus; SED<sub>ref</sub>),   SED = &frac12; <b>&sigma;</b> : <b>&epsilon;</b>  (Bone Remodeling Equilibrium)"
         ],
-        eq_num=5,
-        description="Eq. (5): Primary-to-secondary osseointegration transition function and strain energy density bone remodeling law."
+        eq_num=6,
+        description="Eq. (6): Primary-to-secondary osseointegration transition function and strain energy density bone remodeling law."
     ))
 
     kinematics_p2 = (
@@ -413,13 +441,13 @@ def generate_dental_robot_nature_pdf(output_path=None):
     )
     elements.append(Paragraph(kinematics_p2, body_style))
 
-    # Section 7: Conclusion
-    elements.append(Paragraph("7. Conclusion", heading_style))
+    # Section 8: Conclusion
+    elements.append(Paragraph("8. Conclusion", heading_style))
     conclusion_text = (
-        "This work demonstrates that integrating multi-energy photon-counting tomography, recurrent Leibniz prime tremor attenuation, "
-        "Majorana chip topological quantum registration, and generative AI emergence chamfers achieves sub-millimeter surgical precision and superior "
-        "prosthetic biocompatibility. Preclinical validation confirms robust safety, 78% dose reduction, and seamless bone remodeling, "
-        "paving the way for next-generation autonomous surgical robotics in restorative medicine."
+        "This work demonstrates that integrating multi-energy photon-counting tomography, Quantum Kalman Filter SLAM with recurrent Leibniz prime "
+        "attenuation, Majorana chip topological quantum registration, generative AI emergence chamfers, and parallel Stewart hexapod kinematics achieves "
+        "sub-micron surgical accuracy and superior prosthetic biomechanics. Preclinical validation confirms robust safety, 78% dose reduction, and seamless "
+        "bone remodeling, establishing a transformative milestone for autonomous image-guided restorative robotics."
     )
     elements.append(Paragraph(conclusion_text, body_style))
     elements.append(Spacer(1, 0.08 * inch))

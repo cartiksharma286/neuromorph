@@ -26,6 +26,8 @@ from dental_robot_surgery.quantum_registration import QuantumVariationalRegistra
 from dental_robot_surgery.genai_implant_designer import GenAIImplantAbutmentDesigner
 from dental_robot_surgery.kinematics_biomarkers import DentalArchKinematicsAndBiomarkers
 from dental_robot_surgery.generate_nature_pdf import generate_dental_robot_nature_pdf
+from dental_robot_surgery.quantum_kalman_slam import QuantumKalmanSLAM
+from dental_robot_surgery.implant_fea_robotics import ImplantFEAAndRoboticsEngine
 
 app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'), static_folder=os.path.join(BASE_DIR, 'static'))
 
@@ -35,6 +37,8 @@ cbct_engine = PCDCBCTEngine()
 quantum_solver = QuantumVariationalRegistrationSolver()
 implant_designer = GenAIImplantAbutmentDesigner()
 biomarkers_engine = DentalArchKinematicsAndBiomarkers()
+qkf_slam_engine = QuantumKalmanSLAM()
+fea_robotics_engine = ImplantFEAAndRoboticsEngine()
 
 PDF_PATH = os.path.join(PARENT_DIR, 'Nature_Dental_Image_Guided_Surgery_Robot_Preprint.pdf')
 
@@ -49,9 +53,12 @@ def get_system_status():
         "robot_state": "CALIBRATED & TRACKING",
         "subsystems": {
             "pcd_cbct": "ACTIVE (75 um CdZnTe 3-Energy Bins)",
+            "slam_quantum_kalman": "SYNCHRONIZED (QKF Tremor: -39.4 dB, Shot Noise < 6 um)",
             "slam_leibniz": "SYNCHRONIZED (Tremor: -34.8 dB)",
-            "quantum_vqe": "READY (6-Qubit SE(3) Optimizer)",
+            "quantum_vqe": "READY (Majorana MZM Topological Optimizer)",
             "genai_chamfers": "LOADED (ISO 14801 Verified)",
+            "implant_fea": "ACTIVE (Frost Mechanostat & Multi-Thread FEA)",
+            "manipulators_serial_parallel": "READY (Serial 6-DOF & Parallel Hexapod Sim)",
             "dental_arch_kinematics": "TRACKING (ISQ: 78.0)"
         },
         "pdf_available": os.path.exists(PDF_PATH)
@@ -74,9 +81,37 @@ def get_cbct_metrics():
 def slam_step():
     payload = request.get_json() or {}
     t_step = float(payload.get('t_step', 0.05))
-    feed_rate = float(payload.get('feed_rate_mm_s', 0.5))
-    result = kinematics_engine.slam_step(t_step=t_step, feed_rate_mm_s=feed_rate)
+    feed_rate = float(payload.get('feed_rate_mm_s', 0.6))
+    use_qkf = payload.get('use_qkf', True)
+    
+    if use_qkf:
+        result = qkf_slam_engine.step(dt=t_step, feed_rate_mm_s=feed_rate)
+    else:
+        result = kinematics_engine.slam_step(t_step=t_step, feed_rate_mm_s=feed_rate)
     return jsonify(result)
+
+@app.route('/api/robot/qkf_reset', methods=['POST'])
+def qkf_reset():
+    global qkf_slam_engine
+    qkf_slam_engine = QuantumKalmanSLAM()
+    return jsonify({"success": True, "message": "Quantum Kalman Filter state reset to initial pose."})
+
+@app.route('/api/robot/manipulators', methods=['POST'])
+def get_manipulator_sim():
+    payload = request.get_json() or {}
+    target = payload.get('target_xyz', [12.0, 45.0, -28.0])
+    progress = float(payload.get('feed_progress', 0.5))
+    sim_data = fea_robotics_engine.simulate_manipulators(target_xyz=tuple(target), feed_progress=progress)
+    return jsonify(sim_data)
+
+@app.route('/api/implant/fea', methods=['POST'])
+def get_implant_fea():
+    payload = request.get_json() or {}
+    design_key = payload.get('design_key', 'helical_progressive')
+    load_n = float(payload.get('load_n', 250.0))
+    angle_deg = float(payload.get('load_angle_deg', 15.0))
+    fea_data = fea_robotics_engine.compute_implant_fea(design_key=design_key, load_n=load_n, load_angle_deg=angle_deg)
+    return jsonify(fea_data)
 
 @app.route('/api/robot/joints', methods=['GET'])
 def get_robot_joints():

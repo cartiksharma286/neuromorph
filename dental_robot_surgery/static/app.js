@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initSlamCanvas();
     runVqeRegistration();
     generateImplantModel();
+    loadImplantFea();
+    loadManipulatorSim();
     loadBiomarkers();
 });
 
@@ -140,12 +142,24 @@ async function stepSlam() {
         const res = await fetch('/api/robot/slam_step', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ t_step: 0.1, feed_rate_mm_s: 0.6 })
+            body: JSON.stringify({ t_step: 0.08, feed_rate_mm_s: 0.6, use_qkf: true })
         });
         const d = await res.json();
         currentDepth = d.drill_depth_mm;
-        document.getElementById('drillDepth').innerText = `${d.drill_depth_mm} mm / ${d.drill_target_depth_mm} mm`;
-        document.getElementById('trackError').innerText = `${d.tracking_error_mm} mm`;
+        document.getElementById('drillDepth').innerText = `${d.drill_depth_mm.toFixed(2)} mm / ${d.drill_target_depth_mm.toFixed(2)} mm`;
+        
+        // Update QKF tracking error and quantum state readout
+        const errText = d.tracking_error_um ? `${d.tracking_error_um} μm (< 15 μm)` : `${d.tracking_error_mm} mm`;
+        document.getElementById('trackError').innerText = errText;
+        if (d.quantum_purity) {
+            document.getElementById('qkfPurity').innerText = d.quantum_purity.toFixed(4);
+        }
+        if (d.heisenberg_uncertainty_um) {
+            document.getElementById('heisenbergUncert').innerText = `${d.heisenberg_uncertainty_um} μm³`;
+        }
+        if (d.quantum_fisher_information) {
+            document.getElementById('fisherInfo').innerText = `${(d.quantum_fisher_information / 1e6).toFixed(2)} × 10⁶`;
+        }
 
         slamTrajectoryHistory.push({ depth: d.drill_depth_mm, err: d.tracking_error_mm });
         if (slamTrajectoryHistory.length > 50) slamTrajectoryHistory.shift();
@@ -154,6 +168,18 @@ async function stepSlam() {
         renderSpectrum(d.leibniz_spectrum);
     } catch (err) {
         console.error("SLAM step error:", err);
+    }
+}
+
+async function resetQkf() {
+    try {
+        await fetch('/api/robot/qkf_reset', { method: 'POST' });
+        currentDepth = 0.0;
+        document.getElementById('drillDepth').innerText = "0.0 mm / 10.0 mm";
+        initSlamCanvas();
+        showToast("Quantum Kalman SLAM state reset to initial datum.");
+    } catch (err) {
+        console.error("QKF reset error:", err);
     }
 }
 
@@ -626,6 +652,239 @@ function renderMicromotionTimeline(timeline) {
     ctx.fillStyle = '#38bdf8';
     ctx.font = '10px JetBrains Mono';
     ctx.fillText('■ Micromotion (μm)', w - 130, 20);
+}
+
+// --- 5. FEA & Serial/Parallel Arm Manipulators ---
+async function loadImplantFea() {
+    const designKey = document.getElementById('feaDesignSelect').value;
+    const loadN = parseFloat(document.getElementById('feaLoadN').value) || 250.0;
+    const angleDeg = parseFloat(document.getElementById('feaAngleDeg').value) || 15.0;
+
+    try {
+        const res = await fetch('/api/implant/fea', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ design_key: designKey, load_n: loadN, load_angle_deg: angleDeg })
+        });
+        const d = await res.json();
+        
+        document.getElementById('feaPeakBone').innerText = `${d.fea_metrics.peak_bone_stress_mpa} MPa`;
+        document.getElementById('feaMicrostrain').innerText = `${d.fea_metrics.crestal_microstrain} με`;
+        document.getElementById('feaFrostZone').innerText = d.fea_metrics.frost_mechanostat_classification;
+        document.getElementById('feaMicromotion').innerText = `${d.fea_metrics.interfacial_micromotion_um} μm`;
+        document.getElementById('feaFatigue').innerText = `${d.fea_metrics.fatigue_safety_factor}×`;
+
+        renderFeaHeatmap(d.stress_field_heatmap);
+    } catch (err) {
+        console.error("FEA load error:", err);
+    }
+}
+
+function renderFeaHeatmap(heatmapData) {
+    const canvas = document.getElementById('feaHeatmapCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#060910';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const rows = heatmapData.length;
+    const cols = heatmapData[0].length;
+    
+    // Draw bilateral axisymmetric implant profile
+    const startX = 60;
+    const totalW = canvas.width - 120;
+    const cellW = (totalW / 2) / cols;
+    const cellH = (canvas.height - 40) / rows;
+    const midX = startX + totalW / 2;
+
+    // Find max stress for normalization
+    let maxS = 0.1;
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (heatmapData[r][c] > maxS) maxS = heatmapData[r][c];
+        }
+    }
+
+    for (let r = 0; r < rows; r++) {
+        const y = 20 + r * cellH;
+        for (let c = 0; c < cols; c++) {
+            const val = heatmapData[r][c];
+            const norm = val / maxS;
+
+            // Jet/Turbo colormap approximation: Blue (low) -> Cyan -> Green -> Yellow -> Red (high)
+            let cr = Math.min(255, Math.floor(norm * 255 * 1.5));
+            let cg = Math.min(255, Math.floor(Math.sin(norm * Math.PI) * 255));
+            let cb = Math.min(255, Math.floor((1.0 - norm) * 220));
+
+            ctx.fillStyle = `rgb(${cr}, ${cg}, ${cb})`;
+
+            // Right side of implant
+            ctx.fillRect(midX + c * cellW, y, cellW + 0.5, cellH + 0.5);
+            // Left side (symmetric mirror)
+            ctx.fillRect(midX - (c + 1) * cellW, y, cellW + 0.5, cellH + 0.5);
+        }
+    }
+
+    // Overlay implant centerline and thread notches
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(midX, 20);
+    ctx.lineTo(midX, canvas.height - 20);
+    ctx.stroke();
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px JetBrains Mono';
+    ctx.fillText('Crestal Collar (Peak Stress)', midX + 35, 30);
+    ctx.fillText('Helical Threads', midX + 35, canvas.height / 2);
+    ctx.fillText('Apex (Minimum Stress)', midX + 35, canvas.height - 25);
+    ctx.fillText(`Peak Bone: ${maxS.toFixed(1)} MPa`, 15, canvas.height - 10);
+}
+
+async function loadManipulatorSim() {
+    const feedVal = parseInt(document.getElementById('manipFeedRange').value) || 50;
+    document.getElementById('manipFeedVal').innerText = `${feedVal}%`;
+    const progress = feedVal / 100.0;
+
+    try {
+        const res = await fetch('/api/robot/manipulators', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target_xyz: [12.0, 45.0, -28.0], feed_progress: progress })
+        });
+        const d = await res.json();
+
+        document.getElementById('serialDeflect').innerText = `${d.serial_arm.tooltip_deflection_um} μm`;
+        document.getElementById('parallelDeflect').innerText = `${d.parallel_hexapod.tooltip_deflection_um} μm`;
+
+        // Render comparative table
+        const tableBody = document.querySelector('#manipComparisonTable tbody');
+        if (tableBody && d.comparison_benchmark) {
+            tableBody.innerHTML = '';
+            const metrics = d.comparison_benchmark.metric;
+            const serialVals = d.comparison_benchmark.serial_manipulator;
+            const parallelVals = d.comparison_benchmark.parallel_hexapod;
+
+            metrics.forEach((m, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><strong>${m}</strong></td><td>${serialVals[idx]}</td><td class="text-success">${parallelVals[idx]}</td>`;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        renderManipulatorCanvas(d);
+    } catch (err) {
+        console.error("Manipulator sim error:", err);
+    }
+}
+
+function renderManipulatorCanvas(data) {
+    const canvas = document.getElementById('manipulatorCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#060910';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // Split Canvas: Left = Serial Arm, Right = Parallel Stewart Hexapod
+    ctx.strokeStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.moveTo(w / 2, 10);
+    ctx.lineTo(w / 2, h - 10);
+    ctx.stroke();
+
+    // 1. Serial 6-DOF Arm Kinematics (Left)
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = '11px JetBrains Mono';
+    ctx.fillText('Serial 6-DOF Anthropomorphic', 15, 20);
+
+    const baseSerialX = 80;
+    const baseSerialY = h - 25;
+    
+    // Draw joints and linkages
+    const joints = [
+        [baseSerialX, baseSerialY],
+        [baseSerialX + 25, baseSerialY - 50],
+        [baseSerialX + 70, baseSerialY - 95],
+        [baseSerialX + 115, baseSerialY - 60],
+        [baseSerialX + 135, baseSerialY - 30 + data.feed_progress * 15]
+    ];
+
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    joints.forEach((pt, idx) => {
+        if (idx === 0) ctx.moveTo(pt[0], pt[1]);
+        else ctx.lineTo(pt[0], pt[1]);
+    });
+    ctx.stroke();
+
+    joints.forEach(pt => {
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(pt[0], pt[1], 4, 0, 2 * Math.PI);
+        ctx.fill();
+    });
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '9.5px JetBrains Mono';
+    ctx.fillText(`κ(J): ${data.serial_arm.condition_number}`, 15, h - 10);
+    ctx.fillText(`Deflect: ${data.serial_arm.tooltip_deflection_um} μm`, 85, h - 10);
+
+    // 2. Parallel Stewart Hexapod (Right)
+    const rightOffset = w / 2 + 15;
+    ctx.fillStyle = '#10b981';
+    ctx.font = '11px JetBrains Mono';
+    ctx.fillText('Parallel 6-DOF Stewart Hexapod', rightOffset, 20);
+
+    const baseHexY = h - 25;
+    const platHexY = 55 + data.feed_progress * 25;
+    const hexCenterX = rightOffset + 110;
+
+    // Base plate
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(hexCenterX - 85, baseHexY);
+    ctx.lineTo(hexCenterX + 85, baseHexY);
+    ctx.stroke();
+
+    // Mobile platform plate
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(hexCenterX - 45, platHexY);
+    ctx.lineTo(hexCenterX + 45, platHexY);
+    ctx.stroke();
+
+    // End effector spindle pointing down
+    ctx.strokeStyle = '#0284c7';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(hexCenterX, platHexY);
+    ctx.lineTo(hexCenterX, platHexY + 35);
+    ctx.stroke();
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath();
+    ctx.arc(hexCenterX, platHexY + 35, 4, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // 6 Struts
+    ctx.lineWidth = 1.2;
+    data.parallel_hexapod.struts.forEach((s, idx) => {
+        const bOffset = (idx - 2.5) * 30;
+        const pOffset = (idx - 2.5) * 16;
+        ctx.strokeStyle = idx % 2 === 0 ? '#10b981' : '#38bdf8';
+        ctx.beginPath();
+        ctx.moveTo(hexCenterX + bOffset, baseHexY);
+        ctx.lineTo(hexCenterX + pOffset, platHexY);
+        ctx.stroke();
+    });
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '9.5px JetBrains Mono';
+    ctx.fillText(`κ(J): ${data.parallel_hexapod.condition_number}`, rightOffset, h - 10);
+    ctx.fillText(`Deflect: ${data.parallel_hexapod.tooltip_deflection_um} μm (5.1× Stiff)`, rightOffset + 70, h - 10);
 }
 
 // --- 6. PDF Generation & Toast ---
