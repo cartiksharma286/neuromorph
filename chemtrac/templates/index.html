@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChemTRAC Water Quality Monitor | Stieltjes Primes &amp; Elliptic Moduli</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-badge">
+                    <span class="pulse-dot"></span>
+                    <span class="logo-title">CHEMTRAC / NEUROMORPH</span>
+                </div>
+                <div class="system-title">
+                    <h1>Water Quality Monitoring &amp; Treatment Console</h1>
+                    <span class="tag">CHEMICAL_TRACKING.CSV • STIELTJES PRIMES • ELLIPTIC MODULI • PQC (ML-KEM/DSA)</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-indicator">
+                    <span class="badge badge-success" id="ntuBadge">TURBIDITY: 0.028 NTU (&lt; 0.04 NTU)</span>
+                    <span class="badge badge-info" id="dataQualityBadge">DATA QUALITY: OPTIMAL</span>
+                    <span class="badge badge-purple" id="pqcBadge">PQC: ML-KEM/DSA SECURE</span>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshTelemetry()">
+                        <span class="icon">🔄</span> Refresh Telemetry
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('live_ntu')">1. Live Water Quality &amp; NTU (&lt; 0.04)</button>
+            <button class="tab-btn" onclick="switchTab('chemicals')">2. Chemical Tracking Contaminants (CSV)</button>
+            <button class="tab-btn" onclick="switchTab('stieltjes')">3. Stieltjes Primes &amp; S-Fraction Kinetics</button>
+            <button class="tab-btn" onclick="switchTab('elliptic')">4. Elliptic Moduli &amp; Cauer Filtering</button>
+            <button class="tab-btn" onclick="switchTab('pqc')">5. Post-Quantum Cryptography (PQC)</button>
+            <button class="tab-btn" onclick="switchTab('treatment')">6. Multi-Barrier Treatment Architecture</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- TAB 1: Live Water Quality & Optimal Turbidity (< 0.04 NTU) -->
+            <section id="tab-live_ntu" class="tab-content active">
+                <div class="panel-row">
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Real-Time Turbidity Dynamics &amp; Sub-0.04 NTU Enforcement</h2>
+                            <div class="controls-row">
+                                <label>Treatment Intensity:
+                                    <input type="range" id="treatmentIntensity" min="50" max="150" value="100" oninput="onIntensityChange()">
+                                    <span id="intensityVal">1.0×</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="telemetry-bar">
+                            <div class="tele-item">
+                                <span class="tele-label">Current Turbidity</span>
+                                <span class="tele-value text-success" id="curNtuVal">0.0280 NTU</span>
+                            </div>
+                            <div class="tele-item">
+                                <span class="tele-label">Threshold Ceiling</span>
+                                <span class="tele-value text-info">&lt; 0.0400 NTU</span>
+                            </div>
+                            <div class="tele-item">
+                                <span class="tele-label">Water pH</span>
+                                <span class="tele-value" id="waterPhVal">7.35</span>
+                            </div>
+                            <div class="tele-item">
+                                <span class="tele-label">Dissolved Oxygen</span>
+                                <span class="tele-value" id="waterDoVal">9.20 mg/L</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Real-Time Turbidity (NTU) vs. Strict &lt; 0.04 NTU Quality Ceiling</h4>
+                            <canvas id="ntuStreamCanvas" width="500" height="200"></canvas>
+                        </div>
+                        <div class="info-card mt-2">
+                            <h4>Nephelometric Turbidity Unit (NTU) Quality Benchmark</h4>
+                            <p class="small text-muted">Standard EPA drinking water rules specify &lt; 0.30 NTU. ChemTRAC's advanced Cauer-elliptic nanofiltration suppresses sub-micron colloidal particles to <strong>&lt; 0.04 NTU</strong>, guaranteeing optical clarity and complete removal of microbial pathogen surrogates (Cryptosporidium, Giardia).</p>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Physicochemical Sensor Array &amp; Compliance Overview</h2>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Conductivity</span>
+                                <span class="metric-val text-info" id="condVal">142.0 μS/cm</span>
+                                <span class="metric-sub">Total Dissolved Solids: 91 ppm</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Total Organic Carbon</span>
+                                <span class="metric-val text-success" id="tocVal">0.450 mg/L</span>
+                                <span class="metric-sub">Disinfection Byproduct Precursors</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Redox Potential (ORP)</span>
+                                <span class="metric-val text-purple" id="orpVal">+685.0 mV</span>
+                                <span class="metric-sub">Pathogen Disinfection Potential</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Chemicals Monitored</span>
+                                <span class="metric-val text-success" id="chemCountVal">25 / 25</span>
+                                <span class="metric-sub" id="compliancePctVal">100% Compliant (Below MCL)</span>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>Multi-Parameter Water Sensor Radar</h4>
+                            <canvas id="sensorRadarCanvas" width="500" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: Chemical Tracking Contaminants (CSV) -->
+            <section id="tab-chemicals" class="tab-content">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2>ChemTRAC Contaminants Surveillance Database (Chemical_Tracking.csv)</h2>
+                        <div class="controls-row">
+                            <input type="text" id="chemicalSearchInput" placeholder="Search contaminant or CAS No..." oninput="filterChemicals()">
+                            <select id="categoryFilter" onchange="filterChemicals()">
+                                <option value="all">All Contaminant Categories</option>
+                                <option value="Carcinogen">Carcinogens</option>
+                                <option value="Heavy Metal">Heavy Metals</option>
+                                <option value="Solvent">Solvents / VOCs</option>
+                                <option value="Aldehyde">Aldehydes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="chemicalsTable">
+                            <thead>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Chemical Contaminant Name</th>
+                                    <th>CAS No.</th>
+                                    <th>Category</th>
+                                    <th>Raw Water (ppb)</th>
+                                    <th>Treated Effluent (ppb)</th>
+                                    <th>MCL Limit (ppb)</th>
+                                    <th>Removal %</th>
+                                    <th>Compliance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: Stieltjes Primes & S-Fraction Kinetics -->
+            <section id="tab-stieltjes" class="tab-content">
+                <div class="panel-row">
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Stieltjes Continued Fractions &amp; Adsorption Kinetics</h2>
+                            <div class="controls-row">
+                                <label>Residence Time:
+                                    <input type="number" id="stieltjesTimeInp" value="45" min="10" max="120" step="5" onchange="loadStieltjesDecay()">
+                                    <span>min</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Contaminant Adsorption Decay via Stieltjes S-Fraction Transform</h4>
+                            <canvas id="stieltjesChartCanvas" width="500" height="210"></canvas>
+                        </div>
+                        <div class="info-card mt-2">
+                            <h4>Stieltjes Continued Fraction Formulation</h4>
+                            <pre class="code-block">f(z) = c_0 / (z + c_1 / (1 + c_2 / (z + c_3 / (1 + ...))))
+dμ(t) = (1/π) · lim_{ε→0+} Im[f(t - i·ε)] dt</pre>
+                            <p class="small text-muted">Stieltjes moment theory guarantees monotonic mass decay across porous granular activated carbon (GAC) beds without non-physical oscillating concentration artifacts.</p>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Stieltjes Prime Harmonics (p ∈ ℙ_Stieltjes)</h2>
+                        </div>
+                        <p class="small text-muted">Primes orthogonalized over the Stieltjes measure space index the fundamental acoustic resonant modes and kinetic rate constants:</p>
+                        <div class="table-container">
+                            <table class="data-table" id="stieltjesHarmonicsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Prime p</th>
+                                        <th>Stieltjes Const γ_k</th>
+                                        <th>Rate Constant k_ads</th>
+                                        <th>Acoustic Mode (Hz)</th>
+                                        <th>Phase Angle</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: Elliptic Moduli & Cauer Filtering -->
+            <section id="tab-elliptic" class="tab-content">
+                <div class="panel-row">
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Elliptic Moduli &amp; Modular Curve Characteristics</h2>
+                            <div class="controls-row">
+                                <label>Modulus k:
+                                    <input type="number" id="ellipticModulusK" value="0.885" step="0.02" min="0.1" max="0.99" onchange="loadEllipticData()">
+                                </label>
+                            </div>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Complete Integral K(k)</span>
+                                <span class="metric-val text-info" id="kIntegralVal">2.2841</span>
+                                <span class="metric-sub">Quarter-Period on H</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Complementary K'(k)</span>
+                                <span class="metric-val text-purple" id="kPrimeVal">1.6852</span>
+                                <span class="metric-sub">k' = (1 - k²)½</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Half-Period Ratio τ</span>
+                                <span class="metric-val text-success" id="tauVal">0.7378 i</span>
+                                <span class="metric-sub">Upper Half-Plane H</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Klein j-Invariant</span>
+                                <span class="metric-val text-warning" id="jInvariantVal">1,728.5</span>
+                                <span class="metric-sub">Modular Invariant j(τ)</span>
+                            </div>
+                        </div>
+                        <div class="info-card mt-2">
+                            <h4>Modular Lambda &amp; Jacobi Theta Mapping</h4>
+                            <pre class="code-block">λ(τ) = θ_2⁴(0, τ) / θ_3⁴(0, τ) = k²
+j(τ) = 256 · (1 - λ + λ²)³ / [λ² · (1 - λ)²]</pre>
+                            <p class="small text-muted">Maps multi-stage filtration residence times onto isomorphic Riemann surfaces, providing zero passband ripple and equiripple stopband rejection.</p>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Cauer (Elliptic) Turbidity Filtration Trajectory</h2>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Filtration Cycles to Guaranteed Sub-0.04 NTU Clarity</h4>
+                            <canvas id="cauerFilterCanvas" width="500" height="210"></canvas>
+                        </div>
+                        <div class="metrics-grid mt-2">
+                            <div class="metric-card">
+                                <span class="metric-label">Raw Surface NTU</span>
+                                <span class="metric-val text-warning">0.850 NTU</span>
+                                <span class="metric-sub">Pre-Treatment Turbidity</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Final Purified NTU</span>
+                                <span class="metric-val text-success">0.0248 NTU</span>
+                                <span class="metric-sub">Sub-0.04 NTU Enforced</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: Post-Quantum Cryptography (PQC) -->
+            <section id="tab-pqc" class="tab-content">
+                <div class="panel-row">
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>NIST FIPS 203 ML-KEM-768 Lattice Key Encapsulation</h2>
+                            <button class="btn btn-sm btn-primary" onclick="generatePqcKem()">Encapsulate Key</button>
+                        </div>
+                        <div class="telemetry-bar">
+                            <div class="tele-item">
+                                <span class="tele-label">KEM Algorithm</span>
+                                <span class="tele-value text-info">ML-KEM-768 (Kyber)</span>
+                            </div>
+                            <div class="tele-item">
+                                <span class="tele-label">Quantum Security</span>
+                                <span class="tele-value text-success">NIST Level 3 (AES-192 equiv)</span>
+                            </div>
+                        </div>
+                        <div class="info-card mt-2">
+                            <h4>Shared Secret Key (Hex):</h4>
+                            <div class="code-block" id="kemSharedSecret">0a48f93e4bc1128d9760ef123bbca9814523ad0918efbc7712498eac812039ab</div>
+                            <h4 class="mt-2">Module-LWE Ciphertext (Base64):</h4>
+                            <div class="code-block" id="kemCiphertext">u7F1K9m39B2wX8pLq2vN0z... (1,088 bytes)</div>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>NIST FIPS 204 ML-DSA-65 Dilithium Telemetry Signing</h2>
+                            <button class="btn btn-sm btn-primary" onclick="signAndVerifyTelemetry()">Sign &amp; Verify Packet</button>
+                        </div>
+                        <div class="telemetry-bar">
+                            <div class="tele-item">
+                                <span class="tele-label">Signature Scheme</span>
+                                <span class="tele-value text-purple">ML-DSA-65 (Dilithium)</span>
+                            </div>
+                            <div class="tele-item">
+                                <span class="tele-label">Verification Status</span>
+                                <span class="tele-value text-success" id="dsaVerificationStatus">VERIFIED &amp; UNTAMPERED</span>
+                            </div>
+                        </div>
+                        <div class="info-card mt-2">
+                            <h4>Telemetry Payload Hash (SHA3-256):</h4>
+                            <div class="code-block" id="dsaPayloadHash">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
+                            <h4 class="mt-2">Lattice Digital Signature (Base64):</h4>
+                            <div class="code-block" id="dsaSignature">MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3... (3,293 bytes)</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: Multi-Barrier Treatment Architecture -->
+            <section id="tab-treatment" class="tab-content">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2>Closed-Loop Multi-Barrier Water Purification Architecture</h2>
+                    </div>
+                    <div class="treatment-flow-diagram">
+                        <div class="flow-stage">
+                            <span class="stage-num">STAGE 1</span>
+                            <h4>Coagulation &amp; Sedimentation</h4>
+                            <p class="small text-muted">Poly-aluminum chloride dosing with micro-floc aggregation. Removes 85% of suspended particulates.</p>
+                            <span class="stage-metric">NTU: 1.80 → 0.28</span>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-stage">
+                            <span class="stage-num">STAGE 2</span>
+                            <h4>Granular Activated Carbon (GAC)</h4>
+                            <p class="small text-muted">Porous mesopore adsorption modeled via <strong>Stieltjes Prime S-Fractions</strong>. Absorbs VOCs, Benzene, and Solvents.</p>
+                            <span class="stage-metric">VOCs: 99.4% Clearance</span>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-stage">
+                            <span class="stage-num">STAGE 3</span>
+                            <h4>Cauer Elliptic Nanofiltration (RO)</h4>
+                            <p class="small text-muted">Polyamide thin-film composite membrane governed by <strong>Elliptic Moduli Transfer Functions</strong>. Rejects heavy metals.</p>
+                            <span class="stage-metric">NTU: &lt; 0.04 Guaranteed</span>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-stage highlight-stage">
+                            <span class="stage-num">STAGE 4</span>
+                            <h4>UV-AOP &amp; PQC SCADA Telemetry</h4>
+                            <p class="small text-muted">254 nm germicidal UV + H₂O₂ radical destruction. Data verified with <strong>NIST ML-KEM/DSA lattice cryptography</strong>.</p>
+                            <span class="stage-metric text-success">Pathogens: 99.9999% Kill</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
