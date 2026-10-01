@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SafeCity Prevention Planning Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow"><span class="live-dot"></span> SAFECITY / PREVENTION PLANNING</p>
+      <h1>Hate-Crime Prevention &amp; Survivor Safety</h1>
+      <p class="subtitle">Aggregate data planning with transparent statistical optimization, quantum-kernel-inspired features, and prime-cycle coverage.</p>
+    </div>
+    <div class="header-status">
+      <span id="recordCount">2,041 records</span>
+      <strong>Privacy-preserving aggregate analysis</strong>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="overview">Risk Reduction</button>
+    <button class="tab" data-tab="allocation">Resource Allocation</button>
+    <button class="tab" data-tab="support">Survivor Support</button>
+    <button class="tab" data-tab="method">Methods &amp; Safeguards</button>
+  </nav>
+
+  <main>
+    <section id="overview" class="panel active">
+      <div class="grid two-up">
+        <article class="card emphasis">
+          <div class="card-head"><span>Intervention capacity</span><output id="levelLabel">82%</output></div>
+          <input id="interventionLevel" type="range" min="35" max="100" value="82">
+          <div class="scenario-row">
+            <div><small>Aggregate planning index</small><strong id="riskIndex">19.5%</strong></div>
+            <div><small>Planning threshold</small><strong class="teal">&lt; 2.0%</strong></div>
+            <div><small>Scenario status</small><strong id="targetStatus">Capacity gap remains</strong></div>
+          </div>
+          <p class="footnote" id="scenarioNote"></p>
+        </article>
+        <article class="card">
+          <div class="card-head"><span>Operational guardrails</span><span class="tag">REQUIRED</span></div>
+          <ul class="compact-list">
+            <li>Community partnership and accessible reporting</li>
+            <li>Trauma-informed, survivor-directed safety response</li>
+            <li>Proportionate lawful investigation, due process, and oversight</li>
+            <li>Equity audit before any resource reallocation</li>
+          </ul>
+        </article>
+      </div>
+      <div class="grid two-up charts">
+        <article class="card"><h2>Reported Hate-Crime Incidents by Year</h2><canvas id="yearChart" width="650" height="270"></canvas></article>
+        <article class="card"><h2>Bias Categories in Recorded Incidents</h2><canvas id="biasChart" width="650" height="270"></canvas></article>
+      </div>
+    </section>
+
+    <section id="allocation" class="panel">
+      <article class="card">
+        <div class="card-head"><div><h2>Aggregate Prevention Allocation</h2><p>Division-level planning scores only. No individual risk scores, watchlists, or demographic targeting.</p></div><span class="tag">PRIME-CYCLE COVERAGE</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Division</th><th>Hate incidents</th><th>Planning score</th><th>Prime cycle</th><th>QML-inspired kernel</th><th>Prevention hours</th><th>Scenario reduction</th></tr></thead><tbody id="allocationBody"></tbody></table></div>
+      </article>
+      <article class="card protocol-card"><h2>Integrated Prevention Protocol</h2><div id="protocolList" class="protocols"></div></article>
+    </section>
+
+    <section id="support" class="panel">
+      <div class="grid two-up">
+        <article class="card emphasis"><span class="tag">CARE FIRST</span><h2>Women’s Health &amp; PTSD-Informed Recovery</h2><div class="support-stats"><div><small>Recorded gender-bias incidents</small><strong id="genderBiasCount">0</strong></div><div><small>Records naming women / trans women</small><strong id="womenCount">0</strong></div></div><p>These counts guide aggregate capacity planning and never determine service eligibility. Support remains voluntary, accessible, and survivor-directed.</p></article>
+        <article class="card"><h2>Survivor Safety Pathways</h2><div id="supportList" class="protocols"></div></article>
+      </div>
+    </section>
+
+    <section id="method" class="panel">
+      <div class="grid two-up">
+        <article class="card"><h2>Transparent Optimization</h2><p>The planning score combines historical aggregate incident volume (72%) and aggregate major-crime context (28%). A quantum-kernel-inspired nonlinear feature is used only to vary area-level outreach cadence; it is not a claim of quantum-computer execution and is not applied to people.</p><pre>score_d = 0.72 · normalized(hate_d)
+        + 0.28 · normalized(context_d)
+κ_d = sin²(π · index_d / p_d)</pre></article>
+        <article class="card"><h2>Number-Theoretic Coverage</h2><p>Co-prime prime cycles $p ∈ {2,3,5,7,11,13,17}$ stagger recurring community outreach, victim-service clinics, environmental safety work, and evaluation reviews. The objective is coverage diversity, not enforcement prediction.</p><pre>cycle_d = p_d
+cadence overlap minimized by gcd(p_i, p_j) = 1</pre></article>
+      </div>
+      <article class="card warning"><h2>Model Limits &amp; Legal Safeguards</h2><p id="limitations"></p><p>All accountability measures must be lawful, proportionate, evidence-based, independently reviewed, and consistent with due process. The dashboard supports prevention and service planning; it does not identify suspects or automate legal decisions.</p></article>
+    </section>
+  </main>
+  <div id="toast" role="status"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
