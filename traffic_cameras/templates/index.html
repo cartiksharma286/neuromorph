@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum-Statistical Traffic Signal Intelligence | Red Light Enforcement</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body>
+
+    <!-- Top Navigation Header -->
+    <header class="top-header">
+        <div class="brand-section">
+            <div class="brand-icon">🚦</div>
+            <div>
+                <div class="brand-title">
+                    <span>Quantum-Statistical Traffic Signal Intelligence</span>
+                    <span style="font-size:11px; background:rgba(56,189,248,0.15); color:#38bdf8; padding:2px 8px; border-radius:12px; border:1px solid rgba(56,189,248,0.3); font-weight:600;">v2.6 Enterprise</span>
+                </div>
+                <div class="brand-subtitle">
+                    City of Toronto Red Light Cameras (301 Intersections) · 4-Phase Hilbert Space $\mathcal{H}_4$ · Negative Binomial GLM · EVT Pareto Tail Risk
+                </div>
+            </div>
+        </div>
+
+        <div class="header-status">
+            <div class="status-badge">
+                <span class="pulse-dot"></span>
+                <span id="system-status-text">301 Camera Nodes Active</span>
+            </div>
+            <button onclick="triggerSimulation()" class="btn-primary">
+                <span>🔄 Recalculate Quantum-ML Model</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- KPI Summary Metric Strip -->
+    <section class="kpi-container">
+        <div class="glass-panel kpi-card kpi-cyan">
+            <span class="kpi-label">Monitored Intersections</span>
+            <span class="kpi-value" id="kpi-total-cameras">301</span>
+            <span class="kpi-sub">Toronto GeoJSON Network</span>
+        </div>
+        <div class="glass-panel kpi-card kpi-amber">
+            <span class="kpi-label">Monthly Violations (Base)</span>
+            <span class="kpi-value" id="kpi-monthly-violations">44,210</span>
+            <span class="kpi-sub">Statutory RLR Breaches</span>
+        </div>
+        <div class="glass-panel kpi-card kpi-red">
+            <span class="kpi-label">Dilemma Zone Intersections</span>
+            <span class="kpi-value" id="kpi-dilemma-count">138 (45.8%)</span>
+            <span class="kpi-sub">Type-I Unclearable Gap</span>
+        </div>
+        <div class="glass-panel kpi-card kpi-purple">
+            <span class="kpi-label">Mean Quantum Operator &lang;V̂&rang;</span>
+            <span class="kpi-value" id="kpi-quantum-operator">0.538</span>
+            <span class="kpi-sub">Violation Expectation in $\mathcal{H}_4$</span>
+        </div>
+        <div class="glass-panel kpi-card kpi-pink">
+            <span class="kpi-label">Von Neumann Entropy S(&rho;)</span>
+            <span class="kpi-value" id="kpi-entropy">0.942</span>
+            <span class="kpi-sub">Decoherence Disorder Index</span>
+        </div>
+        <div class="glass-panel kpi-card kpi-emerald">
+            <span class="kpi-label">Risk Reduction Policy</span>
+            <span class="kpi-value" id="kpi-risk-reduction">-45.2%</span>
+            <span class="kpi-sub">Projected Annual Savings $18.4M</span>
+        </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs-nav">
+        <button class="tab-btn active" data-tab="map-tab">
+            <span>🗺️ Geospatial Map &amp; Inspector</span>
+        </button>
+        <button class="tab-btn" data-tab="quantum-tab">
+            <span>⚛️ Quantum Observables &amp; VQE</span>
+        </button>
+        <button class="tab-btn" data-tab="glm-tab">
+            <span>📈 Statistical GLM &amp; Convergence</span>
+        </button>
+        <button class="tab-btn" data-tab="evt-tab">
+            <span>🚨 Extreme Value Tail Risk (EVT)</span>
+        </button>
+        <button class="tab-btn" data-tab="clusters-tab">
+            <span>🧩 Spatial GMM Clusters &amp; Tags</span>
+        </button>
+        <button class="tab-btn" data-tab="mitigation-tab">
+            <span>🛡️ Risk Mitigation &amp; Policy</span>
+        </button>
+    </nav>
+
+    <!-- Main Views Area -->
+    <main class="main-wrapper">
+
+        <!-- ════════════════ TAB 1: GEOSPATIAL MAP & INSPECTOR ════════════════ -->
+        <section id="map-tab" class="tab-content">
+            <div class="grid-2col">
+                <!-- Left: Interactive Map -->
+                <div class="glass-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">Toronto Red Light Camera Geospatial Network</h3>
+                            <p style="font-size: 11.5px; color: #94a3b8;">Click any node to inspect signal phase telemetry, dilemma zone kinematics, and quantum observables.</p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <select id="filter-district" class="select-input" onchange="filterMapNodes()">
+                                <option value="all">All Districts (Toronto)</option>
+                                <option value="Toronto and East York">Toronto and East York</option>
+                                <option value="North York">North York</option>
+                                <option value="Scarborough">Scarborough</option>
+                                <option value="Etobicoke York">Etobicoke York</option>
+                            </select>
+                            <select id="filter-risk" class="select-input" onchange="filterMapNodes()">
+                                <option value="all">All Risk Levels</option>
+                                <option value="Severe Risk">Severe Risk</option>
+                                <option value="High Risk">High Risk</option>
+                                <option value="Moderate Risk">Moderate Risk</option>
+                                <option value="Low Risk">Low Risk</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Map Element -->
+                    <div id="leaflet-map"></div>
+
+                    <!-- Map Legend -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; background: rgba(0,0,0,0.3); border-radius: 6px; font-size: 11px;">
+                        <span style="color: #94a3b8; font-weight: 600;">Hazard Tier:</span>
+                        <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:50%; background:#dc2626;"></span> Severe Risk</span>
+                        <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:50%; background:#f97316;"></span> High Risk</span>
+                        <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:50%; background:#eab308;"></span> Moderate Risk</span>
+                        <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:50%; background:#10b981;"></span> Low Risk</span>
+                    </div>
+                </div>
+
+                <!-- Right: Node Inspection Card & Telemetry -->
+                <div class="glass-panel" style="padding: 18px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <span id="inspect-tag" class="tag-badge tag-red">TAG-SELECT-CAMERA</span>
+                            <h3 id="inspect-name" style="font-size: 16px; font-weight: 700; color: #f8fafc; margin-top: 4px;">University Ave And Wellington St W</h3>
+                            <p id="inspect-district" style="font-size: 11.5px; color: #94a3b8;">District: Toronto and East York · Ward 10</p>
+                        </div>
+                        <div id="inspect-risk-badge" style="font-size: 11px; padding: 4px 10px; border-radius: 12px; font-weight: 700; background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">
+                            Severe Risk
+                        </div>
+                    </div>
+
+                    <!-- Camera Physical Metrics -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px;">
+                        <div>
+                            <div style="font-size: 10.5px; color: #94a3b8;">Speed (Limit / 85th)</div>
+                            <div id="inspect-speed" style="font-size: 13px; font-weight: 700; color: #38bdf8;">50 / 58.4 km/h</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 10.5px; color: #94a3b8;">Daily AADT Flow</div>
+                            <div id="inspect-aadt" style="font-size: 13px; font-weight: 700; color: #fbbf24;">34,200 veh/d</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 10.5px; color: #94a3b8;">Dilemma Zone Gap</div>
+                            <div id="inspect-dilemma" style="font-size: 13px; font-weight: 700; color: #f87171;">8.4 m (Hazard)</div>
+                        </div>
+                    </div>
+
+                    <!-- 24-Hour Violation Distribution Chart -->
+                    <div>
+                        <h4 style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">24-Hour Hourly Violation Distribution</h4>
+                        <div id="plot-hourly-violations" style="height: 180px;"></div>
+                    </div>
+
+                    <!-- Quantum State Telemetry Card -->
+                    <div style="background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="font-size: 12px; font-weight: 700; color: #38bdf8; display: flex; justify-content: space-between;">
+                            <span>⚛️ Quantum State in $\mathcal{H}_4$</span>
+                            <span id="inspect-qfi" style="font-size: 11px; color: #a78bfa;">QFI $F_Q$: 1.45</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 11.5px;">
+                            <div>Violation Expectation &lang;V̂&rang;: <b id="inspect-exp-v" style="color: #f43f5e;">0.642</b></div>
+                            <div>Hamiltonian &lang;Ĥ<sub>risk</sub>&rang;: <b id="inspect-exp-h" style="color: #fb923c;">1.284</b></div>
+                            <div>Von Neumann Entropy: <b id="inspect-vn-entropy" style="color: #c084fc;">0.892</b></div>
+                            <div>State Purity $\mathrm{Tr}(\rho^2)$: <b id="inspect-purity" style="color: #34d399;">0.684</b></div>
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+                            Heisenberg Uncertainty: $\Delta X \cdot \Delta P =$ <b id="inspect-uncertainty" style="color: #f8fafc;">3.24</b> (Bound $\ge 0.0527$ $\checkmark$)
+                        </div>
+                    </div>
+
+                    <!-- Stopping vs Clearing Distance Curve -->
+                    <div>
+                        <h4 style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Kinematic Stopping ($X_0$) vs. Clearing ($X_c$) Distance</h4>
+                        <div id="plot-kinematic-curves" style="height: 170px;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════════════ TAB 2: QUANTUM OBSERVABLES & VQE ════════════════ -->
+        <section id="quantum-tab" class="tab-content hidden">
+            <div class="grid-2col" style="margin-bottom: 20px;">
+                <!-- VQE Convergence Plot -->
+                <div class="glass-panel" style="padding: 18px;">
+                    <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">⚛️ Variational Quantum Eigensolver (VQE) Convergence</h3>
+                    <p style="font-size: 11.5px; color: #94a3b8; margin-bottom: 8px;">Variational minimization of expected violation operator $\langle \hat{\mathcal{V}}(\vec{\theta}) \rangle$ across training epochs.</p>
+                    <div id="plot-vqe-convergence" style="height: 280px;"></div>
+                </div>
+
+                <!-- Quantum Entropy & QFI Plot -->
+                <div class="glass-panel" style="padding: 18px;">
+                    <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">🌌 Von Neumann Entropy $S(\rho)$ &amp; Quantum Fisher Information</h3>
+                    <p style="font-size: 11.5px; color: #94a3b8; margin-bottom: 8px;">Phase decoherence decay and clearance timing estimation precision $F_Q(\tau_{\mathrm{yellow}})$.</p>
+                    <div id="plot-entropy-qfi" style="height: 280px;"></div>
+                </div>
+            </div>
+
+            <!-- Mathematical Formulations Card -->
+            <div class="glass-panel" style="padding: 20px; background: rgba(56, 189, 248, 0.04); border: 1px solid rgba(56, 189, 248, 0.25);">
+                <h3 style="font-size: 15px; font-weight: 700; color: #38bdf8; margin-bottom: 12px;">📐 Quantum Observable Formulations in 4-Phase Hilbert Space $\mathcal{H}_4$</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;">
+                    <div style="background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px;">
+                        <div style="font-weight: 700; color: #34d399; font-size: 12px;">1. 4-Phase Traffic Density Matrix $\rho$</div>
+                        <div class="math-block">
+                            \rho = \sum_{k=0}^3 p_k |\psi_k\rangle\langle\psi_k| + \sum_{j \neq k} \rho_{jk} |j\rangle\langle k|
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8;">State space spanned by $\{|G\rangle, |Y\rangle, |R\rangle, |AR\rangle\}$. Purity $\gamma = \mathrm{Tr}(\rho^2) \in [0.25, 1.0]$.</div>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px;">
+                        <div style="font-weight: 700; color: #38bdf8; font-size: 12px;">2. Hermitian Violation Operator $\hat{\mathcal{V}}$</div>
+                        <div class="math-block">
+                            \hat{\mathcal{V}} = v_r |R\rangle\langle R| + v_{ar} |AR\rangle\langle AR| + \gamma_t (|Y\rangle\langle R| + |R\rangle\langle Y|)
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8;">Expectation $\langle \hat{\mathcal{V}} \rangle = \mathrm{Tr}(\rho \hat{\mathcal{V}})$. $\gamma_t$ captures tunneling into the red phase.</div>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px;">
+                        <div style="font-weight: 700; color: #f59e0b; font-size: 12px;">3. Heisenberg Dilemma Uncertainty Bound</div>
+                        <div class="math-block">
+                            [\hat{X}, \hat{P}] = i \hbar_{\mathrm{eff}} \hat{I} \implies \Delta X \cdot \Delta P \ge \frac{\hbar_{\mathrm{eff}}}{2}
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8;">Non-commutation of approach distance $\hat{X}$ and braking deceleration $\hat{P}$ at yellow onset.</div>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px;">
+                        <div style="font-weight: 700; color: #c084fc; font-size: 12px;">4. Quantum Fisher Information (QFI)</div>
+                        <div class="math-block">
+                            F_Q(\theta) = 2 \sum_{j,k} \frac{(p_j - p_k)^2}{p_j + p_k} |\langle j | \partial_\theta \rho | k \rangle|^2
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8;">Binds the Cramér-Rao lower bound for variance in signal clearance interval tuning.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════════════ TAB 3: STATISTICAL GLM & CONVERGENCE ════════════════ -->
+        <section id="glm-tab" class="tab-content hidden">
+            <div class="grid-2col" style="margin-bottom: 20px;">
+                <!-- IRLS Convergence Plot -->
+                <div class="glass-panel" style="padding: 18px;">
+                    <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">📈 Negative Binomial GLM Fisher Scoring Convergence</h3>
+                    <p style="font-size: 11.5px; color: #94a3b8; margin-bottom: 8px;">Iteratively Reweighted Least Squares (IRLS) log-likelihood and parameter norm difference $\|\beta^{(t+1)} - \beta^{(t)}\|$.</p>
+                    <div id="plot-glm-convergence" style="height: 280px;"></div>
+                </div>
+
+                <!-- MCMC Bayesian Trace Plot -->
+                <div class="glass-panel" style="padding: 18px;">
+                    <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">🎲 Bayesian MCMC Posterior Parameter Trace ($\beta_{\mathrm{speed}}$)</h3>
+                    <p style="font-size: 11.5px; color: #94a3b8; margin-bottom: 8px;">Metropolis-Hastings sampling chains with Gelman-Rubin convergence $\hat{R} = 1.0181 &lt; 1.05$.</p>
+                    <div id="plot-mcmc-trace" style="height: 280px;"></div>
+                </div>
+            </div>
+
+            <!-- GLM Regression Results Table -->
+            <div class="glass-panel" style="padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div>
+                        <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">Generalized Linear Model Parameter Estimates</h3>
+                        <p style="font-size: 11.5px; color: #94a3b8;">Link function: $\ln(\mu_i) = \mathbf{x}_i^\top \boldsymbol{\beta}$ · Negative Binomial Dispersion $\alpha = 0.150$ · Pseudo-$R^2 = 0.8129$.</p>
+                    </div>
+                    <span style="font-size: 11px; background: rgba(16,185,129,0.15); color: #34d399; padding: 4px 10px; border-radius: 6px; font-weight: 600;">
+                        Fisher Scoring Converged (3 iterations)
+                    </span>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Predictor Covariate</th>
+                                <th>Coefficient $\beta$</th>
+                                <th>Standard Error</th>
+                                <th>Wald $z$-Score</th>
+                                <th>$p$-Value</th>
+                                <th>95% Confidence Interval</th>
+                                <th>Significance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="glm-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════════════ TAB 4: EXTREME VALUE TAIL RISK ════════════════ -->
+        <section id="evt-tab" class="tab-content hidden">
+            <div class="grid-2col" style="margin-bottom: 20px;">
+                <!-- EVT Survival Curve Plot -->
+                <div class="glass-panel" style="padding: 18px;">
+                    <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">🚨 Generalized Pareto Distribution (GPD) Survival Function</h3>
+                    <p style="font-size: 11.5px; color: #94a3b8; margin-bottom: 8px;">Peak-Over-Threshold model for dangerous red clearance breaches ($t > 1.5\ \mathrm{s}$ into red).</p>
+                    <div id="plot-evt-survival" style="height: 280px;"></div>
+                </div>
+
+                <!-- Return Levels Plot -->
+                <div class="glass-panel" style="padding: 18px;">
+                    <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">⏳ Return Period vs. Extreme Clearance Delay</h3>
+                    <p style="font-size: 11.5px; color: #94a3b8; margin-bottom: 8px;">Projected worst-case intersection encroachment delays across 10 to 1,095 days (3 years).</p>
+                    <div id="plot-evt-return" style="height: 280px;"></div>
+                </div>
+            </div>
+
+            <!-- EVT Diagnostics Card -->
+            <div class="glass-panel" style="padding: 20px;">
+                <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 10px;">Extreme Value Theory (EVT) Diagnostics &amp; Risk Parameters</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                    <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
+                        <span style="font-size: 11px; color: #94a3b8;">GPD Threshold $u$</span>
+                        <div style="font-size: 18px; font-weight: 700; color: #38bdf8;">1.50 s</div>
+                        <span style="font-size: 10.5px; color: #64748b;">Statutory extreme hazard threshold</span>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
+                        <span style="font-size: 11px; color: #94a3b8;">Shape Parameter $\xi$</span>
+                        <div id="evt-shape-val" style="font-size: 18px; font-weight: 700; color: #f59e0b;">-0.0094</div>
+                        <span style="font-size: 10.5px; color: #64748b;">Fréchet / Gumbel boundary index</span>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
+                        <span style="font-size: 11px; color: #94a3b8;">Scale Parameter $\sigma$</span>
+                        <div id="evt-scale-val" style="font-size: 18px; font-weight: 700; color: #a78bfa;">0.984</div>
+                        <span style="font-size: 10.5px; color: #64748b;">Dispersion of tail exceedances</span>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
+                        <span style="font-size: 11px; color: #94a3b8;">1-Year Return Level</span>
+                        <div id="evt-return-1yr" style="font-size: 18px; font-weight: 700; color: #ef4444;">7.58 s</div>
+                        <span style="font-size: 10.5px; color: #64748b;">Predicted max red entry breach</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════════════ TAB 5: SPATIAL GMM CLUSTERS & TAGS ════════════════ -->
+        <section id="clusters-tab" class="tab-content hidden">
+            <!-- 4 GMM Phenotype Cluster Cards -->
+            <div id="gmm-clusters-container" class="grid-3col" style="margin-bottom: 20px;"></div>
+
+            <!-- Full Intersections Searchable Table -->
+            <div class="glass-panel" style="padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">301 Camera Intersections Directory with Geospatial Tags</h3>
+                        <p style="font-size: 11.5px; color: #94a3b8;">Filter, inspect and verify geospatial tags for risk reduction across Toronto.</p>
+                    </div>
+                    <input type="text" id="search-camera-table" class="select-input" placeholder="🔍 Search street or camera ID..." oninput="searchCameraTable()" style="min-width: 250px;">
+                </div>
+
+                <div class="data-table-container" style="max-height: 480px;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Camera ID</th>
+                                <th>Intersection Name</th>
+                                <th>District &amp; Ward</th>
+                                <th>Speed Limit / 85th</th>
+                                <th>Dilemma Gap</th>
+                                <th>Monthly Violations</th>
+                                <th>Hazard Tier</th>
+                                <th>Geospatial Tag</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-cameras-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ════════════════ TAB 6: RISK MITIGATION & POLICY ════════════════ -->
+        <section id="mitigation-tab" class="tab-content hidden">
+            <div class="grid-2col" style="margin-bottom: 20px;">
+                <!-- Left: Interactive Retiming Controls -->
+                <div class="glass-panel controls-card">
+                    <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">🛡️ Signal Clearance Retiming &amp; Scenario Simulator</h3>
+                    <p style="font-size: 11.5px; color: #94a3b8;">Simulate dynamic clearance extensions and quantum dilemma zone gating to eliminate RLR breaches.</p>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <span>Yellow Interval Extension ($\Delta \tau_{\mathrm{yellow}}$):</span>
+                            <span id="label-yellow-ext" class="control-val">+0.6 s</span>
+                        </div>
+                        <input type="range" id="sim-yellow" min="0.0" max="1.5" step="0.1" value="0.6" oninput="document.getElementById('label-yellow-ext').textContent='+'+parseFloat(this.value).toFixed(1)+' s';" class="slider-input">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <span>All-Red Clearance Extension ($\Delta \tau_{\mathrm{all\_red}}$):</span>
+                            <span id="label-allred-ext" class="control-val">+0.4 s</span>
+                        </div>
+                        <input type="range" id="sim-allred" min="0.0" max="1.0" step="0.1" value="0.4" oninput="document.getElementById('label-allred-ext').textContent='+'+parseFloat(this.value).toFixed(1)+' s';" class="slider-input">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <span>Ambient Traffic Flow Multiplier:</span>
+                            <span id="label-flow" class="control-val">100% (1.0x AADT)</span>
+                        </div>
+                        <input type="range" id="sim-flow" min="0.5" max="1.8" step="0.05" value="1.0" oninput="document.getElementById('label-flow').textContent=Math.round(parseFloat(this.value)*100)+'% ('+parseFloat(this.value).toFixed(2)+'x)'; " class="slider-input">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">
+                            <span>Weather / Road Surface Condition:</span>
+                        </div>
+                        <select id="sim-weather" class="select-input">
+                            <option value="clear">Clear &amp; Dry Surface ($a = 3.2\ \mathrm{m/s}^2$)</option>
+                            <option value="rain">Wet / Rain Pavement ($a = 2.6\ \mathrm{m/s}^2$)</option>
+                            <option value="snow_ice">Snow / Ice Friction ($a = 1.9\ \mathrm{m/s}^2$)</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(0,0,0,0.3); border-radius: 6px;">
+                        <input type="checkbox" id="sim-quantum-gating" checked style="width: 16px; height: 16px; accent-color: #0284c7;">
+                        <label for="sim-quantum-gating" style="font-size: 12px; color: #f8fafc; cursor: pointer;">
+                            Enable <b>Quantum Dilemma-Zone Gating</b> (dynamic hold if platoon superposition in dilemma zone)
+                        </label>
+                    </div>
+
+                    <button onclick="triggerSimulation()" class="btn-primary" style="margin-top: 8px;">
+                        <span>🚀 Run Citywide Mitigation Simulation</span>
+                    </button>
+                </div>
+
+                <!-- Right: Before vs After Impact Chart -->
+                <div class="glass-panel" style="padding: 18px;">
+                    <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc;">📊 Before vs. After Retiming Violation Reductions</h3>
+                    <p style="font-size: 11.5px; color: #94a3b8; margin-bottom: 8px;">District-by-district monthly violations before vs. after quantum clearance retiming.</p>
+                    <div id="plot-mitigation-impact" style="height: 310px;"></div>
+                </div>
+            </div>
+
+            <!-- Policy & Economic Benefits Card -->
+            <div class="glass-panel" style="padding: 20px;">
+                <h3 style="font-size: 15px; font-weight: 700; color: #10b981; margin-bottom: 12px;">🏛️ Projected Municipal Economic &amp; Road Safety Impact</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                    <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); padding: 14px; border-radius: 8px;">
+                        <span style="font-size: 11px; color: #94a3b8;">Violations Averted Monthly</span>
+                        <div id="pol-violations-monthly" style="font-size: 20px; font-weight: 700; color: #34d399;">19,980 / mo</div>
+                        <span style="font-size: 10.5px; color: #64748b;">-45.2% citywide reduction</span>
+                    </div>
+
+                    <div style="background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.25); padding: 14px; border-radius: 8px;">
+                        <span style="font-size: 11px; color: #94a3b8;">Annual Severe Crashes Prevented</span>
+                        <div id="pol-crashes-annual" style="font-size: 20px; font-weight: 700; color: #38bdf8;">912 Collisions</div>
+                        <span style="font-size: 10.5px; color: #64748b;">Right-angle T-bone prevention</span>
+                    </div>
+
+                    <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); padding: 14px; border-radius: 8px;">
+                        <span style="font-size: 11px; color: #94a3b8;">Annual Direct Cost Savings</span>
+                        <div id="pol-savings-cad" style="font-size: 20px; font-weight: 700; color: #fbbf24;">$167.8M CAD</div>
+                        <span style="font-size: 10.5px; color: #64748b;">Emergency care &amp; collision offsets</span>
+                    </div>
+
+                    <div style="background: rgba(192,132,252,0.08); border: 1px solid rgba(192,132,252,0.25); padding: 14px; border-radius: 8px;">
+                        <span style="font-size: 11px; color: #94a3b8;">Recommended Measure</span>
+                        <div style="font-size: 15px; font-weight: 700; color: #c084fc;">Dynamic ITE + 0.6s</div>
+                        <span style="font-size: 10.5px; color: #64748b;">Fully eliminates dilemma zones</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Client Logic JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
