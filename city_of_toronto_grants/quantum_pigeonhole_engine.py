@@ -94,6 +94,76 @@ GRANT_SECTORS = [
     }
 ]
 
+# Downtown Toronto Biotech Innovation Corridor Hubs (Discovery District, University Ave, MaRS, U of T, TMU)
+DOWNTOWN_BIOTECH_HUBS = [
+    {
+        "id": "mars_discovery",
+        "name": "MaRS Discovery District & University Ave Hospital Row",
+        "focus": "Genomic Medicine, Clinical Trials & Advanced Therapeutics",
+        "annual_rd_investment_cad": 68_000_000.0,
+        "vc_leverage_ratio": 4.85,
+        "avg_stem_salary_cad": 118_000.0,
+        "base_annual_jobs": 520,
+        "ip_spinoff_multiplier": 3.40,
+        "municipal_tax_capture_rate": 0.088
+    },
+    {
+        "id": "sric_uoft",
+        "name": "Schwartz Reisman Innovation Campus (U of T)",
+        "focus": "AI Drug Discovery, Quantum Biology & Computational Oncology",
+        "annual_rd_investment_cad": 54_000_000.0,
+        "vc_leverage_ratio": 5.20,
+        "avg_stem_salary_cad": 126_000.0,
+        "base_annual_jobs": 440,
+        "ip_spinoff_multiplier": 3.90,
+        "municipal_tax_capture_rate": 0.092
+    },
+    {
+        "id": "uhn_pmc",
+        "name": "Princess Margaret Cancer Tower & UHN Bio-Incubator",
+        "focus": "Cellular Immunotherapy, Radiopharmaceuticals & Diagnostics",
+        "annual_rd_investment_cad": 48_000_000.0,
+        "vc_leverage_ratio": 4.40,
+        "avg_stem_salary_cad": 112_000.0,
+        "base_annual_jobs": 380,
+        "ip_spinoff_multiplier": 3.20,
+        "municipal_tax_capture_rate": 0.085
+    },
+    {
+        "id": "sickkids_pgcrl",
+        "name": "Peter Gilgan Centre for Research and Learning (SickKids)",
+        "focus": "Pediatric Precision Medicine & Rare Disease Gene Editing",
+        "annual_rd_investment_cad": 42_000_000.0,
+        "vc_leverage_ratio": 4.10,
+        "avg_stem_salary_cad": 109_000.0,
+        "base_annual_jobs": 310,
+        "ip_spinoff_multiplier": 3.00,
+        "municipal_tax_capture_rate": 0.082
+    },
+    {
+        "id": "tmu_biomed",
+        "name": "Toronto Metropolitan University iBest & Biomedical Cluster",
+        "focus": "Neuromorphic BCI Implants & Surgical Robotics Integration",
+        "annual_rd_investment_cad": 36_000_000.0,
+        "vc_leverage_ratio": 4.60,
+        "avg_stem_salary_cad": 114_000.0,
+        "base_annual_jobs": 290,
+        "ip_spinoff_multiplier": 3.60,
+        "municipal_tax_capture_rate": 0.089
+    },
+    {
+        "id": "spadina_healthtech",
+        "name": "King-Spadina HealthTech & Digital Therapeutics Quarter",
+        "focus": "Quantum Biosensors, Digital Health & Diagnostic Software",
+        "annual_rd_investment_cad": 32_000_000.0,
+        "vc_leverage_ratio": 5.50,
+        "avg_stem_salary_cad": 122_000.0,
+        "base_annual_jobs": 260,
+        "ip_spinoff_multiplier": 4.10,
+        "municipal_tax_capture_rate": 0.095
+    }
+]
+
 class QuantumSelectiveExcitationEngine:
     """Simulates quantum-inspired selective excitation profiles using RF pulse shaping.
     Maps community demand resonance frequencies to Bloch excitation states |psi(theta, phi)>.
@@ -345,19 +415,52 @@ class TorontoCommunityGrantOptimizer:
                 "annual_cost_savings_cad": round(municipal_cost_savings, 2)
             })
             
-        # 6. Multi-Year Municipal Revenue & Return Projections (2026 - 2030)
+        # 6. Multi-Year Municipal Revenue & Job Creation Projections (2026 - 2030)
         # Revenue vectors:
         # 1) Direct Municipal Tax Uplift (Commercial vibrancy, BIA assessment growth, property enhancement)
         # 2) Municipal Expenditure Avoidance (Emergency shelters, police/crisis calls, chronic hospital EMS diversion)
         # 3) External Matching Inflow (Federal/Provincial transfers and institutional foundations spent in Toronto)
         # 4) SROI (Net societal and economic value created)
+        # 5) 5-Year Job Creation Horizon (Community Grants + Downtown Biotech Innovation Corridor)
         
+        # 6A. Downtown Toronto Biotech Innovation Corridor Analytics
+        biotech_hubs_analysis = []
+        tot_biotech_rd = sum(h["annual_rd_investment_cad"] for h in DOWNTOWN_BIOTECH_HUBS)
+        tot_biotech_vc = sum(h["annual_rd_investment_cad"] * h["vc_leverage_ratio"] for h in DOWNTOWN_BIOTECH_HUBS)
+        tot_biotech_tax = sum(h["annual_rd_investment_cad"] * h["municipal_tax_capture_rate"] for h in DOWNTOWN_BIOTECH_HUBS)
+        tot_biotech_base_jobs = sum(h["base_annual_jobs"] for h in DOWNTOWN_BIOTECH_HUBS)
+        tot_biotech_gdp = sum(h["annual_rd_investment_cad"] * h["ip_spinoff_multiplier"] for h in DOWNTOWN_BIOTECH_HUBS)
+
+        for h in DOWNTOWN_BIOTECH_HUBS:
+            hub_vc = h["annual_rd_investment_cad"] * h["vc_leverage_ratio"]
+            hub_gdp = h["annual_rd_investment_cad"] * h["ip_spinoff_multiplier"]
+            hub_tax = h["annual_rd_investment_cad"] * h["municipal_tax_capture_rate"]
+            # 5-year cumulative STEM jobs for this hub (compounding as clinical pipeline matures)
+            hub_5yr_jobs = int(round(h["base_annual_jobs"] * (1.0 + 1.15 + 1.32 + 1.52 + 1.75)))
+            biotech_hubs_analysis.append({
+                "hub_id": h["id"],
+                "hub_name": h["name"],
+                "focus": h["focus"],
+                "annual_rd_investment_cad": h["annual_rd_investment_cad"],
+                "vc_leverage_ratio": h["vc_leverage_ratio"],
+                "vc_matched_capital_cad": round(hub_vc, 2),
+                "avg_stem_salary_cad": h["avg_stem_salary_cad"],
+                "yr1_stem_jobs": h["base_annual_jobs"],
+                "five_year_total_jobs": hub_5yr_jobs,
+                "annual_municipal_tax_cad": round(hub_tax, 2),
+                "annual_gdp_impact_cad": round(hub_gdp, 2)
+            })
+
         yearly_projections = []
         cumulative_revenue = 0.0
         cumulative_savings = 0.0
         cumulative_sroi = 0.0
+        cumulative_community_jobs = 0
+        cumulative_biotech_jobs = 0
+        cumulative_total_jobs = 0
         
         base_year = 2026
+        base_community_jobs = sum(w["jobs_created"] for w in ward_allocations)
         weighted_sroi = sum(s["normalized_weight"] * s["sroi_factor"] for s in sector_excitations)
         weighted_avoidance = sum(s["normalized_weight"] * s["cost_avoidance_rate"] for s in sector_excitations)
         weighted_leverage = sum(s["normalized_weight"] * s["matching_leverage"] for s in sector_excitations)
@@ -387,6 +490,23 @@ class TorontoCommunityGrantOptimizer:
             cumulative_savings += annual_avoidance
             cumulative_sroi += annual_sroi_value
             
+            # 5-Year Job Horizon Dynamics:
+            # Community grants new jobs: initial deployment + compounding BIA/neighborhood multiplier jobs
+            if yr == 0:
+                ann_community_new_jobs = base_community_jobs
+            else:
+                ann_community_new_jobs = int(round(base_community_jobs * 0.22 * ((1.0 + 0.08)**yr)))
+            cumulative_community_jobs += ann_community_new_jobs
+
+            # Biotech corridor new STEM jobs: accelerates with trial phases and spin-off growth
+            biotech_year_factor = (1.0 + 0.15)**yr
+            ann_biotech_new_jobs = int(round(tot_biotech_base_jobs * biotech_year_factor))
+            cumulative_biotech_jobs += ann_biotech_new_jobs
+
+            # Combined total new jobs and cumulative total jobs
+            ann_total_new_jobs = ann_community_new_jobs + ann_biotech_new_jobs
+            cumulative_total_jobs += ann_total_new_jobs
+            
             yearly_projections.append({
                 "year": current_year,
                 "tax_base_lift_cad": round(annual_tax_lift, 2),
@@ -395,7 +515,13 @@ class TorontoCommunityGrantOptimizer:
                 "total_municipal_yield_cad": round(total_municipal_yield, 2),
                 "cumulative_municipal_yield_cad": round(cumulative_revenue, 2),
                 "annual_sroi_value_cad": round(annual_sroi_value, 2),
-                "cumulative_sroi_value_cad": round(cumulative_sroi, 2)
+                "cumulative_sroi_value_cad": round(cumulative_sroi, 2),
+                "community_new_jobs": ann_community_new_jobs,
+                "cumulative_community_jobs": cumulative_community_jobs,
+                "biotech_new_jobs": ann_biotech_new_jobs,
+                "cumulative_biotech_jobs": cumulative_biotech_jobs,
+                "total_new_jobs_created": ann_total_new_jobs,
+                "cumulative_total_jobs": cumulative_total_jobs
             })
             
         summary_metrics = {
@@ -407,9 +533,16 @@ class TorontoCommunityGrantOptimizer:
             "5yr_net_municipal_roi_pct": round(((cumulative_revenue - total_budget_cad) / total_budget_cad) * 100, 2),
             "5yr_cumulative_sroi_cad": round(cumulative_sroi, 2),
             "total_community_jobs_sustained": sum(w["jobs_created"] for w in ward_allocations),
+            "5yr_total_community_jobs": cumulative_community_jobs,
+            "5yr_total_biotech_stem_jobs": cumulative_biotech_jobs,
+            "5yr_total_citywide_jobs_created": cumulative_total_jobs,
             "dirichlet_peak_occupancy": pigeon_invariants["pigeonhole_minimum_peak"],
             "quantum_excitation_bandwidth_khz": bandwidth_khz,
-            "excitation_flip_angle_deg": flip_angle_deg
+            "excitation_flip_angle_deg": flip_angle_deg,
+            "biotech_corridor_total_rd_cad": tot_biotech_rd,
+            "biotech_corridor_total_vc_cad": tot_biotech_vc,
+            "biotech_corridor_annual_tax_cad": tot_biotech_tax,
+            "biotech_corridor_annual_gdp_cad": tot_biotech_gdp
         }
         
         return {
@@ -418,7 +551,18 @@ class TorontoCommunityGrantOptimizer:
             "rf_pulse_profile": profile,
             "sector_allocations": sector_allocations,
             "ward_allocations": ward_allocations,
-            "yearly_projections": yearly_projections
+            "yearly_projections": yearly_projections,
+            "biotech_corridor": {
+                "hubs": biotech_hubs_analysis,
+                "summary": {
+                    "annual_rd_investment_cad": tot_biotech_rd,
+                    "vc_matched_capital_cad": tot_biotech_vc,
+                    "annual_municipal_tax_cad": tot_biotech_tax,
+                    "annual_gdp_impact_cad": tot_biotech_gdp,
+                    "five_year_total_stem_jobs": cumulative_biotech_jobs,
+                    "avg_weighted_stem_salary_cad": round(sum(h["annual_rd_investment_cad"] * h["avg_stem_salary_cad"] for h in DOWNTOWN_BIOTECH_HUBS) / tot_biotech_rd, 2)
+                }
+            }
         }
 
 if __name__ == "__main__":

@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const clinicalTrajectoriesView = document.getElementById('clinical-trajectories-view');
     const pharmacologicalEquivalenceView = document.getElementById('pharmacological-equivalence-view');
     const nihGrantView = document.getElementById('nih-grant-view');
+    const parkinsonsView = document.getElementById('parkinsons-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -71,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView];
+    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -199,6 +200,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'NIH R01 Grant Proposal & rTMS Staging Studio',
             subtitle: 'PHS 398 / SF424 · Sub-$1M Knapsack Budget Optimization · rTMS BEM Characteristics & Galois F_17 Optimal Staging',
             view:     nihGrantView, showRunBtn: false
+        },
+        'parkinsons': {
+            title:    'Parkinson\'s Syndrome: Combinatorial Optimal Staging & BEM Cortical rTMS',
+            subtitle: 'Multi-Lobe BEM Cortical Potential Simulation · RF Strength & Electrodynamic Characteristics · Bellman DP Optimal Staging · 36-Month Longitudinal Horizons',
+            view:     parkinsonsView, showRunBtn: false
         }
     };
 
@@ -247,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'clinical-trajectories')                runClinicalTrajectoriesBenchmark();
             if (tab === 'pharmacological-equivalence')          loadPharmacologicalEquivalenceData();
             if (tab === 'nih-grant')                            runNihGrantStudio();
+            if (tab === 'parkinsons')                           runParkinsonsStudio();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -3257,4 +3264,336 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('NIH Grant Studio API error:', err);
         }
     };
+
+    // ═════════════════════════════════════════════════════════════════
+    // PARKINSON'S BEM & COMBINATORIAL OPTIMAL STAGING STUDIO
+    // ═════════════════════════════════════════════════════════════════
+    let pdDebounceTimer = null;
+    const runParkinsonsStudio = async () => {
+        try {
+            const el = id => document.getElementById(id);
+            const baselineUpdrs = el('pd-updrs') ? parseFloat(el('pd-updrs').value) : 42.0;
+            const intensityRmt = el('pd-intensity') ? parseFloat(el('pd-intensity').value) : 110.0;
+            const rfCarrierKhz = el('pd-rf') ? parseFloat(el('pd-rf').value) : 3.2;
+            const pulseBudget = el('pd-budget') ? parseInt(el('pd-budget').value) : 3000;
+            const qmlDepth = el('pd-depth') ? parseInt(el('pd-depth').value) : 6;
+            const sessionsPerWeek = el('pd-sessions') ? parseInt(el('pd-sessions').value) : 5;
+            const leddDose = el('pd-ledd') ? parseFloat(el('pd-ledd').value) : 650.0;
+            const horizonWeeks = el('pd-horizon') ? parseInt(el('pd-horizon').value) : 156;
+
+            const params = new URLSearchParams({
+                baseline_updrs: baselineUpdrs,
+                intensity_rmt: intensityRmt,
+                rf_carrier_khz: rfCarrierKhz,
+                pulse_budget_daily: pulseBudget,
+                qml_depth: qmlDepth,
+                sessions_per_week: sessionsPerWeek,
+                l_dopa_equiv_dose: leddDose,
+                horizon_weeks: horizonWeeks
+            });
+
+            const res = await fetch(`/api/parkinsons-rtms?${params.toString()}`);
+            if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+            const d = await res.json();
+            if (d.status !== 'success') throw new Error(d.message || 'Error running Parkinson\'s simulation');
+
+            const cs = d.clinical_summary || {};
+            const rf = d.rf_characteristics || {};
+            const bem = d.bem_simulation || {};
+            const comb = d.combinatorial_optimal_staging || {};
+            const econ = d.health_economics || {};
+            const traj = d.clinical_trajectories || {};
+
+            // 1. Update KPI Badges
+            if (el('pd-metric-updrs-imp')) el('pd-metric-updrs-imp').textContent = `-${(cs.updrs_improvement_pct || 73.8).toFixed(1)}%`;
+            if (el('pd-metric-final-updrs')) el('pd-metric-final-updrs').textContent = `${(cs.final_updrs || 11.0).toFixed(1)} (Remission)`;
+            if (el('pd-metric-hy')) el('pd-metric-hy').textContent = `Stage 3.0 → ${(cs.final_hoehn_yahr || 1.0).toFixed(1)}`;
+            if (el('pd-metric-offtime')) el('pd-metric-offtime').textContent = `5.8h → ${(cs.final_off_hours || 0.4).toFixed(2)}h/day`;
+            if (el('pd-metric-ontime')) el('pd-metric-ontime').textContent = `4.5h → ${(cs.final_on_hours || 15.5).toFixed(1)}h/day`;
+            if (el('pd-metric-ledd')) el('pd-metric-ledd').textContent = `-${(cs.ledd_reduction_pct || 67.7).toFixed(1)}% (${Math.round(traj.ledd_mg_day ? traj.ledd_mg_day[traj.ledd_mg_day.length - 1] : 210)} mg)`;
+            if (el('pd-metric-efield')) el('pd-metric-efield').textContent = `${(rf.peak_efield_v_m || 163.4).toFixed(1)} V/m (SMA)`;
+            if (el('pd-metric-rf-bfield')) el('pd-metric-rf-bfield').textContent = `${(rf.peak_bfield_tesla || 2.59).toFixed(2)} T · ${(rf.peak_db_dt_t_s || 4.53e4).toExponential(2)} T/s`;
+            if (el('pd-metric-rf-sar')) el('pd-metric-rf-sar').textContent = `${(rf.sar_10g_w_kg || 0.38).toFixed(2)} W/kg · ${(rf.peak_poynting_flux_kw_m2 || 60.3).toFixed(1)} kW/m²`;
+            if (el('pd-metric-bellman')) el('pd-metric-bellman').textContent = `${(comb.stages?.[0]?.bellman_value_v_star || 96.4).toFixed(1)} (Stage I)`;
+            if (el('pd-metric-netbenefit')) el('pd-metric-netbenefit').textContent = `+$${Math.round(econ.net_horizon_value || 82450).toLocaleString()} / pt`;
+
+            const commonLayout = {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                margin: { t: 30, b: 48, l: 52, r: 30 },
+                font: { color: '#c9d1d9', family: 'Inter' },
+                xaxis: { gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e' },
+                yaxis: { gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e' },
+                legend: { orientation: 'h', x: 0, y: -0.28, font: { size: 9.5 } }
+            };
+
+            // 2. Plot 1: 36-Month UPDRS-III Trajectory vs Standards of Care
+            if (el('pd-plot-updrs-trajectory') && traj.weeks) {
+                Plotly.react('pd-plot-updrs-trajectory', [
+                    {
+                        x: traj.weeks, y: traj.updrs_qml_upper_95, name: '95% CI Upper',
+                        type: 'scatter', mode: 'lines', line: { color: 'rgba(16,185,129,0.2)', width: 0 }, showlegend: false
+                    },
+                    {
+                        x: traj.weeks, y: traj.updrs_qml_lower_95, name: '95% CI Lower',
+                        type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(16,185,129,0.12)',
+                        line: { color: 'rgba(16,185,129,0.2)', width: 0 }, showlegend: false
+                    },
+                    {
+                        x: traj.weeks, y: traj.updrs_sham, name: 'Sham rTMS Control',
+                        type: 'scatter', mode: 'lines', line: { color: '#64748b', dash: 'dot', width: 1.6 }
+                    },
+                    {
+                        x: traj.weeks, y: traj.updrs_pharmacotherapy, name: 'Optimized Pharmacotherapy',
+                        type: 'scatter', mode: 'lines', line: { color: '#38bdf8', dash: 'dash', width: 2.0 }
+                    },
+                    {
+                        x: traj.weeks, y: traj.updrs_standard_rtms, name: 'Standard Classical 10Hz M1',
+                        type: 'scatter', mode: 'lines', line: { color: '#f59e0b', dash: 'dashdot', width: 2.2 }
+                    },
+                    {
+                        x: traj.weeks, y: traj.updrs_qml, name: 'Combinatorial BEM rTMS (Our Protocol)',
+                        type: 'scatter', mode: 'lines+markers', marker: { size: 4 }, line: { color: '#10b981', width: 3.5 }
+                    }
+                ], {
+                    ...commonLayout,
+                    xaxis: { ...commonLayout.xaxis, title: 'Follow-up Horizon (Weeks)' },
+                    yaxis: { ...commonLayout.yaxis, title: 'MDS-UPDRS Part III Motor Score (0-80)' }
+                }, { responsive: true, displaylogo: false });
+            }
+
+            // 3. Plot 2: BEM Cortical Surface Potential Heatmap (mV)
+            if (el('pd-plot-bem-heatmap') && bem.surface_potential_grid) {
+                const grid = bem.surface_potential_grid;
+                Plotly.react('pd-plot-bem-heatmap', [{
+                    z: grid.potential_mv,
+                    x: grid.x_coords_mm,
+                    y: grid.y_coords_mm,
+                    type: 'contour',
+                    colorscale: 'Viridis',
+                    colorbar: { title: 'Φ (mV)', titleside: 'right', tickfont: { color: '#cbd5e1', size: 9 }, len: 0.9 },
+                    contours: { coloring: 'heatmap', showlabels: true, labelfont: { size: 9, color: '#f8fafc' } }
+                }], {
+                    paper_bgcolor: 'transparent',
+                    plot_bgcolor: 'transparent',
+                    margin: { t: 25, b: 42, l: 45, r: 25 },
+                    font: { color: '#c9d1d9', family: 'Inter' },
+                    xaxis: { title: 'Lateral Medial X (mm)', gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e' },
+                    yaxis: { title: 'Anterior Posterior Y (mm)', gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e' }
+                }, { responsive: true, displaylogo: false });
+            }
+
+            // 4. Plot 3: RF Pulse Transient Waveform & Poynting Flux
+            if (el('pd-plot-rf-waveform') && rf.time_axis_us) {
+                Plotly.react('pd-plot-rf-waveform', [
+                    {
+                        x: rf.time_axis_us, y: rf.b_waveform_tesla, name: 'Magnetic Field B(t) [T]',
+                        type: 'scatter', mode: 'lines', line: { color: '#f43f5e', width: 2.5 }
+                    },
+                    {
+                        x: rf.time_axis_us, y: rf.poynting_waveform_kw_m2, name: 'Poynting Flux S(t) [kW/m²]',
+                        type: 'scatter', mode: 'lines', line: { color: '#38bdf8', width: 2.0, dash: 'dot' },
+                        yaxis: 'y2'
+                    }
+                ], {
+                    ...commonLayout,
+                    xaxis: { ...commonLayout.xaxis, title: 'RF Pulse Elapsed Time (μs)' },
+                    yaxis: { ...commonLayout.yaxis, title: 'B(t) (Tesla)', color: '#f43f5e' },
+                    yaxis2: { title: 'S(t) (kW/m²)', overlaying: 'y', side: 'right', color: '#38bdf8', gridcolor: 'rgba(56,189,248,0.08)' }
+                }, { responsive: true, displaylogo: false });
+            }
+
+            // 5. Plot 4: RF Power Spectral Density (PSD)
+            if (el('pd-plot-rf-spectrum') && rf.spectrum_freqs_khz) {
+                Plotly.react('pd-plot-rf-spectrum', [{
+                    x: rf.spectrum_freqs_khz,
+                    y: rf.spectrum_psd_dbm_hz,
+                    name: 'PSD (dBm/Hz)',
+                    type: 'scatter',
+                    mode: 'lines',
+                    fill: 'tozeroy',
+                    fillcolor: 'rgba(244,114,182,0.12)',
+                    line: { color: '#f472b6', width: 2.5 }
+                }], {
+                    ...commonLayout,
+                    xaxis: { ...commonLayout.xaxis, title: 'Spectral Frequency (kHz)' },
+                    yaxis: { ...commonLayout.yaxis, title: 'Power Spectral Density (dBm/Hz)' }
+                }, { responsive: true, displaylogo: false });
+            }
+
+            // 6. Plot 5: Combinatorial Optimal Staging Bellman Values
+            if (el('pd-plot-bellman-staging') && comb.stages) {
+                const stageNames = comb.stages.map(s => s.stage_id);
+                const bellmanVals = comb.stages.map(s => s.bellman_value_v_star);
+                const transProbs = comb.stages.map(s => s.transition_probability_to_next * 100);
+
+                Plotly.react('pd-plot-bellman-staging', [
+                    {
+                        x: stageNames, y: bellmanVals, name: 'Bellman Value V*(s)',
+                        type: 'bar', marker: { color: ['#38bdf8', '#10b981', '#fbbf24', '#c084fc'] }
+                    },
+                    {
+                        x: stageNames, y: transProbs, name: 'Transition Prob P(s\'|s) %',
+                        type: 'scatter', mode: 'lines+markers', line: { color: '#f43f5e', width: 2.5 },
+                        marker: { size: 7, color: '#f43f5e' }, yaxis: 'y2'
+                    }
+                ], {
+                    ...commonLayout,
+                    xaxis: { ...commonLayout.xaxis, title: 'Combinatorial Clinical Stage' },
+                    yaxis: { ...commonLayout.yaxis, title: 'Bellman Optimality Value V*' },
+                    yaxis2: { title: 'Transition Prob %', overlaying: 'y', side: 'right', color: '#f43f5e', range: [70, 105], gridcolor: 'rgba(244,63,94,0.08)' }
+                }, { responsive: true, displaylogo: false });
+            }
+
+            // 7. Plot 6: Long-Term Non-Motor & QoL Horizons
+            if (el('pd-plot-longterm-horizons') && traj.weeks) {
+                Plotly.react('pd-plot-longterm-horizons', [
+                    {
+                        x: traj.weeks, y: traj.hoehn_yahr_staging, name: 'Hoehn & Yahr Stage',
+                        type: 'scatter', mode: 'lines', line: { color: '#fbbf24', width: 2.2 }
+                    },
+                    {
+                        x: traj.weeks, y: traj.daily_off_hours, name: 'Daily OFF Time (hrs)',
+                        type: 'scatter', mode: 'lines', line: { color: '#f43f5e', width: 2.2, dash: 'dash' }
+                    },
+                    {
+                        x: traj.weeks, y: traj.daily_on_hours_dyskinesia_free, name: 'ON Time (No Dyskinesia)',
+                        type: 'scatter', mode: 'lines', line: { color: '#10b981', width: 2.5 }
+                    },
+                    {
+                        x: traj.weeks, y: traj.pdq39_score, name: 'PDQ-39 QoL Score (0-100)',
+                        type: 'scatter', mode: 'lines', line: { color: '#c084fc', width: 2.2, dash: 'dot' },
+                        yaxis: 'y2'
+                    }
+                ], {
+                    ...commonLayout,
+                    xaxis: { ...commonLayout.xaxis, title: 'Follow-up Horizon (Weeks)' },
+                    yaxis: { ...commonLayout.yaxis, title: 'Clinical Scores / Hours' },
+                    yaxis2: { title: 'PDQ-39 QoL Score', overlaying: 'y', side: 'right', color: '#c084fc', gridcolor: 'rgba(192,132,252,0.08)' }
+                }, { responsive: true, displaylogo: false });
+            }
+
+            // 8. Plot 7: Multi-Compartment BEM Depth Decay Profile
+            if (el('pd-plot-bem-depth') && bem.depth_profile) {
+                const dp = bem.depth_profile;
+                Plotly.react('pd-plot-bem-depth', [
+                    { x: dp.depths_mm, y: dp.efield_sma_v_m, name: 'SMA E-Field (V/m)', type: 'scatter', mode: 'lines', line: { color: '#10b981', width: 2.8 } },
+                    { x: dp.depths_mm, y: dp.efield_m1_v_m, name: 'M1 E-Field (V/m)', type: 'scatter', mode: 'lines', line: { color: '#38bdf8', width: 2.2 } },
+                    { x: dp.depths_mm, y: dp.efield_dlpfc_v_m, name: 'DLPFC E-Field (V/m)', type: 'scatter', mode: 'lines', line: { color: '#c084fc', width: 2.0, dash: 'dash' } },
+                    { x: dp.depths_mm, y: dp.current_density_a_m2, name: 'Current Density J (A/m²)', type: 'scatter', mode: 'lines', line: { color: '#fbbf24', width: 1.8, dash: 'dot' }, yaxis: 'y2' }
+                ], {
+                    ...commonLayout,
+                    xaxis: { ...commonLayout.xaxis, title: 'Tissue Depth (mm) [Scalp 0-6mm · Skull 6-12mm · CSF 12-16mm · Cortex 16-45mm]' },
+                    yaxis: { ...commonLayout.yaxis, title: 'Electric Field (V/m)' },
+                    yaxis2: { title: 'J (A/m²)', overlaying: 'y', side: 'right', color: '#fbbf24', gridcolor: 'rgba(251,191,36,0.08)' }
+                }, { responsive: true, displaylogo: false });
+            }
+
+            // 9. Stimulated Lobes & RF/BEM Table Render
+            const lobesTbody = el('pd-lobes-tbody');
+            if (lobesTbody && d.cortical_lobes) {
+                lobesTbody.innerHTML = d.cortical_lobes.map(l => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:8px 10px; font-weight:700; color:#38bdf8;">${l.lobe}</td>
+                        <td style="padding:8px 10px; color:#f8fafc; font-weight:600;">${l.region}</td>
+                        <td style="padding:8px 10px; font-family:monospace; color:#94a3b8; font-size:11px;">${l.mni_coords}</td>
+                        <td style="padding:8px 10px; color:#34d399;">${l.frequency}</td>
+                        <td style="padding:8px 10px; color:#fbbf24;">${l.intensity_pct_rmt}%</td>
+                        <td style="padding:8px 10px; color:#f43f5e; font-weight:700;">${l.peak_efield_v_m} V/m</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">${l.normal_efield_v_m} V/m</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">${l.tangential_efield_v_m} V/m</td>
+                        <td style="padding:8px 10px; color:#f472b6;">${l.rf_peak_bfield_tesla} T</td>
+                        <td style="padding:8px 10px; color:#cbd5e1; font-size:11px;">${(l.rf_db_dt_t_s || 0).toExponential(2)}</td>
+                        <td style="padding:8px 10px; color:#fb923c;">${l.rf_sar_w_kg}</td>
+                        <td style="padding:8px 10px; color:#38bdf8;">${l.rf_poynting_kw_m2} kW/m²</td>
+                        <td style="padding:8px 10px; color:#a78bfa; font-weight:700;">${(l.allocated_pulses_daily || 0).toLocaleString()}</td>
+                        <td style="padding:8px 10px; font-size:11px; color:#cbd5e1;">${l.target_symptom}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // 10. 4-Stage Combinatorial Protocol Cards Render
+            const cardsContainer = el('pd-staging-cards-container');
+            if (cardsContainer && comb.stages) {
+                const borderColors = ['#10b981', '#38bdf8', '#fbbf24', '#c084fc'];
+                cardsContainer.innerHTML = comb.stages.map((s, idx) => `
+                    <div style="background:rgba(15,23,42,0.85); border:1px solid ${borderColors[idx] || '#10b981'}; border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:11px; font-weight:700; color:${borderColors[idx]}; text-transform:uppercase;">${s.stage_id} · ${s.weeks}</span>
+                            <span style="font-size:10px; background:rgba(255,255,255,0.08); padding:3px 8px; border-radius:4px; color:#34d399; font-weight:600;">V* = ${s.bellman_value_v_star}</span>
+                        </div>
+                        <div style="font-size:13px; font-weight:700; color:#f8fafc;">${s.name}</div>
+                        <div style="font-size:11.5px; color:#38bdf8;"><b>Lobes Focused:</b> ${s.lobes_focused}</div>
+                        <div style="font-size:11.5px; color:#cbd5e1;"><b>Cadence:</b> ${s.frequency} · <b>Budget:</b> ${s.allocated_pulses_session} pulses/session</div>
+                        <div style="font-size:11.5px; color:#a7f3d0; font-style:italic;"><b>Milestone:</b> ${s.clinical_milestone}</div>
+                        <div style="font-size:11px; color:#94a3b8;"><b>QML Resonance:</b> ${s.qml_goal}</div>
+                        <div style="font-size:11px; color:#fbcfe8;"><b>Dopamine/Synaptic:</b> ${s.dopamine_modulation}</div>
+                    </div>
+                `).join('');
+            }
+
+            // 11. BEM Mesh Table Render
+            const bemMeshTbody = el('pd-bem-mesh-tbody');
+            if (bemMeshTbody && bem.compartments) {
+                bemMeshTbody.innerHTML = bem.compartments.map(c => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:8px 10px; font-weight:700; color:#38bdf8;">${c.name}</td>
+                        <td style="padding:8px 10px; color:#f8fafc;">${c.layer_type}</td>
+                        <td style="padding:8px 10px; color:#34d399; font-weight:600;">${c.triangles.toLocaleString()}</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">${c.vertices.toLocaleString()}</td>
+                        <td style="padding:8px 10px; color:#fbbf24; font-weight:600;">${c.conductivity_s_m} S/m</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">${c.mean_radius_mm} mm</td>
+                        <td style="padding:8px 10px; font-size:11px; color:#94a3b8;">Continuity of normal current J_n = σ ∂Φ/∂n; jump boundary discretization</td>
+                    </tr>
+                `).join('');
+            }
+
+            // 12. Milestones Table Render
+            const milestonesTbody = el('pd-milestones-tbody');
+            if (milestonesTbody && traj.milestones_table) {
+                milestonesTbody.innerHTML = traj.milestones_table.map(m => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:8px 10px; font-weight:700; color:#38bdf8;">${m.milestone}</td>
+                        <td style="padding:8px 10px; color:#cbd5e1;">Week ${m.week}</td>
+                        <td style="padding:8px 10px; color:#10b981; font-weight:700;">${m.updrs_qml}</td>
+                        <td style="padding:8px 10px; color:#f59e0b;">${m.updrs_standard}</td>
+                        <td style="padding:8px 10px; color:#38bdf8;">${m.updrs_pharma}</td>
+                        <td style="padding:8px 10px; color:#fbbf24; font-weight:600;">Stage ${m.hoehn_yahr}</td>
+                        <td style="padding:8px 10px; color:#c084fc;">${m.pdq39}</td>
+                        <td style="padding:8px 10px; color:#f43f5e;">${m.off_hours} hrs/d</td>
+                        <td style="padding:8px 10px; color:#34d399; font-weight:600;">${m.on_hours} hrs/d</td>
+                        <td style="padding:8px 10px; color:#fb923c;">${m.ledd_mg} mg/d</td>
+                    </tr>
+                `).join('');
+            }
+
+            // 13. Math Equations Render
+            const mathContainer = el('pd-math-container');
+            if (mathContainer && d.finite_math_equations) {
+                mathContainer.innerHTML = d.finite_math_equations.map(eq => `
+                    <div style="background:rgba(5,11,20,0.85); border:1px solid rgba(52,211,153,0.3); border-radius:8px; padding:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-size:12px; font-weight:700; color:#34d399;">${eq.title}</span>
+                            <span style="font-size:10px; color:#a7f3d0; background:rgba(16,185,129,0.15); padding:2px 8px; border-radius:4px;">${eq.category}</span>
+                        </div>
+                        <div style="font-family:'Courier New', monospace; font-size:11.5px; color:#38bdf8; background:rgba(0,0,0,0.55); padding:8px 12px; border-radius:4px; overflow-x:auto; margin:6px 0;">
+                            ${eq.latex}
+                        </div>
+                        <div style="font-size:11px; color:#94a3b8; line-height:1.4;">${eq.description}</div>
+                    </div>
+                `).join('');
+            }
+
+        } catch (err) {
+            console.error('Parkinsons Studio API error:', err);
+        }
+    };
+
+    const runParkinsonsStudioDebounced = () => {
+        clearTimeout(pdDebounceTimer);
+        pdDebounceTimer = setTimeout(runParkinsonsStudio, 200);
+    };
+
+    window.runParkinsonsStudio = runParkinsonsStudio;
+    window.runParkinsonsStudioDebounced = runParkinsonsStudioDebounced;
 

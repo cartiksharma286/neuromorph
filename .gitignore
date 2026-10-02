@@ -12,3 +12,4 @@ build/
 node_modules/
 .run/
 *.py~
+*Major_Crime_Indicators_Open_Data*.csv

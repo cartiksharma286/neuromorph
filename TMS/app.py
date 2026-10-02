@@ -39,6 +39,7 @@ from logic.clinical_trajectories_benchmark import simulate_clinical_trajectories
 from logic.stroke_repair_rtms import simulate_stroke_repair_rtms
 from logic.pharmacological_equivalence import simulate_pharmacological_equivalence
 from logic.nih_grant_budget_optimizer import optimize_nih_grant_budget
+from logic.parkinsons_rtms import simulate_parkinsons_rtms
 
 app = Flask(__name__)
 if CORS:
@@ -894,6 +895,52 @@ def nih_grant_proposal_pdf():
         output_path = os.path.join(os.path.dirname(__file__), 'NIH_Grant_Proposal_Neuromorph_TMS_DBS.pdf')
         build_pdf(output_path)
         return send_file(output_path, as_attachment=True, download_name='NIH_Grant_Proposal_Neuromorph_TMS_DBS.pdf')
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/parkinsons-rtms', methods=['GET', 'POST'])
+def api_parkinsons_rtms():
+    """Simulate QML-Governed Multi-Lobe rTMS for Parkinson's Disease neuromodulation & health economics."""
+    try:
+        data = request.get_json(silent=True) or {}
+        baseline_updrs = float(request.args.get('baseline_updrs', data.get('baseline_updrs', 42.0)))
+        intensity_rmt = float(request.args.get('intensity_rmt', data.get('intensity_rmt', 110.0)))
+        qml_depth = int(request.args.get('qml_depth', data.get('qml_depth', 6)))
+        sessions_per_week = int(request.args.get('sessions_per_week', data.get('sessions_per_week', 5)))
+        horizon_weeks = int(request.args.get('horizon_weeks', data.get('horizon_weeks', 156)))
+        l_dopa_equiv_dose = float(request.args.get('l_dopa_equiv_dose', data.get('l_dopa_equiv_dose', 650.0)))
+        rf_carrier_khz = float(request.args.get('rf_carrier_khz', data.get('rf_carrier_khz', 3.2)))
+        pulse_budget_daily = int(request.args.get('pulse_budget_daily', data.get('pulse_budget_daily', 3000)))
+
+        res = simulate_parkinsons_rtms(
+            baseline_updrs=baseline_updrs,
+            intensity_rmt=intensity_rmt,
+            qml_depth=qml_depth,
+            sessions_per_week=sessions_per_week,
+            horizon_weeks=horizon_weeks,
+            l_dopa_equiv_dose=l_dopa_equiv_dose,
+            rf_carrier_khz=rf_carrier_khz,
+            pulse_budget_daily=pulse_budget_daily,
+        )
+        return jsonify(res)
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/parkinsons-nature-preprint', methods=['GET'])
+def parkinsons_nature_preprint():
+    """Generate and serve the Parkinson's Multi-Lobe BEM & Combinatorial Staging Nature preprint PDF."""
+    try:
+        from generate_nature_parkinsons_rtms import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Parkinsons_rTMS_BEM_Combinatorial.pdf')
+        if not os.path.exists(output_path):
+            build_pdf(output_path)
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Parkinsons_rTMS_BEM_Combinatorial.pdf')
     except Exception as exc:
         import traceback
         traceback.print_exc()

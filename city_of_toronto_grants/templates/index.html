@@ -84,37 +84,37 @@
         <div class="metrics-grid">
             <div class="metric-card gold">
                 <div class="metric-title">5-Year Municipal Yield</div>
-                <div class="metric-value" id="metricYield">$373.42M</div>
+                <div class="metric-value" id="metricYield">$510.97M</div>
                 <div class="metric-sub">Direct Tax Lift & Cost Offsets</div>
             </div>
 
             <div class="metric-card cyan">
                 <div class="metric-title">Net Municipal ROI</div>
-                <div class="metric-value" id="metricRoi">+198.7%</div>
+                <div class="metric-value" id="metricRoi">+240.7%</div>
                 <div class="metric-sub">Net Surplus to City of Toronto</div>
             </div>
 
             <div class="metric-card purple">
                 <div class="metric-title">Matching Capital Unlocked</div>
-                <div class="metric-value" id="metricLeverage">$332.50M</div>
+                <div class="metric-value" id="metricLeverage">$393.30M</div>
                 <div class="metric-sub">Federal, Provincial & Donors</div>
             </div>
 
             <div class="metric-card">
                 <div class="metric-title">Weighted SROI Multiplier</div>
-                <div class="metric-value" id="metricSroi">5.32x</div>
+                <div class="metric-value" id="metricSroi">5.31x</div>
                 <div class="metric-sub">Total Social Return / CAD Invested</div>
             </div>
 
-            <div class="metric-card">
-                <div class="metric-title">Community Jobs Sustained</div>
-                <div class="metric-value" id="metricJobs">2,604</div>
-                <div class="metric-sub">Across 25 Toronto Wards</div>
+            <div class="metric-card" style="border-left-color: #10b981;">
+                <div class="metric-title">5-Yr Total Jobs Margin</div>
+                <div class="metric-value" id="metricJobsMargin">20,229</div>
+                <div class="metric-sub">Community (9,470) + Biotech (10,759)</div>
             </div>
 
             <div class="metric-card purple">
                 <div class="metric-title">Dirichlet Peak Bound ⌈N/K⌉</div>
-                <div class="metric-value" id="metricCollisions">242</div>
+                <div class="metric-value" id="metricCollisions">292</div>
                 <div class="metric-sub">Optimal Cluster Density</div>
             </div>
         </div>
@@ -166,6 +166,17 @@
             </div>
         </div>
 
+        <!-- Dedicated Full-Width 5-Year Job Creation Horizon Chart -->
+        <div class="chart-card" style="margin-bottom: 1.5rem;">
+            <div class="chart-card-header">
+                <h3>📊 5-Year Long-Term Planning Job Creation Horizon (City of Toronto)</h3>
+                <span class="badge" style="background: #dcfce7; color: #15803d;">Community Grants + Downtown Biotech Corridor Margin</span>
+            </div>
+            <div style="height: 310px; position: relative;">
+                <canvas id="jobsHorizonChartCanvas"></canvas>
+            </div>
+        </div>
+
         <!-- Tabbed Detailed Tables -->
         <div class="data-tabs">
             <button id="btnTabSectors" class="tab-btn active" onclick="switchTab('sectors')">
@@ -173,6 +184,12 @@
             </button>
             <button id="btnTabWards" class="tab-btn" onclick="switchTab('wards')">
                 25 Toronto Wards Equity & Economic Impact
+            </button>
+            <button id="btnTabBiotech" class="tab-btn" onclick="switchTab('biotech')">
+                🧬 Downtown Biotech Innovation Corridor & Yields
+            </button>
+            <button id="btnTabBalance" class="tab-btn" onclick="switchTab('balance')">
+                📋 Table of Values: 5-Year Balance Sheet & Jobs Margin
             </button>
         </div>
 
@@ -212,6 +229,72 @@
                     </tr>
                 </thead>
                 <tbody id="wardTableBody">
+                    <!-- Populated via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Biotech Corridor Table -->
+        <div id="biotechTableContainer" class="table-container tab-content" style="display: none;">
+            <!-- Mini stats header for biotech -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; padding: 1rem 1.25rem; background: #f0fdf4; border-bottom: 1px solid #bbf7d0;">
+                <div>
+                    <span style="font-size: 0.75rem; font-weight:700; color: #166534; text-transform: uppercase;">Annual Biotech R&D:</span>
+                    <h4 id="bioRdStat" style="font-size: 1.2rem; color: #14532d; font-weight: 800;">$280.0M CAD</h4>
+                </div>
+                <div>
+                    <span style="font-size: 0.75rem; font-weight:700; color: #166534; text-transform: uppercase;">VC Matched Capital:</span>
+                    <h4 id="bioVcStat" style="font-size: 1.2rem; color: #14532d; font-weight: 800;">$1,348.6M CAD</h4>
+                </div>
+                <div>
+                    <span style="font-size: 0.75rem; font-weight:700; color: #166534; text-transform: uppercase;">5-Yr High-Skill STEM Jobs:</span>
+                    <h4 id="bioJobsStat" style="font-size: 1.2rem; color: #14532d; font-weight: 800;">10,759 positions</h4>
+                </div>
+                <div>
+                    <span style="font-size: 0.75rem; font-weight:700; color: #166534; text-transform: uppercase;">Annual Muni Tax Lift:</span>
+                    <h4 id="bioTaxStat" style="font-size: 1.2rem; color: #14532d; font-weight: 800;">$24.71M CAD</h4>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Downtown Biotech Hub</th>
+                        <th>Research & Clinical Focus</th>
+                        <th>Annual R&D</th>
+                        <th>VC Leverage</th>
+                        <th>Matched Private Capital</th>
+                        <th>Avg STEM Compensation</th>
+                        <th>Yr 1 Jobs</th>
+                        <th>5-Yr STEM Jobs</th>
+                        <th>Annual Municipal Tax Lift</th>
+                        <th>Annual GDP Impact</th>
+                    </tr>
+                </thead>
+                <tbody id="biotechTableBody">
+                    <!-- Populated via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 5-Year Balance Sheet & Jobs Margin Table of Values -->
+        <div id="balanceTableContainer" class="table-container tab-content" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fiscal Year</th>
+                        <th>Tax Base Lift</th>
+                        <th>Cost Avoidance</th>
+                        <th>Total Muni Yield</th>
+                        <th>Cumulative Yield</th>
+                        <th>Community Grants Jobs</th>
+                        <th>Downtown Biotech Jobs</th>
+                        <th>Total Annual New Jobs</th>
+                        <th>Cumulative Jobs Margin</th>
+                        <th>Matching Capital Inflow</th>
+                        <th>Societal SROI Output</th>
+                    </tr>
+                </thead>
+                <tbody id="balanceTableBody">
                     <!-- Populated via JS -->
                 </tbody>
             </table>

@@ -325,21 +325,21 @@ def generate_nature_preprint_pdf(output_path: str = None) -> str:
     elements.append(Paragraph("<b>Table 1 |</b> Strategic Sector Grant Allocations under Quantum Selective Excitation and Dirichlet Box Partitioning.", caption_style))
     elements.append(Spacer(1, 0.1*inch))
 
-    # Table 2: 5-Year Municipal Revenue & Yield Projections
+    # Table 2: 5-Year Municipal Revenue & Job Creation Margin Projections
     rev_table_data = [
-        ["Fiscal Year", "Tax Base Lift ($M)", "Cost Avoidance ($M)", "Matching Inflow ($M)", "Total Yield ($M)", "Cumulative Yield ($M)"]
+        ["Fiscal Year", "Tax Base ($M)", "Cost Avoidance ($M)", "Total Yield ($M)", "New Jobs Created", "Cum. Jobs Margin"]
     ]
     for yr in res["yearly_projections"]:
         rev_table_data.append([
             f"FY {yr['year']}",
             f"${yr['tax_base_lift_cad']/1e6:.2f}M",
             f"${yr['cost_avoidance_cad']/1e6:.2f}M",
-            f"${yr['leveraged_inflow_cad']/1e6:.2f}M",
             f"${yr['total_municipal_yield_cad']/1e6:.2f}M",
-            f"${yr['cumulative_municipal_yield_cad']/1e6:.2f}M"
+            f"+{yr['total_new_jobs_created']:,}",
+            f"{yr['cumulative_total_jobs']:,} jobs"
         ])
         
-    t2 = Table(rev_table_data, colWidths=[1.1*inch, 1.2*inch, 1.3*inch, 1.2*inch, 1.1*inch, 1.1*inch])
+    t2 = Table(rev_table_data, colWidths=[1.1*inch, 1.1*inch, 1.3*inch, 1.1*inch, 1.2*inch, 1.2*inch])
     t2.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1e3a8a')),
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
@@ -352,7 +352,7 @@ def generate_nature_preprint_pdf(output_path: str = None) -> str:
         ('TOPPADDING', (0,0), (-1,-1), 4),
     ]))
     elements.append(t2)
-    elements.append(Paragraph("<b>Table 2 |</b> 5-Year Municipal Balance Sheet Revenue Projections for City of Toronto (2026–2030).", caption_style))
+    elements.append(Paragraph("<b>Table 2 |</b> 5-Year Municipal Balance Sheet & Job Creation Projections for City of Toronto (2026–2030).", caption_style))
     elements.append(Spacer(1, 0.1*inch))
 
     # 9. Key Numerical Highlights Callout Box
@@ -361,7 +361,7 @@ def generate_nature_preprint_pdf(output_path: str = None) -> str:
             Paragraph(f"<b>Optimized Budget:</b><br/>${summary['total_budget_allocated_cad']/1e6:.2f}M CAD", body_style),
             Paragraph(f"<b>5-Yr Municipal Yield:</b><br/><b>${summary['5yr_cumulative_municipal_yield_cad']/1e6:.2f}M CAD</b>", body_style),
             Paragraph(f"<b>Net Municipal ROI:</b><br/><b>+{summary['5yr_net_municipal_roi_pct']:.1f}%</b>", body_style),
-            Paragraph(f"<b>Jobs Sustained:</b><br/>{summary['total_community_jobs_sustained']:,} Toronto Workers", body_style)
+            Paragraph(f"<b>5-Yr Citywide Jobs:</b><br/><b>{summary['5yr_total_citywide_jobs_created']:,} Workers</b>", body_style)
         ]
     ]
     t_hl = Table(highlights_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
@@ -374,10 +374,49 @@ def generate_nature_preprint_pdf(output_path: str = None) -> str:
         ('BOTTOMPADDING', (0,0), (-1,-1), 8),
     ]))
     elements.append(t_hl)
-    elements.append(Spacer(1, 0.15*inch))
+    elements.append(Spacer(1, 0.12*inch))
 
-    # 10. Section 6: Discussion & Policy Implementation
-    elements.append(Paragraph("6. Policy Implementation and Discussion", h1_style))
+    # 10. Section 6: Downtown Toronto Biotech Innovation Corridor
+    elements.append(Paragraph("6. Downtown Toronto Biotech Innovation Corridor: Statistical Yields & Economic Growth", h1_style))
+    sec_biotech_text = (
+        "Complementing grassroots social investments, the Downtown Toronto Biotech Innovation Corridor—anchored around the Discovery District, "
+        "University Avenue hospital row, MaRS Discovery District, the University of Toronto, and Toronto Metropolitan University—operates as a high-velocity "
+        "economic engine. Applying quantum selective excitation principles to commercialization pipelines directs municipal infrastructure backing "
+        "to high-yield translational biotech clusters."
+    )
+    elements.append(Paragraph(sec_biotech_text, body_style))
+
+    biotech_table_data = [
+        ["Biotech Innovation Hub", "R&D ($M)", "VC Leverage", "Avg STEM Wage", "5-Yr Jobs", "Muni Tax Lift ($M)", "Annual GDP ($M)"]
+    ]
+    for h in res["biotech_corridor"]["hubs"]:
+        biotech_table_data.append([
+            h["hub_name"][:26],
+            f"${h['annual_rd_investment_cad']/1e6:.1f}M",
+            f"{h['vc_leverage_ratio']:.1f}x",
+            f"${h['avg_stem_salary_cad']:,.0f}",
+            f"+{h['five_year_total_jobs']:,}",
+            f"${h['annual_municipal_tax_cad']/1e6:.2f}M",
+            f"${h['annual_gdp_impact_cad']/1e6:.1f}M"
+        ])
+    t_bio = Table(biotech_table_data, colWidths=[1.9*inch, 0.7*inch, 0.8*inch, 0.9*inch, 0.8*inch, 1.0*inch, 0.9*inch])
+    t_bio.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#065f46')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 7.5),
+        ('ALIGN', (1,0), (-1,-1), 'CENTER'),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f0fdf4')]),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 3.5),
+        ('TOPPADDING', (0,0), (-1,-1), 3.5),
+    ]))
+    elements.append(t_bio)
+    elements.append(Paragraph("<b>Table 3 |</b> Downtown Toronto Biotech Corridor Innovation Hubs, Statistical Yields, and 5-Year Job Horizon.", caption_style))
+    elements.append(Spacer(1, 0.1*inch))
+
+    # 11. Section 7: Discussion & Policy Implementation
+    elements.append(Paragraph("7. Policy Implementation and Discussion", h1_style))
     sec6_text = (
         "The empirical findings demonstrate that treating municipal grant distributions as a quantum-statistical excitation phenomenon "
         "fundamentally resolves the perennial tension between social equity and fiscal austerity. By selectively exciting community nodes "

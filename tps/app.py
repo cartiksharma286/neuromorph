@@ -39,6 +39,6 @@ def model():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5091))
+    port = int(os.environ.get("PORT", 5095))
     print(f"Launching SafeCity Prevention Planning Console on port {port}...")
     app.run(host="0.0.0.0", port=port, debug=False)

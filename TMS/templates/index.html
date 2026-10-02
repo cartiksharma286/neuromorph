@@ -89,6 +89,9 @@
                 <button class="nav-btn" data-tab="nih-grant">
                     <span class="icon">🏛️</span> NIH Grant &amp; rTMS Staging
                 </button>
+                <button class="nav-btn" data-tab="parkinsons">
+                    <span class="icon">🧬</span> Parkinson's rTMS (BEM)
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -2267,6 +2270,307 @@
                         <div class="panel glass-panel" style="background: rgba(10,61,98,0.08); border: 1px solid rgba(56,189,248,0.25);">
                             <h3>📐 Finite Mathematical Formulations &amp; Governing Equations</h3>
                             <div id="nih-math-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Parkinson's Syndrome: Combinatorial Optimal Staging rTMS & BEM Cortical Suite ── -->
+            <div id="parkinsons-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                        <span style="font-size:12px; color:#a7f3d0; background:rgba(5,150,105,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(16,185,129,0.35); font-weight:600;">
+                            ⚡ BEM Multi-Compartment Cortical Model
+                        </span>
+                        <span style="font-size:12px; color:#7dd3fc; background:rgba(2,132,199,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(56,189,248,0.35); font-weight:600;">
+                            🧩 Combinatorial Optimal Staging (Bellman DP)
+                        </span>
+                        <span style="font-size:12px; color:#fbcfe8; background:rgba(219,39,119,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(244,114,182,0.35); font-weight:600;">
+                            📡 RF Strength &amp; Poynting Electrodynamics
+                        </span>
+                        <span style="font-size:12px; color:#fed7aa; background:rgba(217,119,6,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(251,146,60,0.35); font-weight:600;">
+                            ⏳ 36-Month Longitudinal Horizons
+                        </span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <a href="/api/parkinsons-nature-preprint" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #b91c1c, #991b1b); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; cursor:pointer; border:none; box-shadow:0 2px 8px rgba(185,28,28,0.35);">
+                            <span>📥 Download Nature Preprint (.PDF)</span>
+                        </a>
+                        <button onclick="runParkinsonsStudio()" class="primary-btn" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #059669, #047857); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; cursor:pointer; border:none; box-shadow:0 2px 8px rgba(5,150,105,0.35);">
+                            <span>🔄 Recalculate QML, BEM &amp; Optimal Staging</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT COLUMN: CONTROLS & CORE CLINICAL KPIS -->
+                    <div class="panel glass-panel" style="flex: 0 0 350px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Clinical &amp; Electrodynamic Controls</h3>
+                        
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Baseline UPDRS-III Score:</span>
+                                    <span id="label-pd-updrs" class="sa-slider-val" style="color:#f87171;">42.0</span>
+                                </div>
+                                <input type="range" id="pd-updrs" min="20" max="75" step="1" value="42" oninput="document.getElementById('label-pd-updrs').textContent=parseFloat(this.value).toFixed(1); runParkinsonsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Stimulation Intensity (% rMT):</span>
+                                    <span id="label-pd-intensity" class="sa-slider-val" style="color:#38bdf8;">110%</span>
+                                </div>
+                                <input type="range" id="pd-intensity" min="85" max="130" step="1" value="110" oninput="document.getElementById('label-pd-intensity').textContent=parseInt(this.value)+'%'; runParkinsonsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>RF Burst Carrier Frequency:</span>
+                                    <span id="label-pd-rf" class="sa-slider-val" style="color:#f472b6;">3.2 kHz</span>
+                                </div>
+                                <input type="range" id="pd-rf" min="1.5" max="6.0" step="0.1" value="3.2" oninput="document.getElementById('label-pd-rf').textContent=parseFloat(this.value).toFixed(1)+' kHz'; runParkinsonsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Daily Pulse Budget (Knapsack):</span>
+                                    <span id="label-pd-budget" class="sa-slider-val" style="color:#fbbf24;">3,000 pulses</span>
+                                </div>
+                                <input type="range" id="pd-budget" min="1500" max="5000" step="100" value="3000" oninput="document.getElementById('label-pd-budget').textContent=parseInt(this.value).toLocaleString()+' pulses'; runParkinsonsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>QML PQC Ansatz Depth:</span>
+                                    <span id="label-pd-depth" class="sa-slider-val" style="color:#c084fc;">Depth 6</span>
+                                </div>
+                                <input type="range" id="pd-depth" min="2" max="12" step="1" value="6" oninput="document.getElementById('label-pd-depth').textContent='Depth '+parseInt(this.value); runParkinsonsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Sessions per Week:</span>
+                                    <span id="label-pd-sessions" class="sa-slider-val" style="color:#34d399;">5 / wk</span>
+                                </div>
+                                <input type="range" id="pd-sessions" min="1" max="7" step="1" value="5" oninput="document.getElementById('label-pd-sessions').textContent=parseInt(this.value)+' / wk'; runParkinsonsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Baseline Levodopa Dose (LEDD):</span>
+                                    <span id="label-pd-ledd" class="sa-slider-val" style="color:#fb923c;">650 mg/d</span>
+                                </div>
+                                <input type="range" id="pd-ledd" min="300" max="1200" step="25" value="650" oninput="document.getElementById('label-pd-ledd').textContent=parseInt(this.value)+' mg/d'; runParkinsonsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Long-Term Horizon:</span>
+                                    <span id="label-pd-horizon" class="sa-slider-val" style="color:#2dd4bf;">156 Wks (36 Mo)</span>
+                                </div>
+                                <input type="range" id="pd-horizon" min="12" max="156" step="6" value="156" oninput="document.getElementById('label-pd-horizon').textContent=parseInt(this.value)+' Weeks ('+Math.round(parseInt(this.value)/4.33)+' Mo)'; runParkinsonsStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <h3>Parkinson's &amp; Electrodynamic KPIs</h3>
+                        <div class="sa-control-box" style="margin-bottom:0;">
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">UPDRS-III Improvement:</span>
+                                <span id="pd-metric-updrs-imp" class="sa-metric-val" style="color:#4ade80; font-weight:700;">-73.8%</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Long-Term Final UPDRS:</span>
+                                <span id="pd-metric-final-updrs" class="sa-metric-val" style="color:#38bdf8; font-weight:700;">11.0 (Remission)</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Hoehn &amp; Yahr Staging:</span>
+                                <span id="pd-metric-hy" class="sa-metric-val" style="color:#fbbf24; font-weight:600;">Stage 3.0 &rarr; 1.0</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Daily "OFF" Motor Time:</span>
+                                <span id="pd-metric-offtime" class="sa-metric-val" style="color:#34d399; font-weight:600;">5.8h &rarr; 0.4h/day</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Dyskinesia-Free ON Time:</span>
+                                <span id="pd-metric-ontime" class="sa-metric-val" style="color:#a7f3d0; font-weight:600;">4.5h &rarr; 15.5h/day</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">LEDD Taper:</span>
+                                <span id="pd-metric-ledd" class="sa-metric-val" style="color:#c084fc; font-weight:600;">-67.7% (210 mg)</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Peak BEM E-Field:</span>
+                                <span id="pd-metric-efield" class="sa-metric-val" style="color:#f43f5e; font-weight:600;">163.4 V/m (SMA)</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">RF Peak B-Field &amp; dB/dt:</span>
+                                <span id="pd-metric-rf-bfield" class="sa-metric-val" style="color:#f472b6; font-weight:600;">2.59 T · 4.53e4 T/s</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">RF SAR &amp; Poynting Flux:</span>
+                                <span id="pd-metric-rf-sar" class="sa-metric-val" style="color:#fb923c; font-weight:600;">0.38 W/kg · 60.3 kW/m²</span>
+                            </div>
+                            <div class="sa-metric-row">
+                                <span class="sa-metric-lbl">Bellman Optimal Value V*:</span>
+                                <span id="pd-metric-bellman" class="sa-metric-val" style="color:#38bdf8; font-weight:700;">96.4 (Stage I)</span>
+                            </div>
+                            <div class="sa-metric-row" style="border-bottom:none;">
+                                <span class="sa-metric-lbl">36-Mo Net Economic Value:</span>
+                                <span id="pd-metric-netbenefit" class="sa-metric-val" style="color:#a3e635; font-weight:700;">+$82,450 / pt</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: MULTI-PANEL PLOTS & PROTOCOLS -->
+                    <div style="display: flex; flex-direction: column; gap: 20px; grid-column: span 2;">
+                        
+                        <!-- Row 1: 36-Month Longitudinal UPDRS Trajectory & BEM Cortical Surface Potential Heatmap -->
+                        <div style="display: grid; grid-template-columns: 1.25fr 1.15fr; gap: 20px;">
+                            <div class="panel glass-panel">
+                                <h3>📈 36-Month Longitudinal UPDRS-III Trajectory vs. Standards of Care</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">156-Week trajectory comparison across Combinatorial BEM rTMS (with 95% CI), Classical 10Hz, Pharmacotherapy, and Sham.</p>
+                                <div id="pd-plot-updrs-trajectory" class="chart-container" style="min-height:290px;"></div>
+                            </div>
+
+                            <div class="panel glass-panel">
+                                <h3>⚡ Boundary Element Method (BEM) Cortical Surface Potential Heatmap (mV)</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">2D Multi-compartment BEM induced potential distribution Φ(x,y) over SMA, M1, and prefrontal cortex.</p>
+                                <div id="pd-plot-bem-heatmap" class="chart-container" style="min-height:290px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: RF Pulse Transient Electrodynamics & Power Spectral Density -->
+                        <div style="display: grid; grid-template-columns: 1.2fr 1.2fr; gap: 20px;">
+                            <div class="panel glass-panel">
+                                <h3>📡 Radiofrequency (RF) Pulse Waveform, dB/dt &amp; Poynting Flux S(t)</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Time-domain transient electromagnetic induction: B(t) [Tesla], dB/dt [10⁴ T/s], and Poynting flux [kW/m²].</p>
+                                <div id="pd-plot-rf-waveform" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+
+                            <div class="panel glass-panel">
+                                <h3>📶 RF Power Spectral Density (PSD) &amp; Tissue Skin Depth Profile</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Fourier spectral distribution (0-25 kHz) and characteristic cortical penetration depth δ = 16.9 cm.</p>
+                                <div id="pd-plot-rf-spectrum" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Combinatorial Optimal Staging & Long-Term Non-Motor Horizons -->
+                        <div style="display: grid; grid-template-columns: 1.15fr 1.25fr; gap: 20px;">
+                            <div class="panel glass-panel">
+                                <h3>🧩 Combinatorial Optimal Staging Bellman Value Function V*(s)</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">Dynamic programming value progression across Stages I-IV and discrete state-transition probabilities.</p>
+                                <div id="pd-plot-bellman-staging" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+
+                            <div class="panel glass-panel">
+                                <h3>⏳ Long-Term Multi-Horizon Recovery (Hoehn &amp; Yahr, PDQ-39, Daily OFF-Time)</h3>
+                                <p style="color:#8b949e; font-size:12px; margin-bottom:8px;">36-Month clinical milestone trajectories demonstrating durable remission and Levodopa dose reduction.</p>
+                                <div id="pd-plot-longterm-horizons" class="chart-container" style="min-height:280px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Multi-Lobe BEM Electric Field & Tissue Depth Decay -->
+                        <div class="panel glass-panel">
+                            <h3>⚡ Multi-Compartment BEM Tissue Attenuation: Scalp &rarr; Skull &rarr; CSF &rarr; Gray/White Matter</h3>
+                            <div id="pd-plot-bem-depth" class="chart-container" style="min-height:260px;"></div>
+                        </div>
+
+                        <!-- Row 5: Brain Lobes Stimulated, BEM & RF Strength Characteristics Matrix Table -->
+                        <div class="panel glass-panel">
+                            <h3>🧠 Stimulated Brain Lobes, MNI Coordinates, BEM Fields &amp; RF Strength Characteristics</h3>
+                            <div style="overflow-x:auto; margin-top:10px;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:8px 10px;">Brain Lobe</th>
+                                            <th style="padding:8px 10px;">Cortical Subregion</th>
+                                            <th style="padding:8px 10px;">MNI Coords</th>
+                                            <th style="padding:8px 10px;">Frequency</th>
+                                            <th style="padding:8px 10px;">% rMT</th>
+                                            <th style="padding:8px 10px;">Peak E-Field</th>
+                                            <th style="padding:8px 10px;">Normal En</th>
+                                            <th style="padding:8px 10px;">Tangential Et</th>
+                                            <th style="padding:8px 10px;">RF B-Field</th>
+                                            <th style="padding:8px 10px;">RF dB/dt</th>
+                                            <th style="padding:8px 10px;">RF SAR (W/kg)</th>
+                                            <th style="padding:8px 10px;">Poynting Flux</th>
+                                            <th style="padding:8px 10px;">Daily Pulses</th>
+                                            <th style="padding:8px 10px;">Targeted Parkinson's Symptom</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pd-lobes-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 6: 4-Stage Combinatorial Optimal Staging Protocol Cards -->
+                        <div class="panel glass-panel">
+                            <h3>🧩 4-Phase Combinatorial Optimal Staging Treatment Paradigm (Bellman MDP Policy)</h3>
+                            <div id="pd-staging-cards-container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-top:10px;"></div>
+                        </div>
+
+                        <!-- Row 7: Multi-Compartment BEM Boundary Mesh Parameters Table -->
+                        <div class="panel glass-panel">
+                            <h3>📐 Boundary Element Method (BEM) Multi-Compartment Surface Mesh Characteristics</h3>
+                            <div style="overflow-x:auto; margin-top:10px;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:8px 10px;">Anatomical Compartment</th>
+                                            <th style="padding:8px 10px;">Boundary Surface</th>
+                                            <th style="padding:8px 10px;">Triangular Elements</th>
+                                            <th style="padding:8px 10px;">Vertices</th>
+                                            <th style="padding:8px 10px;">Conductivity σ (S/m)</th>
+                                            <th style="padding:8px 10px;">Mean Radius (mm)</th>
+                                            <th style="padding:8px 10px;">Electrodynamic Role</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pd-bem-mesh-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 8: 36-Month Longitudinal Milestones & Health Economics Table -->
+                        <div class="panel glass-panel">
+                            <h3>🏛️ Longitudinal Clinical Milestones &amp; Multi-Year Health Economics (Up to 36 Months)</h3>
+                            <div style="overflow-x:auto; margin-top:10px;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:8px 10px;">Horizon Milestone</th>
+                                            <th style="padding:8px 10px;">Week</th>
+                                            <th style="padding:8px 10px;">UPDRS-III (QML)</th>
+                                            <th style="padding:8px 10px;">UPDRS (Classical)</th>
+                                            <th style="padding:8px 10px;">UPDRS (Pharma)</th>
+                                            <th style="padding:8px 10px;">Hoehn &amp; Yahr</th>
+                                            <th style="padding:8px 10px;">PDQ-39 QoL</th>
+                                            <th style="padding:8px 10px;">Daily OFF-Time</th>
+                                            <th style="padding:8px 10px;">ON-Time (No Dyskinesia)</th>
+                                            <th style="padding:8px 10px;">LEDD Dose (mg)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pd-milestones-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 9: Finite Mathematical Formulations Panel -->
+                        <div class="panel glass-panel" style="background: rgba(5,150,105,0.08); border: 1px solid rgba(52,211,153,0.35);">
+                            <h3>📐 Finite Mathematical Formulations: BEM, RF Electrodynamics &amp; Bellman Optimality</h3>
+                            <p style="color:#8b949e; font-size:12px; margin-bottom:12px;">Rigorous finite mathematics and boundary integral formulations governing the multi-lobe rTMS simulation.</p>
+                            <div id="pd-math-container" style="display:flex; flex-direction:column; gap:12px;"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+                        <!-- Row 6: Governing Formulations & Neurobiology Card -->
+                        <div class="panel glass-panel" style="background: rgba(5,150,105,0.08); border: 1px solid rgba(52,211,153,0.3);">
+                            <h3>📐 Quantum Machine Learning &amp; Cortical FEM Governing Formulations</h3>
+                            <div id="pd-math-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
                         </div>
 
                     </div>
