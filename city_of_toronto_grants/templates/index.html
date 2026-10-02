@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City of Toronto | Community Grants Allocation & Revenue Intelligence</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1/dist/chartjs-plugin-annotation.min.js"></script>
+</head>
+<body>
+
+    <!-- Header Banner -->
+    <header>
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-icon">🏛️</div>
+                <div class="brand-titles">
+                    <h1>City of Toronto • Community Grants Optimization System</h1>
+                    <p>Quantum Selective Excitation States • Generalized Dirichlet Pigeonhole Combinatorics • Municipal Revenue Maximization</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="/download_preprint" class="btn btn-preprint" target="_blank" download="Nature_Preprint_Toronto_Grants_Allocation.pdf">
+                    📄 Download Nature Preprint (.PDF)
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="main-content">
+
+        <!-- Controls Bar -->
+        <div class="controls-bar">
+            <div class="control-group">
+                <label>Municipal Grants Pool (CAD)</label>
+                <input type="range" id="budgetRange" min="25000000" max="250000000" step="5000000" value="150000000">
+                <div class="range-val">
+                    <span>Budget</span>
+                    <span id="budgetValue">$150,000,000 CAD</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Selective Excitation Flip Angle (θ)</label>
+                <input type="range" id="flipRange" min="30" max="180" step="5" value="105">
+                <div class="range-val">
+                    <span>Flip Angle</span>
+                    <span id="flipValue">105°</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>RF Excitation Bandwidth (Δω)</label>
+                <input type="range" id="bwRange" min="0.8" max="5.0" step="0.2" value="2.0">
+                <div class="range-val">
+                    <span>Bandwidth</span>
+                    <span id="bwValue">2.0 kHz</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Grant Applicants Pool (N)</label>
+                <input type="range" id="applicantsRange" min="400" max="3000" step="50" value="1750">
+                <div class="range-val">
+                    <span>Applicants</span>
+                    <span id="applicantsValue">1,750</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+                <button id="btnApply" class="btn btn-primary" style="height: 42px;">
+                    ⚡ Calculate
+                </button>
+                <button id="btnAutoOptimize" class="btn btn-preprint" style="height: 42px; background: linear-gradient(135deg, #1e3a8a 0%, #002B49 100%);">
+                    💎 Maximize Yield
+                </button>
+            </div>
+        </div>
+
+        <!-- KPI Metrics Grid -->
+        <div class="metrics-grid">
+            <div class="metric-card gold">
+                <div class="metric-title">5-Year Municipal Yield</div>
+                <div class="metric-value" id="metricYield">$373.42M</div>
+                <div class="metric-sub">Direct Tax Lift & Cost Offsets</div>
+            </div>
+
+            <div class="metric-card cyan">
+                <div class="metric-title">Net Municipal ROI</div>
+                <div class="metric-value" id="metricRoi">+198.7%</div>
+                <div class="metric-sub">Net Surplus to City of Toronto</div>
+            </div>
+
+            <div class="metric-card purple">
+                <div class="metric-title">Matching Capital Unlocked</div>
+                <div class="metric-value" id="metricLeverage">$332.50M</div>
+                <div class="metric-sub">Federal, Provincial & Donors</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-title">Weighted SROI Multiplier</div>
+                <div class="metric-value" id="metricSroi">5.32x</div>
+                <div class="metric-sub">Total Social Return / CAD Invested</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-title">Community Jobs Sustained</div>
+                <div class="metric-value" id="metricJobs">2,604</div>
+                <div class="metric-sub">Across 25 Toronto Wards</div>
+            </div>
+
+            <div class="metric-card purple">
+                <div class="metric-title">Dirichlet Peak Bound ⌈N/K⌉</div>
+                <div class="metric-value" id="metricCollisions">242</div>
+                <div class="metric-sub">Optimal Cluster Density</div>
+            </div>
+        </div>
+
+        <!-- Visualizations Grid -->
+        <div class="charts-grid">
+            <!-- Quantum Pulse & Excitation Profile -->
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h3>⚛️ Quantum Selective Excitation Spectrum</h3>
+                    <span class="badge badge-quantum">Blackman-Harris Sinc-Hermite</span>
+                </div>
+                <div style="height: 280px; position: relative;">
+                    <canvas id="pulseChartCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Municipal Revenue Projections -->
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h3>📈 5-Year Municipal Balance Sheet & Revenue Projections</h3>
+                    <span class="badge" style="background: #e0f2fe; color: #0369a1;">FY 2026–2030</span>
+                </div>
+                <div style="height: 280px; position: relative;">
+                    <canvas id="revenueChartCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Strategic Sector Envelopes -->
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h3>🎯 Strategic Grant Sector Allocation Envelopes</h3>
+                    <span class="badge" style="background: #fef3c7; color: #92400e;">6 SDFA Portfolios</span>
+                </div>
+                <div style="height: 280px; position: relative;">
+                    <canvas id="sectorChartCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Dirichlet Pigeonhole Occupancy -->
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h3>📦 Dirichlet Pigeonhole Grant Partition Distribution</h3>
+                    <span class="badge badge-pigeon">Zero Deadweight Collision Bound</span>
+                </div>
+                <div style="height: 280px; position: relative;">
+                    <canvas id="pigeonChartCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabbed Detailed Tables -->
+        <div class="data-tabs">
+            <button id="btnTabSectors" class="tab-btn active" onclick="switchTab('sectors')">
+                Strategic Sector Portfolios & Leverage
+            </button>
+            <button id="btnTabWards" class="tab-btn" onclick="switchTab('wards')">
+                25 Toronto Wards Equity & Economic Impact
+            </button>
+        </div>
+
+        <!-- Sector Table -->
+        <div id="sectorTableContainer" class="table-container tab-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategic Sector Envelope</th>
+                        <th>Quantum Resonance</th>
+                        <th>Allocation ($M CAD)</th>
+                        <th>Share (%)</th>
+                        <th>Grants Awarded</th>
+                        <th>Avg Grant Size</th>
+                        <th>External Matching Unlocked</th>
+                    </tr>
+                </thead>
+                <tbody id="sectorTableBody">
+                    <!-- Populated via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Ward Table -->
+        <div id="wardTableContainer" class="table-container tab-content" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Municipal Ward</th>
+                        <th>Population</th>
+                        <th>Deprivation Index</th>
+                        <th>Priority Tier</th>
+                        <th>Target Allocation</th>
+                        <th>City Share</th>
+                        <th>Jobs Sustained</th>
+                        <th>Annual Municipal Cost Offsets</th>
+                    </tr>
+                </thead>
+                <tbody id="wardTableBody">
+                    <!-- Populated via JS -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>City of Toronto • Social Development, Finance and Administration (SDFA) Advanced Computational Modeling</p>
+        <p style="margin-top: 0.35rem; font-size: 0.78rem;">
+            Powered by Quantum-Statistical Mechanics, Cayley-Klein Precession, and Generalized Dirichlet Pigeonhole Combinatorics.
+        </p>
+    </footer>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
