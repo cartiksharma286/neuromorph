@@ -1,0 +1,331 @@
+/* City of Toronto Municipal Design System & Quantum Intelligence UI */
+:root {
+  --toronto-blue: #002B49;
+  --toronto-blue-light: #0d47a1;
+  --toronto-gold: #F2A900;
+  --toronto-cyan: #00A3E0;
+  --toronto-bg: #f8fafc;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --quantum-purple: #7c3aed;
+  --quantum-glow: rgba(124, 58, 237, 0.15);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: var(--toronto-bg);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: linear-gradient(135deg, var(--toronto-blue) 0%, #001726 100%);
+  color: #ffffff;
+  padding: 1.25rem 2rem;
+  box-shadow: 0 4px 20px rgba(0, 43, 73, 0.25);
+  border-bottom: 3px solid var(--toronto-gold);
+}
+
+.header-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--toronto-gold);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  box-shadow: 0 2px 10px rgba(242, 169, 0, 0.4);
+}
+
+.brand-titles h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.brand-titles p {
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  border: none;
+}
+
+.btn-preprint {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(185, 28, 28, 0.35);
+}
+.btn-preprint:hover {
+  background: #7f1d1d;
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--toronto-cyan);
+  color: #002B49;
+  font-weight: 700;
+}
+.btn-primary:hover {
+  background: #38bdf8;
+  transform: translateY(-1px);
+}
+
+.main-content {
+  max-width: 1440px;
+  margin: 1.5rem auto;
+  padding: 0 1.5rem;
+  flex: 1;
+  width: 100%;
+}
+
+/* Control Panel */
+.controls-bar {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto;
+  gap: 1.25rem;
+  align-items: end;
+}
+
+.control-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.control-group input[type="range"] {
+  width: 100%;
+  accent-color: var(--toronto-blue-light);
+}
+
+.range-val {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--toronto-blue);
+  margin-top: 0.2rem;
+}
+
+/* Key Metrics Cards */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  position: relative;
+  overflow: hidden;
+  border-left: 4px solid var(--toronto-blue);
+}
+
+.metric-card.gold { border-left-color: var(--toronto-gold); }
+.metric-card.cyan { border-left-color: var(--toronto-cyan); }
+.metric-card.purple { border-left-color: var(--quantum-purple); }
+
+.metric-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-value {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--toronto-blue);
+  margin: 0.35rem 0 0.15rem 0;
+}
+
+.metric-sub {
+  font-size: 0.75rem;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* Visualization Grid */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 960px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.chart-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.chart-card-header h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--toronto-blue);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 20px;
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.badge-quantum {
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+.badge-pigeon {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* Tables Section */
+.data-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tab-btn {
+  padding: 0.55rem 1.2rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  color: var(--text-muted);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tab-btn.active {
+  background: var(--toronto-blue);
+  color: #ffffff;
+  border-color: var(--toronto-blue);
+}
+
+.table-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  margin-bottom: 2rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  text-align: left;
+}
+
+th {
+  background: #f1f5f9;
+  color: var(--toronto-blue);
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+tr:hover td {
+  background: #f8fafc;
+}
+
+footer {
+  background: #0f172a;
+  color: #94a3b8;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-size: 0.82rem;
+  margin-top: auto;
+}
