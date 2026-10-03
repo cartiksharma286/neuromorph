@@ -1,4 +1,8 @@
-import os, io, math
+import os, io, math, sys
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 import numpy as np
 from flask import Flask, render_template, request, jsonify, send_file
 try:
@@ -40,8 +44,13 @@ from logic.stroke_repair_rtms import simulate_stroke_repair_rtms
 from logic.pharmacological_equivalence import simulate_pharmacological_equivalence
 from logic.nih_grant_budget_optimizer import optimize_nih_grant_budget
 from logic.parkinsons_rtms import simulate_parkinsons_rtms
+from logic.heart_stroke_trajectories import HeartStrokeClinicalTrajectoryOptimizer
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, 'templates'),
+    static_folder=os.path.join(BASE_DIR, 'static')
+)
 if CORS:
     CORS(app)
 
@@ -947,9 +956,56 @@ def parkinsons_nature_preprint():
         return jsonify({'status': 'error', 'message': str(exc)}), 500
 
 
+@app.route('/api/heart-stroke-trajectories', methods=['GET', 'POST'])
+def api_heart_stroke_trajectories():
+    """Simulate Heart & Stroke Long-Term Clinical Trajectories via Ramanujan Modular Nome States,
+    Cortical Surface Interventional Repair, Nash Gap Verification, and Stem Cell Ring Algebra.
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+        baseline_nihss = float(request.args.get('baseline_nihss', data.get('baseline_nihss', 16.5)))
+        baseline_lvef = float(request.args.get('baseline_lvef', data.get('baseline_lvef', 35.0)))
+        tau_imag_y = float(request.args.get('tau_imag_y', data.get('tau_imag_y', 0.85)))
+        tau_real_x = float(request.args.get('tau_real_x', data.get('tau_real_x', 0.25)))
+        horizon_months = int(request.args.get('horizon_months', data.get('horizon_months', 60)))
+        intervention_intensity = float(request.args.get('intervention_intensity', data.get('intervention_intensity', 1.15)))
+        stem_cell_density = float(request.args.get('stem_cell_density', data.get('stem_cell_density', 25.0)))
+
+        optimizer = HeartStrokeClinicalTrajectoryOptimizer()
+        res = optimizer.simulate_longterm_trajectories(
+            baseline_nihss=baseline_nihss,
+            baseline_lvef=baseline_lvef,
+            tau_imag_y=tau_imag_y,
+            tau_real_x=tau_real_x,
+            horizon_months=horizon_months,
+            intervention_intensity=intervention_intensity,
+            stem_cell_density_million=stem_cell_density
+        )
+        return jsonify({'status': 'success', 'data': res})
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/heart-stroke-nature-preprint', methods=['GET'])
+def heart_stroke_nature_preprint():
+    """Generate and serve the Heart & Stroke Ramanujan Modular Nome & Stem Cell Ring Algebra Nature Preprint PDF."""
+    try:
+        from generate_nature_heart_stroke_preprint import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Heart_Stroke_Ramanujan_Nash_RingAlgebra.pdf')
+        if not os.path.exists(output_path):
+            build_pdf(output_path)
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Heart_Stroke_Ramanujan_Nash_RingAlgebra.pdf')
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--port', type=int, default=5003)
+    parser.add_argument('--port', type=int, default=5020)
     args = parser.parse_args()
     app.run(debug=True, host='0.0.0.0', port=args.port)

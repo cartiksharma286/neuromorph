@@ -92,6 +92,9 @@
                 <button class="nav-btn" data-tab="parkinsons">
                     <span class="icon">🧬</span> Parkinson's rTMS (BEM)
                 </button>
+                <button class="nav-btn" data-tab="heart-stroke">
+                    <span class="icon">❤️🧠</span> Heart &amp; Stroke Trajectories
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -2567,10 +2570,231 @@
                 </div>
             </div>
 
-                        <!-- Row 6: Governing Formulations & Neurobiology Card -->
-                        <div class="panel glass-panel" style="background: rgba(5,150,105,0.08); border: 1px solid rgba(52,211,153,0.3);">
-                            <h3>📐 Quantum Machine Learning &amp; Cortical FEM Governing Formulations</h3>
-                            <div id="pd-math-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+            <!-- ── Heart and Stroke Long-Term Clinical Trajectories Suite ── -->
+            <div id="heart-stroke-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                        <span style="font-size:12px; color:#fca5a5; background:rgba(239,68,68,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(248,113,113,0.35); font-weight:600;">
+                            ❤️🧠 Neurocardiac Coupling Axis
+                        </span>
+                        <span style="font-size:12px; color:#a7f3d0; background:rgba(5,150,105,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(16,185,129,0.35); font-weight:600;">
+                            ⚡ Ramanujan Modular Nome Harmonics q(τ)
+                        </span>
+                        <span style="font-size:12px; color:#c4b5fd; background:rgba(124,58,237,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(167,139,250,0.35); font-weight:600;">
+                            🎯 Game-Theoretic Vanishing Nash Gap G(s) → 0
+                        </span>
+                        <span style="font-size:12px; color:#7dd3fc; background:rgba(2,132,199,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(56,189,248,0.35); font-weight:600;">
+                            🧬 Stem Cell Ring Algebra ℝ[x]/⟨p(x)⟩
+                        </span>
+                        <span style="font-size:12px; color:#fed7aa; background:rgba(217,119,6,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(251,146,60,0.35); font-weight:600;">
+                            ⏳ 60-Month Long-Term Horizon
+                        </span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <a href="/api/heart-stroke-nature-preprint" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #b91c1c, #991b1b); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; cursor:pointer; border:none; box-shadow:0 2px 8px rgba(185,28,28,0.35);">
+                            <span>📥 Download Nature Preprint (.PDF)</span>
+                        </a>
+                        <button onclick="runHeartStrokeStudio()" class="primary-btn" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #0284c7, #0369a1); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; cursor:pointer; border:none; box-shadow:0 2px 8px rgba(2,132,199,0.35);">
+                            <span>🔄 Recalculate Trajectories &amp; Nash Equilibrium</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT COLUMN: CONTROLS & CORE CLINICAL KPIS -->
+                    <div class="panel glass-panel" style="flex: 0 0 350px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Clinical &amp; Geodesic Parameters</h3>
+                        
+                        <div class="sa-control-box">
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Baseline Stroke NIHSS:</span>
+                                    <span id="label-hs-nihss" class="sa-slider-val" style="color:#f87171;">16.5</span>
+                                </div>
+                                <input type="range" id="hs-nihss" min="6" max="28" step="0.5" value="16.5" oninput="document.getElementById('label-hs-nihss').textContent=parseFloat(this.value).toFixed(1); runHeartStrokeStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Baseline Cardiac LVEF:</span>
+                                    <span id="label-hs-lvef" class="sa-slider-val" style="color:#38bdf8;">35.0%</span>
+                                </div>
+                                <input type="range" id="hs-lvef" min="20" max="52" step="1" value="35" oninput="document.getElementById('label-hs-lvef').textContent=parseInt(this.value)+'%'; runHeartStrokeStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Modular Nome Im(τ) [y]:</span>
+                                    <span id="label-hs-tau-y" class="sa-slider-val" style="color:#a7f3d0;">0.85</span>
+                                </div>
+                                <input type="range" id="hs-tau-y" min="0.2" max="2.0" step="0.05" value="0.85" oninput="document.getElementById('label-hs-tau-y').textContent=parseFloat(this.value).toFixed(2); runHeartStrokeStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Modular Phase Re(τ) [x]:</span>
+                                    <span id="label-hs-tau-x" class="sa-slider-val" style="color:#a7f3d0;">0.25</span>
+                                </div>
+                                <input type="range" id="hs-tau-x" min="0.0" max="1.0" step="0.05" value="0.25" oninput="document.getElementById('label-hs-tau-x').textContent=parseFloat(this.value).toFixed(2); runHeartStrokeStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Stem Cell Density:</span>
+                                    <span id="label-hs-stem" class="sa-slider-val" style="color:#f472b6;">25M cells</span>
+                                </div>
+                                <input type="range" id="hs-stem" min="5" max="60" step="5" value="25" oninput="document.getElementById('label-hs-stem').textContent=parseInt(this.value)+'M cells'; runHeartStrokeStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Intervention Intensity:</span>
+                                    <span id="label-hs-intensity" class="sa-slider-val" style="color:#fbbf24;">1.15x</span>
+                                </div>
+                                <input type="range" id="hs-intensity" min="0.6" max="2.0" step="0.05" value="1.15" oninput="document.getElementById('label-hs-intensity').textContent=parseFloat(this.value).toFixed(2)+'x'; runHeartStrokeStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Planning Horizon:</span>
+                                    <span id="label-hs-horizon" class="sa-slider-val" style="color:#c4b5fd;">60 Months</span>
+                                </div>
+                                <input type="range" id="hs-horizon" min="12" max="60" step="6" value="60" oninput="document.getElementById('label-hs-horizon').textContent=parseInt(this.value)+' Months'; runHeartStrokeStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <!-- Core Neurocardiac KPIs -->
+                        <h3>5-Year Clinical Milestones &amp; Proofs</h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div class="kpi-card" style="border-left:3px solid #dc2626; padding:10px; background:rgba(255,255,255,0.03); border-radius:6px;">
+                                <span style="font-size:10px; color:#94a3b8; text-transform:uppercase;">5-Yr NIHSS Deficit</span>
+                                <div id="kpi-hs-nihss" style="font-size:18px; font-weight:800; color:#f87171;">2.39</div>
+                                <span id="kpi-hs-nihss-delta" style="font-size:10px; color:#4ade80;">-85.5% Remission</span>
+                            </div>
+                            <div class="kpi-card" style="border-left:3px solid #0284c7; padding:10px; background:rgba(255,255,255,0.03); border-radius:6px;">
+                                <span style="font-size:10px; color:#94a3b8; text-transform:uppercase;">5-Yr Cardiac LVEF</span>
+                                <div id="kpi-hs-lvef" style="font-size:18px; font-weight:800; color:#38bdf8;">55.6%</div>
+                                <span id="kpi-hs-lvef-gain" style="font-size:10px; color:#4ade80;">+20.6% Ejection</span>
+                            </div>
+                            <div class="kpi-card" style="border-left:3px solid #059669; padding:10px; background:rgba(255,255,255,0.03); border-radius:6px;">
+                                <span style="font-size:10px; color:#94a3b8; text-transform:uppercase;">Penumbra Salvage</span>
+                                <div id="kpi-hs-penumbra" style="font-size:18px; font-weight:800; color:#34d399;">94.5%</div>
+                                <span style="font-size:10px; color:#94a3b8;">Ischemic Tissue Restored</span>
+                            </div>
+                            <div class="kpi-card" style="border-left:3px solid #7c3aed; padding:10px; background:rgba(255,255,255,0.03); border-radius:6px;">
+                                <span style="font-size:10px; color:#94a3b8; text-transform:uppercase;">Vanishing Nash Gap</span>
+                                <div id="kpi-hs-nash" style="font-size:18px; font-weight:800; color:#c4b5fd;">0.00062</div>
+                                <span style="font-size:10px; color:#4ade80;">Stability Certified</span>
+                            </div>
+                            <div class="kpi-card" style="border-left:3px solid #f43f5e; padding:10px; background:rgba(255,255,255,0.03); border-radius:6px;">
+                                <span style="font-size:10px; color:#94a3b8; text-transform:uppercase;">Stem Ring Homomorphism</span>
+                                <div id="kpi-hs-stem-yield" style="font-size:18px; font-weight:800; color:#f472b6;">116.3%</div>
+                                <span style="font-size:10px; color:#94a3b8;">Tissue Engraftment Yield</span>
+                            </div>
+                            <div class="kpi-card" style="border-left:3px solid #d97706; padding:10px; background:rgba(255,255,255,0.03); border-radius:6px;">
+                                <span style="font-size:10px; color:#94a3b8; text-transform:uppercase;">Modular Nome |q|</span>
+                                <div id="kpi-hs-nome" style="font-size:18px; font-weight:800; color:#fbbf24;">0.00478</div>
+                                <span style="font-size:10px; color:#94a3b8;">Ramanujan Coherence</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: VISUALIZATIONS & COMPREHENSIVE TABLES -->
+                    <div style="flex: 1 1 700px; display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <!-- Row 1: Dual Clinical Horizon & Ramanujan Geodesic Charts -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel">
+                                <h3>📊 5-Year Clinical Trajectory: Stroke Deficit vs. Cardiac LVEF%</h3>
+                                <div id="hs-chart-clinical-trajectory" class="chart-container" style="min-height:260px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>⚡ Ramanujan Modular Nome Harmonics &amp; Poincaré Geodesic Flow</h3>
+                                <div id="hs-chart-ramanujan-geodesic" class="chart-container" style="min-height:260px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Dual Nash Gap Signature & Stem Cell Ring Algebra Charts -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel">
+                                <h3>🎯 Game-Theoretic Vanishing Nash Gap Signature Convergence (G(s) → 0)</h3>
+                                <div id="hs-chart-nash-gap" class="chart-container" style="min-height:260px;"></div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h3>🧬 Graded Stem Cell Ring Algebra Differentiation Spectrum</h3>
+                                <div id="hs-chart-stem-ring" class="chart-container" style="min-height:260px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: 5-Year Longitudinal Clinical Milestones Table -->
+                        <div class="panel glass-panel">
+                            <h3>📋 Longitudinal Clinical Milestones Table (Month 0 to Month 60)</h3>
+                            <div style="overflow-x:auto; margin-top:10px;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:8px 10px;">Timeline</th>
+                                            <th style="padding:8px 10px;">Horizon</th>
+                                            <th style="padding:8px 10px;">NIHSS</th>
+                                            <th style="padding:8px 10px;">mRS</th>
+                                            <th style="padding:8px 10px;">LVEF %</th>
+                                            <th style="padding:8px 10px;">Penumbra Salvage</th>
+                                            <th style="padding:8px 10px;">Barthel ADL</th>
+                                            <th style="padding:8px 10px;">γ_nc Coupling</th>
+                                            <th style="padding:8px 10px;">Nash Gap</th>
+                                            <th style="padding:8px 10px;">Cortical Repair</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="hs-milestones-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Game-Theoretic Strategy Payoff Matrix & Mixed Equilibrium -->
+                        <div class="panel glass-panel">
+                            <h3>🎯 Game-Theoretic Payoff Matrix &amp; Mixed Strategy Nash Equilibrium</h3>
+                            <div style="overflow-x:auto; margin-top:10px;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:8px 10px;">Interventionist Strategy (P1)</th>
+                                            <th style="padding:8px 10px;">P1 Mix Prob</th>
+                                            <th style="padding:8px 10px;">Pathology S21 (Mild)</th>
+                                            <th style="padding:8px 10px;">Pathology S22 (Acute Penumbra)</th>
+                                            <th style="padding:8px 10px;">Pathology S23 (Reperfusion)</th>
+                                            <th style="padding:8px 10px;">Pathology S24 (Chronic Fibrosis)</th>
+                                            <th style="padding:8px 10px;">Expected Payoff</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="hs-game-matrix-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 5: Stem Cell Ring Algebra Graded Multiplication Matrix Table -->
+                        <div class="panel glass-panel">
+                            <h3>🧬 Graded Quotient Ring Multiplication Matrix R = ℝ[x] / ⟨x⁴ - 2.10x² - 1.45⟩</h3>
+                            <div style="overflow-x:auto; margin-top:10px;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:8px 10px;">Basis Generator</th>
+                                            <th style="padding:8px 10px;">e0 (Pluripotent P)</th>
+                                            <th style="padding:8px 10px;">e1 (Neural Progenitor N)</th>
+                                            <th style="padding:8px 10px;">e2 (Cardiomyocyte C)</th>
+                                            <th style="padding:8px 10px;">e3 (Endothelial V)</th>
+                                            <th style="padding:8px 10px;">Biological Lineage Role</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="hs-ring-mult-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 6: Governing Mathematical Formulations -->
+                        <div class="panel glass-panel" style="background: rgba(2,132,199,0.08); border: 1px solid rgba(56,189,248,0.3);">
+                            <h3>📐 Governing Mathematical Formulations: Ramanujan Modular Harmonics, Nash Equilibrium &amp; Ring Ideals</h3>
+                            <div id="hs-math-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
                         </div>
 
                     </div>

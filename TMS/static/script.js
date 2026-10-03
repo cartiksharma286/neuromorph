@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pharmacologicalEquivalenceView = document.getElementById('pharmacological-equivalence-view');
     const nihGrantView = document.getElementById('nih-grant-view');
     const parkinsonsView = document.getElementById('parkinsons-view');
+    const heartStrokeView = document.getElementById('heart-stroke-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -72,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView];
+    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -205,6 +206,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Parkinson\'s Syndrome: Combinatorial Optimal Staging & BEM Cortical rTMS',
             subtitle: 'Multi-Lobe BEM Cortical Potential Simulation · RF Strength & Electrodynamic Characteristics · Bellman DP Optimal Staging · 36-Month Longitudinal Horizons',
             view:     parkinsonsView, showRunBtn: false
+        },
+        'heart-stroke': {
+            title:    'Heart & Stroke Long-Term Clinical Trajectories',
+            subtitle: 'Geodesic Ramanujan Harmonic Modular Nome States · Cortical Surface Interventional Repair · Vanishing Nash Gap · Stem Cell Ring Algebra',
+            view:     heartStrokeView, showRunBtn: false
         }
     };
 
@@ -254,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'pharmacological-equivalence')          loadPharmacologicalEquivalenceData();
             if (tab === 'nih-grant')                            runNihGrantStudio();
             if (tab === 'parkinsons')                           runParkinsonsStudio();
+            if (tab === 'heart-stroke')                          runHeartStrokeStudio();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -3596,4 +3603,255 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.runParkinsonsStudio = runParkinsonsStudio;
     window.runParkinsonsStudioDebounced = runParkinsonsStudioDebounced;
+
+    // ─────────────────────────────────────────────────────────────
+    // HEART & STROKE LONG-TERM CLINICAL TRAJECTORIES STUDIO
+    // ─────────────────────────────────────────────────────────────
+    let hsDebounceTimer = null;
+    let hsChartClinicalTrajectory = null;
+    let hsChartRamanujanGeodesic = null;
+    let hsChartNashGap = null;
+    let hsChartStemRing = null;
+
+    const runHeartStrokeStudio = async () => {
+        const el = id => document.getElementById(id);
+        try {
+            const nihss = parseFloat(el('hs-nihss')?.value || 16.5);
+            const lvef = parseFloat(el('hs-lvef')?.value || 35.0);
+            const tauY = parseFloat(el('hs-tau-y')?.value || 0.85);
+            const tauX = parseFloat(el('hs-tau-x')?.value || 0.25);
+            const stem = parseFloat(el('hs-stem')?.value || 25.0);
+            const intensity = parseFloat(el('hs-intensity')?.value || 1.15);
+            const horizon = parseInt(el('hs-horizon')?.value || 60);
+
+            const res = await fetch('/api/heart-stroke-trajectories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    baseline_nihss: nihss,
+                    baseline_lvef: lvef,
+                    tau_imag_y: tauY,
+                    tau_real_x: tauX,
+                    stem_cell_density: stem,
+                    intervention_intensity: intensity,
+                    horizon_months: horizon
+                })
+            });
+
+            const json = await res.json();
+            if (json.status !== 'success') {
+                console.error('Heart & Stroke API error:', json.message);
+                return;
+            }
+            const d = json.data;
+            const s = d.summary;
+
+            // 1. Update Core KPIs
+            if (el('kpi-hs-nihss')) el('kpi-hs-nihss').textContent = s.final_5yr_nihss.toFixed(2);
+            if (el('kpi-hs-nihss-delta')) el('kpi-hs-nihss-delta').textContent = `-${s.nihss_delta_pct}% Remission`;
+            if (el('kpi-hs-lvef')) el('kpi-hs-lvef').textContent = `${s.final_5yr_lvef_pct.toFixed(1)}%`;
+            if (el('kpi-hs-lvef-gain')) el('kpi-hs-lvef-gain').textContent = `+${s.lvef_gain_pct}% Ejection`;
+            if (el('kpi-hs-penumbra')) el('kpi-hs-penumbra').textContent = `${s.penumbra_tissue_salvage_pct.toFixed(1)}%`;
+            if (el('kpi-hs-nash')) el('kpi-hs-nash').textContent = s.vanishing_nash_gap.toFixed(5);
+            if (el('kpi-hs-stem-yield')) el('kpi-hs-stem-yield').textContent = `${s.stem_cell_homomorphism_yield_pct.toFixed(1)}%`;
+            if (el('kpi-hs-nome')) el('kpi-hs-nome').textContent = s.ramanujan_nome_magnitude.toFixed(5);
+
+            const milestones = d.trajectory_milestones;
+            const months = milestones.map(m => `M${m.month}`);
+            const nihssData = milestones.map(m => m.nihss_score);
+            const lvefData = milestones.map(m => m.lvef_pct);
+            const mrsData = milestones.map(m => m.mrs_score);
+            const gammaData = milestones.map(m => m.neurocardiac_coupling_gamma);
+
+            const commonPlotlyLayout = {
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                font: { color: '#c9d1d9', family: 'Inter, system-ui, sans-serif' },
+                margin: { t: 30, b: 40, l: 45, r: 45 },
+                legend: { orientation: 'h', y: 1.15, font: { size: 9, color: '#94a3b8' } },
+                xaxis: { gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e', tickfont: { size: 9 } },
+                yaxis: { gridcolor: 'rgba(255,255,255,0.06)', color: '#8b949e', tickfont: { size: 9 } }
+            };
+
+            // 2. Chart 1: 5-Year Clinical Trajectory (NIHSS / mRS vs LVEF%)
+            if (el('hs-chart-clinical-trajectory')) {
+                Plotly.react('hs-chart-clinical-trajectory', [
+                    {
+                        x: months, y: nihssData, name: 'Stroke NIHSS Deficit',
+                        type: 'scatter', mode: 'lines+markers', line: { color: '#ef4444', width: 2.2 },
+                        marker: { size: 5, color: '#f87171' }
+                    },
+                    {
+                        x: months, y: mrsData, name: 'Modified Rankin (mRS)',
+                        type: 'scatter', mode: 'lines+markers', line: { color: '#f59e0b', width: 1.8, dash: 'dot' },
+                        marker: { size: 4, color: '#fbbf24' }
+                    },
+                    {
+                        x: months, y: lvefData, name: 'Cardiac LVEF (%)',
+                        type: 'scatter', mode: 'lines+markers', line: { color: '#0284c7', width: 2.5 },
+                        marker: { size: 5, color: '#38bdf8' },
+                        yaxis: 'y2'
+                    }
+                ], {
+                    ...commonPlotlyLayout,
+                    yaxis: { ...commonPlotlyLayout.yaxis, title: 'Deficit (NIHSS / mRS)', color: '#f87171' },
+                    yaxis2: { title: 'LVEF (%)', overlaying: 'y', side: 'right', color: '#38bdf8', gridcolor: 'rgba(56,189,248,0.08)' }
+                }, { responsive: true, displaylogo: false });
+            }
+
+            // 3. Chart 2: Ramanujan Modular Nome Harmonics & Poincaré Geodesics
+            if (el('hs-chart-ramanujan-geodesic')) {
+                const modNome = d.modular_nome_state;
+                const tVals = Array.from({ length: 30 }, (_, i) => i / 29.0);
+                const harmonicNome = tVals.map(t => Math.exp(-2 * Math.PI * (modNome.tau_imag + 0.25 * Math.sin(Math.PI * t))));
+                const poincareMetric = tVals.map(t => 1.0 / Math.pow(modNome.tau_imag + 0.25 * Math.sin(Math.PI * t), 2));
+                const monthLabels = tVals.map(t => (t * 60).toFixed(0) + 'm');
+
+                Plotly.react('hs-chart-ramanujan-geodesic', [
+                    {
+                        x: monthLabels, y: harmonicNome, name: 'Harmonic Nome |q(τ)|',
+                        type: 'scatter', mode: 'lines', fill: 'tozeroy', fillcolor: 'rgba(16,185,129,0.12)',
+                        line: { color: '#10b981', width: 2.2 }
+                    },
+                    {
+                        x: monthLabels, y: poincareMetric, name: 'Poincaré Potential 1/y²',
+                        type: 'scatter', mode: 'lines', line: { color: '#a855f7', width: 2.0, dash: 'dash' },
+                        yaxis: 'y2'
+                    }
+                ], {
+                    ...commonPlotlyLayout,
+                    yaxis: { ...commonPlotlyLayout.yaxis, title: 'Modular Nome |q|', color: '#10b981' },
+                    yaxis2: { title: 'Hyperbolic Metric 1/y²', overlaying: 'y', side: 'right', color: '#c084fc', gridcolor: 'rgba(192,132,252,0.08)' }
+                }, { responsive: true, displaylogo: false });
+            }
+
+            // 4. Chart 3: Vanishing Nash Gap Signature G(s) -> 0
+            if (el('hs-chart-nash-gap')) {
+                const gapTrace = d.nash_game_verification.nash_gap_convergence_trace;
+                const iters = gapTrace.map((_, i) => `Step ${i + 1}`);
+
+                Plotly.react('hs-chart-nash-gap', [
+                    {
+                        x: iters, y: gapTrace, name: 'Nash Gap Signature G(s)',
+                        type: 'scatter', mode: 'lines+markers', fill: 'tozeroy', fillcolor: 'rgba(139,92,246,0.18)',
+                        line: { color: '#8b5cf6', width: 2.5 },
+                        marker: { size: 6, color: '#c4b5fd' }
+                    }
+                ], {
+                    ...commonPlotlyLayout,
+                    yaxis: { ...commonPlotlyLayout.yaxis, title: 'Gap Magnitude G(s) → 0', color: '#c4b5fd' }
+                }, { responsive: true, displaylogo: false });
+            }
+
+            // 5. Chart 4: Stem Cell Ring Algebra Differentiation Spectrum
+            if (el('hs-chart-stem-ring')) {
+                const pluri = milestones.map(m => m.stem_cell_distribution.pluripotent * 100);
+                const neural = milestones.map(m => m.stem_cell_distribution.neural * 100);
+                const cardiac = milestones.map(m => m.stem_cell_distribution.cardiac * 100);
+                const vasc = milestones.map(m => m.stem_cell_distribution.vascular * 100);
+
+                Plotly.react('hs-chart-stem-ring', [
+                    { x: months, y: pluri, name: 'e0 (Pluripotent P)', type: 'bar', marker: { color: '#94a3b8' } },
+                    { x: months, y: neural, name: 'e1 (Neural N)', type: 'bar', marker: { color: '#38bdf8' } },
+                    { x: months, y: cardiac, name: 'e2 (Cardiac C)', type: 'bar', marker: { color: '#f43f5e' } },
+                    { x: months, y: vasc, name: 'e3 (Endothelial V)', type: 'bar', marker: { color: '#34d399' } }
+                ], {
+                    ...commonPlotlyLayout,
+                    barmode: 'stack',
+                    yaxis: { ...commonPlotlyLayout.yaxis, title: 'Lineage Commitment Yield (%)', range: [0, 100], color: '#cbd5e1' }
+                }, { responsive: true, displaylogo: false });
+            }
+
+            // 6. Populate Table 1: Longitudinal Clinical Milestones
+            const milestonesTbody = el('hs-milestones-tbody');
+            if (milestonesTbody) {
+                milestonesTbody.innerHTML = milestones.map(m => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:7px 10px; font-weight:700; color:#38bdf8;">Month ${m.month}</td>
+                        <td style="padding:7px 10px; color:#94a3b8;">${m.year > 0 ? m.year + ' yr' : 'Baseline'}</td>
+                        <td style="padding:7px 10px; color:#f87171; font-weight:600;">${m.nihss_score}</td>
+                        <td style="padding:7px 10px; color:#fbbf24;">${m.mrs_score}</td>
+                        <td style="padding:7px 10px; color:#38bdf8; font-weight:600;">${m.lvef_pct}%</td>
+                        <td style="padding:7px 10px; color:#34d399;">${m.penumbra_salvage_pct}%</td>
+                        <td style="padding:7px 10px; color:#e2e8f0;">${m.barthel_index}</td>
+                        <td style="padding:7px 10px; color:#a7f3d0;">${m.neurocardiac_coupling_gamma}</td>
+                        <td style="padding:7px 10px; color:#c4b5fd; font-family:monospace;">${m.nash_gap}</td>
+                        <td style="padding:7px 10px; color:#f472b6;">${m.cortical_repair_cm3} cm³</td>
+                    </tr>
+                `).join('');
+            }
+
+            // 7. Populate Table 2: Game-Theoretic Payoff Matrix
+            const gameTbody = el('hs-game-matrix-tbody');
+            if (gameTbody) {
+                const game = d.nash_game_verification;
+                const p1Probs = game.p1_mixed_strategy;
+                const payoffs = [
+                    [55.2, 36.8, 27.6, 20.7, 34.2],
+                    [89.7, 78.2, 66.7, 59.8, 73.6],
+                    [82.8, 69.0, 51.8, 43.7, 61.8],
+                    [108.1, 101.2, 94.3, 87.4, 97.8]
+                ];
+                gameTbody.innerHTML = game.p1_strategies.map((strat, i) => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:7px 10px; font-weight:600; color:#e2e8f0;">${strat}</td>
+                        <td style="padding:7px 10px; color:#a78bfa; font-weight:700;">${(p1Probs[i] * 100).toFixed(1)}%</td>
+                        <td style="padding:7px 10px; color:#94a3b8;">${payoffs[i][0]}</td>
+                        <td style="padding:7px 10px; color:#94a3b8;">${payoffs[i][1]}</td>
+                        <td style="padding:7px 10px; color:#94a3b8;">${payoffs[i][2]}</td>
+                        <td style="padding:7px 10px; color:#94a3b8;">${payoffs[i][3]}</td>
+                        <td style="padding:7px 10px; color:#34d399; font-weight:700;">+${payoffs[i][4]}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // 8. Populate Table 3: Stem Cell Ring Algebra Graded Multiplication
+            const ringTbody = el('hs-ring-mult-tbody');
+            if (ringTbody) {
+                const ringTable = d.stem_cell_ring_algebra.multiplication_table;
+                const labels = ["e0: Pluripotent (P)", "e1: Neural Progenitor (N)", "e2: Cardiomyocyte (C)", "e3: Endothelial (V)"];
+                const roles = [
+                    "Ground state pluripotency & self-renewal core",
+                    "Cortical synaptogenesis & perilesional axonal sprouting",
+                    "Myocardial sarcomere reconstruction & LVEF contractile pacing",
+                    "Angiogenic revascularization of ischemic penumbral core"
+                ];
+                ringTbody.innerHTML = ringTable.map((row, i) => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:7px 10px; font-weight:700; color:#34d399;">${labels[i]}</td>
+                        <td style="padding:7px 10px; color:#94a3b8; font-family:monospace;">${row[0]}</td>
+                        <td style="padding:7px 10px; color:#38bdf8; font-family:monospace;">${row[1]}</td>
+                        <td style="padding:7px 10px; color:#f43f5e; font-family:monospace;">${row[2]}</td>
+                        <td style="padding:7px 10px; color:#a7f3d0; font-family:monospace;">${row[3]}</td>
+                        <td style="padding:7px 10px; color:#cbd5e1; font-size:11px;">${roles[i]}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // 9. Populate Governing Formulations
+            const mathContainer = el('hs-math-container');
+            if (mathContainer && d.governing_formulations) {
+                mathContainer.innerHTML = d.governing_formulations.map(eq => `
+                    <div style="background:rgba(5,11,20,0.85); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:10px;">
+                        <div style="font-size:12px; font-weight:700; color:#38bdf8; margin-bottom:4px;">${eq.domain}</div>
+                        <div style="font-family:'Courier New', monospace; font-size:11.5px; color:#a7f3d0; background:rgba(0,0,0,0.55); padding:8px 12px; border-radius:4px; overflow-x:auto; margin:6px 0;">
+                            ${eq.formula}
+                        </div>
+                        <div style="font-size:11px; color:#94a3b8; line-height:1.4;">${eq.explanation}</div>
+                    </div>
+                `).join('');
+            }
+
+        } catch (err) {
+            console.error('Heart & Stroke Studio API error:', err);
+        }
+    };
+
+    const runHeartStrokeStudioDebounced = () => {
+        clearTimeout(hsDebounceTimer);
+        hsDebounceTimer = setTimeout(runHeartStrokeStudio, 200);
+    };
+
+    window.runHeartStrokeStudio = runHeartStrokeStudio;
+    window.runHeartStrokeStudioDebounced = runHeartStrokeStudioDebounced;
 
