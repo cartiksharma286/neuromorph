@@ -145,7 +145,7 @@ def figure_bem_potentials_and_depth(sim_data):
     y_coords = grid["y_coords_mm"]
 
     im = ax1.contourf(x_coords, y_coords, pot_matrix, levels=18, cmap="viridis")
-    ax1.set_title("A. BEM Cortical Surface Potential $\Phi(x, y)$ (mV)", fontsize=8.2, fontweight="bold", pad=5)
+    ax1.set_title(r"A. BEM Cortical Surface Potential $\Phi(x, y)$ (mV)", fontsize=8.2, fontweight="bold", pad=5)
     ax1.set_xlabel("Lateral-Medial Axis $X$ (mm)", fontsize=7.2)
     ax1.set_ylabel("Anterior-Posterior Axis $Y$ (mm)", fontsize=7.2)
     ax1.tick_params(labelsize=6.5)
@@ -210,15 +210,15 @@ def figure_rf_characteristics_and_spectrum(sim_data):
 
     # Panel A: Time-Domain Waveforms
     line1 = ax1.plot(t, b_t, color="#dc2626", linewidth=1.8, label="$B(t)$ [Tesla]")
-    ax1.set_xlabel("Pulse Elapsed Time $t$ ($\mu$s)", fontsize=7.2)
+    ax1.set_xlabel(r"Pulse Elapsed Time $t$ ($\mu$s)", fontsize=7.2)
     ax1.set_ylabel("Magnetic Flux Density $B$ (T)", color="#dc2626", fontsize=7.2)
     ax1.tick_params(axis="y", labelcolor="#dc2626", labelsize=6.5)
     ax1.tick_params(axis="x", labelsize=6.5)
     ax1.grid(alpha=0.25, linestyle=":")
 
     ax1_twin = ax1.twinx()
-    line2 = ax1_twin.plot(t, p_t, color="#0284c7", linewidth=1.5, linestyle="--", label="Poynting $S(t)$ [$\mathrm{kW/m}^2$]")
-    ax1_twin.set_ylabel("Poynting Flux $S$ ($\mathrm{kW/m}^2$)", color="#0284c7", fontsize=7.2)
+    line2 = ax1_twin.plot(t, p_t, color="#0284c7", linewidth=1.5, linestyle="--", label=r"Poynting $S(t)$ [$\mathrm{kW/m}^2$]")
+    ax1_twin.set_ylabel(r"Poynting Flux $S$ ($\mathrm{kW/m}^2$)", color="#0284c7", fontsize=7.2)
     ax1_twin.tick_params(axis="y", labelcolor="#0284c7", labelsize=6.5)
 
     lines = line1 + line2
@@ -234,7 +234,7 @@ def figure_rf_characteristics_and_spectrum(sim_data):
     ax2.axvline(x=rf["carrier_frequency_khz"], color="#059669", linestyle=":", linewidth=1.2, label=f"Carrier $f_c$ = {rf['carrier_frequency_khz']} kHz")
     ax2.set_title("B. RF Power Spectral Density (PSD)", fontsize=8.2, fontweight="bold", pad=5)
     ax2.set_xlabel("Frequency (kHz)", fontsize=7.2)
-    ax2.set_ylabel("PSD ($\mathrm{dBm/Hz}$)", fontsize=7.2)
+    ax2.set_ylabel(r"PSD ($\mathrm{dBm/Hz}$)", fontsize=7.2)
     ax2.tick_params(labelsize=6.5)
     ax2.grid(alpha=0.25, linestyle=":")
     ax2.legend(fontsize=6.2, loc="upper right")

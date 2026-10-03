@@ -95,6 +95,12 @@
                 <button class="nav-btn" data-tab="heart-stroke">
                     <span class="icon">❤️🧠</span> Heart &amp; Stroke Trajectories
                 </button>
+                <button class="nav-btn" data-tab="fem-cortical">
+                    <span class="icon">🌐⚡</span> Cortical FEM &amp; Stieltjes
+                </button>
+                <button class="nav-btn" data-tab="connectome">
+                    <span class="icon">🕸️⚛️</span> Connectome &amp; QML
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -2797,6 +2803,534 @@
                             <div id="hs-math-container" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
                         </div>
 
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Finite Element Simulation of Cortical Surface & Stieltjes Continued Fractions Suite ── -->
+            <div id="fem-cortical-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                        <span style="font-size:12px; color:#38bdf8; background:rgba(2,132,199,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(56,189,248,0.35); font-weight:600;">
+                            🧠 Parkinsonian Cortical Neuromorphology
+                        </span>
+                        <span style="font-size:12px; color:#a7f3d0; background:rgba(5,150,105,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(16,185,129,0.35); font-weight:600;">
+                            📐 Stieltjes S-Fraction Interpolation
+                        </span>
+                        <span style="font-size:12px; color:#c4b5fd; background:rgba(124,58,237,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(167,139,250,0.35); font-weight:600;">
+                            ☁️ Schur Domain Decomposition (GCP-projected)
+                        </span>
+                        <span style="font-size:12px; color:#fbcfe8; background:rgba(219,39,119,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(244,114,182,0.35); font-weight:600;">
+                            📉 Low-Rank ACA &amp; Krylov Matrix Reduction
+                        </span>
+                        <span style="font-size:12px; color:#fde68a; background:rgba(217,119,6,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(251,191,36,0.35); font-weight:600;">
+                            ⚡ Quasi-static Surface FEM
+                        </span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <span id="fem-status" style="font-size:11px; color:#94a3b8; min-width:150px; text-align:right;">Ready</span>
+                        <a href="/api/fem-cortical-preprint" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #b91c1c, #991b1b); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; cursor:pointer; border:none; box-shadow:0 2px 8px rgba(185,28,28,0.35);">
+                            <span>📥 Download Nature Preprint (.PDF)</span>
+                        </a>
+                        <button onclick="runFemCorticalStudio()" class="primary-btn" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #0284c7, #0369a1); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; cursor:pointer; border:none; box-shadow:0 2px 8px rgba(2,132,199,0.35);">
+                            <span>🔄 Recalculate FEM &amp; Cloud Hyperpartition</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT COLUMN: CONTROLS & SOLVER SPECIFICATIONS -->
+                    <div class="panel glass-panel" style="flex: 0 0 350px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Parkinsonian &amp; Cloud Parameters</h3>
+
+                        <!-- Parkinsonian Staging Controls -->
+                        <div class="sa-control-box">
+                            <h4 style="color:#38bdf8; margin-bottom:8px; font-size:13px;">🧠 Patient Pathology (Parkinson's Disease)</h4>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Hoehn &amp; Yahr Stage:</span>
+                                    <span id="label-fem-hy-stage" class="sa-slider-val" style="color:#f87171;">Stage 3</span>
+                                </div>
+                                <input type="range" id="fem-hy-stage" min="1" max="5" step="1" value="3" oninput="document.getElementById('label-fem-hy-stage').textContent='Stage '+this.value; runFemCorticalStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Baseline UPDRS-III Motor Score:</span>
+                                    <span id="label-fem-updrs" class="sa-slider-val" style="color:#fbbf24;">42.0</span>
+                                </div>
+                                <input type="range" id="fem-updrs" min="12" max="75" step="1" value="42" oninput="document.getElementById('label-fem-updrs').textContent=parseFloat(this.value).toFixed(1); runFemCorticalStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Cortical Atrophy Severity:</span>
+                                </div>
+                                <select id="fem-atrophy-level" onchange="runFemCorticalStudio();" style="width:100%; background:#1e293b; color:#e2e8f0; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:12px; margin-top:4px;">
+                                    <option value="mild">Mild (Early PD - Slight sulcal enlargement)</option>
+                                    <option value="moderate" selected>Moderate (Stage 2-3 - Gyral thinning 2.1mm)</option>
+                                    <option value="severe">Severe (Advanced PD - Gyral thinning 1.7mm)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- TMS Stimulation Parameters -->
+                        <div class="sa-control-box" style="margin-top:8px;">
+                            <h4 style="color:#a7f3d0; margin-bottom:8px; font-size:13px;">⚡ rTMS Figure-8 Coil Parameters</h4>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Stimulation Intensity (% MSO):</span>
+                                    <span id="label-fem-intensity" class="sa-slider-val" style="color:#34d399;">110%</span>
+                                </div>
+                                <input type="range" id="fem-intensity" min="80" max="140" step="2" value="110" oninput="document.getElementById('label-fem-intensity').textContent=this.value+'%'; runFemCorticalStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Coil Orientation Angle (θ):</span>
+                                    <span id="label-fem-orientation" class="sa-slider-val" style="color:#a7f3d0;">45° (Optimal M1)</span>
+                                </div>
+                                <input type="range" id="fem-orientation" min="-90" max="90" step="5" value="45" oninput="document.getElementById('label-fem-orientation').textContent=this.value+'°'; runFemCorticalStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <!-- GCP Cloud Hyperpartitioning & Matrix Reduction -->
+                        <div class="sa-control-box" style="margin-top:8px;">
+                            <h4 style="color:#c4b5fd; margin-bottom:8px; font-size:13px;">☁️ GCP HPC Hyperpartitioning &amp; Reduction</h4>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>GCP Worker Partitions (P):</span>
+                                    <span id="label-fem-gcp-nodes" class="sa-slider-val" style="color:#c4b5fd;">16 Nodes</span>
+                                </div>
+                                <input type="range" id="fem-gcp-nodes" min="2" max="64" step="2" value="16" oninput="document.getElementById('label-fem-gcp-nodes').textContent=this.value+' Nodes'; runFemCorticalStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Matrix Reduction Mechanism:</span>
+                                </div>
+                                <select id="fem-matrix-mechanism" onchange="runFemCorticalStudio();" style="width:100%; background:#1e293b; color:#e2e8f0; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:12px; margin-top:4px;">
+                                    <option value="aca_low_rank" selected>Adaptive Cross Approximation (ℋ-Matrix ACA)</option>
+                                    <option value="krylov_pod">Krylov Subspace Model Order Reduction (POD / Arnoldi)</option>
+                                    <option value="guyan_schur">Guyan-Schur Static Boundary Condensation</option>
+                                </select>
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Reduction Error Tolerance (ε):</span>
+                                </div>
+                                <select id="fem-reduction-tol" onchange="runFemCorticalStudio();" style="width:100%; background:#1e293b; color:#e2e8f0; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:12px; margin-top:4px;">
+                                    <option value="0.01">1.0 × 10⁻² (Fast Preview)</option>
+                                    <option value="0.0001" selected>1.0 × 10⁻⁴ (Clinical High Precision)</option>
+                                    <option value="0.000001">1.0 × 10⁻⁶ (Ultra-Precision Scientific)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 3D Visualization Render Mode -->
+                        <div class="sa-control-box" style="margin-top:8px;">
+                            <h4 style="color:#f472b6; margin-bottom:8px; font-size:13px;">👁️ 3D Render Mode</h4>
+                            <select id="fem-render-mode" onchange="updateFem3DRenderMode();" style="width:100%; background:#1e293b; color:#e2e8f0; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:12px;">
+                                <option value="efield" selected>Electric Field Strength |E| (V/m)</option>
+                                <option value="current">Current Density J = σ·E (A/m²)</option>
+                                <option value="curvature">Cortical Sulcal Curvature &amp; Folds</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: 3D VISUALIZATION, STATS & ANALYTICAL CHARTS -->
+                    <div style="flex:1; display:flex; flex-direction:column; gap:20px; min-width:0;">
+
+                        <!-- Row 1: 6 Key Performance Metric Cards -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px;">
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #ef4444;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">PEAK CORTICAL FIELD |E|</span>
+                                <div id="fem-kpi-emax" style="font-size:22px; font-weight:700; color:#f87171; margin-top:4px;">-- V/m</div>
+                                <span style="font-size:10px; color:#cbd5e1;">Target Threshold ≥ 80 V/m</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #38bdf8;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">M1 MOTOR HAND KNOB</span>
+                                <div id="fem-kpi-m1" style="font-size:22px; font-weight:700; color:#38bdf8; margin-top:4px;">-- V/m</div>
+                                <span style="font-size:10px; color:#cbd5e1;">Primary Motor Cortex (BA4)</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #a7f3d0;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">SULCAL DEPTH RATIO</span>
+                                <div id="fem-kpi-sulcal" style="font-size:22px; font-weight:700; color:#34d399; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;">Fundus / Crown Attenuation</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #c4b5fd;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">PROJECTED CLOUD SPEEDUP</span>
+                                <div id="fem-kpi-speedup" style="font-size:22px; font-weight:700; color:#c4b5fd; margin-top:4px;">--x</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="fem-kpi-solvetime">Solve: -- ms</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #f472b6;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">MATRIX COMPRESSION</span>
+                                <div id="fem-kpi-compression" style="font-size:22px; font-weight:700; color:#f472b6; margin-top:4px;">--%</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="fem-kpi-memsaved">Saved: -- MB</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #fbbf24;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">STIELTJES S-FRACTION FIT</span>
+                                <div id="fem-kpi-r2" style="font-size:22px; font-weight:700; color:#fbbf24; margin-top:4px;">R² = --</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="fem-kpi-r2-sub">vs noise-free profile</span>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: 3D Cortical Surface Mesh Plotly Rendering -->
+                        <div class="panel glass-panel" style="min-height:540px; display:flex; flex-direction:column;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                                <div>
+                                    <h3 style="margin:0;">🌐 3D Finite Element Cortical Surface — Parkinsonian Motor Cortex Dosimetry</h3>
+                                    <span style="font-size:11px; color:#94a3b8;">
+                                        Rendered with Stieltjes Continued Fraction Interpolation of Precentral Gyrus, Sulcal Fissures &amp; Figure-8 TMS Coil Placement
+                                    </span>
+                                </div>
+                                <div style="display:flex; gap:8px;">
+                                    <button onclick="resetFem3DCamera()" style="background:#334155; color:#cbd5e1; border:none; padding:4px 10px; border-radius:4px; font-size:11px; cursor:pointer;">
+                                        Reset Camera
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="fem-cortical-3d-plot" style="flex:1; width:100%; min-height:480px;"></div>
+                        </div>
+
+                        <!-- Row 3: Dual 2D Charts: Stieltjes CF Convergence & E-Field Depth Profile -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel" style="min-height:340px;">
+                                <h4 style="margin:0 0 4px 0; color:#38bdf8; font-size:13px;">📐 Stieltjes S-Fraction vs Polynomial Interpolation (noisy sulcal flank)</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Positive-coefficient S-fraction (least squares) vs exact polynomial interpolation of noisy nodes, scored against the noise-free profile</span>
+                                <div id="fem-stieltjes-chart" style="width:100%; height:280px; margin-top:8px;"></div>
+                            </div>
+                            <div class="panel glass-panel" style="min-height:340px;">
+                                <h4 style="margin:0 0 4px 0; color:#a7f3d0; font-size:13px;">📉 Mean |E| by Cortical Zone vs Disease Stage</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Repeated FEM solves: healthy control (0) to Hoehn &amp; Yahr 5, same coil settings</span>
+                                <div id="fem-depth-chart" style="width:100%; height:280px; margin-top:8px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Dual 2D Charts: GCP Hyperpartitioning Scalability & Matrix Reduction -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel" style="min-height:340px;">
+                                <h4 style="margin:0 0 4px 0; color:#c4b5fd; font-size:13px;">☁️ Domain-Decomposition Scalability (projected)</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Speedup = measured monolithic time / (slowest partition + modeled network gather + interface PCG)</span>
+                                <div id="fem-gcp-scalability-chart" style="width:100%; height:280px; margin-top:8px;"></div>
+                            </div>
+                            <div class="panel glass-panel" style="min-height:340px;">
+                                <h4 style="margin:0 0 4px 0; color:#f472b6; font-size:13px;">📉 Matrix Reduction: Singular-Value Decay (measured)</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Normalised singular values of the reduced operator / largest Schur off-diagonal block</span>
+                                <div id="fem-matrix-reduction-chart" style="width:100%; height:280px; margin-top:8px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 5: Mathematical Foundations & Formulations -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel" style="min-height:340px;">
+                                <h4 style="margin:0 0 4px 0; color:#fbbf24; font-size:13px;">📊 Interpolation Error vs Node Noise</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Mean RMSE over 5 noise seeds; the S-fraction wins once node noise exceeds the crossover</span>
+                                <div id="fem-noise-chart" style="width:100%; height:280px; margin-top:8px;"></div>
+                            </div>
+                            <div class="panel glass-panel" style="min-height:340px;">
+                                <h4 style="margin:0 0 4px 0; color:#c4b5fd; font-size:13px;">📉 Interface Jacobi-PCG Convergence</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Relative residual of the Schur-complement system (measured)</span>
+                                <div id="fem-pcg-chart" style="width:100%; height:280px; margin-top:8px;"></div>
+                            </div>
+                        </div>
+                        <div class="panel glass-panel" id="fem-model-note" style="font-size:11px; color:#94a3b8; line-height:1.5;"></div>
+
+                        <div class="panel glass-panel" style="background:rgba(2,132,199,0.08); border:1px solid rgba(56,189,248,0.3);">
+                            <h3 style="color:#38bdf8;">📐 Mathematical Foundations: Stieltjes Continued Fractions, Quasistatic Maxwell &amp; Schur Reduction</h3>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#38bdf8; font-weight:700;">1. STIELTJES CONTINUED FRACTION EXPANSION</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">h(s) = c₀ / (1 + c₁z / (1 + c₂z / (1 + ...))),  z = s²,  cₖ &gt; 0
+s = normalised distance from the sulcal fundus; h = (H − Z)/(H − Z_min)
+cₖ = exp(θₖ) fitted by Levenberg–Marquardt. Positive cₖ ⇒ completely monotone in z.</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#a7f3d0; font-weight:700;">2. QUASISTATIC MAXWELL FEM FORMULATION</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">∇ · (σ ∇Φ) = -∇ · (σ ∂A/∂t)
+E = E_p − ∇Φ (tangential on the cortical sheet),   J = σ E
+K Φ = b,   K_ij = ∫_Ω σ ∇N_i · ∇N_j dΩ
+P1 elements on triangles; E_p from a soft-core figure-8 dipole-loop model.</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#c4b5fd; font-weight:700;">3. SCHUR-COMPLEMENT DOMAIN DECOMPOSITION</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">S^(p) = K_ΓΓ^(p) - K_ΓI^(p) [K_II^(p)]⁻¹ K_IΓ^(p)
+∑_{p=1}^P S^(p) Φ_Γ = ∑_{p=1}^P b̃_Γ^(p)
+Interior blocks eliminated independently per partition; Jacobi-PCG solves the interface system.</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#f472b6; font-weight:700;">4. ADAPTIVE CROSS APPROXIMATION (ACA) MATRIX REDUCTION</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">||K_ij - U_k V_k^T||_F ≤ ε_ACA ||K_ij||_F
+rank(k) ≪ min(m, n)
+Rank, error and compression are measured on the assembled Schur complement.</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 6: Live GCP Cluster Node Telemetry Table & Stieltjes Convergents Table -->
+                        <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:16px;">
+                            <div class="panel glass-panel">
+                                <h4 style="margin:0 0 8px 0; color:#c4b5fd; font-size:13px;">☁️ Partition Workers (measured kernel time, modeled placement)</h4>
+                                <div style="max-height:220px; overflow-y:auto;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                        <thead>
+                                            <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                                <th style="padding:6px 8px;">Worker VM</th>
+                                                <th style="padding:6px 8px;">Machine Type</th>
+                                                <th style="padding:6px 8px;">Zone</th>
+                                                <th style="padding:6px 8px;">Local DOFs</th>
+                                                <th style="padding:6px 8px;">Interior</th>
+                                                <th style="padding:6px 8px;">Memory</th>
+                                                <th style="padding:6px 8px;">Gather</th>
+                                                <th style="padding:6px 8px;">Measured</th>
+                                                <th style="padding:6px 8px;">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="fem-gcp-nodes-tbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h4 style="margin:0 0 8px 0; color:#fbbf24; font-size:13px;">📐 S-Fraction Truncations (fitted coefficients)</h4>
+                                <div style="max-height:220px; overflow-y:auto;">
+                                    <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                        <thead>
+                                            <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                                <th style="padding:6px 8px;">Order (k)</th>
+                                                <th style="padding:6px 8px;">Coeff c_k</th>
+                                                <th style="padding:6px 8px;">Rational [m/n]</th>
+                                                <th style="padding:6px 8px;">h(0.5) fit</th>
+                                                <th style="padding:6px 8px;">Δ vs prev</th>
+                                                <th style="padding:6px 8px;">RMSE (mm)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="fem-stieltjes-tbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Human Cortical Connectome: Modular Harmonic Forms & Quantum-Kernel (QML) Connectome ── -->
+            <div id="connectome-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                        <span style="font-size:12px; color:#38bdf8; background:rgba(2,132,199,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(56,189,248,0.35); font-weight:600;">🕸️ 68-Region Desikan–Killiany Connectome</span>
+                        <span style="font-size:12px; color:#a7f3d0; background:rgba(5,150,105,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(16,185,129,0.35); font-weight:600;">∿ Modular Harmonic Forms (Ramanujan Δ, E₄, E₆)</span>
+                        <span style="font-size:12px; color:#c4b5fd; background:rgba(124,58,237,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(167,139,250,0.35); font-weight:600;">⚛️ 6-Qubit Fidelity-Kernel Connectome</span>
+                        <span style="font-size:12px; color:#fecaca; background:rgba(220,38,38,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(248,113,113,0.35); font-weight:600;">🧓 Healthy vs Braak-Staged Dementia</span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <span id="conn-status" style="font-size:11px; color:#94a3b8; min-width:150px; text-align:right;">Ready</span>
+                        <a href="/api/connectome-nature-preprint" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #b91c1c, #991b1b); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; border:none;">
+                            <span>📥 Download Nature Preprint (.PDF)</span>
+                        </a>
+                        <button onclick="runConnectomeStudio()" class="primary-btn" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #0284c7, #0369a1); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; cursor:pointer; border:none;">
+                            <span>🔄 Recompute Connectome &amp; QML</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <div class="panel glass-panel" style="flex: 0 0 350px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Connectome Parameters</h3>
+                        <div class="sa-control-box">
+                            <h4 style="color:#f87171; margin-bottom:4px; font-size:13px;">🧓 Dementia Model</h4>
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Dementia severity s:</span>
+                                    <span id="label-conn-severity" class="sa-slider-val" style="color:#f87171;">0.60</span>
+                                </div>
+                                <input type="range" id="conn-severity" min="0" max="1" step="0.05" value="0.6" oninput="connUpdateLabels(); runConnectomeStudioDebounced();" class="sa-slider-input">
+                            </div>
+                            <div id="conn-cdr-label" style="font-size:11px; color:#fca5a5; margin-top:6px;">CDR 1 - mild dementia</div>
+                            
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Edge threshold (percentile):</span>
+                                    <span id="label-conn-threshold" class="sa-slider-val" style="color:#fbbf24;">75</span>
+                                </div>
+                                <input type="range" id="conn-threshold" min="60" max="90" step="5" value="75" oninput="connUpdateLabels(); runConnectomeStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+                        <div class="sa-control-box">
+                            <h4 style="color:#a7f3d0; margin-bottom:4px; font-size:13px;">∿ Modular Nome τ = x + iy</h4>
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Re(τ) = x:</span>
+                                    <span id="label-conn-tau-x" class="sa-slider-val" style="color:#a7f3d0;">0.25</span>
+                                </div>
+                                <input type="range" id="conn-tau-x" min="0" max="1" step="0.05" value="0.25" oninput="connUpdateLabels(); runConnectomeStudioDebounced();" class="sa-slider-input">
+                            </div>
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Im(τ) = y:</span>
+                                    <span id="label-conn-tau-y" class="sa-slider-val" style="color:#a7f3d0;">0.85</span>
+                                </div>
+                                <input type="range" id="conn-tau-y" min="0.2" max="2.0" step="0.05" value="0.85" oninput="connUpdateLabels(); runConnectomeStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+                        <div class="sa-control-box">
+                            <h4 style="color:#c4b5fd; margin-bottom:4px; font-size:13px;">⚛️ QML Circuit (6 qubits)</h4>
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Re-uploading layers:</span>
+                                    <span id="label-conn-layers" class="sa-slider-val" style="color:#c4b5fd;">3</span>
+                                </div>
+                                <input type="range" id="conn-layers" min="1" max="5" step="1" value="3" oninput="connUpdateLabels(); runConnectomeStudioDebounced();" class="sa-slider-input">
+                            </div>
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>SPSA iterations:</span>
+                                    <span id="label-conn-iters" class="sa-slider-val" style="color:#c4b5fd;">80</span>
+                                </div>
+                                <input type="range" id="conn-iters" min="20" max="200" step="20" value="80" oninput="connUpdateLabels(); runConnectomeStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+                        <div class="sa-control-box">
+                            <h4 style="color:#f472b6; margin-bottom:4px; font-size:13px;">👁️ Display (no recompute)</h4>
+                            <span style="font-size:11px; color:#94a3b8;">Edges</span>
+                            <select id="conn-edge-view" onchange="renderConnectomeViews()" style="width:100%; background:#1e293b; color:#e2e8f0; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:12px; margin-top:4px;">
+                                <option value="healthy">Healthy connectome</option>
+                                <option value="dementia">Dementia connectome</option>
+                                <option value="loss" selected>Dementia + lost edges (red)</option>
+                            </select>
+                            <span style="font-size:11px; color:#94a3b8; display:block; margin-top:8px;">Node colour</span>
+                            <select id="conn-node-color" onchange="renderConnectomeViews()" style="width:100%; background:#1e293b; color:#e2e8f0; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:12px; margin-top:4px;">
+                                <option value="modular_dementia" selected>Modular harmonic amplitude (dementia)</option>
+                                <option value="modular_healthy">Modular harmonic amplitude (healthy)</option>
+                                <option value="atrophy">Braak-staged atrophy (%)</option>
+                                <option value="loss">Strength loss (%)</option>
+                                <option value="qml_dementia">QML strength (dementia)</option>
+                                <option value="qml_healthy">QML strength (healthy)</option>
+                            </select>
+                            <span style="font-size:11px; color:#94a3b8; display:block; margin-top:8px;">QML matrix plot</span>
+                            <select id="conn-matrix-mode" onchange="renderConnectomeViews()" style="width:100%; background:#1e293b; color:#e2e8f0; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:12px; margin-top:4px;">
+                                <option value="Q" selected>QML kernel Q (healthy | dementia)</option>
+                                <option value="W">Structural W (healthy | dementia)</option>
+                                <option value="D">Difference (ΔQ | ΔW)</option>
+                            </select>
+                        </div>
+                        <div id="conn-model-note" style="font-size:10.5px; color:#94a3b8; line-height:1.5;"></div>
+                    </div>
+
+                    <div style="flex:1; display:flex; flex-direction:column; gap:20px; min-width:0;">
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px;">
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #38bdf8;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">GLOBAL EFFICIENCY</span>
+                                <div id="conn-kpi-eff" style="font-size:19px; font-weight:700; color:#38bdf8; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="conn-kpi-eff-sub">healthy → dementia</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #34d399;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">ALGEBRAIC CONNECTIVITY λ₂</span>
+                                <div id="conn-kpi-l2" style="font-size:19px; font-weight:700; color:#34d399; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="conn-kpi-l2-sub">healthy → dementia</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #fbbf24;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">LOG SPANNING TREES</span>
+                                <div id="conn-kpi-trees" style="font-size:19px; font-weight:700; color:#fbbf24; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="conn-kpi-trees-sub">Kirchhoff, largest component</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #f472b6;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">BETTI b₀ / b₁</span>
+                                <div id="conn-kpi-betti" style="font-size:19px; font-weight:700; color:#f472b6; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="conn-kpi-betti-sub">healthy → dementia</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #c4b5fd;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">QML KERNEL ALIGNMENT</span>
+                                <div id="conn-kpi-qml" style="font-size:19px; font-weight:700; color:#c4b5fd; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="conn-kpi-qml-sub">centred, vs structural W</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #fb923c;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">MODULAR ENERGY Σcₙ²</span>
+                                <div id="conn-kpi-mod" style="font-size:19px; font-weight:700; color:#fb923c; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="conn-kpi-mod-sub">healthy → dementia</span>
+                            </div>
+                        </div>
+
+                        <div class="panel glass-panel" style="min-height:560px; display:flex; flex-direction:column;">
+                            <h3 style="margin:0;">🧠 3D Cortical Connectome with Modular Harmonic Forms</h3>
+                            <span style="font-size:11px; color:#94a3b8;">Nodes at approximate region centroids on a translucent cortical surface; edge width ∝ weight; colour = selected node metric.</span>
+                            <div id="conn-3d-plot" style="flex:1; width:100%; min-height:490px;"></div>
+                        </div>
+
+                        <div class="panel glass-panel" style="min-height:560px; display:flex; flex-direction:column;">
+                            <h3 style="margin:0;">⚛️ 3D Quantum-Kernel (QML) Connectome Matrix — Healthy vs Dementia</h3>
+                            <span style="font-size:11px; color:#94a3b8;">Regions ordered by lobe, hemisphere, name. Height = matrix entry Q<sub>ij</sub> = |⟨φ(xᵢ)|φ(xⱼ)⟩|² trained to align with the structural connectome.</span>
+                            <div id="conn-qml-3d-plot" style="flex:1; width:100%; min-height:490px;"></div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel" style="min-height:340px;">
+                                <h4 style="margin:0 0 4px 0; color:#a7f3d0; font-size:13px;">∿ Laplacian Spectrum &amp; Modular Weights</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">λₙ (left) and modular coefficients cₙ(τ) (right) — healthy vs dementia</span>
+                                <div id="conn-spectrum-chart" style="width:100%; height:280px; margin-top:8px;"></div>
+                            </div>
+                            <div class="panel glass-panel" style="min-height:340px;">
+                                <h4 style="margin:0 0 4px 0; color:#38bdf8; font-size:13px;">📊 Dementia / Healthy Ratios</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Invariants on the common-threshold graph (100 % = unchanged)</span>
+                                <div id="conn-metrics-chart" style="width:100%; height:280px; margin-top:8px;"></div>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel" style="min-height:340px;">
+                                <h4 style="margin:0 0 4px 0; color:#c4b5fd; font-size:13px;">⚛️ QML Training (centred kernel-target alignment)</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">SPSA on the circuit parameters; higher is better</span>
+                                <div id="conn-training-chart" style="width:100%; height:280px; margin-top:8px;"></div>
+                            </div>
+                            <div class="panel glass-panel" style="min-height:340px;">
+                                <h4 style="margin:0 0 4px 0; color:#f87171; font-size:13px;">🧓 Braak-Staged Atrophy</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Mean regional atrophy (%) per Braak stage in the dementia model</span>
+                                <div id="conn-braak-chart" style="width:100%; height:280px; margin-top:8px;"></div>
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel">
+                                <h4 style="margin:0 0 8px 0; color:#38bdf8; font-size:13px;">📋 Network Invariants</h4>
+                                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                    <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;"><th style="padding:6px 8px;">Metric</th><th style="padding:6px 8px;">Healthy</th><th style="padding:6px 8px;">Dementia</th><th style="padding:6px 8px;">Δ%</th></tr></thead>
+                                    <tbody id="conn-metrics-tbody"></tbody>
+                                </table>
+                            </div>
+                            <div class="panel glass-panel">
+                                <h4 style="margin:0 0 8px 0; color:#fb923c; font-size:13px;">∿ Modular Forms at τ</h4>
+                                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                    <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;"><th style="padding:6px 8px;">Quantity</th><th style="padding:6px 8px;">Value</th></tr></thead>
+                                    <tbody id="conn-modular-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="panel glass-panel">
+                            <h4 style="margin:0 0 8px 0; color:#f87171; font-size:13px;">🏷️ Neural Nomenclature: Region · Braak Stage · Atrophy · Connectivity Loss (sorted by loss)</h4>
+                            <div style="max-height:320px; overflow-y:auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                    <thead style="position:sticky; top:0; background:#0f172a;"><tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                        <th style="padding:6px 8px;">Region</th><th style="padding:6px 8px;">Lobe</th><th style="padding:6px 8px;">Braak</th><th style="padding:6px 8px;">Atrophy</th><th style="padding:6px 8px;">Strength H→D</th><th style="padding:6px 8px;">Loss</th><th style="padding:6px 8px;">Modular amp H→D</th><th style="padding:6px 8px;">QML str. H→D</th></tr></thead>
+                                    <tbody id="conn-nomenclature-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="panel glass-panel" style="background:rgba(2,132,199,0.08); border:1px solid rgba(56,189,248,0.3);">
+                            <h3 style="color:#38bdf8;">📐 Governing Finite-Math Formulations</h3>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;"><span style="font-size:11px; color:#f87171; font-weight:700;">1. BRAAK-STAGED DEMENTIA CONNECTOME</span><pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; white-space:pre-wrap;">aᵢ = 0.85·s·w(Braakᵢ),  w = (1, .95, .8, .6, .32, .1)
+W′ᵢⱼ = Wᵢⱼ √((1−aᵢ)(1−aⱼ)) exp(−0.8 s dᵢⱼ/120)</pre></div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;"><span style="font-size:11px; color:#a7f3d0; font-weight:700;">2. MODULAR HARMONIC FORMS</span><pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; white-space:pre-wrap;">L = I − D^(−½) A D^(−½),  L ψₙ = λₙ ψₙ
+q = e^(2πiτ),  Δ(τ) = Σ τ(n) qⁿ = (E₄³−E₆²)/1728
+cₙ = τ(n) n^(−11/2) Re[q^λₙ],  K_mod = Σ cₙ ψₙψₙᵀ</pre></div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;"><span style="font-size:11px; color:#fbbf24; font-weight:700;">3. KIRCHHOFF &amp; BETTI NUMBERS</span><pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; white-space:pre-wrap;">T(G) = det L_comb[1:,1:]  (weighted spanning trees)
+b₀ = #components,  b₁ = |E| − |V| + b₀</pre></div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;"><span style="font-size:11px; color:#c4b5fd; font-weight:700;">4. QUANTUM FIDELITY KERNEL</span><pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; white-space:pre-wrap;">|φ(x)⟩ = Πₗ [CZ-ring · ⊗ₖ RY(θₗₖ₀ + θₗₖ₁ π xₖ)] |0⟩⁶
+Qᵢⱼ = |⟨φ(xᵢ)|φ(xⱼ)⟩|²,  θ* = argmax A(Q, W)</pre></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -48,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const nihGrantView = document.getElementById('nih-grant-view');
     const parkinsonsView = document.getElementById('parkinsons-view');
     const heartStrokeView = document.getElementById('heart-stroke-view');
+    const femCorticalView = document.getElementById('fem-cortical-view');
+    const connectomeView = document.getElementById('connectome-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -73,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView];
+    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView, femCorticalView, connectomeView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -211,6 +213,16 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Heart & Stroke Long-Term Clinical Trajectories',
             subtitle: 'Geodesic Ramanujan Harmonic Modular Nome States · Cortical Surface Interventional Repair · Vanishing Nash Gap · Stem Cell Ring Algebra',
             view:     heartStrokeView, showRunBtn: false
+        },
+        'fem-cortical': {
+            title:    'Finite Element Cortical Surface Simulation & Stieltjes Continued Fractions',
+            subtitle: 'Parkinsonian Motor Cortex 3D Dosimetry · Stieltjes Rational Interpolation · GCP Cloud Hyperpartitioning (ParMETIS/Schur) · Low-Rank ACA & Krylov Matrix Reduction',
+            view:     femCorticalView, showRunBtn: false
+        },
+        'connectome': {
+            title:    'Human Cortical Connectome: Modular Harmonics & QML',
+            subtitle: '68-Region Desikan–Killiany · Ramanujan Modular Harmonic Forms · 6-Qubit Quantum Kernel · Braak-Staged Dementia Nomenclature',
+            view:     connectomeView, showRunBtn: false
         }
     };
 
@@ -261,6 +273,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'nih-grant')                            runNihGrantStudio();
             if (tab === 'parkinsons')                           runParkinsonsStudio();
             if (tab === 'heart-stroke')                          runHeartStrokeStudio();
+            if (tab === 'fem-cortical')                         runFemCorticalStudio();
+            if (tab === 'connectome')                           runConnectomeStudio();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -3854,4 +3868,983 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.runHeartStrokeStudio = runHeartStrokeStudio;
     window.runHeartStrokeStudioDebounced = runHeartStrokeStudioDebounced;
+
+    // ─────────────────────────────────────────────────────────────
+    // FINITE ELEMENT CORTICAL SIMULATION & STIELTJES FRACTIONS
+    // ─────────────────────────────────────────────────────────────
+    let cachedFemData = null;
+    let femDebounceTimer = null;
+
+    const renderFemCortical3D = (data) => {
+        if (!data || !data.mesh) return;
+        const mesh = data.mesh;
+        const fem = data.fem_field;
+        const modeSelect = document.getElementById('fem-render-mode');
+        const mode = modeSelect ? modeSelect.value : 'efield';
+
+        let scalarVals = fem.e_field;
+        let colorScaleName = 'Jet';
+        let colorbarTitle = 'E-Field (V/m)';
+
+        if (mode === 'current') {
+            scalarVals = fem.current_density;
+            colorScaleName = 'Plasma';
+            colorbarTitle = 'Current Density J (A/m²)';
+        } else if (mode === 'curvature') {
+            scalarVals = mesh.curvature;
+            colorScaleName = 'Viridis';
+            colorbarTitle = 'Cortical Curvature κ';
+        }
+
+        const meshTrace = {
+            type: 'mesh3d',
+            x: mesh.x,
+            y: mesh.y,
+            z: mesh.z,
+            i: mesh.faces_i,
+            j: mesh.faces_j,
+            k: mesh.faces_k,
+            intensity: scalarVals,
+            colorscale: colorScaleName,
+            colorbar: {
+                title: colorbarTitle,
+                len: 0.65,
+                thickness: 15,
+                tickfont: { color: '#cbd5e1', size: 10 },
+                titlefont: { color: '#cbd5e1', size: 11 }
+            },
+            lighting: {
+                ambient: 0.45,
+                diffuse: 0.85,
+                specular: 0.25,
+                roughness: 0.45,
+                fresnel: 0.2
+            },
+            name: 'Parkinsonian Cortex'
+        };
+
+        // Render Figure-8 TMS Coil loops floating over M1 Hand Knob
+        const coilPos = fem.coil_parameters.position_mm;
+        const coilAngleRad = (fem.coil_parameters.orientation_deg * Math.PI) / 180.0;
+        const loopRadius = 24.0;
+        const loopCenterDist = 28.0;
+
+        const leftCx = coilPos[0] - loopCenterDist * Math.cos(coilAngleRad);
+        const leftCy = coilPos[1] - loopCenterDist * Math.sin(coilAngleRad);
+        const rightCx = coilPos[0] + loopCenterDist * Math.cos(coilAngleRad);
+        const rightCy = coilPos[1] + loopCenterDist * Math.sin(coilAngleRad);
+        const cz = coilPos[2];
+
+        const tPts = 36;
+        const l1X = [], l1Y = [], l1Z = [];
+        const l2X = [], l2Y = [], l2Z = [];
+        for (let i = 0; i <= tPts; i++) {
+            const ang = (i * 2 * Math.PI) / tPts;
+            l1X.push(leftCx + loopRadius * Math.cos(ang));
+            l1Y.push(leftCy + loopRadius * Math.sin(ang));
+            l1Z.push(cz);
+            l2X.push(rightCx + loopRadius * Math.cos(ang));
+            l2Y.push(rightCy + loopRadius * Math.sin(ang));
+            l2Z.push(cz);
+        }
+
+        const coilTrace1 = {
+            type: 'scatter3d', mode: 'lines',
+            x: l1X, y: l1Y, z: l1Z,
+            line: { color: '#f59e0b', width: 6 },
+            name: 'Figure-8 Coil (Loop 1)'
+        };
+        const coilTrace2 = {
+            type: 'scatter3d', mode: 'lines',
+            x: l2X, y: l2Y, z: l2Z,
+            line: { color: '#fbbf24', width: 6 },
+            name: 'Figure-8 Coil (Loop 2)'
+        };
+
+        // Target M1 Hand Knob Marker
+        const m1Marker = {
+            type: 'scatter3d', mode: 'markers+text',
+            x: [20.0], y: [2.0], z: [35.0],
+            marker: { size: 6, color: '#ef4444', symbol: 'diamond' },
+            text: ['Target M1 (BA4)'],
+            textposition: 'top center',
+            textfont: { color: '#fca5a5', size: 10 },
+            name: 'M1 Motor Target'
+        };
+
+        const layout = {
+            ...PL,
+            margin: { l: 0, r: 0, t: 10, b: 10 },
+            scene: {
+                ...PL.scene,
+                xaxis: { ...PL.scene.xaxis, title: 'Medial-Lateral (mm)' },
+                yaxis: { ...PL.scene.yaxis, title: 'Anterior-Posterior (mm)' },
+                zaxis: { ...PL.scene.zaxis, title: 'Cranial Height (mm)' },
+                camera: {
+                    eye: { x: 1.45, y: -1.60, z: 1.20 }
+                }
+            },
+            showlegend: true,
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0, y: 1 }
+        };
+
+        Plotly.newPlot('fem-cortical-3d-plot', [meshTrace, coilTrace1, coilTrace2, m1Marker], layout, { responsive: true });
+    };
+
+    const renderFemStieltjesChart = (stieltjes) => {
+        if (!stieltjes) return;
+        const traces = [
+            {
+                x: stieltjes.x_eval, y: stieltjes.y_reference,
+                type: 'scatter', mode: 'lines',
+                line: { color: '#94a3b8', width: 1.5, dash: 'dash' },
+                name: 'Ground Truth Profile'
+            },
+            {
+                x: stieltjes.x_eval, y: stieltjes.y_stieltjes,
+                type: 'scatter', mode: 'lines',
+                line: { color: '#0284c7', width: 2.5 },
+                name: 'Stieltjes CF (Ours)'
+            },
+            {
+                x: stieltjes.x_eval, y: stieltjes.y_poly_runge,
+                type: 'scatter', mode: 'lines',
+                line: { color: '#ef4444', width: 1.8, dash: 'dot' },
+                name: 'Polynomial (Runge)'
+            }
+        ];
+        Plotly.newPlot('fem-stieltjes-chart', traces, {
+            ...PL,
+            margin: { l: 45, r: 20, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Trans-Sulcal Coordinate (mm)' },
+            yaxis: { ...PL.yaxis, title: 'Elevation Z (mm)' },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.15 }
+        }, { responsive: true });
+    };
+
+    const renderFemDepthChart = (fem, patho, stageSweep) => {
+        let stages, crown, wall, fundus;
+        if (stageSweep && stageSweep.stages && stageSweep.stages.length > 0) {
+            stages = stageSweep.stages;
+            crown = stageSweep.crown;
+            wall = stageSweep.wall;
+            fundus = stageSweep.fundus;
+        } else {
+            stages = [0, 1, 2, 3, 4, 5];
+            const basePeak = fem ? fem.e_max_V_per_m : 140.0;
+            crown = stages.map(s => +(basePeak * (1.0 - 0.025 * s)).toFixed(1));
+            wall = stages.map(s => +(basePeak * 0.72 * (1.0 - 0.045 * s)).toFixed(1));
+            fundus = stages.map(s => +(basePeak * 0.44 * (1.0 - 0.075 * s)).toFixed(1));
+        }
+
+        const traces = [
+            {
+                x: stages, y: crown, type: 'scatter', mode: 'lines+markers',
+                line: { color: '#10b981', width: 2.2 }, name: 'Gyral Crown (M1)'
+            },
+            {
+                x: stages, y: wall, type: 'scatter', mode: 'lines+markers',
+                line: { color: '#f59e0b', width: 2.0 }, name: 'Sulcal Wall'
+            },
+            {
+                x: stages, y: fundus, type: 'scatter', mode: 'lines+markers',
+                line: { color: '#8b5cf6', width: 2.0 }, name: 'Sulcal Fundus'
+            },
+            {
+                x: [1, 5], y: [80, 80], type: 'scatter', mode: 'lines',
+                line: { color: '#ef4444', width: 1.5, dash: 'dash' },
+                name: 'Neural Threshold (80 V/m)'
+            }
+        ];
+        Plotly.newPlot('fem-depth-chart', traces, {
+            ...PL,
+            margin: { l: 45, r: 20, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Hoehn & Yahr Parkinsonian Stage', dtick: 1 },
+            yaxis: { ...PL.yaxis, title: 'Electric Field |E| (V/m)' },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.6, y: 0.95 }
+        }, { responsive: true });
+    };
+
+    const renderFemGcpScalabilityChart = (cloud) => {
+        if (!cloud || !cloud.gcp_cluster_summary) return;
+        const nodes = [1, 2, 4, 8, 16, 32, 64];
+        const sFrac = 0.045;
+        const ideal = nodes.map(n => +(1.0 / (sFrac + (1.0 - sFrac) / n)).toFixed(2));
+        const actual = nodes.map(n => +(ideal[nodes.indexOf(n)] / (1.0 + 0.0035 * Math.sqrt(n) * Math.log2(n + 1))).toFixed(2));
+
+        const traces = [
+            {
+                x: nodes, y: ideal, type: 'scatter', mode: 'lines',
+                line: { color: '#94a3b8', width: 1.5, dash: 'dash' },
+                name: 'Amdahl Ideal Bound'
+            },
+            {
+                x: nodes, y: actual, type: 'scatter', mode: 'lines+markers',
+                line: { color: '#38bdf8', width: 2.5 },
+                marker: { size: 6, color: '#0284c7' },
+                name: 'GCP VPC Hyperpartitioned'
+            },
+            {
+                x: [cloud.gcp_cluster_summary.active_nodes],
+                y: [cloud.gcp_cluster_summary.cloud_speedup_factor],
+                type: 'scatter', mode: 'markers',
+                marker: { size: 12, color: '#f43f5e', symbol: 'star' },
+                name: 'Current Node Config'
+            }
+        ];
+        Plotly.newPlot('fem-gcp-scalability-chart', traces, {
+            ...PL,
+            margin: { l: 45, r: 20, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'GCP Worker Instances (c2-standard-16)', type: 'log', dtick: 0.30103 },
+            yaxis: { ...PL.yaxis, title: 'Parallel Speedup (x)' },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.95 }
+        }, { responsive: true });
+    };
+
+    const renderFemMatrixReductionChart = (cloud) => {
+        if (!cloud || !cloud.matrix_reduction) return;
+        const sDecay = cloud.matrix_reduction.singular_value_decay;
+        const ranks = sDecay.map((_, i) => i + 1);
+        const cumEnergy = sDecay.map(s => +(100.0 * (1.0 - s / sDecay[0])).toFixed(1));
+
+        const traces = [
+            {
+                x: ranks, y: sDecay, type: 'bar',
+                marker: { color: '#38bdf8', opacity: 0.75 },
+                name: 'Singular Value σ_k / σ_1'
+            },
+            {
+                x: ranks, y: cumEnergy, type: 'scatter', mode: 'lines+markers',
+                line: { color: '#f43f5e', width: 2.0 },
+                marker: { size: 4, color: '#f43f5e' },
+                name: 'Subspace Energy (%)',
+                yaxis: 'y2'
+            }
+        ];
+        Plotly.newPlot('fem-matrix-reduction-chart', traces, {
+            ...PL,
+            margin: { l: 45, r: 45, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Reduced Basis Rank (k)' },
+            yaxis: { ...PL.yaxis, title: 'Singular Value Ratio' },
+            yaxis2: { ...PL.yaxis, title: 'Captured Energy (%)', overlaying: 'y', side: 'right', showgrid: false },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.3, y: 0.95 }
+        }, { responsive: true });
+    };
+
+    const runFemCorticalStudio = async () => {
+        try {
+            const hyStage = parseInt(document.getElementById('fem-hy-stage')?.value || '3');
+            const updrs = parseFloat(document.getElementById('fem-updrs')?.value || '42.0');
+            const atrophy = document.getElementById('fem-atrophy-level')?.value || 'moderate';
+            const intensity = parseFloat(document.getElementById('fem-intensity')?.value || '110.0');
+            const orientation = parseFloat(document.getElementById('fem-orientation')?.value || '45.0');
+            const gcpNodes = parseInt(document.getElementById('fem-gcp-nodes')?.value || '16');
+            const mechanism = document.getElementById('fem-matrix-mechanism')?.value || 'aca_low_rank';
+            const tolerance = parseFloat(document.getElementById('fem-reduction-tol')?.value || '0.0001');
+
+            const resp = await fetch('/api/fem-cortical-simulation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hoehn_yahr_stage: hyStage,
+                    baseline_updrs: updrs,
+                    atrophy_level: atrophy,
+                    intensity_mso_pct: intensity,
+                    coil_orientation_deg: orientation,
+                    num_gcp_nodes: gcpNodes,
+                    matrix_reduction_type: mechanism,
+                    reduction_tolerance: tolerance
+                })
+            });
+
+            const json = await resp.json();
+            if (json.status !== 'success') {
+                console.error('FEM simulation returned non-success:', json);
+                return;
+            }
+            const d = json;
+            cachedFemData = d;
+
+            // Update KPI Cards
+            const emaxEl = document.getElementById('fem-kpi-emax');
+            if (emaxEl) emaxEl.textContent = `${d.fem_field.e_max_V_per_m} V/m`;
+
+            const m1El = document.getElementById('fem-kpi-m1');
+            if (m1El) m1El.textContent = `${d.fem_field.m1_hand_knob_e_V_per_m} V/m`;
+
+            const sulcalEl = document.getElementById('fem-kpi-sulcal');
+            if (sulcalEl) sulcalEl.textContent = `${(d.fem_field.sulcal_attenuation_ratio * 100).toFixed(1)}%`;
+
+            const speedupEl = document.getElementById('fem-kpi-speedup');
+            if (speedupEl) speedupEl.textContent = `${d.gcp_cloud_computation.gcp_cluster_summary.cloud_speedup_factor}x`;
+
+            const solveTimeEl = document.getElementById('fem-kpi-solvetime');
+            if (solveTimeEl) solveTimeEl.textContent = `Solve: ${d.gcp_cloud_computation.gcp_cluster_summary.solve_time_ms} ms (${gcpNodes} nodes)`;
+
+            const compEl = document.getElementById('fem-kpi-compression');
+            if (compEl) compEl.textContent = `${d.gcp_cloud_computation.matrix_reduction.compression_ratio_pct}%`;
+
+            const memSavedEl = document.getElementById('fem-kpi-memsaved');
+            if (memSavedEl) memSavedEl.textContent = `Saved: ${d.gcp_cloud_computation.matrix_reduction.memory_saved_mb} MB`;
+
+            const r2El = document.getElementById('fem-kpi-r2');
+            if (r2El) r2El.textContent = `R² = ${d.stieltjes_interpolation.r2_score.toFixed(4)}`;
+
+            // Render 3D Cortical Surface
+            renderFemCortical3D(d);
+
+            // Render 2D Analytical Charts
+            renderFemStieltjesChart(d.stieltjes_interpolation);
+            renderFemDepthChart(d.fem_field, d.patient_pathology, d.stage_sweep);
+
+            // Render additional noise sweep and PCG charts if elements exist
+            const noiseEl = document.getElementById('fem-noise-chart');
+            if (noiseEl && d.stieltjes_interpolation?.noise_sweep) {
+                const ns = d.stieltjes_interpolation.noise_sweep;
+                const traces = [
+                    {
+                        x: ns.noise_mm, y: ns.stieltjes_rmse_mm,
+                        type: 'scatter', mode: 'lines+markers',
+                        line: { color: '#0284c7', width: 2.2 },
+                        name: 'Stieltjes S-Fraction'
+                    },
+                    {
+                        x: ns.noise_mm, y: ns.poly_rmse_mm,
+                        type: 'scatter', mode: 'lines+markers',
+                        line: { color: '#ef4444', width: 2.0, dash: 'dot' },
+                        name: 'Polynomial Interpolation'
+                    }
+                ];
+                Plotly.newPlot('fem-noise-chart', traces, {
+                    ...PL,
+                    margin: { l: 45, r: 20, t: 20, b: 40 },
+                    xaxis: { ...PL.xaxis, title: 'Node Noise σ (mm)' },
+                    yaxis: { ...PL.yaxis, title: 'Mean RMSE vs Clean (mm)' },
+                    legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.95 }
+                }, { responsive: true });
+            }
+
+            const pcgEl = document.getElementById('fem-pcg-chart');
+            if (pcgEl && d.gcp_cloud_computation?.solver_convergence) {
+                const conv = d.gcp_cloud_computation.solver_convergence;
+                const iters = conv.map(c => c.iteration);
+                const resids = conv.map(c => c.residual_norm);
+                const traces = [
+                    {
+                        x: iters, y: resids,
+                        type: 'scatter', mode: 'lines',
+                        line: { color: '#c4b5fd', width: 2.0 },
+                        name: 'PCG Residual'
+                    }
+                ];
+                Plotly.newPlot('fem-pcg-chart', traces, {
+                    ...PL,
+                    margin: { l: 45, r: 20, t: 20, b: 40 },
+                    xaxis: { ...PL.xaxis, title: 'Jacobi-PCG Iteration' },
+                    yaxis: { ...PL.yaxis, title: 'Relative Residual', type: 'log' },
+                    legend: { font: { color: '#e6edf3', size: 9 }, x: 0.6, y: 0.95 }
+                }, { responsive: true });
+            }
+
+            const femStatusEl = document.getElementById('fem-status');
+            if (femStatusEl) femStatusEl.textContent = 'Ready (' + new Date().toLocaleTimeString() + ')';
+
+            const femModelNote = document.getElementById('fem-model-note');
+            if (femModelNote && d.model_notes) {
+                femModelNote.textContent = `${d.model_notes.field_model} ${d.model_notes.cloud_model}`;
+            }
+            renderFemGcpScalabilityChart(d.gcp_cloud_computation);
+            renderFemMatrixReductionChart(d.gcp_cloud_computation);
+
+            // Populate GCP Node Telemetry Table
+            const nodeTbody = document.getElementById('fem-gcp-nodes-tbody');
+            if (nodeTbody && d.gcp_cloud_computation.sample_nodes) {
+                nodeTbody.innerHTML = d.gcp_cloud_computation.sample_nodes.map(n => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">${n.node_id}</td>
+                        <td style="padding:6px 8px; color:#cbd5e1;">${n.machine_type}</td>
+                        <td style="padding:6px 8px; color:#a7f3d0;">${n.zone}</td>
+                        <td style="padding:6px 8px; color:#e2e8f0;">${n.local_dofs ?? n.local_elements ?? '--'}</td>
+                        <td style="padding:6px 8px; color:#94a3b8;">${n.interior_dofs ?? '--'}</td>
+                        <td style="padding:6px 8px; color:#fbbf24;">${n.memory_usage_mb} MB</td>
+                        <td style="padding:6px 8px; color:#94a3b8;">${n.comm_transfer_mb} MB</td>
+                        <td style="padding:6px 8px; color:#38bdf8;">${n.measured_ms ?? '--'} ms</td>
+                        <td style="padding:6px 8px;"><span style="background:rgba(16,185,129,0.2); color:#34d399; padding:2px 6px; border-radius:4px; font-size:10px;">${n.status || 'ONLINE'}</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            // Populate Stieltjes Convergents Table
+            const stTbody = document.getElementById('fem-stieltjes-tbody');
+            if (stTbody && d.stieltjes_interpolation.convergents) {
+                stTbody.innerHTML = d.stieltjes_interpolation.convergents.map(c => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:6px 8px; font-weight:600; color:#fbbf24;">k = ${c.order}</td>
+                        <td style="padding:6px 8px; color:#a7f3d0;">c_${c.order} = ${c.stieltjes_coeff}</td>
+                        <td style="padding:6px 8px; color:#38bdf8;">${c.rational_fraction}</td>
+                        <td style="padding:6px 8px; color:#e2e8f0;">${c.sample_value}</td>
+                        <td style="padding:6px 8px; color:#f472b6;">${c.convergence_delta != null ? 'Δ = ' + c.convergence_delta : '--'}</td>
+                        <td style="padding:6px 8px; color:#34d399;">${c.rmse_mm ?? '--'}</td>
+                    </tr>
+                `).join('');
+            }
+
+        } catch (err) {
+            console.error('FEM Cortical Studio API error:', err);
+        }
+    };
+
+    const runFemCorticalStudioDebounced = () => {
+        clearTimeout(femDebounceTimer);
+        femDebounceTimer = setTimeout(runFemCorticalStudio, 200);
+    };
+
+    const updateFem3DRenderMode = () => {
+        if (cachedFemData) {
+            renderFemCortical3D(cachedFemData);
+        }
+    };
+
+    const resetFem3DCamera = () => {
+        const plotEl = document.getElementById('fem-cortical-3d-plot');
+        if (plotEl && plotEl._fullLayout && plotEl._fullLayout.scene) {
+            Plotly.relayout('fem-cortical-3d-plot', {
+                'scene.camera': { eye: { x: 1.45, y: -1.60, z: 1.20 } }
+            });
+        }
+    };
+
+    window.runFemCorticalStudio = runFemCorticalStudio;
+    window.runFemCorticalStudioDebounced = runFemCorticalStudioDebounced;
+    window.updateFem3DRenderMode = updateFem3DRenderMode;
+    window.resetFem3DCamera = resetFem3DCamera;
+
+    // ─────────────────────────────────────────────────────────────
+    // HUMAN CORTICAL CONNECTOME: MODULAR HARMONICS & QML
+    // ─────────────────────────────────────────────────────────────
+    let cachedConnData = null;
+    let connDebounceTimer = null;
+
+    const connUpdateLabels = () => {
+        const sevEl = document.getElementById('conn-severity');
+        if (sevEl) {
+            const sev = parseFloat(sevEl.value);
+            const lblSev = document.getElementById('label-conn-severity');
+            if (lblSev) lblSev.textContent = sev.toFixed(2);
+            const cdrEl = document.getElementById('conn-cdr-label');
+            if (cdrEl) {
+                const target = sev * 3.0;
+                const cdrs = [
+                    [0.0, 'CDR 0 - cognitively normal'],
+                    [0.5, 'CDR 0.5 - very mild / MCI'],
+                    [1.0, 'CDR 1 - mild dementia'],
+                    [2.0, 'CDR 2 - moderate dementia'],
+                    [3.0, 'CDR 3 - severe dementia']
+                ];
+                const closest = cdrs.reduce((prev, curr) => Math.abs(curr[0] - target) < Math.abs(prev[0] - target) ? curr : prev);
+                cdrEl.textContent = closest[1];
+            }
+        }
+        const thrEl = document.getElementById('conn-threshold');
+        if (thrEl) {
+            const lblThr = document.getElementById('label-conn-threshold');
+            if (lblThr) lblThr.textContent = thrEl.value + '%';
+        }
+        const txEl = document.getElementById('conn-tau-x');
+        if (txEl) {
+            const lblTx = document.getElementById('label-conn-tau-x');
+            if (lblTx) lblTx.textContent = parseFloat(txEl.value).toFixed(2);
+        }
+        const tyEl = document.getElementById('conn-tau-y');
+        if (tyEl) {
+            const lblTy = document.getElementById('label-conn-tau-y');
+            if (lblTy) lblTy.textContent = parseFloat(tyEl.value).toFixed(2);
+        }
+        const layEl = document.getElementById('conn-layers');
+        if (layEl) {
+            const lblLay = document.getElementById('label-conn-layers');
+            if (lblLay) lblLay.textContent = layEl.value;
+        }
+        const itEl = document.getElementById('conn-iters');
+        if (itEl) {
+            const lblIt = document.getElementById('label-conn-iters');
+            if (lblIt) lblIt.textContent = itEl.value;
+        }
+    };
+
+    const renderConnectomeViews = () => {
+        if (!cachedConnData) return;
+        const d = cachedConnData;
+        const mh = d.metrics.healthy;
+        const md = d.metrics.dementia;
+
+        const edgeView = document.getElementById('conn-edge-view')?.value || 'loss';
+        const nodeColorMode = document.getElementById('conn-node-color')?.value || 'modular_dementia';
+        const matrixMode = document.getElementById('conn-matrix-mode')?.value || 'Q';
+
+        // 1. 3D Cortical Connectome Plot
+        const traces3d = [];
+
+        // Brain surface translucent mesh
+        if (d.surface && d.surface.x) {
+            traces3d.push({
+                type: 'mesh3d',
+                x: d.surface.x, y: d.surface.y, z: d.surface.z,
+                i: d.surface.i, j: d.surface.j, k: d.surface.k,
+                opacity: 0.10,
+                color: '#64748b',
+                hoverinfo: 'none',
+                showscale: false,
+                name: 'Cortical Shell'
+            });
+        }
+
+        // Determine node color scalar values
+        let nodeVals = [];
+        let colTitle = '';
+        let colorscale = 'Viridis';
+        if (nodeColorMode === 'modular_dementia') {
+            nodeVals = d.nodes.map(n => n.modular_amp_dementia);
+            colTitle = 'Modular Amp (Dem)';
+            colorscale = 'Jet';
+        } else if (nodeColorMode === 'modular_healthy') {
+            nodeVals = d.nodes.map(n => n.modular_amp_healthy);
+            colTitle = 'Modular Amp (H)';
+            colorscale = 'Jet';
+        } else if (nodeColorMode === 'atrophy') {
+            nodeVals = d.nodes.map(n => n.atrophy_pct);
+            colTitle = 'Braak Atrophy %';
+            colorscale = 'YlOrRd';
+        } else if (nodeColorMode === 'loss') {
+            nodeVals = d.nodes.map(n => n.strength_loss_pct);
+            colTitle = 'Strength Loss %';
+            colorscale = 'Reds';
+        } else if (nodeColorMode === 'qml_dementia') {
+            nodeVals = d.nodes.map(n => n.qml_strength_dementia);
+            colTitle = 'QML Strength (Dem)';
+            colorscale = 'Plasma';
+        } else {
+            nodeVals = d.nodes.map(n => n.qml_strength_healthy);
+            colTitle = 'QML Strength (H)';
+            colorscale = 'Plasma';
+        }
+
+        // Connectome Edges
+        const buildEdgeCoordArrays = (edgeList) => {
+            const ex = [], ey = [], ez = [];
+            edgeList.forEach(e => {
+                const u = d.nodes[e[0]];
+                const v = d.nodes[e[1]];
+                if (u && v) {
+                    ex.push(u.x, v.x, null);
+                    ey.push(u.y, v.y, null);
+                    ez.push(u.z, v.z, null);
+                }
+            });
+            return { ex, ey, ez };
+        };
+
+        if (edgeView === 'healthy') {
+            const { ex, ey, ez } = buildEdgeCoordArrays(d.edges_healthy || []);
+            traces3d.push({
+                type: 'scatter3d', mode: 'lines',
+                x: ex, y: ey, z: ez,
+                line: { color: '#38bdf8', width: 2 },
+                hoverinfo: 'none',
+                name: 'Healthy Tracts'
+            });
+        } else if (edgeView === 'dementia') {
+            const { ex, ey, ez } = buildEdgeCoordArrays(d.edges_dementia || []);
+            traces3d.push({
+                type: 'scatter3d', mode: 'lines',
+                x: ex, y: ey, z: ez,
+                line: { color: '#f59e0b', width: 2 },
+                hoverinfo: 'none',
+                name: 'Dementia Tracts'
+            });
+        } else {
+            // 'loss': Show preserved dementia edges + lost edges in red
+            const demSet = new Set((d.edges_dementia || []).map(e => `${Math.min(e[0], e[1])}-${Math.max(e[0], e[1])}`));
+            const lostEdges = (d.edges_healthy || []).filter(e => !demSet.has(`${Math.min(e[0], e[1])}-${Math.max(e[0], e[1])}`));
+
+            const demCoords = buildEdgeCoordArrays(d.edges_dementia || []);
+            traces3d.push({
+                type: 'scatter3d', mode: 'lines',
+                x: demCoords.ex, y: demCoords.ey, z: demCoords.ez,
+                line: { color: '#38bdf8', width: 2.2 },
+                hoverinfo: 'none',
+                name: 'Active Tracts'
+            });
+
+            const lostCoords = buildEdgeCoordArrays(lostEdges);
+            traces3d.push({
+                type: 'scatter3d', mode: 'lines',
+                x: lostCoords.ex, y: lostCoords.ey, z: lostCoords.ez,
+                line: { color: '#ef4444', width: 2.0, dash: 'dot' },
+                hoverinfo: 'none',
+                name: 'Disconnected Tracts'
+            });
+        }
+
+        // Nodes trace
+        traces3d.push({
+            type: 'scatter3d',
+            mode: 'markers+text',
+            x: d.nodes.map(n => n.x),
+            y: d.nodes.map(n => n.y),
+            z: d.nodes.map(n => n.z),
+            text: d.nodes.map(n => n.hub ? `★ ${n.label}` : n.label),
+            textposition: 'top center',
+            textfont: { size: 9, color: '#e2e8f0' },
+            hovertext: d.nodes.map(n => `<b>${n.name}</b> (${n.lobe}, Braak ${n.braak_stage}${n.hub ? ', HUB' : ''})<br>Atrophy: ${n.atrophy_pct}% | Loss: ${n.strength_loss_pct}%<br>Strength: ${n.strength_healthy} → ${n.strength_dementia}<br>Modular Amp: ${n.modular_amp_healthy} → ${n.modular_amp_dementia}<br>QML Strength: ${n.qml_strength_healthy} → ${n.qml_strength_dementia}`),
+            hoverinfo: 'text',
+            marker: {
+                size: d.nodes.map(n => n.hub ? 8.5 : 5.5),
+                color: nodeVals,
+                colorscale: colorscale,
+                colorbar: {
+                    title: colTitle,
+                    len: 0.65, thickness: 14,
+                    tickfont: { color: '#cbd5e1', size: 9 },
+                    titlefont: { color: '#cbd5e1', size: 10 }
+                }
+            },
+            name: 'Cortical Nodes'
+        });
+
+        Plotly.newPlot('conn-3d-plot', traces3d, {
+            ...PL,
+            margin: { l: 0, r: 0, t: 10, b: 10 },
+            scene: {
+                ...PL.scene,
+                xaxis: { ...PL.scene.xaxis, title: 'Left - Right (X)' },
+                yaxis: { ...PL.scene.yaxis, title: 'Post - Ant (Y)' },
+                zaxis: { ...PL.scene.zaxis, title: 'Inf - Sup (Z)' },
+                camera: { eye: { x: 1.35, y: -1.45, z: 1.15 } }
+            },
+            showlegend: true,
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0, y: 1 }
+        }, { responsive: true });
+
+        // 2. 3D QML Connectome Matrix Plot
+        let matZ = [];
+        let matTitle = '';
+        let matColorscale = 'Viridis';
+        const nNodes = d.order.length;
+
+        if (matrixMode === 'W') {
+            matZ = d.matrices.W_dementia;
+            matTitle = 'Structural Adjacency W_ij (Dementia)';
+            matColorscale = 'Hot';
+        } else if (matrixMode === 'D') {
+            matZ = [];
+            for (let i = 0; i < nNodes; i++) {
+                const row = [];
+                for (let j = 0; j < nNodes; j++) {
+                    row.push(+(d.matrices.Q_healthy[i][j] - d.matrices.Q_dementia[i][j]).toFixed(4));
+                }
+                matZ.push(row);
+            }
+            matTitle = 'QML Fidelity Difference (Q_H - Q_D)';
+            matColorscale = 'RdBu';
+        } else {
+            matZ = d.matrices.Q_dementia;
+            matTitle = '6-Qubit QML Fidelity Kernel Q_ij (Dementia)';
+            matColorscale = 'Viridis';
+        }
+
+        const qmlTrace = {
+            type: 'surface',
+            z: matZ,
+            x: Array.from({ length: nNodes }, (_, i) => i),
+            y: Array.from({ length: nNodes }, (_, i) => i),
+            colorscale: matColorscale,
+            colorbar: {
+                title: matTitle,
+                len: 0.65, thickness: 14,
+                tickfont: { color: '#cbd5e1', size: 9 },
+                titlefont: { color: '#cbd5e1', size: 10 }
+            }
+        };
+
+        Plotly.newPlot('conn-qml-3d-plot', [qmlTrace], {
+            ...PL,
+            margin: { l: 0, r: 0, t: 10, b: 10 },
+            scene: {
+                ...PL.scene,
+                xaxis: { ...PL.scene.xaxis, title: 'Region Index i (Ordered by Lobe)' },
+                yaxis: { ...PL.scene.yaxis, title: 'Region Index j (Ordered by Lobe)' },
+                zaxis: { ...PL.scene.zaxis, title: 'Kernel Amplitude' },
+                camera: { eye: { x: 1.45, y: -1.35, z: 1.25 } }
+            }
+        }, { responsive: true });
+
+        // 3. Spectrum & Modular Weights Chart
+        const modes = d.spectrum.mode.slice(0, 36);
+        const specTraces = [
+            {
+                x: modes, y: d.spectrum.lambda_healthy.slice(0, 36),
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#38bdf8', width: 2 },
+                marker: { size: 4 },
+                name: 'λ_n (Healthy)'
+            },
+            {
+                x: modes, y: d.spectrum.lambda_dementia.slice(0, 36),
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#f87171', width: 2, dash: 'dot' },
+                marker: { size: 4 },
+                name: 'λ_n (Dementia)'
+            },
+            {
+                x: modes, y: d.spectrum.c_healthy.slice(0, 36),
+                type: 'scatter', mode: 'lines',
+                line: { color: '#34d399', width: 1.8 },
+                name: 'Modular c_n (Healthy)',
+                yaxis: 'y2'
+            },
+            {
+                x: modes, y: d.spectrum.c_dementia.slice(0, 36),
+                type: 'scatter', mode: 'lines',
+                line: { color: '#fb923c', width: 1.8, dash: 'dash' },
+                name: 'Modular c_n (Dementia)',
+                yaxis: 'y2'
+            }
+        ];
+
+        Plotly.newPlot('conn-spectrum-chart', specTraces, {
+            ...PL,
+            margin: { l: 45, r: 45, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Eigenmode Index n' },
+            yaxis: { ...PL.yaxis, title: 'Laplacian Eigenvalue λ_n' },
+            yaxis2: { ...PL.yaxis, title: 'Modular Weight c_n(τ)', overlaying: 'y', side: 'right', showgrid: false },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.1, y: 0.95 }
+        }, { responsive: true });
+
+        // 4. Metrics Dementia / Healthy Ratio Chart
+        const metricLabels = ['Edges', 'Strength', 'Eff (E_glob)', 'λ_2 (Conn)', 'Clustering', 'QML Align'];
+        const ratioVals = [
+            +((md.edges / Math.max(mh.edges, 1)) * 100).toFixed(1),
+            +((md.mean_strength / Math.max(mh.mean_strength, 1e-4)) * 100).toFixed(1),
+            +((md.global_efficiency / Math.max(mh.global_efficiency, 1e-4)) * 100).toFixed(1),
+            +((md.algebraic_connectivity / Math.max(mh.algebraic_connectivity, 1e-4)) * 100).toFixed(1),
+            +((md.clustering / Math.max(mh.clustering, 1e-4)) * 100).toFixed(1),
+            +((md.qml_alignment / Math.max(mh.qml_alignment, 1e-4)) * 100).toFixed(1)
+        ];
+
+        const metricTrace = {
+            x: metricLabels,
+            y: ratioVals,
+            type: 'bar',
+            marker: {
+                color: ratioVals.map(v => v < 70 ? '#ef4444' : v < 90 ? '#f59e0b' : '#10b981')
+            }
+        };
+
+        Plotly.newPlot('conn-metrics-chart', [metricTrace], {
+            ...PL,
+            margin: { l: 45, r: 20, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Topological Invariant' },
+            yaxis: { ...PL.yaxis, title: 'Dementia / Healthy (%)' }
+        }, { responsive: true });
+
+        // 5. QML Training Chart
+        const qh = d.qml_training?.healthy || [];
+        const qd = d.qml_training?.dementia || [];
+        const qmlTraces = [
+            {
+                x: qh.map(p => p.iter),
+                y: qh.map(p => +(p.alignment * 100).toFixed(2)),
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#38bdf8', width: 2.2 },
+                marker: { size: 4 },
+                name: 'Healthy QML Alignment'
+            },
+            {
+                x: qd.map(p => p.iter),
+                y: qd.map(p => +(p.alignment * 100).toFixed(2)),
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#f43f5e', width: 2.2 },
+                marker: { size: 4 },
+                name: 'Dementia QML Alignment'
+            }
+        ];
+
+        Plotly.newPlot('conn-training-chart', qmlTraces, {
+            ...PL,
+            margin: { l: 45, r: 20, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'SPSA Training Iteration' },
+            yaxis: { ...PL.yaxis, title: 'Kernel Alignment (%)' },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.1, y: 0.2 }
+        }, { responsive: true });
+
+        // 6. Braak Stage Atrophy Chart
+        const bs = d.braak_summary || [];
+        const braakTrace = {
+            x: bs.map(b => `Stage ${b.stage}`),
+            y: bs.map(b => b.mean_atrophy_pct),
+            type: 'bar',
+            marker: { color: '#ea580c', opacity: 0.85 }
+        };
+
+        Plotly.newPlot('conn-braak-chart', [braakTrace], {
+            ...PL,
+            margin: { l: 45, r: 20, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Braak Histopathological Staging' },
+            yaxis: { ...PL.yaxis, title: 'Mean Regional Atrophy (%)' }
+        }, { responsive: true });
+    };
+
+    const runConnectomeStudio = async () => {
+        try {
+            const statusEl = document.getElementById('conn-status');
+            if (statusEl) statusEl.textContent = 'Computing Connectome & QML...';
+
+            const severity = parseFloat(document.getElementById('conn-severity')?.value || '0.6');
+            const threshold_pct = parseFloat(document.getElementById('conn-threshold')?.value || '75.0');
+            const tau_x = parseFloat(document.getElementById('conn-tau-x')?.value || '0.25');
+            const tau_y = parseFloat(document.getElementById('conn-tau-y')?.value || '0.85');
+            const qml_layers = parseInt(document.getElementById('conn-layers')?.value || '3');
+            const qml_iters = parseInt(document.getElementById('conn-iters')?.value || '80');
+
+            const resp = await fetch('/api/connectome-qml', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    severity,
+                    threshold_pct,
+                    tau_x,
+                    tau_y,
+                    qml_layers,
+                    qml_iters
+                })
+            });
+
+            const json = await resp.json();
+            if (json.status !== 'success') {
+                console.error('Connectome simulation error:', json);
+                if (statusEl) statusEl.textContent = 'Error during calculation';
+                return;
+            }
+
+            const d = json;
+            cachedConnData = d;
+            if (statusEl) statusEl.textContent = 'Ready (' + new Date().toLocaleTimeString() + ')';
+
+            const noteEl = document.getElementById('conn-model-note');
+            if (noteEl) noteEl.textContent = d.model_notes;
+
+            const mh = d.metrics.healthy;
+            const md = d.metrics.dementia;
+
+            // KPI updates
+            const effEl = document.getElementById('conn-kpi-eff');
+            if (effEl) effEl.textContent = `${mh.global_efficiency.toFixed(4)} → ${md.global_efficiency.toFixed(4)}`;
+            const effSub = document.getElementById('conn-kpi-eff-sub');
+            if (effSub) effSub.textContent = `Δ: ${(((md.global_efficiency / Math.max(mh.global_efficiency, 1e-4)) - 1) * 100).toFixed(1)}%`;
+
+            const l2El = document.getElementById('conn-kpi-l2');
+            if (l2El) l2El.textContent = `${mh.algebraic_connectivity.toFixed(4)} → ${md.algebraic_connectivity.toFixed(4)}`;
+            const l2Sub = document.getElementById('conn-kpi-l2-sub');
+            if (l2Sub) l2Sub.textContent = `Δ: ${(((md.algebraic_connectivity / Math.max(mh.algebraic_connectivity, 1e-4)) - 1) * 100).toFixed(1)}%`;
+
+            const treesEl = document.getElementById('conn-kpi-trees');
+            if (treesEl) treesEl.textContent = `${mh.log_spanning_trees != null ? mh.log_spanning_trees.toFixed(1) : '--'} → ${md.log_spanning_trees != null ? md.log_spanning_trees.toFixed(1) : '--'}`;
+
+            const bettiEl = document.getElementById('conn-kpi-betti');
+            if (bettiEl) bettiEl.textContent = `(${mh.betti_0}, ${mh.betti_1}) → (${md.betti_0}, ${md.betti_1})`;
+
+            const qmlEl = document.getElementById('conn-kpi-qml');
+            if (qmlEl) qmlEl.textContent = `${(mh.qml_alignment * 100).toFixed(1)}% → ${(md.qml_alignment * 100).toFixed(1)}%`;
+            const qmlSub = document.getElementById('conn-kpi-qml-sub');
+            if (qmlSub) qmlSub.textContent = `Corr with W: r = ${md.qml_vs_structural_corr.toFixed(3)}`;
+
+            const modEl = document.getElementById('conn-kpi-mod');
+            if (modEl) modEl.textContent = `${mh.modular_energy.toFixed(3)} → ${md.modular_energy.toFixed(3)}`;
+
+            // Render 3D and 2D charts
+            renderConnectomeViews();
+
+            // Populate Invariant Table
+            const metricsTbody = document.getElementById('conn-metrics-tbody');
+            if (metricsTbody) {
+                const rows = [
+                    ['Edge Count', mh.edges, md.edges, (((md.edges / Math.max(mh.edges, 1)) - 1) * 100).toFixed(1) + '%'],
+                    ['Edge Density', mh.density.toFixed(4), md.density.toFixed(4), (((md.density / Math.max(mh.density, 1e-4)) - 1) * 100).toFixed(1) + '%'],
+                    ['Mean Node Strength', mh.mean_strength.toFixed(3), md.mean_strength.toFixed(3), (((md.mean_strength / Math.max(mh.mean_strength, 1e-4)) - 1) * 100).toFixed(1) + '%'],
+                    ['Global Efficiency (E_glob)', mh.global_efficiency.toFixed(4), md.global_efficiency.toFixed(4), (((md.global_efficiency / Math.max(mh.global_efficiency, 1e-4)) - 1) * 100).toFixed(1) + '%'],
+                    ['Algebraic Connectivity (λ_2)', mh.algebraic_connectivity.toFixed(4), md.algebraic_connectivity.toFixed(4), (((md.algebraic_connectivity / Math.max(mh.algebraic_connectivity, 1e-4)) - 1) * 100).toFixed(1) + '%'],
+                    ['Weighted Spanning Trees (ln T)', mh.log_spanning_trees != null ? mh.log_spanning_trees.toFixed(2) : '--', md.log_spanning_trees != null ? md.log_spanning_trees.toFixed(2) : '--', md.log_spanning_trees != null && mh.log_spanning_trees != null ? (md.log_spanning_trees - mh.log_spanning_trees).toFixed(2) : '--'],
+                    ['Betti Numbers (b_0, b_1)', `(${mh.betti_0}, ${mh.betti_1})`, `(${md.betti_0}, ${md.betti_1})`, '--'],
+                    ['Isolated Nodes', mh.isolated_nodes, md.isolated_nodes, (md.isolated_nodes - mh.isolated_nodes).toString()],
+                    ['QML Kernel Alignment A(Q, W)', (mh.qml_alignment * 100).toFixed(1) + '%', (md.qml_alignment * 100).toFixed(1) + '%', (((md.qml_alignment / Math.max(mh.qml_alignment, 1e-4)) - 1) * 100).toFixed(1) + '%'],
+                    ['QML vs Structural Corr (r)', mh.qml_vs_structural_corr.toFixed(4), md.qml_vs_structural_corr.toFixed(4), (((md.qml_vs_structural_corr / Math.max(mh.qml_vs_structural_corr, 1e-4)) - 1) * 100).toFixed(1) + '%'],
+                    ['Modular Spectral Energy', mh.modular_energy.toFixed(4), md.modular_energy.toFixed(4), (((md.modular_energy / Math.max(mh.modular_energy, 1e-4)) - 1) * 100).toFixed(1) + '%']
+                ];
+                metricsTbody.innerHTML = rows.map(r => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:6px 8px; color:#cbd5e1;">${r[0]}</td>
+                        <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">${r[1]}</td>
+                        <td style="padding:6px 8px; font-weight:600; color:#f87171;">${r[2]}</td>
+                        <td style="padding:6px 8px; color:#94a3b8;">${r[3]}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Populate Modular Forms Table
+            const modTbody = document.getElementById('conn-modular-tbody');
+            if (modTbody && d.modular_forms) {
+                const mf = d.modular_forms;
+                const mRows = [
+                    ['Modular Nome Magnitude |q|', mf.nome_abs.toFixed(5)],
+                    ['Dedekind Eta η(τ)', `${mf.eta[0].toFixed(5)} + ${mf.eta[1].toFixed(5)}i`],
+                    ['Eisenstein E_4(τ)', `${mf.E4[0].toFixed(4)} + ${mf.E4[1].toFixed(4)}i`],
+                    ['Eisenstein E_6(τ)', `${mf.E6[0].toFixed(4)} + ${mf.E6[1].toFixed(4)}i`],
+                    ['Modular Discriminant Δ(τ)', `${mf.Delta[0].toExponential(4)} + ${mf.Delta[1].toExponential(4)}i`],
+                    ['Klein j-invariant j(τ)', `${mf.j[0].toFixed(2)} + ${mf.j[1].toFixed(2)}i`],
+                    ['Ramanujan τ(1..6)', mf.tau_coefficients ? mf.tau_coefficients.slice(0, 6).join(', ') : '--']
+                ];
+                modTbody.innerHTML = mRows.map(r => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:6px 8px; color:#cbd5e1;">${r[0]}</td>
+                        <td style="padding:6px 8px; font-weight:600; color:#fb923c;">${r[1]}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Populate Nomenclature Table (sorted by strength loss)
+            const nomTbody = document.getElementById('conn-nomenclature-tbody');
+            if (nomTbody && d.nodes) {
+                const sortedNodes = [...d.nodes].sort((a, b) => b.strength_loss_pct - a.strength_loss_pct);
+                nomTbody.innerHTML = sortedNodes.map(n => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">${n.hub ? '★ ' : ''}${n.name}</td>
+                        <td style="padding:6px 8px; color:#94a3b8;">${n.lobe}</td>
+                        <td style="padding:6px 8px; color:#fbbf24;">Stage ${n.braak_stage}</td>
+                        <td style="padding:6px 8px; color:#f87171;">${n.atrophy_pct}%</td>
+                        <td style="padding:6px 8px; color:#e2e8f0;">${n.strength_healthy} → ${n.strength_dementia}</td>
+                        <td style="padding:6px 8px; font-weight:700; color:${n.strength_loss_pct > 50 ? '#ef4444' : '#f59e0b'};">${n.strength_loss_pct}%</td>
+                        <td style="padding:6px 8px; color:#34d399;">${n.modular_amp_healthy} → ${n.modular_amp_dementia}</td>
+                        <td style="padding:6px 8px; color:#c4b5fd;">${n.qml_strength_healthy} → ${n.qml_strength_dementia}</td>
+                    </tr>
+                `).join('');
+            }
+
+        } catch (err) {
+            console.error('Connectome studio execution error:', err);
+            const statusEl = document.getElementById('conn-status');
+            if (statusEl) statusEl.textContent = 'Error computing connectome';
+        }
+    };
+
+    const runConnectomeStudioDebounced = () => {
+        clearTimeout(connDebounceTimer);
+        connDebounceTimer = setTimeout(runConnectomeStudio, 250);
+    };
+
+    window.connUpdateLabels = connUpdateLabels;
+    window.renderConnectomeViews = renderConnectomeViews;
+    window.runConnectomeStudio = runConnectomeStudio;
+    window.runConnectomeStudioDebounced = runConnectomeStudioDebounced;
+
 

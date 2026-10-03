@@ -45,6 +45,8 @@ from logic.pharmacological_equivalence import simulate_pharmacological_equivalen
 from logic.nih_grant_budget_optimizer import optimize_nih_grant_budget
 from logic.parkinsons_rtms import simulate_parkinsons_rtms
 from logic.heart_stroke_trajectories import HeartStrokeClinicalTrajectoryOptimizer
+from logic.fem_cortical_solver import run_full_cortical_fem_simulation
+from logic.connectome_qml import simulate_connectome_qml
 
 app = Flask(
     __name__,
@@ -997,6 +999,100 @@ def heart_stroke_nature_preprint():
         if not os.path.exists(output_path):
             build_pdf(output_path)
         return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Heart_Stroke_Ramanujan_Nash_RingAlgebra.pdf')
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+def _arg(data, name, default, cast):
+    """Read a query-string or JSON parameter, falling back to a default."""
+    return cast(request.args.get(name, data.get(name, default)))
+
+
+def _fem_params(data):
+    return dict(
+        hoehn_yahr_stage=_arg(data, 'hoehn_yahr_stage', 3, int),
+        baseline_updrs=_arg(data, 'baseline_updrs', 42.0, float),
+        atrophy_level=_arg(data, 'atrophy_level', 'moderate', str),
+        intensity_mso_pct=_arg(data, 'intensity_mso_pct', 110.0, float),
+        coil_orientation_deg=_arg(data, 'coil_orientation_deg', 45.0, float),
+        num_gcp_nodes=_arg(data, 'num_gcp_nodes', 16, int),
+        matrix_reduction_type=_arg(data, 'matrix_reduction_type', 'aca_low_rank', str),
+        reduction_tolerance=_arg(data, 'reduction_tolerance', 1e-4, float),
+        grid_resolution=_arg(data, 'grid_resolution', 28, int),
+        coil_pos_x=_arg(data, 'coil_pos_x', 12.0, float),
+        coil_pos_y=_arg(data, 'coil_pos_y', 2.0, float),
+        activation_threshold_v_per_m=_arg(data, 'activation_threshold_v_per_m', 80.0, float),
+    )
+
+
+@app.route('/api/fem-cortical-simulation', methods=['GET', 'POST'])
+def api_fem_cortical_simulation():
+    """Surface FEM of a Parkinsonian motor cortex under rTMS with Stieltjes S-fraction interpolation,
+    Schur-complement domain decomposition and measured matrix reduction (see logic/fem_cortical_solver.py)."""
+    try:
+        data = request.get_json(silent=True) or {}
+        return jsonify(run_full_cortical_fem_simulation(**_fem_params(data)))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/fem-cortical-preprint', methods=['GET'])
+def fem_cortical_preprint():
+    """Generate the cortical-FEM Nature-style preprint from the current simulation parameters."""
+    try:
+        from generate_nature_fem_cortical_preprint import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Cortical_FEM_Stieltjes_GCP.pdf')
+        build_pdf(output_path, sim_params=_fem_params({}))
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Cortical_FEM_Stieltjes_GCP.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+def _connectome_params(data):
+    return dict(
+        severity=_arg(data, 'severity', 0.6, float),
+        tau_x=_arg(data, 'tau_x', 0.25, float),
+        tau_y=_arg(data, 'tau_y', 0.85, float),
+        qml_layers=_arg(data, 'qml_layers', 3, int),
+        qml_iters=_arg(data, 'qml_iters', 80, int),
+        threshold_pct=_arg(data, 'threshold_pct', 75.0, float),
+    )
+
+
+@app.route('/api/connectome-qml', methods=['GET', 'POST'])
+def api_connectome_qml():
+    """Healthy vs dementia cortical connectome with modular harmonic forms and a quantum-kernel connectome matrix."""
+    try:
+        data = request.get_json(silent=True) or {}
+        return jsonify(simulate_connectome_qml(**_connectome_params(data)))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/connectome-nature-preprint', methods=['GET'])
+def connectome_nature_preprint():
+    """Generate the connectome / modular harmonic / QML Nature-style preprint for the current parameters."""
+    try:
+        from generate_nature_connectome_preprint import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Connectome_Modular_Harmonics_QML.pdf')
+        build_pdf(output_path, sim_params=_connectome_params({}))
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Connectome_Modular_Harmonics_QML.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
     except Exception as exc:
         import traceback
         traceback.print_exc()
