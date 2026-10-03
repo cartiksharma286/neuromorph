@@ -48,6 +48,7 @@ from logic.heart_stroke_trajectories import HeartStrokeClinicalTrajectoryOptimiz
 from logic.fem_cortical_solver import run_full_cortical_fem_simulation
 from logic.connectome_qml import simulate_connectome_qml
 from logic.health_economics_valuation import run_full_health_economics_simulation
+from logic.xanadu_quantum_tms import run_full_xanadu_quantum_tms_simulation
 
 app = Flask(
     __name__,
@@ -1133,6 +1134,50 @@ def health_economics_pdf():
         output_path = os.path.join(os.path.dirname(__file__), 'Economist_Health_Economics_Neuromorph_Valuation.pdf')
         build_pdf(output_path, sim_params=_health_econ_params({}))
         return send_file(output_path, as_attachment=True, download_name='Economist_Health_Economics_Neuromorph_Valuation.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+def _xanadu_params(data):
+    return dict(
+        chipset=_arg(data, 'chipset', 'borealis', str),
+        squeezing_r=_arg(data, 'squeezing_r', 1.25, float),
+        squeezing_theta=_arg(data, 'squeezing_theta', 0.35, float),
+        displacement_alpha=_arg(data, 'displacement_alpha', 0.65, float),
+        modulus_q=_arg(data, 'modulus_q', 17, int),
+        horizon_months=_arg(data, 'horizon_months', 60, int),
+        qml_iterations=_arg(data, 'qml_iterations', 50, int),
+        qaas_price_per_pulse=_arg(data, 'qaas_price_per_pulse', 0.018, float)
+    )
+
+
+@app.route('/api/xanadu-quantum-tms', methods=['GET', 'POST'])
+def api_xanadu_quantum_tms():
+    """Simulate Xanadu Photonic Quantum Computing (Borealis/X8/X12) QML neural repair optimization,
+    number-theoretic fractional states, 60-month clinical trajectories, and commercial QaaS economics."""
+    try:
+        data = request.get_json(silent=True) or {}
+        return jsonify(run_full_xanadu_quantum_tms_simulation(**_xanadu_params(data)))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/xanadu-quantum-tms-pdf', methods=['GET'])
+def xanadu_quantum_tms_pdf():
+    """Generate and stream the Nature preprint PDF on Xanadu Photonic Quantum TMS Neural Repair."""
+    try:
+        from generate_nature_xanadu_qml_tms import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Xanadu_Quantum_TMS_Neural_Repair.pdf')
+        build_pdf(output_path, sim_params=_xanadu_params({}))
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Xanadu_Quantum_TMS_Neural_Repair.pdf')
     except (TypeError, ValueError) as exc:
         return jsonify({'status': 'error', 'message': str(exc)}), 400
     except Exception as exc:

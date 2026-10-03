@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const femCorticalView = document.getElementById('fem-cortical-view');
     const connectomeView = document.getElementById('connectome-view');
     const healthEconomicsView = document.getElementById('health-economics-view');
+    const xanaduQuantumView = document.getElementById('xanadu-quantum-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView, femCorticalView, connectomeView, healthEconomicsView];
+    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView, femCorticalView, connectomeView, healthEconomicsView, xanaduQuantumView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -229,6 +230,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Health Economics & 2-Year Corporate Valuation',
             subtitle: 'Markov Multi-State Transitions · Dementia, Schizophrenia, Parkinson\'s & Alexander\'s Disease · CEAC Frontiers · Pro Forma P&L & rNPV',
             view:     healthEconomicsView, showRunBtn: false
+        },
+        'xanadu-quantum': {
+            title:    'Xanadu Photonic Quantum TMS & Neural Repair',
+            subtitle: 'Continuous-Variable Photonic Chipsets (Borealis/X8/X12) · Number-Theoretic Fractional States · Parameter-Shift QML · 60-Month Trajectories',
+            view:     xanaduQuantumView, showRunBtn: false
         }
     };
 
@@ -282,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'fem-cortical')                         runFemCorticalStudio();
             if (tab === 'connectome')                           runConnectomeStudio();
             if (tab === 'health-economics')                     runHealthEconomicsStudio();
+            if (tab === 'xanadu-quantum')                       runXanaduQuantumStudio();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -5250,6 +5257,380 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderHealthEconomicsViews = renderHealthEconomicsViews;
     window.runHealthEconomicsStudio = runHealthEconomicsStudio;
     window.runHealthEconomicsStudioDebounced = runHealthEconomicsStudioDebounced;
+
+    // ─────────────────────────────────────────────────────────────
+    // XANADU PHOTONIC QUANTUM TMS & NEURAL REPAIR SUITE
+    // ─────────────────────────────────────────────────────────────
+    let cachedXqData = null;
+    let xqDebounceTimer = null;
+
+    const xqUpdateLabels = () => {
+        const sqEl = document.getElementById('xq-squeezing');
+        if (sqEl) {
+            const r = parseFloat(sqEl.value);
+            const db = (10.0 * Math.log10(Math.exp(2.0 * r))).toFixed(1);
+            const lbl = document.getElementById('label-xq-squeezing');
+            if (lbl) lbl.textContent = `${r.toFixed(2)} (${db} dB)`;
+        }
+        const dispEl = document.getElementById('xq-displacement');
+        if (dispEl) {
+            const lbl = document.getElementById('label-xq-displacement');
+            if (lbl) lbl.textContent = parseFloat(dispEl.value).toFixed(2);
+        }
+        const phEl = document.getElementById('xq-phase');
+        if (phEl) {
+            const lbl = document.getElementById('label-xq-phase');
+            if (lbl) lbl.textContent = parseFloat(phEl.value).toFixed(2) + ' rad';
+        }
+        const modEl = document.getElementById('xq-modulus');
+        if (modEl) {
+            const lbl = document.getElementById('label-xq-modulus');
+            if (lbl) lbl.textContent = `F_${parseInt(modEl.value)} (Prime)`;
+        }
+        const itEl = document.getElementById('xq-iters');
+        if (itEl) {
+            const lbl = document.getElementById('label-xq-iters');
+            if (lbl) lbl.textContent = parseInt(itEl.value) + ' Epochs';
+        }
+        const horEl = document.getElementById('xq-horizon');
+        if (horEl) {
+            const m = parseInt(horEl.value);
+            const lbl = document.getElementById('label-xq-horizon');
+            if (lbl) lbl.textContent = `${m} Months (${(m / 12).toFixed(0)} Yrs)`;
+        }
+        const prEl = document.getElementById('xq-pulse-price');
+        if (prEl) {
+            const lbl = document.getElementById('label-xq-pulse-price');
+            if (lbl) lbl.textContent = '$' + parseFloat(prEl.value).toFixed(3);
+        }
+    };
+
+    const renderXanaduQuantumViews = () => {
+        if (!cachedXqData) return;
+        const d = cachedXqData;
+        const wig = d.photonic_wigner;
+        const qml = d.qml_optimization;
+        const clin = d.clinical_trajectories;
+        const comm = d.commercial_economics;
+        const diseaseFocus = document.getElementById('xq-disease-focus')?.value || 'stroke';
+
+        // 1. Wigner Function Contour Chart
+        const xCoords = wig.x_coords;
+        const pCoords = wig.p_coords;
+        const wMatrix = wig.wigner_matrix;
+
+        const wignerTrace = {
+            x: xCoords,
+            y: pCoords,
+            z: wMatrix,
+            type: 'contour',
+            colorscale: 'Viridis',
+            contours: { coloring: 'heatmap' },
+            colorbar: {
+                title: 'W(x, p)',
+                len: 0.75, thickness: 12,
+                tickfont: { color: '#cbd5e1', size: 9 },
+                titlefont: { color: '#cbd5e1', size: 10 }
+            }
+        };
+
+        Plotly.newPlot('xq-wigner-chart', [wignerTrace], {
+            ...PL,
+            margin: { l: 45, r: 20, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Field Quadrature X (Position)' },
+            yaxis: { ...PL.yaxis, title: 'Phase Quadrature P (Momentum)' }
+        }, { responsive: true });
+
+        // 2. QML Parameter-Shift Loss Convergence Chart
+        const qmlTraces = [
+            {
+                x: qml.iterations,
+                y: qml.qml_loss,
+                type: 'scatter', mode: 'lines',
+                line: { color: '#10b981', width: 2.2 },
+                name: 'Xanadu CV Photonic QML'
+            },
+            {
+                x: qml.iterations,
+                y: qml.classical_loss,
+                type: 'scatter', mode: 'lines',
+                line: { color: '#ef4444', width: 1.8, dash: 'dot' },
+                name: 'Classical BEM Solver'
+            },
+            {
+                x: qml.iterations,
+                y: qml.quantum_speedup_curve,
+                type: 'scatter', mode: 'lines',
+                line: { color: '#38bdf8', width: 1.5, dash: 'dash' },
+                name: 'Speedup Ratio (x)',
+                yaxis: 'y2'
+            }
+        ];
+
+        Plotly.newPlot('xq-qml-chart', qmlTraces, {
+            ...PL,
+            margin: { l: 45, r: 45, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Optimization Epoch / Iteration' },
+            yaxis: { ...PL.yaxis, title: 'Target E-Field Loss', type: 'log' },
+            yaxis2: { ...PL.yaxis, title: 'Speedup Factor (x)', overlaying: 'y', side: 'right', showgrid: false },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.1, y: 0.95 }
+        }, { responsive: true });
+
+        // 3. 60-Month Longitudinal Clinical Trajectories Chart
+        const months = clin.months;
+        const trajTraces = [];
+
+        const indInfo = clin[diseaseFocus] || clin.stroke;
+        trajTraces.push({
+            x: months,
+            y: indInfo.xanadu_qml_rtms,
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#0284c7', width: 2.5 },
+            marker: { size: 5 },
+            name: `Xanadu Quantum rTMS (+${indInfo.improvement_pct}%)`
+        });
+        trajTraces.push({
+            x: months,
+            y: indInfo.conventional_rtms,
+            type: 'scatter', mode: 'lines',
+            line: { color: '#f59e0b', width: 1.8, dash: 'dash' },
+            name: 'Conventional rTMS'
+        });
+        trajTraces.push({
+            x: months,
+            y: indInfo.soc,
+            type: 'scatter', mode: 'lines',
+            line: { color: '#94a3b8', width: 1.4, dash: 'dot' },
+            name: 'Standard of Care (SOC)'
+        });
+
+        Plotly.newPlot('xq-trajectories-chart', trajTraces, {
+            ...PL,
+            margin: { l: 45, r: 20, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Follow-up Horizon (Months)' },
+            yaxis: { ...PL.yaxis, title: indInfo.name },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.1, y: 0.95 }
+        }, { responsive: true });
+
+        // 4. 36-Month Xanadu QaaS Revenue & EBITDA Chart
+        const m36 = comm.monthly.months;
+        const apiRevK = comm.monthly.qaas_api_rev.map(v => +(v / 1000.0).toFixed(1));
+        const entRevK = comm.monthly.enterprise_rev.map(v => +(v / 1000.0).toFixed(1));
+        const bioRevK = comm.monthly.biopharma_rev.map(v => +(v / 1000.0).toFixed(1));
+
+        let cumEb = 0;
+        const cumEbK = comm.monthly.ebitda.map(v => {
+            cumEb += v;
+            return +(cumEb / 1000.0).toFixed(1);
+        });
+
+        const revTraces = [
+            {
+                x: m36, y: apiRevK,
+                type: 'bar', name: 'QaaS Pulse API',
+                marker: { color: '#38bdf8' }
+            },
+            {
+                x: m36, y: entRevK,
+                type: 'bar', name: 'Hospital Enterprise',
+                marker: { color: '#8b5cf6' }
+            },
+            {
+                x: m36, y: bioRevK,
+                type: 'bar', name: 'Biopharma Co-Dev',
+                marker: { color: '#f472b6' }
+            },
+            {
+                x: m36, y: cumEbK,
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#10b981', width: 2.2 },
+                marker: { size: 4 },
+                name: 'Cumulative EBITDA ($k)',
+                yaxis: 'y2'
+            }
+        ];
+
+        Plotly.newPlot('xq-revenue-chart', revTraces, {
+            ...PL,
+            barmode: 'stack',
+            margin: { l: 45, r: 45, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Commercial Month (M1 to M36)' },
+            yaxis: { ...PL.yaxis, title: 'Monthly Revenue ($k)' },
+            yaxis2: { ...PL.yaxis, title: 'Cumulative EBITDA ($k)', overlaying: 'y', side: 'right', showgrid: false },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.95 }
+        }, { responsive: true });
+    };
+
+    const runXanaduQuantumStudio = async () => {
+        try {
+            const statusEl = document.getElementById('xq-status');
+            if (statusEl) statusEl.textContent = 'Simulating Xanadu Photonic QPU...';
+
+            const chipset = document.getElementById('xq-chipset')?.value || 'borealis';
+            const squeezing_r = parseFloat(document.getElementById('xq-squeezing')?.value || '1.25');
+            const displacement_alpha = parseFloat(document.getElementById('xq-displacement')?.value || '0.65');
+            const squeezing_theta = parseFloat(document.getElementById('xq-phase')?.value || '0.35');
+            const modulus_q = parseInt(document.getElementById('xq-modulus')?.value || '17');
+            const horizon_months = parseInt(document.getElementById('xq-horizon')?.value || '60');
+            const qml_iterations = parseInt(document.getElementById('xq-iters')?.value || '50');
+            const qaas_price_per_pulse = parseFloat(document.getElementById('xq-pulse-price')?.value || '0.018');
+
+            const resp = await fetch('/api/xanadu-quantum-tms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chipset,
+                    squeezing_r,
+                    displacement_alpha,
+                    squeezing_theta,
+                    modulus_q,
+                    horizon_months,
+                    qml_iterations,
+                    qaas_price_per_pulse
+                })
+            });
+
+            const json = await resp.json();
+            if (json.status !== 'success') {
+                console.error('Xanadu Quantum simulation error:', json);
+                if (statusEl) statusEl.textContent = 'Error during simulation';
+                return;
+            }
+
+            const d = json;
+            cachedXqData = d;
+            if (statusEl) statusEl.textContent = 'Ready (' + new Date().toLocaleTimeString() + ')';
+
+            const qml = d.qml_optimization;
+            const wig = d.photonic_wigner;
+            const clin = d.clinical_trajectories;
+            const comm = d.commercial_economics;
+            const he = comm.health_economics;
+
+            // Update KPI elements
+            const speedupEl = document.getElementById('xq-kpi-speedup');
+            if (speedupEl) speedupEl.textContent = `${qml.peak_speedup_factor}x`;
+            const speedupSub = document.getElementById('xq-kpi-speedup-sub');
+            if (speedupSub) speedupSub.textContent = `vs Classical BEM (${qml.time_reduction_pct}% faster)`;
+
+            const sqEl = document.getElementById('xq-kpi-squeezing');
+            if (sqEl) sqEl.textContent = `${wig.squeezing_db} dB`;
+            const sqSub = document.getElementById('xq-kpi-squeezing-sub');
+            if (sqSub) sqSub.textContent = `Vacuum Fid: ${(wig.vacuum_fidelity * 100).toFixed(1)}%`;
+
+            const runEl = document.getElementById('xq-kpi-runtime');
+            if (runEl) runEl.textContent = `${qml.wallclock_quantum_ms} ms`;
+
+            const revEl = document.getElementById('xq-kpi-revenue');
+            if (revEl) revEl.textContent = '$' + (comm.summary_3yr.total_3yr_revenue / 1000000.0).toFixed(2) + 'M';
+            const revSub = document.getElementById('xq-kpi-revenue-sub');
+            if (revSub) revSub.textContent = `3-Yr Total (${comm.summary_3yr.installed_hospitals_m36} Hospitals)`;
+
+            const recEl = document.getElementById('xq-kpi-recovery');
+            if (recEl) recEl.textContent = `+${clin.stroke.improvement_pct}%`;
+
+            const icerEl = document.getElementById('xq-kpi-icer');
+            if (icerEl) icerEl.textContent = he.is_dominant_strategy ? 'Cost-Saving' : '$' + Math.round(he.icer_per_qaly).toLocaleString() + '/QALY';
+
+            // Render 2D and Contour Plots
+            renderXanaduQuantumViews();
+
+            // Populate Hardware / Number Theory Table
+            const hwTbody = document.getElementById('xq-hardware-tbody');
+            if (hwTbody && d.number_theoretic_states) {
+                hwTbody.innerHTML = d.number_theoretic_states.map(s => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">k = ${s.order}</td>
+                        <td style="padding:6px 8px; font-weight:600; color:#fbbf24;">${s.fraction}</td>
+                        <td style="padding:6px 8px; color:#cbd5e1;">${s.value}</td>
+                        <td style="padding:6px 8px; color:#a7f3d0;">${s.quantum_phase_rad} rad</td>
+                        <td style="padding:6px 8px; color:#c4b5fd;">s(p, q) = ${s.dedekind_sum}</td>
+                        <td style="padding:6px 8px; color:#f472b6;">dim(H) = ${s.squeezing_subspace_dim}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Populate Clinical Outcomes Table
+            const clinTbody = document.getElementById('xq-clinical-tbody');
+            if (clinTbody && d.clinical_trajectories) {
+                const cRows = [
+                    {
+                        name: "Stroke Motor Deficit",
+                        scale: "Fugl-Meyer Assessment (0–66)",
+                        soc: d.clinical_trajectories.stroke.soc.slice(-1)[0] + " / 66",
+                        conv: d.clinical_trajectories.stroke.conventional_rtms.slice(-1)[0] + " / 66",
+                        xan: d.clinical_trajectories.stroke.xanadu_qml_rtms.slice(-1)[0] + " / 66",
+                        gain: "+" + d.clinical_trajectories.stroke.improvement_pct + "%",
+                        mech: "Quantum-synchronized M1 corticospinal tract axonal reinnervation"
+                    },
+                    {
+                        name: "Dementia (Alzheimer's)",
+                        scale: "ADAS-Cog-14 Score (0–90)",
+                        soc: d.clinical_trajectories.dementia.soc.slice(-1)[0] + " (Severe)",
+                        conv: d.clinical_trajectories.dementia.conventional_rtms.slice(-1)[0] + " (Moderate)",
+                        xan: d.clinical_trajectories.dementia.xanadu_qml_rtms.slice(-1)[0] + " (Mild)",
+                        gain: "-" + d.clinical_trajectories.dementia.improvement_pct + "%",
+                        mech: "40 Hz gamma entrainment suppressing hippocampal amyloid/tau accumulation"
+                    },
+                    {
+                        name: "Parkinson's Disease",
+                        scale: "UPDRS-III Motor Score (0–108)",
+                        soc: d.clinical_trajectories.parkinsons.soc.slice(-1)[0] + " (Severe)",
+                        conv: d.clinical_trajectories.parkinsons.conventional_rtms.slice(-1)[0] + " (Moderate)",
+                        xan: d.clinical_trajectories.parkinsons.xanadu_qml_rtms.slice(-1)[0] + " (Mild)",
+                        gain: "-" + d.clinical_trajectories.parkinsons.improvement_pct + "%",
+                        mech: "Multi-lobe basal ganglia decoupling; +4.5 hours daily ON-time"
+                    },
+                    {
+                        name: "Schizophrenia Deficit",
+                        scale: "PANSS Cognitive Subscale (7–49)",
+                        soc: d.clinical_trajectories.schizophrenia.soc.slice(-1)[0] + " (Refractory)",
+                        conv: d.clinical_trajectories.schizophrenia.conventional_rtms.slice(-1)[0] + " (Partial)",
+                        xan: d.clinical_trajectories.schizophrenia.xanadu_qml_rtms.slice(-1)[0] + " (Stable)",
+                        gain: "-" + d.clinical_trajectories.schizophrenia.improvement_pct + "%",
+                        mech: "Prefrontal theta-burst synchrony restoring fronto-striatal gating"
+                    },
+                    {
+                        name: "Alexander's Disease",
+                        scale: "SARA Ataxia Rating Scale (0–40)",
+                        soc: d.clinical_trajectories.alexander.soc.slice(-1)[0] + " (End-Stage)",
+                        conv: d.clinical_trajectories.alexander.conventional_rtms.slice(-1)[0] + " (Severe)",
+                        xan: d.clinical_trajectories.alexander.xanadu_qml_rtms.slice(-1)[0] + " (Ambulatory)",
+                        gain: "-" + d.clinical_trajectories.alexander.improvement_pct + "%",
+                        mech: "GFAP astrogliopathy suppression protecting brainstem bulbar nuclei"
+                    }
+                ];
+
+                clinTbody.innerHTML = cRows.map(r => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">${r.name}</td>
+                        <td style="padding:6px 8px; color:#cbd5e1;">${r.scale}</td>
+                        <td style="padding:6px 8px; color:#cbd5e1;">${r.soc}</td>
+                        <td style="padding:6px 8px; color:#fbbf24;">${r.conv}</td>
+                        <td style="padding:6px 8px; font-weight:600; color:#10b981;">${r.xan}</td>
+                        <td style="padding:6px 8px; font-weight:700; color:#38bdf8;">${r.gain}</td>
+                        <td style="padding:6px 8px; color:#94a3b8; font-size:10.5px;">${r.mech}</td>
+                    </tr>
+                `).join('');
+            }
+
+        } catch (err) {
+            console.error('Xanadu Quantum studio error:', err);
+            const statusEl = document.getElementById('xq-status');
+            if (statusEl) statusEl.textContent = 'Error during simulation';
+        }
+    };
+
+    const runXanaduQuantumStudioDebounced = () => {
+        clearTimeout(xqDebounceTimer);
+        xqDebounceTimer = setTimeout(runXanaduQuantumStudio, 250);
+    };
+
+    window.xqUpdateLabels = xqUpdateLabels;
+    window.renderXanaduQuantumViews = renderXanaduQuantumViews;
+    window.runXanaduQuantumStudio = runXanaduQuantumStudio;
+    window.runXanaduQuantumStudioDebounced = runXanaduQuantumStudioDebounced;
+
 
 
 
