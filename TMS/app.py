@@ -47,6 +47,7 @@ from logic.parkinsons_rtms import simulate_parkinsons_rtms
 from logic.heart_stroke_trajectories import HeartStrokeClinicalTrajectoryOptimizer
 from logic.fem_cortical_solver import run_full_cortical_fem_simulation
 from logic.connectome_qml import simulate_connectome_qml
+from logic.health_economics_valuation import run_full_health_economics_simulation
 
 app = Flask(
     __name__,
@@ -1091,6 +1092,47 @@ def connectome_nature_preprint():
         output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Connectome_Modular_Harmonics_QML.pdf')
         build_pdf(output_path, sim_params=_connectome_params({}))
         return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Connectome_Modular_Harmonics_QML.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+def _health_econ_params(data):
+    return dict(
+        discount_rate=_arg(data, 'discount_rate', 0.035, float),
+        wacc=_arg(data, 'wacc', 0.115, float),
+        rtms_price_per_session=_arg(data, 'rtms_price_per_session', 280.0, float),
+        system_capital_price=_arg(data, 'system_capital_price', 65000.0, float),
+        wtp_threshold=_arg(data, 'wtp_threshold', 100000.0, float)
+    )
+
+
+@app.route('/api/health-economics-simulation', methods=['GET', 'POST'])
+def api_health_economics_simulation():
+    """Simulate Markov multi-state health economics across Dementia, Schizophrenia, Parkinson's,
+    and Alexander's disease, 2-year pro forma revenues, and multi-method corporate valuation."""
+    try:
+        data = request.get_json(silent=True) or {}
+        return jsonify(run_full_health_economics_simulation(**_health_econ_params(data)))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/health-economics-pdf', methods=['GET'])
+def health_economics_pdf():
+    """Generate and stream the Economist research report PDF on health economics and Neuromorph valuation."""
+    try:
+        from generate_economist_health_economics import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Economist_Health_Economics_Neuromorph_Valuation.pdf')
+        build_pdf(output_path, sim_params=_health_econ_params({}))
+        return send_file(output_path, as_attachment=True, download_name='Economist_Health_Economics_Neuromorph_Valuation.pdf')
     except (TypeError, ValueError) as exc:
         return jsonify({'status': 'error', 'message': str(exc)}), 400
     except Exception as exc:

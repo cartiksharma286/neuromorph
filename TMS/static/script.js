@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const heartStrokeView = document.getElementById('heart-stroke-view');
     const femCorticalView = document.getElementById('fem-cortical-view');
     const connectomeView = document.getElementById('connectome-view');
+    const healthEconomicsView = document.getElementById('health-economics-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -75,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView, femCorticalView, connectomeView];
+    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView, femCorticalView, connectomeView, healthEconomicsView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -223,6 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Human Cortical Connectome: Modular Harmonics & QML',
             subtitle: '68-Region Desikan–Killiany · Ramanujan Modular Harmonic Forms · 6-Qubit Quantum Kernel · Braak-Staged Dementia Nomenclature',
             view:     connectomeView, showRunBtn: false
+        },
+        'health-economics': {
+            title:    'Health Economics & 2-Year Corporate Valuation',
+            subtitle: 'Markov Multi-State Transitions · Dementia, Schizophrenia, Parkinson\'s & Alexander\'s Disease · CEAC Frontiers · Pro Forma P&L & rNPV',
+            view:     healthEconomicsView, showRunBtn: false
         }
     };
 
@@ -275,6 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'heart-stroke')                          runHeartStrokeStudio();
             if (tab === 'fem-cortical')                         runFemCorticalStudio();
             if (tab === 'connectome')                           runConnectomeStudio();
+            if (tab === 'health-economics')                     runHealthEconomicsStudio();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -4846,5 +4853,403 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderConnectomeViews = renderConnectomeViews;
     window.runConnectomeStudio = runConnectomeStudio;
     window.runConnectomeStudioDebounced = runConnectomeStudioDebounced;
+
+    // ─────────────────────────────────────────────────────────────
+    // HEALTH ECONOMICS, NEURAL REPAIR & 2-YEAR CORPORATE VALUATION
+    // ─────────────────────────────────────────────────────────────
+    let cachedHeData = null;
+    let heDebounceTimer = null;
+
+    const heUpdateLabels = () => {
+        const discEl = document.getElementById('he-discount');
+        if (discEl) {
+            const lbl = document.getElementById('label-he-discount');
+            if (lbl) lbl.textContent = parseFloat(discEl.value).toFixed(1) + '%';
+        }
+        const waccEl = document.getElementById('he-wacc');
+        if (waccEl) {
+            const lbl = document.getElementById('label-he-wacc');
+            if (lbl) lbl.textContent = parseFloat(waccEl.value).toFixed(1) + '%';
+        }
+        const prEl = document.getElementById('he-price');
+        if (prEl) {
+            const lbl = document.getElementById('label-he-price');
+            if (lbl) lbl.textContent = '$' + parseInt(prEl.value);
+        }
+        const conEl = document.getElementById('he-console');
+        if (conEl) {
+            const lbl = document.getElementById('label-he-console');
+            if (lbl) lbl.textContent = '$' + parseInt(conEl.value).toLocaleString();
+        }
+        const wtpEl = document.getElementById('he-wtp');
+        if (wtpEl) {
+            const lbl = document.getElementById('label-he-wtp');
+            if (lbl) lbl.textContent = '$' + parseInt(wtpEl.value).toLocaleString() + ' / QALY';
+        }
+    };
+
+    const renderHealthEconomicsViews = () => {
+        if (!cachedHeData) return;
+        const d = cachedHeData;
+        const ceac = d.ceac_curve;
+        const fin = d.financials_2year;
+        const val = d.corporate_valuation;
+        const markov = d.markov_cohorts;
+        const focusDisease = document.getElementById('he-disease-select')?.value || 'all';
+
+        // 1. CEAC Plot
+        const wtpK = (ceac.wtp_thresholds || []).map(w => w / 1000.0);
+        const probsPct = (ceac.probabilities || []).map(p => +(p * 100.0).toFixed(1));
+
+        const ceacTraces = [
+            {
+                x: wtpK, y: probsPct,
+                type: 'scatter', mode: 'lines',
+                line: { color: '#0284c7', width: 2.5 },
+                name: 'NeuroMorph rTMS vs SOC'
+            },
+            {
+                x: [50, 50], y: [0, 100],
+                type: 'scatter', mode: 'lines',
+                line: { color: '#64748b', width: 1.5, dash: 'dot' },
+                name: 'UK NICE (£50k)'
+            },
+            {
+                x: [100, 100], y: [0, 100],
+                type: 'scatter', mode: 'lines',
+                line: { color: '#10b981', width: 1.5, dash: 'dash' },
+                name: 'US Standard ($100k)'
+            },
+            {
+                x: [150, 150], y: [0, 100],
+                type: 'scatter', mode: 'lines',
+                line: { color: '#f59e0b', width: 1.5, dash: 'dashdot' },
+                name: 'Orphan WTP ($150k)'
+            }
+        ];
+
+        Plotly.newPlot('he-ceac-chart', ceacTraces, {
+            ...PL,
+            margin: { l: 45, r: 20, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Willingness-to-Pay Threshold λ ($k / QALY)' },
+            yaxis: { ...PL.yaxis, title: 'Probability Cost-Effective (%)', range: [0, 105] },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.55, y: 0.15 }
+        }, { responsive: true });
+
+        // 2. Revenue Streams & Cumulative FCF Chart
+        const months = fin.monthly.months;
+        const hRevK = fin.monthly.hardware_rev.map(v => +(v / 1000.0).toFixed(1));
+        const sRevK = fin.monthly.saas_rev.map(v => +(v / 1000.0).toFixed(1));
+        const tRevK = fin.monthly.trial_rev.map(v => +(v / 1000.0).toFixed(1));
+        const svcRevK = fin.monthly.service_rev.map(v => +(v / 1000.0).toFixed(1));
+
+        let runningFcf = 0;
+        const cumFcfK = fin.monthly.fcf.map(v => {
+            runningFcf += v;
+            return +(runningFcf / 1000.0).toFixed(1);
+        });
+
+        const revTraces = [
+            {
+                x: months, y: hRevK,
+                type: 'bar', name: 'Hardware Consoles',
+                marker: { color: '#38bdf8' }
+            },
+            {
+                x: months, y: sRevK,
+                type: 'bar', name: 'Per-Session SaaS',
+                marker: { color: '#10b981' }
+            },
+            {
+                x: months, y: tRevK,
+                type: 'bar', name: 'Biopharma Trial AI',
+                marker: { color: '#8b5cf6' }
+            },
+            {
+                x: months, y: svcRevK,
+                type: 'bar', name: 'Maintenance ARR',
+                marker: { color: '#fbbf24' }
+            },
+            {
+                x: months, y: cumFcfK,
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#f43f5e', width: 2.2 },
+                marker: { size: 4 },
+                name: 'Cumulative FCF ($k)',
+                yaxis: 'y2'
+            }
+        ];
+
+        Plotly.newPlot('he-revenue-chart', revTraces, {
+            ...PL,
+            barmode: 'stack',
+            margin: { l: 45, r: 45, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Operational Month (M1 to M24)' },
+            yaxis: { ...PL.yaxis, title: 'Monthly Revenue ($k)' },
+            yaxis2: { ...PL.yaxis, title: 'Cumulative FCF ($k)', overlaying: 'y', side: 'right', showgrid: false },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.95 }
+        }, { responsive: true });
+
+        // 3. Markov Health States Trajectory Plot
+        const markovTraces = [];
+        const mAxis = Array.from({ length: 24 }, (_, i) => i + 1);
+
+        if (focusDisease === 'all') {
+            // Plot preservation of Early / Mild state across all 4 indications
+            const colors = { dementia: '#38bdf8', schizophrenia: '#a7f3d0', parkinsons: '#fbbf24', alexander: '#f472b6' };
+            const names = { dementia: "Dementia (MCI)", schizophrenia: "Schizophrenia (Stable)", parkinsons: "Parkinson's (Early H&Y 1-2)", alexander: "Alexander's (Early Ataxic)" };
+
+            Object.entries(markov).forEach(([key, ind]) => {
+                const rtmsEarly = ind.history_rtms.map(pt => +(pt.distribution[0] * 100.0).toFixed(1));
+                const socEarly = ind.history_soc.map(pt => +(pt.distribution[0] * 100.0).toFixed(1));
+                markovTraces.push({
+                    x: mAxis, y: rtmsEarly,
+                    type: 'scatter', mode: 'lines',
+                    line: { color: colors[key], width: 2.2 },
+                    name: `rTMS: ${names[key]}`
+                });
+                markovTraces.push({
+                    x: mAxis, y: socEarly,
+                    type: 'scatter', mode: 'lines',
+                    line: { color: colors[key], width: 1.4, dash: 'dot' },
+                    name: `SOC: ${names[key]}`
+                });
+            });
+        } else {
+            // Plot multi-state distribution for the selected disease
+            const selInd = markov[focusDisease];
+            if (selInd && selInd.states) {
+                const stateCols = ['#10b981', '#38bdf8', '#f59e0b', '#ef4444', '#8b5cf6'];
+                selInd.states.forEach((st, sIdx) => {
+                    const rVals = selInd.history_rtms.map(pt => +(pt.distribution[sIdx] * 100.0).toFixed(1));
+                    const sVals = selInd.history_soc.map(pt => +(pt.distribution[sIdx] * 100.0).toFixed(1));
+                    markovTraces.push({
+                        x: mAxis, y: rVals,
+                        type: 'scatter', mode: 'lines',
+                        line: { color: stateCols[sIdx % stateCols.length], width: 2.2 },
+                        name: `rTMS: ${st}`
+                    });
+                    markovTraces.push({
+                        x: mAxis, y: sVals,
+                        type: 'scatter', mode: 'lines',
+                        line: { color: stateCols[sIdx % stateCols.length], width: 1.4, dash: 'dot' },
+                        name: `SOC: ${st}`
+                    });
+                });
+            }
+        }
+
+        Plotly.newPlot('he-markov-chart', markovTraces, {
+            ...PL,
+            margin: { l: 45, r: 20, t: 20, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Elapsed Horizon (Months)' },
+            yaxis: { ...PL.yaxis, title: 'Cohort Proportion (%)', range: [0, 105] },
+            legend: { font: { color: '#e6edf3', size: 8.5 }, x: 0.6, y: 0.95 }
+        }, { responsive: true });
+
+        // 4. Corporate Valuation & Pipeline rNPV Chart
+        const indVals = val.rnpv_valuation?.indications || [];
+        const valLabels = [
+            'DCF (2-Yr FCF)',
+            'DCF (Terminal)',
+            'Dementia rNPV',
+            'Schiz rNPV',
+            'Parkinson rNPV',
+            'Alexander rNPV',
+            'ARR Multiple (14.5x)',
+            'Blended Valuation'
+        ];
+        const valAmounts = [
+            +(val.dcf_valuation.pv_explicit_2yr_fcf / 1000000.0).toFixed(2),
+            +(val.dcf_valuation.pv_terminal_value / 1000000.0).toFixed(2),
+            +(indVals.find(i => i.target === 'dementia')?.risk_adjusted_npv / 1000000.0 || 23.5).toFixed(2),
+            +(indVals.find(i => i.target === 'schizophrenia')?.risk_adjusted_npv / 1000000.0 || 14.2).toFixed(2),
+            +(indVals.find(i => i.target === 'parkinsons')?.risk_adjusted_npv / 1000000.0 || 20.8).toFixed(2),
+            +(indVals.find(i => i.target === 'alexander')?.risk_adjusted_npv / 1000000.0 || 7.9).toFixed(2),
+            +(val.market_multiple_valuation.enterprise_value / 1000000.0).toFixed(2),
+            +(val.blended_valuation.enterprise_value / 1000000.0).toFixed(2)
+        ];
+
+        const barColors = [
+            '#0284c7', '#0369a1', '#38bdf8', '#a7f3d0', '#fbbf24', '#f472b6', '#8b5cf6', '#10b981'
+        ];
+
+        const valTrace = {
+            x: valLabels,
+            y: valAmounts,
+            type: 'bar',
+            marker: { color: barColors },
+            text: valAmounts.map(v => `$${v}M`),
+            textposition: 'auto',
+            textfont: { size: 9, color: '#ffffff' }
+        };
+
+        Plotly.newPlot('he-valuation-chart', [valTrace], {
+            ...PL,
+            margin: { l: 45, r: 20, t: 20, b: 70 },
+            xaxis: { ...PL.xaxis, tickangle: -25, tickfont: { size: 9, color: '#cbd5e1' } },
+            yaxis: { ...PL.yaxis, title: 'Enterprise Value ($ Millions)' }
+        }, { responsive: true });
+    };
+
+    const runHealthEconomicsStudio = async () => {
+        try {
+            const statusEl = document.getElementById('he-status');
+            if (statusEl) statusEl.textContent = 'Calculating Markov & Valuation...';
+
+            const discount = parseFloat(document.getElementById('he-discount')?.value || '3.5') / 100.0;
+            const wacc = parseFloat(document.getElementById('he-wacc')?.value || '11.5') / 100.0;
+            const sessionPrice = parseFloat(document.getElementById('he-price')?.value || '280.0');
+            const consolePrice = parseFloat(document.getElementById('he-console')?.value || '65000.0');
+            const wtp = parseFloat(document.getElementById('he-wtp')?.value || '100000.0');
+
+            const resp = await fetch('/api/health-economics-simulation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    discount_rate: discount,
+                    wacc: wacc,
+                    rtms_price_per_session: sessionPrice,
+                    system_capital_price: consolePrice,
+                    wtp_threshold: wtp
+                })
+            });
+
+            const json = await resp.json();
+            if (json.status !== 'success') {
+                console.error('Health economics simulation error:', json);
+                if (statusEl) statusEl.textContent = 'Error computing simulation';
+                return;
+            }
+
+            const d = json;
+            cachedHeData = d;
+            if (statusEl) statusEl.textContent = 'Ready (' + new Date().toLocaleTimeString() + ')';
+
+            const fin = d.financials_2year;
+            const val = d.corporate_valuation;
+            const pooled = d.pooled_outcomes;
+
+            // KPI updates
+            const revEl = document.getElementById('he-kpi-rev');
+            if (revEl) revEl.textContent = '$' + (fin.summary.total_2year_revenue / 1000000.0).toFixed(2) + 'M';
+            const revSub = document.getElementById('he-kpi-rev-sub');
+            if (revSub) revSub.textContent = `${fin.summary.final_installed_systems} Installed Consoles (M24)`;
+
+            const valEl = document.getElementById('he-kpi-val');
+            if (valEl) valEl.textContent = '$' + (val.blended_valuation.enterprise_value / 1000000.0).toFixed(2) + 'M';
+            const valSub = document.getElementById('he-kpi-val-sub');
+            if (valSub) valSub.textContent = `DCF: $${(val.dcf_valuation.enterprise_value / 1000000.0).toFixed(1)}M | rNPV: $${(val.rnpv_valuation.pipeline_rnpv / 1000000.0).toFixed(1)}M`;
+
+            const shareEl = document.getElementById('he-kpi-share');
+            if (shareEl) shareEl.textContent = '$' + val.blended_valuation.price_per_share.toFixed(2);
+
+            const icerEl = document.getElementById('he-kpi-icer');
+            if (icerEl) icerEl.textContent = pooled.is_dominant_strategy ? 'Cost-Saving' : '$' + pooled.pooled_icer.toLocaleString() + '/QALY';
+            const icerSub = document.getElementById('he-kpi-icer-sub');
+            if (icerSub) icerSub.textContent = pooled.is_dominant_strategy ? 'Dominant vs Standard of Care' : 'Below $100k/QALY WTP';
+
+            const ceacEl = document.getElementById('he-kpi-ceac');
+            if (ceacEl) ceacEl.textContent = (d.ceac_curve.prob_at_100k * 100.0).toFixed(1) + '%';
+
+            const qalyEl = document.getElementById('he-kpi-qaly');
+            if (qalyEl) qalyEl.textContent = '+' + pooled.pooled_delta_qaly_per_pt.toFixed(3) + ' QALYs';
+
+            // Render Charts
+            renderHealthEconomicsViews();
+
+            // Populate Indication Table
+            const indTbody = document.getElementById('he-indications-tbody');
+            if (indTbody && d.markov_cohorts) {
+                const rows = [
+                    {
+                        name: "Dementia (Alzheimer's)",
+                        prev: "6.7M US",
+                        cSoc: d.markov_cohorts.dementia.cum_cost_soc,
+                        cRtms: d.markov_cohorts.dementia.cum_cost_rtms,
+                        dCost: d.markov_cohorts.dementia.delta_cost,
+                        dQaly: d.markov_cohorts.dementia.delta_qaly,
+                        icer: d.markov_cohorts.dementia.icer_per_qaly,
+                        assess: "Dominant (Cost-Saving); delays institutional nursing entry by 14 mos"
+                    },
+                    {
+                        name: "Schizophrenia (Cognitive/Negative)",
+                        prev: "2.8M US",
+                        cSoc: d.markov_cohorts.schizophrenia.cum_cost_soc,
+                        cRtms: d.markov_cohorts.schizophrenia.cum_cost_rtms,
+                        dCost: d.markov_cohorts.schizophrenia.delta_cost,
+                        dQaly: d.markov_cohorts.schizophrenia.delta_qaly,
+                        icer: d.markov_cohorts.schizophrenia.icer_per_qaly,
+                        assess: "Dominant (Cost-Saving); cuts 30-day psychiatric readmission by 44%"
+                    },
+                    {
+                        name: "Parkinson's Disease (Motor/OFF)",
+                        prev: "1.1M US",
+                        cSoc: d.markov_cohorts.parkinsons.cum_cost_soc,
+                        cRtms: d.markov_cohorts.parkinsons.cum_cost_rtms,
+                        dCost: d.markov_cohorts.parkinsons.delta_cost,
+                        dQaly: d.markov_cohorts.parkinsons.delta_qaly,
+                        icer: d.markov_cohorts.parkinsons.icer_per_qaly,
+                        assess: "Highly Cost-Effective ($9.8k/QALY); suppresses dyskinesia & fall trauma"
+                    },
+                    {
+                        name: "Alexander's Disease (Leukodystrophy)",
+                        prev: "12k US (Orphan)",
+                        cSoc: d.markov_cohorts.alexander.cum_cost_soc,
+                        cRtms: d.markov_cohorts.alexander.cum_cost_rtms,
+                        dCost: d.markov_cohorts.alexander.delta_cost,
+                        dQaly: d.markov_cohorts.alexander.delta_qaly,
+                        icer: d.markov_cohorts.alexander.icer_per_qaly,
+                        assess: "Dominant (Cost-Saving); preserves bulbar & corticospinal tract function"
+                    }
+                ];
+
+                indTbody.innerHTML = rows.map(r => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">${r.name}</td>
+                        <td style="padding:6px 8px; color:#cbd5e1;">${r.prev}</td>
+                        <td style="padding:6px 8px; color:#cbd5e1;">$${r.cSoc.toLocaleString()}</td>
+                        <td style="padding:6px 8px; color:#a7f3d0;">$${r.cRtms.toLocaleString()}</td>
+                        <td style="padding:6px 8px; font-weight:600; color:${r.dCost < 0 ? '#10b981' : '#f59e0b'};">${r.dCost < 0 ? '-$' + Math.abs(r.dCost).toLocaleString() : '+$' + r.dCost.toLocaleString()}</td>
+                        <td style="padding:6px 8px; color:#fbbf24;">+${r.dQaly.toFixed(3)}</td>
+                        <td style="padding:6px 8px; font-weight:700; color:${r.dCost < 0 ? '#10b981' : '#38bdf8'};">${r.dCost < 0 ? 'Cost-Saving' : '$' + Math.round(r.icer).toLocaleString()}</td>
+                        <td style="padding:6px 8px; color:#94a3b8; font-size:10.5px;">${r.assess}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Populate Quarterly Pro Forma Table
+            const qTbody = document.getElementById('he-quarters-tbody');
+            if (qTbody && fin.quarters) {
+                qTbody.innerHTML = fin.quarters.map(q => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">${q.quarter}</td>
+                        <td style="padding:6px 8px; color:#cbd5e1;">${q.installed_base} Consoles</td>
+                        <td style="padding:6px 8px; font-weight:600; color:#a7f3d0;">$${Math.round(q.total_revenue).toLocaleString()}</td>
+                        <td style="padding:6px 8px; color:#cbd5e1;">$${Math.round(q.gross_profit).toLocaleString()}</td>
+                        <td style="padding:6px 8px; color:#fbbf24;">${q.gross_margin_pct}%</td>
+                        <td style="padding:6px 8px; color:${q.ebitda >= 0 ? '#10b981' : '#f87171'}; font-weight:600;">$${Math.round(q.ebitda).toLocaleString()}</td>
+                        <td style="padding:6px 8px; color:${q.fcf >= 0 ? '#10b981' : '#f87171'}; font-weight:600;">$${Math.round(q.fcf).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            }
+
+        } catch (err) {
+            console.error('Health economics studio error:', err);
+            const statusEl = document.getElementById('he-status');
+            if (statusEl) statusEl.textContent = 'Error during calculation';
+        }
+    };
+
+    const runHealthEconomicsStudioDebounced = () => {
+        clearTimeout(heDebounceTimer);
+        heDebounceTimer = setTimeout(runHealthEconomicsStudio, 250);
+    };
+
+    window.heUpdateLabels = heUpdateLabels;
+    window.renderHealthEconomicsViews = renderHealthEconomicsViews;
+    window.runHealthEconomicsStudio = runHealthEconomicsStudio;
+    window.runHealthEconomicsStudioDebounced = runHealthEconomicsStudioDebounced;
+
 
 

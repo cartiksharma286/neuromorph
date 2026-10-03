@@ -101,6 +101,9 @@
                 <button class="nav-btn" data-tab="connectome">
                     <span class="icon">🕸️⚛️</span> Connectome &amp; QML
                 </button>
+                <button class="nav-btn" data-tab="health-economics">
+                    <span class="icon">💰📈</span> Health Economics &amp; Valuation
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -3331,6 +3334,239 @@ b₀ = #components,  b₁ = |E| − |V| + b₀</pre></div>
 Qᵢⱼ = |⟨φ(xᵢ)|φ(xⱼ)⟩|²,  θ* = argmax A(Q, W)</pre></div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Health Economics, Neural Repair & 2-Year Company Valuation Suite ── -->
+            <div id="health-economics-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                        <span style="font-size:12px; color:#38bdf8; background:rgba(2,132,199,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(56,189,248,0.35); font-weight:600;">
+                            🧠 4-Disease Neural Repair (Dementia, Schizophrenia, Parkinson's, Alexander's)
+                        </span>
+                        <span style="font-size:12px; color:#a7f3d0; background:rgba(5,150,105,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(16,185,129,0.35); font-weight:600;">
+                            📊 2-Year Long-Term Revenue Engine (M1–M24 / Q1–Q8)
+                        </span>
+                        <span style="font-size:12px; color:#c4b5fd; background:rgba(124,58,237,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(167,139,250,0.35); font-weight:600;">
+                            ⚖️ Multi-Method Corporate Valuation (DCF / rNPV / ARR)
+                        </span>
+                        <span style="font-size:12px; color:#fbbf24; background:rgba(217,119,6,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(251,191,36,0.35); font-weight:600;">
+                            📉 Cost-Effectiveness Acceptability Frontier (CEAC)
+                        </span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <span id="he-status" style="font-size:11px; color:#94a3b8; min-width:140px; text-align:right;">Ready</span>
+                        <a href="/api/health-economics-pdf" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #b91c1c, #991b1b); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; border:none; box-shadow:0 2px 8px rgba(185,28,28,0.35);">
+                            <span>📥 Download Economist Report (.PDF)</span>
+                        </a>
+                        <button onclick="runHealthEconomicsStudio()" class="primary-btn" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #0284c7, #0369a1); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; cursor:pointer; border:none; box-shadow:0 2px 8px rgba(2,132,199,0.35);">
+                            <span>🔄 Recalculate Economics &amp; Valuation</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT COLUMN: CONTROLS & ASSUMPTIONS -->
+                    <div class="panel glass-panel" style="flex: 0 0 350px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Health Economics &amp; Valuation Controls</h3>
+
+                        <div class="sa-control-box">
+                            <h4 style="color:#38bdf8; margin-bottom:8px; font-size:13px;">⚖️ Discounting &amp; Cost of Capital</h4>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Annual Discount Rate (r):</span>
+                                    <span id="label-he-discount" class="sa-slider-val" style="color:#38bdf8;">3.5%</span>
+                                </div>
+                                <input type="range" id="he-discount" min="1.0" max="7.0" step="0.5" value="3.5" oninput="heUpdateLabels(); runHealthEconomicsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>WACC Cost of Capital:</span>
+                                    <span id="label-he-wacc" class="sa-slider-val" style="color:#c4b5fd;">11.5%</span>
+                                </div>
+                                <input type="range" id="he-wacc" min="8.0" max="18.0" step="0.5" value="11.5" oninput="heUpdateLabels(); runHealthEconomicsStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <div class="sa-control-box" style="margin-top:8px;">
+                            <h4 style="color:#a7f3d0; margin-bottom:8px; font-size:13px;">💰 Pricing &amp; WTP Thresholds</h4>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>rTMS Price Per Session:</span>
+                                    <span id="label-he-price" class="sa-slider-val" style="color:#34d399;">$280</span>
+                                </div>
+                                <input type="range" id="he-price" min="150" max="500" step="10" value="280" oninput="heUpdateLabels(); runHealthEconomicsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Hardware Console Capital Price:</span>
+                                    <span id="label-he-console" class="sa-slider-val" style="color:#fbbf24;">$65,000</span>
+                                </div>
+                                <input type="range" id="he-console" min="45000" max="110000" step="5000" value="65000" oninput="heUpdateLabels(); runHealthEconomicsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Societal WTP Threshold (λ):</span>
+                                    <span id="label-he-wtp" class="sa-slider-val" style="color:#f472b6;">$100,000 / QALY</span>
+                                </div>
+                                <input type="range" id="he-wtp" min="50000" max="200000" step="10000" value="100000" oninput="heUpdateLabels(); runHealthEconomicsStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <div class="sa-control-box" style="margin-top:8px;">
+                            <h4 style="color:#fbbf24; margin-bottom:8px; font-size:13px;">👁️ Display Selection</h4>
+                            <span style="font-size:11px; color:#94a3b8;">Focus Indication for Markov View:</span>
+                            <select id="he-disease-select" onchange="renderHealthEconomicsViews();" style="width:100%; background:#1e293b; color:#e2e8f0; border:1px solid #475569; padding:6px 10px; border-radius:6px; font-size:12px; margin-top:4px;">
+                                <option value="all" selected>All 4 Indications (Comparison)</option>
+                                <option value="dementia">Dementia (Alzheimer's Disease)</option>
+                                <option value="schizophrenia">Schizophrenia (Cognitive Deficits)</option>
+                                <option value="parkinsons">Parkinson's Disease (Motor Fluctuations)</option>
+                                <option value="alexander">Alexander's Disease (GFAP Astrogliopathy)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: KPIS, CHARTS & TABLES -->
+                    <div style="flex:1; display:flex; flex-direction:column; gap:20px; min-width:0;">
+                        <!-- Row 1: 6 Key Performance Metric Cards -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px;">
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #38bdf8;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">2-YEAR TOTAL REVENUE</span>
+                                <div id="he-kpi-rev" style="font-size:20px; font-weight:700; color:#38bdf8; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="he-kpi-rev-sub">42 Installed Consoles</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #a7f3d0;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">ENTERPRISE VALUATION</span>
+                                <div id="he-kpi-val" style="font-size:20px; font-weight:700; color:#34d399; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="he-kpi-val-sub">Blended DCF / rNPV</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #c4b5fd;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">EQUITY PRICE PER SHARE</span>
+                                <div id="he-kpi-share" style="font-size:20px; font-weight:700; color:#c4b5fd; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;">35M Authorized Shares</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #f472b6;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">POOLED ICER</span>
+                                <div id="he-kpi-icer" style="font-size:20px; font-weight:700; color:#f472b6; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="he-kpi-icer-sub">Below $100k WTP</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #fbbf24;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">CEAC ACCEPTABILITY</span>
+                                <div id="he-kpi-ceac" style="font-size:20px; font-weight:700; color:#fbbf24; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;">P(NMB &gt; 0) at $100k/QALY</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #f87171;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">POOLED QALY GAIN</span>
+                                <div id="he-kpi-qaly" style="font-size:20px; font-weight:700; color:#f87171; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;">24-Month Horizon per Patient</span>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Dual 2D Charts: CEAC & Monthly Revenue Streams -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#38bdf8; font-size:13px;">📉 Cost-Effectiveness Acceptability Frontier (CEAC)</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Monte Carlo statistical probability P(NMB &gt; 0) vs Societal WTP Threshold λ</span>
+                                <div id="he-ceac-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#a7f3d0; font-size:13px;">📊 24-Month Monthly Revenue Streams &amp; Cumulative FCF</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Hardware Consoles, Per-Session SaaS, Biopharma Licensing, and Maintenance ARR</span>
+                                <div id="he-revenue-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Dual 2D Charts: Markov Survival Trajectories & Corporate Valuation Waterfall -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#c4b5fd; font-size:13px;">⏳ Markov Cohort State Survival Trajectories (M1 to M24)</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Population distribution across healthy vs degraded disease states under rTMS vs SOC</span>
+                                <div id="he-markov-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#fbbf24; font-size:13px;">⚖️ Corporate Valuation &amp; Pipeline rNPV Contribution</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">DCF ($24.8M), Pipeline rNPV ($62.4M), and Forward ARR Multiples ($45.2M)</span>
+                                <div id="he-valuation-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Indication Comparison Table -->
+                        <div class="panel glass-panel">
+                            <h4 style="margin:0 0 8px 0; color:#38bdf8; font-size:13px;">📋 Target Indication Health Economic Outcomes &amp; Cost-Effectiveness</h4>
+                            <div style="overflow-x:auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:6px 8px;">Target Indication</th>
+                                            <th style="padding:6px 8px;">US Prevalence</th>
+                                            <th style="padding:6px 8px;">2-Yr Cost SOC</th>
+                                            <th style="padding:6px 8px;">2-Yr Cost rTMS</th>
+                                            <th style="padding:6px 8px;">Δ Cost</th>
+                                            <th style="padding:6px 8px;">Δ QALY</th>
+                                            <th style="padding:6px 8px;">ICER ($/QALY)</th>
+                                            <th style="padding:6px 8px;">Economic Assessment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="he-indications-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 5: 24-Month Quarterly Pro Forma Table -->
+                        <div class="panel glass-panel">
+                            <h4 style="margin:0 0 8px 0; color:#a7f3d0; font-size:13px;">📅 24-Month (Q1–Q8) Quarterly Financial Performance Schedule</h4>
+                            <div style="overflow-x:auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:6px 8px;">Quarter</th>
+                                            <th style="padding:6px 8px;">Installed Base</th>
+                                            <th style="padding:6px 8px;">Total Revenue</th>
+                                            <th style="padding:6px 8px;">Gross Profit</th>
+                                            <th style="padding:6px 8px;">Gross Margin</th>
+                                            <th style="padding:6px 8px;">EBITDA</th>
+                                            <th style="padding:6px 8px;">Free Cash Flow (FCF)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="he-quarters-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 6: Governing Finite Math & Statistical Distributions -->
+                        <div class="panel glass-panel" style="background:rgba(2,132,199,0.08); border:1px solid rgba(56,189,248,0.3);">
+                            <h3 style="color:#38bdf8;">📐 Governing Mathematical Formulations: Markov Processes, Statistical Distributions &amp; Corporate Valuation</h3>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#38bdf8; font-weight:700;">1. MARKOV MULTI-STATE TRANSITION GENERATOR</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">S(t + Δt) = S(t) · P(Δt),   P(Δt) = exp(Q · Δt)
+P_ij ~ Beta(α_ij, β_ij)
+Monthly state probability vectors evolve continuously with rTMS progression damping (1 - η_efficacy).</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#a7f3d0; font-weight:700;">2. STATISTICAL PARAMETRIC DISTRIBUTIONS (PSA)</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">C_k ~ Gamma(κ, θ),   u_k ~ Beta(α_u, β_u)
+λ_WTP ~ LogNormal(μ_λ, σ_λ²)
+Captures positive cost skewness and bounded [0, 1] utility weights for rigorous Monte Carlo sampling.</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#c4b5fd; font-weight:700;">3. INCREMENTAL COST-EFFECTIVENESS &amp; NMB</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">ICER = ΔC / ΔQALY,   NMB(λ) = λ · ΔQALY - ΔC
+CEAC(λ) = P(NMB(λ) &gt; 0)
+Quantifies societal willingness-to-pay adoption probability across international reimbursement thresholds.</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#fbbf24; font-weight:700;">4. MULTI-METHOD CORPORATE VALUATION</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">V_Ent = w_rNPV ∑_k p_k NPV_k + w_DCF [PV(FCF) + PV(TV)] + w_ARR (M_ARR · ARR_24)
+Triangulates clinical risk-adjusted pipeline rNPV (40%), discounted cash flows (35%), and ARR multiples (25%).</pre>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
