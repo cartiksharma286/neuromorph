@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request, jsonify
+from flask import Flask, render_template_string, request, jsonify, send_file
 import threading
 import webbrowser
 import sys
@@ -68,6 +68,7 @@ def index():
                 <button class="btn btn-secondary" onclick="startSim('/run_dewar')">Run Dewar Quantum CFD</button>
                 <button class="btn btn-accent" onclick="startSim('/run_nvqlink')">Run Real-Time NVQLink SSS</button>
                 <button class="btn btn-success" onclick="startSim('/run_prime_vortex')">Run Prime Vortex Generator</button>
+                <a href="/download_prime_vortex_preprint" target="_blank" class="btn" style="background:linear-gradient(135deg, #b91c1c, #991b1b); text-decoration:none; display:inline-flex; align-items:center;">📥 Prime Vortex Nature Preprint (.PDF)</a>
             </div>
         </div>
         <iframe id="viewer"></iframe>
@@ -183,6 +184,14 @@ def run_dewar():
         return html_report
     except Exception as e:
         return f"<h1>Error Running Dewar Simulation</h1><pre>{str(e)}</pre>"
+
+@app.route('/download_prime_vortex_preprint')
+def download_prime_vortex_preprint():
+    pdf_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Nature_Preprint_Quantum_Prime_Vortex_Riemannian_Topology.pdf')
+    if not os.path.exists(pdf_path):
+        from generate_nature_preprint_prime_vortex_topology import build_pdf
+        build_pdf(pdf_path)
+    return send_file(pdf_path, as_attachment=True, download_name='Nature_Preprint_Quantum_Prime_Vortex_Riemannian_Topology.pdf')
 
 def run_flask():
     print(f"Starting MEG Processing App on http://0.0.0.0:{PORT}")

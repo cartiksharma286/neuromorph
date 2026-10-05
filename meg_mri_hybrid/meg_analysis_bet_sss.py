@@ -823,6 +823,7 @@ def run_prime_vortex_simulation(
             <div style="display:flex; gap:8px; align-items:center;">
                 <button class="btn btn-anim" id="btn-animate" onclick="toggleAnimation()">▶ Animate Vortex Wave</button>
                 <button class="btn" onclick="updateSimulation()">🔄 Recalculate Field</button>
+                <a href="/download_prime_vortex_preprint" target="_blank" class="btn" style="background:linear-gradient(135deg, #b91c1c, #991b1b); text-decoration:none;">📥 Download Nature Preprint (.PDF)</a>
             </div>
         </div>
 
