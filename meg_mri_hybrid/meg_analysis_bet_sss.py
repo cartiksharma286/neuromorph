@@ -4,6 +4,14 @@ import scipy.ndimage as ndimage
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+
+def compute_sph_harm(m, l, phi, theta):
+    """Computes spherical harmonics with compatibility for scipy < 1.15 and >= 1.15."""
+    if hasattr(sp, 'sph_harm_y'):
+        return sp.sph_harm_y(l, m, theta, phi)
+    return sp.sph_harm(m, l, phi, theta)
+
+
 class BrainExtractionTool:
     """
     Simulates a Brain Extraction Tool (BET).
@@ -145,7 +153,7 @@ class SphericalHarmonicsSSS:
         col = 0
         for l in range(1, self.L_in + 1):
              for m in range(-l, l + 1):
-                 Y_lm_val = sp.sph_harm(m, l, Phi, Theta) 
+                 Y_lm_val = compute_sph_harm(m, l, Phi, Theta) 
                  S_in[:, col] = (R ** l) * Y_lm_val
                  col += 1
                  
@@ -154,7 +162,7 @@ class SphericalHarmonicsSSS:
         col = 0
         for l in range(1, self.L_out + 1):
              for m in range(-l, l + 1):
-                 Y_lm_val = sp.sph_harm(m, l, Phi, Theta)
+                 Y_lm_val = compute_sph_harm(m, l, Phi, Theta)
                  
                  # Use CF-based radial term
                  rad_term = self.continued_fraction_radial_decay(R, l)
