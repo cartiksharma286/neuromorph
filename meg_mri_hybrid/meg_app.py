@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string
+from flask import Flask, render_template_string, request, jsonify
 import threading
 import webbrowser
 import sys
@@ -41,10 +41,15 @@ def index():
                 document.getElementById('status').innerText = 'Running Simulation...';
                 const viewer = document.getElementById('viewer');
                 viewer.style.display = 'block';
-                viewer.src = route;
+                // Cache-busting URL parameter so browser always reloads live simulation
+                viewer.src = route + (route.includes('?') ? '&' : '?') + 't=' + Date.now();
                 viewer.onload = function() {
                     document.getElementById('spinner').style.display = 'none';
                     document.getElementById('status').innerText = 'Simulation Complete.';
+                };
+                viewer.onerror = function() {
+                    document.getElementById('spinner').style.display = 'none';
+                    document.getElementById('status').innerText = 'Error loading simulation.';
                 };
             }
         </script>
@@ -73,11 +78,48 @@ def index():
 @app.route('/run_prime_vortex')
 def run_prime():
     try:
-        html_report = run_prime_vortex_simulation()
+        prime_cutoff = int(request.args.get('prime_cutoff', 100))
+        vorticity = int(request.args.get('vorticity', 1))
+        bec_coupling = float(request.args.get('bec_coupling', 1.2))
+        time_phase = float(request.args.get('time_phase', 0.0))
+        zeta_zero = float(request.args.get('zeta_zero', 14.1347))
+
+        html_report = run_prime_vortex_simulation(
+            prime_cutoff=prime_cutoff,
+            vorticity_n=vorticity,
+            bec_coupling=bec_coupling,
+            time_phase=time_phase,
+            zeta_zero=zeta_zero
+        )
+        cwd_path = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(cwd_path, 'prime_vortex_report.html'), 'w') as f:
+            f.write(html_report)
         return html_report
     except Exception as e:
         import traceback
         return f"<h1>Error Running Prime Vortex Simulation</h1><pre>{traceback.format_exc()}</pre>"
+
+@app.route('/api/prime-vortex-data')
+def api_prime_vortex_data():
+    try:
+        from meg_analysis_bet_sss import compute_prime_vortex_dataset
+        prime_cutoff = int(request.args.get('prime_cutoff', 100))
+        vorticity = int(request.args.get('vorticity', 1))
+        bec_coupling = float(request.args.get('bec_coupling', 1.2))
+        time_phase = float(request.args.get('time_phase', 0.0))
+        zeta_zero = float(request.args.get('zeta_zero', 14.1347))
+
+        data = compute_prime_vortex_dataset(
+            prime_cutoff=prime_cutoff,
+            vorticity_n=vorticity,
+            bec_coupling=bec_coupling,
+            time_phase=time_phase,
+            zeta_zero=zeta_zero
+        )
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        import traceback
+        return jsonify({'status': 'error', 'message': str(e), 'trace': traceback.format_exc()}), 500
 
 @app.route('/run_simulation')
 def run_sim():
@@ -143,9 +185,12 @@ def run_dewar():
         return f"<h1>Error Running Dewar Simulation</h1><pre>{str(e)}</pre>"
 
 def run_flask():
-    print(f"Starting MEG Processing App on http://localhost:{PORT}")
-    webbrowser.open(f"http://localhost:{PORT}")
-    app.run(port=PORT, debug=False, threaded=True)
+    print(f"Starting MEG Processing App on http://0.0.0.0:{PORT}")
+    try:
+        webbrowser.open(f"http://localhost:{PORT}")
+    except Exception:
+        pass
+    app.run(host='0.0.0.0', port=PORT, debug=False, threaded=True)
 
 if __name__ == "__main__":
     run_flask()

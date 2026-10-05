@@ -202,36 +202,69 @@ class SphericalHarmonicsSSS:
         
         return data_internal, data_external
 
+def sieve_primes(n):
+    """Sieve of Eratosthenes returning all primes <= n."""
+    import math
+    n = max(3, int(n))
+    is_p = np.ones(n + 1, dtype=bool)
+    is_p[:2] = False
+    for p in range(2, math.isqrt(n) + 1):
+        if is_p[p]:
+            is_p[p*p::p] = False
+    return np.nonzero(is_p)[0]
+
+
 class PrimeVortexGenerator:
     """
     Generates a 'Prime Vortex' quantum field.
-    Mathematically represented as a toroidal vector field modulated by prime-number distribution gaps.
-    Used for 'Quantum Surface Integral' calculations.
+    Mathematically represented as multi-core quantized quantum vortices
+    situated along prime distribution radii and modulated by non-trivial Riemann Zeta zeros.
+    Used for Quantum Surface Integral calculations and quantum topological analysis.
     """
-    def __init__(self, shape):
+    def __init__(self, shape, prime_cutoff=100, vorticity_n=1, time_phase=0.0, zeta_zero=14.1347):
+        import math
         self.shape = shape
-        self.center = np.array(shape) / 2
+        self.center = np.array(shape) / 2.0
+        self.prime_cutoff = prime_cutoff
+        self.vorticity_n = vorticity_n
+        self.time_phase = time_phase
+        self.zeta_zero = zeta_zero
+        self.primes = sieve_primes(prime_cutoff)
+        self.gaps = np.diff(self.primes) if len(self.primes) > 1 else np.array([2])
         
     def get_field(self, X, Y, Z):
-        # Toroidal field flow
-        # Psi = (-y, x, 0) / (x^2 + y^2) * exp(-z^2)
-        
-        # Centered coords
+        import math
         xc = X - self.center[0]
         yc = Y - self.center[1]
         zc = Z - self.center[2]
-        
         r2 = xc**2 + yc**2 + 1e-6
-        
-        # Prime Modulation (simulated by high freq harmonics)
-        # In a full implementation this would use the Riemann Zeta zeros
-        prime_mod = 1 + 0.2 * np.sin(10 * np.sqrt(r2)) * np.cos(10 * zc)
-        
-        # Vector Field components
-        Vx = -yc / r2 * np.exp(-zc**2 / 500) * prime_mod
-        Vy =  xc / r2 * np.exp(-zc**2 / 500) * prime_mod
-        Vz =  0.1 * np.sin(np.sqrt(r2)/5) * prime_mod # Slight helical component
-        
+        r = np.sqrt(r2)
+
+        K = min(12, len(self.primes))
+        selected = self.primes[:K]
+        p_max = float(selected[-1])
+
+        Vx = np.zeros_like(xc, dtype=float)
+        Vy = np.zeros_like(yc, dtype=float)
+
+        sz = self.shape[0]
+        for idx, p in enumerate(selected):
+            r_core = (sz * 0.35) * math.sqrt(p / p_max)
+            phi_core = 2.0 * math.pi * (idx / K) + self.time_phase * 0.5
+            kx = r_core * math.cos(phi_core)
+            ky = r_core * math.sin(phi_core)
+            dx = xc - kx
+            dy = yc - ky
+            dist2 = dx**2 + dy**2 + 0.85
+            circ = float(self.vorticity_n) / dist2
+            Vx -= dy * circ
+            Vy += dx * circ
+
+        zeta_mod = 1.0 + 0.28 * np.cos(self.zeta_zero * np.log(r + 1.0) - self.time_phase)
+        Vx *= zeta_mod
+        Vy *= zeta_mod
+        Vz = 0.12 * float(self.vorticity_n) * np.sin(zc / 4.0 - self.time_phase) * zeta_mod
+
         return np.stack([Vx, Vy, Vz], axis=-1)
 
 class QuantumHeadIntegrator:
@@ -549,151 +582,380 @@ def run_realtime_nvqlink():
 class BoseEinsteinCondensate:
     """
     Simulates a BEC state interacting with the Prime Vortex Field.
-    Approximated via Gross-Pitaevskii ground state in a harmonic trap + Vortex Potential.
+    Gross-Pitaevskii ground state in a harmonic trap with quantized prime vortex cores.
     """
-    def __init__(self, shape):
+    def __init__(self, shape, bec_coupling=1.2, time_phase=0.0):
+        import math
         self.shape = shape
-        self.center = np.array(shape) / 2
-        
-    def compute_wavefunction(self, vortex_field_mag):
+        self.center = np.array(shape) / 2.0
+        self.g = bec_coupling
+        self.time_phase = time_phase
+
+    def compute_wavefunction(self, vortex_field_mag, primes=None):
+        import math
         X, Y, Z = np.mgrid[0:self.shape[0], 0:self.shape[1], 0:self.shape[2]]
-        
-        # Harmonic Trap Potential
         xc = X - self.center[0]
         yc = Y - self.center[1]
         zc = Z - self.center[2]
         r2 = xc**2 + yc**2 + zc**2
-        
-        # Ground state (Gaussian)
-        psi_0 = np.exp(-r2 / 400.0)
-        
-        # Interaction with Vortex Field (Phase imprinting / Density Depletion)
-        # BEC density dips at vortex cores (magnitude peaks)
-        interaction_potential = np.exp(-vortex_field_mag * 5.0)
-        
-        psi = psi_0 * interaction_potential
-        
+        sz = self.shape[0]
+
+        # Ground-state harmonic trap envelope
+        psi = np.exp(-r2 / (2.0 * (sz * 0.38)**2)).astype(complex)
+
+        if primes is not None and len(primes) > 0:
+            K = min(10, len(primes))
+            selected = primes[:K]
+            p_max = float(selected[-1])
+            for idx, p in enumerate(selected):
+                r_core = (sz * 0.35) * math.sqrt(p / p_max)
+                phi_core = 2.0 * math.pi * (idx / K) + self.time_phase * 0.5
+                kx = r_core * math.cos(phi_core)
+                ky = r_core * math.sin(phi_core)
+                dx = xc - kx
+                dy = yc - ky
+                core_phase = (dx + 1j * dy) / np.sqrt(dx**2 + dy**2 + 0.6)
+                psi *= core_phase
+
+        # Density depletion by vortex field interaction
+        interaction = np.exp(-self.g * vortex_field_mag * 0.75)
+        psi *= interaction
+
         # Normalize
-        psi = psi / np.sqrt(np.sum(psi**2))
-        
+        norm = np.sqrt(np.sum(np.abs(psi)**2))
+        if norm > 0:
+            psi /= norm
+
         return psi
+
 
 class RiemannianGeometry:
     """
-    Computes Riemannian properties over the quantum manifold.
+    Computes Riemannian properties over the quantum superfluid manifold.
     Metric tensor g_uv derived from Superfluid Density.
     """
     def __init__(self, density_field):
         self.rho = density_field
-        
+
     def compute_metric_and_integral(self):
-        # Conformal metric approximation: g_uv = rho^(2/3) * delta_uv
-        # This relates local "distance" to the density of the condensate.
-        
-        # 1. Volume Form Integral (Riemannian Volume)
-        # dV = sqrt(det(g)) = rho
-        # Integral = Total Particle Number (Conceptually) or Manifold Volume
-        vol_form = self.rho
-        total_riemannian_volume = np.sum(vol_form)
-        
-        # 2. Scalar Curvature R
-        # For conformal metric g = e^(2f) * delta, R ~ -Laplacian(f)
-        # Here e^(2f) = rho^(2/3) => f = 1/3 ln(rho)
+        # 1. Volume Form Integral: int rho d^3x
+        total_riemannian_volume = float(np.sum(self.rho))
+
+        # 2. Scalar Curvature R: -Laplacian(1/3 ln(rho + eps))
         with np.errstate(divide='ignore', invalid='ignore'):
-            f_potential = (1.0/3.0) * np.log(self.rho + 1e-12)
-        
+            f_potential = (1.0 / 3.0) * np.log(self.rho + 1e-12)
+
         grad_z, grad_y, grad_x = np.gradient(f_potential)
-        laplacian = np.gradient(grad_x)[2] + np.gradient(grad_y)[1] + np.gradient(grad_z)[0]
-        
+        laplacian = np.gradient(grad_x, axis=2) + np.gradient(grad_y, axis=1) + np.gradient(grad_z, axis=0)
         curvature = -laplacian
-        
+
         return total_riemannian_volume, curvature
 
-def run_prime_vortex_simulation():
-    """
-    Generates a detailed visualization of Prime Vortex Fields, BEC States, and Riemannian Geometry.
-    """
-    print("Running Prime Vortex & BEC Simulation...")
-    
-    # Grid Setup (High res for field detail)
-    shape = (40, 40, 40)
+
+def compute_prime_vortex_dataset(
+    prime_cutoff=100,
+    vorticity_n=1,
+    bec_coupling=1.2,
+    time_phase=0.0,
+    zeta_zero=14.1347,
+    shape=(26, 26, 26)
+):
+    """Computes numerical tensors and telemetry for Prime Vortex, BEC, and Riemannian Geometry."""
+    import math
     X, Y, Z = np.mgrid[0:shape[0], 0:shape[1], 0:shape[2]]
-    
-    # 1. Generate Prime Vortex Field
-    gen = PrimeVortexGenerator(shape)
-    field = gen.get_field(X, Y, Z) # (40,40,40,3)
+    gen = PrimeVortexGenerator(shape, prime_cutoff=prime_cutoff, vorticity_n=vorticity_n, time_phase=time_phase, zeta_zero=zeta_zero)
+    field = gen.get_field(X, Y, Z)
     mag = np.linalg.norm(field, axis=3)
-    
-    # 2. Simulate Bose-Einstein Condensate
-    bec = BoseEinsteinCondensate(shape)
-    psi = bec.compute_wavefunction(mag)
-    density = psi**2
-    
-    # 3. Compute Riemannian Geometry
+
+    bec = BoseEinsteinCondensate(shape, bec_coupling=bec_coupling, time_phase=time_phase)
+    psi = bec.compute_wavefunction(mag, primes=gen.primes)
+    density = np.abs(psi)**2
+    density = density / np.sum(density)
+
     riemann = RiemannianGeometry(density)
     r_vol, curvature = riemann.compute_metric_and_integral()
-    
-    print(f"Riemannian Volume Integral: {r_vol:.6e}")
-    
-    # Visualization
+    curv_viz = np.clip(curvature, -1.0, 1.0)
+
+    twin_count = int(np.sum(gen.gaps == 2)) if len(gen.gaps) > 0 else 0
+    cousin_count = int(np.sum(gen.gaps == 4)) if len(gen.gaps) > 0 else 0
+    sexy_count = int(np.sum(gen.gaps == 6)) if len(gen.gaps) > 0 else 0
+
+    return {
+        "x": X.flatten().tolist(),
+        "y": Y.flatten().tolist(),
+        "z": Z.flatten().tolist(),
+        "mag": [round(float(v), 4) for v in mag.flatten()],
+        "density": [round(float(v), 7) for v in density.flatten()],
+        "curvature": [round(float(v), 4) for v in curv_viz.flatten()],
+        "vz": [round(float(v), 4) for v in field[:, :, :, 2].flatten()],
+        "telemetry": {
+            "prime_count": len(gen.primes),
+            "max_prime": int(gen.primes[-1]) if len(gen.primes) > 0 else 2,
+            "twin_primes": twin_count,
+            "cousin_primes": cousin_count,
+            "sexy_primes": sexy_count,
+            "riemannian_volume": round(float(r_vol), 6),
+            "quantized_circulation": round(float(vorticity_n * 2.0 * math.pi), 4),
+            "peak_vortex_mag": round(float(np.max(mag)), 4),
+            "min_bec_density": round(float(np.min(density)), 8),
+            "mean_curvature": round(float(np.mean(curvature)), 6),
+            "time_phase": round(float(time_phase), 3),
+            "zeta_zero": round(float(zeta_zero), 4),
+            "vorticity_n": int(vorticity_n),
+            "bec_coupling": round(float(bec_coupling), 2)
+        }
+    }
+
+
+def run_prime_vortex_simulation(
+    prime_cutoff=100,
+    vorticity_n=1,
+    bec_coupling=1.2,
+    time_phase=0.0,
+    zeta_zero=14.1347,
+    shape=(26, 26, 26)
+):
+    """
+    Generates a high-performance interactive dashboard with live controls,
+    telemetry cards, and 4-subplot 3D Volume raymarchers.
+    """
+    import json
+    data = compute_prime_vortex_dataset(
+        prime_cutoff=prime_cutoff,
+        vorticity_n=vorticity_n,
+        bec_coupling=bec_coupling,
+        time_phase=time_phase,
+        zeta_zero=zeta_zero,
+        shape=shape
+    )
+    tel = data["telemetry"]
+    x = data["x"]
+    y = data["y"]
+    z = data["z"]
+    mag = data["mag"]
+    density = data["density"]
+    curvature = data["curvature"]
+    vz = data["vz"]
+
     fig = make_subplots(
         rows=2, cols=2,
-        specs=[[{'type': 'volume'}, {'type': 'volume'}],
-               [{'type': 'volume'}, {'type': 'volume'}]],
+        specs=[[{'type': 'scene'}, {'type': 'scene'}],
+               [{'type': 'scene'}, {'type': 'scene'}]],
         subplot_titles=(
-            'Prime Vortex Magnitude', 
-            'BEC Density (Ground State)', 
-            f'Riemannian Curvature (Vol: {r_vol:.2e})', 
-            'Vortex Z-Component (Helical)'
+            'Prime Vortex Magnitude |B|', 
+            'BEC Superfluid Wavefunction |ψ|²', 
+            f'Riemannian Curvature R (Vol: {tel["riemannian_volume"]:.2e})', 
+            'Helical Axial Velocity V_z'
         )
     )
-    
+
     # 1. Vortex Magnitude
     fig.add_trace(go.Volume(
-        x=X.flatten(), y=Y.flatten(), z=Z.flatten(),
-        value=mag.flatten(),
-        isomin=0.01, isomax=0.5, opacity=0.1, surface_count=15, colorscale='Plasma',
+        x=x, y=y, z=z, value=mag,
+        isomin=0.05, isomax=0.85, opacity=0.12, surface_count=12, colorscale='Plasma',
         name='Vortex |B|'
     ), row=1, col=1)
-    
+
     # 2. BEC Density
     fig.add_trace(go.Volume(
-        x=X.flatten(), y=Y.flatten(), z=Z.flatten(),
-        value=density.flatten(),
-        isomin=np.max(density)*0.1, isomax=np.max(density)*0.9, 
-        opacity=0.15, surface_count=15, colorscale='Viridis',
+        x=x, y=y, z=z, value=density,
+        isomin=min(density) * 1.5, isomax=max(density) * 0.9,
+        opacity=0.14, surface_count=12, colorscale='Viridis',
         name='BEC Density'
     ), row=1, col=2)
-    
+
     # 3. Riemannian Curvature
-    # Filter extreme values for visualization
-    curv_viz = np.clip(curvature, -0.5, 0.5)
     fig.add_trace(go.Volume(
-        x=X.flatten(), y=Y.flatten(), z=Z.flatten(),
-        value=curv_viz.flatten(),
-        isomin=-0.1, isomax=0.1, opacity=0.1, surface_count=15, colorscale='RdBu',
+        x=x, y=y, z=z, value=curvature,
+        isomin=-0.25, isomax=0.25, opacity=0.12, surface_count=12, colorscale='RdBu',
         name='Curvature'
     ), row=2, col=1)
-    
-    # 4. Z-Component (Helical Modulations)
+
+    # 4. Helical Axial Velocity
     fig.add_trace(go.Volume(
-        x=X.flatten(), y=Y.flatten(), z=Z.flatten(),
-        value=field[:,:,:,2].flatten(),
-        isomin=-0.05, isomax=0.05, opacity=0.1, surface_count=15, colorscale='Inferno',
+        x=x, y=y, z=z, value=vz,
+        isomin=-0.08, isomax=0.08, opacity=0.12, surface_count=12, colorscale='Inferno',
         name='Vz'
     ), row=2, col=2)
-    
+
     fig.update_layout(
-        title='Quantum Topology: Prime Vortex, BEC & Riemannian Geometry',
-        height=900,
+        title=f'Quantum Topology: Prime Vortex (P_max={tel["max_prime"]}), BEC & Riemannian Geometry',
+        height=720,
+        margin=dict(l=20, r=20, t=50, b=20),
         template='plotly_dark'
     )
-    
-    return fig.to_html(full_html=True, include_plotlyjs='cdn')
+
+    plot_div = fig.to_html(full_html=False, include_plotlyjs=False)
+
+    dashboard_html = f"""<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Quantum Prime Vortex & Riemannian Geometry</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+    <style>
+        body {{ background: #0b0f19; color: #e2e8f0; font-family: 'Inter', sans-serif; margin: 0; padding: 12px; }}
+        .control-panel {{ background: #131d31; padding: 14px 18px; border-radius: 10px; border: 1px solid #233556; margin-bottom: 12px; }}
+        .grid-controls {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: center; }}
+        .slider-group {{ display: flex; flex-direction: column; gap: 4px; }}
+        .slider-label {{ font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between; font-weight: 600; }}
+        .slider-val {{ color: #38bdf8; font-weight: 700; }}
+        input[type=range] {{ width: 100%; height: 5px; border-radius: 3px; background: #334155; outline: none; cursor: pointer; }}
+        select {{ background: #1e293b; color: #e2e8f0; border: 1px solid #475569; padding: 5px 8px; border-radius: 6px; font-size: 11px; }}
+        .kpi-row {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 12px; }}
+        .kpi-card {{ background: #111a2d; padding: 10px 14px; border-radius: 8px; border-left: 3px solid #38bdf8; }}
+        .kpi-title {{ font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }}
+        .kpi-val {{ font-size: 17px; font-weight: 700; color: #e2e8f0; margin-top: 3px; }}
+        .btn {{ background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; font-size: 11px; cursor: pointer; }}
+        .btn:hover {{ filter: brightness(1.15); }}
+        .btn-anim {{ background: linear-gradient(135deg, #10b981, #059669); }}
+        .plot-container {{ background: #111a2d; border-radius: 10px; padding: 8px; border: 1px solid #233556; }}
+    </style>
+</head>
+<body>
+    <div class="control-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <div>
+                <h2 style="margin:0; font-size:16px; color:#38bdf8;">🌀 Quantum Prime Vortex Generator &amp; Riemannian Topology</h2>
+                <span style="font-size:11px; color:#94a3b8;">Multi-Core Quantized Vortex Filaments · Gross-Pitaevskii Condensate · Riemann Zeta Zeros</span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button class="btn btn-anim" id="btn-animate" onclick="toggleAnimation()">▶ Animate Vortex Wave</button>
+                <button class="btn" onclick="updateSimulation()">🔄 Recalculate Field</button>
+            </div>
+        </div>
+
+        <div class="grid-controls">
+            <div class="slider-group">
+                <div class="slider-label"><span>Prime Cutoff P_max:</span><span id="lbl-cutoff" class="slider-val">{prime_cutoff}</span></div>
+                <input type="range" id="param-cutoff" min="10" max="250" step="10" value="{prime_cutoff}" oninput="document.getElementById('lbl-cutoff').textContent=this.value; debouncedUpdate();">
+            </div>
+            <div class="slider-group">
+                <div class="slider-label"><span>Quantized Vorticity κ:</span><span id="lbl-vorticity" class="slider-val">n = {vorticity_n}</span></div>
+                <input type="range" id="param-vorticity" min="1" max="4" step="1" value="{vorticity_n}" oninput="document.getElementById('lbl-vorticity').textContent='n = '+this.value; debouncedUpdate();">
+            </div>
+            <div class="slider-group">
+                <div class="slider-label"><span>BEC Coupling (g):</span><span id="lbl-bec" class="slider-val">{bec_coupling:.1f}</span></div>
+                <input type="range" id="param-bec" min="0.2" max="2.5" step="0.1" value="{bec_coupling}" oninput="document.getElementById('lbl-bec').textContent=parseFloat(this.value).toFixed(1); debouncedUpdate();">
+            </div>
+            <div class="slider-group">
+                <div class="slider-label"><span>Zeta Zero Harmonic:</span></div>
+                <select id="param-zeta" onchange="updateSimulation();">
+                    <option value="14.1347" selected>γ₁ = 14.135 (Fundamental Zero)</option>
+                    <option value="21.0220">γ₂ = 21.022 (Second Zero)</option>
+                    <option value="25.0109">γ₃ = 25.011 (Third Zero)</option>
+                    <option value="30.4249">γ₄ = 30.425 (Fourth Zero)</option>
+                </select>
+            </div>
+            <div class="slider-group">
+                <div class="slider-label"><span>Time Phase (ωt):</span><span id="lbl-phase" class="slider-val">{time_phase:.2f} rad</span></div>
+                <input type="range" id="param-phase" min="0.0" max="6.28" step="0.1" value="{time_phase}" oninput="document.getElementById('lbl-phase').textContent=parseFloat(this.value).toFixed(2)+' rad'; debouncedUpdate();">
+            </div>
+        </div>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-card" style="border-left-color:#38bdf8;">
+            <div class="kpi-title">Prime Vortex Cores</div>
+            <div class="kpi-val" id="kpi-primes" style="color:#38bdf8;">{tel['prime_count']} Primes</div>
+            <span style="font-size:10px; color:#94a3b8;" id="kpi-gaps">Twins: {tel['twin_primes']} | Cousins: {tel['cousin_primes']}</span>
+        </div>
+        <div class="kpi-card" style="border-left-color:#10b981;">
+            <div class="kpi-title">Circulation ∮v·dl</div>
+            <div class="kpi-val" id="kpi-circ" style="color:#10b981;">{tel['quantized_circulation']:.2f} ℏ/m</div>
+            <span style="font-size:10px; color:#94a3b8;">Quantized Phase Winding</span>
+        </div>
+        <div class="kpi-card" style="border-left-color:#f59e0b;">
+            <div class="kpi-title">Peak Vortex |B|</div>
+            <div class="kpi-val" id="kpi-mag" style="color:#f59e0b;">{tel['peak_vortex_mag']:.3f}</div>
+            <span style="font-size:10px; color:#94a3b8;">Toroidal Core Gradient</span>
+        </div>
+        <div class="kpi-card" style="border-left-color:#a855f7;">
+            <div class="kpi-title">Riemannian Volume</div>
+            <div class="kpi-val" id="kpi-vol" style="color:#c084fc;">{tel['riemannian_volume']:.4f}</div>
+            <span style="font-size:10px; color:#94a3b8;">∫ √det(g) d³x</span>
+        </div>
+    </div>
+
+    <div class="plot-container" id="plot-wrapper">
+        {plot_div}
+    </div>
+
+    <script>
+        let isAnimating = false;
+        let animTimer = null;
+        let updateDebounce = null;
+
+        function debouncedUpdate() {{
+            clearTimeout(updateDebounce);
+            updateDebounce = setTimeout(updateSimulation, 150);
+        }}
+
+        async function updateSimulation() {{
+            const cutoff = document.getElementById('param-cutoff').value;
+            const vorticity = document.getElementById('param-vorticity').value;
+            const bec = document.getElementById('param-bec').value;
+            const zeta = document.getElementById('param-zeta').value;
+            const phase = document.getElementById('param-phase').value;
+
+            try {{
+                const url = `/api/prime-vortex-data?prime_cutoff=${{cutoff}}&vorticity=${{vorticity}}&bec_coupling=${{bec}}&zeta_zero=${{zeta}}&time_phase=${{phase}}`;
+                const res = await fetch(url);
+                const json = await res.json();
+                if (json.status !== 'success') return;
+
+                const d = json.data;
+                const tel = d.telemetry;
+
+                // Update Telemetry Cards
+                document.getElementById('kpi-primes').textContent = tel.prime_count + ' Primes';
+                document.getElementById('kpi-gaps').textContent = `Twins: ${{tel.twin_primes}} | Cousins: ${{tel.cousin_primes}}`;
+                document.getElementById('kpi-circ').textContent = tel.quantized_circulation.toFixed(2) + ' ℏ/m';
+                document.getElementById('kpi-mag').textContent = tel.peak_vortex_mag.toFixed(3);
+                document.getElementById('kpi-vol').textContent = tel.riemannian_volume.toFixed(4);
+
+                // Update Plotly Traces dynamically
+                const plotEl = document.querySelector('.plotly-graph-div');
+                if (plotEl) {{
+                    Plotly.restyle(plotEl, {{
+                        value: [d.mag, d.density, d.curvature, d.vz]
+                    }}, [0, 1, 2, 3]);
+                }}
+            }} catch (err) {{
+                console.error('Update prime vortex error:', err);
+            }}
+        }}
+
+        function toggleAnimation() {{
+            const btn = document.getElementById('btn-animate');
+            if (isAnimating) {{
+                isAnimating = false;
+                clearInterval(animTimer);
+                btn.textContent = '▶ Animate Vortex Wave';
+                btn.classList.remove('btn-anim-active');
+            }} else {{
+                isAnimating = true;
+                btn.textContent = '⏸ Pause Animation';
+                animTimer = setInterval(() => {{
+                    const slider = document.getElementById('param-phase');
+                    let cur = parseFloat(slider.value) + 0.15;
+                    if (cur > 6.28) cur = 0.0;
+                    slider.value = cur.toFixed(2);
+                    document.getElementById('lbl-phase').textContent = cur.toFixed(2) + ' rad';
+                    updateSimulation();
+                }}, 180);
+            }}
+        }}
+    </script>
+</body>
+</html>
+"""
+    return dashboard_html
+
 
 if __name__ == "__main__":
     html = run_analysis()
     with open("meg_bet_sss_report.html", "w") as f:
         f.write(html)
     print("Report saved to meg_bet_sss_report.html")
-
