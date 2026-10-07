@@ -9,7 +9,7 @@ PORT="${PORT:-5080}"
 
 echo "=========================================================================="
 echo " Starting Neuromorph QML Pharmacogenomics & Photonic Dementia Suite"
-echo " Nature Preprint: Nature_Preprint_Pharmacogenomics_Photonic_Quantum_Dementia.pdf"
+echo " Nature Preprint: CC_Nature_Preprint_Pharmacogenomics_Photonic_Quantum_Dementia.pdf"
 echo " Endpoint: http://127.0.0.1:${PORT}"
 echo "=========================================================================="
 

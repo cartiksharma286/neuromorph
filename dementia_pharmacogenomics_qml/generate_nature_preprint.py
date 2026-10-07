@@ -456,7 +456,7 @@ class NumberedCanvas(canvas.Canvas):
 
 def build_preprint_pdf(output_path: str = None) -> str:
     if output_path is None:
-        output_path = os.path.join(BASE_DIR, 'Nature_Preprint_Pharmacogenomics_Photonic_Quantum_Dementia.pdf')
+        output_path = os.path.join(BASE_DIR, 'CC_Nature_Preprint_Pharmacogenomics_Photonic_Quantum_Dementia.pdf')
         
     print(f"Generating 5 high-resolution figures (300 DPI)...")
     fig1 = generate_figure_1()

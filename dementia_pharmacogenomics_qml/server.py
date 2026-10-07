@@ -24,7 +24,7 @@ app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'), stati
 
 # Global optimizer instance
 qml_optimizer = QuantumPharmacogenomicOptimizer(num_qubits=6)
-PDF_PATH = os.path.join(BASE_DIR, 'Nature_Preprint_Pharmacogenomics_Photonic_Quantum_Dementia.pdf')
+PDF_PATH = os.path.join(BASE_DIR, 'CC_Nature_Preprint_Pharmacogenomics_Photonic_Quantum_Dementia.pdf')
 
 @app.route('/')
 def index():
@@ -169,7 +169,7 @@ def download_preprint():
     return send_file(
         PDF_PATH,
         as_attachment=True,
-        download_name='Nature_Preprint_Pharmacogenomics_Photonic_Quantum_Dementia.pdf',
+        download_name='CC_Nature_Preprint_Pharmacogenomics_Photonic_Quantum_Dementia.pdf',
         mimetype='application/pdf'
     )
 
