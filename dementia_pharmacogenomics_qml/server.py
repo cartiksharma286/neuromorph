@@ -18,6 +18,7 @@ from pharmacogenomics_model import PharmacogenomicsEngine
 from photonic_circuit_model import PhotonicNeuralCircuitEngine
 from clinical_horizons import ClinicalHorizonsSimulator
 from generate_nature_preprint import build_preprint_pdf
+from quantum_molecular_design import QuantumMolecularDesignEngine
 
 app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'), static_folder=os.path.join(BASE_DIR, 'static'))
 
@@ -184,6 +185,44 @@ def regenerate_preprint():
         })
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/molecules')
+def list_molecules():
+    mols = QuantumMolecularDesignEngine.list_molecules()
+    return jsonify({"status": "success", "molecules": mols})
+
+@app.route('/api/molecule/<mol_id>')
+def get_molecule(mol_id):
+    mol = QuantumMolecularDesignEngine.get_molecule(mol_id)
+    if not mol:
+        return jsonify({"status": "error", "message": f"Molecule {mol_id} not found"}), 404
+    return jsonify({"status": "success", "molecule": mol})
+
+@app.route('/api/qml_dock', methods=['POST'])
+def qml_dock():
+    data = request.get_json() or {}
+    mol_id = data.get('molecule_id', 'NQML-8101')
+    target = data.get('target_protein', 'AChE')
+    wavelength = float(data.get('wavelength', 810.0))
+    res = QuantumMolecularDesignEngine.simulate_qml_electronic_docking(
+        mol_id=mol_id,
+        target_protein=target,
+        photonic_wavelength=wavelength
+    )
+    return jsonify({"status": "success", "docking": res})
+
+@app.route('/api/generate_molecular_candidate', methods=['POST'])
+def generate_molecular_candidate():
+    data = request.get_json() or {}
+    scaffold = data.get('core_scaffold', 'Indanone_Piperidine')
+    switch = data.get('photonic_switch', 'o-Nitrobenzyl_Ester')
+    warhead = data.get('warhead', 'Fluorobenzyl_AChE')
+    candidate = QuantumMolecularDesignEngine.generate_custom_qml_candidate(
+        core_scaffold=scaffold,
+        photonic_switch=switch,
+        warhead=warhead
+    )
+    return jsonify({"status": "success", "candidate": candidate})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5080))

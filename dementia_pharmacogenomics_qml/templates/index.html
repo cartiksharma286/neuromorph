@@ -135,6 +135,128 @@
             border-color: var(--accent-sky);
         }
 
+        /* Tab Navigation Bar */
+        .tabs-header-bar {
+            background: #0c1222;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            padding: 0 28px;
+            gap: 10px;
+            position: sticky;
+            top: 61px;
+            z-index: 90;
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 12px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-sky);
+            border-bottom-color: var(--accent-sky);
+            background: rgba(14, 165, 233, 0.08);
+        }
+
+        .tab-badge {
+            background: rgba(14, 165, 233, 0.2);
+            color: #38bdf8;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .tab-pane {
+            display: none;
+            width: 100%;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* 2D & 3D Molecule Viewers */
+        .mol-viewer-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 1000px) {
+            .mol-viewer-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .mol-canvas-card {
+            background: #070d19;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 320px;
+        }
+
+        .mol-canvas-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .qsar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .qsar-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 10px;
+        }
+
+        .qsar-title {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .qsar-val {
+            font-size: 15px;
+            font-weight: 800;
+            color: white;
+            margin-top: 2px;
+        }
+
         /* Layout Grid */
         .container {
             display: grid;
@@ -416,6 +538,25 @@
         </div>
     </header>
 
+    <!-- Tab Navigation Bar -->
+    <div class="tabs-header-bar">
+        <button class="tab-btn active" id="tabBtnHorizons" onclick="switchTab('horizons')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            1. Clinical Horizons & Pharmacogenomics
+        </button>
+        <button class="tab-btn" id="tabBtnMolecules" onclick="switchTab('molecules')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="6" r="3"></circle><circle cx="12" cy="18" r="3"></circle><line x1="8.5" y1="7.5" x2="10" y2="15"></line><line x1="15.5" y1="7.5" x2="14" y2="15"></line></svg>
+            2. Molecular Organic Structures & Quantum Drug Discovery
+            <span class="tab-badge">QML Molecular VQE</span>
+        </button>
+        <button class="tab-btn" id="tabBtnPreprint" onclick="switchTab('preprint')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            3. Nature Preprint & Finite Mathematics
+        </button>
+    </div>
+
+    <!-- TAB 1: CLINICAL HORIZONS & PHARMACOGENOMICS -->
+    <div id="tabHorizons" class="tab-pane active">
     <div class="container">
         <!-- Sidebar Controls -->
         <div class="sidebar">
@@ -609,30 +750,258 @@
                 </div>
             </div>
 
-            <!-- Nature Preprint Abstract and Equation Showcase -->
-            <div class="card" style="background: #0d1527;">
+        </div>
+    </div>
+    </div> <!-- END TAB 1 -->
+
+    <!-- TAB 2: MOLECULAR ORGANIC STRUCTURES & QUANTUM DRUG DISCOVERY -->
+    <div id="tabMolecules" class="tab-pane">
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 18px;">
+            
+            <!-- Top Controls Card -->
+            <div class="card">
                 <div class="card-header">
-                    <span style="color: var(--accent-sky);">Nature Biomedical Engineering Preprint &bull; Paper Synopsis</span>
-                    <a href="/api/download_preprint" class="btn btn-outline" style="font-size: 11px; padding: 3px 10px;">Download PDF (1.1 MB)</a>
+                    <span>Select Organic Molecule / Dementia Candidate</span>
+                    <span id="molCategoryBadge" class="tab-badge">Quantum-Engineered Novel Candidate</span>
                 </div>
-                <p style="font-size: 12.5px; color: #cbd5e1; line-height: 1.6; margin-bottom: 12px;">
-                    <b>Abstract:</b> Alzheimer's Disease (AD) and Early-Onset Alzheimer's Disease (EOAD) present complex neurodegenerative cascades combining amyloid-&beta; oligomerization, tau phosphorylation, microglial senescence, and gamma desynchronization. We present a unified therapeutic paradigm combining pharmacogenomic precision dosing (APOE, CYP2D6, PSEN1) with selective combinatorial photonic neural circuit excitation (660, 810, and 1064 nm at 40 Hz gamma resonance) governed in real-time by Quantum Machine Learning (QML) over the moduli space of elliptic curves &Mscr;<sub>1,1</sub> &cong; SL(2, &Zopf;) &bsol; &Hopf;.
-                </p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 11.5px; color: #94a3b8;">
-                    <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
-                        <b style="color: white;">Equation 1 (Weierstrass Invariants):</b><br/>
-                        (&weierp;&prime;(z))² = 4&weierp;(z)³ - g<sub>2</sub>(&tau;) &weierp;(z) - g<sub>3</sub>(&tau;)<br/>
-                        g<sub>2</sub> = (4&pi;⁴/3) E₄(&tau;), &emsp; g<sub>3</sub> = (8&pi;⁶/27) E₆(&tau;)
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; align-items: center;">
+                    <div>
+                        <label>Target Compound</label>
+                        <select id="molSelector" onchange="onSelectMolecule(this.value)">
+                            <option value="NQML-8101" selected>NQML-8101 (Photocleavable Dual AChE/BACE1 Inhibitor)</option>
+                            <option value="QML-TAU-042">QML-TAU-042 (Elliptic-Modulated Microtubule & Tau Disrupter)</option>
+                            <option value="OPTO-AChE-40">OPTO-AChE-40 (Photoswitchable Azobenzene Donepezil)</option>
+                            <option value="NM-GLU-902">NM-GLU-902 (Quantum-Optimized GluN2B Allosteric Antagonist)</option>
+                            <option value="Donepezil">Donepezil (Aricept • Reference Standard)</option>
+                            <option value="Memantine">Memantine (Namenda • Reference Standard)</option>
+                        </select>
                     </div>
-                    <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
-                        <b style="color: white;">Equation 2 (Finite Parameter-Shift Rule):</b><br/>
-                        &nabla;<sub>&theta;<sub>k</sub></sub> &lang;&Hcirc;&rang; = [ &lang;&Hcirc;(&theta;<sub>k</sub> + &pi;/2)&rang; - &lang;&Hcirc;(&theta;<sub>k</sub> - &pi;/2)&rang; ] / 2
+                    <div>
+                        <label>Target Receptor</label>
+                        <select id="dockTargetProtein" onchange="runQmlDocking()">
+                            <option value="AChE" selected>Acetylcholinesterase (AChE)</option>
+                            <option value="BACE1">BACE-1 (β-Secretase)</option>
+                            <option value="Tau_PHF">Tau Paired Helical Filament</option>
+                            <option value="GluN2B">NMDA Receptor (GluN2B Subunit)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Photonic Excitation Coupling</label>
+                        <div class="range-slider-row">
+                            <input type="range" id="molWaveSlider" min="400" max="1100" value="810" step="10" oninput="document.getElementById('molWaveVal').innerText = this.value + ' nm'; runQmlDocking();">
+                            <span class="slider-val" id="molWaveVal">810 nm</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Two-Column Layout: Visualizers & QML Docking Engine -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+                
+                <!-- Left: 2D & 3D Structure Visualizers -->
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    
+                    <!-- 2D Chemical Structure SVG Canvas -->
+                    <div class="mol-canvas-card">
+                        <div class="mol-canvas-header">
+                            <span id="molNameDisplay">NQML-8101 • 2D Chemical Topology</span>
+                            <span style="font-size: 11px; color: var(--accent-sky);">SVG Vector Representation</span>
+                        </div>
+                        <svg id="molSvg2d" width="100%" height="240" style="background: #080f1d; border-radius: 6px;"></svg>
+                        <div style="width: 100%; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 11px; color: var(--text-muted); font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80%;" id="molSmilesDisplay">SMILES: Loading...</span>
+                            <button class="btn btn-outline" style="padding: 2px 8px; font-size: 10px;" onclick="copySmiles()">Copy</button>
+                        </div>
+                    </div>
+
+                    <!-- 3D Ball-and-Stick Orbiting Canvas -->
+                    <div class="mol-canvas-card">
+                        <div class="mol-canvas-header">
+                            <span>Interactive 3D Molecular Coordinate Orbit</span>
+                            <span style="font-size: 11px; color: var(--accent-emerald);">Click & Drag to Rotate</span>
+                        </div>
+                        <canvas id="molCanvas3d" width="480" height="220" style="background: radial-gradient(circle, #0e172a 0%, #060a12 100%); border-radius: 6px; cursor: grab;"></canvas>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+                            CPK Colors: <span style="color:#cbd5e1;">Carbon (Gray)</span> &bull; <span style="color:#38bdf8;">Nitrogen (Blue)</span> &bull; <span style="color:#f43f5e;">Oxygen (Red)</span> &bull; <span style="color:#10b981;">Fluorine (Green)</span>
+                        </div>
+                    </div>
+
+                    <!-- QSAR Molecular Descriptors -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Physicochemical & Blood-Brain Barrier (BBB) Descriptors</span>
+                            <span style="font-size: 11px; color: var(--accent-amber);">Clark & Pickett logBB</span>
+                        </div>
+                        <div class="qsar-grid">
+                            <div class="qsar-item">
+                                <div class="qsar-title">Molecular Weight</div>
+                                <div class="qsar-val" id="qsarMw">611.6 g/mol</div>
+                            </div>
+                            <div class="qsar-item">
+                                <div class="qsar-title">cLogP (Lipophilicity)</div>
+                                <div class="qsar-val" id="qsarLogP">2.85</div>
+                            </div>
+                            <div class="qsar-item">
+                                <div class="qsar-title">TPSA</div>
+                                <div class="qsar-val" id="qsarTpsa">112.4 Å²</div>
+                            </div>
+                            <div class="qsar-item">
+                                <div class="qsar-title">H-Bond Donors (HBD)</div>
+                                <div class="qsar-val" id="qsarHbd">2</div>
+                            </div>
+                            <div class="qsar-item">
+                                <div class="qsar-title">H-Bond Acceptors</div>
+                                <div class="qsar-val" id="qsarHba">7</div>
+                            </div>
+                            <div class="qsar-item">
+                                <div class="qsar-title">logBB (BBB Score)</div>
+                                <div class="qsar-val" id="qsarLogBb" style="color: #34d399;">+0.12 (High Penetrance)</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 11.5px; color: #cbd5e1; margin-top: 10px; line-height: 1.5;" id="molDescText">
+                            Multi-target organic conjugate with an o-nitrobenzyl photolabile carbamate protecting group.
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right: QML Electronic Structure & Generative Assembly -->
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    
+                    <!-- QML VQE Convergence & Orbital Chart -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Quantum Variational Eigensolver (VQE) Molecular Orbitals</span>
+                            <button class="btn btn-emerald" style="padding: 3px 10px; font-size: 11px;" onclick="runQmlDocking()">Run VQE Docking</button>
+                        </div>
+                        <div id="chartMolVqe" style="height: 230px;"></div>
+                        
+                        <!-- Orbital Energy Levels -->
+                        <div class="qsar-grid" style="margin-top: 10px;">
+                            <div class="qsar-item">
+                                <div class="qsar-title">HOMO Energy</div>
+                                <div class="qsar-val" id="qsarHomo" style="color: #38bdf8;">-8.45 eV</div>
+                            </div>
+                            <div class="qsar-item">
+                                <div class="qsar-title">LUMO Energy</div>
+                                <div class="qsar-val" id="qsarLumo" style="color: #f43f5e;">-2.15 eV</div>
+                            </div>
+                            <div class="qsar-item">
+                                <div class="qsar-title">HOMO-LUMO Gap</div>
+                                <div class="qsar-val" id="qsarGap">6.30 eV</div>
+                            </div>
+                            <div class="qsar-item">
+                                <div class="qsar-title">Binding ΔG</div>
+                                <div class="qsar-val" id="qsarDeltaG" style="color: #10b981;">-11.8 kcal/mol</div>
+                            </div>
+                            <div class="qsar-item">
+                                <div class="qsar-title">Predicted Ki</div>
+                                <div class="qsar-val" id="qsarKi" style="color: #fbbf24;">4.2 nM</div>
+                            </div>
+                            <div class="qsar-item">
+                                <div class="qsar-title">Chemical Hardness η</div>
+                                <div class="qsar-val" id="qsarHardness">3.15 eV</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Combinatorial Molecular Scaffold Assembly Studio -->
+                    <div class="card" style="background: linear-gradient(180deg, #131c31 0%, #0d1527 100%);">
+                        <div class="card-header">
+                            <span style="color: var(--accent-emerald);">Combinatorial Quantum Molecular Assembly Studio</span>
+                            <span class="tab-badge" style="background: rgba(16,185,129,0.2); color:#34d399;">Generative AI & QML</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                            <div>
+                                <label>Core Scaffold</label>
+                                <select id="genScaffold">
+                                    <option value="Indanone_Piperidine" selected>Indanone-Piperidine</option>
+                                    <option value="Quinazoline_Dione">Quinazoline-Dione</option>
+                                    <option value="Benzimidazole">Benzimidazole</option>
+                                    <option value="Adamantane">Adamantane</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Photonic Trigger</label>
+                                <select id="genSwitch">
+                                    <option value="o-Nitrobenzyl_Ester" selected>o-Nitrobenzyl Photocage</option>
+                                    <option value="Azobenzene_Photoswitch">Azobenzene Photoswitch</option>
+                                    <option value="Coumarin_Photocage">Coumarin Two-Photon</option>
+                                    <option value="None_Constitutive">None (Constitutive)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Pharmacophore Warhead</label>
+                                <select id="genWarhead">
+                                    <option value="Fluorobenzyl_AChE" selected>Fluorobenzyl (AChE)</option>
+                                    <option value="Triazole_Tau_Disrupter">Triazole (Tau PHF)</option>
+                                    <option value="Morpholine_Solubilizer">Morpholine (Solubilizer)</option>
+                                    <option value="Phenol_NMDA_Modulator">Phenol (GluN2B)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" style="width: 100%; justify-content: center; margin-bottom: 12px;" onclick="assembleCustomCandidate()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M2 12h20"></path></svg>
+                            Assemble & Optimize Quantum Candidate in QPU Simulator
+                        </button>
+
+                        <div id="genResultCard" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 6px; padding: 12px; font-size: 12px;">
+                            <div style="font-weight: 700; color: #38bdf8; margin-bottom: 6px;" id="genCandidateName">Candidate: QML-IND-810</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; color: #cbd5e1;">
+                                <div>MW: <b id="genMw">505.5 g/mol</b></div>
+                                <div>cLogP: <b id="genLogP">3.2</b></div>
+                                <div>TPSA: <b id="genTpsa">85.3 Å²</b></div>
+                                <div>logBB: <b id="genLogBb" style="color:#34d399;">+0.18</b></div>
+                                <div>Lipinski Ro5: <b id="genRo5" style="color:#10b981;">Passed</b></div>
+                                <div>Pred. ΔG: <b id="genDeltaG" style="color:#38bdf8;">-10.4 kcal/mol</b></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
-    </div>
+    </div> <!-- END TAB 2 -->
+
+    <!-- TAB 3: NATURE PREPRINT & FINITE MATHEMATICS -->
+    <div id="tabPreprint" class="tab-pane">
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+            <div class="card" style="background: #0d1527;">
+                <div class="card-header">
+                    <span style="color: var(--accent-sky); font-size: 15px;">Nature Biomedical Engineering & Nature Medicine Preprint &bull; Paper Synopsis</span>
+                    <a href="/api/download_preprint" class="btn btn-primary" style="font-size: 12px; padding: 6px 14px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Download Nature Preprint PDF (1.1 MB)
+                    </a>
+                </div>
+                <p style="font-size: 13px; color: #cbd5e1; line-height: 1.7; margin-bottom: 14px;">
+                    <b>Abstract:</b> Alzheimer's Disease (AD) and Early-Onset Alzheimer's Disease (EOAD) present complex neurodegenerative cascades combining amyloid-&beta; oligomerization, tau phosphorylation, microglial senescence, and gamma desynchronization. We present a unified therapeutic paradigm combining pharmacogenomic precision dosing (APOE, CYP2D6, PSEN1) with selective combinatorial photonic neural circuit excitation (660, 810, and 1064 nm at 40 Hz gamma resonance) governed in real-time by Quantum Machine Learning (QML) over the moduli space of elliptic curves &Mscr;<sub>1,1</sub> &cong; SL(2, &Zopf;) &bsol; &Hopf;.
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 12px; color: #94a3b8;">
+                    <div style="background: rgba(0,0,0,0.35); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                        <b style="color: white;">Equation 1 (Weierstrass Invariants & Modular Forms):</b><br/>
+                        (&weierp;&prime;(z))² = 4&weierp;(z)³ - g<sub>2</sub>(&tau;) &weierp;(z) - g<sub>3</sub>(&tau;)<br/>
+                        g<sub>2</sub> = (4&pi;⁴/3) E₄(&tau;), &emsp; g<sub>3</sub> = (8&pi;⁶/27) E₆(&tau;)
+                    </div>
+                    <div style="background: rgba(0,0,0,0.35); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                        <b style="color: white;">Equation 2 (Finite Parameter-Shift Rule):</b><br/>
+                        &nabla;<sub>&theta;<sub>k</sub></sub> &lang;&Hcirc;&rang; = [ &lang;&Hcirc;(&theta;<sub>k</sub> + &pi;/2)&rang; - &lang;&Hcirc;(&theta;<sub>k</sub> - &pi;/2)&rang; ] / 2
+                    </div>
+                    <div style="background: rgba(0,0,0,0.35); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                        <b style="color: white;">Equation 3 (Hasse Finite Curve Bound):</b><br/>
+                        | #E(&Fopf;<sub>p</sub>) - (p + 1) | &le; 2 &radic;p, &emsp; y² &equiv; x³ + ax + b (mod p)
+                    </div>
+                    <div style="background: rgba(0,0,0,0.35); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                        <b style="color: white;">Equation 4 (Poincaré Hyperbolic Geodesic Metric):</b><br/>
+                        d<sub>&Hopf;</sub>(&tau;₁, &tau;₂) = arcosh( 1 + |&tau;₁ - &tau;₂|² / [2 Im(&tau;₁) Im(&tau;₂)] )
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- END TAB 3 -->
 
     <!-- Footer -->
     <footer>
@@ -866,6 +1235,379 @@
             } finally {
                 btn.innerHTML = originalText;
                 btn.style.opacity = '1.0';
+            }
+        }
+
+        // =========================================================
+        // TAB SWITCHING & MOLECULAR QUANTUM DRUG DISCOVERY LOGIC
+        // =========================================================
+
+        let currentActiveTab = 'horizons';
+        let currentMolData = null;
+        let animFrameId3D = null;
+        let rotX = 0.2, rotY = 0.4;
+        let isDragging3D = false;
+        let lastMouseX = 0, lastMouseY = 0;
+
+        function switchTab(tabId) {
+            currentActiveTab = tabId;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+            if (tabId === 'horizons') {
+                document.getElementById('tabBtnHorizons').classList.add('active');
+                document.getElementById('tabHorizons').classList.add('active');
+            } else if (tabId === 'molecules') {
+                document.getElementById('tabBtnMolecules').classList.add('active');
+                document.getElementById('tabMolecules').classList.add('active');
+                if (!currentMolData) {
+                    onSelectMolecule(document.getElementById('molSelector').value);
+                } else {
+                    renderMolecule2D(currentMolData);
+                    runQmlDocking();
+                }
+            } else if (tabId === 'preprint') {
+                document.getElementById('tabBtnPreprint').classList.add('active');
+                document.getElementById('tabPreprint').classList.add('active');
+            }
+        }
+
+        async function onSelectMolecule(molId) {
+            try {
+                const res = await fetch(`/api/molecule/${molId}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    currentMolData = data.molecule;
+                    displayMoleculeData(currentMolData);
+                    renderMolecule2D(currentMolData);
+                    setupMolecule3D(currentMolData);
+                    runQmlDocking();
+                }
+            } catch (e) {
+                console.error("Error loading molecule:", e);
+            }
+        }
+
+        function displayMoleculeData(m) {
+            document.getElementById('molCategoryBadge').innerText = m.category;
+            document.getElementById('molNameDisplay').innerText = `${m.name} • 2D Topology`;
+            document.getElementById('molSmilesDisplay').innerText = `SMILES: ${m.smiles}`;
+            document.getElementById('qsarMw').innerText = `${m.mw} g/mol`;
+            document.getElementById('qsarLogP').innerText = m.logP;
+            document.getElementById('qsarTpsa').innerText = `${m.tpsa} Å²`;
+            document.getElementById('qsarHbd').innerText = m.hbd;
+            document.getElementById('qsarHba').innerText = m.hba;
+            
+            const logBbEl = document.getElementById('qsarLogBb');
+            logBbEl.innerText = `${m.logBB > 0 ? '+' : ''}${m.logBB} (${m.logBB > 0.1 ? 'High Penetrance' : 'Moderate'})`;
+            logBbEl.style.color = m.logBB > 0.1 ? '#34d399' : '#f59e0b';
+            
+            document.getElementById('molDescText').innerHTML = `<b>Mechanism & Targeting:</b> ${m.description}<br/><b style="color:var(--accent-sky);">Photonic Trigger:</b> ${m.photonic_trigger}`;
+        }
+
+        function renderMolecule2D(m) {
+            const svg = document.getElementById('molSvg2d');
+            if (!svg || !m.atoms_2d) return;
+            svg.innerHTML = '';
+
+            const atoms = m.atoms_2d;
+            const bonds = m.bonds_2d;
+
+            // Center and scale coordinates
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            atoms.forEach(a => {
+                if (a.x < minX) minX = a.x;
+                if (a.x > maxX) maxX = a.x;
+                if (a.y < minY) minY = a.y;
+                if (a.y > maxY) maxY = a.y;
+            });
+
+            const svgW = svg.clientWidth || 450;
+            const svgH = 240;
+            const scaleX = (svgW - 80) / Math.max(1, maxX - minX);
+            const scaleY = (svgH - 60) / Math.max(1, maxY - minY);
+            const scale = Math.min(scaleX, scaleY, 1.25);
+            const offsetX = (svgW - (maxX - minX) * scale) / 2 - minX * scale;
+            const offsetY = (svgH - (maxY - minY) * scale) / 2 - minY * scale;
+
+            const atomMap = {};
+            atoms.forEach(a => {
+                atomMap[a.id] = {
+                    x: a.x * scale + offsetX,
+                    y: a.y * scale + offsetY,
+                    sym: a.sym,
+                    charge: a.charge
+                };
+            });
+
+            // Draw Bonds
+            bonds.forEach(b => {
+                const u = atomMap[b.u];
+                const v = atomMap[b.v];
+                if (!u || !v) return;
+
+                if (b.order === 2) {
+                    const dx = v.x - u.x;
+                    const dy = v.y - u.y;
+                    const len = Math.sqrt(dx*dx + dy*dy) || 1;
+                    const nx = (-dy / len) * 3.0;
+                    const ny = (dx / len) * 3.0;
+
+                    const l1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    l1.setAttribute('x1', u.x + nx); l1.setAttribute('y1', u.y + ny);
+                    l1.setAttribute('x2', v.x + nx); l1.setAttribute('y2', v.y + ny);
+                    l1.setAttribute('stroke', '#64748b'); l1.setAttribute('stroke-width', '2.2');
+                    svg.appendChild(l1);
+
+                    const l2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    l2.setAttribute('x1', u.x - nx); l2.setAttribute('y1', u.y - ny);
+                    l2.setAttribute('x2', v.x - nx); l2.setAttribute('y2', v.y - ny);
+                    l2.setAttribute('stroke', '#64748b'); l2.setAttribute('stroke-width', '2.2');
+                    svg.appendChild(l2);
+                } else {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', u.x); line.setAttribute('y1', u.y);
+                    line.setAttribute('x2', v.x); line.setAttribute('y2', v.y);
+                    line.setAttribute('stroke', '#94a3b8'); line.setAttribute('stroke-width', '2.2');
+                    svg.appendChild(line);
+                }
+            });
+
+            // Draw Atoms
+            atoms.forEach(a => {
+                const pt = atomMap[a.id];
+                if (!pt) return;
+
+                let fill = '#cbd5e1'; // Carbon
+                if (pt.sym === 'N') fill = '#38bdf8';
+                else if (pt.sym === 'O') fill = '#f43f5e';
+                else if (pt.sym === 'F') fill = '#10b981';
+
+                const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circ.setAttribute('cx', pt.x);
+                circ.setAttribute('cy', pt.y);
+                circ.setAttribute('r', pt.sym === 'C' ? '7' : '11');
+                circ.setAttribute('fill', pt.sym === 'C' ? '#1e293b' : fill);
+                circ.setAttribute('stroke', fill);
+                circ.setAttribute('stroke-width', '1.8');
+                svg.appendChild(circ);
+
+                if (pt.sym !== 'C') {
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', pt.x);
+                    text.setAttribute('y', pt.y + 4);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', '#ffffff');
+                    text.setAttribute('font-size', '10.5');
+                    text.setAttribute('font-weight', 'bold');
+                    text.setAttribute('font-family', 'Helvetica, Arial, sans-serif');
+                    text.textContent = pt.sym;
+                    svg.appendChild(text);
+                }
+            });
+        }
+
+        function setupMolecule3D(m) {
+            const canvas = document.getElementById('molCanvas3d');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            if (animFrameId3D) cancelAnimationFrame(animFrameId3D);
+
+            // Synthesize 3D coordinates from 2D coordinates with pseudo Z-depth
+            const pts3D = m.atoms_2d.map((a, i) => {
+                const z = 45.0 * Math.sin(i * 1.35 + (a.x * 0.05));
+                return { x: a.x - 200, y: a.y - 140, z: z, sym: a.sym, id: a.id };
+            });
+
+            const bonds = m.bonds_2d;
+
+            canvas.onmousedown = (e) => {
+                isDragging3D = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                canvas.style.cursor = 'grabbing';
+            };
+
+            window.onmouseup = () => {
+                isDragging3D = false;
+                if (canvas) canvas.style.cursor = 'grab';
+            };
+
+            canvas.onmousemove = (e) => {
+                if (!isDragging3D) return;
+                const dx = e.clientX - lastMouseX;
+                const dy = e.clientY - lastMouseY;
+                rotY += dx * 0.012;
+                rotX += dy * 0.012;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+            };
+
+            function draw3D() {
+                if (!isDragging3D) {
+                    rotY += 0.007; // Gentle auto-rotation
+                }
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+                const scale = 1.05;
+
+                // Rotate points
+                const transformed = pts3D.map(p => {
+                    // Rotate around Y
+                    const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+                    const x1 = p.x * cosY + p.z * sinY;
+                    const z1 = -p.x * sinY + p.z * cosY;
+
+                    // Rotate around X
+                    const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+                    const y2 = p.y * cosX - z1 * sinX;
+                    const z2 = p.y * sinX + z1 * cosX;
+
+                    // Perspective projection
+                    const pers = 350 / (350 + z2);
+                    return {
+                        id: p.id,
+                        sym: p.sym,
+                        projX: cx + x1 * pers * scale,
+                        projY: cy + y2 * pers * scale,
+                        z: z2,
+                        pers: pers
+                    };
+                });
+
+                // Draw Bonds in 3D
+                bonds.forEach(b => {
+                    const u = transformed.find(t => t.id === b.u);
+                    const v = transformed.find(t => t.id === b.v);
+                    if (!u || !v) return;
+
+                    ctx.beginPath();
+                    ctx.moveTo(u.projX, u.projY);
+                    ctx.lineTo(v.projX, v.projY);
+                    ctx.strokeStyle = '#475569';
+                    ctx.lineWidth = Math.max(1.2, 3.0 * ((u.pers + v.pers) / 2));
+                    ctx.stroke();
+                });
+
+                // Sort atoms by Z (painter's algorithm)
+                const sorted = [...transformed].sort((a, b) => b.z - a.z);
+
+                // Draw Atoms in 3D
+                sorted.forEach(p => {
+                    const r = (p.sym === 'C' ? 6.5 : 9.5) * p.pers;
+                    let col = '#94a3b8';
+                    if (p.sym === 'N') col = '#38bdf8';
+                    else if (p.sym === 'O') col = '#f43f5e';
+                    else if (p.sym === 'F') col = '#10b981';
+
+                    const grad = ctx.createRadialGradient(
+                        p.projX - r*0.3, p.projY - r*0.3, r*0.1,
+                        p.projX, p.projY, r
+                    );
+                    grad.addColorStop(0, '#ffffff');
+                    grad.addColorStop(0.35, col);
+                    grad.addColorStop(1, '#090d16');
+
+                    ctx.beginPath();
+                    ctx.arc(p.projX, p.projY, r, 0, 2 * Math.PI);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                });
+
+                animFrameId3D = requestAnimationFrame(draw3D);
+            }
+
+            draw3D();
+        }
+
+        async function runQmlDocking() {
+            const molId = document.getElementById('molSelector').value;
+            const target = document.getElementById('dockTargetProtein').value;
+            const wave = parseFloat(document.getElementById('molWaveSlider').value);
+
+            try {
+                const res = await fetch('/api/qml_dock', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        molecule_id: molId,
+                        target_protein: target,
+                        wavelength: wave
+                    })
+                });
+                const d = await res.json();
+                if (d.status === 'success') {
+                    const dock = d.docking;
+                    document.getElementById('qsarHomo').innerText = `${dock.homo_ev} eV`;
+                    document.getElementById('qsarLumo').innerText = `${dock.lumo_ev} eV`;
+                    document.getElementById('qsarGap').innerText = `${dock.homo_lumo_gap_ev} eV`;
+                    document.getElementById('qsarDeltaG').innerText = `${dock.binding_free_energy_kcal_mol} kcal/mol`;
+                    document.getElementById('qsarKi').innerText = `${dock.predicted_ki_nm} nM`;
+                    document.getElementById('qsarHardness').innerText = `${dock.chemical_hardness_eta} eV`;
+
+                    // Render VQE Eigensolver convergence
+                    const iters = Array.from({length: dock.vqe_convergence_curve.length}, (_, i) => i + 1);
+                    Plotly.newPlot('chartMolVqe', [
+                        {
+                            x: iters,
+                            y: dock.vqe_convergence_curve,
+                            mode: 'lines+markers',
+                            name: 'VQE ⟨H_mol⟩',
+                            line: {color: '#38bdf8', width: 2.5},
+                            marker: {color: '#0284c7', size: 5}
+                        }
+                    ], {
+                        title: { text: `<b>VQE Ground-State Convergence vs ${dock.target_protein} (ΔG = ${dock.binding_free_energy_kcal_mol} kcal/mol)</b>`, font: {color: '#f8fafc', size: 11.5} },
+                        paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+                        xaxis: { title: 'Parameter-Shift Step k', gridcolor: '#1e293b', color: '#94a3b8' },
+                        yaxis: { title: 'Energy (Hartree)', gridcolor: '#1e293b', color: '#94a3b8' },
+                        margin: { l: 45, r: 15, t: 30, b: 35 }
+                    }, {responsive: true, displayModeBar: false});
+                }
+            } catch (err) {
+                console.error("Docking error:", err);
+            }
+        }
+
+        async function assembleCustomCandidate() {
+            const scaf = document.getElementById('genScaffold').value;
+            const sw = document.getElementById('genSwitch').value;
+            const wh = document.getElementById('genWarhead').value;
+
+            try {
+                const res = await fetch('/api/generate_molecular_candidate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        core_scaffold: scaf,
+                        photonic_switch: sw,
+                        warhead: wh
+                    })
+                });
+                const d = await res.json();
+                if (d.status === 'success') {
+                    const c = d.candidate;
+                    document.getElementById('genCandidateName').innerText = `Candidate: ${c.candidate_name} • Target: ${c.primary_target}`;
+                    document.getElementById('genMw').innerText = `${c.molecular_weight} g/mol`;
+                    document.getElementById('genLogP').innerText = c.clogP;
+                    document.getElementById('genTpsa').innerText = `${c.tpsa} Å²`;
+                    document.getElementById('genLogBb').innerText = `${c.logBB > 0 ? '+' : ''}${c.logBB}`;
+                    document.getElementById('genRo5').innerText = c.lipinski_rule_of_5 ? 'Passed (Compliant)' : 'Violation (>500 MW)';
+                    document.getElementById('genRo5').style.color = c.lipinski_rule_of_5 ? '#10b981' : '#f43f5e';
+                    document.getElementById('genDeltaG').innerText = `${c.predicted_binding_delta_g} kcal/mol`;
+                }
+            } catch (e) {
+                console.error("Error assembling candidate:", e);
+            }
+        }
+
+        function copySmiles() {
+            if (currentMolData && currentMolData.smiles) {
+                navigator.clipboard.writeText(currentMolData.smiles);
+                alert("SMILES string copied to clipboard:\n" + currentMolData.smiles);
             }
         }
 
