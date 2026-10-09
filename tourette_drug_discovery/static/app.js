@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initFoldingCanvas();
     loadClinicalTrajectories();
     loadHealthEconomics();
+    loadTMSModule();
     setupEventListeners();
 });
 
@@ -692,6 +693,396 @@ function setupEventListeners() {
                 btnRecompile.innerText = '❌ Failed';
             }
             setTimeout(() => { btnRecompile.innerText = '🔄 Recompile PDF'; }, 3000);
+        });
+    }
+
+    setupTMSEventListeners();
+}
+
+// --- TAB 5: TMS Cortical Simulation & Staging Logic ---
+
+let currentTMSLobes = {};
+let currentTMSPG = {};
+let chartTMSEcon = null;
+let chartTMSCash = null;
+
+async function loadTMSModule() {
+    try {
+        const res = await fetch('/api/tms/lobes');
+        const json = await res.json();
+        if (json.status === 'success') {
+            currentTMSLobes = json.lobes;
+            currentTMSPG = json.pharmacogenomics;
+            updateTMSLobeDossier('pre_sma');
+            updateTMSGeneDossier('CYP2D6_EXTENSIVE');
+            runTMSSimulation('pre_sma');
+            loadTMSStaging('CYP2D6_EXTENSIVE');
+            loadTMSRevenue(150);
+            initTMSCanvas();
+        }
+    } catch (err) {
+        console.error('Error loading TMS lobes:', err);
+    }
+}
+
+function updateTMSLobeDossier(lobeKey) {
+    const lobe = currentTMSLobes[lobeKey];
+    if (!lobe) return;
+
+    const dossier = document.getElementById('tms-lobe-dossier');
+    dossier.innerHTML = `
+        <div class="target-title">${lobe.name} (${lobe.broadmann})</div>
+        <div class="target-desc"><b>Clinical Function:</b> ${lobe.role}</div>
+        <div class="target-desc" style="margin-top:4px;">
+            <b>Depth:</b> ${lobe.depth_mm} mm &nbsp;|&nbsp;
+            <b>Conductivity &sigma;:</b> ${lobe.conductivity_s_m} S/m &nbsp;|&nbsp;
+            <b>Permittivity &epsilon;<sub>r</sub>:</b> ${lobe.relative_permittivity} &nbsp;|&nbsp;
+            <b>Protocol:</b> ${lobe.protocol_type}
+        </div>
+    `;
+}
+
+function updateTMSGeneDossier(pgKey) {
+    const pg = currentTMSPG[pgKey];
+    if (!pg) return;
+
+    const dossier = document.getElementById('pg-dossier');
+    dossier.innerHTML = `
+        <div class="target-title"><b>Genomic Profile:</b> ${pg.gene} - ${pg.phenotype}</div>
+        <div class="target-desc"><b>TMS & Drug Synergy:</b> ${pg.tms_synergy}</div>
+        <div class="target-desc" style="margin-top:4px; color:var(--accent-green); font-weight:600;">
+            <b>Response Efficacy Multiplier:</b> ${(pg.response_multiplier * 100).toFixed(0)}% Relative Target Rate
+        </div>
+    `;
+}
+
+async function runTMSSimulation(lobeKey) {
+    const current = parseFloat(document.getElementById('tms-coil-current').value);
+    const freq = parseFloat(document.getElementById('tms-pulse-freq').value);
+
+    try {
+        const res = await fetch('/api/tms/simulate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lobe: lobeKey, coil_current: current, pulse_freq: freq })
+        });
+        const json = await res.json();
+        if (json.status === 'success') {
+            const exc = json.excitation;
+            document.getElementById('tms-e-field').innerText = `${exc.e_induced_v_m} V/m`;
+            document.getElementById('tms-depol-ratio').innerText = `${exc.depolarization_ratio}x Threshold`;
+            document.getElementById('tms-wave-numbers').innerText = `${exc.wave_number_beta_rad_m} / ${exc.attenuation_alpha_np_m}`;
+            document.getElementById('tms-skin-depth').innerText = `${exc.skin_depth_mm} mm`;
+
+            document.getElementById('val-b-peak').innerText = `${exc.b_peak_tesla} T`;
+            document.getElementById('val-poynting').innerText = `${exc.poynting_flux_w_m2} W/m²`;
+            document.getElementById('val-power-loss').innerText = `${exc.power_density_w_cm3} W/cm³`;
+
+            const statusBadge = document.getElementById('tms-depol-status');
+            if (exc.effective_excitation_achieved) {
+                statusBadge.innerText = 'Depolarization: ACTIVE';
+                statusBadge.className = 'badge badge-success';
+            } else {
+                statusBadge.innerText = 'Sub-Threshold';
+                statusBadge.className = 'badge badge-accent';
+            }
+
+            renderTMSCanvasField(exc);
+        }
+    } catch (err) {
+        console.error('TMS simulation error:', err);
+    }
+}
+
+async function loadTMSStaging(pgKey) {
+    try {
+        const res = await fetch(`/api/tms/staging?profile=${pgKey}`);
+        const json = await res.json();
+        if (json.status === 'success') {
+            const container = document.getElementById('tms-roadmap-container');
+            container.innerHTML = '';
+
+            json.staging.stages.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'protocol-card';
+                card.innerHTML = `
+                    <div class="protocol-phase">${s.stage}</div>
+                    <div class="protocol-timeline">${s.timeline}</div>
+                    <div class="protocol-dose">${s.tms_protocol}</div>
+                    <div class="protocol-obj"><b>Adjuvant:</b> ${s.drug_adjuvant}</div>
+                    <div class="protocol-obj"><b>Mechanism:</b> ${s.mechanism}</div>
+                    <div class="protocol-milestone"><b>Target YGTSS Reduction:</b> ${s.target_ygtss_reduction}</div>
+                    <div class="protocol-obj" style="margin-top:4px; font-size:0.75rem;"><b>Endpoint:</b> ${s.clinical_endpoint}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    } catch (err) {
+        console.error('Error loading TMS staging:', err);
+    }
+}
+
+async function loadTMSRevenue(patients) {
+    try {
+        const res = await fetch(`/api/tms/revenue?patients=${patients}`);
+        const json = await res.json();
+        if (json.status === 'success') {
+            const econ = json.economics;
+            const proj = econ.three_year_projections;
+
+            document.getElementById('rev-y1').innerText = `$${econ.three_year_projections.gross_revenue[0].toLocaleString()}`;
+            document.getElementById('profit-y1').innerText = `$${econ.three_year_projections.net_operating_profit[0].toLocaleString()}`;
+            document.getElementById('payback-stat').innerText = `${econ.payback_months} Months`;
+            document.getElementById('cashflow-3yr').innerText = `$${econ.three_year_projections.cumulative_cashflow[2].toLocaleString()}`;
+
+            renderTMSRevenueCharts(proj);
+        }
+    } catch (err) {
+        console.error('Error loading TMS revenue:', err);
+    }
+}
+
+function renderTMSRevenueCharts(proj) {
+    // 1. Revenue & Operating Costs Bar Chart
+    const ctxRev = document.getElementById('chart-tms-revenue').getContext('2d');
+    if (chartTMSEcon) chartTMSEcon.destroy();
+    chartTMSEcon = new Chart(ctxRev, {
+        type: 'bar',
+        data: {
+            labels: proj.years,
+            datasets: [
+                {
+                    label: 'Gross Commercial Revenue ($)',
+                    data: proj.gross_revenue,
+                    backgroundColor: 'rgba(56, 189, 248, 0.75)',
+                    borderColor: '#38bdf8',
+                    borderWidth: 1.5
+                },
+                {
+                    label: 'Net Operating Profit ($ EBITDA)',
+                    data: proj.net_operating_profit,
+                    backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                    borderColor: '#10b981',
+                    borderWidth: 1.5
+                },
+                {
+                    label: 'Operating Costs ($)',
+                    data: proj.operating_costs,
+                    backgroundColor: 'rgba(239, 68, 68, 0.65)',
+                    borderColor: '#ef4444',
+                    borderWidth: 1.5
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    title: { display: true, text: 'USD ($)', color: '#94a3b8' },
+                    grid: { color: '#1e293b' },
+                    ticks: { color: '#94a3b8', callback: v => `$${v / 1e6}M` }
+                },
+                x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }
+            },
+            plugins: { legend: { labels: { color: '#f8fafc', font: { size: 10 } } } }
+        }
+    });
+
+    // 2. Cumulative Cashflow Chart
+    const ctxCash = document.getElementById('chart-tms-cashflow').getContext('2d');
+    if (chartTMSCash) chartTMSCash.destroy();
+    chartTMSCash = new Chart(ctxCash, {
+        type: 'line',
+        data: {
+            labels: ['Start (CapEx)', ...proj.years],
+            datasets: [{
+                label: 'Cumulative Net Commercial Cashflow ($ USD)',
+                data: [-95000, ...proj.cumulative_cashflow],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.25,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    title: { display: true, text: 'Cumulative Cashflow ($)', color: '#94a3b8' },
+                    grid: { color: '#1e293b' },
+                    ticks: { color: '#94a3b8', callback: v => `$${v / 1e6}M` }
+                },
+                x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }
+            },
+            plugins: { legend: { labels: { color: '#f8fafc' } } }
+        }
+    });
+}
+
+// 2D FEM Field Canvas Simulation
+let tmsCanvasCtx = null;
+let tmsAnimOffset = 0;
+let lastTMSExcitation = null;
+
+function initTMSCanvas() {
+    const canvas = document.getElementById('tms-field-canvas');
+    if (!canvas) return;
+    tmsCanvasCtx = canvas.getContext('2d');
+    animateTMSCanvas();
+}
+
+function renderTMSCanvasField(exc) {
+    lastTMSExcitation = exc;
+}
+
+function animateTMSCanvas() {
+    if (!tmsCanvasCtx) return;
+    const canvas = document.getElementById('tms-field-canvas');
+    const ctx = tmsCanvasCtx;
+
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const cx = canvas.width / 2;
+    const cy = 40; // Coil placed at top surface
+    tmsAnimOffset += 0.05;
+
+    // Draw cranial layers (Scalp, Skull, CSF, Gray Matter Cortex)
+    const layers = [
+        { r: 240, label: 'Deep White Matter', color: '#0f172a' },
+        { r: 190, label: 'Cortical Gray Matter', color: '#1e293b' },
+        { r: 130, label: 'Subarachnoid CSF', color: '#0c4a6e' },
+        { r: 80, label: 'Cranium / Skull Bone', color: '#334155' }
+    ];
+
+    layers.forEach(l => {
+        ctx.beginPath();
+        ctx.arc(cx, cy, l.r, 0, Math.PI);
+        ctx.fillStyle = l.color;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.15)';
+        ctx.stroke();
+    });
+
+    // Draw induced electric field contours and wave propagation
+    const eMax = lastTMSExcitation ? lastTMSExcitation.e_induced_v_m : 100.0;
+    const numRings = 9;
+
+    for (let i = 1; i <= numRings; i++) {
+        const radius = i * 22 + Math.sin(tmsAnimOffset + i) * 2;
+        const opacity = Math.max(0.08, 1.0 - (i / numRings) * 0.85);
+
+        // Figure-of-8 coil twin lobes
+        ctx.beginPath();
+        ctx.arc(cx - 35, cy + radius * 0.7, radius * 0.55, 0, Math.PI * 2);
+        ctx.arc(cx + 35, cy + radius * 0.7, radius * 0.55, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(56, 189, 248, ${opacity})`;
+        ctx.lineWidth = Math.max(1, 3.5 - i * 0.3);
+        ctx.stroke();
+    }
+
+    // Focal hot spot at target depth
+    const depthVal = (lastTMSExcitation && typeof lastTMSExcitation.depth_mm === 'number') ? lastTMSExcitation.depth_mm : 18.5;
+    const targetDepth = depthVal * 2.8;
+    const grad = ctx.createRadialGradient(cx, cy + targetDepth, 4, cx, cy + targetDepth, 48);
+    grad.addColorStop(0, 'rgba(244, 63, 94, 0.95)');
+    grad.addColorStop(0.5, 'rgba(251, 191, 36, 0.5)');
+    grad.addColorStop(1, 'transparent');
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy + targetDepth, 48, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hot spot label
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 11px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Target: ${lastTMSExcitation ? lastTMSExcitation.lobe_name : 'Pre-SMA'}`, cx, cy + targetDepth - 6);
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = '10px system-ui';
+    ctx.fillText(`${eMax.toFixed(1)} V/m`, cx, cy + targetDepth + 10);
+
+    // Draw coil representation on scalp
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillRect(cx - 70, 8, 60, 14);
+    ctx.fillRect(cx + 10, 8, 60, 14);
+    ctx.strokeStyle = '#f8fafc';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cx - 70, 8, 60, 14);
+    ctx.strokeRect(cx + 10, 8, 60, 14);
+
+    requestAnimationFrame(animateTMSCanvas);
+}
+
+function setupTMSEventListeners() {
+    const lobeSelect = document.getElementById('tms-lobe-select');
+    if (lobeSelect) {
+        lobeSelect.addEventListener('change', (e) => {
+            updateTMSLobeDossier(e.target.value);
+            runTMSSimulation(e.target.value);
+        });
+    }
+
+    const currentSlider = document.getElementById('tms-coil-current');
+    if (currentSlider) {
+        currentSlider.addEventListener('input', (e) => {
+            document.getElementById('current-val').innerText = `${parseInt(e.target.value).toLocaleString()} A`;
+        });
+    }
+
+    const freqSlider = document.getElementById('tms-pulse-freq');
+    if (freqSlider) {
+        freqSlider.addEventListener('input', (e) => {
+            document.getElementById('freq-val').innerText = `${parseFloat(e.target.value).toFixed(1)} kHz`;
+        });
+    }
+
+    const btnRunTMS = document.getElementById('btn-run-tms');
+    if (btnRunTMS) {
+        btnRunTMS.addEventListener('click', () => {
+            const lobe = document.getElementById('tms-lobe-select').value;
+            runTMSSimulation(lobe);
+        });
+    }
+
+    const pgSelect = document.getElementById('pg-select');
+    if (pgSelect) {
+        pgSelect.addEventListener('change', (e) => {
+            updateTMSGeneDossier(e.target.value);
+            loadTMSStaging(e.target.value);
+        });
+    }
+
+    const patientSelect = document.getElementById('patient-volume-select');
+    if (patientSelect) {
+        patientSelect.addEventListener('change', (e) => {
+            loadTMSRevenue(parseInt(e.target.value));
+        });
+    }
+
+    const btnRecompileTMS = document.getElementById('btn-recompile-tms-pdf');
+    if (btnRecompileTMS) {
+        btnRecompileTMS.addEventListener('click', async () => {
+            btnRecompileTMS.innerText = 'Recompiling...';
+            try {
+                const res = await fetch('/api/tms/preprint/generate');
+                const json = await res.json();
+                if (json.status === 'success') {
+                    btnRecompileTMS.innerText = '✅ TMS PDF Ready';
+                    const iframe = document.querySelector('iframe[title="Nature TMS Preprint PDF"]');
+                    if (iframe) {
+                        iframe.src = '/api/tms/preprint/view?t=' + Date.now();
+                    }
+                }
+            } catch (err) {
+                btnRecompileTMS.innerText = '❌ Failed';
+            }
+            setTimeout(() => { btnRecompileTMS.innerText = '🔄 Recompile TMS PDF'; }, 3000);
         });
     }
 }

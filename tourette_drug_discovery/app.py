@@ -32,6 +32,8 @@ from qml_number_theoretic_engine import (
 from molecular_conjugates import COMPOUND_LIBRARY, generate_svg_structure
 from clinical_and_economics_engine import ClinicalAndEconomicsEngine
 from nature_preprint_generator import generate_nature_preprint_pdf
+from tms_fem_staging_engine import TMSCorticalFEMEngine
+from nature_tms_preprint_generator import generate_nature_tms_preprint_pdf
 
 app = Flask(
     __name__,
@@ -42,15 +44,23 @@ app = Flask(
 # Instantiate engines
 qml_engine = QuantumProteomicEngine(num_qubits=6)
 clinical_econ_engine = ClinicalAndEconomicsEngine()
+tms_engine = TMSCorticalFEMEngine()
 
 PREPRINT_PDF_PATH = os.path.join(CURRENT_DIR, 'Nature_Tourette_QML_Drug_Discovery_Preprint.pdf')
+TMS_PREPRINT_PDF_PATH = os.path.join(CURRENT_DIR, 'Nature_Tourette_TMS_Cortical_FEM_Preprint.pdf')
 
-# Ensure PDF exists at startup
+# Ensure PDFs exist at startup
 if not os.path.exists(PREPRINT_PDF_PATH):
     try:
         generate_nature_preprint_pdf(PREPRINT_PDF_PATH)
     except Exception as e:
-        print(f"Warning: Could not pre-generate PDF: {e}")
+        print(f"Warning: Could not pre-generate drug preprint PDF: {e}")
+
+if not os.path.exists(TMS_PREPRINT_PDF_PATH):
+    try:
+        generate_nature_tms_preprint_pdf(TMS_PREPRINT_PDF_PATH)
+    except Exception as e:
+        print(f"Warning: Could not pre-generate TMS preprint PDF: {e}")
 
 @app.route('/')
 def index():
@@ -196,6 +206,96 @@ def view_preprint():
     return send_file(
         PREPRINT_PDF_PATH,
         as_attachment=False,
+        mimetype='application/pdf'
+    )
+
+# --- TMS & Cortical FEM Routes ---
+
+@app.route('/api/tms/lobes', methods=['GET'])
+def get_tms_lobes():
+    """Returns cortical lobe targets and pharmacogenomic profiles."""
+    return jsonify({
+        'status': 'success',
+        'lobes': tms_engine.CORTICAL_LOBES,
+        'pharmacogenomics': tms_engine.PHARMACOGENOMIC_PROFILES
+    })
+
+@app.route('/api/tms/simulate', methods=['POST', 'GET'])
+def simulate_tms():
+    """Simulates wave numbers, E-field induction, and Poynting energy transfer."""
+    if request.method == 'POST':
+        data = request.json or {}
+    else:
+        data = request.args
+        
+    lobe_key = data.get('lobe', 'pre_sma')
+    coil_current = float(data.get('coil_current', 4500.0))
+    pulse_freq = float(data.get('pulse_freq', 3.5))
+    
+    result = tms_engine.calculate_wave_number_and_excitation(
+        lobe_key=lobe_key,
+        coil_current_a=coil_current,
+        freq_khz=pulse_freq
+    )
+    return jsonify({
+        'status': 'success',
+        'excitation': result
+    })
+
+@app.route('/api/tms/staging', methods=['GET'])
+def get_tms_staging():
+    """Returns the 4-stage adaptive treatment roadmap based on patient genotype."""
+    pg_profile = request.args.get('profile', 'CYP2D6_EXTENSIVE')
+    result = tms_engine.generate_staging_trajectory(pharmacogenomic_key=pg_profile)
+    return jsonify({
+        'status': 'success',
+        'staging': result
+    })
+
+@app.route('/api/tms/revenue', methods=['GET'])
+def get_tms_revenue():
+    """Returns 3-year commercial revenue projections and equipment CapEx payback."""
+    annual_patients = int(request.args.get('patients', 150))
+    result = tms_engine.compute_revenue_and_cost_economics(annual_patients=annual_patients)
+    return jsonify({
+        'status': 'success',
+        'economics': result
+    })
+
+@app.route('/api/tms/preprint/generate', methods=['POST', 'GET'])
+def regenerate_tms_preprint():
+    """Recompiles the Nature TMS Preprint PDF."""
+    try:
+        path = generate_nature_tms_preprint_pdf(TMS_PREPRINT_PDF_PATH)
+        return jsonify({
+            'status': 'success',
+            'message': 'Nature TMS preprint PDF generated successfully',
+            'pdf_path': path,
+            'size_bytes': os.path.getsize(path)
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/tms/preprint/view', methods=['GET'])
+def view_tms_preprint():
+    """Serves the Nature TMS Preprint PDF inline."""
+    if not os.path.exists(TMS_PREPRINT_PDF_PATH):
+        generate_nature_tms_preprint_pdf(TMS_PREPRINT_PDF_PATH)
+    return send_file(
+        TMS_PREPRINT_PDF_PATH,
+        as_attachment=False,
+        mimetype='application/pdf'
+    )
+
+@app.route('/api/tms/preprint/download', methods=['GET'])
+def download_tms_preprint():
+    """Serves the Nature TMS Preprint PDF as a download."""
+    if not os.path.exists(TMS_PREPRINT_PDF_PATH):
+        generate_nature_tms_preprint_pdf(TMS_PREPRINT_PDF_PATH)
+    return send_file(
+        TMS_PREPRINT_PDF_PATH,
+        as_attachment=True,
+        download_name='Nature_Tourette_TMS_Cortical_FEM_Preprint.pdf',
         mimetype='application/pdf'
     )
 

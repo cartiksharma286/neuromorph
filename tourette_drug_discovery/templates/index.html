@@ -33,7 +33,8 @@
         <button class="nav-tab" data-tab="tab-compounds">🧪 Molecular Formulae & Chemical Library</button>
         <button class="nav-tab" data-tab="tab-clinical">📈 2-Year Clinical Trajectories & Recovery</button>
         <button class="nav-tab" data-tab="tab-economics">💰 Health Economics & Markov Outcomes</button>
-        <button class="nav-tab" data-tab="tab-preprint">📄 Nature Preprint & Finite Math PDF</button>
+        <button class="nav-tab" data-tab="tab-tms">🧠 Cortical TMS & FEM Staging</button>
+        <button class="nav-tab" data-tab="tab-preprint">📄 Nature Preprints & Finite Math PDF</button>
     </nav>
 
     <main class="content-container">
@@ -278,7 +279,190 @@
             </div>
         </section>
 
-        <!-- TAB 5: NATURE PREPRINT & FINITE MATH PDF -->
+        <!-- TAB 5: CORTICAL TMS & FEM STAGING -->
+        <section id="tab-tms" class="tab-pane">
+            <div class="section-intro">
+                <h2>🧠 Transcranial Magnetic Stimulation & Cortical Finite Element Staging</h2>
+                <p>Cortical lobe mapping, RF excitation & wave number energy transfer, pharmacogenomically stratified staging paradigms, and commercial clinic revenue projections.</p>
+            </div>
+
+            <!-- Top Grid: Lobe Excitation & Canvas -->
+            <div class="grid-2col">
+                <!-- Control Panel -->
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>🎯 Cortical Lobe & RF Field Excitation</h2>
+                        <span class="badge badge-accent">Faraday Induction</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tms-lobe-select">Target Cortical Lobe:</label>
+                        <select id="tms-lobe-select" class="form-control">
+                            <option value="pre_sma" selected>Pre-SMA (BA 6/8) - Inhibitory Control Node</option>
+                            <option value="dlpfc_left">Left DLPFC (BA 9/46) - Urge Modulation & Gating</option>
+                            <option value="m1_motor">Primary Motor Cortex (BA 4) - Peripheral Tic Focal Hub</option>
+                            <option value="s1_somatosensory">Somatosensory Cortex (BA 1/2/3) - Premonitory Urge Genesis</option>
+                            <option value="anterior_insula">Anterior Insula (BA 13) - Visceral Urge Center</option>
+                        </select>
+                    </div>
+
+                    <div class="target-dossier" id="tms-lobe-dossier">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <div class="math-box">
+                        <div class="math-title">Finite Math: Complex Wave Number & Poynting Flux</div>
+                        <div class="math-eq">k(&omega;) = (&omega;/c) [ &epsilon;<sub>r</sub> - j&sigma;/(&omega;&epsilon;<sub>0</sub>) ]<sup>1/2</sup> = &beta; - j&alpha;</div>
+                        <div class="math-desc">Skin depth &delta; = 1/&alpha;, Poynting flux S = &frac12; Re[E &times; H<sup>*</sup>], Volume loss Q = &sigma; ||E||<sup>2</sup></div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tms-coil-current">Coil Peak Current: <span id="current-val">4,500 A</span></label>
+                            <input type="range" id="tms-coil-current" min="2000" max="6500" step="100" value="4500" class="range-slider">
+                        </div>
+                        <div class="form-group">
+                            <label for="tms-pulse-freq">Pulse Frequency: <span id="freq-val">3.5 kHz</span></label>
+                            <input type="range" id="tms-pulse-freq" min="1.5" max="7.0" step="0.1" value="3.5" class="range-slider">
+                        </div>
+                    </div>
+
+                    <button id="btn-run-tms" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
+                        ⚡ Compute FEM Wave Induction & Depolarization
+                    </button>
+                </div>
+
+                <!-- Simulation Telemetry & 2D Cortical Grid -->
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>📡 Electromagnetic Excitation Telemetry</h2>
+                        <span class="badge badge-success" id="tms-depol-status">Depolarization: ACTIVE</span>
+                    </div>
+
+                    <div class="telemetry-grid">
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Induced E-Field (E<sub>ind</sub>)</div>
+                            <div class="telemetry-value highlight" id="tms-e-field">104.2 V/m</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Depolarization Ratio</div>
+                            <div class="telemetry-value highlight-cyan" id="tms-depol-ratio">1.27x Threshold</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Wave Number &beta; / &alpha;</div>
+                            <div class="telemetry-value" id="tms-wave-numbers">0.0042 / 11.41</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Skin Depth &delta; (mm)</div>
+                            <div class="telemetry-value text-green" id="tms-skin-depth">87.6 mm</div>
+                        </div>
+                    </div>
+
+                    <div class="jacobi-readout">
+                        <span>Peak B: <b id="val-b-peak">1.24 T</b></span>
+                        <span>Poynting Flux: <b id="val-poynting">42.8 W/m²</b></span>
+                        <span>Power Loss: <b id="val-power-loss">2.98 W/cm³</b></span>
+                    </div>
+
+                    <div class="canvas-wrapper">
+                        <canvas id="tms-field-canvas" width="560" height="260"></canvas>
+                        <div class="canvas-legend">Finite Element 2D Induced Electric Field Iso-contours over Cortical Tissue</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pharmacogenomics & 4-Stage Treatment Roadmap -->
+            <div class="card glass-card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h2>🧬 Pharmacogenomic Stratification & 4-Stage Adaptive Roadmap</h2>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <label for="pg-select" style="font-size:0.8rem; color:var(--text-secondary); margin:0;">Genotype:</label>
+                        <select id="pg-select" class="form-control" style="width: auto; padding: 0.3rem 0.6rem;">
+                            <option value="CYP2D6_EXTENSIVE" selected>CYP2D6 Extensive (*1/*1)</option>
+                            <option value="CYP2D6_POOR">CYP2D6 Poor (*4/*4)</option>
+                            <option value="DRD2_TAQ1A_A1">DRD2 Taq1A A1 Allele Carrier</option>
+                            <option value="COMT_VAL158MET">COMT Val158Met (Met/Met High DA)</option>
+                            <option value="HDC_W317X">HDC W317X Nonsense Carrier</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="target-dossier" id="pg-dossier" style="margin-bottom: 1rem;">
+                    <!-- Injected dynamically -->
+                </div>
+
+                <div class="protocol-grid" id="tms-roadmap-container">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Commercial Revenue Projections & Health Economics -->
+            <div class="card glass-card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h2>💼 Commercial Suite Revenue Projections & Capital Efficiency</h2>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <label for="patient-volume-select" style="font-size:0.8rem; color:var(--text-secondary); margin:0;">Base Patients/Yr:</label>
+                        <select id="patient-volume-select" class="form-control" style="width: auto; padding: 0.3rem 0.6rem;">
+                            <option value="100">100 Patients / Year</option>
+                            <option value="150" selected>150 Patients / Year</option>
+                            <option value="250">250 Patients / Year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="metrics-row">
+                    <div class="metric-card">
+                        <div class="metric-title">Year 1 Gross Revenue</div>
+                        <div class="metric-val text-green" id="rev-y1">$1,593,000</div>
+                        <div class="metric-sub">CPT 90867/90868 Reimbursement</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Year 1 Net Operating Profit</div>
+                        <div class="metric-val text-cyan" id="profit-y1">$1,252,800</div>
+                        <div class="metric-sub">78.6% Operating Margin</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Equipment CapEx Payback</div>
+                        <div class="metric-val text-purple" id="payback-stat">0.91 Months</div>
+                        <div class="metric-sub">$95,000 Robotic TMS Suite</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">3-Year Cumulative Cashflow</div>
+                        <div class="metric-val text-green" id="cashflow-3yr">$6,169,000</div>
+                        <div class="metric-sub">Net Liquid Commercial Return</div>
+                    </div>
+                </div>
+
+                <div class="grid-2col" style="margin-top: 1rem;">
+                    <div class="chart-box">
+                        <canvas id="chart-tms-revenue"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="chart-tms-cashflow"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dedicated Nature TMS Preprint Card -->
+            <div class="card glass-card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <div>
+                        <h3>Nature Preprint: Transcranial Magnetic Stimulation and Finite Element Modeling of Cortical Wave Number Energy Transfer in Tourette Syndrome</h3>
+                        <p class="subtitle">Authors: Cartik Sharma et al. • Transcranial Neurogenomics Consortium</p>
+                    </div>
+                    <div class="btn-group">
+                        <button id="btn-recompile-tms-pdf" class="btn btn-secondary">🔄 Recompile TMS PDF</button>
+                        <a href="/api/tms/preprint/download" class="btn btn-primary" download>📥 Download TMS PDF</a>
+                    </div>
+                </div>
+
+                <div class="pdf-frame-wrapper">
+                    <iframe src="/api/tms/preprint/view#toolbar=1" class="pdf-iframe" title="Nature TMS Preprint PDF"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: NATURE PREPRINT & FINITE MATH PDF -->
         <section id="tab-preprint" class="tab-pane">
             <div class="section-intro">
                 <h2>📄 Nature Preprint Manuscript & Finite Mathematical Foundations</h2>
