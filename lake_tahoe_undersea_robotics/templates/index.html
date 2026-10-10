@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lake Tahoe Undersea Robotics & Molecular Gene Combing Platform</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo-badge">🌊 TAHOE-AUV</div>
+            <div>
+                <h1>Lake Tahoe Undersea Robotics & eDNA Gene Combing</h1>
+                <p class="subtitle">Autonomous Benthic Submersibles • p-Adic Ultrametric Topology • Single-Molecule Optical Combing (501m Abyssal Depth)</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span>AUV Telemetry: ONLINE</span>
+            </div>
+            <a href="/api/preprint/download" class="btn btn-outline" download>
+                📥 Download Nature Preprint (PDF)
+            </a>
+        </div>
+    </header>
+
+    <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="tab-auv">🌊 AUV Robotics & 501m Bathymetry</button>
+        <button class="nav-tab" data-tab="tab-combing">🧬 Molecular Gene Combing & eDNA</button>
+        <button class="nav-tab" data-tab="tab-padic">📐 p-Adic Topological Placement</button>
+        <button class="nav-tab" data-tab="tab-limnology">📊 Clarity & Thermocline Analytics</button>
+        <button class="nav-tab" data-tab="tab-preprint">📄 Nature Preprint & Finite Math PDF</button>
+    </nav>
+
+    <main class="content-container">
+        <!-- TAB 1: AUV UNDERSEA ROBOTICS & 6-DOF BATHYMETRY -->
+        <section id="tab-auv" class="tab-pane active">
+            <div class="grid-2col">
+                <!-- Control Panel -->
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>🎯 Benthic Station & Propulsion Control</h2>
+                        <span class="badge badge-accent">Deep Abyss Submersible</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="auv-station-select">Lake Tahoe Survey Station:</label>
+                        <select id="auv-station-select" class="form-control">
+                            <option value="crystal_bay_trench" selected>Crystal Bay Trench (501.0 m / 50.1 bar) - Deepest Abyssal Station</option>
+                            <option value="rubicon_point">Rubicon Point Escarpment (380.0 m / 38.0 bar) - Bedrock Fault Wall</option>
+                            <option value="glenbrook_ridge">Glenbrook Submerged Fault Ridge (310.0 m / 31.0 bar)</option>
+                            <option value="tahoe_city_shelf">Tahoe City Littoral-Pelagic Sill (115.0 m / 11.5 bar)</option>
+                            <option value="stateline_shelf">South Lake Tahoe / Stateline Shelf (85.0 m / 8.5 bar)</option>
+                            <option value="emerald_bay_sill">Emerald Bay Glacial Sill (65.0 m / 6.5 bar)</option>
+                        </select>
+                    </div>
+
+                    <div class="target-dossier" id="auv-station-dossier">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <div class="math-box">
+                        <div class="math-title">Finite Math: Hydrodynamic Power & Hydrostatic Equilibrium</div>
+                        <div class="math-eq">F<sub>drag</sub> = &frac12; &rho; C<sub>d</sub> A<sub>f</sub> v<sup>2</sup>, &nbsp;&nbsp;&nbsp; P<sub>hydrostatic</sub> = &rho; g h &approx; 50.1 bar</div>
+                        <div class="math-desc">Acoustic Doppler positioning latency t = 2h / c<sub>sound</sub> (c &approx; 1,440 m/s in fresh cold water).</div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="auv-thruster-rpm">Thruster RPM: <span id="rpm-val">1,200 RPM</span></label>
+                            <input type="range" id="auv-thruster-rpm" min="400" max="2200" step="50" value="1200" class="range-slider">
+                        </div>
+                        <div class="form-group">
+                            <label for="auv-buoyancy-trim">Buoyancy Trim: <span id="trim-val">0 cc (Neutral)</span></label>
+                            <input type="range" id="auv-buoyancy-trim" min="-300" max="300" step="25" value="0" class="range-slider">
+                        </div>
+                    </div>
+
+                    <button id="btn-run-auv" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        ⚡ Update AUV 6-DOF Kinematics & Acoustic Ping
+                    </button>
+                </div>
+
+                <!-- Simulation Telemetry & Canvas -->
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>📡 AUV Real-Time Submersible Telemetry</h2>
+                        <span class="badge badge-success" id="auv-status">Submerged: SURVEY ACTIVE</span>
+                    </div>
+
+                    <div class="telemetry-grid">
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Survey Depth / Pressure</div>
+                            <div class="telemetry-value highlight" id="auv-depth">501.0 m / 50.1 bar</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Forward Cruise Speed</div>
+                            <div class="telemetry-value highlight-cyan" id="auv-speed">1.60 m/s (3.11 kt)</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Total Power / Battery</div>
+                            <div class="telemetry-value" id="auv-power">84.5 W / 21.9 hr</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Acoustic USBL Latency</div>
+                            <div class="telemetry-value text-green" id="auv-latency">695.8 ms</div>
+                        </div>
+                    </div>
+
+                    <div class="jacobi-readout">
+                        <span>Drag: <b id="val-drag">7.2 N</b></span>
+                        <span>Buoyancy: <b id="val-net-buoy">0.0 N</b></span>
+                        <span>Pitch: <b id="val-pitch">0.0°</b></span>
+                        <span>Range: <b id="val-range">126.1 km</b></span>
+                        <span>Temp: <b id="val-temp">4.1°C</b></span>
+                    </div>
+
+                    <div class="canvas-wrapper">
+                        <canvas id="auv-canvas" width="560" height="270"></canvas>
+                        <div class="canvas-legend">AUV Submersible Bathymetric Profile, Sonar Ping, and Deep Sediment Bed</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: MOLECULAR GENE COMBING & eDNA -->
+        <section id="tab-combing" class="tab-pane">
+            <div class="section-intro">
+                <h2>🧬 Single-Molecule Microfluidic Gene Combing & Particle States</h2>
+                <p>Direct optical hybridization barcoding of environmental DNA (eDNA) stretched under laminar meniscus shear flow (&lambda; = 2.0 kb/&mu;m).</p>
+            </div>
+
+            <div class="grid-2col">
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>🎯 eDNA Target Taxon & Meniscus Shear</h2>
+                        <span class="badge badge-accent">Optical Combing</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="combing-species-select">Benthic eDNA Target Organism:</label>
+                        <select id="combing-species-select" class="form-control">
+                            <option value="cyclotella_gordonensis" selected>Cyclotella gordonensis - Endemic Clarity Diatom (rbcL)</option>
+                            <option value="mysis_diluviana">Mysis diluviana - Relict Opossum Shrimp (16S/COI)</option>
+                            <option value="anabaena_flos_aquae">Anabaena flos-aquae - Littoral Cyanobacteria (mcyA)</option>
+                            <option value="aquatic_bacteroidetes">Aquatic Bacteroidetes - Urban Watershed Runoff eDNA</option>
+                        </select>
+                    </div>
+
+                    <div class="target-dossier" id="combing-species-dossier">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <div class="math-box">
+                        <div class="math-title">Finite Math: Meniscus Hydrodynamic Linearization</div>
+                        <div class="math-eq">&lambda; = L / N<sub>bp</sub> = 2.0 kb/&mu;m &equiv; 0.50 nm/bp, &nbsp;&nbsp;&nbsp; v<sub>meniscus</sub> = 300 &mu;m/s</div>
+                        <div class="math-desc">WLC overstretching force F &approx; 160 pN preserves covalent integrity on vinyl-silane glass (&theta;<sub>c</sub> = 105°).</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="combing-shear-rate">Meniscus Shear Rate: <span id="shear-val">1,200 s⁻¹</span></label>
+                        <input type="range" id="combing-shear-rate" min="800" max="2200" step="50" value="1200" class="range-slider">
+                    </div>
+
+                    <button id="btn-run-combing" class="btn btn-primary" style="width: 100%;">
+                        🔬 Elongate eDNA Strand & Read Optical Fluorophore Barcode
+                    </button>
+                </div>
+
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>🔬 Single-Molecule Optical Barcode Readout</h2>
+                        <span class="badge badge-success" id="combing-status">Strand Combed</span>
+                    </div>
+
+                    <div class="telemetry-grid">
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Combed DNA Length</div>
+                            <div class="telemetry-value highlight" id="combing-length">84.0 &mu;m</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Linearization Ratio</div>
+                            <div class="telemetry-value highlight-cyan">2.0 kb/&mu;m</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Particulate Carbon (POC)</div>
+                            <div class="telemetry-value text-green" id="combing-poc">32.5 &mu;g/L</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Secchi Clarity Projection</div>
+                            <div class="telemetry-value text-purple" id="combing-secchi">28.8 m</div>
+                        </div>
+                    </div>
+
+                    <div class="canvas-wrapper">
+                        <canvas id="combing-canvas" width="560" height="230"></canvas>
+                        <div class="canvas-legend">Single-Molecule DNA Fiber with Multi-Color Hybridization Fluorophore Barcode Loci</div>
+                    </div>
+
+                    <div class="particle-states-box" id="particle-bins-container" style="margin-top:0.75rem;">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: p-ADIC TOPOLOGICAL PLACEMENT -->
+        <section id="tab-padic" class="tab-pane">
+            <div class="section-intro">
+                <h2>📐 p-Adic Ultrametric Topology & Lake Tahoe Geodesic Placement</h2>
+                <p>Non-Archimedean metric optimization over prime fields &Qopf;<sub>p</sub> for hierarchical multi-depth mooring placement without coordinate degeneracy.</p>
+            </div>
+
+            <div class="grid-2col">
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>🎯 p-Adic Valuation & Distance Metric</h2>
+                        <span class="badge badge-accent">Non-Archimedean Field</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="padic-prime-select">Chosen p-Adic Prime <i>p</i>:</label>
+                            <select id="padic-prime-select" class="form-control">
+                                <option value="2">p = 2 (Binary Dyadic)</option>
+                                <option value="3">p = 3 (Ternary Branching)</option>
+                                <option value="5" selected>p = 5 (Pentadic Pentagonal)</option>
+                                <option value="7">p = 7 (Septadic Stratification)</option>
+                                <option value="11">p = 11 (Endecadic Bathymetry)</option>
+                                <option value="13">p = 13 (Tridecadic Lattice)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="padic-thresh">Distance Threshold: <span id="thresh-val">0.65</span></label>
+                            <input type="range" id="padic-thresh" min="0.10" max="1.0" step="0.05" value="0.65" class="range-slider">
+                        </div>
+                    </div>
+
+                    <div class="math-box">
+                        <div class="math-title">Finite Math: Strong Ultrametric Triangle Inequality</div>
+                        <div class="math-eq">d<sub>p</sub>(x, y) = p<sup>-v<sub>p</sub>(x - y)</sup> &le; max( d<sub>p</sub>(x, z), d<sub>p</sub>(z, y) )</div>
+                        <div class="math-desc">Every triangle in (&Qopf;<sub>p</sub>, d<sub>p</sub>) is isosceles with base &le; sides, preventing packet collisions across depth layers.</div>
+                    </div>
+
+                    <div class="telemetry-grid" style="margin-top:1rem;">
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Connected Components (&beta;₀)</div>
+                            <div class="telemetry-value highlight-cyan" id="betti-0">1 (Full Mesh)</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Independent Cycles (&beta;₁)</div>
+                            <div class="telemetry-value text-green" id="betti-1">5 Loops</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Bruhat-Tits Tree Depth</div>
+                            <div class="telemetry-value text-purple" id="tree-depth">3 Levels</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Surveyed Area Coverage</div>
+                            <div class="telemetry-value" id="coverage-area">496.2 km²</div>
+                        </div>
+                    </div>
+
+                    <button id="btn-run-padic" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
+                        ⚡ Recalculate p-Adic Simplicial Filtration
+                    </button>
+                </div>
+
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>🗺️ Lake Tahoe Topological Geodesic Placement Map</h2>
+                        <span class="badge badge-success">8 Mooring Stations</span>
+                    </div>
+
+                    <div class="canvas-wrapper">
+                        <canvas id="padic-map-canvas" width="560" height="340"></canvas>
+                        <div class="canvas-legend">Lake Tahoe Shoreline (38.9°N–39.25°N, -120.15°W–-119.95°W) with p-Adic Sensor Network Edges</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: CLARITY & THERMOCLINE ANALYTICS -->
+        <section id="tab-limnology" class="tab-pane">
+            <div class="section-intro">
+                <h2>📊 Lake Tahoe Limnological Clarity & Deep Thermocline Stratification</h2>
+                <p>Secchi depth clarity trends, dissolved oxygen profiles, and deep hypolimnion thermal stability at 501m.</p>
+            </div>
+
+            <div class="metrics-row">
+                <div class="metric-card">
+                    <div class="metric-title">Deepest Trench (Crystal Bay)</div>
+                    <div class="metric-val text-cyan">501.0 m</div>
+                    <div class="metric-sub">Hydrostatic Pressure 50.1 bar</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Deep Hypolimnion Temp</div>
+                    <div class="metric-val text-green">4.10 °C</div>
+                    <div class="metric-sub">Permanent Density Stratification</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Average Secchi Disk Clarity</div>
+                    <div class="metric-val text-purple">28.4 m</div>
+                    <div class="metric-sub">Ultra-Oligotrophic Clarity Index</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Dissolved Oxygen (Abyss)</div>
+                    <div class="metric-val text-green">9.85 mg/L</div>
+                    <div class="metric-sub">Complete Deep-Water Oxygenation</div>
+                </div>
+            </div>
+
+            <div class="grid-2col" style="margin-top: 1.5rem;">
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h3>Lake Tahoe Vertical Thermocline Temperature Profile</h3>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="chart-thermocline"></canvas>
+                    </div>
+                </div>
+
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h3>Secchi Disk Clarity Depth across Benthic Stations</h3>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="chart-secchi"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: NATURE PREPRINT & FINITE MATH PDF -->
+        <section id="tab-preprint" class="tab-pane">
+            <div class="section-intro">
+                <h2>📄 Nature Preprint Manuscript & Finite Mathematical Foundations</h2>
+                <p>Peer-reviewed preprint manuscript on undersea robotics, molecular gene combing, and p-adic ultrametric placement for Lake Tahoe.</p>
+            </div>
+
+            <div class="card glass-card">
+                <div class="card-header">
+                    <div>
+                        <h3>Nature Preprint: Undersea Robotics and Single-Molecule Gene Combing at Particle States for Lake Tahoe: p-Adic Ultrametric Topology and Optimal Geodesic Placement</h3>
+                        <p class="subtitle">Authors: Cartik Sharma et al. • Lake Tahoe Benthic Robotics Consortium</p>
+                    </div>
+                    <div class="btn-group">
+                        <button id="btn-recompile-tahoe-pdf" class="btn btn-secondary">🔄 Recompile PDF</button>
+                        <a href="/api/preprint/download" class="btn btn-primary" download>📥 Download PDF</a>
+                    </div>
+                </div>
+
+                <div class="pdf-frame-wrapper">
+                    <iframe src="/api/preprint/view#toolbar=1" class="pdf-iframe" title="Nature Tahoe Preprint PDF"></iframe>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>Lake Tahoe Undersea Robotics & Molecular Gene Combing Platform • Neuromorph System © 2026 • Production Edition</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
