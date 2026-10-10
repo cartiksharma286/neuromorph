@@ -654,6 +654,85 @@ body {
     border: none;
 }
 
+/* Heatmap Legend */
+.heatmap-legend-container {
+    background: rgba(11, 19, 41, 0.95);
+    border-top: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+
+.legend-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+
+.legend-threshold-tag {
+    color: var(--accent-yellow);
+    background: rgba(251, 191, 36, 0.12);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.heatmap-colorbar {
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, 
+        #020617 0%, 
+        #0c4a6e 15%, 
+        #0284c7 30%, 
+        #06b6d4 45%, 
+        #10b981 55%, 
+        #fbbf24 65%, 
+        #f97316 80%, 
+        #ef4444 92%, 
+        #d946ef 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.35rem;
+}
+
+.legend-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.tick-threshold {
+    color: var(--accent-yellow);
+    font-weight: 800;
+}
+
+.cranial-layers-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(51, 65, 85, 0.4);
+}
+
+.layer-pill {
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
 /* Footer */
 .app-footer {
     background: rgba(11, 19, 41, 0.95);

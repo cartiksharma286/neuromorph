@@ -341,32 +341,56 @@
 
                     <div class="telemetry-grid">
                         <div class="telemetry-item">
-                            <div class="telemetry-label">Induced E-Field (E<sub>ind</sub>)</div>
-                            <div class="telemetry-value highlight" id="tms-e-field">104.2 V/m</div>
+                            <div class="telemetry-label">Induced E-Field (E<sub>total</sub>)</div>
+                            <div class="telemetry-value highlight" id="tms-e-field">169.3 V/m</div>
                         </div>
                         <div class="telemetry-item">
                             <div class="telemetry-label">Depolarization Ratio</div>
-                            <div class="telemetry-value highlight-cyan" id="tms-depol-ratio">1.27x Threshold</div>
+                            <div class="telemetry-value highlight-cyan" id="tms-depol-ratio">2.07x Threshold</div>
                         </div>
                         <div class="telemetry-item">
-                            <div class="telemetry-label">Wave Number &beta; / &alpha;</div>
-                            <div class="telemetry-value" id="tms-wave-numbers">0.0042 / 11.41</div>
+                            <div class="telemetry-label">Rate of Change (dI/dt)</div>
+                            <div class="telemetry-value" id="tms-didt">99.0 A/&mu;s</div>
                         </div>
                         <div class="telemetry-item">
-                            <div class="telemetry-label">Skin Depth &delta; (mm)</div>
-                            <div class="telemetry-value text-green" id="tms-skin-depth">87.6 mm</div>
+                            <div class="telemetry-label">Specific Absorption (SAR)</div>
+                            <div class="telemetry-value text-green" id="tms-sar">3.79 W/kg</div>
                         </div>
                     </div>
 
                     <div class="jacobi-readout">
-                        <span>Peak B: <b id="val-b-peak">1.24 T</b></span>
-                        <span>Poynting Flux: <b id="val-poynting">42.8 W/m²</b></span>
-                        <span>Power Loss: <b id="val-power-loss">2.98 W/cm³</b></span>
+                        <span>B<sub>surface</sub>: <b id="val-b-surf">2.25 T</b></span>
+                        <span>B<sub>target</sub>: <b id="val-b-peak">0.45 T</b></span>
+                        <span>BEM Focusing: <b id="val-bem-factor">1.28x</b></span>
+                        <span>Half-Depth: <b id="val-half-depth">34.4 mm</b></span>
                     </div>
 
                     <div class="canvas-wrapper">
-                        <canvas id="tms-field-canvas" width="560" height="260"></canvas>
-                        <div class="canvas-legend">Finite Element 2D Induced Electric Field Iso-contours over Cortical Tissue</div>
+                        <canvas id="tms-field-canvas" width="560" height="280"></canvas>
+                        
+                        <!-- Heatmap Colorbar Legend -->
+                        <div class="heatmap-legend-container">
+                            <div class="legend-header">
+                                <span>Induced RF Electric Field Intensity ||E|| (V/m)</span>
+                                <span class="legend-threshold-tag">⚡ Depolarization Threshold &ge; 82 V/m</span>
+                            </div>
+                            <div class="heatmap-colorbar"></div>
+                            <div class="legend-ticks">
+                                <span>0 V/m</span>
+                                <span>40 V/m</span>
+                                <span class="tick-threshold">82 V/m (&Theta;<sub>th</sub>)</span>
+                                <span>120 V/m</span>
+                                <span>160 V/m</span>
+                                <span>200+ V/m</span>
+                            </div>
+                            <div class="cranial-layers-legend">
+                                <span class="layer-pill" style="border-color:#64748b;">S₁ Scalp (0–6mm)</span>
+                                <span class="layer-pill" style="border-color:#475569;">S₂ Skull (6–13mm, &sigma;=0.015)</span>
+                                <span class="layer-pill" style="border-color:#0284c7;">S₃ CSF (13–16mm, &sigma;=1.65)</span>
+                                <span class="layer-pill" style="border-color:#38bdf8;">S₄ Cortex (16–21mm)</span>
+                                <span class="layer-pill" style="border-color:#1e293b;">S₅ White Matter (21mm+)</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

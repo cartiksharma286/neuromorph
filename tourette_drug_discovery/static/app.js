@@ -771,19 +771,32 @@ async function runTMSSimulation(lobeKey) {
             const exc = json.excitation;
             document.getElementById('tms-e-field').innerText = `${exc.e_induced_v_m} V/m`;
             document.getElementById('tms-depol-ratio').innerText = `${exc.depolarization_ratio}x Threshold`;
-            document.getElementById('tms-wave-numbers').innerText = `${exc.wave_number_beta_rad_m} / ${exc.attenuation_alpha_np_m}`;
-            document.getElementById('tms-skin-depth').innerText = `${exc.skin_depth_mm} mm`;
+            if (document.getElementById('tms-didt')) {
+                document.getElementById('tms-didt').innerText = `${exc.di_dt_a_per_us} A/µs`;
+            }
+            if (document.getElementById('tms-sar')) {
+                document.getElementById('tms-sar').innerText = `${exc.sar_peak_w_kg} W/kg`;
+            }
 
-            document.getElementById('val-b-peak').innerText = `${exc.b_peak_tesla} T`;
-            document.getElementById('val-poynting').innerText = `${exc.poynting_flux_w_m2} W/m²`;
-            document.getElementById('val-power-loss').innerText = `${exc.power_density_w_cm3} W/cm³`;
+            if (document.getElementById('val-b-surf')) {
+                document.getElementById('val-b-surf').innerText = `${exc.b_surface_tesla} T`;
+            }
+            if (document.getElementById('val-b-peak')) {
+                document.getElementById('val-b-peak').innerText = `${exc.b_target_tesla} T`;
+            }
+            if (document.getElementById('val-bem-factor')) {
+                document.getElementById('val-bem-factor').innerText = `${exc.bem_focusing_multiplier}x`;
+            }
+            if (document.getElementById('val-half-depth')) {
+                document.getElementById('val-half-depth').innerText = `${exc.z_half_depth_mm} mm`;
+            }
 
             const statusBadge = document.getElementById('tms-depol-status');
             if (exc.effective_excitation_achieved) {
-                statusBadge.innerText = 'Depolarization: ACTIVE';
+                statusBadge.innerText = `Depolarization: ACTIVE (${exc.e_induced_v_m} V/m)`;
                 statusBadge.className = 'badge badge-success';
             } else {
-                statusBadge.innerText = 'Sub-Threshold';
+                statusBadge.innerText = `Sub-Threshold (${exc.e_induced_v_m} V/m)`;
                 statusBadge.className = 'badge badge-accent';
             }
 
@@ -939,6 +952,25 @@ function renderTMSCanvasField(exc) {
     lastTMSExcitation = exc;
 }
 
+function getEFieldColor(eVal, alpha = 0.85) {
+    if (eVal < 40) {
+        const t = Math.max(0, eVal / 40);
+        return `rgba(${Math.floor(2 + t * 4)}, ${Math.floor(6 + t * 176)}, ${Math.floor(23 + t * 189)}, ${alpha})`;
+    } else if (eVal < 82) {
+        const t = (eVal - 40) / 42;
+        return `rgba(${Math.floor(6 + t * 245)}, ${Math.floor(182 + t * 9)}, ${Math.floor(212 - t * 176)}, ${alpha})`;
+    } else if (eVal < 120) {
+        const t = (eVal - 82) / 38;
+        return `rgba(${Math.floor(251 - t * 2)}, ${Math.floor(191 - t * 76)}, ${Math.floor(36 - t * 14)}, ${alpha})`;
+    } else if (eVal < 160) {
+        const t = (eVal - 120) / 40;
+        return `rgba(${Math.floor(249 - t * 10)}, ${Math.floor(115 - t * 47)}, ${Math.floor(22 + t * 46)}, ${alpha})`;
+    } else {
+        const t = Math.min(1.0, (eVal - 160) / 60);
+        return `rgba(${Math.floor(239 - t * 22)}, ${Math.floor(68 + t * 2)}, ${Math.floor(68 + t * 171)}, ${alpha})`;
+    }
+}
+
 function animateTMSCanvas() {
     if (!tmsCanvasCtx) return;
     const canvas = document.getElementById('tms-field-canvas');
@@ -948,73 +980,120 @@ function animateTMSCanvas() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const cx = canvas.width / 2;
-    const cy = 40; // Coil placed at top surface
-    tmsAnimOffset += 0.05;
+    const cy = 25; // Surface of scalp
+    tmsAnimOffset += 0.04;
 
-    // Draw cranial layers (Scalp, Skull, CSF, Gray Matter Cortex)
-    const layers = [
-        { r: 240, label: 'Deep White Matter', color: '#0f172a' },
-        { r: 190, label: 'Cortical Gray Matter', color: '#1e293b' },
-        { r: 130, label: 'Subarachnoid CSF', color: '#0c4a6e' },
-        { r: 80, label: 'Cranium / Skull Bone', color: '#334155' }
+    const eMax = lastTMSExcitation ? lastTMSExcitation.e_induced_v_m : 169.3;
+    const depthVal = (lastTMSExcitation && typeof lastTMSExcitation.depth_mm === 'number') ? lastTMSExcitation.depth_mm : 18.5;
+    const targetY = cy + depthVal * 4.2;
+
+    // 1. Draw Cranial BEM Layers with realistic anatomical depth arcs
+    const cranialLayers = [
+        { r: 250, label: 'S₅ Deep White Matter (21mm+)', color: '#090d16', stroke: '#1e293b' },
+        { r: 180, label: 'S₄ Cortical Gray Matter (16–21mm)', color: '#0f172a', stroke: '#334155' },
+        { r: 110, label: 'S₃ Cerebrospinal Fluid (13–16mm)', color: '#082f49', stroke: '#0284c7' },
+        { r: 80, label: 'S₂ Skull Bone (6–13mm)', color: '#1e293b', stroke: '#475569' },
+        { r: 50, label: 'S₁ Scalp (0–6mm)', color: '#334155', stroke: '#64748b' }
     ];
 
-    layers.forEach(l => {
+    cranialLayers.forEach(l => {
         ctx.beginPath();
         ctx.arc(cx, cy, l.r, 0, Math.PI);
         ctx.fillStyle = l.color;
         ctx.fill();
-        ctx.strokeStyle = 'rgba(148, 163, 184, 0.15)';
+        ctx.strokeStyle = l.stroke;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
+
+        // Interface depth label
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.45)';
+        ctx.font = '9px system-ui';
+        ctx.textAlign = 'right';
+        ctx.fillText(l.label, cx + l.r - 8, cy + 12);
     });
 
-    // Draw induced electric field contours and wave propagation
-    const eMax = lastTMSExcitation ? lastTMSExcitation.e_induced_v_m : 100.0;
-    const numRings = 9;
+    // 2. Continuous Scientific Heatmap Colormap for Induced E-Field
+    const heatGrad = ctx.createRadialGradient(cx, targetY, 4, cx, targetY, 110);
+    heatGrad.addColorStop(0, getEFieldColor(eMax, 0.95));
+    heatGrad.addColorStop(0.3, getEFieldColor(eMax * 0.75, 0.85));
+    heatGrad.addColorStop(0.55, getEFieldColor(82.0, 0.65)); // 82 V/m threshold isocontour
+    heatGrad.addColorStop(0.8, getEFieldColor(40.0, 0.35));
+    heatGrad.addColorStop(1.0, 'transparent');
 
-    for (let i = 1; i <= numRings; i++) {
-        const radius = i * 22 + Math.sin(tmsAnimOffset + i) * 2;
-        const opacity = Math.max(0.08, 1.0 - (i / numRings) * 0.85);
+    ctx.fillStyle = heatGrad;
+    ctx.beginPath();
+    ctx.ellipse(cx, targetY, 130, 85, 0, 0, Math.PI * 2);
+    ctx.fill();
 
-        // Figure-of-8 coil twin lobes
-        ctx.beginPath();
-        ctx.arc(cx - 35, cy + radius * 0.7, radius * 0.55, 0, Math.PI * 2);
-        ctx.arc(cx + 35, cy + radius * 0.7, radius * 0.55, 0, Math.PI * 2);
+    // 3. Draw Isocontour Lines & Threshold Circle
+    const threshRadius = Math.max(15, 65 * (eMax / 120.0));
+    ctx.beginPath();
+    ctx.ellipse(cx, targetY, threshRadius, threshRadius * 0.65, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = '#fbbf24'; // Yellow threshold contour
+    ctx.lineWidth = 2.2;
+    ctx.setLineDash([5, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 4. Figure-of-8 Magnetic Field Lines
+    const numLoops = 6;
+    for (let i = 1; i <= numLoops; i++) {
+        const phase = (tmsAnimOffset * 1.5 + i * 0.8) % (numLoops * 0.8);
+        const loopR = 15 + phase * 14;
+        const opacity = Math.max(0.05, 0.6 - (phase / (numLoops * 0.8)) * 0.55);
+
         ctx.strokeStyle = `rgba(56, 189, 248, ${opacity})`;
-        ctx.lineWidth = Math.max(1, 3.5 - i * 0.3);
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        // Left wing loop
+        ctx.arc(cx - 38, cy + loopR * 0.6, loopR * 0.5, 0, Math.PI * 2);
+        // Right wing loop
+        ctx.arc(cx + 38, cy + loopR * 0.6, loopR * 0.5, 0, Math.PI * 2);
         ctx.stroke();
     }
 
-    // Focal hot spot at target depth
-    const depthVal = (lastTMSExcitation && typeof lastTMSExcitation.depth_mm === 'number') ? lastTMSExcitation.depth_mm : 18.5;
-    const targetDepth = depthVal * 2.8;
-    const grad = ctx.createRadialGradient(cx, cy + targetDepth, 4, cx, cy + targetDepth, 48);
-    grad.addColorStop(0, 'rgba(244, 63, 94, 0.95)');
-    grad.addColorStop(0.5, 'rgba(251, 191, 36, 0.5)');
-    grad.addColorStop(1, 'transparent');
-
-    ctx.fillStyle = grad;
+    // 5. Target Crosshairs and Numeric Field Tag
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
-    ctx.arc(cx, cy + targetDepth, 48, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(cx - 12, targetY);
+    ctx.lineTo(cx + 12, targetY);
+    ctx.moveTo(cx, targetY - 12);
+    ctx.lineTo(cx, targetY + 12);
+    ctx.stroke();
 
-    // Hot spot label
+    // Center focal bead
+    ctx.fillStyle = '#f43f5e';
+    ctx.beginPath();
+    ctx.arc(cx, targetY, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Focal point text readout
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 11px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText(`Target: ${lastTMSExcitation ? lastTMSExcitation.lobe_name : 'Pre-SMA'}`, cx, cy + targetDepth - 6);
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = '10px system-ui';
-    ctx.fillText(`${eMax.toFixed(1)} V/m`, cx, cy + targetDepth + 10);
+    ctx.fillText(`${lastTMSExcitation ? lastTMSExcitation.lobe_name : 'Pre-SMA'} (Depth: ${depthVal}mm)`, cx, targetY - 16);
 
-    // Draw coil representation on scalp
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillRect(cx - 70, 8, 60, 14);
-    ctx.fillRect(cx + 10, 8, 60, 14);
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 12px system-ui';
+    ctx.fillText(`||E|| = ${eMax.toFixed(1)} V/m ${eMax >= 82 ? '(⚡ Depolarization Active)' : '(Sub-threshold)'}`, cx, targetY + 22);
+
+    // 6. Draw Figure-of-8 Copper Coil Geometry on Scalp
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.9)';
+    ctx.fillRect(cx - 72, cy - 14, 64, 12);
+    ctx.fillRect(cx + 8, cy - 14, 64, 12);
     ctx.strokeStyle = '#f8fafc';
     ctx.lineWidth = 2;
-    ctx.strokeRect(cx - 70, 8, 60, 14);
-    ctx.strokeRect(cx + 10, 8, 60, 14);
+    ctx.strokeRect(cx - 72, cy - 14, 64, 12);
+    ctx.strokeRect(cx + 8, cy - 14, 64, 12);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 9px system-ui';
+    ctx.fillText('◄ COIL WING 1', cx - 40, cy - 5);
+    ctx.fillText('COIL WING 2 ►', cx + 40, cy - 5);
 
     requestAnimationFrame(animateTMSCanvas);
 }
