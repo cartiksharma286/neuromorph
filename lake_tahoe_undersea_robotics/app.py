@@ -173,7 +173,7 @@ def view_preprint():
     )
 
 if __name__ == '__main__':
-    port = int(os.environ.get('FLASK_RUN_PORT', 5070))
+    port = int(os.environ.get('FLASK_RUN_PORT', 5090))
     host = os.environ.get('FLASK_RUN_HOST', '0.0.0.0')
     print(f"\n{'='*70}")
     print(f"🌊 Lake Tahoe Undersea Robotics & p-Adic Topological Placement Platform")
