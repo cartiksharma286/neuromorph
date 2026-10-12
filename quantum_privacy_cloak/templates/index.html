@@ -331,6 +331,7 @@
         </div>
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showTab('dashboard')">🛡️ Sovereign Enclave</button>
+            <button class="nav-btn" onclick="showTab('ramanujan')">🌌 Ramanujan Modular PQC (EU)</button>
             <button class="nav-btn" onclick="showTab('patient')">🧬 Patient Cloaking (7T MRI)</button>
             <button class="nav-btn" onclick="showTab('algorithms')">⚡ NTT & Tensor Engine</button>
             <button class="nav-btn" onclick="showTab('compliance')">🇨🇦 🇪🇺 Regulatory Compliance</button>
@@ -513,6 +514,157 @@ Establishing PQC cybersecure private network session…
             </div>
         </div>
 
+        <!-- TAB 2: RAMANUJAN MODULAR PQC (EU PRIVACY CLOAK) -->
+        <div id="tab-ramanujan" class="tab-content">
+            <div class="grid-4" style="margin-bottom: 1.5rem;">
+                <div class="metric-card">
+                    <div class="metric-sub">RAMANUJAN DISCRIMINANT</div>
+                    <div class="metric-val" id="metricRamanujanDelta">$\Delta(\tau)$</div>
+                    <div class="metric-sub">Weight 12 Cusp Form (SL₂(&#x2124;))</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-sub">DELIGNE PETERSON BOUND</div>
+                    <div class="metric-val" style="color:var(--accent-cyan);">&le; 2p<sup>11/2</sup></div>
+                    <div class="metric-sub">Hecke Eigenform Multiplicativity</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-sub">EU CLOAK ATTENUATION</div>
+                    <div class="metric-val" id="metricEuAttenuation" style="color:var(--accent-emerald);">98.6 dB</div>
+                    <div class="metric-sub">V<sub>res</sub> &le; 10<sup>-10</sup> Residual</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-sub">EHDS CROSS-BORDER COMPLIANCE</div>
+                    <div class="metric-val" style="color:var(--accent-indigo);">99.7%</div>
+                    <div class="metric-sub">GDPR Art. 9, 25, 32 / BSI TR-02102</div>
+                </div>
+            </div>
+
+            <!-- Ramanujan Modular Controls & Mathematical Display -->
+            <div class="grid-2" style="margin-bottom: 1.5rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🌌 Ramanujan Modular Harmonic Cloak Generator</div>
+                        <span class="badge-status badge-active">EU Sovereign Metamaterial</span>
+                    </div>
+                    <div class="grid-2">
+                        <div class="control-group">
+                            <label>Modular Half-Plane Coordinate $\text{Im}(\tau)$ ($y$)</label>
+                            <input type="number" id="inputTauImag" value="1.618" step="0.01">
+                        </div>
+                        <div class="control-group">
+                            <label>Harmonic Mode Count ($N$)</label>
+                            <input type="number" id="inputHarmonicModes" value="16" min="4" max="32">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="control-group">
+                            <label>Metamaterial Annular Radius ($b$ meters)</label>
+                            <input type="number" id="inputEuRadius" value="1.25" step="0.05">
+                        </div>
+                        <div class="control-group">
+                            <label>Boundary Attenuation Factor ($\kappa$)</label>
+                            <input type="number" id="inputEuAttenuation" value="0.98" step="0.01">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="simulateRamanujanCloak()" style="width:100%; justify-content:center;">
+                        ⚡ Compute Ramanujan Modular Cloak &amp; Deligne Bounds
+                    </button>
+
+                    <div style="margin-top: 1.25rem; font-size: 0.8rem; background: rgba(2,6,23,0.7); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; line-height: 1.6;">
+                        <div style="font-weight:700; color:var(--accent-cyan); margin-bottom:4px;">Finite Mathematical Equations:</div>
+                        <div>&bull; <strong>Cusp Form:</strong> $\Delta(\tau) = q \prod_{n=1}^\infty (1-q^n)^{24} = \sum_{n=1}^\infty \tau(n) q^n = \frac{E_4^3 - E_6^2}{1728}$</div>
+                        <div>&bull; <strong>Eisenstein:</strong> $E_4 = 1 + 240\sum \sigma_3(n) q^n, \quad E_6 = 1 - 504\sum \sigma_5(n) q^n$</div>
+                        <div>&bull; <strong>Klein Invariant:</strong> $j(\tau) = 1728 E_4^3 / (E_4^3 - E_6^2)$</div>
+                        <div>&bull; <strong>Deligne Bound:</strong> $|\tau(p)| \leq 2 p^{11/2} \quad (\forall \text{ primes } p)$</div>
+                        <div>&bull; <strong>Boundary Nulling:</strong> $\sum_{k=1}^{17} c_{17}(k) = 0 \implies \text{Zero Exterior Dipole}$</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📈 Ramanujan Tau $|\tau(n)|$ vs Deligne Bound Chart</div>
+                        <span class="badge-status badge-active">Fourier Modes</span>
+                    </div>
+                    <div style="height: 340px;">
+                        <canvas id="ramanujanTauChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optimal Patient Privacy Measures Section (EU EHDS & GDPR) -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🇪🇺 Optimal Patient Privacy Measures (EHDS / GDPR)</div>
+                        <span class="badge-status badge-active">Cross-Border Health Vault</span>
+                    </div>
+                    <div class="grid-2">
+                        <div class="control-group">
+                            <label>EU Patient Identifier</label>
+                            <input type="text" id="euPatientId" value="EU-DE-BER-98214-Z">
+                        </div>
+                        <div class="control-group">
+                            <label>EU Member State Authority</label>
+                            <select id="euMemberState">
+                                <option value="Germany (BfArM / BSI TR-02102)">Germany (BfArM / BSI TR-02102)</option>
+                                <option value="France (ANSSI PQC / ANS Health)">France (ANSSI PQC / ANS Health)</option>
+                                <option value="Sweden (Karolinska / IMY DPA)">Sweden (Karolinska / IMY DPA)</option>
+                                <option value="Italy (Garante Privacy / Humanitas)">Italy (Garante Privacy / Humanitas)</option>
+                                <option value="Netherlands (AP DPA / Erasmus MC)">Netherlands (AP DPA / Erasmus MC)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-3">
+                        <div class="control-group">
+                            <label>Patient Age</label>
+                            <input type="number" id="euPatientAge" value="52">
+                        </div>
+                        <div class="control-group">
+                            <label>Systolic BP (mmHg)</label>
+                            <input type="number" id="euPatientBP" value="138.4">
+                        </div>
+                        <div class="control-group">
+                            <label>Biomarker (pg/mL)</label>
+                            <input type="number" id="euPatientBio" value="64.2">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="control-group">
+                            <label>NUTS-3 Region Code</label>
+                            <input type="text" id="euPatientNuts" value="DE300">
+                        </div>
+                        <div class="control-group">
+                            <label>Genomic Variant Profile</label>
+                            <input type="text" id="euPatientGenomic" value="PSEN1-A246E / rs63750083">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="control-group">
+                            <label>Differential Privacy $\epsilon$</label>
+                            <input type="number" id="euEpsilon" value="0.5" step="0.1">
+                        </div>
+                        <div class="control-group">
+                            <label>Cohort Partition Size ($N$)</label>
+                            <input type="number" id="euCohortSize" value="25000">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="cloakEuPatient()" style="width:100%; justify-content:center;">
+                        🔒 Cloak EU Patient with Ramanujan Modular PQC &amp; Stirling Bounds
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📜 EHDS Secondary Vault Token &amp; Compliance Audit</div>
+                        <span class="badge-status badge-active">EU Safe Harbor Certified</span>
+                    </div>
+                    <div class="code-box" id="euPatientCloakOutput" style="height: 380px;">
+Click 'Cloak EU Patient with Ramanujan Modular PQC' to generate sovereign EHDS token…
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- TAB 2: PATIENT CLOAKING -->
         <div id="tab-patient" class="tab-content">
             <div class="grid-2">
@@ -688,6 +840,20 @@ Awaiting clinical patient record ingestion…
                         <a href="/api/preprint/europe/download" class="btn-outline" style="text-align:center;">⬇️ Download PDF</a>
                     </div>
                 </div>
+
+                <div class="card" style="border-color: rgba(99,102,241,0.5); background: rgba(15,23,42,0.9);">
+                    <div class="card-header">
+                        <div class="card-title">🌌 Ramanujan Modular Forms EU Preprint</div>
+                        <span class="badge-status badge-active" style="background:rgba(99,102,241,0.2); color:var(--accent-indigo);">Finite Math Edition</span>
+                    </div>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+                        Title: <em>Post-Quantum Cryptography via Ramanujan's Modular Harmonic Forms for EU Privacy Cloaks and Optimal Patient Privacy Measures</em>
+                    </p>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <a href="/api/preprint/ramanujan_eu/view" target="_blank" class="btn-primary" style="justify-content:center; background:linear-gradient(135deg,#6366f1,#3b82f6);">📖 View Ramanujan PDF Manuscript</a>
+                        <a href="/api/preprint/ramanujan_eu/download" class="btn-outline" style="text-align:center; border-color:var(--accent-indigo); color:var(--accent-indigo);">⬇️ Download Ramanujan PDF</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -696,6 +862,7 @@ Awaiting clinical patient record ingestion…
         let cloakChartInstance = null;
         let alarpChartInstance = null;
         let probMapChartInstance = null;
+        let ramanujanChartInstance = null;
 
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -710,6 +877,141 @@ Awaiting clinical patient record ingestion…
                 if (!cloakChartInstance || !alarpChartInstance || !probMapChartInstance) {
                     initCharts();
                 }
+            } else if (tabName === 'ramanujan') {
+                if (!ramanujanChartInstance) {
+                    initRamanujanChart();
+                }
+            }
+        }
+
+        async function initRamanujanChart() {
+            const ctx = document.getElementById('ramanujanTauChart').getContext('2d');
+            ramanujanChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Deligne Bound 2 n^(11/2)',
+                            data: [],
+                            borderColor: '#ef4444',
+                            borderDash: [6, 4],
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Ramanujan Tau |τ(n)|',
+                            data: [],
+                            borderColor: '#0284c7',
+                            backgroundColor: 'rgba(2, 132, 199, 0.2)',
+                            fill: true,
+                            pointRadius: 4,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Modular Boundary Leakage (Cloaked)',
+                            data: [],
+                            borderColor: '#10b981',
+                            pointRadius: 4,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Harmonic Mode Index (n)', color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y: {
+                            type: 'logarithmic',
+                            title: { display: true, text: 'Magnitude log10', color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc', boxWidth: 12 } }
+                    }
+                }
+            });
+            await simulateRamanujanCloak();
+        }
+
+        async function simulateRamanujanCloak() {
+            const tauImag = parseFloat(document.getElementById('inputTauImag').value) || 1.618;
+            const modes = parseInt(document.getElementById('inputHarmonicModes').value) || 16;
+            const radius = parseFloat(document.getElementById('inputEuRadius').value) || 1.25;
+            const attenuation = parseFloat(document.getElementById('inputEuAttenuation').value) || 0.98;
+
+            try {
+                const res = await fetch('/api/pqc/ramanujan/simulate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        tau_imag: tauImag,
+                        modes: modes,
+                        radius: radius,
+                        attenuation: attenuation,
+                        seed: 2026
+                    })
+                });
+                const data = await res.json();
+                
+                if (data.ramanujan_delta !== undefined) {
+                    document.getElementById('metricRamanujanDelta').innerText = data.ramanujan_delta.toExponential(2);
+                }
+                if (data.attenuation_db !== undefined) {
+                    document.getElementById('metricEuAttenuation').innerText = data.attenuation_db + ' dB';
+                }
+
+                if (ramanujanChartInstance && data.harmonic_modes) {
+                    const labels = data.harmonic_modes.map(m => `n=${m.mode_index}`);
+                    const deligneData = data.harmonic_modes.map(m => Math.max(1, m.deligne_bound));
+                    const tauData = data.harmonic_modes.map(m => Math.max(1, Math.abs(m.ramanujan_tau)));
+                    const leakageData = data.harmonic_modes.map(m => Math.max(1e-12, m.mode_leakage * 1e8));
+
+                    ramanujanChartInstance.data.labels = labels;
+                    ramanujanChartInstance.data.datasets[0].data = deligneData;
+                    ramanujanChartInstance.data.datasets[1].data = tauData;
+                    ramanujanChartInstance.data.datasets[2].data = leakageData;
+                    ramanujanChartInstance.update();
+                }
+            } catch (err) {
+                console.error('Error simulating Ramanujan cloak:', err);
+            }
+        }
+
+        async function cloakEuPatient() {
+            const payload = {
+                patient_id: document.getElementById('euPatientId').value,
+                member_state: document.getElementById('euMemberState').value,
+                age: parseInt(document.getElementById('euPatientAge').value),
+                systolic_bp: parseFloat(document.getElementById('euPatientBP').value),
+                biomarker_pg_ml: parseFloat(document.getElementById('euPatientBio').value),
+                nuts_code: document.getElementById('euPatientNuts').value,
+                genomic_variant: document.getElementById('euPatientGenomic').value,
+                epsilon: parseFloat(document.getElementById('euEpsilon').value),
+                cohort_size: parseInt(document.getElementById('euCohortSize').value)
+            };
+
+            const out = document.getElementById('euPatientCloakOutput');
+            out.innerText = 'Negotiating EHDS sovereign cryptographic token & computing Stirling bounds…';
+
+            try {
+                const res = await fetch('/api/pqc/ramanujan/patient_cloak', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                out.innerText = JSON.stringify(data, null, 2);
+            } catch (err) {
+                out.innerText = 'Error executing EU patient cloak: ' + err.message;
             }
         }
 

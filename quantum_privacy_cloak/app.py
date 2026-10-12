@@ -34,6 +34,15 @@ from number_theoretic_invisibility import (
     security_standard_info,
 )
 
+from backend_ramanujan_modular_pqc import (
+    RAMANUJAN_TAU_TABLE,
+    compute_ramanujan_modular_cloak_state,
+    eisenstein_e4_series,
+    eisenstein_e6_series,
+    execute_eu_patient_privacy_cloak,
+    ramanujan_tau,
+)
+
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
 NTT_Q = 3329
@@ -685,6 +694,66 @@ def view_preprint_finite_math():
     pdf_path = Path(__file__).parent / "Nature_Quantum_Finite_Math_Privacy_Cloak.pdf"
     if not pdf_path.exists():
         subprocess.run([sys.executable, str(Path(__file__).parent / "generate_nature_finite_math_preprint.py")], check=True)
+    return send_file(pdf_path, mimetype="application/pdf")
+
+
+@app.route("/api/pqc/ramanujan/simulate", methods=["POST"])
+def simulate_ramanujan_modular_pqc():
+    """Simulate Ramanujan modular harmonic forms for EU quantum privacy cloaking."""
+    payload = request.get_json(silent=True) or {}
+    tau_imag = float(payload.get("tau_imag", 1.6180339))
+    modes = int(payload.get("modes", 16))
+    radius = float(payload.get("radius", 1.25))
+    attenuation = float(payload.get("attenuation", 0.98))
+    seed = int(payload.get("seed", 2026))
+
+    result = compute_ramanujan_modular_cloak_state(
+        tau_imag=tau_imag,
+        modes=modes,
+        radius=radius,
+        attenuation=attenuation,
+        seed=seed
+    )
+    return jsonify({
+        "success": True,
+        **result
+    })
+
+
+@app.route("/api/pqc/ramanujan/patient_cloak", methods=["POST"])
+def cloak_patient_ramanujan_eu():
+    """Execute optimal patient privacy measures for European EHDS & GDPR using modular forms."""
+    payload = request.get_json(silent=True) or {}
+    epsilon = float(payload.get("epsilon", 0.5))
+    delta = float(payload.get("delta", 1e-06))
+    cohort_size = int(payload.get("cohort_size", 25000))
+    clusters = int(payload.get("clusters", 500))
+    seed = int(payload.get("seed", 2026))
+
+    result = execute_eu_patient_privacy_cloak(
+        patient_payload=payload,
+        epsilon=epsilon,
+        delta=delta,
+        cohort_size=cohort_size,
+        clusters=clusters,
+        seed=seed
+    )
+    return jsonify(result)
+
+
+@app.route("/api/preprint/ramanujan_eu/download")
+def download_preprint_ramanujan_eu():
+    pdf_path = Path(__file__).parent / "Nature_Ramanujan_Modular_Harmonic_Forms_EU_Privacy_Preprint.pdf"
+    if not pdf_path.exists():
+        subprocess.run([sys.executable, str(Path(__file__).parent / "generate_nature_pdf_ramanujan_eu_preprint.py")], check=True)
+    return send_file(pdf_path, as_attachment=True, download_name="Nature_Ramanujan_Modular_Harmonic_Forms_EU_Privacy_Preprint.pdf")
+
+
+@app.route("/api/preprint/ramanujan_eu/view")
+def view_preprint_ramanujan_eu():
+    pdf_path = Path(__file__).parent / "Nature_Ramanujan_Modular_Harmonic_Forms_EU_Privacy_Preprint.pdf"
+    if not pdf_path.exists():
+        subprocess.run([sys.executable, str(Path(__file__).parent / "generate_nature_pdf_ramanujan_eu_preprint.py")], check=True)
     return send_file(pdf_path, mimetype="application/pdf")
 
 
