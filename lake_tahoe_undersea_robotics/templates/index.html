@@ -31,8 +31,9 @@
         <button class="nav-tab active" data-tab="tab-auv">🌊 AUV Robotics & 501m Bathymetry</button>
         <button class="nav-tab" data-tab="tab-combing">🧬 Molecular Gene Combing & eDNA</button>
         <button class="nav-tab" data-tab="tab-padic">📐 p-Adic Topological Placement</button>
+        <button class="nav-tab" data-tab="tab-ontario">⚡ Lake Ontario Qubit & 10-Yr Recovery</button>
         <button class="nav-tab" data-tab="tab-limnology">📊 Clarity & Thermocline Analytics</button>
-        <button class="nav-tab" data-tab="tab-preprint">📄 Nature Preprint & Finite Math PDF</button>
+        <button class="nav-tab" data-tab="tab-preprint">📄 Nature Preprints & Finite Math PDF</button>
     </nav>
 
     <main class="content-container">
@@ -283,7 +284,180 @@
             </div>
         </section>
 
-        <!-- TAB 4: CLARITY & THERMOCLINE ANALYTICS -->
+        <!-- TAB 4: LAKE ONTARIO QUBIT CIRCUITRY & 10-YEAR RECOVERY -->
+        <section id="tab-ontario" class="tab-pane">
+            <div class="section-intro">
+                <h2>⚡ Lake Ontario Superconducting Qubit Circuitry, In-Situ Spectroscopy & 10-Year Recovery Horizons</h2>
+                <p>Hardware KiCad schematic formation, optimal Quantum Natural Gradient (QNG) characteristics, simulated robotic water collection movement, continuous UV-Vis & Raman spectral signatures, and 10-year GLWQA Annex 4 ecosystem recovery.</p>
+            </div>
+
+            <!-- Top Grid: Hardware KiCad Specs & AUV Water Collection Animation -->
+            <div class="grid-2col">
+                <!-- Hardware & Controls -->
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>🔬 Superconducting Transmon Qubit & KiCad Formation</h2>
+                        <span class="badge badge-accent">6-Qubit Cryo QPU</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ontario-station-select">Lake Ontario Benthic Survey Station:</label>
+                        <select id="ontario-station-select" class="form-control">
+                            <option value="toronto_inner_harbour" selected>Toronto Inner Harbour / Keating Channel (12m) - Urban Nutrient Plume</option>
+                            <option value="leslie_spit_outer">Leslie Spit / Tommy Thompson Sill (45m) - Ashbridges Outfall</option>
+                            <option value="western_deep_basin">Western Deep Pelagic Basin (185m) - Hypolimnion Benthic Zone</option>
+                            <option value="niagara_plume_zone">Niagara River Inflow Plume Delta (95m) - Agricultural Flux</option>
+                            <option value="abyssal_eastern_trench">Abyssal Eastern Trench (244m / 24.4 bar) - Deepest Trench</option>
+                        </select>
+                    </div>
+
+                    <div class="target-dossier" id="ontario-station-dossier">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <div class="math-box">
+                        <div class="math-title">Finite Math: Transmon Hamiltonian & CPW Resonator</div>
+                        <div class="math-eq">H&#770; = 4 E<sub>C</sub>(n&#770; - n<sub>g</sub>)<sup>2</sup> - E<sub>J</sub> cos(&phi;&#770;) + &hbar;&omega;<sub>r</sub> a&#770;<sup>&dagger;</sup>a&#770;, &nbsp;&nbsp;&nbsp; E<sub>J</sub>/E<sub>C</sub> = 88.75</div>
+                        <div class="math-desc">CPW transmission line Z₀ = 50.0 &Omega; (S₁₁ &lt; -28 dB) under 24.4 bar subsea pressure boundary.</div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ontario-depth-slider">AUV Survey Depth: <span id="ontario-depth-val">12.0 m</span></label>
+                            <input type="range" id="ontario-depth-slider" min="2" max="244" step="2" value="12" class="range-slider">
+                        </div>
+                        <div class="form-group">
+                            <label for="ontario-flow-slider">Water Intake Pump Rate: <span id="ontario-flow-val">150 mL/min</span></label>
+                            <input type="range" id="ontario-flow-slider" min="50" max="300" step="10" value="150" class="range-slider">
+                        </div>
+                    </div>
+
+                    <div class="btn-group" style="margin-top:0.5rem;">
+                        <button id="btn-run-ontario-spec" class="btn btn-primary">⚡ Simulate In-Situ Water Intake Spectroscopy</button>
+                        <a href="/api/ontario/kicad/download" class="btn btn-outline" download>📥 Download KiCad (.kicad_sch)</a>
+                    </div>
+                </div>
+
+                <!-- Live AUV Intake Canvas & QML Telemetry -->
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>🌊 Robotic Water Collection & In-Situ Flow Simulation</h2>
+                        <span class="badge badge-success" id="qml-opt-badge">QML Classifier: OPTIMAL (98.8%)</span>
+                    </div>
+
+                    <div class="telemetry-grid">
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Classification Fidelity</div>
+                            <div class="telemetry-value highlight" id="spec-fidelity">98.8%</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Quantum Speedup</div>
+                            <div class="telemetry-value highlight-cyan" id="spec-speedup">64.5x O(&radic;N)</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Total Phosphorus (TP)</div>
+                            <div class="telemetry-value text-green" id="spec-tp">28.5 &mu;g/L</div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-label">Dissolved Oxygen</div>
+                            <div class="telemetry-value text-purple" id="spec-do">12.4 mg/L</div>
+                        </div>
+                    </div>
+
+                    <div class="jacobi-readout">
+                        <span>Fubini &lambda;<sub>min</sub>: <b id="val-fubini">0.425</b></span>
+                        <span>Qubit f₀₁: <b>4.850 GHz</b></span>
+                        <span>Resonator: <b>6.450 GHz</b></span>
+                        <span>T₁: <b>142.5 &mu;s</b></span>
+                        <span>P<sub>intake</sub>: <b id="val-intake-p">1.2 bar</b></span>
+                    </div>
+
+                    <div class="canvas-wrapper">
+                        <canvas id="ontario-flow-canvas" width="560" height="230"></canvas>
+                        <div class="canvas-legend">AUV Water Intake Inflow, Laminar Shearing, and Optical Cryo-Spectrometer Chamber</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In-Situ Spectroscopy Spectral Signature Chart -->
+            <div class="card glass-card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h2>🌈 In-Situ Continuous UV-Vis & Raman Spectroscopic Signature (250 – 750 nm)</h2>
+                    <span class="badge badge-accent">Quantum Natural Gradient (QNG) Inversion</span>
+                </div>
+                <div class="chart-box" style="height: 280px;">
+                    <canvas id="chart-ontario-spectrum"></canvas>
+                </div>
+                <div class="particle-states-box" id="ontario-signatures-container" style="margin-top:1rem;">
+                    <!-- Injected dynamically -->
+                </div>
+            </div>
+
+            <!-- 10-Year Lake Ontario Ecological Recovery Horizons -->
+            <div class="card glass-card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h2>🍁 10-Year Lake Ontario Long-Term Ecological Recovery Horizons (2026 – 2036)</h2>
+                    <span class="badge badge-success">GLWQA Annex 4 Mandate Compliance</span>
+                </div>
+
+                <div class="metrics-row">
+                    <div class="metric-card">
+                        <div class="metric-title">Target Phosphorus Load</div>
+                        <div class="metric-val text-green" id="recov-p-load">6,200 MT/yr</div>
+                        <div class="metric-sub">-47.5% from 11,800 MT Baseline</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Secchi Transparency Depth</div>
+                        <div class="metric-val text-cyan" id="recov-secchi">12.40 m</div>
+                        <div class="metric-sub">+226% Deep Water Clarity Restoration</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Benthic Diporeia Density</div>
+                        <div class="metric-val text-purple" id="recov-diporeia">4,850 /m²</div>
+                        <div class="metric-sub">Benthic Amphipod Food Web Re-established</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Cumulative Economic Value</div>
+                        <div class="metric-val text-green" id="recov-econ">$324.5M CAD</div>
+                        <div class="metric-sub">Drinking Water & Fishery Revival</div>
+                    </div>
+                </div>
+
+                <div class="grid-2col" style="margin-top: 1rem;">
+                    <div class="chart-box">
+                        <canvas id="chart-ontario-phosphorus"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="chart-ontario-diporeia"></canvas>
+                    </div>
+                </div>
+
+                <!-- 4-Phase Recovery Roadmap Cards -->
+                <div class="protocol-grid" id="ontario-roadmap-container" style="margin-top:1rem;">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Dedicated Nature Lake Ontario Preprint Card -->
+            <div class="card glass-card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <div>
+                        <h3>Nature Preprint: Quantum-Enhanced Undersea Robotics and Superconducting Qubit Circuitry for In-Situ Spectroscopic Water Monitoring: KiCad Schematics and 10-Year Lake Ontario Ecological Recovery Horizons</h3>
+                        <p class="subtitle">Authors: Cartik Sharma et al. • Great Lakes Autonomous Limnology Consortium</p>
+                    </div>
+                    <div class="btn-group">
+                        <button id="btn-recompile-ontario-pdf" class="btn btn-secondary">🔄 Recompile Ontario PDF</button>
+                        <a href="/api/ontario/preprint/download" class="btn btn-primary" download>📥 Download Ontario PDF</a>
+                    </div>
+                </div>
+
+                <div class="pdf-frame-wrapper">
+                    <iframe src="/api/ontario/preprint/view#toolbar=1" class="pdf-iframe" title="Nature Lake Ontario Preprint PDF"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: CLARITY & THERMOCLINE ANALYTICS -->
         <section id="tab-limnology" class="tab-pane">
             <div class="section-intro">
                 <h2>📊 Lake Tahoe Limnological Clarity & Deep Thermocline Stratification</h2>

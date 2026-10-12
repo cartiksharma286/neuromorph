@@ -23,6 +23,8 @@ from tahoe_auv_robotics_engine import TahoeAUVRoboticsEngine
 from gene_combing_particle_engine import GeneCombingParticleEngine
 from padic_topological_engine import PadicTopologicalEngine
 from nature_tahoe_preprint_generator import generate_nature_tahoe_preprint_pdf
+from ontario_qubit_spectroscopy_engine import OntarioQubitSpectroscopyEngine
+from nature_ontario_preprint_generator import generate_nature_ontario_preprint_pdf
 
 app = Flask(
     __name__,
@@ -34,15 +36,23 @@ app = Flask(
 auv_engine = TahoeAUVRoboticsEngine()
 combing_engine = GeneCombingParticleEngine()
 padic_engine = PadicTopologicalEngine()
+ontario_engine = OntarioQubitSpectroscopyEngine()
 
 PREPRINT_PDF_PATH = os.path.join(CURRENT_DIR, 'Nature_Lake_Tahoe_Undersea_Robotics_pAdic_Preprint.pdf')
+ONTARIO_PREPRINT_PDF_PATH = os.path.join(CURRENT_DIR, 'Nature_Lake_Ontario_Qubit_Robotics_Spectroscopy_Preprint.pdf')
 
-# Ensure PDF exists at startup
+# Ensure PDFs exist at startup
 if not os.path.exists(PREPRINT_PDF_PATH):
     try:
         generate_nature_tahoe_preprint_pdf(PREPRINT_PDF_PATH)
     except Exception as e:
-        print(f"Warning: Could not pre-generate PDF: {e}")
+        print(f"Warning: Could not pre-generate Tahoe PDF: {e}")
+
+if not os.path.exists(ONTARIO_PREPRINT_PDF_PATH):
+    try:
+        generate_nature_ontario_preprint_pdf(ONTARIO_PREPRINT_PDF_PATH)
+    except Exception as e:
+        print(f"Warning: Could not pre-generate Ontario PDF: {e}")
 
 @app.route('/')
 def index():
@@ -172,13 +182,121 @@ def view_preprint():
         mimetype='application/pdf'
     )
 
+# --- Lake Ontario Qubit Circuitry, Spectroscopy & 10-Year Recovery Routes ---
+
+@app.route('/api/ontario/stations', methods=['GET'])
+def get_ontario_stations():
+    """Returns Lake Ontario benthic stations."""
+    return jsonify({
+        'status': 'success',
+        'stations': ontario_engine.LAKE_ONTARIO_STATIONS
+    })
+
+@app.route('/api/ontario/qubit/specs', methods=['GET'])
+def get_qubit_specs():
+    """Returns superconducting transmon qubit hardware specifications."""
+    return jsonify({
+        'status': 'success',
+        'specs': ontario_engine.QUBIT_HARDWARE_SPEC
+    })
+
+@app.route('/api/ontario/kicad/download', methods=['GET'])
+def download_kicad_schematic():
+    """Generates and serves the complete KiCad S-Expression schematic file (.kicad_sch)."""
+    kicad_content = ontario_engine.generate_kicad_schematic_sexpr()
+    import io
+    buf = io.BytesIO(kicad_content.encode('utf-8'))
+    return send_file(
+        buf,
+        as_attachment=True,
+        download_name='AUV_Superconducting_Qubit_Spectrometer.kicad_sch',
+        mimetype='application/x-kicad-schematic'
+    )
+
+@app.route('/api/ontario/kicad/raw', methods=['GET'])
+def get_kicad_raw():
+    """Returns raw KiCad S-Expression content for in-browser inspection."""
+    return jsonify({
+        'status': 'success',
+        'kicad_sch': ontario_engine.generate_kicad_schematic_sexpr()
+    })
+
+@app.route('/api/ontario/spectroscopy/simulate', methods=['POST', 'GET'])
+def simulate_ontario_spectroscopy():
+    """Simulates AUV robotic movement, water intake, and quantum-enhanced spectroscopy."""
+    if request.method == 'POST':
+        data = request.json or {}
+    else:
+        data = request.args
+        
+    station_key = data.get('station', 'toronto_inner_harbour')
+    depth = float(data.get('depth_m', 12.0))
+    intake_rate = float(data.get('intake_rate', 150.0))
+    
+    result = ontario_engine.simulate_qubit_spectroscopy(
+        station_key=station_key,
+        auv_depth_m=depth,
+        intake_rate_ml_min=intake_rate
+    )
+    return jsonify({
+        'status': 'success',
+        'data': result
+    })
+
+@app.route('/api/ontario/recovery/10yr', methods=['GET'])
+def get_ontario_10yr_recovery():
+    """Returns 10-year Lake Ontario ecological recovery trajectory and roadmap."""
+    result = ontario_engine.compute_lake_ontario_10yr_recovery()
+    return jsonify({
+        'status': 'success',
+        'recovery': result
+    })
+
+@app.route('/api/ontario/preprint/generate', methods=['POST', 'GET'])
+def regenerate_ontario_preprint():
+    """Recompiles the Nature Lake Ontario Qubit Preprint PDF."""
+    try:
+        path = generate_nature_ontario_preprint_pdf(ONTARIO_PREPRINT_PDF_PATH)
+        return jsonify({
+            'status': 'success',
+            'message': 'Nature Lake Ontario preprint PDF generated successfully',
+            'pdf_path': path,
+            'size_bytes': os.path.getsize(path)
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/ontario/preprint/view', methods=['GET'])
+def view_ontario_preprint():
+    """Serves the Nature Lake Ontario Qubit Preprint PDF inline."""
+    if not os.path.exists(ONTARIO_PREPRINT_PDF_PATH):
+        generate_nature_ontario_preprint_pdf(ONTARIO_PREPRINT_PDF_PATH)
+    return send_file(
+        ONTARIO_PREPRINT_PDF_PATH,
+        as_attachment=False,
+        mimetype='application/pdf'
+    )
+
+@app.route('/api/ontario/preprint/download', methods=['GET'])
+def download_ontario_preprint():
+    """Serves the Nature Lake Ontario Qubit Preprint PDF as a download."""
+    if not os.path.exists(ONTARIO_PREPRINT_PDF_PATH):
+        generate_nature_ontario_preprint_pdf(ONTARIO_PREPRINT_PDF_PATH)
+    return send_file(
+        ONTARIO_PREPRINT_PDF_PATH,
+        as_attachment=True,
+        download_name='Nature_Lake_Ontario_Qubit_Robotics_Spectroscopy_Preprint.pdf',
+        mimetype='application/pdf'
+    )
+
 if __name__ == '__main__':
-    port = int(os.environ.get('FLASK_RUN_PORT', 5090))
+    port = int(os.environ.get('FLASK_RUN_PORT', 5070))
     host = os.environ.get('FLASK_RUN_HOST', '0.0.0.0')
     print(f"\n{'='*70}")
-    print(f"🌊 Lake Tahoe Undersea Robotics & p-Adic Topological Placement Platform")
+    print(f"🌊 Lake Tahoe & Lake Ontario Undersea Robotics Platform")
+    print(f"⚡ Superconducting Qubit Circuitry • KiCad Schematics • 10-Yr Recovery")
     print(f"{'='*70}")
     print(f"Starting Server on http://{host}:{port}")
-    print(f"Serving Nature Preprint at: http://{host}:{port}/api/preprint/view")
+    print(f"Serving Nature Preprint at: http://{host}:{port}/api/ontario/preprint/view")
     print(f"{'='*70}\n")
     app.run(host=host, port=port, debug=False, threaded=True)

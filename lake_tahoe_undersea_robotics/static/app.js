@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAUVModule();
     initGeneCombingModule();
     initPadicModule();
+    initOntarioModule();
     initLimnologyCharts();
     setupEventListeners();
 });
@@ -733,6 +734,433 @@ function setupEventListeners() {
                 btnRecompile.innerText = '❌ Failed';
             }
             setTimeout(() => { btnRecompile.innerText = '🔄 Recompile PDF'; }, 3000);
+        });
+    }
+
+    setupOntarioEventListeners();
+}
+
+// ─── TAB 4: LAKE ONTARIO QUBIT CIRCUITRY & 10-YR RECOVERY ────────────────────
+let currentOntarioStations = {};
+let lastOntarioSpecData = null;
+let chartOntarioSpectrum = null;
+let chartOntarioPhosphorus = null;
+let chartOntarioDiporeia = null;
+let ontarioFlowAnimOffset = 0;
+
+async function initOntarioModule() {
+    try {
+        const res = await fetch('/api/ontario/stations');
+        const json = await res.json();
+        if (json.status === 'success') {
+            currentOntarioStations = json.stations;
+            updateOntarioStationDossier('toronto_inner_harbour');
+            runOntarioSpectroscopy('toronto_inner_harbour');
+            loadOntarioRecovery10Yr();
+            initOntarioFlowCanvas();
+        }
+    } catch (err) {
+        console.error('Error initializing Lake Ontario module:', err);
+    }
+}
+
+function updateOntarioStationDossier(stKey) {
+    const st = currentOntarioStations[stKey];
+    if (!st) return;
+
+    const dossier = document.getElementById('ontario-station-dossier');
+    dossier.innerHTML = `
+        <div class="target-title">${st.name} (Lat: ${st.lat}°N, Lon: ${st.lon}°W)</div>
+        <div class="target-desc"><b>Baseline Depth:</b> ${st.depth_m} m &nbsp;|&nbsp; <b>Total Phosphorus:</b> ${st.baseline_phosphorus_ug_l} µg/L &nbsp;|&nbsp; <b>Secchi:</b> ${st.baseline_secchi_m} m</div>
+        <div class="target-desc" style="margin-top:4px; color:var(--accent-yellow);"><b>Target Pollution Profile:</b> ${st.target_pollutants}</div>
+    `;
+
+    document.getElementById('ontario-depth-slider').value = st.depth_m;
+    document.getElementById('ontario-depth-val').innerText = `${st.depth_m} m`;
+}
+
+async function runOntarioSpectroscopy(stKey) {
+    const depth = parseFloat(document.getElementById('ontario-depth-slider').value);
+    const flow = parseFloat(document.getElementById('ontario-flow-slider').value);
+
+    try {
+        const res = await fetch('/api/ontario/spectroscopy/simulate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ station: stKey, depth_m: depth, intake_rate: flow })
+        });
+        const json = await res.json();
+        if (json.status === 'success') {
+            const data = json.data;
+            lastOntarioSpecData = data;
+
+            document.getElementById('spec-fidelity').innerText = `${data.qml_telemetry.classifier_fidelity}%`;
+            document.getElementById('spec-speedup').innerText = data.qml_telemetry.quantum_speedup;
+            document.getElementById('spec-tp').innerText = `${data.limnological_diagnostics.total_phosphorus_ug_l} µg/L`;
+            document.getElementById('spec-do').innerText = `${data.limnological_diagnostics.dissolved_oxygen_mg_l} mg/L`;
+
+            document.getElementById('val-fubini').innerText = data.qml_telemetry.fubini_study_eigen_min;
+            document.getElementById('val-intake-p').innerText = `${data.hydrostatic_pressure_bar} bar`;
+
+            renderOntarioSpectrumChart(data.spectroscopy_curve);
+            renderDetectedSignatures(data.spectroscopy_curve.detected_signatures);
+        }
+    } catch (err) {
+        console.error('Error running Lake Ontario spectroscopy:', err);
+    }
+}
+
+function renderOntarioSpectrumChart(curve) {
+    const ctx = document.getElementById('chart-ontario-spectrum').getContext('2d');
+    if (chartOntarioSpectrum) chartOntarioSpectrum.destroy();
+
+    chartOntarioSpectrum = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: curve.wavelengths_nm.map(w => `${w} nm`),
+            datasets: [{
+                label: 'In-Situ Ingestion Optical Spectrum (UV-Vis & Raman Intensity)',
+                data: curve.intensities_au,
+                borderColor: '#38bdf8',
+                backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                borderWidth: 2.8,
+                fill: true,
+                tension: 0.25,
+                pointRadius: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { title: { display: true, text: 'Fluorescence / Absorbance Intensity (A.U.)', color: '#94a3b8' }, min: 0, grid: { color: '#0f1f42' }, ticks: { color: '#94a3b8' } },
+                x: { title: { display: true, text: 'Wavelength (nm)', color: '#94a3b8' }, grid: { color: '#0f1f42' }, ticks: { color: '#94a3b8', maxTicksLimit: 12 } }
+            },
+            plugins: { legend: { labels: { color: '#f8fafc' } } }
+        }
+    });
+}
+
+function renderDetectedSignatures(sigs) {
+    const container = document.getElementById('ontario-signatures-container');
+    container.innerHTML = '';
+    sigs.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'particle-bin-card';
+        div.innerHTML = `
+            <div class="bin-size" style="color:var(--accent-yellow); font-weight:800;">${s.peak_nm} nm</div>
+            <div class="bin-frac" style="font-size:0.85rem;">${s.name}</div>
+            <div class="bin-type" style="color:var(--accent-cyan); font-weight:600;">${s.significance}</div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+async function loadOntarioRecovery10Yr() {
+    try {
+        const res = await fetch('/api/ontario/recovery/10yr');
+        const json = await res.json();
+        if (json.status === 'success') {
+            const recov = json.recovery;
+
+            document.getElementById('recov-p-load').innerText = `${recov.phosphorus_load_mt[9].toLocaleString()} MT/yr`;
+            document.getElementById('recov-secchi').innerText = `${recov.secchi_depth_m[9].toFixed(2)} m`;
+            document.getElementById('recov-diporeia').innerText = `${recov.diporeia_density_indiv_m2[9].toLocaleString()} /m²`;
+            document.getElementById('recov-econ').innerText = `$${recov.cumulative_economic_value_cad_m[9]}M CAD`;
+
+            renderOntarioRecoveryCharts(recov);
+            renderOntarioRoadmap(recov.recovery_roadmap);
+        }
+    } catch (err) {
+        console.error('Error loading 10-year Lake Ontario recovery:', err);
+    }
+}
+
+function renderOntarioRecoveryCharts(recov) {
+    // 1. Phosphorus & Secchi Trajectory
+    const ctxP = document.getElementById('chart-ontario-phosphorus').getContext('2d');
+    if (chartOntarioPhosphorus) chartOntarioPhosphorus.destroy();
+
+    chartOntarioPhosphorus = new Chart(ctxP, {
+        type: 'line',
+        data: {
+            labels: recov.years,
+            datasets: [
+                {
+                    label: 'Total Phosphorus Loading (MT/year)',
+                    data: recov.phosphorus_load_mt,
+                    borderColor: '#f43f5e',
+                    backgroundColor: 'rgba(244, 63, 94, 0.1)',
+                    yAxisID: 'y1',
+                    borderWidth: 2.8,
+                    tension: 0.3
+                },
+                {
+                    label: 'Secchi Transparency Depth (m)',
+                    data: recov.secchi_depth_m,
+                    borderColor: '#06b6d4',
+                    yAxisID: 'y2',
+                    borderWidth: 2.8,
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y1: {
+                    type: 'linear',
+                    position: 'left',
+                    title: { display: true, text: 'Phosphorus Load (MT/yr)', color: '#f43f5e' },
+                    grid: { color: '#0f1f42' },
+                    ticks: { color: '#f43f5e' }
+                },
+                y2: {
+                    type: 'linear',
+                    position: 'right',
+                    title: { display: true, text: 'Secchi Depth (meters)', color: '#06b6d4' },
+                    grid: { drawOnChartArea: false },
+                    ticks: { color: '#06b6d4' }
+                },
+                x: { grid: { color: '#0f1f42' }, ticks: { color: '#94a3b8' } }
+            },
+            plugins: { legend: { labels: { color: '#f8fafc', font: { size: 10 } } } }
+        }
+    });
+
+    // 2. Diporeia Recovery & Economic NPV Chart
+    const ctxD = document.getElementById('chart-ontario-diporeia').getContext('2d');
+    if (chartOntarioDiporeia) chartOntarioDiporeia.destroy();
+
+    chartOntarioDiporeia = new Chart(ctxD, {
+        type: 'bar',
+        data: {
+            labels: recov.years,
+            datasets: [
+                {
+                    type: 'bar',
+                    label: 'Benthic Diporeia Density (indiv/m²)',
+                    data: recov.diporeia_density_indiv_m2,
+                    backgroundColor: 'rgba(16, 185, 129, 0.75)',
+                    borderColor: '#10b981',
+                    yAxisID: 'y1',
+                    borderWidth: 1.5
+                },
+                {
+                    type: 'line',
+                    label: 'Cumulative Economic NPV ($M CAD)',
+                    data: recov.cumulative_economic_value_cad_m,
+                    borderColor: '#fbbf24',
+                    backgroundColor: 'rgba(251, 191, 36, 0.15)',
+                    yAxisID: 'y2',
+                    borderWidth: 2.5,
+                    tension: 0.25
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y1: {
+                    type: 'linear',
+                    position: 'left',
+                    title: { display: true, text: 'Diporeia Density (/m²)', color: '#10b981' },
+                    grid: { color: '#0f1f42' },
+                    ticks: { color: '#10b981' }
+                },
+                y2: {
+                    type: 'linear',
+                    position: 'right',
+                    title: { display: true, text: 'Economic Value ($M CAD)', color: '#fbbf24' },
+                    grid: { drawOnChartArea: false },
+                    ticks: { color: '#fbbf24' }
+                },
+                x: { grid: { color: '#0f1f42' }, ticks: { color: '#94a3b8' } }
+            },
+            plugins: { legend: { labels: { color: '#f8fafc', font: { size: 10 } } } }
+        }
+    });
+}
+
+function renderOntarioRoadmap(roadmap) {
+    const container = document.getElementById('ontario-roadmap-container');
+    container.innerHTML = '';
+    roadmap.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'protocol-card';
+        div.innerHTML = `
+            <div class="protocol-phase">${r.phase}</div>
+            <div class="protocol-timeline">${r.horizon}</div>
+            <div class="protocol-dose">${r.robot_deployment}</div>
+            <div class="protocol-obj"><b>Action Targets:</b> ${r.action_targets}</div>
+            <div class="protocol-milestone"><b>Milestone:</b> ${r.milestone}</div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// In-Situ AUV Water Intake Canvas Simulation
+function initOntarioFlowCanvas() {
+    const canvas = document.getElementById('ontario-flow-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    function renderOntarioFlow() {
+        ctx.fillStyle = '#020714';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ontarioFlowAnimOffset += 0.05;
+        const cx = canvas.width / 2;
+        const cy = 115;
+
+        // 1. Flow background gradient
+        const bgGrad = ctx.createLinearGradient(0, 0, canvas.width, 0);
+        bgGrad.addColorStop(0, '#040d24');
+        bgGrad.addColorStop(0.5, '#061a38');
+        bgGrad.addColorStop(1, '#020714');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 2. Incoming Water Intake Streamlines (entering AUV nose from left)
+        const numLines = 8;
+        for (let i = 0; i < numLines; i++) {
+            const yBase = cy - 40 + i * 11;
+            const flowOffset = (ontarioFlowAnimOffset * 45 + i * 20) % (cx - 70);
+
+            ctx.beginPath();
+            ctx.moveTo(0, yBase);
+            ctx.bezierCurveTo(cx - 140, yBase, cx - 100, cy, cx - 65, cy);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${0.25 + (i % 3) * 0.2})`;
+            ctx.lineWidth = 1.6;
+            ctx.stroke();
+
+            // Streamline flow particles
+            const particleX = (flowOffset) % (cx - 65);
+            const particleY = yBase + (cy - yBase) * ((particleX) / (cx - 65));
+            ctx.beginPath();
+            ctx.arc(particleX, particleY, 2.2, 0, Math.PI * 2);
+            ctx.fillStyle = '#06b6d4';
+            ctx.fill();
+        }
+
+        // 3. AUV Hull & Cross-Sectional Cutaway
+        ctx.fillStyle = '#0284c7';
+        ctx.beginPath();
+        ctx.roundRect(cx - 65, cy - 35, 240, 70, [25, 6, 6, 25]);
+        ctx.fill();
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Internal Optical Flow Cell Chamber (Glowing Transmon QPU Target)
+        ctx.fillStyle = 'rgba(2, 6, 23, 0.9)';
+        ctx.fillRect(cx - 15, cy - 22, 110, 44);
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 1.8;
+        ctx.strokeRect(cx - 15, cy - 22, 110, 44);
+
+        // Dilution Refrigerator / QPU Chip Icon
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.arc(cx + 40, cy, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#f8fafc';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('6Q QPU', cx + 40, cy + 3);
+
+        // UV-Vis Multi-wavelength Laser beam across sample
+        const beamPhase = (Math.sin(ontarioFlowAnimOffset * 3) + 1) / 2;
+        ctx.strokeStyle = `rgba(244, 63, 94, ${0.6 + beamPhase * 0.4})`;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(cx - 5, cy);
+        ctx.lineTo(cx + 25, cy);
+        ctx.stroke();
+
+        // Chamber labels
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 9px system-ui';
+        ctx.textAlign = 'left';
+        ctx.fillText('CRYO QPU SPECTROPHOTOMETER (15 mK)', cx - 12, cy - 26);
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '8px system-ui';
+        ctx.fillText('Laminar Sample Flow (150 mL/min)', cx - 12, cy + 32);
+
+        // Water intake snout
+        ctx.fillStyle = '#06b6d4';
+        ctx.beginPath();
+        ctx.moveTo(cx - 65, cy - 12);
+        ctx.lineTo(cx - 80, cy - 18);
+        ctx.lineTo(cx - 80, cy + 18);
+        ctx.lineTo(cx - 65, cy + 12);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        requestAnimationFrame(renderOntarioFlow);
+    }
+
+    renderOntarioFlow();
+}
+
+function setupOntarioEventListeners() {
+    const stSelect = document.getElementById('ontario-station-select');
+    if (stSelect) {
+        stSelect.addEventListener('change', (e) => {
+            updateOntarioStationDossier(e.target.value);
+            runOntarioSpectroscopy(e.target.value);
+        });
+    }
+
+    const depthSlider = document.getElementById('ontario-depth-slider');
+    if (depthSlider) {
+        depthSlider.addEventListener('input', (e) => {
+            document.getElementById('ontario-depth-val').innerText = `${e.target.value} m`;
+        });
+    }
+
+    const flowSlider = document.getElementById('ontario-flow-slider');
+    if (flowSlider) {
+        flowSlider.addEventListener('input', (e) => {
+            document.getElementById('ontario-flow-val').innerText = `${e.target.value} mL/min`;
+        });
+    }
+
+    const btnRunSpec = document.getElementById('btn-run-ontario-spec');
+    if (btnRunSpec) {
+        btnRunSpec.addEventListener('click', () => {
+            const st = document.getElementById('ontario-station-select').value;
+            runOntarioSpectroscopy(st);
+        });
+    }
+
+    const btnRecompile = document.getElementById('btn-recompile-ontario-pdf');
+    if (btnRecompile) {
+        btnRecompile.addEventListener('click', async () => {
+            btnRecompile.innerText = 'Recompiling...';
+            try {
+                const res = await fetch('/api/ontario/preprint/generate');
+                const json = await res.json();
+                if (json.status === 'success') {
+                    btnRecompile.innerText = '✅ Ontario PDF Ready';
+                    const iframe = document.querySelector('iframe[title="Nature Lake Ontario Preprint PDF"]');
+                    if (iframe) {
+                        iframe.src = '/api/ontario/preprint/view?t=' + Date.now();
+                    }
+                }
+            } catch (err) {
+                btnRecompile.innerText = '❌ Failed';
+            }
+            setTimeout(() => { btnRecompile.innerText = '🔄 Recompile Ontario PDF'; }, 3000);
         });
     }
 }
