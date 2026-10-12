@@ -754,8 +754,9 @@ async function initOntarioModule() {
         const json = await res.json();
         if (json.status === 'success') {
             currentOntarioStations = json.stations;
-            updateOntarioStationDossier('toronto_inner_harbour');
-            runOntarioSpectroscopy('toronto_inner_harbour');
+            const defaultStation = currentOntarioStations['yellow_creek_ravine'] ? 'yellow_creek_ravine' : 'toronto_inner_harbour';
+            updateOntarioStationDossier(defaultStation);
+            runOntarioSpectroscopy(defaultStation);
             loadOntarioRecovery10Yr();
             initOntarioFlowCanvas();
         }
@@ -768,10 +769,13 @@ function updateOntarioStationDossier(stKey) {
     const st = currentOntarioStations[stKey];
     if (!st) return;
 
+    const cfdInfo = st.cfd_velocity_m_s ? ` &nbsp;|&nbsp; <b>CFD Flow:</b> ${st.cfd_velocity_m_s} m/s (Re=${st.cfd_reynolds_re.toLocaleString()})` : '';
+    const ecoliInfo = st.baseline_ecoli_cfu ? ` &nbsp;|&nbsp; <b>Baseline E.coli:</b> ${st.baseline_ecoli_cfu} CFU` : '';
+
     const dossier = document.getElementById('ontario-station-dossier');
     dossier.innerHTML = `
         <div class="target-title">${st.name} (Lat: ${st.lat}°N, Lon: ${st.lon}°W)</div>
-        <div class="target-desc"><b>Baseline Depth:</b> ${st.depth_m} m &nbsp;|&nbsp; <b>Total Phosphorus:</b> ${st.baseline_phosphorus_ug_l} µg/L &nbsp;|&nbsp; <b>Secchi:</b> ${st.baseline_secchi_m} m</div>
+        <div class="target-desc"><b>Survey Depth:</b> ${st.depth_m} m &nbsp;|&nbsp; <b>Total Phosphorus:</b> ${st.baseline_phosphorus_ug_l} µg/L &nbsp;|&nbsp; <b>Secchi:</b> ${st.baseline_secchi_m} m${cfdInfo}${ecoliInfo}</div>
         <div class="target-desc" style="margin-top:4px; color:var(--accent-yellow);"><b>Target Pollution Profile:</b> ${st.target_pollutants}</div>
     `;
 
@@ -799,8 +803,21 @@ async function runOntarioSpectroscopy(stKey) {
             document.getElementById('spec-tp').innerText = `${data.limnological_diagnostics.total_phosphorus_ug_l} µg/L`;
             document.getElementById('spec-do').innerText = `${data.limnological_diagnostics.dissolved_oxygen_mg_l} mg/L`;
 
-            document.getElementById('val-fubini').innerText = data.qml_telemetry.fubini_study_eigen_min;
-            document.getElementById('val-intake-p').innerText = `${data.hydrostatic_pressure_bar} bar`;
+            if (document.getElementById('val-cfd-re') && data.cfd_hydraulics) {
+                document.getElementById('val-cfd-re').innerText = data.cfd_hydraulics.reynolds_number.toLocaleString();
+            }
+            if (document.getElementById('val-cfd-tke') && data.cfd_hydraulics) {
+                document.getElementById('val-cfd-tke').innerText = `${data.cfd_hydraulics.turbulent_kinetic_energy_m2_s2} m²/s²`;
+            }
+            if (document.getElementById('val-cfd-shear') && data.cfd_hydraulics) {
+                document.getElementById('val-cfd-shear').innerText = `${data.cfd_hydraulics.bed_shear_stress_pa} Pa`;
+            }
+            if (document.getElementById('val-cfd-ecoli') && data.limnological_diagnostics.ecoli_cfu_100ml) {
+                document.getElementById('val-cfd-ecoli').innerText = `${data.limnological_diagnostics.ecoli_cfu_100ml} CFU`;
+            }
+            if (document.getElementById('val-intake-p') && data.cfd_hydraulics) {
+                document.getElementById('val-intake-p').innerText = `${data.cfd_hydraulics.intake_suction_pa} Pa`;
+            }
 
             renderOntarioSpectrumChart(data.spectroscopy_curve);
             renderDetectedSignatures(data.spectroscopy_curve.detected_signatures);
@@ -877,33 +894,47 @@ async function loadOntarioRecovery10Yr() {
 }
 
 function renderOntarioRecoveryCharts(recov) {
-    // 1. Phosphorus & Secchi Trajectory
+    // 1. Phosphorus, Secchi & Yellow Creek E. coli Trajectory
     const ctxP = document.getElementById('chart-ontario-phosphorus').getContext('2d');
     if (chartOntarioPhosphorus) chartOntarioPhosphorus.destroy();
+
+    const datasets = [
+        {
+            label: 'Total Phosphorus Loading (MT/year)',
+            data: recov.phosphorus_load_mt,
+            borderColor: '#f43f5e',
+            backgroundColor: 'rgba(244, 63, 94, 0.1)',
+            yAxisID: 'y1',
+            borderWidth: 2.8,
+            tension: 0.3
+        },
+        {
+            label: 'Secchi Transparency Depth (m)',
+            data: recov.secchi_depth_m,
+            borderColor: '#06b6d4',
+            yAxisID: 'y2',
+            borderWidth: 2.8,
+            tension: 0.3
+        }
+    ];
+
+    if (recov.yellow_creek_ecoli_cfu) {
+        datasets.push({
+            label: 'Yellow Creek Ravine E. coli (CFU/100mL ÷ 10)',
+            data: recov.yellow_creek_ecoli_cfu.map(v => v / 10.0),
+            borderColor: '#10b981',
+            borderWidth: 2.2,
+            borderDash: [5, 4],
+            yAxisID: 'y1',
+            tension: 0.3
+        });
+    }
 
     chartOntarioPhosphorus = new Chart(ctxP, {
         type: 'line',
         data: {
             labels: recov.years,
-            datasets: [
-                {
-                    label: 'Total Phosphorus Loading (MT/year)',
-                    data: recov.phosphorus_load_mt,
-                    borderColor: '#f43f5e',
-                    backgroundColor: 'rgba(244, 63, 94, 0.1)',
-                    yAxisID: 'y1',
-                    borderWidth: 2.8,
-                    tension: 0.3
-                },
-                {
-                    label: 'Secchi Transparency Depth (m)',
-                    data: recov.secchi_depth_m,
-                    borderColor: '#06b6d4',
-                    yAxisID: 'y2',
-                    borderWidth: 2.8,
-                    tension: 0.3
-                }
-            ]
+            datasets: datasets
         },
         options: {
             responsive: true,
@@ -912,7 +943,7 @@ function renderOntarioRecoveryCharts(recov) {
                 y1: {
                     type: 'linear',
                     position: 'left',
-                    title: { display: true, text: 'Phosphorus Load (MT/yr)', color: '#f43f5e' },
+                    title: { display: true, text: 'Phosphorus (MT/yr) / E.coli (x10 CFU)', color: '#f43f5e' },
                     grid: { color: '#0f1f42' },
                     ticks: { color: '#f43f5e' }
                 },
@@ -1015,7 +1046,7 @@ function initOntarioFlowCanvas() {
         const cx = canvas.width / 2;
         const cy = 115;
 
-        // 1. Flow background gradient
+        // 1. Flow background gradient & Ravine Culvert Channel
         const bgGrad = ctx.createLinearGradient(0, 0, canvas.width, 0);
         bgGrad.addColorStop(0, '#040d24');
         bgGrad.addColorStop(0.5, '#061a38');
@@ -1023,25 +1054,46 @@ function initOntarioFlowCanvas() {
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 2. Incoming Water Intake Streamlines (entering AUV nose from left)
-        const numLines = 8;
+        // Draw Riparian Ravine Channel Boundaries (Concrete Culvert & Bedrock Silt)
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, canvas.width, 22);
+        ctx.fillRect(0, canvas.height - 22, canvas.width, 22);
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(0, 0, canvas.width, 22);
+        ctx.strokeRect(0, canvas.height - 22, canvas.width, 22);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 9px system-ui';
+        ctx.textAlign = 'left';
+        ctx.fillText('YELLOW CREEK RAVINE CULVERT CHANNEL (Re = 48,500 • v = 1.45 m/s)', 15, 15);
+        ctx.fillText('BEDROCK SILT & SEDIMENT BOUNDARY (Shear Stress τw = 8.42 Pa)', 15, canvas.height - 8);
+
+        // 2. CFD Turbulent Streamlines with Velocity Colormap
+        const numLines = 9;
+        const curVelocity = lastOntarioSpecData && lastOntarioSpecData.cfd_hydraulics ? lastOntarioSpecData.cfd_hydraulics.channel_velocity_m_s : 1.45;
+
         for (let i = 0; i < numLines; i++) {
-            const yBase = cy - 40 + i * 11;
-            const flowOffset = (ontarioFlowAnimOffset * 45 + i * 20) % (cx - 70);
+            const yBase = 32 + i * 19;
+            const flowOffset = (ontarioFlowAnimOffset * (30 * curVelocity) + i * 22) % (cx - 65);
+            const eddyWiggle = Math.sin(ontarioFlowAnimOffset * 3 + i) * 6;
 
             ctx.beginPath();
             ctx.moveTo(0, yBase);
-            ctx.bezierCurveTo(cx - 140, yBase, cx - 100, cy, cx - 65, cy);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${0.25 + (i % 3) * 0.2})`;
-            ctx.lineWidth = 1.6;
+            ctx.bezierCurveTo(cx - 150, yBase + eddyWiggle, cx - 110, cy, cx - 65, cy);
+
+            // Color gradient reflecting streamflow turbulence
+            const strokeColor = (i % 2 === 0) ? 'rgba(6, 182, 212, 0.7)' : 'rgba(251, 191, 36, 0.65)';
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = (i % 3 === 0) ? 2.2 : 1.4;
             ctx.stroke();
 
-            // Streamline flow particles
+            // Streamline velocity particles
             const particleX = (flowOffset) % (cx - 65);
-            const particleY = yBase + (cy - yBase) * ((particleX) / (cx - 65));
+            const particleY = yBase + (cy - yBase) * ((particleX) / (cx - 65)) + (eddyWiggle * (1 - particleX / (cx - 65)));
             ctx.beginPath();
-            ctx.arc(particleX, particleY, 2.2, 0, Math.PI * 2);
-            ctx.fillStyle = '#06b6d4';
+            ctx.arc(particleX, particleY, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = (curVelocity > 1.0) ? '#f43f5e' : '#06b6d4';
             ctx.fill();
         }
 

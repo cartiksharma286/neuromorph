@@ -257,6 +257,11 @@ def generate_nature_ontario_preprint_pdf(output_path: str = None) -> str:
             Paragraph("<b>28 g/m<sup>2</sup></b>", table_cell_style), Paragraph("-88.3% Shoreline Nuisance", table_cell_style)
         ],
         [
+            Paragraph("Yellow Creek <i>E. coli</i> (CFU/100mL)", table_cell_style),
+            Paragraph("2,400 CFU", table_cell_style), Paragraph("850 CFU", table_cell_style), Paragraph("310 CFU", table_cell_style),
+            Paragraph("<b>78 CFU</b>", table_cell_style), Paragraph("<b>COMPLIANT (&lt; 100 CFU)</b>", table_cell_style)
+        ],
+        [
             Paragraph("Cumulative Economic NPV ($ CAD)", table_cell_style),
             Paragraph("$14.5M", table_cell_style), Paragraph("$64.2M", table_cell_style), Paragraph("$162.8M", table_cell_style),
             Paragraph("<b>$324.5M CAD</b>", table_cell_style), Paragraph("Tourism & Drinking Water", table_cell_style)

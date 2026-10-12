@@ -23,6 +23,23 @@ class OntarioQubitSpectroscopyEngine:
     """Simulates superconducting qubit hardware, QML spectroscopy, and Lake Ontario 10-year horizons."""
 
     LAKE_ONTARIO_STATIONS = {
+        'yellow_creek_ravine': {
+            'id': 'yellow_creek_ravine',
+            'name': 'Yellow Creek Ravine Riparian Corridor & Culvert',
+            'lat': 43.6880,
+            'lon': -79.3870,
+            'depth_m': 3.5,
+            'pressure_bar': 1.05,
+            'ambient_temp_c': 15.8,
+            'target_pollutants': 'Flash stormwater surges, E. coli coliform spikes, microplastics, and suspended road-dust silt',
+            'baseline_phosphorus_ug_l': 42.0,
+            'baseline_secchi_m': 1.2,
+            'cfd_velocity_m_s': 1.45,
+            'cfd_reynolds_re': 48500,
+            'cfd_tke_m2_s2': 0.185,
+            'cfd_shear_stress_pa': 8.42,
+            'baseline_ecoli_cfu': 2400.0
+        },
         'toronto_inner_harbour': {
             'id': 'toronto_inner_harbour',
             'name': 'Toronto Inner Harbour / Keating Channel Hub',
@@ -33,7 +50,12 @@ class OntarioQubitSpectroscopyEngine:
             'ambient_temp_c': 14.5,
             'target_pollutants': 'Urban runoff, eDNA coliforms, microplastics, and dissolved nutrients',
             'baseline_phosphorus_ug_l': 28.5,
-            'baseline_secchi_m': 2.4
+            'baseline_secchi_m': 2.4,
+            'cfd_velocity_m_s': 0.65,
+            'cfd_reynolds_re': 24000,
+            'cfd_tke_m2_s2': 0.082,
+            'cfd_shear_stress_pa': 3.15,
+            'baseline_ecoli_cfu': 1200.0
         },
         'leslie_spit_outer': {
             'id': 'leslie_spit_outer',
@@ -213,7 +235,16 @@ class OntarioQubitSpectroscopyEngine:
         dissolved_oxygen_mg_l = round(12.5 - (depth * 0.008) + math.sin(depth * 0.1) * 0.2, 2)
         turbidity_ntu = round(max(0.15, (st['baseline_phosphorus_ug_l'] / 8.0) * math.exp(-depth / 60.0)), 2)
         total_phosphorus_ug_l = round(max(4.0, st['baseline_phosphorus_ug_l'] * (1.0 - 0.2 * math.sin(depth * 0.02))), 1)
-        
+        ecoli_cfu = round(st.get('baseline_ecoli_cfu', 200.0) * (0.8 + 0.4 * math.sin(depth * 0.3)), 1)
+
+        # Computational Fluid Dynamics (CFD) Ravine & AUV Intake Simulation
+        stream_velocity = st.get('cfd_velocity_m_s', 0.85)
+        reynolds_re = st.get('cfd_reynolds_re', 32000)
+        tke = st.get('cfd_tke_m2_s2', 0.11)
+        bed_shear = st.get('cfd_shear_stress_pa', 4.8)
+        # Suction pressure gradient Delta P (Pa) across microfluidic flow cell
+        intake_suction_pa = round(0.5 * 1000.0 * ((intake_rate_ml_min * 1e-6 / 0.0001) ** 2) + 120.0, 1)
+
         return {
             'station_id': st['id'],
             'station_name': st['name'],
@@ -223,6 +254,15 @@ class OntarioQubitSpectroscopyEngine:
             'hydrostatic_pressure_bar': hydrostatic_bar,
             'ambient_water_temp_c': round(ambient_temp, 2),
             'intake_flow_rate_ml_min': intake_rate_ml_min,
+            'cfd_hydraulics': {
+                'channel_velocity_m_s': stream_velocity,
+                'reynolds_number': reynolds_re,
+                'turbulent_kinetic_energy_m2_s2': tke,
+                'bed_shear_stress_pa': bed_shear,
+                'intake_suction_pa': intake_suction_pa,
+                'vorticity_rad_s': round(stream_velocity * 4.2, 2),
+                'flow_regime': 'Turbulent Riparian Channel Flow' if reynolds_re > 4000 else 'Laminar Channel'
+            },
             'qubit_hardware': self.QUBIT_HARDWARE_SPEC,
             'qml_telemetry': {
                 'classifier_fidelity': round(qf_fidelity * 100.0, 2),
@@ -235,9 +275,9 @@ class OntarioQubitSpectroscopyEngine:
                 'wavelengths_nm': [round(float(w), 1) for w in wavelengths],
                 'intensities_au': spectrum_intensity,
                 'detected_signatures': [
-                    {'name': 'eDNA / Microbial Tryptophan Peak', 'peak_nm': 345.0, 'significance': 'High (Active Coliforms)'},
-                    {'name': 'FDOM Humic / Fulvic Carbon', 'peak_nm': 420.0, 'significance': 'Moderate'},
-                    {'name': 'Microplastic Polymer Raman Peak', 'peak_nm': 582.0, 'significance': 'Detected (Polystyrene / PE)'},
+                    {'name': 'eDNA / Microbial Tryptophan Peak', 'peak_nm': 345.0, 'significance': f'{ecoli_cfu} CFU/100mL E.coli Indicator'},
+                    {'name': 'FDOM Humic / Fulvic Carbon', 'peak_nm': 420.0, 'significance': 'High (Ravine Leaf Litter Decay)' if 'yellow_creek' in station_key else 'Moderate'},
+                    {'name': 'Microplastic Polymer Raman Peak', 'peak_nm': 582.0, 'significance': 'Detected (Road Runoff PE/PS)' if 'yellow_creek' in station_key else 'Detected (Polystyrene)'},
                     {'name': 'Chlorophyll-a Photosynthetic Emission', 'peak_nm': 680.0, 'significance': f'{total_phosphorus_ug_l} µg/L TP Induced'}
                 ]
             },
@@ -245,25 +285,27 @@ class OntarioQubitSpectroscopyEngine:
                 'total_phosphorus_ug_l': total_phosphorus_ug_l,
                 'dissolved_oxygen_mg_l': dissolved_oxygen_mg_l,
                 'turbidity_ntu': turbidity_ntu,
+                'ecoli_cfu_100ml': ecoli_cfu,
                 'target_pollutants': st['target_pollutants']
             }
         }
 
     def compute_lake_ontario_10yr_recovery(self) -> Dict[str, Any]:
         """
-        Computes 10-Year Long-Term Lake Ontario Ecological Recovery Horizon (2026 - 2036).
+        Computes 10-Year Long-Term Lake Ontario & Yellow Creek Ravine Ecological Recovery Horizon (2026 - 2036).
         Simulates:
-        - Annual Total Phosphorus load (Metric Tonnes / yr) converging to GLWQA Annex 4 target (6,000 MT/yr)
+        - Annual Total Phosphorus load (Metric Tonnes / yr) converging to GLWQA Annex 4 target (6,200 MT/yr)
         - Secchi disk clarity depth improvement (meters)
         - Diporeia benthic macroinvertebrate re-colonization (individuals / m^2)
         - Toxic Cladophora & cyanobacteria biomass reduction (g/m^2 dry weight)
+        - Yellow Creek Ravine E. coli coliform load reduction (CFU/100mL -> safe <100 CFU)
+        - Yellow Creek Turbidity reduction (NTU) & Benthic Index of Biological Integrity (B-IBI)
         - Cumulative economic watershed restoration value ($ Millions CAD)
         """
         years = [f"Year {y} (20{25+y})" for y in range(1, 11)]
         years_num = np.arange(1, 11)
         
         # 1. Phosphorus Reduction: 11,800 MT/yr baseline -> 6,200 MT/yr in Year 10
-        # Exponential recovery modulated by qubit-robot monitored targeted interception
         p_baseline = 11800.0
         p_target = 6200.0
         phosphorus_load_mt = [round(p_target + (p_baseline - p_target) * math.exp(-0.28 * y), 1) for y in years_num]
@@ -278,40 +320,47 @@ class OntarioQubitSpectroscopyEngine:
         
         # 4. Cladophora Algal Shoreline Fouling: 240 g/m^2 -> 28 g/m^2
         cladophora_biomass = [round(28.0 + (240.0 - 28.0) * math.exp(-0.32 * y), 1) for y in years_num]
+
+        # 5. Yellow Creek Ravine Specific 10-Yr Restoration Curves
+        # E. coli drops from 2,400 CFU/100mL to 78 CFU/100mL (below 100 threshold)
+        yellow_creek_ecoli = [round(78.0 + (2400.0 - 78.0) * math.exp(-0.35 * y), 1) for y in years_num]
+        # Turbidity drops from 48.5 NTU to 2.4 NTU
+        yellow_creek_turbidity = [round(2.4 + (48.5 - 2.4) * math.exp(-0.38 * y), 2) for y in years_num]
+        # Benthic IBI score improves from 16.5 (Poor) to 44.0 (Excellent)
+        yellow_creek_bibi = [round(44.0 - (44.0 - 16.5) * math.exp(-0.26 * y), 1) for y in years_num]
         
-        # 5. Economic Restoration Net Present Value ($ Millions CAD)
-        # Tourism, drinking water filtration savings, fishery revitalization
+        # 6. Economic Restoration Net Present Value ($ Millions CAD)
         cumulative_economic_value_m = [round(14.5 * (y ** 1.35), 1) for y in years_num]
         
         # 4-Phase Recovery Roadmap
         roadmap = [
             {
-                'phase': 'Phase 1: Deep Trench Hotspot Mapping & Source Tracking',
+                'phase': 'Phase 1: Yellow Creek Ravine & Keating Channel Hotspot Interception',
                 'horizon': 'Years 1 – 2 (2026 – 2027)',
-                'robot_deployment': 'Fleet of 4 Qubit-AUVs stationed at Keating Channel & Niagara River Delta',
-                'action_targets': 'Autonomous in-situ spectroscopy isolating point-source industrial/stormwater phosphorus plumes',
-                'milestone': '15% reduction in Keating Channel acute nutrient pulses; Secchi clarity rises to 5.6m.'
+                'robot_deployment': 'Fleet of 4 Qubit-AUVs stationed at Yellow Creek Culvert & Keating Channel Hub',
+                'action_targets': 'Autonomous in-situ CFD streamline tracking isolating acute E. coli stormwater bursts and microplastics',
+                'milestone': 'Yellow Creek E. coli reduced by 45%; Keating Channel acute nutrient pulses damped by 18%; Secchi clarity rises to 5.6m.'
             },
             {
-                'phase': 'Phase 2: Microfluidic Bioremediation & Quorum Sensing Interception',
+                'phase': 'Phase 2: Microfluidic Bioremediation & Riparian Buffer Stabilization',
                 'horizon': 'Years 3 – 5 (2028 – 2030)',
-                'robot_deployment': 'Pelagic Autonomous Swarm (8 AUVs) across Western & Central Lake Ontario',
-                'action_targets': 'Targeted biological coagulant and biocontrol release during pre-bloom cyanobacterial microstates',
-                'milestone': 'Total phosphorus falls below 8,500 MT/yr; Cladophora shoreline fouling reduced by 60%.'
+                'robot_deployment': 'Pelagic Autonomous Swarm (8 AUVs) across Western & Central Lake Ontario + Ravine Weirs',
+                'action_targets': 'Targeted biological coagulant and biocontrol release during storm runoff; sediment retention weirs in Yellow Creek',
+                'milestone': 'Total phosphorus falls below 8,500 MT/yr; Yellow Creek E. coli drops below 350 CFU/100mL; Cladophora reduced by 60%.'
             },
             {
                 'phase': 'Phase 3: Deep Benthic Re-Colonization & Hypolimnion Oxygenation',
                 'horizon': 'Years 6 – 8 (2031 – 2033)',
                 'robot_deployment': 'Abyssal Benthic Crawlers & Profilers down to 244m depth',
                 'action_targets': 'Sediment micro-aeration and re-introduction of native Diporeia amphipods to restore deep food web',
-                'milestone': 'Diporeia densities exceed 3,200 indiv/m²; offshore lake whitefish fisheries experience 4-fold recovery.'
+                'milestone': 'Diporeia densities exceed 3,200 indiv/m²; Yellow Creek B-IBI reaches 38.0 (Good to Excellent); offshore lake whitefish recovery.'
             },
             {
                 'phase': 'Phase 4: Equilibrium Homeostasis & GLWQA Compliance',
                 'horizon': 'Years 9 – 10 (2034 – 2036)',
                 'robot_deployment': 'Permanent Autonomous Sentinel Network with Satellite Uplinks',
                 'action_targets': 'Zero-emission continuous monitoring, autonomous dock re-charging, and automated regulatory reporting',
-                'milestone': 'Full Great Lakes Water Quality Agreement (GLWQA Annex 4) compliance; Secchi clarity achieves 12.4m.'
+                'milestone': 'Full Great Lakes Water Quality Agreement (GLWQA Annex 4) compliance; Yellow Creek E. coli stably <100 CFU; Secchi clarity achieves 12.4m.'
             }
         ]
         
@@ -321,6 +370,9 @@ class OntarioQubitSpectroscopyEngine:
             'secchi_depth_m': secchi_depth_m,
             'diporeia_density_indiv_m2': diporeia_density,
             'cladophora_biomass_g_m2': cladophora_biomass,
+            'yellow_creek_ecoli_cfu': yellow_creek_ecoli,
+            'yellow_creek_turbidity_ntu': yellow_creek_turbidity,
+            'yellow_creek_bibi_score': yellow_creek_bibi,
             'cumulative_economic_value_cad_m': cumulative_economic_value_m,
             'recovery_roadmap': roadmap
         }

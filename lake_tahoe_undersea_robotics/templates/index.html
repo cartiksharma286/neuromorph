@@ -301,9 +301,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="ontario-station-select">Lake Ontario Benthic Survey Station:</label>
+                        <label for="ontario-station-select">Lake Ontario / Watershed Benthic Survey Station:</label>
                         <select id="ontario-station-select" class="form-control">
-                            <option value="toronto_inner_harbour" selected>Toronto Inner Harbour / Keating Channel (12m) - Urban Nutrient Plume</option>
+                            <option value="yellow_creek_ravine" selected>Yellow Creek Ravine (3.5m) - Stormwater Culvert & Riparian CFD Inflow</option>
+                            <option value="toronto_inner_harbour">Toronto Inner Harbour / Keating Channel (12m) - Urban Nutrient Plume</option>
                             <option value="leslie_spit_outer">Leslie Spit / Tommy Thompson Sill (45m) - Ashbridges Outfall</option>
                             <option value="western_deep_basin">Western Deep Pelagic Basin (185m) - Hypolimnion Benthic Zone</option>
                             <option value="niagara_plume_zone">Niagara River Inflow Plume Delta (95m) - Agricultural Flux</option>
@@ -365,11 +366,11 @@
                     </div>
 
                     <div class="jacobi-readout">
-                        <span>Fubini &lambda;<sub>min</sub>: <b id="val-fubini">0.425</b></span>
-                        <span>Qubit f₀₁: <b>4.850 GHz</b></span>
-                        <span>Resonator: <b>6.450 GHz</b></span>
-                        <span>T₁: <b>142.5 &mu;s</b></span>
-                        <span>P<sub>intake</sub>: <b id="val-intake-p">1.2 bar</b></span>
+                        <span>CFD Re: <b id="val-cfd-re">48,500</b></span>
+                        <span>TKE: <b id="val-cfd-tke">0.185 m²/s²</b></span>
+                        <span>Shear: <b id="val-cfd-shear">8.42 Pa</b></span>
+                        <span>E.coli: <b id="val-cfd-ecoli">2,400 CFU</b></span>
+                        <span>Suction: <b id="val-intake-p">2,120 Pa</b></span>
                     </div>
 
                     <div class="canvas-wrapper">
