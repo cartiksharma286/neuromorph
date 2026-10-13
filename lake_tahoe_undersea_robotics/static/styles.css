@@ -1,5 +1,12 @@
 /* Lake Tahoe Undersea Robotics & Molecular Gene Combing Platform - Stylesheet */
 
+.carbon-inputs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.carbon-results p { padding: 8px 0; border-bottom: 1px solid var(--border-color); }
+.carbon-equation { font-family: monospace; margin-top: 12px; overflow-wrap: anywhere; }
+.pqc-output { white-space: pre-wrap; overflow-wrap: anywhere; padding: 16px 0; }
+#carbon-status, #pqc-status { margin: 14px 0; color: var(--accent-yellow); }
+@media (max-width: 640px) { .carbon-inputs { grid-template-columns: 1fr; } }
+
 :root {
     --bg-primary: #040914;
     --bg-secondary: #0a1329;

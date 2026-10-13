@@ -25,12 +25,14 @@ from padic_topological_engine import PadicTopologicalEngine
 from nature_tahoe_preprint_generator import generate_nature_tahoe_preprint_pdf
 from ontario_qubit_spectroscopy_engine import OntarioQubitSpectroscopyEngine
 from nature_ontario_preprint_generator import generate_nature_ontario_preprint_pdf
+from backend.carbon_routes import carbon
 
 app = Flask(
     __name__,
     template_folder=os.path.join(CURRENT_DIR, 'templates'),
     static_folder=os.path.join(CURRENT_DIR, 'static')
 )
+app.register_blueprint(carbon)
 
 # Instantiate engines
 auv_engine = TahoeAUVRoboticsEngine()

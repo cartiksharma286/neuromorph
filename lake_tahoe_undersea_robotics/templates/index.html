@@ -32,6 +32,8 @@
         <button class="nav-tab" data-tab="tab-combing">🧬 Molecular Gene Combing & eDNA</button>
         <button class="nav-tab" data-tab="tab-padic">📐 p-Adic Topological Placement</button>
         <button class="nav-tab" data-tab="tab-ontario">⚡ Lake Ontario Qubit & 10-Yr Recovery</button>
+        <button class="nav-tab" data-tab="tab-carbon">Cost Economics & Carbon Viability</button>
+        <button class="nav-tab" data-tab="tab-pqc">Post-Quantum Report Verification</button>
         <button class="nav-tab" data-tab="tab-limnology">📊 Clarity & Thermocline Analytics</button>
         <button class="nav-tab" data-tab="tab-preprint">📄 Nature Preprints & Finite Math PDF</button>
     </nav>
@@ -509,6 +511,61 @@
             </div>
         </section>
 
+        <section id="tab-carbon" class="tab-pane">
+            <div class="section-intro">
+                <h2>Ten-year cost economics and carbon viability</h2>
+                <p>Illustrative CAD / kg CO2e assumptions, not a measured lifecycle assessment. Replace defaults with your own data. QML energy savings are assumed, not proven.</p>
+            </div>
+            <div class="grid-2col">
+                <div class="card glass-card">
+                    <h3>Editable fleet and baseline assumptions</h3>
+                    <form id="carbon-form">
+                        <div id="carbon-inputs" class="carbon-inputs"></div>
+                        <button class="btn btn-primary" type="submit">Calculate and sign scenario</button>
+                        <button id="carbon-pdf" class="btn btn-secondary" type="button">Download scenario preprint PDF</button>
+                    </form>
+                    <p id="carbon-status" role="status" aria-live="polite">Loading assumptions...</p>
+                    <p class="subtitle">Includes robot and shared QML/cryogenic electricity and embodied carbon. Baseline assets are assumed sunk. No offset-credit sales, replacements or end-of-life inventory. Annual non-carbon benefits must not duplicate avoided baseline costs.</p>
+                </div>
+                <div class="card glass-card">
+                    <h3>Finite-horizon results</h3>
+                    <div id="carbon-results" class="carbon-results"></div>
+                    <p id="carbon-qml"></p>
+                    <p id="carbon-number-theory"></p>
+                    <p class="subtitle">Quantum kernel: classical exact simulation with six synthetic labels. Its score does not drive NPV. Prime residues label schedules, not optimal geography or security keys.</p>
+                    <p class="carbon-equation">NPV = -C0 + sum(Ft / (1+r)^t); G(T) = Gemb + T E gamma</p>
+                    <p class="carbon-equation">K(x,z) = product cos²(pi(xj-zj)/2); group(i) = i mod p</p>
+                </div>
+            </div>
+            <div class="grid-2col">
+                <div class="card glass-card"><h3>Discounted value (CAD)</h3><div class="chart-box"><canvas id="carbon-npv-chart"></canvas></div></div>
+                <div class="card glass-card"><h3>Lifecycle footprint (kg CO2e)</h3><div class="chart-box"><canvas id="carbon-emissions-chart"></canvas></div></div>
+            </div>
+            <div class="card glass-card">
+                <h3>Capital-cost sensitivity (financial NPV, CAD)</h3>
+                <div class="chart-box"><canvas id="carbon-sensitivity-chart"></canvas></div>
+            </div>
+        </section>
+
+        <section id="tab-pqc" class="tab-pane">
+            <div class="section-intro">
+                <h2>Post-quantum signed scenario verification</h2>
+                <p>Real ML-DSA-65 report signatures and ML-KEM-768 functional tests. Reuses Quantum Privacy Cloak's local arithmetic helper; its simulated security scores are not verification evidence.</p>
+            </div>
+            <div class="card glass-card">
+                <div class="btn-group">
+                    <button id="pqc-self-test" class="btn btn-primary">Run PQC functional tests</button>
+                    <button id="pqc-verify" class="btn btn-secondary">Verify latest signed scenario</button>
+                    <button id="pqc-tamper" class="btn btn-secondary">Test altered report rejection</button>
+                    <button id="pqc-download" class="btn btn-outline">Download signed report JSON</button>
+                </div>
+                <p id="pqc-status" role="status" aria-live="polite">Calculate a scenario to obtain a signed snapshot.</p>
+                <pre id="pqc-results" class="pqc-output"></pre>
+                <p class="subtitle">Keys are ephemeral and pinned to the current server process. Restarting invalidates earlier reports. This demo does not establish signer identity, encrypt reports, provide PQ TLS, replay protection or authentication. HTTP is unencrypted. Functional checks are not a security audit or FIPS module certification.</p>
+                <a href="http://127.0.0.1:5008/" target="_blank" rel="noopener noreferrer" class="btn btn-outline">Open local Quantum Privacy Cloak</a>
+            </div>
+        </section>
+
         <!-- TAB 5: NATURE PREPRINT & FINITE MATH PDF -->
         <section id="tab-preprint" class="tab-pane">
             <div class="section-intro">
@@ -540,5 +597,6 @@
     </footer>
 
     <script src="/static/app.js"></script>
+    <script src="/static/carbon.js"></script>
 </body>
 </html>
