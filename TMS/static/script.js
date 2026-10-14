@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const healthEconomicsView = document.getElementById('health-economics-view');
     const xanaduQuantumView = document.getElementById('xanadu-quantum-view');
     const parkinsonsDbsView = document.getElementById('parkinsons-dbs-view');
+    const indigenousDepressionView = document.getElementById('indigenous-depression-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -78,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView, femCorticalView, connectomeView, healthEconomicsView, xanaduQuantumView, parkinsonsDbsView];
+    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView, femCorticalView, connectomeView, healthEconomicsView, xanaduQuantumView, parkinsonsDbsView, indigenousDepressionView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -241,6 +242,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    "Parkinson's DBS: Prime-Gap Staging & QML Revenue",
             subtitle: 'Asymmetric Prime-Gap Signatures · Geometric Fencing · 10-Year Markov Clinical Trajectory · QML-Annealed 5-Year Revenue',
             view:     parkinsonsDbsView, showRunBtn: false
+        },
+        'indigenous-depression': {
+            title:    'Indigenous Depression rTMS: CF Staging & QML Scheduling',
+            subtitle: 'Continued-Fraction Optimal Staging · Combinatorial QML Frequency Scheduling · Attrition-Hazard Retention · Health-Equity Cost-Effectiveness',
+            view:     indigenousDepressionView, showRunBtn: false
         }
     };
 
@@ -296,6 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'health-economics')                     runHealthEconomicsStudio();
             if (tab === 'xanadu-quantum')                       runXanaduQuantumStudio();
             if (tab === 'parkinsons-dbs')                       runParkinsonsDbsStudio();
+            if (tab === 'indigenous-depression')                runIndigenousDepressionTmsStudio();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -5860,3 +5867,190 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+    // ── Indigenous Depression rTMS: CF Staging & Combinatorial QML Scheduling ──
+    let cachedIdtmsData = null;
+    let idtmsDebounceTimer = null;
+
+    const idtmsUpdateLabels = () => {
+        const specs = [
+            ['idtms-phq9', 'label-idtms-phq9', v => parseFloat(v).toFixed(1)],
+            ['idtms-travel', 'label-idtms-travel', v => parseFloat(v).toFixed(2)],
+            ['idtms-cst', 'label-idtms-cst', v => parseFloat(v).toFixed(2)],
+            ['idtms-trauma', 'label-idtms-trauma', v => parseFloat(v).toFixed(2)],
+            ['idtms-support', 'label-idtms-support', v => parseFloat(v).toFixed(2)],
+            ['idtms-sessions', 'label-idtms-sessions', v => parseInt(v)],
+            ['idtms-iters', 'label-idtms-iters', v => parseInt(v)],
+            ['idtms-cost', 'label-idtms-cost', v => '$' + parseInt(v).toLocaleString()]
+        ];
+        specs.forEach(([inputId, labelId, fmt]) => {
+            const el = document.getElementById(inputId);
+            if (!el) return;
+            const lbl = document.getElementById(labelId);
+            if (lbl) lbl.textContent = fmt(el.value);
+        });
+    };
+
+    const renderIndigenousDepressionTmsViews = () => {
+        if (!cachedIdtmsData) return;
+        const d = cachedIdtmsData;
+        const staging = d.staging;
+        const so = d.schedule_optimization;
+        const traj = d.trajectory;
+
+        // 1. Continued-fraction convergent error / Hurwitz bound
+        const conv = staging.convergents;
+        const n = conv.map((_, i) => i + 1);
+        Plotly.newPlot('idtms-cf-chart', [
+            { x: n, y: conv.map(c => c.error), type: 'scatter', mode: 'lines+markers', name: '|ρ - p_n/q_n|', line: { color: '#0284c7', width: 2.5 } },
+            { x: n, y: staging.hurwitz_bounds, type: 'scatter', mode: 'lines', name: 'Hurwitz Bound 1/(√5 q_n²)', line: { color: '#f59e0b', width: 2, dash: 'dash' } }
+        ], {
+            margin: { l: 55, r: 15, t: 10, b: 35 },
+            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e6edf3', size: 10 },
+            xaxis: { title: 'Convergent Index n', gridcolor: 'rgba(255,255,255,0.08)' },
+            yaxis: { title: 'Approximation Error', type: 'log', gridcolor: 'rgba(255,255,255,0.08)' },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.55, y: 0.95 }
+        }, { responsive: true });
+
+        // 2. Stage boundary diagram
+        const stages = staging.stages;
+        Plotly.newPlot('idtms-stage-chart', [{
+            x: stages.map(s => s.length), y: stages.map(s => s.name), type: 'bar', orientation: 'h',
+            marker: { color: ['#0284c7', '#059669', '#f59e0b', '#b91c1c'].slice(0, stages.length) },
+            text: stages.map(s => `Sessions ${s.start}\u2013${s.end}`), textposition: 'inside'
+        }], {
+            margin: { l: 110, r: 15, t: 10, b: 35 },
+            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e6edf3', size: 10 },
+            xaxis: { title: 'Sessions in Stage', gridcolor: 'rgba(255,255,255,0.08)' }
+        }, { responsive: true });
+
+        // 3. PHQ-9 trajectory
+        Plotly.newPlot('idtms-trajectory-chart', [
+            { x: traj.months, y: traj.phq9_optimized, type: 'scatter', mode: 'lines', name: 'CF-Staged + QML Schedule', line: { color: '#0284c7', width: 2.5 } },
+            { x: traj.months, y: traj.phq9_standard, type: 'scatter', mode: 'lines', name: 'Fixed-Frequency Standard', line: { color: '#b91c1c', width: 2, dash: 'dash' } }
+        ], {
+            margin: { l: 45, r: 15, t: 10, b: 35 },
+            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e6edf3', size: 10 },
+            xaxis: { title: 'Months', gridcolor: 'rgba(255,255,255,0.08)' },
+            yaxis: { title: 'Expected PHQ-9', gridcolor: 'rgba(255,255,255,0.08)' },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.55, y: 0.95 }
+        }, { responsive: true });
+
+        // 4. Retention / survival curves
+        Plotly.newPlot('idtms-retention-chart', [
+            { x: traj.months, y: traj.survival_optimized_pct, type: 'scatter', mode: 'lines', name: 'Optimized Cohort Retention', line: { color: '#059669', width: 2.5 } },
+            { x: traj.months, y: traj.survival_standard_pct, type: 'scatter', mode: 'lines', name: 'Standard Cohort Retention', line: { color: '#7c3aed', width: 2, dash: 'dash' } }
+        ], {
+            margin: { l: 45, r: 15, t: 10, b: 35 },
+            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e6edf3', size: 10 },
+            xaxis: { title: 'Months', gridcolor: 'rgba(255,255,255,0.08)' },
+            yaxis: { title: 'Cohort Retention (%)', gridcolor: 'rgba(255,255,255,0.08)' },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.55, y: 0.15 }
+        }, { responsive: true });
+    };
+
+    const runIndigenousDepressionTmsStudio = async () => {
+        try {
+            const statusEl = document.getElementById('idtms-status');
+            if (statusEl) statusEl.textContent = 'Simulating CF Staging & QML Scheduling...';
+
+            const baseline_phq9 = parseFloat(document.getElementById('idtms-phq9')?.value || '21.0');
+            const travel_barrier = parseFloat(document.getElementById('idtms-travel')?.value || '0.55');
+            const cultural_safety_score = parseFloat(document.getElementById('idtms-cst')?.value || '0.6');
+            const historical_trauma_load = parseFloat(document.getElementById('idtms-trauma')?.value || '0.45');
+            const community_support = parseFloat(document.getElementById('idtms-support')?.value || '0.5');
+            const sessions = parseInt(document.getElementById('idtms-sessions')?.value || '30');
+            const annealer_iterations = parseInt(document.getElementById('idtms-iters')?.value || '60');
+            const cost_per_session = parseFloat(document.getElementById('idtms-cost')?.value || '185');
+
+            const resp = await fetch('/api/indigenous-depression-tms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    baseline_phq9, travel_barrier, cultural_safety_score, historical_trauma_load,
+                    community_support, sessions, annealer_iterations, cost_per_session
+                })
+            });
+
+            const d = await resp.json();
+            if (d.status === 'error') {
+                console.error('Indigenous Depression TMS simulation error:', d);
+                if (statusEl) statusEl.textContent = 'Error during simulation';
+                return;
+            }
+
+            cachedIdtmsData = d;
+            if (statusEl) statusEl.textContent = 'Ready (' + new Date().toLocaleTimeString() + ')';
+
+            const staging = d.staging;
+            const so = d.schedule_optimization;
+            const robustness = so.robustness;
+            const traj = d.trajectory;
+            const econ = d.equity_economics;
+
+            // KPI cards
+            const responseGain = (traj.response_pct_optimized - traj.response_pct_standard);
+            const completionGain = (traj.completion_rate_optimized_pct - traj.completion_rate_standard_pct);
+            const respEl = document.getElementById('idtms-kpi-response');
+            if (respEl) respEl.textContent = `+${responseGain.toFixed(1)} pp`;
+            const compEl = document.getElementById('idtms-kpi-completion');
+            if (compEl) compEl.textContent = `+${completionGain.toFixed(1)} pp`;
+            const winEl = document.getElementById('idtms-kpi-winrate');
+            if (winEl) winEl.textContent = `${robustness.win_rate_pct.toFixed(1)}%`;
+            const rhoEl = document.getElementById('idtms-kpi-rho');
+            if (rhoEl) rhoEl.textContent = staging.rho_equity_ratio.toFixed(3);
+            const icerEl = document.getElementById('idtms-kpi-icer');
+            if (icerEl) icerEl.textContent = '$' + Math.round(econ.icer_usd_per_qaly).toLocaleString();
+            const costRespEl = document.getElementById('idtms-kpi-costresp');
+            if (costRespEl) costRespEl.textContent = '$' + Math.round(econ.cost_per_responder_optimized).toLocaleString();
+
+            // Staging table
+            const stagingBody = document.getElementById('idtms-staging-tbody');
+            if (stagingBody) {
+                stagingBody.innerHTML = staging.stages.map(s => `
+                    <tr>
+                        <td>${s.name}</td>
+                        <td>${s.start}</td>
+                        <td>${s.end}</td>
+                        <td>${s.length}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Summary table
+            const summaryBody = document.getElementById('idtms-summary-tbody');
+            if (summaryBody) {
+                summaryBody.innerHTML = `
+                    <tr><td>QML Schedule (Hz)</td><td>${so.qml_schedule_hz.join(', ')}</td></tr>
+                    <tr><td>Brute-Force Best Schedule (Hz)</td><td>${so.brute_force_best_schedule_hz.join(', ')}</td></tr>
+                    <tr><td>Baseline Fixed Schedule (Hz)</td><td>${so.baseline_fixed_schedule_hz.join(', ')}</td></tr>
+                    <tr><td>Uplift vs Fixed Schedule</td><td>${so.uplift_vs_fixed_pct.toFixed(2)}%</td></tr>
+                    <tr><td>Robustness Mean Gap (Annealer)</td><td>${robustness.mean_gap_anneal.toFixed(4)}</td></tr>
+                    <tr><td>Robustness Mean Gap (Random)</td><td>${robustness.mean_gap_random.toFixed(4)}</td></tr>
+                    <tr><td>Cohort Size</td><td>${econ.cohort_size}</td></tr>
+                    <tr><td>Responders (Optimized / Standard)</td><td>${econ.responders_optimized} / ${econ.responders_standard}</td></tr>
+                    <tr><td>Total Cost (Optimized / Standard)</td><td>$${Math.round(econ.cost_optimized_total).toLocaleString()} / $${Math.round(econ.cost_standard_total).toLocaleString()}</td></tr>
+                `;
+            }
+
+            renderIndigenousDepressionTmsViews();
+        } catch (err) {
+            console.error('runIndigenousDepressionTmsStudio failed:', err);
+            const statusEl = document.getElementById('idtms-status');
+            if (statusEl) statusEl.textContent = 'Error during simulation';
+        }
+    };
+
+    const runIndigenousDepressionTmsStudioDebounced = () => {
+        clearTimeout(idtmsDebounceTimer);
+        idtmsDebounceTimer = setTimeout(runIndigenousDepressionTmsStudio, 250);
+    };
+
+    window.idtmsUpdateLabels = idtmsUpdateLabels;
+    window.renderIndigenousDepressionTmsViews = renderIndigenousDepressionTmsViews;
+    window.runIndigenousDepressionTmsStudio = runIndigenousDepressionTmsStudio;
+    window.runIndigenousDepressionTmsStudioDebounced = runIndigenousDepressionTmsStudioDebounced;

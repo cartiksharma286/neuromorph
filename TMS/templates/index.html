@@ -110,6 +110,9 @@
                 <button class="nav-btn" data-tab="parkinsons-dbs">
                     <span class="icon">🧬🔢</span> Parkinson's DBS Trajectories
                 </button>
+                <button class="nav-btn" data-tab="indigenous-depression">
+                    <span class="icon">🪶🔢</span> Indigenous Depression rTMS
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -4050,6 +4053,244 @@ T_(i,i+1)=p_prog,  T_(i,i-1)=p_regr,  T_(i,i)=1-T_(i,i+1)-T_(i,i-1)
                                     <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">J(s) = ΣR_m(s)/(1+ρ)^(m/12) - ΣC_y(s)/(1+ρ)^y - budget penalty
 Metropolis P(accept) = exp(ΔJ[$M] / T),  validated vs exact brute force
 3^5 = 243 schedules enumerated exactly; honest multi-trial robustness vs random search.</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div id="indigenous-depression-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                        <span style="font-size:12px; color:#38bdf8; background:rgba(2,132,199,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(56,189,248,0.35); font-weight:600;">
+                            🔢 Continued-Fraction Optimal Staging
+                        </span>
+                        <span style="font-size:12px; color:#a7f3d0; background:rgba(5,150,105,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(16,185,129,0.35); font-weight:600;">
+                            🧠 Depression Symptom &amp; Retention Trajectory
+                        </span>
+                        <span style="font-size:12px; color:#c4b5fd; background:rgba(124,58,237,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(167,139,250,0.35); font-weight:600;">
+                            ⚛️ Combinatorial QML Frequency Scheduling
+                        </span>
+                        <span style="font-size:12px; color:#fbbf24; background:rgba(217,119,6,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(251,191,36,0.35); font-weight:600;">
+                            🪶 Indigenous Health-Equity Cost-Effectiveness
+                        </span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <span id="idtms-status" style="font-size:11px; color:#94a3b8; min-width:140px; text-align:right;">Ready</span>
+                        <a href="/api/indigenous-depression-tms-pdf" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #b91c1c, #991b1b); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; border:none; box-shadow:0 2px 8px rgba(185,28,28,0.35);">
+                            <span>📥 Download Nature Preprint (.PDF)</span>
+                        </a>
+                        <button onclick="runIndigenousDepressionTmsStudio()" class="primary-btn" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #0284c7, #0369a1); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; cursor:pointer; border:none; box-shadow:0 2px 8px rgba(2,132,199,0.35);">
+                            <span>🔄 Recalculate Staging &amp; Trajectories</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT COLUMN: CONTROLS -->
+                    <div class="panel glass-panel" style="flex: 0 0 350px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>CF Staging &amp; QML Controls</h3>
+
+                        <div class="sa-control-box">
+                            <h4 style="color:#38bdf8; margin-bottom:8px; font-size:13px;">🪶 Community Access Context</h4>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Baseline PHQ-9:</span>
+                                    <span id="label-idtms-phq9" class="sa-slider-val" style="color:#38bdf8;">21.0</span>
+                                </div>
+                                <input type="range" id="idtms-phq9" min="10" max="27" step="0.5" value="21" oninput="idtmsUpdateLabels(); runIndigenousDepressionTmsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Travel Barrier Index:</span>
+                                    <span id="label-idtms-travel" class="sa-slider-val" style="color:#f87171;">0.55</span>
+                                </div>
+                                <input type="range" id="idtms-travel" min="0" max="1" step="0.05" value="0.55" oninput="idtmsUpdateLabels(); runIndigenousDepressionTmsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Cultural Safety Score:</span>
+                                    <span id="label-idtms-cst" class="sa-slider-val" style="color:#a7f3d0;">0.60</span>
+                                </div>
+                                <input type="range" id="idtms-cst" min="0" max="1" step="0.05" value="0.6" oninput="idtmsUpdateLabels(); runIndigenousDepressionTmsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Historical Trauma Load:</span>
+                                    <span id="label-idtms-trauma" class="sa-slider-val" style="color:#c4b5fd;">0.45</span>
+                                </div>
+                                <input type="range" id="idtms-trauma" min="0" max="1" step="0.05" value="0.45" oninput="idtmsUpdateLabels(); runIndigenousDepressionTmsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Community Health-Worker Support:</span>
+                                    <span id="label-idtms-support" class="sa-slider-val" style="color:#34d399;">0.50</span>
+                                </div>
+                                <input type="range" id="idtms-support" min="0" max="1" step="0.05" value="0.5" oninput="idtmsUpdateLabels(); runIndigenousDepressionTmsStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <div class="sa-control-box" style="margin-top:8px;">
+                            <h4 style="color:#fbbf24; margin-bottom:8px; font-size:13px;">⚛️ QML Schedule &amp; Economics</h4>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Sessions in Course:</span>
+                                    <span id="label-idtms-sessions" class="sa-slider-val" style="color:#f472b6;">30</span>
+                                </div>
+                                <input type="range" id="idtms-sessions" min="15" max="40" step="1" value="30" oninput="idtmsUpdateLabels(); runIndigenousDepressionTmsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Annealer Iterations:</span>
+                                    <span id="label-idtms-iters" class="sa-slider-val" style="color:#38bdf8;">60</span>
+                                </div>
+                                <input type="range" id="idtms-iters" min="20" max="120" step="10" value="60" oninput="idtmsUpdateLabels(); runIndigenousDepressionTmsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Cost per Session ($):</span>
+                                    <span id="label-idtms-cost" class="sa-slider-val" style="color:#fbbf24;">$185</span>
+                                </div>
+                                <input type="range" id="idtms-cost" min="50" max="500" step="5" value="185" oninput="idtmsUpdateLabels(); runIndigenousDepressionTmsStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: KPIs, CHARTS, TABLES -->
+                    <div style="flex:1; display:flex; flex-direction:column; gap:16px; min-width:0;">
+                        <!-- Row 1: KPI Cards -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px;">
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #38bdf8;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">DEPRESSION RESPONSE GAIN</span>
+                                <div id="idtms-kpi-response" style="font-size:20px; font-weight:700; color:#38bdf8; margin-top:4px;">--%</div>
+                                <span style="font-size:10px; color:#cbd5e1;">vs Standard Fixed-Frequency</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #a7f3d0;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">COMPLETION RATE GAIN</span>
+                                <div id="idtms-kpi-completion" style="font-size:20px; font-weight:700; color:#34d399; margin-top:4px;">-- pp</div>
+                                <span style="font-size:10px; color:#cbd5e1;">Treatment-Course Retention</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #c4b5fd;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">QML ANNEALER WIN RATE</span>
+                                <div id="idtms-kpi-winrate" style="font-size:20px; font-weight:700; color:#c4b5fd; margin-top:4px;">--%</div>
+                                <span style="font-size:10px; color:#cbd5e1;">vs Random Search</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #fbbf24;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">EQUITY RATIO &rho;</span>
+                                <div id="idtms-kpi-rho" style="font-size:20px; font-weight:700; color:#fbbf24; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;">CF-Expanded Staging Ratio</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #f472b6;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">ICER</span>
+                                <div id="idtms-kpi-icer" style="font-size:20px; font-weight:700; color:#f472b6; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;">$ per QALY Gained</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #f87171;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">COST PER RESPONDER</span>
+                                <div id="idtms-kpi-costresp" style="font-size:20px; font-weight:700; color:#f87171; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;">CF-Staged + QML Protocol</span>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: CF Convergents & Stage Boundaries -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#38bdf8; font-size:13px;">🔢 Continued-Fraction Convergent Error</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">|&rho; - p_n/q_n| vs Hurwitz Optimality Bound</span>
+                                <div id="idtms-cf-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#a7f3d0; font-size:13px;">📏 CF-Optimal Stage Boundaries</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Induction / Consolidation / Maintenance Over Session Horizon</span>
+                                <div id="idtms-stage-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Symptom Trajectory & Retention -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#c4b5fd; font-size:13px;">📈 Depression Symptom Trajectory</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Expected PHQ-9: Standard Fixed-Frequency vs CF-Staged + QML-Optimized</span>
+                                <div id="idtms-trajectory-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#fbbf24; font-size:13px;">🫶 Treatment-Course Retention</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Cohort Completion Survival Curve Under Attrition Hazard</span>
+                                <div id="idtms-retention-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Staging Table -->
+                        <div class="panel glass-panel">
+                            <h4 style="margin:0 0 8px 0; color:#38bdf8; font-size:13px;">📋 Continued-Fraction Optimal Staging Parameters</h4>
+                            <div style="overflow-x:auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:6px 8px;">Clinical Stage</th>
+                                            <th style="padding:6px 8px;">Session Range</th>
+                                            <th style="padding:6px 8px;">Length (Sessions)</th>
+                                            <th style="padding:6px 8px;">QML Frequency (Hz)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="idtms-staging-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 5: Clinical & Economics Summary Table -->
+                        <div class="panel glass-panel">
+                            <h4 style="margin:0 0 8px 0; color:#a7f3d0; font-size:13px;">📋 Clinical Outcomes &amp; Health-Equity Economics Summary</h4>
+                            <div style="overflow-x:auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:6px 8px;">Metric</th>
+                                            <th style="padding:6px 8px;">Standard Fixed-Frequency</th>
+                                            <th style="padding:6px 8px;">CF-Staged + QML</th>
+                                            <th style="padding:6px 8px;">Gain</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="idtms-summary-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 6: Governing Mathematical Formulations -->
+                        <div class="panel glass-panel" style="background:rgba(2,132,199,0.08); border:1px solid rgba(56,189,248,0.3);">
+                            <h3 style="color:#38bdf8;">📐 Governing Formulations: CF Staging, Attrition Hazard &amp; QML Scheduling</h3>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#38bdf8; font-weight:700;">1. ACCESS-ADJUSTED EQUITY RATIO &amp; CF EXPANSION</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">ρ = 1 + τ/(1+κ) + 0.35·η
+ρ = a_0 + 1/(a_1 + 1/(a_2 + 1/(a_3 + …)))
+Convergents p_n/q_n: provably optimal finite rational staging (Hurwitz).</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#a7f3d0; font-weight:700;">2. HURWITZ APPROXIMATION BOUND</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">p_n = a_n·p_(n-1) + p_(n-2),  q_n = a_n·q_(n-1) + q_(n-2)
+|ρ - p_n/q_n| &lt; 1 / (q_n·(q_n + q_(n-1)))
+Each convergent is the closest rational approximation at its denominator order.</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#c4b5fd; font-weight:700;">3. ATTRITION-HAZARD RETENTION MODEL</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">h(t) = h_0·(1+1.6τ)·(1-0.55σ)·(1-κ·t/N)
+S(t) = Π_(i=1..t) (1 - h(i))
+Cohort completion survival under travel burden, support, and CST ramp.</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#fbbf24; font-weight:700;">4. QML COMBINATORIAL FREQUENCY SCHEDULE</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">J(f) = (PHQ9_N - θ)² + 0.35·mean[(PHQ9_t - θ)²] + retention penalty
+5³ = 125 schedules enumerated exactly; Metropolis P(accept) = exp(-ΔJ/T)
+Honest multi-trial robustness vs uniform random search.</pre>
                                 </div>
                             </div>
                         </div>

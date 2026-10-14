@@ -50,6 +50,7 @@ from logic.connectome_qml import simulate_connectome_qml
 from logic.health_economics_valuation import run_full_health_economics_simulation
 from logic.xanadu_quantum_tms import run_full_xanadu_quantum_tms_simulation
 from logic.parkinsons_dbs_trajectories import simulate_parkinsons_dbs_trajectories
+from logic.indigenous_depression_tms import simulate_indigenous_depression_tms
 
 app = Flask(
     __name__,
@@ -1230,6 +1231,52 @@ def parkinsons_dbs_trajectories_pdf():
         output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Parkinsons_DBS_Prime_Gap_Staging_QML_Revenue.pdf')
         build_pdf(output_path, sim_params=_parkinsons_dbs_params({}))
         return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Parkinsons_DBS_Prime_Gap_Staging_QML_Revenue.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+def _indigenous_depression_tms_params(data):
+    return dict(
+        baseline_phq9=_arg(data, 'baseline_phq9', 21.0, float),
+        sessions=_arg(data, 'sessions', 30, int),
+        travel_barrier=_arg(data, 'travel_barrier', 0.55, float),
+        cultural_safety_score=_arg(data, 'cultural_safety_score', 0.6, float),
+        historical_trauma_load=_arg(data, 'historical_trauma_load', 0.45, float),
+        community_support=_arg(data, 'community_support', 0.5, float),
+        annealer_iterations=_arg(data, 'annealer_iterations', 60, int),
+        cost_per_session=_arg(data, 'cost_per_session', 185.0, float)
+    )
+
+
+@app.route('/api/indigenous-depression-tms', methods=['GET', 'POST'])
+def api_indigenous_depression_tms():
+    """Simulate continued-fraction optimal staging & combinatorial QML frequency scheduling
+    for rTMS depression care in remote Indigenous communities, with attrition-hazard cohort
+    retention and health-equity cost-effectiveness economics."""
+    try:
+        data = request.get_json(silent=True) or {}
+        return jsonify(simulate_indigenous_depression_tms(**_indigenous_depression_tms_params(data)))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/indigenous-depression-tms-pdf', methods=['GET'])
+def indigenous_depression_tms_pdf():
+    """Generate and stream the Nature preprint PDF on CF-optimal staging & QML scheduling for
+    Indigenous-community depression rTMS care."""
+    try:
+        from generate_nature_indigenous_depression_tms import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Indigenous_Depression_TMS_CF_Staging_QML.pdf')
+        build_pdf(output_path, sim_params=_indigenous_depression_tms_params({}))
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Indigenous_Depression_TMS_CF_Staging_QML.pdf')
     except (TypeError, ValueError) as exc:
         return jsonify({'status': 'error', 'message': str(exc)}), 400
     except Exception as exc:
