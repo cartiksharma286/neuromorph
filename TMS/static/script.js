@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const connectomeView = document.getElementById('connectome-view');
     const healthEconomicsView = document.getElementById('health-economics-view');
     const xanaduQuantumView = document.getElementById('xanadu-quantum-view');
+    const parkinsonsDbsView = document.getElementById('parkinsons-dbs-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView, femCorticalView, connectomeView, healthEconomicsView, xanaduQuantumView];
+    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView, femCorticalView, connectomeView, healthEconomicsView, xanaduQuantumView, parkinsonsDbsView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -235,6 +236,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Xanadu Photonic Quantum TMS & Neural Repair',
             subtitle: 'Continuous-Variable Photonic Chipsets (Borealis/X8/X12) · Number-Theoretic Fractional States · Parameter-Shift QML · 60-Month Trajectories',
             view:     xanaduQuantumView, showRunBtn: false
+        },
+        'parkinsons-dbs': {
+            title:    "Parkinson's DBS: Prime-Gap Staging & QML Revenue",
+            subtitle: 'Asymmetric Prime-Gap Signatures · Geometric Fencing · 10-Year Markov Clinical Trajectory · QML-Annealed 5-Year Revenue',
+            view:     parkinsonsDbsView, showRunBtn: false
         }
     };
 
@@ -289,6 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'connectome')                           runConnectomeStudio();
             if (tab === 'health-economics')                     runHealthEconomicsStudio();
             if (tab === 'xanadu-quantum')                       runXanaduQuantumStudio();
+            if (tab === 'parkinsons-dbs')                       runParkinsonsDbsStudio();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -5630,6 +5637,225 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderXanaduQuantumViews = renderXanaduQuantumViews;
     window.runXanaduQuantumStudio = runXanaduQuantumStudio;
     window.runXanaduQuantumStudioDebounced = runXanaduQuantumStudioDebounced;
+
+    // ── Parkinson's DBS: Prime-Gap Staging, Geometric Fencing & QML Revenue ──
+    let cachedPdbsData = null;
+    let pdbsDebounceTimer = null;
+
+    const pdbsUpdateLabels = () => {
+        const primesEl = document.getElementById('pdbs-primes');
+        if (primesEl) {
+            const lbl = document.getElementById('label-pdbs-primes');
+            if (lbl) lbl.textContent = parseInt(primesEl.value);
+        }
+        const stagesEl = document.getElementById('pdbs-stages');
+        if (stagesEl) {
+            const lbl = document.getElementById('label-pdbs-stages');
+            if (lbl) lbl.textContent = parseInt(stagesEl.value);
+        }
+        const progsocEl = document.getElementById('pdbs-progsoc');
+        if (progsocEl) {
+            const lbl = document.getElementById('label-pdbs-progsoc');
+            if (lbl) lbl.textContent = parseFloat(progsocEl.value).toFixed(3);
+        }
+        const regrdbsEl = document.getElementById('pdbs-regrdbs');
+        if (regrdbsEl) {
+            const lbl = document.getElementById('label-pdbs-regrdbs');
+            if (lbl) lbl.textContent = parseFloat(regrdbsEl.value).toFixed(3);
+        }
+        const itersEl = document.getElementById('pdbs-iters');
+        if (itersEl) {
+            const lbl = document.getElementById('label-pdbs-iters');
+            if (lbl) lbl.textContent = parseInt(itersEl.value);
+        }
+        const priceEl = document.getElementById('pdbs-price');
+        if (priceEl) {
+            const lbl = document.getElementById('label-pdbs-price');
+            if (lbl) lbl.textContent = '$' + parseInt(priceEl.value).toLocaleString();
+        }
+    };
+
+    const renderParkinsonsDbsViews = () => {
+        if (!cachedPdbsData) return;
+        const d = cachedPdbsData;
+        const staging = d.staging;
+        const clinical = d.clinical;
+        const rev = d.revenue;
+
+        // 1. Prime-gap signature bar chart
+        const sig = staging.signature;
+        const idx = sig.gaps.map((_, i) => i);
+        Plotly.newPlot('pdbs-signature-chart', [{
+            x: idx, y: sig.signature, type: 'bar',
+            marker: { color: sig.signature.map(s => s > 0 ? '#0284c7' : '#b91c1c') }
+        }], {
+            margin: { l: 45, r: 15, t: 10, b: 35 },
+            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e6edf3', size: 10 },
+            xaxis: { title: 'Prime Index i', gridcolor: 'rgba(255,255,255,0.08)' },
+            yaxis: { title: 'Signature S_i', gridcolor: 'rgba(255,255,255,0.08)' }
+        }, { responsive: true });
+
+        // 2. Geometric fencing diagram
+        const theta = Array.from({ length: 100 }, (_, i) => (2 * Math.PI * i) / 99);
+        const fenceTraces = d.fence_centers.map((c, k) => {
+            const r = d.fence_radii[k];
+            return {
+                x: theta.map(t => c[0] + r * Math.cos(t)),
+                y: theta.map(t => c[1] + r * Math.sin(t)),
+                mode: 'lines', type: 'scatter', name: `Fence ${k + 1}`,
+                line: { color: ['#34d399', '#fbbf24', '#f59e0b', '#b91c1c', '#c4b5fd', '#38bdf8'][k % 6], width: 2 }
+            };
+        });
+        Plotly.newPlot('pdbs-fencing-chart', fenceTraces, {
+            margin: { l: 45, r: 15, t: 10, b: 35 },
+            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e6edf3', size: 10 },
+            xaxis: { title: 'UPDRS-III Score', gridcolor: 'rgba(255,255,255,0.08)' },
+            yaxis: { title: 'Stimulation Voltage (V)', gridcolor: 'rgba(255,255,255,0.08)' },
+            showlegend: true, legend: { font: { color: '#e6edf3', size: 8 }, x: 0.02, y: 0.98 }
+        }, { responsive: true });
+
+        // 3. 10-year clinical trajectory
+        const years = clinical.months.map(m => m / 12.0);
+        Plotly.newPlot('pdbs-trajectory-chart', [
+            { x: years, y: clinical.updrs_soc, type: 'scatter', mode: 'lines', name: 'Standard of Care', line: { color: '#b91c1c', width: 2.5 } },
+            { x: years, y: clinical.updrs_dbs, type: 'scatter', mode: 'lines', name: 'Prime-Gap Fenced DBS', line: { color: '#0284c7', width: 2.5 } }
+        ], {
+            margin: { l: 45, r: 15, t: 10, b: 35 },
+            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e6edf3', size: 10 },
+            xaxis: { title: 'Follow-up (Years)', gridcolor: 'rgba(255,255,255,0.08)' },
+            yaxis: { title: 'Expected UPDRS-III', gridcolor: 'rgba(255,255,255,0.08)' },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.02, y: 0.1 }
+        }, { responsive: true });
+
+        // 4. 5-year revenue projection with CI bands
+        const rq = rev.qml, rb = rev.baseline;
+        const mYears = rq.months.map(m => m / 12.0);
+        Plotly.newPlot('pdbs-revenue-chart', [
+            { x: mYears, y: rq.ci_upper.map(v => v / 1e6), type: 'scatter', mode: 'lines', line: { width: 0 }, showlegend: false, hoverinfo: 'skip' },
+            { x: mYears, y: rq.ci_lower.map(v => v / 1e6), type: 'scatter', mode: 'lines', fill: 'tonexty', fillcolor: 'rgba(5,150,105,0.18)', line: { width: 0 }, showlegend: false, hoverinfo: 'skip' },
+            { x: mYears, y: rq.cum_revenue_mean.map(v => v / 1e6), type: 'scatter', mode: 'lines', name: 'QML-Annealed Schedule', line: { color: '#059669', width: 2.5 } },
+            { x: mYears, y: rb.cum_revenue_mean.map(v => v / 1e6), type: 'scatter', mode: 'lines', name: 'Fixed Moderate Baseline', line: { color: '#7c3aed', width: 2, dash: 'dash' } }
+        ], {
+            margin: { l: 50, r: 15, t: 10, b: 35 },
+            paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e6edf3', size: 10 },
+            xaxis: { title: 'Horizon (Years)', gridcolor: 'rgba(255,255,255,0.08)' },
+            yaxis: { title: 'Cumulative Revenue ($M)', gridcolor: 'rgba(255,255,255,0.08)' },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.02, y: 0.95 }
+        }, { responsive: true });
+    };
+
+    const runParkinsonsDbsStudio = async () => {
+        try {
+            const statusEl = document.getElementById('pdbs-status');
+            if (statusEl) statusEl.textContent = 'Simulating Prime-Gap Staging...';
+
+            const num_primes = parseInt(document.getElementById('pdbs-primes')?.value || '30');
+            const num_stages = parseInt(document.getElementById('pdbs-stages')?.value || '4');
+            const progress_p_soc = parseFloat(document.getElementById('pdbs-progsoc')?.value || '0.018');
+            const regress_p_dbs = parseFloat(document.getElementById('pdbs-regrdbs')?.value || '0.010');
+            const iterations = parseInt(document.getElementById('pdbs-iters')?.value || '60');
+            const price_per_implant = parseFloat(document.getElementById('pdbs-price')?.value || '42000');
+
+            const resp = await fetch('/api/parkinsons-dbs-trajectories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    num_primes, num_stages, progress_p_soc, regress_p_dbs, iterations, price_per_implant
+                })
+            });
+
+            const d = await resp.json();
+            if (d.status === 'error') {
+                console.error('Parkinsons DBS simulation error:', d);
+                if (statusEl) statusEl.textContent = 'Error during simulation';
+                return;
+            }
+
+            cachedPdbsData = d;
+            if (statusEl) statusEl.textContent = 'Ready (' + new Date().toLocaleTimeString() + ')';
+
+            const staging = d.staging;
+            const clinical = d.clinical;
+            const so = d.schedule_optimization;
+            const robustness = so.robustness;
+            const rev = d.revenue;
+            const fenceProj = d.fence_projections;
+
+            // KPI cards
+            const updrsEl = document.getElementById('pdbs-kpi-updrs');
+            if (updrsEl) updrsEl.textContent = `-${clinical.final_updrs_improvement_pct}%`;
+            const delayEl = document.getElementById('pdbs-kpi-delay');
+            if (delayEl) delayEl.textContent = `+${clinical.severe_stage_delay_months} mo`;
+            const winEl = document.getElementById('pdbs-kpi-winrate');
+            if (winEl) winEl.textContent = `${robustness.win_rate_pct}%`;
+            const revEl = document.getElementById('pdbs-kpi-revenue');
+            if (revEl) revEl.textContent = '$' + (rev.qml.year5_revenue_mean / 1e6).toFixed(2) + 'M';
+            const revSubEl = document.getElementById('pdbs-kpi-revenue-sub');
+            if (revSubEl) revSubEl.textContent = `95% CI $${(rev.qml.year5_ci[0] / 1e6).toFixed(2)}M–$${(rev.qml.year5_ci[1] / 1e6).toFixed(2)}M`;
+            const upliftEl = document.getElementById('pdbs-kpi-uplift');
+            if (upliftEl) upliftEl.textContent = `+${rev.uplift_pct}%`;
+            const voltEl = document.getElementById('pdbs-kpi-voltage');
+            if (voltEl) voltEl.textContent = `${fenceProj[0].optimal_voltage}–${fenceProj[fenceProj.length - 1].optimal_voltage} V`;
+
+            renderParkinsonsDbsViews();
+
+            // Staging & fencing table
+            const stagingTbody = document.getElementById('pdbs-staging-tbody');
+            if (stagingTbody) {
+                const pgT = staging.prime_gap_thresholds;
+                const eqT = staging.equal_width_thresholds;
+                stagingTbody.innerHTML = staging.stage_names.map((name, i) => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">${name}</td>
+                        <td style="padding:6px 8px; color:#cbd5e1;">[${pgT[i].toFixed(1)}, ${pgT[i + 1].toFixed(1)}]</td>
+                        <td style="padding:6px 8px; color:#94a3b8;">[${eqT[i].toFixed(1)}, ${eqT[i + 1].toFixed(1)}]</td>
+                        <td style="padding:6px 8px; color:#a7f3d0;">${d.fence_radii[i].toFixed(3)}</td>
+                        <td style="padding:6px 8px; font-weight:600; color:#fbbf24;">${fenceProj[i].optimal_voltage.toFixed(2)} V</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Schedule & revenue summary table
+            const summaryTbody = document.getElementById('pdbs-summary-tbody');
+            if (summaryTbody) {
+                const rows = [
+                    { metric: 'UPDRS-III at Year 10', base: clinical.updrs_soc[clinical.updrs_soc.length - 1].toFixed(1), qml: clinical.updrs_dbs[clinical.updrs_dbs.length - 1].toFixed(1), gain: `-${clinical.final_updrs_improvement_pct}%` },
+                    { metric: 'Severe-Stage (H&Y 5) Onset Delay', base: 'Reference', qml: `+${clinical.severe_stage_delay_months} months`, gain: 'Clinically Significant' },
+                    { metric: '5-Year Rollout Schedule', base: so.baseline_schedule.join(' → '), qml: so.qml_schedule.join(' → '), gain: 'Combinatorial QML Search' },
+                    { metric: '5-Year Cumulative Revenue', base: '$' + (rev.baseline.year5_revenue_mean / 1e6).toFixed(2) + 'M', qml: '$' + (rev.qml.year5_revenue_mean / 1e6).toFixed(2) + 'M', gain: `+${rev.uplift_pct}%` },
+                    { metric: 'Annealer Win/Tie Rate', base: 'N/A', qml: `${robustness.win_rate_pct}%`, gain: `vs Random (${robustness.num_trials} trials)` },
+                    { metric: 'Mean Optimality Gap', base: 'N/A', qml: '$' + (robustness.mean_gap_anneal / 1000).toFixed(1) + 'k', gain: 'vs $' + (robustness.mean_gap_random / 1000).toFixed(1) + 'k Random' }
+                ];
+                summaryTbody.innerHTML = rows.map(r => `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">${r.metric}</td>
+                        <td style="padding:6px 8px; color:#cbd5e1;">${r.base}</td>
+                        <td style="padding:6px 8px; font-weight:600; color:#10b981;">${r.qml}</td>
+                        <td style="padding:6px 8px; font-weight:700; color:#fbbf24;">${r.gain}</td>
+                    </tr>
+                `).join('');
+            }
+
+        } catch (err) {
+            console.error('Parkinsons DBS studio error:', err);
+            const statusEl = document.getElementById('pdbs-status');
+            if (statusEl) statusEl.textContent = 'Error during simulation';
+        }
+    };
+
+    const runParkinsonsDbsStudioDebounced = () => {
+        clearTimeout(pdbsDebounceTimer);
+        pdbsDebounceTimer = setTimeout(runParkinsonsDbsStudio, 250);
+    };
+
+    window.pdbsUpdateLabels = pdbsUpdateLabels;
+    window.renderParkinsonsDbsViews = renderParkinsonsDbsViews;
+    window.runParkinsonsDbsStudio = runParkinsonsDbsStudio;
+    window.runParkinsonsDbsStudioDebounced = runParkinsonsDbsStudioDebounced;
 
 
 

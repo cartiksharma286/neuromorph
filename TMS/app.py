@@ -49,6 +49,7 @@ from logic.fem_cortical_solver import run_full_cortical_fem_simulation
 from logic.connectome_qml import simulate_connectome_qml
 from logic.health_economics_valuation import run_full_health_economics_simulation
 from logic.xanadu_quantum_tms import run_full_xanadu_quantum_tms_simulation
+from logic.parkinsons_dbs_trajectories import simulate_parkinsons_dbs_trajectories
 
 app = Flask(
     __name__,
@@ -1178,6 +1179,57 @@ def xanadu_quantum_tms_pdf():
         output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Xanadu_Quantum_TMS_Neural_Repair.pdf')
         build_pdf(output_path, sim_params=_xanadu_params({}))
         return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Xanadu_Quantum_TMS_Neural_Repair.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+def _parkinsons_dbs_params(data):
+    return dict(
+        horizon_months=_arg(data, 'horizon_months', 120, int),
+        num_stages=_arg(data, 'num_stages', 4, int),
+        num_primes=_arg(data, 'num_primes', 30, int),
+        progress_p_soc=_arg(data, 'progress_p_soc', 0.018, float),
+        progress_p_dbs=_arg(data, 'progress_p_dbs', 0.007, float),
+        regress_p_dbs=_arg(data, 'regress_p_dbs', 0.010, float),
+        iterations=_arg(data, 'iterations', 60, int),
+        temperature=_arg(data, 'temperature', 1.0, float),
+        cooling_rate=_arg(data, 'cooling_rate', 0.95, float),
+        price_per_implant=_arg(data, 'price_per_implant', 42000.0, float),
+        base_churn=_arg(data, 'base_churn', 0.05, float),
+        implants_per_site_per_year=_arg(data, 'implants_per_site_per_year', 14.0, float),
+        discount_rate_annual=_arg(data, 'discount_rate_annual', 0.08, float),
+        sigma_market=_arg(data, 'sigma_market', 0.09, float),
+        seed=_arg(data, 'seed', 42, int)
+    )
+
+
+@app.route('/api/parkinsons-dbs-trajectories', methods=['GET', 'POST'])
+def api_parkinsons_dbs_trajectories():
+    """Simulate asymmetric prime-gap optimal DBS staging, geometric fencing of stimulation
+    amplitude, 10-year Markov clinical trajectories, and QML-annealed 5-year revenue projection."""
+    try:
+        data = request.get_json(silent=True) or {}
+        return jsonify(simulate_parkinsons_dbs_trajectories(**_parkinsons_dbs_params(data)))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/parkinsons-dbs-trajectories-pdf', methods=['GET'])
+def parkinsons_dbs_trajectories_pdf():
+    """Generate and stream the Nature preprint PDF on prime-gap optimal DBS staging & QML revenue."""
+    try:
+        from generate_nature_parkinsons_dbs_trajectories import build_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Parkinsons_DBS_Prime_Gap_Staging_QML_Revenue.pdf')
+        build_pdf(output_path, sim_params=_parkinsons_dbs_params({}))
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Parkinsons_DBS_Prime_Gap_Staging_QML_Revenue.pdf')
     except (TypeError, ValueError) as exc:
         return jsonify({'status': 'error', 'message': str(exc)}), 400
     except Exception as exc:

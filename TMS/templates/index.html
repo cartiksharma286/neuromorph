@@ -107,6 +107,9 @@
                 <button class="nav-btn" data-tab="xanadu-quantum">
                     <span class="icon">🔬⚛️</span> Xanadu Quantum TMS
                 </button>
+                <button class="nav-btn" data-tab="parkinsons-dbs">
+                    <span class="icon">🧬🔢</span> Parkinson's DBS Trajectories
+                </button>
             </nav>
             <div class="topbar-actions">
                 <a href="/api/rtms-nature-publication" class="primary-btn" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #c0392b, #962d22); padding:10px 16px; white-space:nowrap;">
@@ -3821,6 +3824,232 @@ Evaluates exact hardware gradients on Xanadu QPUs, achieving 45.0x speedup over 
                                     <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">dC_i(t)/dt = -κ_q E_opt(t) (C_i(t) - C_∞) + λ_degen C_i(t)
 Rev_QaaS = N_pulses · $0.018 + N_hosp · $240k/yr + N_pharma · $450k/trial
 Accelerated closed-loop synchronization generates $15.98M in 3-yr QaaS revenue with dominant health economics.</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div id="parkinsons-dbs-view" class="hidden">
+                <div style="padding:0 0 16px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                        <span style="font-size:12px; color:#38bdf8; background:rgba(2,132,199,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(56,189,248,0.35); font-weight:600;">
+                            🔢 Asymmetric Prime-Gap Signatures &amp; Optimal Staging
+                        </span>
+                        <span style="font-size:12px; color:#a7f3d0; background:rgba(5,150,105,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(16,185,129,0.35); font-weight:600;">
+                            ⭕ Geometric Fencing of DBS Stimulation Amplitude
+                        </span>
+                        <span style="font-size:12px; color:#c4b5fd; background:rgba(124,58,237,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(167,139,250,0.35); font-weight:600;">
+                            🧠 10-Year Markov Clinical Trajectory (SOC vs DBS)
+                        </span>
+                        <span style="font-size:12px; color:#fbbf24; background:rgba(217,119,6,0.18); padding:6px 12px; border-radius:6px; border:1px solid rgba(251,191,36,0.35); font-weight:600;">
+                            💰 QML-Annealed 5-Year Revenue Schedule
+                        </span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <span id="pdbs-status" style="font-size:11px; color:#94a3b8; min-width:140px; text-align:right;">Ready</span>
+                        <a href="/api/parkinsons-dbs-trajectories-pdf" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #b91c1c, #991b1b); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; border:none; box-shadow:0 2px 8px rgba(185,28,28,0.35);">
+                            <span>📥 Download Nature Preprint (.PDF)</span>
+                        </a>
+                        <button onclick="runParkinsonsDbsStudio()" class="primary-btn" style="display:inline-flex; align-items:center; gap:8px; font-size:12px; background:linear-gradient(135deg, #0284c7, #0369a1); padding:8px 16px; border-radius:6px; color:#ffffff; font-weight:600; cursor:pointer; border:none; box-shadow:0 2px 8px rgba(2,132,199,0.35);">
+                            <span>🔄 Recalculate Staging &amp; Trajectories</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="margin-bottom:24px;">
+                    <!-- LEFT COLUMN: CONTROLS -->
+                    <div class="panel glass-panel" style="flex: 0 0 350px; display: flex; flex-direction: column; gap: 16px;">
+                        <h3>Prime-Gap Staging &amp; QML Controls</h3>
+
+                        <div class="sa-control-box">
+                            <h4 style="color:#38bdf8; margin-bottom:8px; font-size:13px;">🔢 Number-Theoretic Staging</h4>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Primes Used for Signature:</span>
+                                    <span id="label-pdbs-primes" class="sa-slider-val" style="color:#38bdf8;">30</span>
+                                </div>
+                                <input type="range" id="pdbs-primes" min="12" max="60" step="2" value="30" oninput="pdbsUpdateLabels(); runParkinsonsDbsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Clinical Stages (K):</span>
+                                    <span id="label-pdbs-stages" class="sa-slider-val" style="color:#a7f3d0;">4</span>
+                                </div>
+                                <input type="range" id="pdbs-stages" min="3" max="6" step="1" value="4" oninput="pdbsUpdateLabels(); runParkinsonsDbsStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <div class="sa-control-box" style="margin-top:8px;">
+                            <h4 style="color:#c4b5fd; margin-bottom:8px; font-size:13px;">🧠 10-Year Clinical Trajectory</h4>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>SOC Monthly Progression Rate:</span>
+                                    <span id="label-pdbs-progsoc" class="sa-slider-val" style="color:#f87171;">0.018</span>
+                                </div>
+                                <input type="range" id="pdbs-progsoc" min="0.008" max="0.030" step="0.001" value="0.018" oninput="pdbsUpdateLabels(); runParkinsonsDbsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>DBS Monthly Regression Rate:</span>
+                                    <span id="label-pdbs-regrdbs" class="sa-slider-val" style="color:#34d399;">0.010</span>
+                                </div>
+                                <input type="range" id="pdbs-regrdbs" min="0.000" max="0.020" step="0.001" value="0.010" oninput="pdbsUpdateLabels(); runParkinsonsDbsStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+
+                        <div class="sa-control-box" style="margin-top:8px;">
+                            <h4 style="color:#fbbf24; margin-bottom:8px; font-size:13px;">💰 QML Schedule Optimization</h4>
+                            <div class="sa-slider-group">
+                                <div class="sa-slider-header">
+                                    <span>Annealer Iterations:</span>
+                                    <span id="label-pdbs-iters" class="sa-slider-val" style="color:#f472b6;">60</span>
+                                </div>
+                                <input type="range" id="pdbs-iters" min="20" max="120" step="10" value="60" oninput="pdbsUpdateLabels(); runParkinsonsDbsStudioDebounced();" class="sa-slider-input">
+                            </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>Price per Implant ($):</span>
+                                    <span id="label-pdbs-price" class="sa-slider-val" style="color:#fbbf24;">$42,000</span>
+                                </div>
+                                <input type="range" id="pdbs-price" min="25000" max="60000" step="1000" value="42000" oninput="pdbsUpdateLabels(); runParkinsonsDbsStudioDebounced();" class="sa-slider-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: KPIs, CHARTS, TABLES -->
+                    <div style="flex:1; display:flex; flex-direction:column; gap:16px; min-width:0;">
+                        <!-- Row 1: KPI Cards -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px;">
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #38bdf8;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">10-YR UPDRS IMPROVEMENT</span>
+                                <div id="pdbs-kpi-updrs" style="font-size:20px; font-weight:700; color:#38bdf8; margin-top:4px;">--%</div>
+                                <span style="font-size:10px; color:#cbd5e1;">vs Standard of Care</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #a7f3d0;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">SEVERE-STAGE DELAY</span>
+                                <div id="pdbs-kpi-delay" style="font-size:20px; font-weight:700; color:#34d399; margin-top:4px;">-- mo</div>
+                                <span style="font-size:10px; color:#cbd5e1;">H&amp;Y Stage 5 Onset</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #c4b5fd;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">ANNEALER WIN RATE</span>
+                                <div id="pdbs-kpi-winrate" style="font-size:20px; font-weight:700; color:#c4b5fd; margin-top:4px;">--%</div>
+                                <span style="font-size:10px; color:#cbd5e1;">vs Random Search</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #fbbf24;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">YEAR-5 REVENUE</span>
+                                <div id="pdbs-kpi-revenue" style="font-size:20px; font-weight:700; color:#fbbf24; margin-top:4px;">--</div>
+                                <span style="font-size:10px; color:#cbd5e1;" id="pdbs-kpi-revenue-sub">QML-Annealed Schedule</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #f472b6;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">REVENUE UPLIFT</span>
+                                <div id="pdbs-kpi-uplift" style="font-size:20px; font-weight:700; color:#f472b6; margin-top:4px;">--%</div>
+                                <span style="font-size:10px; color:#cbd5e1;">vs Fixed Moderate Baseline</span>
+                            </div>
+                            <div class="panel glass-panel" style="padding:14px; border-left:4px solid #f87171;">
+                                <span style="font-size:11px; color:#94a3b8; font-weight:600;">OPTIMAL VOLTAGE RANGE</span>
+                                <div id="pdbs-kpi-voltage" style="font-size:20px; font-weight:700; color:#f87171; margin-top:4px;">-- V</div>
+                                <span style="font-size:10px; color:#cbd5e1;">Geometric Fence Projection</span>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Prime-Gap Signature & Geometric Fencing -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#38bdf8; font-size:13px;">🔢 Asymmetric Prime-Gap Signature S_i</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Alternating-Sign Normalized Prime-Gap Sequence Over First N Primes</span>
+                                <div id="pdbs-signature-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#a7f3d0; font-size:13px;">⭕ Geometric Fencing: Optimal Staging Boundaries</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Concentric Decision Fences in (UPDRS-III, Stimulation Voltage) Plane</span>
+                                <div id="pdbs-fencing-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Clinical Trajectory & QML Schedule Convergence -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#c4b5fd; font-size:13px;">📈 10-Year Clinical Trajectory</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Expected UPDRS-III: Standard of Care vs Prime-Gap-Fenced DBS</span>
+                                <div id="pdbs-trajectory-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                            <div class="panel glass-panel" style="min-height:360px;">
+                                <h4 style="margin:0 0 4px 0; color:#fbbf24; font-size:13px;">💰 5-Year Revenue Projection (QML vs Baseline)</h4>
+                                <span style="font-size:10.5px; color:#94a3b8;">Cumulative Revenue with 95% Confidence Bands</span>
+                                <div id="pdbs-revenue-chart" style="width:100%; height:290px; margin-top:8px;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Staging & Fencing Table -->
+                        <div class="panel glass-panel">
+                            <h4 style="margin:0 0 8px 0; color:#38bdf8; font-size:13px;">📋 Asymmetric Prime-Gap Optimal Staging &amp; Geometric Fence Parameters</h4>
+                            <div style="overflow-x:auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:6px 8px;">Clinical Stage</th>
+                                            <th style="padding:6px 8px;">Prime-Gap UPDRS Band</th>
+                                            <th style="padding:6px 8px;">Equal-Width UPDRS Band</th>
+                                            <th style="padding:6px 8px;">Fence Radius</th>
+                                            <th style="padding:6px 8px;">Optimal Voltage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pdbs-staging-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 5: Schedule & Revenue Summary Table -->
+                        <div class="panel glass-panel">
+                            <h4 style="margin:0 0 8px 0; color:#a7f3d0; font-size:13px;">📋 QML-Annealed 5-Year Rollout Schedule &amp; Revenue Summary</h4>
+                            <div style="overflow-x:auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:6px 8px;">Metric</th>
+                                            <th style="padding:6px 8px;">Baseline / SOC</th>
+                                            <th style="padding:6px 8px;">QML-Annealed / Prime-Gap DBS</th>
+                                            <th style="padding:6px 8px;">Gain</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pdbs-summary-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Row 6: Governing Mathematical Formulations -->
+                        <div class="panel glass-panel" style="background:rgba(2,132,199,0.08); border:1px solid rgba(56,189,248,0.3);">
+                            <h3 style="color:#38bdf8;">📐 Governing Formulations: Prime-Gap Staging, Geometric Fencing &amp; QML Scheduling</h3>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#38bdf8; font-weight:700;">1. ASYMMETRIC PRIME-GAP SIGNATURE</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">S_i = (-1)^i · g_i / Σg,   g_i = p_(i+1) - p_i
+θ_k = 108 · Ĉ(⌈kN/K⌉)
+Non-uniform optimal staging thresholds derived purely from finite prime-gap structure.</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#a7f3d0; font-weight:700;">2. GEOMETRIC FENCING OF STIMULATION VOLTAGE</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">v* = argmin_v [w_e v² + w_f (‖(x,v)-c_k‖ - r_k)²]
+r_k = r_0 (1 + 2.2·Ĉ_k)
+Closed-form Newton projection onto nearest circular fence boundary.</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#c4b5fd; font-weight:700;">3. MARKOV CLINICAL TRAJECTORY</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">π(m+1) = π(m)·T
+T_(i,i+1)=p_prog,  T_(i,i-1)=p_regr,  T_(i,i)=1-T_(i,i+1)-T_(i,i-1)
+10-year tri-diagonal multi-state cohort propagation, SOC vs prime-gap-fenced DBS.</pre>
+                                </div>
+                                <div style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid #334155;">
+                                    <span style="font-size:11px; color:#fbbf24; font-weight:700;">4. QML-ANNEALED COMBINATORIAL SCHEDULE</span>
+                                    <pre style="margin:6px 0 0 0; font-size:11px; color:#cbd5e1; font-family:monospace; white-space:pre-wrap; line-height:1.4;">J(s) = ΣR_m(s)/(1+ρ)^(m/12) - ΣC_y(s)/(1+ρ)^y - budget penalty
+Metropolis P(accept) = exp(ΔJ[$M] / T),  validated vs exact brute force
+3^5 = 243 schedules enumerated exactly; honest multi-trial robustness vs random search.</pre>
                                 </div>
                             </div>
                         </div>
