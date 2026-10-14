@@ -5881,7 +5881,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ['idtms-support', 'label-idtms-support', v => parseFloat(v).toFixed(2)],
             ['idtms-sessions', 'label-idtms-sessions', v => parseInt(v)],
             ['idtms-iters', 'label-idtms-iters', v => parseInt(v)],
-            ['idtms-cost', 'label-idtms-cost', v => '$' + parseInt(v).toLocaleString()]
+            ['idtms-cost', 'label-idtms-cost', v => '$' + parseInt(v).toLocaleString()],
+            ['idtms-intensity', 'label-idtms-intensity', v => parseInt(v) + '%']
         ];
         specs.forEach(([inputId, labelId, fmt]) => {
             const el = document.getElementById(inputId);
@@ -5951,6 +5952,41 @@ document.addEventListener('DOMContentLoaded', () => {
             yaxis: { title: 'Cohort Retention (%)', gridcolor: 'rgba(255,255,255,0.08)' },
             legend: { font: { color: '#e6edf3', size: 9 }, x: 0.55, y: 0.15 }
         }, { responsive: true });
+
+        // 5. Cortical surface BEM stimulation field (superposed coil montage)
+        const bem = d.cortical_bem_field;
+        if (bem && document.getElementById('idtms-bem-chart')) {
+            const coilTrace = {
+                x: bem.coils.map(c => c.x), y: bem.coils.map(c => c.y), z: bem.coils.map(c => c.z),
+                type: 'scatter3d', mode: 'markers+text', text: bem.coils.map(c => c.label.replace(/ Cortex$/, '')),
+                textposition: 'top center', textfont: { color: '#f8fafc', size: 9 },
+                marker: { size: 6, color: '#f472b6', symbol: 'diamond', line: { color: '#fff', width: 1 } },
+                name: 'Coil Montage'
+            };
+            Plotly.newPlot('idtms-bem-chart', [{
+                x: bem.x, y: bem.y, z: bem.z, surfacecolor: bem.potential, type: 'surface',
+                colorscale: [[0, '#051b2c'], [.35, '#0d4f90'], [.65, '#0d9488'], [.85, '#38bdf8'], [1, '#f472b6']],
+                colorbar: { title: 'Induced Potential', tickfont: { color: '#c9d1d9', size: 9 } },
+                contours: { z: { show: true, usecolormap: true, project: { z: true } } },
+                opacity: 0.96
+            }, coilTrace], {
+                margin: { t: 10, b: 0, l: 0, r: 0 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#e6edf3', size: 10 },
+                scene: {
+                    xaxis: { title: 'Cortical X', gridcolor: 'rgba(255,255,255,0.08)', color: '#94a3b8' },
+                    yaxis: { title: 'Cortical Y', gridcolor: 'rgba(255,255,255,0.08)', color: '#94a3b8' },
+                    zaxis: { title: 'Cortical Z', gridcolor: 'rgba(255,255,255,0.08)', color: '#94a3b8' },
+                    camera: { eye: { x: 1.55, y: -1.55, z: .95 } }
+                },
+                showlegend: false
+            }, { responsive: true });
+
+            const peakEl = document.getElementById('idtms-bem-peak');
+            if (peakEl) peakEl.textContent = bem.peak_potential.toFixed(3);
+            const coilCountEl = document.getElementById('idtms-bem-coil-count');
+            if (coilCountEl) coilCountEl.textContent = bem.coils.length;
+        }
     };
 
     const runIndigenousDepressionTmsStudio = async () => {
@@ -5966,6 +6002,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const sessions = parseInt(document.getElementById('idtms-sessions')?.value || '30');
             const annealer_iterations = parseInt(document.getElementById('idtms-iters')?.value || '60');
             const cost_per_session = parseFloat(document.getElementById('idtms-cost')?.value || '185');
+            const rf_intensity_pct = parseFloat(document.getElementById('idtms-intensity')?.value || '110');
             const target_lobes = Array.from(document.querySelectorAll('.idtms-lobe-checkbox:checked')).map(el => el.value);
 
             const resp = await fetch('/api/indigenous-depression-tms', {
@@ -5973,7 +6010,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     baseline_phq9, travel_barrier, cultural_safety_score, historical_trauma_load,
-                    community_support, sessions, annealer_iterations, cost_per_session, target_lobes
+                    community_support, sessions, annealer_iterations, cost_per_session, target_lobes, rf_intensity_pct
                 })
             });
 

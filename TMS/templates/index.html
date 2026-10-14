@@ -4161,7 +4161,16 @@ Metropolis P(accept) = exp(ΔJ[$M] / T),  validated vs exact brute force
                                 </div>
                                 <input type="range" id="idtms-cost" min="50" max="500" step="5" value="185" oninput="idtmsUpdateLabels(); runIndigenousDepressionTmsStudioDebounced();" class="sa-slider-input">
                             </div>
+
+                            <div class="sa-slider-group" style="margin-top:12px;">
+                                <div class="sa-slider-header">
+                                    <span>RF Field Strength (% MSO):</span>
+                                    <span id="label-idtms-intensity" class="sa-slider-val" style="color:#f472b6;">110%</span>
+                                </div>
+                                <input type="range" id="idtms-intensity" min="60" max="150" step="2" value="110" oninput="idtmsUpdateLabels(); runIndigenousDepressionTmsStudioDebounced();" class="sa-slider-input">
+                            </div>
                         </div>
+
 
                         <div style="margin-top:16px;">
                             <h4 style="color:#f472b6; margin-bottom:8px; font-size:13px;">🧠 Cortical Lobes Stimulated (Coil Montage)</h4>
@@ -4294,6 +4303,14 @@ Metropolis P(accept) = exp(ΔJ[$M] / T),  validated vs exact brute force
                                 </table>
                             </div>
                             <span style="font-size:10px; color:#94a3b8; display:block; margin-top:6px;">Montage Coverage Factor (multi-site engagement index): <span id="idtms-lobe-coverage" style="color:#f472b6; font-weight:600;">1.000&times;</span></span>
+                        </div>
+
+                        <!-- Row 4c: Cortical Surface BEM Stimulation Render Window -->
+                        <div class="panel glass-panel" style="min-height:420px;">
+                            <h4 style="margin:0 0 4px 0; color:#f472b6; font-size:13px;">🧊 Cortical Surface Boundary-Element Stimulation Field</h4>
+                            <span style="font-size:10.5px; color:#94a3b8;">Superposed single-layer BEM induced-potential &phi;(x) across selected coil montage at the modeled RF drive intensity</span>
+                            <div id="idtms-bem-chart" style="width:100%; height:420px; margin-top:8px;"></div>
+                            <span style="font-size:10px; color:#94a3b8; display:block; margin-top:6px;">Peak Surface Potential: <span id="idtms-bem-peak" style="color:#f472b6; font-weight:600;">--</span> &middot; Active Coils: <span id="idtms-bem-coil-count" style="color:#38bdf8; font-weight:600;">--</span></span>
                         </div>
 
                         <!-- Row 5: Clinical & Economics Summary Table -->

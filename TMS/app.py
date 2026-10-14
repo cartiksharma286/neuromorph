@@ -1259,6 +1259,7 @@ def _indigenous_depression_tms_params(data):
         annealer_iterations=_arg(data, 'annealer_iterations', 60, int),
         cost_per_session=_arg(data, 'cost_per_session', 185.0, float),
         target_lobes=target_lobes,
+        rf_intensity_pct=_arg(data, 'rf_intensity_pct', 110.0, float),
     )
 
 

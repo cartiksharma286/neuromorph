@@ -296,6 +296,7 @@ CORTICAL_LOBE_TARGETS: Dict[str, Dict[str, Any]] = {
         'brodmann': 'BA9 / BA46',
         'frequency_role': 'High-frequency excitatory (10 Hz) — primary FDA-cleared depression target',
         'evidence_weight': 1.00,
+        'theta_deg': 325.0, 'phi_deg': 58.0,
     },
     'right_dlpfc': {
         'label': 'Right Dorsolateral Prefrontal Cortex',
@@ -303,6 +304,7 @@ CORTICAL_LOBE_TARGETS: Dict[str, Dict[str, Any]] = {
         'brodmann': 'BA9 / BA46',
         'frequency_role': 'Low-frequency inhibitory (1 Hz) — adjunct for comorbid anxiety',
         'evidence_weight': 0.62,
+        'theta_deg': 35.0, 'phi_deg': 58.0,
     },
     'dmpfc': {
         'label': 'Dorsomedial Prefrontal Cortex',
@@ -310,6 +312,7 @@ CORTICAL_LOBE_TARGETS: Dict[str, Dict[str, Any]] = {
         'brodmann': 'BA9 / BA32',
         'frequency_role': 'Deep TMS (H-coil) / intermittent theta-burst alternative target',
         'evidence_weight': 0.68,
+        'theta_deg': 0.0, 'phi_deg': 40.0,
     },
     'ofc': {
         'label': 'Orbitofrontal Cortex',
@@ -317,6 +320,7 @@ CORTICAL_LOBE_TARGETS: Dict[str, Dict[str, Any]] = {
         'brodmann': 'BA11',
         'frequency_role': 'Deep rTMS adjunct target for anhedonia subtype',
         'evidence_weight': 0.50,
+        'theta_deg': 0.0, 'phi_deg': 100.0,
     },
     'acc': {
         'label': 'Anterior Cingulate Cortex',
@@ -324,6 +328,7 @@ CORTICAL_LOBE_TARGETS: Dict[str, Dict[str, Any]] = {
         'brodmann': 'BA24 / BA32',
         'frequency_role': 'Deep rTMS for treatment-resistant subtype',
         'evidence_weight': 0.47,
+        'theta_deg': 0.0, 'phi_deg': 75.0,
     },
     'parietal_ppc': {
         'label': 'Posterior Parietal Cortex',
@@ -331,8 +336,10 @@ CORTICAL_LOBE_TARGETS: Dict[str, Dict[str, Any]] = {
         'brodmann': 'BA7',
         'frequency_role': 'Connectivity-guided network adjunct target',
         'evidence_weight': 0.33,
+        'theta_deg': 180.0, 'phi_deg': 50.0,
     },
 }
+
 
 
 def compute_cortical_targets(selected_keys: List[str]) -> Dict[str, Any]:
@@ -363,6 +370,63 @@ def compute_cortical_targets(selected_keys: List[str]) -> Dict[str, Any]:
     }
 
 
+def compute_cortical_bem_field(targets: List[Dict[str, Any]], rf_intensity_pct: float,
+                                resolution: int = 44, coil_height: float = 1.32) -> Dict[str, Any]:
+    """Single-layer boundary-element (BEM) induced-potential field on a deformed-sphere
+    cortical surface, superposed across one magnetic-dipole coil per selected lobe target:
+
+        phi(x) = (mu0 / 4*pi) * sum_k [ m_k * (n_k . (x - x_k)) / |x - x_k|^3 ]
+
+    where m_k is the coil moment (RF drive intensity scaled by the site's evidence weight)
+    and n_k is the coil's local surface-normal orientation at anatomical angle (theta_k, phi_k).
+    """
+    mu0 = 4.0 * np.pi * 1e-7
+
+    theta = np.linspace(0.0, 2.0 * np.pi, resolution)
+    phi = np.linspace(0.02, np.pi - 0.02, max(resolution // 2, 8))
+    TH, PH = np.meshgrid(theta, phi)
+
+    r_surface = 1.0 + 0.05 * np.sin(5 * TH) * np.cos(4 * PH)
+    X = r_surface * np.sin(PH) * np.cos(TH)
+    Y = r_surface * np.sin(PH) * np.sin(TH)
+    Z = r_surface * np.cos(PH)
+
+    potential = np.zeros_like(X)
+    coil_records = []
+    for t in targets:
+        th0 = math.radians(t['theta_deg'])
+        ph0 = math.radians(t['phi_deg'])
+        axis = np.array([math.sin(ph0) * math.cos(th0), math.sin(ph0) * math.sin(th0), math.cos(ph0)])
+        coil_pos = coil_height * axis
+        moment = (rf_intensity_pct / 100.0) * 2.0 * t['evidence_weight']
+
+        dx, dy, dz = X - coil_pos[0], Y - coil_pos[1], Z - coil_pos[2]
+        dist3 = np.maximum((dx ** 2 + dy ** 2 + dz ** 2) ** 1.5, 1e-6)
+        proj = dx * axis[0] + dy * axis[1] + dz * axis[2]
+        potential += (mu0 / (4.0 * np.pi)) * moment * proj / dist3
+
+        coil_records.append({
+            'key': t['key'],
+            'label': t['label'],
+            'x': round(float(coil_pos[0]), 4),
+            'y': round(float(coil_pos[1]), 4),
+            'z': round(float(coil_pos[2]), 4),
+            'moment': round(float(moment), 4),
+        })
+
+    potential_scaled = potential * 1e7  # rescale to a convenient display range
+
+    return {
+        'x': X.round(4).tolist(),
+        'y': Y.round(4).tolist(),
+        'z': Z.round(4).tolist(),
+        'potential': potential_scaled.round(4).tolist(),
+        'peak_potential': round(float(np.max(np.abs(potential_scaled))), 4),
+        'coils': coil_records,
+        'rf_intensity_pct': float(rf_intensity_pct),
+    }
+
+
 def _attrition_survival(months, travel_barrier, community_support, cst_ramp):
     h0 = 0.028
     hazards = h0 * (1.0 + 1.6 * travel_barrier) * (1.0 - 0.55 * community_support) * (1.0 - cst_ramp)
@@ -381,6 +445,7 @@ def simulate_indigenous_depression_tms(
     annealer_iterations: int = 60,
     cost_per_session: float = 185.0,
     target_lobes: List[str] = None,
+    rf_intensity_pct: float = 110.0,
 ) -> Dict[str, Any]:
     """Top-level entry point: run staging, QML scheduling, trajectory, and equity economics."""
     baseline_phq9 = float(np.clip(baseline_phq9, 8.0, 27.0))
@@ -391,10 +456,12 @@ def simulate_indigenous_depression_tms(
     community_support = float(np.clip(community_support, 0.0, 1.0))
     annealer_iterations = int(np.clip(annealer_iterations, 20, 150))
     cost_per_session = float(np.clip(cost_per_session, 50.0, 1000.0))
+    rf_intensity_pct = float(np.clip(rf_intensity_pct, 60.0, 150.0))
     target_phq9 = 6.0
 
     cortical_targets = compute_cortical_targets(target_lobes or ['left_dlpfc'])
     engagement_factor = cortical_targets['montage_coverage_factor']
+    cortical_bem_field = compute_cortical_bem_field(cortical_targets['targets'], rf_intensity_pct)
 
     staging = compute_optimal_staging(travel_barrier, cultural_safety_score,
                                        historical_trauma_load, sessions)
@@ -484,12 +551,14 @@ def simulate_indigenous_depression_tms(
             'cost_per_session': cost_per_session,
             'target_phq9': target_phq9,
             'target_lobes': cortical_targets['selected_keys'],
+            'rf_intensity_pct': rf_intensity_pct,
         },
         'staging': staging,
         'schedule_optimization': qml,
         'trajectory': trajectory,
         'equity_economics': equity_economics,
         'cortical_targets': cortical_targets,
+        'cortical_bem_field': cortical_bem_field,
         'paradigm': {
             'status': 'in-silico research scenario; not a clinical prescription',
             'population': 'remote/underserved Indigenous communities (research model)',
