@@ -1240,6 +1240,15 @@ def parkinsons_dbs_trajectories_pdf():
 
 
 def _indigenous_depression_tms_params(data):
+    raw_lobes = data.get('target_lobes') if isinstance(data, dict) else None
+    if raw_lobes is None:
+        raw_lobes = request.args.getlist('target_lobes') or request.args.get('target_lobes')
+    if isinstance(raw_lobes, str):
+        target_lobes = [s.strip() for s in raw_lobes.split(',') if s.strip()]
+    elif isinstance(raw_lobes, list) and raw_lobes:
+        target_lobes = [str(s) for s in raw_lobes]
+    else:
+        target_lobes = ['left_dlpfc']
     return dict(
         baseline_phq9=_arg(data, 'baseline_phq9', 21.0, float),
         sessions=_arg(data, 'sessions', 30, int),
@@ -1248,7 +1257,8 @@ def _indigenous_depression_tms_params(data):
         historical_trauma_load=_arg(data, 'historical_trauma_load', 0.45, float),
         community_support=_arg(data, 'community_support', 0.5, float),
         annealer_iterations=_arg(data, 'annealer_iterations', 60, int),
-        cost_per_session=_arg(data, 'cost_per_session', 185.0, float)
+        cost_per_session=_arg(data, 'cost_per_session', 185.0, float),
+        target_lobes=target_lobes,
     )
 
 

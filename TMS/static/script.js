@@ -5966,13 +5966,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const sessions = parseInt(document.getElementById('idtms-sessions')?.value || '30');
             const annealer_iterations = parseInt(document.getElementById('idtms-iters')?.value || '60');
             const cost_per_session = parseFloat(document.getElementById('idtms-cost')?.value || '185');
+            const target_lobes = Array.from(document.querySelectorAll('.idtms-lobe-checkbox:checked')).map(el => el.value);
 
             const resp = await fetch('/api/indigenous-depression-tms', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     baseline_phq9, travel_barrier, cultural_safety_score, historical_trauma_load,
-                    community_support, sessions, annealer_iterations, cost_per_session
+                    community_support, sessions, annealer_iterations, cost_per_session, target_lobes
                 })
             });
 
@@ -6020,6 +6021,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     </tr>
                 `).join('');
             }
+
+            // Cortical lobes stimulated table
+            const lobesBody = document.getElementById('idtms-lobes-tbody');
+            const ct = d.cortical_targets;
+            if (lobesBody && ct) {
+                lobesBody.innerHTML = ct.targets.map(t => `
+                    <tr>
+                        <td>${t.label}</td>
+                        <td>${t.lobe}</td>
+                        <td>${t.brodmann}</td>
+                        <td>${t.frequency_role}</td>
+                        <td>${t.evidence_weight.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            }
+            const coverageEl = document.getElementById('idtms-lobe-coverage');
+            if (coverageEl && ct) coverageEl.textContent = `${ct.montage_coverage_factor.toFixed(3)}\u00d7`;
 
             // Summary table
             const summaryBody = document.getElementById('idtms-summary-tbody');

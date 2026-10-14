@@ -4162,6 +4162,36 @@ Metropolis P(accept) = exp(ΔJ[$M] / T),  validated vs exact brute force
                                 <input type="range" id="idtms-cost" min="50" max="500" step="5" value="185" oninput="idtmsUpdateLabels(); runIndigenousDepressionTmsStudioDebounced();" class="sa-slider-input">
                             </div>
                         </div>
+
+                        <div style="margin-top:16px;">
+                            <h4 style="color:#f472b6; margin-bottom:8px; font-size:13px;">🧠 Cortical Lobes Stimulated (Coil Montage)</h4>
+                            <div id="idtms-lobe-checklist" style="display:flex; flex-direction:column; gap:6px; font-size:11.5px; color:#cbd5e1;">
+                                <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+                                    <input type="checkbox" class="idtms-lobe-checkbox" value="left_dlpfc" checked onchange="runIndigenousDepressionTmsStudioDebounced();">
+                                    Left Dorsolateral Prefrontal Cortex <span style="color:#64748b;">(Frontal Lobe · BA9/46 · primary)</span>
+                                </label>
+                                <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+                                    <input type="checkbox" class="idtms-lobe-checkbox" value="right_dlpfc" onchange="runIndigenousDepressionTmsStudioDebounced();">
+                                    Right Dorsolateral Prefrontal Cortex <span style="color:#64748b;">(Frontal Lobe · BA9/46)</span>
+                                </label>
+                                <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+                                    <input type="checkbox" class="idtms-lobe-checkbox" value="dmpfc" onchange="runIndigenousDepressionTmsStudioDebounced();">
+                                    Dorsomedial Prefrontal Cortex <span style="color:#64748b;">(Frontal Lobe · BA9/32)</span>
+                                </label>
+                                <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+                                    <input type="checkbox" class="idtms-lobe-checkbox" value="ofc" onchange="runIndigenousDepressionTmsStudioDebounced();">
+                                    Orbitofrontal Cortex <span style="color:#64748b;">(Frontal Lobe · BA11)</span>
+                                </label>
+                                <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+                                    <input type="checkbox" class="idtms-lobe-checkbox" value="acc" onchange="runIndigenousDepressionTmsStudioDebounced();">
+                                    Anterior Cingulate Cortex <span style="color:#64748b;">(Limbic/Frontal · BA24/32)</span>
+                                </label>
+                                <label style="display:flex; align-items:center; gap:7px; cursor:pointer;">
+                                    <input type="checkbox" class="idtms-lobe-checkbox" value="parietal_ppc" onchange="runIndigenousDepressionTmsStudioDebounced();">
+                                    Posterior Parietal Cortex <span style="color:#64748b;">(Parietal Lobe · BA7)</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- RIGHT COLUMN: KPIs, CHARTS, TABLES -->
@@ -4244,6 +4274,26 @@ Metropolis P(accept) = exp(ΔJ[$M] / T),  validated vs exact brute force
                                     <tbody id="idtms-staging-tbody"></tbody>
                                 </table>
                             </div>
+                        </div>
+
+                        <!-- Row 4b: Cortical Lobes Stimulated Table -->
+                        <div class="panel glass-panel">
+                            <h4 style="margin:0 0 8px 0; color:#f472b6; font-size:13px;">🧠 Cortical Lobes Stimulated by rTMS</h4>
+                            <div style="overflow-x:auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                                    <thead>
+                                        <tr style="border-bottom:1px solid rgba(255,255,255,0.15); color:#94a3b8;">
+                                            <th style="padding:6px 8px;">Target</th>
+                                            <th style="padding:6px 8px;">Lobe</th>
+                                            <th style="padding:6px 8px;">Brodmann Area</th>
+                                            <th style="padding:6px 8px;">Stimulation Role</th>
+                                            <th style="padding:6px 8px;">Evidence Weight</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="idtms-lobes-tbody"></tbody>
+                                </table>
+                            </div>
+                            <span style="font-size:10px; color:#94a3b8; display:block; margin-top:6px;">Montage Coverage Factor (multi-site engagement index): <span id="idtms-lobe-coverage" style="color:#f472b6; font-weight:600;">1.000&times;</span></span>
                         </div>
 
                         <!-- Row 5: Clinical & Economics Summary Table -->

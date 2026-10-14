@@ -147,12 +147,12 @@ FREQUENCY_GRID = [8.0, 10.0, 12.0, 16.0, 20.0]
 
 
 def _simulate_stage_trajectory(baseline, target, stage_freqs, stage_lengths, cultural_safety_score,
-                                historical_trauma_load, community_support, rng):
+                                historical_trauma_load, community_support, rng, engagement_factor=1.0):
     symptom = baseline
     trace = [symptom]
     for freq, length in zip(stage_freqs, stage_lengths):
         for _ in range(length):
-            k_rtms = 0.0042 * freq * (0.5 + 0.5 * community_support)
+            k_rtms = 0.0042 * freq * (0.5 + 0.5 * community_support) * engagement_factor
             k_cst = 0.018 * cultural_safety_score * (1.0 - 0.4 * historical_trauma_load)
             symptom = max(2.0, target + (symptom - target) * math.exp(-(k_rtms + k_cst)) + rng.normal(0.0, 0.14))
             trace.append(float(symptom))
@@ -285,6 +285,84 @@ def optimize_qml_schedule(baseline: float, target: float, stage_lengths: List[in
 # 3. Population Trajectory & Equity Economics
 # ──────────────────────────────────────────────────────────────────────────────
 
+# ──────────────────────────────────────────────────────────────────────────────
+# 2b. Cortical Lobe / Coil-Montage Targets Stimulated by rTMS
+# ──────────────────────────────────────────────────────────────────────────────
+
+CORTICAL_LOBE_TARGETS: Dict[str, Dict[str, Any]] = {
+    'left_dlpfc': {
+        'label': 'Left Dorsolateral Prefrontal Cortex',
+        'lobe': 'Frontal Lobe',
+        'brodmann': 'BA9 / BA46',
+        'frequency_role': 'High-frequency excitatory (10 Hz) — primary FDA-cleared depression target',
+        'evidence_weight': 1.00,
+    },
+    'right_dlpfc': {
+        'label': 'Right Dorsolateral Prefrontal Cortex',
+        'lobe': 'Frontal Lobe',
+        'brodmann': 'BA9 / BA46',
+        'frequency_role': 'Low-frequency inhibitory (1 Hz) — adjunct for comorbid anxiety',
+        'evidence_weight': 0.62,
+    },
+    'dmpfc': {
+        'label': 'Dorsomedial Prefrontal Cortex',
+        'lobe': 'Frontal Lobe',
+        'brodmann': 'BA9 / BA32',
+        'frequency_role': 'Deep TMS (H-coil) / intermittent theta-burst alternative target',
+        'evidence_weight': 0.68,
+    },
+    'ofc': {
+        'label': 'Orbitofrontal Cortex',
+        'lobe': 'Frontal Lobe',
+        'brodmann': 'BA11',
+        'frequency_role': 'Deep rTMS adjunct target for anhedonia subtype',
+        'evidence_weight': 0.50,
+    },
+    'acc': {
+        'label': 'Anterior Cingulate Cortex',
+        'lobe': 'Limbic Lobe (Frontal Border)',
+        'brodmann': 'BA24 / BA32',
+        'frequency_role': 'Deep rTMS for treatment-resistant subtype',
+        'evidence_weight': 0.47,
+    },
+    'parietal_ppc': {
+        'label': 'Posterior Parietal Cortex',
+        'lobe': 'Parietal Lobe',
+        'brodmann': 'BA7',
+        'frequency_role': 'Connectivity-guided network adjunct target',
+        'evidence_weight': 0.33,
+    },
+}
+
+
+def compute_cortical_targets(selected_keys: List[str]) -> Dict[str, Any]:
+    """Resolve selected coil-montage keys into anatomical target records plus a bounded
+    'montage coverage factor' reflecting multi-site stimulation engagement.
+
+    engagement_factor = 1 + 0.06 * sum(evidence_weight of additional sites beyond the
+    primary/highest-weight selected site), capped at 1.25, so the single-site default
+    (left DLPFC only) leaves prior behavior exactly unchanged (factor == 1.0).
+    """
+    valid_keys = [k for k in selected_keys if k in CORTICAL_LOBE_TARGETS]
+    if not valid_keys:
+        valid_keys = ['left_dlpfc']
+
+    targets = sorted(
+        ({'key': k, **CORTICAL_LOBE_TARGETS[k]} for k in valid_keys),
+        key=lambda t: -t['evidence_weight']
+    )
+    primary = targets[0]
+    additional = targets[1:]
+    engagement_factor = 1.0 + min(0.25, 0.06 * sum(t['evidence_weight'] for t in additional))
+
+    return {
+        'selected_keys': valid_keys,
+        'targets': targets,
+        'primary_key': primary['key'],
+        'montage_coverage_factor': float(engagement_factor),
+    }
+
+
 def _attrition_survival(months, travel_barrier, community_support, cst_ramp):
     h0 = 0.028
     hazards = h0 * (1.0 + 1.6 * travel_barrier) * (1.0 - 0.55 * community_support) * (1.0 - cst_ramp)
@@ -302,6 +380,7 @@ def simulate_indigenous_depression_tms(
     community_support: float = 0.5,
     annealer_iterations: int = 60,
     cost_per_session: float = 185.0,
+    target_lobes: List[str] = None,
 ) -> Dict[str, Any]:
     """Top-level entry point: run staging, QML scheduling, trajectory, and equity economics."""
     baseline_phq9 = float(np.clip(baseline_phq9, 8.0, 27.0))
@@ -313,6 +392,9 @@ def simulate_indigenous_depression_tms(
     annealer_iterations = int(np.clip(annealer_iterations, 20, 150))
     cost_per_session = float(np.clip(cost_per_session, 50.0, 1000.0))
     target_phq9 = 6.0
+
+    cortical_targets = compute_cortical_targets(target_lobes or ['left_dlpfc'])
+    engagement_factor = cortical_targets['montage_coverage_factor']
 
     staging = compute_optimal_staging(travel_barrier, cultural_safety_score,
                                        historical_trauma_load, sessions)
@@ -327,7 +409,8 @@ def simulate_indigenous_depression_tms(
 
     optimized_trace = _simulate_stage_trajectory(baseline_phq9, target_phq9, qml['qml_schedule_hz'],
                                                   stage_lengths, cultural_safety_score,
-                                                  historical_trauma_load, community_support, rng)
+                                                  historical_trauma_load, community_support, rng,
+                                                  engagement_factor=engagement_factor)
     standard_trace = _simulate_stage_trajectory(baseline_phq9, target_phq9, qml['baseline_fixed_schedule_hz'],
                                                  stage_lengths, cultural_safety_score * 0.55,
                                                  historical_trauma_load, community_support * 0.6, rng)
@@ -400,11 +483,13 @@ def simulate_indigenous_depression_tms(
             'annealer_iterations': annealer_iterations,
             'cost_per_session': cost_per_session,
             'target_phq9': target_phq9,
+            'target_lobes': cortical_targets['selected_keys'],
         },
         'staging': staging,
         'schedule_optimization': qml,
         'trajectory': trajectory,
         'equity_economics': equity_economics,
+        'cortical_targets': cortical_targets,
         'paradigm': {
             'status': 'in-silico research scenario; not a clinical prescription',
             'population': 'remote/underserved Indigenous communities (research model)',
