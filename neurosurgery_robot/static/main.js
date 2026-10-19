@@ -245,6 +245,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const cryoCanvasEl = document.getElementById('cryo-canvas');
     const cryoViz = cryoCanvasEl ? new CryoViz('cryo-canvas') : null;
 
+    // Init 6-DOF Intraoperative Surgery Simulation Viz
+    if (typeof Intraoperative6DOFViz !== 'undefined' && document.getElementById('canvas-6dof-intraop')) {
+        window.intraop6DofViz = new Intraoperative6DOFViz('canvas-6dof-intraop', 'intraop-slice-canvas');
+    }
+
     // UI Elements
     const elSystemStatus = document.getElementById('system-status');
     const elLoopRate = document.getElementById('loop-rate');
@@ -342,9 +347,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 runEconomicsSim();
             } else if (targetId === 'tab-ablation-modalities' && typeof loadAblationModalities === 'function') {
                 loadAblationModalities();
+            } else if (targetId === 'tab-majorana-mrus' && typeof loadMajoranaRegistration === 'function') {
+                loadMajoranaRegistration();
+            } else if (targetId === 'tab-intraop-6dof' && window.intraop6DofViz) {
+                window.intraop6DofViz.onTabActivated();
             }
         });
     });
+
+    // Global helpers for 6-DOF Intraoperative Tab
+    window.onJointSliderInput = function() {
+        if (!window.intraop6DofViz) return;
+        const angles = [
+            parseFloat(document.getElementById('slider-j1')?.value) || 0,
+            parseFloat(document.getElementById('slider-j2')?.value) || 0,
+            parseFloat(document.getElementById('slider-j3')?.value) || 0,
+            parseFloat(document.getElementById('slider-j4')?.value) || 0,
+            parseFloat(document.getElementById('slider-j5')?.value) || 0,
+            parseFloat(document.getElementById('slider-j6')?.value) || 0,
+        ];
+        angles.forEach((a, i) => {
+            const el = document.getElementById(`val-j${i + 1}`);
+            if (el) el.textContent = a.toFixed(1) + '°';
+        });
+        window.intraop6DofViz.updateKinematicsFromAngles(angles);
+    };
+
+    window.toggleIntraopAblation = function() {
+        if (!window.intraop6DofViz) return;
+        if (window.intraop6DofViz.ablationActive) {
+            window.intraop6DofViz.pauseAblation();
+        } else {
+            window.intraop6DofViz.startAblation();
+        }
+    };
 
     // Polling Loop
     setInterval(async () => {
@@ -2059,6 +2095,227 @@ if (btnRunAblationModalities) {
         btnRunAblationModalities.textContent = '⏳ RUNNING SIMULATION…';
         loadAblationModalities().finally(() => {
             btnRunAblationModalities.textContent = '▶ RUN LITT / CRYO / US SIMULATION';
+        });
+    });
+}
+
+// =====================================================================
+// MAJORANA ZERO-MODE TOPOLOGICAL QML MR/US REGISTRATION & FUSION
+// =====================================================================
+let majoranaHistChart = null;
+let majoranaRegistrationLoaded = false;
+
+function initMajoranaHistChart(histData, meanVal) {
+    const canvas = document.getElementById('majorana-hist-canvas');
+    if (!canvas) return;
+    if (majoranaHistChart) majoranaHistChart.destroy();
+
+    const labels = histData.bin_centers_mm.map(c => c.toFixed(3));
+    const counts = histData.counts;
+
+    majoranaHistChart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '512-Trial Monte Carlo TRE (mm)',
+                data: counts,
+                backgroundColor: 'rgba(20, 184, 166, 0.75)',
+                borderColor: '#14b8a6',
+                borderWidth: 1,
+                borderRadius: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: { display: true, text: 'Target Registration Error TRE (mm)', color: '#94a3b8', font: { size: 8.5 } },
+                    grid: { color: 'rgba(51,65,85,0.25)' },
+                    ticks: { color: '#94a3b8', font: { size: 7.5 } }
+                },
+                y: {
+                    title: { display: true, text: 'Count (N=512)', color: '#94a3b8', font: { size: 8.5 } },
+                    grid: { color: 'rgba(51,65,85,0.25)' },
+                    ticks: { color: '#94a3b8', font: { size: 7.5 } }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: (items) => `TRE Bin: ${items[0].label} mm`,
+                        label: (item) => `Trials: ${item.raw}`
+                    }
+                }
+            }
+        }
+    });
+}
+
+async function loadMajoranaRegistration() {
+    const btnRun = document.getElementById('btn-run-majorana-reg');
+    const shiftSlider = document.getElementById('majorana-shift-slider');
+    const depthSlider = document.getElementById('majorana-depth-slider');
+    const weightSlider = document.getElementById('majorana-weight-slider');
+
+    const brainShift = shiftSlider ? parseFloat(shiftSlider.value) : 2.4;
+    const braidDepth = depthSlider ? parseInt(depthSlider.value) : 6;
+    const fusionAlpha = weightSlider ? parseFloat(weightSlider.value) : 0.58;
+
+    if (btnRun) {
+        btnRun.textContent = '⏳ RUNNING MAJORANA BRAID CIRCUIT…';
+        btnRun.disabled = true;
+    }
+
+    try {
+        const resp = await fetch('/api/majorana/mrus_registration', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                brain_shift_mm: brainShift,
+                braid_depth: braidDepth,
+                fusion_alpha: fusionAlpha,
+                noise_sigma_mm: 0.18
+            }),
+            signal: AbortSignal.timeout(30000)
+        });
+
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        if (data.error) {
+            console.error("Majorana registration error:", data.error);
+            return;
+        }
+
+        // 1. Update Hardware Telemetry
+        const hw = data.majorana_hardware || {};
+        const bc = data.braid_circuit || {};
+        const reg = data.registration_metrics || {};
+        const stat = data.statistical_verifiability || {};
+
+        const elHwName = document.getElementById('maj-hw-name');
+        const elBraidFid = document.getElementById('maj-braid-fidelity');
+        const elTopoGap = document.getElementById('maj-topo-gap');
+        const elParity = document.getElementById('maj-parity-tot');
+        const elBraidBadge = document.getElementById('maj-braid-word-badge');
+
+        if (elHwName) elHwName.textContent = `${hw.num_logical_qubits || 4} Tetrons / ${hw.num_majorana_zero_modes || 8} MZMs`;
+        if (elBraidFid && hw.topological_braid_fidelity !== undefined) {
+            elBraidFid.textContent = `${(hw.topological_braid_fidelity * 100).toFixed(4)}%`;
+        }
+        if (elTopoGap) elTopoGap.textContent = `${hw.topological_gap_mev || 0.18} meV`;
+        if (elParity && bc.global_fermion_parity !== undefined) {
+            elParity.textContent = (bc.global_fermion_parity >= 0 ? '+' : '') + bc.global_fermion_parity.toFixed(3);
+        }
+        if (elBraidBadge && bc.braid_word) {
+            elBraidBadge.textContent = bc.braid_word;
+            elBraidBadge.title = bc.braid_word;
+        }
+
+        // 2. Update Registration Metrics
+        const elTreUnreg = document.getElementById('maj-tre-unreg');
+        const elTreFused = document.getElementById('maj-tre-fused');
+        const elTreRed = document.getElementById('maj-tre-reduction');
+        const elHd95 = document.getElementById('maj-hd95');
+        const elDice = document.getElementById('maj-dice');
+
+        if (elTreUnreg && reg.tre_unregistered_mm !== undefined) elTreUnreg.textContent = `${reg.tre_unregistered_mm.toFixed(3)} mm`;
+        if (elTreFused && reg.tre_fused_surface_mm !== undefined) elTreFused.textContent = `${reg.tre_fused_surface_mm.toFixed(3)} mm`;
+        if (elTreRed && reg.tre_reduction_pct !== undefined) elTreRed.textContent = `${reg.tre_reduction_pct.toFixed(1)}% Reduction`;
+        if (elHd95 && reg.hd95_fused_mm !== undefined) elHd95.textContent = `${reg.hd95_fused_mm.toFixed(3)} mm`;
+        if (elDice && reg.dice_fused !== undefined) elDice.textContent = reg.dice_fused.toFixed(4);
+
+        // 3. Render 3-Panel High-Res Chart
+        const chartBox = document.getElementById('majorana-chart-container');
+        if (chartBox && data.chart) {
+            chartBox.innerHTML = `<img src="${data.chart}" style="width:100%; height:auto; border-radius:6px; display:block;" alt="Majorana QML Surface Registration">`;
+        }
+
+        // 4. Update Statistical Concentration Metrics
+        const elHoeffding = document.getElementById('stat-hoeffding');
+        const elDkw = document.getElementById('stat-dkw');
+        const elQcrlb = document.getElementById('stat-qcrlb');
+        const elCompliance = document.getElementById('stat-compliance');
+
+        if (elHoeffding && stat.hoeffding_tail_bound_prob !== undefined) {
+            elHoeffding.textContent = `P ≤ ${stat.hoeffding_tail_bound_prob.toExponential(1)}`;
+        }
+        if (elDkw && stat.dkw_sup_norm_bound !== undefined) {
+            elDkw.textContent = `sup |F-F_N| ≤ ${stat.dkw_sup_norm_bound.toFixed(3)}`;
+        }
+        if (elQcrlb && stat.quantum_cramer_rao_lower_bound_mm !== undefined) {
+            elQcrlb.textContent = `σ = ${stat.quantum_cramer_rao_lower_bound_mm.toFixed(3)} mm`;
+        }
+        if (elCompliance && stat.sub_250um_compliance_pct !== undefined) {
+            elCompliance.textContent = `${stat.sub_250um_compliance_pct.toFixed(1)}%`;
+        }
+
+        // 5. Render Histogram Chart
+        if (stat.histogram) {
+            initMajoranaHistChart(stat.histogram, stat.majorana_tre_mean_mm);
+        }
+
+        majoranaRegistrationLoaded = true;
+        log(`⚛️ Majorana QML Surface Registration & Fusion: TRE reduced from ${reg.tre_unregistered_mm.toFixed(3)} mm to ${reg.tre_fused_surface_mm.toFixed(3)} mm (${reg.tre_reduction_pct.toFixed(1)}% reduction, DSC=${reg.dice_fused.toFixed(4)}).`);
+
+        // Typeset MathJax if available
+        requestAnimationFrame(() => {
+            const mathBox = document.getElementById('tab-majorana-mrus');
+            if (mathBox && window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([mathBox]).catch(() => {});
+            }
+        });
+
+    } catch (e) {
+        console.error("Majorana registration error:", e);
+    } finally {
+        if (btnRun) {
+            btnRun.textContent = '▶ RUN MAJORANA REGISTRATION & FUSION';
+            btnRun.disabled = false;
+        }
+    }
+}
+
+// Sliders and Buttons Listeners for Majorana Tab
+const shiftSlider = document.getElementById('majorana-shift-slider');
+if (shiftSlider) {
+    shiftSlider.addEventListener('input', (e) => {
+        const valEl = document.getElementById('majorana-shift-val');
+        if (valEl) valEl.textContent = `${parseFloat(e.target.value).toFixed(1)} mm`;
+    });
+}
+const depthSlider = document.getElementById('majorana-depth-slider');
+if (depthSlider) {
+    depthSlider.addEventListener('input', (e) => {
+        const valEl = document.getElementById('majorana-depth-val');
+        if (valEl) valEl.textContent = `${e.target.value} Layers`;
+    });
+}
+const weightSlider = document.getElementById('majorana-weight-slider');
+if (weightSlider) {
+    weightSlider.addEventListener('input', (e) => {
+        const valEl = document.getElementById('majorana-weight-val');
+        if (valEl) valEl.textContent = parseFloat(e.target.value).toFixed(2);
+    });
+}
+
+const btnRunMajReg = document.getElementById('btn-run-majorana-reg');
+if (btnRunMajReg) {
+    btnRunMajReg.addEventListener('click', () => {
+        loadMajoranaRegistration();
+    });
+}
+
+const btnRunMajMonteCarlo = document.getElementById('btn-run-majorana-monte-carlo');
+if (btnRunMajMonteCarlo) {
+    btnRunMajMonteCarlo.addEventListener('click', () => {
+        btnRunMajMonteCarlo.textContent = '⏳ RUNNING 512 TRIALS…';
+        btnRunMajMonteCarlo.disabled = true;
+        loadMajoranaRegistration().finally(() => {
+            btnRunMajMonteCarlo.textContent = '📊 512-TRIAL MONTE CARLO';
+            btnRunMajMonteCarlo.disabled = false;
         });
     });
 }

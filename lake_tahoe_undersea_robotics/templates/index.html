@@ -32,6 +32,9 @@
         <button class="nav-tab" data-tab="tab-combing">🧬 Molecular Gene Combing & eDNA</button>
         <button class="nav-tab" data-tab="tab-padic">📐 p-Adic Topological Placement</button>
         <button class="nav-tab" data-tab="tab-ontario">⚡ Lake Ontario Qubit & 10-Yr Recovery</button>
+        <button class="nav-tab" data-tab="tab-ecoli">🧲 NMR E. coli & Robotic SLAM</button>
+        <button class="nav-tab" data-tab="tab-vision">👁️ Underwater Vision & QML Elliptic</button>
+        <button class="nav-tab" data-tab="tab-mineral">⛏️ Benthic Mineral Ore & QML Parity</button>
         <button class="nav-tab" data-tab="tab-carbon">Cost Economics & Carbon Viability</button>
         <button class="nav-tab" data-tab="tab-pqc">Post-Quantum Report Verification</button>
         <button class="nav-tab" data-tab="tab-limnology">📊 Clarity & Thermocline Analytics</button>
@@ -39,6 +42,9 @@
     </nav>
 
     <main class="content-container">
+        {% include "ecoli.html" %}
+        {% include "vision.html" %}
+        {% include "mineral.html" %}
         <!-- TAB 1: AUV UNDERSEA ROBOTICS & 6-DOF BATHYMETRY -->
         <section id="tab-auv" class="tab-pane active">
             <div class="grid-2col">
@@ -338,7 +344,9 @@
                     <div class="btn-group" style="margin-top:0.5rem;">
                         <button id="btn-run-ontario-spec" class="btn btn-primary">⚡ Simulate In-Situ Water Intake Spectroscopy</button>
                         <a href="/api/ontario/kicad/download" class="btn btn-outline" download>📥 Download KiCad (.kicad_sch)</a>
+                        <button id="open-ecoli-analysis" class="btn btn-outline">🧲 Advanced NMR E. coli Spectroscopy & SLAM</button>
                     </div>
+                    <p class="subtitle">For 1H-NMR metabolomics (lactate, acetate, succinate, formate, peptidoglycans), CPMG T2 relaxation, DOSY diffusion, regularized chemometrics in lieu of QML, and a dedicated Nature-format PDF, open the advanced NMR analysis tab.</p>
                 </div>
 
                 <!-- Live AUV Intake Canvas & QML Telemetry -->
@@ -598,5 +606,8 @@
 
     <script src="/static/app.js"></script>
     <script src="/static/carbon.js"></script>
+    <script src="/static/ecoli.js"></script>
+    <script src="/static/vision.js"></script>
+    <script src="/static/mineral.js"></script>
 </body>
 </html>

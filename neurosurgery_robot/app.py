@@ -54,6 +54,8 @@ from litt_cryo_ablation import (
     full_modality_comparison,
 )
 from stem_cell_therapy import stem_cell_therapy_summary
+from intraoperative_robot_6dof import Intraoperative6DOFRobotEngine
+from majorana_qml_mrus_registration import MajoranaMRUSSurfaceRegistrationEngine
 
 nvqlink = NVQLinkBridge()
 qml_segmenter = QuantumMLSegmenter()
@@ -61,6 +63,7 @@ cost_economics_engine = RobotCostEconomics()
 thermometric_fencing = CombinatorialThermometricFencing(grid_size=128, voxel_size_mm=0.5)
 number_theoretic_uq = NumberTheoreticUQ(num_samples=256)
 enhanced_localization = EnhancedEndEffectorLocalization()
+majorana_reg_engine = MajoranaMRUSSurfaceRegistrationEngine(grid_size=36)
 
 # Ultrasound & Ablation Engine Instances
 us_simulator = IntraoperativeUltrasoundSimulator(grid_w=128, grid_h=128)
@@ -76,6 +79,7 @@ mrus_fusion_engine = MRUSFusionEngine(num_terms=14, seed_modulus=0.15, max_energ
 litt_engine = LITTAblationEngine(width=96, height=96, voxel_mm=0.6)
 cryo_clinical_engine = CryoAblationClinicalEngine(width=96, height=96, voxel_mm=0.6)
 us_precision_engine = UltrasoundGuidedAblationPrecision(width=96, height=96, voxel_mm=0.6)
+intraop_6dof_robot = Intraoperative6DOFRobotEngine()
 
 # Cache for ablation simulation results (invalidates every 5 minutes)
 _ablation_cache = {}
@@ -1589,6 +1593,89 @@ def get_robot_kinematics_qkf():
     })
 
 
+@app.route('/api/robot/6dof/status', methods=['GET'])
+def get_intraop_6dof_status():
+    """Returns complete 6-DOF intraoperative surgical kinematics, end-effector state, and ablation metrics."""
+    fk = intraop_6dof_robot.forward_kinematics()
+    return jsonify(numpy_to_native({
+        'status': 'ok',
+        'kinematics': fk,
+        'burr_hole_entry_mm': intraop_6dof_robot.burr_hole_entry_mm.tolist(),
+        'tumor_target_mm': intraop_6dof_robot.tumor_target_mm.tolist(),
+        'tumor_radius_mm': intraop_6dof_robot.tumor_radius_mm,
+        'tumor_volume_cm3': round(intraop_6dof_robot.tumor_volume_cm3, 3),
+        'corticospinal_tract_mm': intraop_6dof_robot.corticospinal_tract_mm.tolist(),
+        'ablation': {
+            'active': intraop_6dof_robot.ablation_active,
+            'time_s': round(intraop_6dof_robot.ablation_time_s, 1),
+            'power_w': intraop_6dof_robot.ablation_power_w,
+            'modality': intraop_6dof_robot.ablation_modality,
+            'necrosis_radius_mm': round(intraop_6dof_robot.current_necrosis_radius_mm, 2),
+            'hyperthermia_radius_mm': round(intraop_6dof_robot.current_hyperthermia_radius_mm, 2),
+            'peak_core_temp_c': round(intraop_6dof_robot.max_tissue_temp_c, 1),
+            'cem43_min': round(intraop_6dof_robot.cumulative_cem43_min, 1),
+            'tumor_coverage_pct': round(intraop_6dof_robot.tumor_coverage_pct, 1),
+            'cst_clearance_mm': round(intraop_6dof_robot.cst_clearance_mm, 2),
+            'safety_margin_intact': intraop_6dof_robot.cst_clearance_mm >= 3.5,
+        }
+    }))
+
+
+@app.route('/api/robot/6dof/kinematics', methods=['GET', 'POST'])
+def update_intraop_6dof_kinematics():
+    """Computes or updates 6-DOF forward kinematics, Jacobian, and end-effector pose."""
+    angles = None
+    if request.method == 'POST':
+        data = request.json or {}
+        if 'joint_angles' in data:
+            angles = [float(a) for a in data['joint_angles']]
+        elif 'preset' in data:
+            preset = data['preset']
+            return jsonify(numpy_to_native(intraop_6dof_robot.set_pose_preset(preset)))
+
+    fk = intraop_6dof_robot.forward_kinematics(angles_deg=angles)
+    return jsonify(numpy_to_native({
+        'status': 'ok',
+        'kinematics': fk
+    }))
+
+
+@app.route('/api/robot/6dof/ablate', methods=['POST'])
+def handle_intraop_6dof_ablation():
+    """Advances or resets multi-physics Pennes bioheat tumor ablation."""
+    data = request.json or {}
+    action = data.get('action', 'step')
+    power_w = float(data.get('power_w', 12.0))
+    dt_s = float(data.get('dt_s', 1.0))
+    modality = data.get('modality', 'LITT (1064nm Laser)')
+
+    if action == 'reset':
+        res = intraop_6dof_robot.reset_ablation()
+    elif action == 'pause':
+        intraop_6dof_robot.ablation_active = False
+        res = {'status': 'paused', 'ablation_active': False}
+    else:
+        res = intraop_6dof_robot.step_ablation(power_w=power_w, dt_s=dt_s, modality=modality)
+
+    return jsonify(numpy_to_native({
+        'status': 'ok',
+        'ablation': res
+    }))
+
+
+@app.route('/api/robot/6dof/preset', methods=['POST'])
+def set_intraop_6dof_preset():
+    """Sets a predefined surgical configuration (home, burr_hole_align, cannula_engaged, tumor_target)."""
+    data = request.json or {}
+    preset_name = data.get('preset', 'home')
+    fk = intraop_6dof_robot.set_pose_preset(preset_name)
+    return jsonify(numpy_to_native({
+        'status': 'ok',
+        'preset': preset_name,
+        'kinematics': fk
+    }))
+
+
 @app.route('/api/ablation/step', methods=['POST'])
 def step_ablation():
     """Executes an incremental recurrent ultrasound ablation pulse."""
@@ -1799,6 +1886,51 @@ def get_cryo_laser_preprint():
     )
 
 
+@app.route('/api/majorana/mrus_registration', methods=['GET', 'POST'])
+def get_majorana_mrus_registration():
+    """Topological QML on Majorana chip for non-rigid MRI and ultrasound surface registration & fusion."""
+    data = request.get_json(silent=True) or {}
+    try:
+        brain_shift = float(data.get('brain_shift_mm', request.args.get('brain_shift_mm', 2.4)))
+        braid_depth = int(data.get('braid_depth', request.args.get('braid_depth', 6)))
+        fusion_alpha = float(data.get('fusion_alpha', request.args.get('fusion_alpha', 0.58)))
+        noise_sigma = float(data.get('noise_sigma_mm', request.args.get('noise_sigma_mm', 0.18)))
+    except (TypeError, ValueError):
+        brain_shift = 2.4
+        braid_depth = 6
+        fusion_alpha = 0.58
+        noise_sigma = 0.18
+
+    result = majorana_reg_engine.generate_3d_surfaces_and_fuse(
+        brain_shift_mm=brain_shift,
+        braid_depth=braid_depth,
+        fusion_alpha=fusion_alpha,
+        noise_sigma_mm=noise_sigma
+    )
+    return jsonify(numpy_to_native(result))
+
+
+@app.route('/api/preprint/majorana_mrus/download', methods=['GET'])
+@app.route('/api/preprint/majorana_mrus/view', methods=['GET'])
+def get_majorana_mrus_preprint():
+    """Serves the Nature Majorana QML MR/US Surface Registration Preprint PDF."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'Nature_Majorana_QML_MRUS_Registration_Preprint.pdf')
+    if not os.path.exists(pdf_path):
+        try:
+            from generate_nature_majorana_mrus_preprint import build_majorana_mrus_preprint_pdf
+            build_majorana_mrus_preprint_pdf(pdf_path)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    as_att = request.path.endswith('/download')
+    return send_file(
+        pdf_path,
+        as_attachment=as_att,
+        mimetype='application/pdf',
+        download_name='Nature_Majorana_QML_MRUS_Registration_Preprint.pdf'
+    )
+
+
 @app.route('/api/ablation-modalities/litt', methods=['GET', 'POST'])
 def get_litt_ablation():
     """Runs the nonlinear Pennes bioheat LITT simulation."""
@@ -1908,6 +2040,27 @@ def get_litt_cryo_preprint():
         as_attachment=as_att,
         mimetype='application/pdf',
         download_name='l.pdf'
+    )
+
+
+@app.route('/api/preprint/6dof_ablation/download', methods=['GET'])
+@app.route('/api/preprint/6dof_ablation/view', methods=['GET'])
+def get_6dof_ablation_preprint():
+    """Serves the Nature 6-DOF Robotics & Thermometric Tumor Ablation Preprint PDF."""
+    pdf_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_6DOF_Robotics_Thermometric_Tumor_Ablation.pdf')
+    if not os.path.exists(pdf_path):
+        try:
+            from generate_nature_6dof_ablation_preprint import build_nature_preprint_pdf
+            build_nature_preprint_pdf(pdf_path)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    as_att = request.path.endswith('/download')
+    return send_file(
+        pdf_path,
+        as_attachment=as_att,
+        mimetype='application/pdf',
+        download_name='Nature_Preprint_6DOF_Robotics_Thermometric_Tumor_Ablation.pdf'
     )
 
 

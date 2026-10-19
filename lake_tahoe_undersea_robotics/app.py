@@ -26,6 +26,9 @@ from nature_tahoe_preprint_generator import generate_nature_tahoe_preprint_pdf
 from ontario_qubit_spectroscopy_engine import OntarioQubitSpectroscopyEngine
 from nature_ontario_preprint_generator import generate_nature_ontario_preprint_pdf
 from backend.carbon_routes import carbon
+from backend.ecoli_routes import ecoli
+from backend.vision_routes import vision
+from backend.mineral_routes import mineral
 
 app = Flask(
     __name__,
@@ -33,6 +36,9 @@ app = Flask(
     static_folder=os.path.join(CURRENT_DIR, 'static')
 )
 app.register_blueprint(carbon)
+app.register_blueprint(ecoli)
+app.register_blueprint(vision)
+app.register_blueprint(mineral)
 
 # Instantiate engines
 auv_engine = TahoeAUVRoboticsEngine()

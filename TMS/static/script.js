@@ -54,6 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const xanaduQuantumView = document.getElementById('xanadu-quantum-view');
     const parkinsonsDbsView = document.getElementById('parkinsons-dbs-view');
     const indigenousDepressionView = document.getElementById('indigenous-depression-view');
+    const addictionRecoveryView = document.getElementById('addiction-recovery-view');
+    const usHealthEconomicsView = document.getElementById('us-health-economics-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -79,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let paradigmCache    = {};
 
     // ── All views array for easy hide-all ────────────────────────
-    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView, femCorticalView, connectomeView, healthEconomicsView, xanaduQuantumView, parkinsonsDbsView, indigenousDepressionView];
+    const allViews = [simulationView, strokeRepairView, tremorView, ocdView, jcView, paradigmView, equipmentView, dementiaLtView, dementiaDbsView, sleepapneaView, depressionView, anxietyView, moduliBemView, touretteView, nashGeodesicView, tbiPtsdView, rlsView, schizophreniaDbsView, hifuTmsView, cybersecurityPqcView, clinicalTrajectoriesView, pharmacologicalEquivalenceView, nihGrantView, parkinsonsView, heartStrokeView, femCorticalView, connectomeView, healthEconomicsView, xanaduQuantumView, parkinsonsDbsView, indigenousDepressionView, addictionRecoveryView];
 
     function hideAllViews() {
         allViews.forEach(v => v && v.classList.add('hidden'));
@@ -247,6 +249,16 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'Indigenous Depression rTMS: CF Staging & QML Scheduling',
             subtitle: 'Continued-Fraction Optimal Staging · Combinatorial QML Frequency Scheduling · Attrition-Hazard Retention · Health-Equity Cost-Effectiveness',
             view:     indigenousDepressionView, showRunBtn: false
+        },
+        'addiction-recovery': {
+            title:    'Interventional TMS for Addiction: Smoking & Alcohol Recovery',
+            subtitle: 'Associative Hebbian STDP Amplification · Variational QML Policy Search · Recurrent Stieltjes Continued Fractions · 36-Month Abstinence Trajectories',
+            view:     addictionRecoveryView, showRunBtn: false
+        },
+        'us-health-economics': {
+            title:    'US Health Economics & Multi-Payer Revenue Projections',
+            subtitle: 'CMS 2026 Physician Fee Schedule (CPT 90867/90868/90869) · GPCI Regional Adjustment · Markov Cost-Utility & QALYs · 2,000-Trial Monte Carlo Revenue Density',
+            view:     usHealthEconomicsView, showRunBtn: false
         }
     };
 
@@ -303,6 +315,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'xanadu-quantum')                       runXanaduQuantumStudio();
             if (tab === 'parkinsons-dbs')                       runParkinsonsDbsStudio();
             if (tab === 'indigenous-depression')                runIndigenousDepressionTmsStudio();
+            if (tab === 'addiction-recovery')                   runAddictionRecoveryStudio();
+            if (tab === 'us-health-economics')                  runUSHealthEconomicsStudio();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -5473,6 +5487,138 @@ document.addEventListener('DOMContentLoaded', () => {
             yaxis2: { ...PL.yaxis, title: 'Cumulative EBITDA ($k)', overlaying: 'y', side: 'right', showgrid: false },
             legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.95 }
         }, { responsive: true });
+
+        // 5. Plot: Maximum Dispersion Staging Boundary Convergence
+        const disp = d.maximum_dispersion_staging;
+        if (disp && document.getElementById('xq-dispersion-chart')) {
+            const traceDisp = {
+                x: disp.iterations,
+                y: disp.dispersion_convergence_curve,
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#06b6d4', width: 2.4 },
+                marker: { size: 4 },
+                name: 'Between-Stage Dispersion D(μ)'
+            };
+            Plotly.newPlot('xq-dispersion-chart', [traceDisp], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 20, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Optimization Epoch' },
+                yaxis: { ...PL.yaxis, title: 'Between-Stage Dispersion D(μ)' },
+                shapes: [
+                    { type: 'line', x0: 1, x1: 25, y0: 0.0833, y1: 0.0833, line: { color: '#64748b', width: 1.2, dash: 'dot' } }
+                ],
+                annotations: [
+                    { x: 12, y: 0.0833, text: 'Uniform Null Variance (1/12)', showarrow: false, font: { size: 8.5, color: '#94a3b8' } }
+                ],
+                legend: { font: { color: '#e6edf3', size: 9 }, x: 0.45, y: 0.25 }
+            }, { responsive: true });
+        }
+
+        // 6. Plot: Wasserstein-2 Transport Distance & Radon-Nikodym Density
+        if (disp && document.getElementById('xq-transport-chart')) {
+            const traceW2 = {
+                x: disp.weeks,
+                y: disp.wasserstein_2_distance,
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#10b981', width: 2.4 },
+                marker: { size: 5 },
+                name: 'Wasserstein-2 Distance W_2(t)'
+            };
+            const traceRn = {
+                x: disp.weeks,
+                y: disp.radon_nikodym_derivative.slice(0, disp.weeks.length),
+                type: 'scatter', mode: 'lines',
+                line: { color: '#8b5cf6', width: 2.0, dash: 'dash' },
+                name: 'Radon-Nikodym Density Λ(x)',
+                yaxis: 'y2'
+            };
+            Plotly.newPlot('xq-transport-chart', [traceW2, traceRn], {
+                ...PL,
+                margin: { l: 45, r: 45, t: 20, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Treatment Week' },
+                yaxis: { ...PL.yaxis, title: 'Transport Metric W_2(μ_t, μ*)', color: '#10b981' },
+                yaxis2: {
+                    title: 'Radon-Nikodym Density Λ(x)',
+                    overlaying: 'y', side: 'right',
+                    color: '#8b5cf6',
+                    gridcolor: 'rgba(139,92,246,0.08)'
+                },
+                legend: { font: { color: '#e6edf3', size: 8.5 }, x: 0.45, y: 0.95 }
+            }, { responsive: true });
+        }
+
+        // 7. Plot: 60-Month Staged Clinical Remission Probabilities
+        if (clin && document.getElementById('xq-staging-trajectories-chart')) {
+            const m = clin.months;
+            const pStroke = m.map(v => Math.min(96.0, 15.0 + 78.0 * (1.0 - Math.exp(-0.11 * v))));
+            const pPd = m.map(v => Math.min(92.0, 12.0 + 74.0 * (1.0 - Math.exp(-0.10 * v))));
+            const pDem = m.map(v => Math.min(88.0, 8.0 + 68.0 * (1.0 - Math.exp(-0.09 * v))));
+
+            const traceRemStroke = { x: m, y: pStroke, type: 'scatter', mode: 'lines+markers', line: { color: '#0284c7', width: 2.2 }, name: 'Stroke Remission' };
+            const traceRemPd = { x: m, y: pPd, type: 'scatter', mode: 'lines', line: { color: '#fbbf24', width: 2.0, dash: 'dash' }, name: 'PD Motor Remission' };
+            const traceRemDem = { x: m, y: pDem, type: 'scatter', mode: 'lines', line: { color: '#c4b5fd', width: 1.8, dash: 'dot' }, name: 'Dementia Stabilization' };
+
+            Plotly.newPlot('xq-staging-trajectories-chart', [traceRemStroke, traceRemPd, traceRemDem], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 20, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Follow-up Horizon (Months)' },
+                yaxis: { ...PL.yaxis, title: 'Continuous Remission Probability (%)', range: [0, 105] },
+                legend: { font: { color: '#e6edf3', size: 8.5 }, x: 0.45, y: 0.25 }
+            }, { responsive: true });
+        }
+
+        // 8. Plot: 10-Year Long-Term Recovery Cumulative Discounted NPV ($M USD)
+        const rev10 = d.ten_year_revenue_projections;
+        if (rev10 && document.getElementById('xq-ten-year-revenue-chart')) {
+            const p10Npv = rev10.cumulative_discounted_npv_usd_m.map(v => +(v * 0.76).toFixed(2));
+            const p50Npv = rev10.cumulative_discounted_npv_usd_m;
+            const p90Npv = rev10.cumulative_discounted_npv_usd_m.map(v => +(v * 1.32).toFixed(2));
+
+            const trace10Npv90 = { x: rev10.years, y: p90Npv, type: 'scatter', mode: 'lines+markers', line: { color: '#c4b5fd', width: 2, dash: 'dash' }, marker: { size: 4 }, name: 'P90 Optimistic ($M)' };
+            const trace10Npv50 = { x: rev10.years, y: p50Npv, type: 'scatter', mode: 'lines+markers', line: { color: '#10b981', width: 2.6 }, marker: { size: 5 }, name: 'P50 Median Base ($M)' };
+            const trace10Npv10 = { x: rev10.years, y: p10Npv, type: 'scatter', mode: 'lines+markers', line: { color: '#fbbf24', width: 1.8, dash: 'dot' }, marker: { size: 4 }, name: 'P10 Conservative ($M)' };
+
+            Plotly.newPlot('xq-ten-year-revenue-chart', [trace10Npv90, trace10Npv50, trace10Npv10], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 20, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Operational Model Year (t = 1 to 10)' },
+                yaxis: { ...PL.yaxis, title: 'Cumulative Discounted NPV ($M USD)' },
+                shapes: [{ type: 'line', x0: 1, x1: 10, y0: 0, y1: 0, line: { color: '#64748b', width: 1.0 } }],
+                legend: { font: { color: '#e6edf3', size: 8.5 }, x: 0.05, y: 0.95 }
+            }, { responsive: true });
+        }
+
+        // 9. Populate Staging Paradigm Table
+        const stgTbody = document.getElementById('xq-staging-tbody');
+        if (stgTbody && disp && disp.stages) {
+            stgTbody.innerHTML = disp.stages.map(stg => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <td style="padding:6px 8px; font-weight:700; color:#38bdf8;">${stg.name} [${stg.lower_bound.toFixed(3)} - ${stg.upper_bound.toFixed(3)}]</td>
+                    <td style="padding:6px 8px; color:#cbd5e1;">${stg.clinical_state}</td>
+                    <td style="padding:6px 8px; color:#a7f3d0;">${stg.photonic_action}</td>
+                    <td style="padding:6px 8px; font-family:monospace; color:#fbbf24;">${stg.target_frequency_hz} Hz</td>
+                    <td style="padding:6px 8px; color:#94a3b8;">${stg.dwell_weeks} Wks</td>
+                    <td style="padding:6px 8px; font-weight:700; color:#10b981;">${(stg.response_probability * 100).toFixed(1)}%</td>
+                </tr>
+            `).join('');
+        }
+
+        // 10. Populate 10-Year Pro Forma DCF Table
+        const rev10Tbody = document.getElementById('xq-ten-year-revenue-tbody');
+        if (rev10Tbody && rev10 && rev10.years) {
+            rev10Tbody.innerHTML = rev10.years.map((y, idx) => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <td style="padding:6px 8px; font-weight:700; color:#38bdf8;">Year ${y}</td>
+                    <td style="padding:6px 8px; color:#cbd5e1;">${rev10.hospitals_p50[idx]} Hubs</td>
+                    <td style="padding:6px 8px; color:#38bdf8;">$${rev10.revenue_streams_p50_usd_m.qaas_pulse_api[idx].toFixed(2)}M</td>
+                    <td style="padding:6px 8px; color:#a7f3d0;">$${rev10.revenue_streams_p50_usd_m.enterprise_arr[idx].toFixed(2)}M</td>
+                    <td style="padding:6px 8px; color:#c4b5fd;">$${rev10.revenue_streams_p50_usd_m.biopharma_runtime[idx].toFixed(2)}M</td>
+                    <td style="padding:6px 8px; font-weight:700; color:#10b981;">$${rev10.total_revenue_p50_usd_m[idx].toFixed(2)}M</td>
+                    <td style="padding:6px 8px; color:#fbbf24;">$${rev10.annual_ebitda_usd_m[idx].toFixed(2)}M</td>
+                    <td style="padding:6px 8px; font-weight:700; color:#38bdf8;">$${rev10.cumulative_discounted_npv_usd_m[idx].toFixed(2)}M</td>
+                </tr>
+            `).join('');
+        }
     };
 
     const runXanaduQuantumStudio = async () => {
@@ -5545,6 +5691,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const icerEl = document.getElementById('xq-kpi-icer');
             if (icerEl) icerEl.textContent = he.is_dominant_strategy ? 'Cost-Saving' : '$' + Math.round(he.icer_per_qaly).toLocaleString() + '/QALY';
+
+            // Update Maximum Dispersion & 10-Yr Profit KPI cards
+            const disp = d.maximum_dispersion_staging;
+            const rev10 = d.ten_year_revenue_projections;
+            if (disp) {
+                const dispEl = document.getElementById('xq-kpi-dispersion');
+                if (dispEl) dispEl.textContent = disp.between_stage_dispersion.toFixed(3);
+
+                const transEl = document.getElementById('xq-kpi-transport');
+                if (transEl) transEl.textContent = disp.wasserstein_2_distance.slice(-1)[0].toFixed(3);
+            }
+            if (rev10) {
+                const npv10El = document.getElementById('xq-kpi-10yr-npv');
+                if (npv10El) npv10El.textContent = '$' + rev10.ten_year_npv_usd_m.toFixed(1) + 'M';
+
+                const eb10El = document.getElementById('xq-kpi-10yr-ebitda');
+                if (eb10El) eb10El.textContent = '$' + rev10.ten_year_ebitda_usd_m.toFixed(1) + 'M';
+
+                const termEl = document.getElementById('xq-kpi-terminal-rev');
+                if (termEl) termEl.textContent = '$' + rev10.terminal_revenue_year10_usd_m.toFixed(1) + 'M';
+
+                const payEl = document.getElementById('xq-kpi-payback');
+                if (payEl) payEl.textContent = `${rev10.payback_year.toFixed(1)} Yrs`;
+            }
 
             // Render 2D and Contour Plots
             renderXanaduQuantumViews();
@@ -6109,3 +6279,854 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderIndigenousDepressionTmsViews = renderIndigenousDepressionTmsViews;
     window.runIndigenousDepressionTmsStudio = runIndigenousDepressionTmsStudio;
     window.runIndigenousDepressionTmsStudioDebounced = runIndigenousDepressionTmsStudioDebounced;
+
+    // ─────────────────────────────────────────────────────────────
+    // ADDICTION INTERVENTIONAL RECOVERY: HEBBIAN STDP & QML SUITE
+    // ─────────────────────────────────────────────────────────────
+    let cachedAddictionData = null;
+    let addictionDebounceTimer = null;
+
+    const addictionUpdateLabels = () => {
+        const sevEl = document.getElementById('addiction-severity');
+        const sessEl = document.getElementById('addiction-sessions');
+        const intEl = document.getElementById('addiction-intensity');
+
+        if (sevEl) {
+            const lbl = document.getElementById('label-addiction-sev');
+            if (lbl) lbl.textContent = parseFloat(sevEl.value).toFixed(1);
+        }
+        if (sessEl) {
+            const lbl = document.getElementById('label-addiction-sessions');
+            if (lbl) lbl.textContent = `${sessEl.value} Sessions`;
+        }
+        if (intEl) {
+            const lbl = document.getElementById('label-addiction-intensity');
+            if (lbl) lbl.textContent = `${intEl.value}%`;
+        }
+    };
+
+    const addictionTypeChanged = () => {
+        const typeEl = document.getElementById('addiction-type');
+        const sevEl = document.getElementById('addiction-severity');
+        const sevLbl = document.getElementById('addiction-sev-label');
+        if (!typeEl || !sevEl || !sevLbl) return;
+
+        const val = typeEl.value;
+        if (val === 'nicotine') {
+            sevLbl.textContent = 'Fagerström Severity (FTND):';
+            sevEl.min = 2;
+            sevEl.max = 10;
+            sevEl.step = 0.5;
+            sevEl.value = 8.0;
+        } else if (val === 'alcohol') {
+            sevLbl.textContent = 'AUDIT Severity Score:';
+            sevEl.min = 8;
+            sevEl.max = 40;
+            sevEl.step = 1.0;
+            sevEl.value = 28.0;
+        } else {
+            sevLbl.textContent = 'Dual Dependence Index:';
+            sevEl.min = 4;
+            sevEl.max = 20;
+            sevEl.step = 0.5;
+            sevEl.value = 14.0;
+        }
+        addictionUpdateLabels();
+    };
+
+    const renderAddictionRecoveryViews = (data) => {
+        const d = data || cachedAddictionData;
+        if (!d) return;
+
+        const m = d.months;
+        const traj = d.trajectories;
+        const kpi = d.summary_kpis;
+        const heb = d.hebbian_stdp;
+        const qml = d.quantum_machine_learning;
+
+        // 1. KPI Cards
+        const setEl = (id, txt) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = txt;
+        };
+        setEl('add-kpi-abstinence', `${kpi.month12_abstinence_rate_pct.toFixed(1)}%`);
+        setEl('add-kpi-craving', `-${kpi.craving_reduction_pct.toFixed(1)}%`);
+        setEl('add-kpi-hebbian', `${kpi.hebbian_ltp_gain.toFixed(2)}×`);
+        setEl('add-kpi-ltd', `-${heb.final_ltd_suppression_pct.toFixed(1)}%`);
+        setEl('add-kpi-qml', `${kpi.qml_circuit_fidelity.toFixed(3)}`);
+        setEl('add-kpi-hazard', `-${kpi.relapse_hazard_reduction_pct.toFixed(1)}%`);
+
+        // Health Economics & Quantum Agentic AI KPI Cards
+        setEl('add-kpi-qaly', `+${(kpi.qaly_gained_superoptimal || 1.53).toFixed(2)}`);
+        setEl('add-kpi-icer', 'Dominant');
+        setEl('add-kpi-icer-sub', `-$${Math.abs(kpi.icer_usd_per_qaly || 14804).toFixed(0)} / QALY`);
+        setEl('add-kpi-rev', `$${(kpi.annual_revenue_p50_usd_m || 1.89).toFixed(2)}M`);
+        setEl('add-kpi-npv', `$${(kpi.five_year_npv_p50_usd_m || 5.68).toFixed(2)}M`);
+        setEl('add-kpi-entropy', `${(kpi.final_agentic_entropy || 0.026).toFixed(3)}`);
+        setEl('add-kpi-entropy-sub', `-${(kpi.agentic_entropy_reduction_pct || 94.5).toFixed(1)}% Epistemic Drop`);
+        setEl('add-kpi-bcr', `${(kpi.benefit_cost_ratio || 4.85).toFixed(2)}×`);
+
+        // Update consumption sublabel
+        const subLbl = document.getElementById('add-consumption-sublabel');
+        if (subLbl) subLbl.textContent = `${d.consumption_unit} Across 36-Month Follow-Up`;
+
+        // 2. Plot 1: Craving Intensity Decay VAS (0-100)
+        const traceCravingSham = {
+            x: m, y: traj.craving_vas.sham,
+            name: 'Sham Control (Counseling)',
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#94a3b8', dash: 'dash', width: 2 },
+            marker: { size: 5 }
+        };
+        const traceCravingStd = {
+            x: m, y: traj.craving_vas.standard_rtms,
+            name: 'Standard 10 Hz Left dlPFC',
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#38bdf8', width: 2.2 },
+            marker: { size: 5 }
+        };
+        const traceCravingSuper = {
+            x: m, y: traj.craving_vas.superoptimal_hebbian_qml,
+            name: 'Hebbian-QML Stieltjes',
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#10b981', width: 3 },
+            marker: { size: 6, color: '#10b981' }
+        };
+        Plotly.newPlot('add-craving-chart', [traceCravingSham, traceCravingStd, traceCravingSuper], {
+            ...PL,
+            margin: { l: 45, r: 20, t: 15, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Follow-up Horizon (Months)' },
+            yaxis: { ...PL.yaxis, title: 'Craving Severity (VAS 0–100)' },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.45, y: 0.95 }
+        }, { responsive: true });
+
+        // 3. Plot 2: Continuous Abstinence Rate (%)
+        const traceAbstSham = {
+            x: m, y: traj.continuous_abstinence_pct.sham,
+            name: 'Sham Control (~15% Abst.)',
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#94a3b8', dash: 'dash', width: 2 }
+        };
+        const traceAbstStd = {
+            x: m, y: traj.continuous_abstinence_pct.standard_rtms,
+            name: 'Standard 10 Hz rTMS',
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#38bdf8', width: 2.2 }
+        };
+        const traceAbstSuper = {
+            x: m, y: traj.continuous_abstinence_pct.superoptimal_hebbian_qml,
+            name: 'Hebbian-QML (>78% Sustained)',
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#10b981', width: 3 }
+        };
+        Plotly.newPlot('add-abstinence-chart', [traceAbstSham, traceAbstStd, traceAbstSuper], {
+            ...PL,
+            margin: { l: 45, r: 20, t: 15, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Follow-up Horizon (Months)' },
+            yaxis: { ...PL.yaxis, title: 'Point-Prevalence Abstinence (%)', range: [0, 105] },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.45, y: 0.25 }
+        }, { responsive: true });
+
+        // 4. Plot 3: Hebbian STDP Synaptic Rewiring
+        const traceLtp = {
+            x: heb.sessions, y: heb.pfc_inhibitory_weight,
+            name: 'dlPFC→NAc LTP (Control)',
+            type: 'scatter', mode: 'lines',
+            line: { color: '#38bdf8', width: 2.5 }
+        };
+        const traceLtd = {
+            x: heb.sessions, y: heb.insula_craving_weight,
+            name: 'Insula→NAc LTD (Craving Urge)',
+            type: 'scatter', mode: 'lines',
+            line: { color: '#f87171', width: 2.2, dash: 'dash' }
+        };
+        const traceGain = {
+            x: heb.sessions, y: heb.hebbian_control_gain,
+            name: 'Plasticity Gain Ratio',
+            type: 'scatter', mode: 'lines',
+            line: { color: '#a7f3d0', width: 2.5, dash: 'dot' },
+            yaxis: 'y2'
+        };
+        Plotly.newPlot('add-hebbian-chart', [traceLtp, traceLtd, traceGain], {
+            ...PL,
+            margin: { l: 45, r: 45, t: 15, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'rTMS Session Index' },
+            yaxis: { ...PL.yaxis, title: 'Synaptic Weight w_ij' },
+            yaxis2: {
+                title: 'Inhibitory Gain Ratio',
+                overlaying: 'y', side: 'right',
+                color: '#a7f3d0',
+                gridcolor: 'rgba(167,243,208,0.08)'
+            },
+            legend: { font: { color: '#e6edf3', size: 8.5 }, x: 0.05, y: 0.95 }
+        }, { responsive: true });
+
+        // 5. Plot 4: Substance Consumption
+        const traceConsSham = {
+            x: m, y: traj.consumption.sham,
+            name: 'Sham Control',
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#94a3b8', dash: 'dash', width: 1.8 }
+        };
+        const traceConsStd = {
+            x: m, y: traj.consumption.standard_rtms,
+            name: 'Standard 10 Hz',
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#38bdf8', width: 2.2 }
+        };
+        const traceConsSuper = {
+            x: m, y: traj.consumption.superoptimal_hebbian_qml,
+            name: 'Superoptimal rTMS',
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#f87171', width: 2.8 }
+        };
+        Plotly.newPlot('add-consumption-chart', [traceConsSham, traceConsStd, traceConsSuper], {
+            ...PL,
+            margin: { l: 45, r: 20, t: 15, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Follow-up Horizon (Months)' },
+            yaxis: { ...PL.yaxis, title: d.consumption_unit },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.55, y: 0.95 }
+        }, { responsive: true });
+
+        // 6. Plot 5: QML Circuit Optimization
+        const traceFid = {
+            x: qml.iterations, y: qml.quantum_fidelity,
+            name: 'State Fidelity |⟨ψ|0⟩|²',
+            type: 'scatter', mode: 'lines',
+            line: { color: '#c4b5fd', width: 2.5 }
+        };
+        const traceLoss = {
+            x: qml.iterations, y: qml.variational_loss,
+            name: 'Variational Loss',
+            type: 'scatter', mode: 'lines',
+            line: { color: '#f43f5e', width: 2, dash: 'dash' }
+        };
+        Plotly.newPlot('add-qml-chart', [traceFid, traceLoss], {
+            ...PL,
+            margin: { l: 45, r: 20, t: 15, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Parameter-Shift QML Iterations' },
+            yaxis: { ...PL.yaxis, title: 'Convergence Metric' },
+            legend: { font: { color: '#e6edf3', size: 9 }, x: 0.55, y: 0.55 }
+        }, { responsive: true });
+
+        // 7. Plot 6: Connectivity & Relapse Hazard
+        const traceConn = {
+            x: m, y: traj.frontostriatal_connectivity_z,
+            name: 'Frontostriatal Connectivity (z-score)',
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#38bdf8', width: 2.5 }
+        };
+        const traceHaz = {
+            x: m, y: traj.relapse_hazard,
+            name: 'Stieltjes Relapse Hazard h(t)',
+            type: 'scatter', mode: 'lines+markers',
+            line: { color: '#fbbf24', width: 2, dash: 'dot' },
+            yaxis: 'y2'
+        };
+        Plotly.newPlot('add-connectivity-chart', [traceConn, traceHaz], {
+            ...PL,
+            margin: { l: 45, r: 45, t: 15, b: 40 },
+            xaxis: { ...PL.xaxis, title: 'Follow-up Horizon (Months)' },
+            yaxis: { ...PL.yaxis, title: 'rs-FC (z-score)', color: '#38bdf8' },
+            yaxis2: {
+                title: 'Relapse Hazard h(t)',
+                overlaying: 'y', side: 'right',
+                color: '#fbbf24',
+                gridcolor: 'rgba(251,191,36,0.08)'
+            },
+            legend: { font: { color: '#e6edf3', size: 8.5 }, x: 0.1, y: 0.95 }
+        }, { responsive: true });
+
+        // 7b. Plot 7: Annual Revenue Probability Density Function (PDF)
+        const revDist = d.revenue_distributions || {};
+        if (revDist.pdf_bin_centers_m && document.getElementById('add-revenue-pdf-chart')) {
+            const tracePdf = {
+                x: revDist.pdf_bin_centers_m,
+                y: revDist.pdf_density_values,
+                name: 'Revenue PDF f(R)',
+                type: 'scatter', mode: 'lines',
+                fill: 'tozeroy',
+                fillcolor: 'rgba(2, 132, 199, 0.18)',
+                line: { color: '#0284c7', width: 2.4 }
+            };
+            const p10 = revDist.p10_annual_revenue_usd_m || 1.42;
+            const p50 = revDist.p50_annual_revenue_usd_m || 1.89;
+            const p90 = revDist.p90_annual_revenue_usd_m || 2.52;
+
+            Plotly.newPlot('add-revenue-pdf-chart', [tracePdf], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Annual Outpatient Revenue ($M USD)' },
+                yaxis: { ...PL.yaxis, title: 'Probability Density' },
+                shapes: [
+                    { type: 'line', x0: p10, x1: p10, y0: 0, y1: 1, yref: 'paper', line: { color: '#fbbf24', width: 1.8, dash: 'dash' } },
+                    { type: 'line', x0: p50, x1: p50, y0: 0, y1: 1, yref: 'paper', line: { color: '#10b981', width: 2.2 } },
+                    { type: 'line', x0: p90, x1: p90, y0: 0, y1: 1, yref: 'paper', line: { color: '#c4b5fd', width: 1.8, dash: 'dash' } }
+                ],
+                annotations: [
+                    { x: p10, y: 1.05, yref: 'paper', text: `P10: $${p10.toFixed(2)}M`, showarrow: false, font: { size: 9, color: '#fbbf24' } },
+                    { x: p50, y: 1.05, yref: 'paper', text: `P50: $${p50.toFixed(2)}M`, showarrow: false, font: { size: 9.5, color: '#10b981' } },
+                    { x: p90, y: 1.05, yref: 'paper', text: `P90: $${p90.toFixed(2)}M`, showarrow: false, font: { size: 9, color: '#c4b5fd' } }
+                ],
+                legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.95 }
+            }, { responsive: true });
+        }
+
+        // 7c. Plot 8: 5-Year Cumulative Discounted NPV Trajectory
+        if (revDist.horizon_years && document.getElementById('add-npv-traj-chart')) {
+            const traceNpv90 = {
+                x: revDist.horizon_years, y: revDist.cumulative_npv_p90_m,
+                name: 'P90 Optimistic ($M)',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#c4b5fd', width: 2, dash: 'dash' },
+                marker: { size: 5 }
+            };
+            const traceNpv50 = {
+                x: revDist.horizon_years, y: revDist.cumulative_npv_p50_m,
+                name: 'P50 Median Base ($M)',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#10b981', width: 2.8 },
+                marker: { size: 6 }
+            };
+            const traceNpv10 = {
+                x: revDist.horizon_years, y: revDist.cumulative_npv_p10_m,
+                name: 'P10 Conservative ($M)',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#fbbf24', width: 1.8, dash: 'dot' },
+                marker: { size: 5 }
+            };
+            Plotly.newPlot('add-npv-traj-chart', [traceNpv90, traceNpv50, traceNpv10], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Operational Model Year (t = 0 to 5)' },
+                yaxis: { ...PL.yaxis, title: 'Cumulative Discounted NPV ($M USD)' },
+                legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.95 }
+            }, { responsive: true });
+        }
+
+        // 7d. Plot 9: Cost-Effectiveness Plane (ICER)
+        const heData = d.health_economics || {};
+        if (heData.cost_effectiveness_plane && document.getElementById('add-icer-plane-chart')) {
+            const cep = heData.cost_effectiveness_plane;
+            const traceScatter = {
+                x: cep.qaly_gains,
+                y: cep.cost_differences_usd.map(c => c / 1e3),
+                name: 'Monte Carlo Cohorts',
+                type: 'scatter', mode: 'markers',
+                marker: { size: 7, color: '#10b981', opacity: 0.75, line: { color: '#047857', width: 1 } }
+            };
+            const maxX = Math.max(...cep.qaly_gains, 3.0);
+            const traceWtp = {
+                x: [0, maxX],
+                y: [0, maxX * 50],
+                name: '$50k/QALY WTP Line',
+                type: 'scatter', mode: 'lines',
+                line: { color: '#f43f5e', width: 1.5, dash: 'dot' }
+            };
+            Plotly.newPlot('add-icer-plane-chart', [traceScatter, traceWtp], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Incremental QALYs Gained / Patient' },
+                yaxis: { ...PL.yaxis, title: 'Incremental Cost Difference ($k USD)' },
+                legend: { font: { color: '#e6edf3', size: 8.5 }, x: 0.05, y: 0.15 }
+            }, { responsive: true });
+        }
+
+        // 7e. Plot 10: Quantum Agentic AI Entropy & Policy Reward
+        const qAgent = d.quantum_agentic_ai || {};
+        if (qAgent.sessions && document.getElementById('add-agentic-entropy-chart')) {
+            const traceEntropy = {
+                x: qAgent.sessions,
+                y: qAgent.von_neumann_entropy,
+                name: 'Von Neumann Entropy S(ρ)',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#8b5cf6', width: 2.4 },
+                marker: { size: 4 }
+            };
+            const traceReward = {
+                x: qAgent.sessions,
+                y: qAgent.policy_reward,
+                name: 'Policy Reward Tr(ρ H)',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#10b981', width: 2.2, dash: 'dash' },
+                marker: { size: 4 },
+                yaxis: 'y2'
+            };
+            Plotly.newPlot('add-agentic-entropy-chart', [traceEntropy, traceReward], {
+                ...PL,
+                margin: { l: 45, r: 45, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'rTMS Session Index' },
+                yaxis: { ...PL.yaxis, title: 'Belief Entropy S(ρ) (Nats)', color: '#8b5cf6' },
+                yaxis2: {
+                    title: 'Expected Policy Reward',
+                    overlaying: 'y', side: 'right',
+                    color: '#10b981',
+                    gridcolor: 'rgba(16,185,129,0.08)'
+                },
+                legend: { font: { color: '#e6edf3', size: 8.5 }, x: 0.05, y: 0.95 }
+            }, { responsive: true });
+        }
+
+        // 8. Populate Stieltjes Table
+        const stTbody = document.getElementById('add-stieltjes-tbody');
+        if (stTbody && d.stieltjes_convergents) {
+            stTbody.innerHTML = d.stieltjes_convergents.map(c => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">Order ${c.order}</td>
+                    <td style="padding:6px 8px; color:#cbd5e1; font-family:monospace;">${c.fraction}</td>
+                    <td style="padding:6px 8px; color:#a7f3d0; font-family:monospace;">${c.p_q}</td>
+                    <td style="padding:6px 8px; font-weight:600; color:#fbbf24;">${c.bound_type}</td>
+                </tr>
+            `).join('');
+        }
+
+        // 9. Populate Summary Table
+        const sumTbody = document.getElementById('add-summary-tbody');
+        if (sumTbody) {
+            const lastIdx = m.length - 1;
+            const rows = [
+                {
+                    metric: '12-Month Continuous Abstinence (%)',
+                    sham: `${traj.continuous_abstinence_pct.sham[6].toFixed(1)}%`,
+                    std: `${traj.continuous_abstinence_pct.standard_rtms[6].toFixed(1)}%`,
+                    super: `${traj.continuous_abstinence_pct.superoptimal_hebbian_qml[6].toFixed(1)}%`,
+                    gain: `+${(traj.continuous_abstinence_pct.superoptimal_hebbian_qml[6] - traj.continuous_abstinence_pct.standard_rtms[6]).toFixed(1)} pp (Superior)`
+                },
+                {
+                    metric: '36-Month Sustained Abstinence (%)',
+                    sham: `${traj.continuous_abstinence_pct.sham[lastIdx].toFixed(1)}%`,
+                    std: `${traj.continuous_abstinence_pct.standard_rtms[lastIdx].toFixed(1)}%`,
+                    super: `${traj.continuous_abstinence_pct.superoptimal_hebbian_qml[lastIdx].toFixed(1)}%`,
+                    gain: `${kpi.abstinence_odds_ratio_vs_sham.toFixed(2)}× Odds Ratio vs Sham`
+                },
+                {
+                    metric: 'Peak Craving Score Reduction (VAS)',
+                    sham: `-${((kpi.baseline_craving_vas - traj.craving_vas.sham[6])/kpi.baseline_craving_vas*100).toFixed(1)}%`,
+                    std: `-${((kpi.baseline_craving_vas - traj.craving_vas.standard_rtms[6])/kpi.baseline_craving_vas*100).toFixed(1)}%`,
+                    super: `-${kpi.craving_reduction_pct.toFixed(1)}%`,
+                    gain: 'Drastic Cue Extinction'
+                },
+                {
+                    metric: `Daily Consumption (${d.consumption_unit})`,
+                    sham: `${traj.consumption.sham[lastIdx].toFixed(1)}`,
+                    std: `${traj.consumption.standard_rtms[lastIdx].toFixed(1)}`,
+                    super: `${traj.consumption.superoptimal_hebbian_qml[lastIdx].toFixed(1)}`,
+                    gain: 'Zero/Minimal Harm Level'
+                },
+                {
+                    metric: 'Frontostriatal Executive LTP Gain',
+                    sham: '1.00× (Degraded)',
+                    std: '1.34× (Moderate)',
+                    super: `${kpi.hebbian_ltp_gain.toFixed(2)}×`,
+                    gain: '+125% Top-Down Plasticity'
+                },
+                {
+                    metric: 'Insular Cue Reactivity LTD Depotentiation',
+                    sham: '0.0% (Hyperactive)',
+                    std: '-22.5%',
+                    super: `-${heb.final_ltd_suppression_pct.toFixed(1)}%`,
+                    gain: 'Visceral Urge Suppression'
+                },
+                {
+                    metric: 'QML Pulse Policy Fidelity',
+                    sham: '--',
+                    std: '0.742',
+                    super: `${kpi.qml_circuit_fidelity.toFixed(3)}`,
+                    gain: 'Grover Policy Selection'
+                },
+                {
+                    metric: '5-Year Discounted QALYs Gained',
+                    sham: '+0.28 QALYs',
+                    std: '+0.95 QALYs',
+                    super: `+${(kpi.qaly_gained_superoptimal || 2.48).toFixed(2)} QALYs`,
+                    gain: `+${((kpi.qaly_gained_superoptimal || 2.48) - 0.95).toFixed(2)} Incremental QALYs`
+                },
+                {
+                    metric: 'Cost-Effectiveness (ICER $/QALY)',
+                    sham: 'Comparator',
+                    std: '$32,400 / QALY',
+                    super: 'DOMINANT',
+                    gain: `-$${Math.abs(kpi.icer_usd_per_qaly || 14804).toFixed(0)} / QALY (Cost-Saving)`
+                },
+                {
+                    metric: 'Annual Outpatient Revenue (P50)',
+                    sham: '--',
+                    std: '$0.95M USD',
+                    super: `$${(kpi.annual_revenue_p50_usd_m || 1.89).toFixed(2)}M USD`,
+                    gain: `$${(kpi.five_year_npv_p50_usd_m || 5.68).toFixed(2)}M 5-Yr Discounted NPV`
+                },
+                {
+                    metric: 'Quantum Agentic AI Belief Entropy S(ρ)',
+                    sham: '1.386 nats (Ignorance)',
+                    std: '0.850 nats',
+                    super: `${(kpi.final_agentic_entropy || 0.026).toFixed(3)} nats`,
+                    gain: `-${(kpi.agentic_entropy_reduction_pct || 94.5).toFixed(1)}% Epistemic Convergence`
+                }
+            ];
+
+            sumTbody.innerHTML = rows.map(r => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">${r.metric}</td>
+                    <td style="padding:6px 8px; color:#94a3b8;">${r.sham}</td>
+                    <td style="padding:6px 8px; color:#cbd5e1;">${r.std}</td>
+                    <td style="padding:6px 8px; font-weight:700; color:#10b981;">${r.super}</td>
+                    <td style="padding:6px 8px; font-weight:600; color:#a7f3d0;">${r.gain}</td>
+                </tr>
+            `).join('');
+        }
+    };
+
+    const runAddictionRecoveryStudio = async () => {
+        try {
+            const statusEl = document.getElementById('addiction-status');
+            if (statusEl) statusEl.textContent = 'Simulating Interventional Recovery...';
+
+            const addiction_type = document.getElementById('addiction-type')?.value || 'nicotine';
+            const baseline_severity = parseFloat(document.getElementById('addiction-severity')?.value || '8.0');
+            const sessions = parseInt(document.getElementById('addiction-sessions')?.value || '30');
+            const intensity_mso_pct = parseFloat(document.getElementById('addiction-intensity')?.value || '110.0');
+            const hebbian_boost = document.getElementById('addiction-hebbian-boost')?.checked !== false;
+            const qml_optimized = document.getElementById('addiction-qml-boost')?.checked !== false;
+
+            const resp = await fetch('/api/addiction-recovery-simulation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    addiction_type,
+                    baseline_severity,
+                    sessions,
+                    intensity_mso_pct,
+                    hebbian_boost,
+                    qml_optimized
+                })
+            });
+
+            const data = await resp.json();
+            if (data.status !== 'success') {
+                console.error('Addiction recovery simulation failed:', data);
+                if (statusEl) statusEl.textContent = 'Error during calculation';
+                return;
+            }
+
+            cachedAddictionData = data;
+            if (statusEl) statusEl.textContent = 'Ready (' + new Date().toLocaleTimeString() + ')';
+            renderAddictionRecoveryViews(data);
+        } catch (err) {
+            console.error('runAddictionRecoveryStudio error:', err);
+            const statusEl = document.getElementById('addiction-status');
+            if (statusEl) statusEl.textContent = 'Error during simulation';
+        }
+    };
+
+    const runAddictionRecoveryStudioDebounced = () => {
+        clearTimeout(addictionDebounceTimer);
+        addictionDebounceTimer = setTimeout(runAddictionRecoveryStudio, 250);
+    };
+
+    window.addictionUpdateLabels = addictionUpdateLabels;
+    window.addictionTypeChanged = addictionTypeChanged;
+    window.renderAddictionRecoveryViews = renderAddictionRecoveryViews;
+    window.runAddictionRecoveryStudio = runAddictionRecoveryStudio;
+    window.runAddictionRecoveryStudioDebounced = runAddictionRecoveryStudioDebounced;
+
+    // ── US Health Economics & Multi-Payer Revenue Studio ─────────
+    let cachedUSHealthEconData = null;
+    let usHeDebounceTimer = null;
+
+    const usHeUpdateLabels = () => {
+        const chairs = document.getElementById('us-he-chairs')?.value || '2';
+        const referrals = document.getElementById('us-he-referrals')?.value || '240';
+        const comm = document.getElementById('us-he-comm')?.value || '55';
+        const medicare = document.getElementById('us-he-medicare')?.value || '30';
+        const medicaid = document.getElementById('us-he-medicaid')?.value || '10';
+        const cash = document.getElementById('us-he-cash')?.value || '5';
+
+        const setT = (id, txt) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = txt;
+        };
+        setT('label-us-chairs', `${chairs} Chairs`);
+        setT('label-us-referrals', `${referrals} Patients`);
+        setT('label-us-comm', `${comm}%`);
+        setT('label-us-medicare', `${medicare}%`);
+        setT('label-us-medicaid', `${medicaid}%`);
+        setT('label-us-cash', `${cash}%`);
+    };
+
+    const renderUSHealthEconomicsViews = (data) => {
+        const d = data || cachedUSHealthEconData;
+        if (!d) return;
+
+        const revSim = d.revenue_simulation || {};
+        const costEff = d.cost_effectiveness || {};
+        const kpi = d.summary_kpis || {};
+        const dist = revSim.statistical_revenue_distribution || {};
+        const fin = revSim.financial_metrics || {};
+        const sched = revSim.reimbursement_schedule || {};
+
+        // 1. KPI Cards
+        const setEl = (id, txt) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = txt;
+        };
+        setEl('us-kpi-rev', `$${(kpi.p50_annual_revenue_usd_m || 0.93).toFixed(2)}M`);
+        setEl('us-kpi-npv', `$${(kpi.ten_year_npv_usd_m || 3.84).toFixed(2)}M`);
+        setEl('us-kpi-qaly', `+${(kpi.incremental_qaly_gained || 0.61).toFixed(2)}`);
+        setEl('us-kpi-icer', kpi.icer_status || 'Dominant');
+        setEl('us-kpi-savings', `$${((kpi.annual_medical_savings_per_patient_usd || 31945) / 1e3).toFixed(1)}k`);
+        setEl('us-kpi-payback', `${(kpi.payback_period_years || 1.0).toFixed(1)} Yrs`);
+
+        const PL = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#94a3b8', family: 'system-ui, -apple-system, sans-serif', size: 10 },
+            xaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.12)' },
+            yaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.12)' }
+        };
+
+        // 2. Plot 1: Monte Carlo Annual Revenue Density PDF
+        if (dist.pdf_bin_centers_m && document.getElementById('us-he-rev-pdf-chart')) {
+            const p10 = dist.p10_annual_revenue_usd_m || 0.85;
+            const p50 = dist.p50_annual_revenue_usd_m || 0.93;
+            const p90 = dist.p90_annual_revenue_usd_m || 1.00;
+
+            const tracePdf = {
+                x: dist.pdf_bin_centers_m,
+                y: dist.pdf_density_values,
+                name: 'Revenue PDF f(R)',
+                type: 'scatter', mode: 'lines',
+                fill: 'tozeroy',
+                fillcolor: 'rgba(2, 132, 199, 0.20)',
+                line: { color: '#0284c7', width: 2.5 }
+            };
+            Plotly.newPlot('us-he-rev-pdf-chart', [tracePdf], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Annual Gross Clinic Revenue ($M USD)' },
+                yaxis: { ...PL.yaxis, title: 'Probability Density' },
+                shapes: [
+                    { type: 'line', x0: p10, x1: p10, y0: 0, y1: 1, yref: 'paper', line: { color: '#fbbf24', width: 1.8, dash: 'dash' } },
+                    { type: 'line', x0: p50, x1: p50, y0: 0, y1: 1, yref: 'paper', line: { color: '#10b981', width: 2.4 } },
+                    { type: 'line', x0: p90, x1: p90, y0: 0, y1: 1, yref: 'paper', line: { color: '#c4b5fd', width: 1.8, dash: 'dash' } }
+                ],
+                annotations: [
+                    { x: p10, y: 1.04, yref: 'paper', text: `P10: $${p10.toFixed(2)}M`, showarrow: false, font: { size: 9, color: '#fbbf24' } },
+                    { x: p50, y: 1.04, yref: 'paper', text: `P50: $${p50.toFixed(2)}M`, showarrow: false, font: { size: 9.5, color: '#10b981' } },
+                    { x: p90, y: 1.04, yref: 'paper', text: `P90: $${p90.toFixed(2)}M`, showarrow: false, font: { size: 9, color: '#c4b5fd' } }
+                ],
+                legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.95 }
+            }, { responsive: true });
+        }
+
+        // 3. Plot 2: 10-Year Cumulative Discounted NPV Trajectory
+        if (revSim.trajectory_years && document.getElementById('us-he-npv-traj-chart')) {
+            const traceNpv90 = {
+                x: revSim.trajectory_years, y: revSim.npv_p90_trajectory_m,
+                name: 'P90 Optimistic ($M)',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#c4b5fd', width: 2, dash: 'dash' },
+                marker: { size: 5 }
+            };
+            const traceNpv50 = {
+                x: revSim.trajectory_years, y: revSim.npv_p50_trajectory_m,
+                name: 'P50 Median Base ($M)',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#10b981', width: 2.8 },
+                marker: { size: 6 }
+            };
+            const traceNpv10 = {
+                x: revSim.trajectory_years, y: revSim.npv_p10_trajectory_m,
+                name: 'P10 Conservative ($M)',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#fbbf24', width: 1.8, dash: 'dot' },
+                marker: { size: 5 }
+            };
+            Plotly.newPlot('us-he-npv-traj-chart', [traceNpv90, traceNpv50, traceNpv10], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Operational Model Year (t = 0 to 10)' },
+                yaxis: { ...PL.yaxis, title: 'Cumulative Discounted NPV ($M USD)' },
+                legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.95 }
+            }, { responsive: true });
+        }
+
+        // 4. Plot 3: Cost-Effectiveness Acceptability Curve (CEAC)
+        if (costEff.ceac_wtp_axis && document.getElementById('us-he-ceac-chart')) {
+            const traceCeac = {
+                x: costEff.ceac_wtp_axis, y: costEff.ceac_probabilities,
+                name: 'rTMS Cost-Effective P(CE)',
+                type: 'scatter', mode: 'lines',
+                line: { color: '#10b981', width: 2.8 }
+            };
+            Plotly.newPlot('us-he-ceac-chart', [traceCeac], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Willingness-to-Pay Threshold λ ($/QALY)' },
+                yaxis: { ...PL.yaxis, title: 'Probability Cost-Effective', range: [0, 1.05] },
+                shapes: [
+                    { type: 'line', x0: 50000, x1: 50000, y0: 0, y1: 1, yref: 'paper', line: { color: '#fbbf24', width: 1.5, dash: 'dot' } },
+                    { type: 'line', x0: 100000, x1: 100000, y0: 0, y1: 1, yref: 'paper', line: { color: '#0284c7', width: 1.8, dash: 'dash' } },
+                    { type: 'line', x0: 150000, x1: 150000, y0: 0, y1: 1, yref: 'paper', line: { color: '#c4b5fd', width: 1.5, dash: 'dot' } }
+                ],
+                annotations: [
+                    { x: 50000, y: 0.25, text: '$50k WTP', showarrow: false, font: { size: 8.5, color: '#fbbf24' } },
+                    { x: 100000, y: 0.45, text: 'US $100k Standard', showarrow: false, font: { size: 9, color: '#0284c7' } },
+                    { x: 150000, y: 0.65, text: '$150k High WTP', showarrow: false, font: { size: 8.5, color: '#c4b5fd' } }
+                ],
+                legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.95 }
+            }, { responsive: true });
+        }
+
+        // 5. Plot 4: Course Reimbursement by Payer Segment
+        if (document.getElementById('us-he-payer-chart')) {
+            const med = sched.medicare_course_revenue_usd || 7450;
+            const comm = sched.commercial_course_revenue_usd || 10800;
+            const mcaid = med * 0.72;
+            const cash = med * 1.35;
+
+            const tracePayer = {
+                x: ['Commercial Private', 'Medicare Part B', 'Medicaid (MCO)', 'Cash / Concierge'],
+                y: [comm / 1e3, med / 1e3, mcaid / 1e3, cash / 1e3],
+                type: 'bar',
+                marker: { color: ['#0284c7', '#38bdf8', '#fbbf24', '#a7f3d0'], line: { color: '#0f172a', width: 1 } }
+            };
+            Plotly.newPlot('us-he-payer-chart', [tracePayer], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'US Payer Classification' },
+                yaxis: { ...PL.yaxis, title: 'Reimbursement per Course ($k USD)' }
+            }, { responsive: true });
+        }
+
+        // 6. Plot 5: Direct Medical Savings Breakdown
+        if (document.getElementById('us-he-savings-chart')) {
+            const totSav = costEff.annual_medical_savings_per_patient_usd || 31945;
+            const inpat = totSav * 0.65;
+            const ed = totSav * 0.20;
+            const rx = totSav * 0.15;
+
+            const traceSav = {
+                x: ['Inpatient Bed-Days', 'ED Acute Visits', 'Specialty Rx', 'Total Annual Offsets'],
+                y: [inpat / 1e3, ed / 1e3, rx / 1e3, totSav / 1e3],
+                type: 'bar',
+                marker: { color: ['#0284c7', '#38bdf8', '#818cf8', '#10b981'], line: { color: '#0f172a', width: 1 } }
+            };
+            Plotly.newPlot('us-he-savings-chart', [traceSav], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Healthcare Resource Category' },
+                yaxis: { ...PL.yaxis, title: 'Annual Savings / Patient ($k USD)' }
+            }, { responsive: true });
+        }
+
+        // 7. Plot 6: GPCI Regional Sensitivity
+        if (document.getElementById('us-he-gpci-chart')) {
+            const gpciRegs = ['National Avg', 'California/West', 'Northeast NY', 'Midwest', 'South Sunbelt'];
+            const gpciVals = [8.62, 11.39, 10.95, 8.24, 8.52];
+
+            const traceGpci = {
+                x: gpciRegs,
+                y: gpciVals,
+                type: 'bar',
+                marker: { color: ['#64748b', '#0284c7', '#38bdf8', '#fbbf24', '#f59e0b'], line: { color: '#0f172a', width: 1 } }
+            };
+            Plotly.newPlot('us-he-gpci-chart', [traceGpci], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'US Geographic Locality' },
+                yaxis: { ...PL.yaxis, title: 'Blended Course Fee ($k USD)' }
+            }, { responsive: true });
+        }
+
+        // 8. Table 1: CPT Reimbursement Table
+        const cptTbody = document.getElementById('us-cpt-tbody');
+        if (cptTbody && sched.cpt_codes) {
+            cptTbody.innerHTML = Object.entries(sched.cpt_codes).map(([code, c]) => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <td style="padding:6px 8px; font-weight:700; color:#38bdf8;">CPT ${code}</td>
+                    <td style="padding:6px 8px; color:#cbd5e1;">${c.desc}</td>
+                    <td style="padding:6px 8px; font-family:monospace; color:#94a3b8;">${code === '90867' ? '1.28' : code === '90868' ? '0.75' : '1.15'}</td>
+                    <td style="padding:6px 8px; font-family:monospace; color:#94a3b8;">${code === '90867' ? '6.85' : code === '90868' ? '5.42' : '6.10'}</td>
+                    <td style="padding:6px 8px; font-family:monospace; color:#94a3b8;">${code === '90867' ? '0.12' : code === '90868' ? '0.08' : '0.10'}</td>
+                    <td style="padding:6px 8px; font-family:monospace; font-weight:600; color:#a7f3d0;">${code === '90867' ? '8.25' : code === '90868' ? '6.25' : '7.35'}</td>
+                    <td style="padding:6px 8px; font-weight:600; color:#38bdf8;">$${c.medicare_allowable_usd.toFixed(2)}</td>
+                    <td style="padding:6px 8px; font-weight:600; color:#10b981;">$${c.commercial_rate_usd.toFixed(2)}</td>
+                    <td style="padding:6px 8px; font-weight:700; color:#fbbf24;">$${c.blended_reimbursement_usd.toFixed(2)}</td>
+                </tr>
+            `).join('');
+        }
+
+        // 9. Table 2: 10-Year DCF Schedule Table
+        const dcfTbody = document.getElementById('us-dcf-tbody');
+        if (dcfTbody && revSim.dcf_schedule) {
+            dcfTbody.innerHTML = revSim.dcf_schedule.map(row => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <td style="padding:6px 8px; font-weight:700; color:#38bdf8;">Year ${row.year}</td>
+                    <td style="padding:6px 8px; color:#10b981;">$${(row.gross_revenue_usd / 1e6).toFixed(2)}M</td>
+                    <td style="padding:6px 8px; color:#f87171;">$${(row.opex_usd / 1e6).toFixed(2)}M</td>
+                    <td style="padding:6px 8px; color:#38bdf8;">$${(row.net_cash_flow_usd / 1e6).toFixed(2)}M</td>
+                    <td style="padding:6px 8px; color:#c4b5fd;">$${((row.discounted_cash_flow_usd || row.net_cash_flow_usd) / 1e6).toFixed(2)}M</td>
+                    <td style="padding:6px 8px; font-weight:700; color:#fbbf24;">$${(row.cumulative_npv_usd / 1e6).toFixed(2)}M</td>
+                </tr>
+            `).join('');
+        }
+    };
+
+    const runUSHealthEconomicsStudio = async () => {
+        try {
+            const statusEl = document.getElementById('us-he-status');
+            if (statusEl) statusEl.textContent = 'Simulating US Healthcare Reimbursement & DCF...';
+
+            const indication_key = document.getElementById('us-he-indication')?.value || 'depression_trd';
+            const region_key = document.getElementById('us-he-region')?.value || 'national_avg';
+            const num_tms_chairs = parseInt(document.getElementById('us-he-chairs')?.value || '2');
+            const annual_referrals_mean = parseFloat(document.getElementById('us-he-referrals')?.value || '240');
+            const commercial_pct = parseFloat(document.getElementById('us-he-comm')?.value || '55') / 100.0;
+            const medicare_pct = parseFloat(document.getElementById('us-he-medicare')?.value || '30') / 100.0;
+            const medicaid_pct = parseFloat(document.getElementById('us-he-medicaid')?.value || '10') / 100.0;
+            const self_pay_pct = parseFloat(document.getElementById('us-he-cash')?.value || '5') / 100.0;
+
+            const resp = await fetch('/api/us-health-economics-simulation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    indication_key,
+                    region_key,
+                    num_tms_chairs,
+                    annual_referrals_mean,
+                    commercial_pct,
+                    medicare_pct,
+                    medicaid_pct,
+                    self_pay_pct,
+                    discount_rate_annual: 0.075,
+                    wtp_threshold_usd: 100000.0
+                })
+            });
+
+            const data = await resp.json();
+            if (data.status !== 'success') {
+                console.error('US health economics simulation failed:', data);
+                if (statusEl) statusEl.textContent = 'Error during calculation';
+                return;
+            }
+
+            cachedUSHealthEconData = data;
+            if (statusEl) statusEl.textContent = 'Ready (' + new Date().toLocaleTimeString() + ')';
+            renderUSHealthEconomicsViews(data);
+        } catch (err) {
+            console.error('runUSHealthEconomicsStudio error:', err);
+            const statusEl = document.getElementById('us-he-status');
+            if (statusEl) statusEl.textContent = 'Error during simulation';
+        }
+    };
+
+    const runUSHealthEconomicsStudioDebounced = () => {
+        clearTimeout(usHeDebounceTimer);
+        usHeDebounceTimer = setTimeout(runUSHealthEconomicsStudio, 250);
+    };
+
+    window.usHeUpdateLabels = usHeUpdateLabels;
+    window.renderUSHealthEconomicsViews = renderUSHealthEconomicsViews;
+    window.runUSHealthEconomicsStudio = runUSHealthEconomicsStudio;
+    window.runUSHealthEconomicsStudioDebounced = runUSHealthEconomicsStudioDebounced;
+

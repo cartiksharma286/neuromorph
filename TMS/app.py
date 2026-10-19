@@ -51,6 +51,13 @@ from logic.health_economics_valuation import run_full_health_economics_simulatio
 from logic.xanadu_quantum_tms import run_full_xanadu_quantum_tms_simulation
 from logic.parkinsons_dbs_trajectories import simulate_parkinsons_dbs_trajectories
 from logic.indigenous_depression_tms import simulate_indigenous_depression_tms
+from logic.addiction_recovery_tms import simulate_addiction_recovery_trajectories
+from logic.us_health_economics import (
+    run_full_us_health_economics_simulation,
+    US_REGIONS,
+    CLINICAL_INDICATIONS,
+    CPT_RVU_BASELINE
+)
 
 app = Flask(
     __name__,
@@ -1288,6 +1295,152 @@ def indigenous_depression_tms_pdf():
         output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Indigenous_Depression_TMS_CF_Staging_QML.pdf')
         build_pdf(output_path, sim_params=_indigenous_depression_tms_params({}))
         return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Indigenous_Depression_TMS_CF_Staging_QML.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+def _addiction_recovery_params(data):
+    return dict(
+        addiction_type=_arg(data, 'addiction_type', 'nicotine', str),
+        baseline_severity=_arg(data, 'baseline_severity', 8.0, float),
+        sessions=_arg(data, 'sessions', 30, int),
+        intensity_mso_pct=_arg(data, 'intensity_mso_pct', 110.0, float),
+        hebbian_boost=_arg(data, 'hebbian_boost', True, bool),
+        qml_optimized=_arg(data, 'qml_optimized', True, bool)
+    )
+
+
+@app.route('/api/addiction-recovery-simulation', methods=['GET', 'POST'])
+def api_addiction_recovery_simulation():
+    """Simulates interventional rTMS addiction care: Hebbian STDP plasticity amplification,
+    variational QML policy, Stieltjes continued fraction craving decay, and 36-month clinical recovery."""
+    try:
+        data = request.get_json(silent=True) or {}
+        return jsonify(simulate_addiction_recovery_trajectories(**_addiction_recovery_params(data)))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/addiction-recovery-pdf', methods=['GET'])
+def addiction_recovery_pdf():
+    """Generate and stream the Nature preprint PDF on interventional rTMS addiction recovery."""
+    try:
+        from generate_nature_addiction_recovery_preprint import build_addiction_recovery_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Addiction_Recovery_TMS_Hebbian_QML.pdf')
+        build_addiction_recovery_pdf(output_path, params=_addiction_recovery_params({}))
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Addiction_Recovery_TMS_Hebbian_QML.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+def _us_health_economics_params(data):
+    return dict(
+        num_tms_chairs=_arg(data, 'num_tms_chairs', 2, int),
+        region_key=_arg(data, 'region_key', 'national_avg', str),
+        indication_key=_arg(data, 'indication_key', 'depression_trd', str),
+        annual_referrals_mean=_arg(data, 'annual_referrals_mean', 240.0, float),
+        commercial_pct=_arg(data, 'commercial_pct', 0.55, float),
+        medicare_pct=_arg(data, 'medicare_pct', 0.30, float),
+        medicaid_pct=_arg(data, 'medicaid_pct', 0.10, float),
+        self_pay_pct=_arg(data, 'self_pay_pct', 0.05, float),
+        discount_rate_annual=_arg(data, 'discount_rate_annual', 0.075, float),
+        wtp_threshold_usd=_arg(data, 'wtp_threshold_usd', 100000.0, float),
+        seed=_arg(data, 'seed', 42, int),
+    )
+
+
+@app.route('/api/us-health-economics-defaults', methods=['GET'])
+def api_us_health_economics_defaults():
+    """Return default parameter definitions, regional GPCI settings, and clinical indications for US healthcare."""
+    return jsonify({
+        "status": "success",
+        "regions": {k: v["name"] for k, v in US_REGIONS.items()},
+        "indications": {k: v["name"] for k, v in CLINICAL_INDICATIONS.items()},
+        "cpt_baseline": CPT_RVU_BASELINE,
+        "defaults": {
+            "num_tms_chairs": 2,
+            "region_key": "national_avg",
+            "indication_key": "depression_trd",
+            "annual_referrals_mean": 240.0,
+            "commercial_pct": 0.55,
+            "medicare_pct": 0.30,
+            "medicaid_pct": 0.10,
+            "self_pay_pct": 0.05,
+            "discount_rate_annual": 0.075,
+            "wtp_threshold_usd": 100000.0,
+        }
+    })
+
+
+@app.route('/api/us-health-economics-simulation', methods=['GET', 'POST'])
+def api_us_health_economics_simulation():
+    """Simulate US multi-payer reimbursement, GPCI adjustments, QALY cost-effectiveness, and 10-year Monte Carlo revenue."""
+    try:
+        data = request.get_json(silent=True) or {}
+        return jsonify(run_full_us_health_economics_simulation(**_us_health_economics_params(data)))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/us-health-economics-pdf', methods=['GET'])
+def us_health_economics_pdf():
+    """Generate and stream the Nature preprint PDF on US Health Economics & 10-Year Revenue Projections."""
+    try:
+        from generate_nature_us_health_economics import build_us_health_economics_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_US_Health_Economics_Neuromodulation_Revenue.pdf')
+        build_us_health_economics_pdf(output_path, sim_params=_us_health_economics_params({}))
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_US_Health_Economics_Neuromodulation_Revenue.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/neurodegenerative-economics-simulation', methods=['GET', 'POST'])
+def api_neurodegenerative_economics_simulation():
+    """Simulate long-term health economics, multi-site stimulation combinatorics, statistical quantum invariants,
+    and 10-year multi-cohort profit projections across all neurodegenerative repair indications."""
+    try:
+        from logic.neurodegenerative_economics import NeurodegenerativeEconomicsEngine
+        data = request.get_json(silent=True) or {}
+        scenario = str(request.args.get('expansion_scenario', data.get('expansion_scenario', 'enterprise_scale')))
+        seed = int(request.args.get('seed', data.get('seed', 42)))
+        engine = NeurodegenerativeEconomicsEngine()
+        return jsonify(engine.simulate(expansion_scenario=scenario, seed=seed))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/neurodegenerative-economics-pdf', methods=['GET'])
+def neurodegenerative_economics_pdf():
+    """Generate and stream the Nature preprint PDF on Neurodegenerative Repair Health Economics, Combinatorics & Profit."""
+    try:
+        from generate_nature_neurodegenerative_economics import build_neurodegenerative_economics_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Neurodegenerative_Repair_Health_Economics_Quantum_Combinatorics.pdf')
+        build_neurodegenerative_economics_pdf(output_path, sim_params={})
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Neurodegenerative_Repair_Health_Economics_Quantum_Combinatorics.pdf')
     except (TypeError, ValueError) as exc:
         return jsonify({'status': 'error', 'message': str(exc)}), 400
     except Exception as exc:

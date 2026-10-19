@@ -1,0 +1,77 @@
+<section id="tab-ecoli" class="tab-pane">
+    <div class="section-intro">
+        <h2>Lake Ontario: Advanced NMR Spectroscopy, Water Chemistry & Robotic SLAM</h2>
+        <p>In-situ 1H-NMR metabolomics (lactate, acetate, succinate, formate, peptidoglycans), CPMG T2 relaxation,
+            DOSY diffusion, and regularized chemometrics in lieu of quantum machine learning for undersea robotic sampling.
+            No validated bacterial detection, patient/clinical diagnosis, or water-safety determination.
+            Confirm with accredited microbiological culture (EPA 1603 / ISO 9308).</p>
+    </div>
+    <div class="grid-2col">
+        <div class="card glass-card">
+            <div class="card-header"><h2>Water sample & scenario inputs</h2><span class="badge badge-accent">Simulation only</span></div>
+            <p>Concentrations below are assumed scenario inputs, not measurements inferred from spectra.
+                SLAM uses a local 2-D survey, not a georeferenced Lake Ontario field deployment.</p>
+            <form id="ecoli-form">
+                <div id="ecoli-inputs" class="carbon-inputs"></div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary" id="ecoli-run" disabled>Analyze sample & SLAM</button>
+                    <button type="button" class="btn btn-outline" id="ecoli-pdf" disabled>Download Nature-style PDF</button>
+                </div>
+            </form>
+            <p id="ecoli-status" role="status" aria-live="polite">Loading analysis inputs...</p>
+            <p>PDF uses the last successfully analyzed inputs. Edit inputs and rerun to update all results.</p>
+        </div>
+        <div class="card glass-card">
+            <div class="card-header"><h2>NMR Chemometric Characteristics (In Lieu of QML)</h2></div>
+            <div id="ecoli-metrics" class="carbon-results"></div>
+            <p id="ecoli-qml-scope"></p>
+            <div class="math-box">
+                <div class="math-title">Finite Math: Bloch Magnetization, FID & Tikhonov Spectral Deconvolution</div>
+                <div class="carbon-equation">
+                    s(t) = sum[k] A_k exp(i 2&pi; &nu;_k t - t/T_{2,k}); &nbsp; S(&nu;) = Re{F{s(t)}} = sum[k] A_k &middot; (&Gamma;_k/2&pi;) / [(&nu; - &nu;_k)&sup2; + (&Gamma;_k/2)&sup2;]<br>
+                    c_hat = (&Phi;^T &Phi; + &lambda; I)^(-1) &Phi;^T s; &nbsp; y = w^T c_hat + b, &nbsp; w = (X_train^T X_train + &lambda;_2 I)^(-1) X_train^T y_train
+                </div>
+                <p>180 training / 60 held-out synthetic water samples; training-only scaling.
+                    Classical NMR physics and regularized chemometrics replace unproven quantum machine learning.
+                    Metabolite discriminant score is continuous; the threshold near 99 CFU/100 mL is an analytical benchmark, not a regulatory standard.</p>
+            </div>
+        </div>
+    </div>
+    <div class="grid-2col">
+        <div class="card glass-card">
+            <h2>1H-NMR Chemical Shift Spectrum (0.0 to 10.0 ppm)</h2>
+            <div id="ecoli-nmr" class="ecoli-plot"></div>
+            <p class="subtitle">Metabolic peaks: lactate (1.33 ppm), acetate (1.92 ppm), peptidoglycans (2.05 ppm), succinate (2.40 ppm), formate (8.45 ppm), water notch (4.70 ppm).</p>
+        </div>
+        <div class="card glass-card">
+            <h2>CPMG T2 Relaxation & DOSY Diffusion Attenuation</h2>
+            <div id="ecoli-relaxation" class="ecoli-plot"></div>
+            <p class="subtitle">CPMG filtering separates small metabolites (T2 ~ 220 ms) from macromolecules (T2 ~ 28 ms); DOSY separates bacterial cells (D ~ 10^-12 m²/s).</p>
+        </div>
+    </div>
+    <div class="card glass-card">
+        <h2>Metabolite Resonances, Relaxation & Limitations</h2>
+        <div id="ecoli-bands" class="carbon-results"></div>
+        <p>Microbial byproducts (acetate, lactate, formate) can also arise from algal fermentation or decaying organic matter.
+            Spectroscopy alone cannot differentiate pathogenic E. coli strains (e.g. O157:H7) or verify live cellular viability.</p>
+    </div>
+    <div class="grid-2col">
+        <div class="card glass-card"><h2>72-Hour Water-Sample Burden Trajectory</h2><div id="ecoli-decay" class="ecoli-plot"></div></div>
+        <div class="card glass-card"><h2>Water-Sample Chemical Characteristics</h2><div id="ecoli-chemistry" class="ecoli-plot"></div>
+            <p>Turbidity uses NTU; nitrate, phosphate, and dissolved organic carbon use mg/L. Units are distinct.</p></div>
+        <div class="card glass-card"><h2>Ten-Year Source-Control Remediation Scenario</h2><div id="ecoli-recovery" class="ecoli-plot"></div></div>
+        <div class="card glass-card"><h2>Joint Pose & Landmark SLAM</h2><div id="ecoli-slam" class="ecoli-plot"></div><div id="ecoli-slam-metrics"></div></div>
+    </div>
+    <div class="card glass-card">
+        <h2>Robotic SLAM Position Uncertainty & Kinematics</h2><div id="ecoli-uncertainty" class="ecoli-plot"></div>
+        <p id="ecoli-slam-scope"></p>
+        <p id="ecoli-trajectory-scope"></p>
+        <div class="carbon-equation">
+            I(2n&tau;) = I_0 exp(-2n&tau; / T_2); &nbsp; ln[I(g)/I_0] = -&gamma;&sup2; g&sup2; &delta;&sup2; (&Delta; - &delta;/3) D<br>
+            z_j = landmark_j - pose + v; &nbsp; K = P H^T (H P H^T + R)^(-1); &nbsp; P_new = (I - K H) P (I - K H)^T + K R K^T<br>
+            C(h) = C(0) exp(-k_decay h); &nbsp; C_source(y) = C(0) exp(-r_intervention y), y = 0,...,10
+        </div>
+        <p>The submersible performs environmental monitoring, not remediation.
+            Classical NMR physics and chemometrics provide direct physical interpretability without relying on quantum hardware.</p>
+    </div>
+</section>

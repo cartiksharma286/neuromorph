@@ -1,0 +1,18 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Launch underwater robotics",
+			"type": "shell",
+			"command": "env",
+			"args": [
+				"FLASK_RUN_HOST=127.0.0.1",
+				"FLASK_RUN_PORT=5070",
+				"${workspaceFolder}/.venv/bin/python",
+				"${workspaceFolder}/lake_tahoe_undersea_robotics/app.py"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

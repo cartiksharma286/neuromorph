@@ -1,0 +1,138 @@
+<section id="tab-mineral" class="tab-pane">
+    <div class="section-intro">
+        <h2>⛏️ Benthic Mineral Ore Excavation: Computer Vision, Hyperspectral Spectroscopy & QML Fermionic Parity</h2>
+        <p>Sub-lacustrine extraction of strategic minerals: Iron (Fe), Uranium (U), Rare Earth Elements (REE: Nd, Dy, Eu), Silver (Ag), and Cobalt (Co).
+            Perception utilizes 400–1000 nm hyperspectral optical reflectance and Jordan-Wigner 5-qubit fermionic parity operators P = Z_1...Z_N,
+            coupled with 10-year discounted cash flow (DCF) multi-commodity revenue projections.</p>
+    </div>
+
+    <div class="grid-2col">
+        <!-- Ore Excavation Controls -->
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2>🎯 Benthic Deposit & Excavation Parameterization</h2>
+                <span class="badge badge-accent">Subsea Mining AUV Fleet</span>
+            </div>
+
+            <form id="mineral-form">
+                <div class="form-group">
+                    <label for="mineral-deposit-select">Target Mineral Deposit & Geological Setting:</label>
+                    <select id="mineral-deposit-select" class="form-control">
+                        <option value="abyssal_nodule_field" selected>Abyssal Polymetallic Nodule Field (Fe 34.5%, Co 0.85%, REE 1250ppm)</option>
+                        <option value="hydrothermal_vein">Hydrothermal Fault Vein (Ag 320g/t, Co 0.62%, Fe 22%)</option>
+                        <option value="uraniferous_sapropel">Uraniferous Pelagic Sapropel (U 640ppm, REE 2150ppm, Fe 18.5%)</option>
+                        <option value="granitic_placer">Granitic Heavy-Mineral Placer (Fe 42%, REE 1820ppm, U 140ppm)</option>
+                        <option value="cobalt_crust_ridge">Cobalt-Rich Ferromanganese Ridge (Co 1.15%, REE 1450ppm, Fe 28%)</option>
+                    </select>
+                </div>
+
+                <div id="mineral-inputs-grid" class="carbon-inputs">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div class="btn-group" style="margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary" id="btn-run-mineral">⚡ Run Ore Perception & Economic Valuation</button>
+                    <button type="button" class="btn btn-outline" id="btn-mineral-pdf">📥 Download Nature Mining PDF</button>
+                </div>
+            </form>
+            <p id="mineral-status" role="status" aria-live="polite" style="margin-top: 10px; color: var(--accent-yellow);">Initializing benthic mineral simulation...</p>
+        </div>
+
+        <!-- Economic & Quantum Parity Telemetry -->
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2>📊 10-Year Economic Valuation & Fermionic Parity Signatures</h2>
+                <span class="badge badge-success" id="mineral-status-badge">RESERVE VALIDATED</span>
+            </div>
+
+            <div class="telemetry-grid">
+                <div class="telemetry-item">
+                    <div class="telemetry-label">Annual Gross Revenue</div>
+                    <div class="telemetry-value highlight" id="min-gross-rev">--</div>
+                </div>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">10-Year Discounted NPV</div>
+                    <div class="telemetry-value highlight-cyan" id="min-npv">--</div>
+                </div>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">Fermionic Parity &lang;P&rang;</div>
+                    <div class="telemetry-value text-green" id="min-parity">--</div>
+                </div>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">QML Ore Confidence</div>
+                    <div class="telemetry-value text-purple" id="min-confidence">--</div>
+                </div>
+            </div>
+
+            <div class="jacobi-readout" id="mineral-jacobi-bar">
+                <span>Ore Rate: <b id="min-ore-rate">--</b></span>
+                <span>Annual Ore: <b id="min-annual-ore">--</b></span>
+                <span>Payback: <b id="min-payback">--</b></span>
+                <span>IRR: <b id="min-irr">--</b></span>
+                <span>Env Levy: <b id="min-env-levy">--</b></span>
+            </div>
+
+            <!-- Ore Grade Breakdown Card -->
+            <div style="margin-top: 1rem; padding: 12px; background: rgba(6, 18, 38, 0.65); border-radius: 6px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 6px;">IDENTIFIED IN-SITU ORE GRADES:</div>
+                <div id="mineral-grades-readout" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; font-size: 0.8rem;">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Math Formulation Box -->
+    <div class="card glass-card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+            <h2>📐 Finite Math: Jordan-Wigner Fermionic Parity, Hyperspectral Mixing & Discounted Cash Flows</h2>
+        </div>
+        <div class="grid-2col" style="gap: 1.5rem;">
+            <div class="math-box">
+                <div class="math-title">Jordan-Wigner Fermionic Parity Operator & Electronic State Encoding</div>
+                <div class="carbon-equation">
+                    c_j^&dagger; = (&otimes;_{k&lt;j} Z_k) (X_j - i Y_j)/2; &nbsp;&nbsp; c_j = (&otimes;_{k&lt;j} Z_k) (X_j + i Y_j)/2<br>
+                    P = &prod;_{j=1}^5 (-1)^(n_j) = &prod;_{j=1}^5 (1 - 2 c_j^&dagger; c_j) = &otimes;_{j=1}^5 Z_j = Z_1 Z_2 Z_3 Z_4 Z_5<br>
+                    U_f(&phi;) = exp[-i (&phi;/2) (X_j Y_{j+1} - Y_j X_{j+1})], &nbsp;&nbsp; [U_f, P] = 0; &nbsp;&nbsp; &lang;P&rang; &isin; [-1, +1]
+                </div>
+                <p>Maps 5 orbital valence electron configurations for Fe, U, REE, Ag, and Co to Pauli strings. Parity-preserving Givens gates maintain particle number and fermionic parity invariance.</p>
+            </div>
+            <div class="math-box">
+                <div class="math-title">Hyperspectral Optical Mixing & 10-Year Discounted Cash Flow</div>
+                <div class="carbon-equation">
+                    s(&lambda;) = &sum;_m w_m &rho;_m(&lambda;) + b_matrix(&lambda;) + &epsilon;; &nbsp;&nbsp; M_m(t) = R &middot; D &middot; g_m &middot; &eta;_m<br>
+                    Rev(t) = &sum;_m M_m(t) &middot; p_m; &nbsp;&nbsp; CF(t) = Rev(t) &middot; (1 - &lambda;_env) - M_ore &middot; C_opex<br>
+                    NPV = -CapEx + &sum;_{t=1}^{10} [ CF(t) / (1 + r)^t ]; &nbsp;&nbsp; &sum;_{t=1}^{10} [ CF(t) / (1 + IRR)^t ] = CapEx
+                </div>
+                <p>Calculates multi-commodity production, gross revenue across market spot prices, 8% environmental remediation endowment, and 10-year discounted Net Present Value.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Visual Plots -->
+    <div class="grid-2col" style="margin-top: 1.5rem;">
+        <div class="card glass-card">
+            <h2>Diagnostic Hyperspectral Reflectance Spectra &rho;(&lambda;) [400 - 1000 nm]</h2>
+            <div id="min-plot-spectral" class="ecoli-plot"></div>
+            <p class="subtitle">Diagnostic reflectance curves for Iron (Fe), Uranium (U), Rare Earths (REE), Silver (Ag), and Cobalt (Co).</p>
+        </div>
+        <div class="card glass-card">
+            <h2>Fermionic Parity Operator Expectation &lang;P&rang; vs PQC Circuit Depth</h2>
+            <div id="min-plot-parity" class="ecoli-plot"></div>
+            <p class="subtitle">Quantum expectation value &lang;P&rang; = &lang;&otimes; Z_j&rang; demonstrating parity conservation across variational layers.</p>
+        </div>
+    </div>
+
+    <div class="grid-2col" style="margin-top: 1.5rem;">
+        <div class="card glass-card">
+            <h2>10-Year Cumulative Discounted Net Present Value Trajectory ($M USD)</h2>
+            <div id="min-plot-npv" class="ecoli-plot"></div>
+            <p class="subtitle">Cumulative discounted cash flow from initial CapEx through 10 operational mining years.</p>
+        </div>
+        <div class="card glass-card">
+            <h2>Annual Gross Revenue Breakdown by Commodity ($M USD)</h2>
+            <div id="min-plot-revenue" class="ecoli-plot"></div>
+            <p class="subtitle">Annual recovered value across Iron, Uranium, Rare Earth Elements, Silver, and Cobalt.</p>
+        </div>
+    </div>
+</section>

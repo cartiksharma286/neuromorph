@@ -1,0 +1,187 @@
+<section id="tab-vision" class="tab-pane">
+    <div class="section-intro">
+        <h2>Underwater Robot Camera & Vision System: Quantum Machine Learning & Elliptic Moduli</h2>
+        <p>Benthic optical perception, Jaffe-McGlamery radiative scatter transfer, Weibull-GEV intensity statistics,
+            and conformal boundary parameterization via elliptic moduli theory (Klein j-invariant, complete elliptic integrals K(k)).
+            Object classification and anomaly event detection powered by a 4-qubit Parameterized Quantum Circuit (PQC) with Quantum Natural Gradient optimization.</p>
+    </div>
+
+    <div class="grid-2col">
+        <!-- Vision Controls & Parameters -->
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2>🎯 Camera Sensor & Benthic Environment Controls</h2>
+                <span class="badge badge-accent">AUV Optoelectronic Payload</span>
+            </div>
+
+            <form id="vision-form">
+                <div class="form-group">
+                    <label for="vision-scene-select">Survey Target & Benthic Scene:</label>
+                    <select id="vision-scene-select" class="form-control">
+                        <option value="pipeline_infrastructure" selected>Submerged Pipeline Seam & Structural Defect (k=0.842)</option>
+                        <option value="hydrothermal_vent">Benthic Thermal Chimney & Mineral Plume (k=0.465)</option>
+                        <option value="escarpment_fault">Abyssal Fault Fissure & Diatomaceous Wall (k=0.938)</option>
+                        <option value="optical_beacon">Submerged Transponder & Optical Strobe Pinger (k=0.165)</option>
+                        <option value="benthic_fauna">Deep Relict Biological Cluster & Planktonic Drift (k=0.615)</option>
+                    </select>
+                </div>
+
+                <div id="vision-inputs-grid" class="carbon-inputs">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div class="btn-group" style="margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary" id="btn-run-vision">⚡ Run Quantum Vision & Event Detection</button>
+                    <button type="button" class="btn btn-outline" id="btn-vision-pdf">📥 Download Nature Vision PDF</button>
+                </div>
+            </form>
+            <p id="vision-status" role="status" aria-live="polite" style="margin-top: 10px; color: var(--accent-yellow);">Initializing optical simulation...</p>
+        </div>
+
+        <!-- Live Simulated Camera Viewfinder -->
+        <div class="card glass-card">
+            <div class="card-header">
+                <h2>👁️ Simulated AUV Optical Camera Viewfinder (640x360)</h2>
+                <span class="badge badge-success" id="vision-status-badge">TARGET LOCKED</span>
+            </div>
+
+            <div class="canvas-wrapper" style="position: relative;">
+                <canvas id="vision-camera-canvas" width="640" height="360" style="width: 100%; border-radius: 6px; background: #021020;"></canvas>
+                <div class="canvas-legend">Simulated Benthic Video Feed • Jaffe-McGlamery Radiative Scatter • Elliptic Bounding Box</div>
+            </div>
+
+            <!-- Vision Telemetry Readouts -->
+            <div class="telemetry-grid" style="margin-top: 1rem;">
+                <div class="telemetry-item">
+                    <div class="telemetry-label">Optical Transmittance</div>
+                    <div class="telemetry-value highlight" id="vis-transmittance">--</div>
+                </div>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">Klein j-Invariant</div>
+                    <div class="telemetry-value highlight-cyan" id="vis-j-invariant">--</div>
+                </div>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">QML Detection Conf.</div>
+                    <div class="telemetry-value text-green" id="vis-qml-conf">--</div>
+                </div>
+                <div class="telemetry-item">
+                    <div class="telemetry-label">Quantum State Fidelity</div>
+                    <div class="telemetry-value text-purple" id="vis-fidelity">--</div>
+                </div>
+            </div>
+
+            <div class="jacobi-readout" id="vis-jacobi-bar">
+                <span>Modulus k: <b id="vis-k">--</b></span>
+                <span>Im(&tau;): <b id="vis-tau">--</b></span>
+                <span>Atten c: <b id="vis-c">--</b></span>
+                <span>Visibility: <b id="vis-range">--</b></span>
+                <span>SNR: <b id="vis-snr">--</b></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Math Formulation Box -->
+    <div class="card glass-card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+            <h2>📐 Finite Math Formulations: Optical Scattering, Elliptic Moduli & Quantum Natural Gradient</h2>
+        </div>
+        <div class="grid-2col" style="gap: 1.5rem;">
+            <div class="math-box">
+                <div class="math-title">Jaffe-McGlamery Radiative Transfer & Statistical Distributions</div>
+                <div class="carbon-equation">
+                    E_T(x,y) = E_d + E_fs + E_bs = E_0 e^(-c r) &rho;(x,y) + E_d * g_fs + B_&infin;(1 - e^(-c r))<br>
+                    f(I; k_w, &lambda;_w) = (k_w / &lambda;_w)(I / &lambda;_w)^(k_w - 1) exp[-(I / &lambda;_w)^(k_w)]<br>
+                    G(x; &mu;, &sigma;, &xi;) = (1/&sigma;)[1 + &xi;((x-&mu;)/&sigma;)]^(-(1/&xi; + 1)) exp[-[1 + &xi;((x-&mu;)/&sigma;)]^(-1/&xi;)]
+                </div>
+                <p>Combines direct exponential beam attenuation, forward-scatter point spread convolution, veiling backscatter, Weibull speckle, and Generalized Extreme Value (GEV) optical burst detection.</p>
+            </div>
+            <div class="math-box">
+                <div class="math-title">Elliptic Moduli Conformal Contours & Variational QML</div>
+                <div class="carbon-equation">
+                    K(k) = &int;_0^(&pi;/2) [1 / &radic;(1 - k&sup2; sin&sup2;&theta;)] d&theta;; &nbsp; &tau; = i K'(k) / K(k)<br>
+                    j(k) = 256 (1 - k&sup2; + k^4)&sup3; / [k^4 (1 - k&sup2;)&sup2;]; &nbsp; j(&gamma;&middot;&tau;) = j(&tau;), &forall;&gamma;&isin;SL_2(&Zopf;)<br>
+                    |&psi;(x)&rang; = [&otimes;_j R_y(&theta;_j) R_z(&phi;_j)] |0&rang;^(8); &nbsp; &alpha;_{t+1} = &alpha;_t - &eta; g^+ &nabla; L(&alpha;)
+                </div>
+                <p>Contour boundary parameterization on Riemannian 2-tori yields scale- and turbidity-invariant Klein j-invariants. 4-qubit parameterized quantum circuits optimize detection using the Quantum Natural Gradient (QNG).</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Visual Plots -->
+    <div class="grid-2col" style="margin-top: 1.5rem;">
+        <div class="card glass-card">
+            <h2>Klein j-Invariant Conformal Characteristic Curve log10[j(k)]</h2>
+            <div id="vis-plot-j" class="ecoli-plot"></div>
+            <p class="subtitle">Exact modular invariant j(k) as a function of the geometric contour aspect ratio modulus k in (0, 1).</p>
+        </div>
+        <div class="card glass-card">
+            <h2>Underwater Beam Attenuation Spectrum c(&lambda;) [400 - 700 nm]</h2>
+            <div id="vis-plot-attenuation" class="ecoli-plot"></div>
+            <p class="subtitle">Spectral absorption and particulate scatter across blue-green underwater transmission windows.</p>
+        </div>
+    </div>
+
+    <div class="grid-2col" style="margin-top: 1.5rem;">
+        <div class="card glass-card">
+            <h2>Statistical Distributions: Weibull Speckle & GEV Optical Event PDF</h2>
+            <div id="vis-plot-distributions" class="ecoli-plot"></div>
+            <p class="subtitle">Weibull intensity PDF for marine snow scatter alongside Generalized Extreme Value (GEV) anomaly distribution.</p>
+        </div>
+        <div class="card glass-card">
+            <h2>QML Variational Loss L(&alpha;) & Quantum State Fidelity Convergence</h2>
+            <div id="vis-plot-qml" class="ecoli-plot"></div>
+            <p class="subtitle">Parameter optimization under Fubini-Study Quantum Natural Gradient across variational iterations.</p>
+        </div>
+    </div>
+
+    <div class="card glass-card" style="margin-top: 1.5rem;">
+        <h2>Simulated Optical Event Anomaly Metric Timeline (60-Second AUV Mission)</h2>
+        <div id="vis-plot-events" class="ecoli-plot"></div>
+        <p class="subtitle">Real-time GEV anomaly score tracking subsea bursts, bubble flares, and optical beacon pulses.</p>
+    </div>
+
+    <!-- Ecological Conservation, Image Resolution & Sub-Lacustrine Geographic Extents -->
+    <div class="card glass-card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+            <h2>🌿 Ecological Conservation, Optical Resolution & Sub-Lacustrine Geographic Extents</h2>
+            <span class="badge badge-success">Alpine Lacustrine Habitat Survey</span>
+        </div>
+        <div class="telemetry-grid" style="margin-top: 0.5rem;">
+            <div class="telemetry-item">
+                <div class="telemetry-label">Ground Resolution (GSD)</div>
+                <div class="telemetry-value highlight" id="vis-gsd">--</div>
+            </div>
+            <div class="telemetry-item">
+                <div class="telemetry-label">Benthic Swath Width</div>
+                <div class="telemetry-value highlight-cyan" id="vis-swath">--</div>
+            </div>
+            <div class="telemetry-item">
+                <div class="telemetry-label">Shannon Diversity H'</div>
+                <div class="telemetry-value text-green" id="vis-shannon">--</div>
+            </div>
+            <div class="telemetry-item">
+                <div class="telemetry-label">Periphyton Algal Cover</div>
+                <div class="telemetry-value text-purple" id="vis-periphyton">--</div>
+            </div>
+        </div>
+
+        <div class="grid-2col" style="margin-top: 1.5rem;">
+            <div>
+                <h3>Modulation Transfer Function MTF(f_s) Resolution Degradation</h3>
+                <div id="vis-plot-mtf" class="ecoli-plot"></div>
+                <p class="subtitle">Diffraction-limited optical lens MTF vs forward-scattering water-column attenuation MTF (0 to 120 lp/mm).</p>
+            </div>
+            <div>
+                <h3>Geographic Extent: Sub-Lacustrine Bathymetric Elevation Profile</h3>
+                <div id="vis-plot-transect" class="ecoli-plot"></div>
+                <p class="subtitle">35.2 km longitudinal transect across Lake Tahoe trench stations from Tahoe City Sill (115 m) to Crystal Bay Abyss (501 m).</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <h3>Benthic Sand & Ecological Substrate Spectral Reflectance &rho;(&lambda;) [400 - 700 nm]</h3>
+            <div id="vis-plot-sand" class="ecoli-plot"></div>
+            <p class="subtitle">Spectral distinguishing signatures for littoral quartz sand, abyssal diatomaceous silt, relict deep-water moss (Fissidens grandifrons, 60-120m), and invasive shell druses.</p>
+        </div>
+    </div>
+</section>
