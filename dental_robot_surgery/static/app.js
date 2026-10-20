@@ -7,6 +7,7 @@ let activeTab = 'cbct';
 let slamInterval = null;
 let currentDepth = 0.0;
 let slamTrajectoryHistory = [];
+let cachedQmlData = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadCbctSlice();
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadJoints();
     initSlamCanvas();
     runVqeRegistration();
+    runQmlUsCtRegistration();
     generateImplantModel();
     loadImplantFea();
     loadManipulatorSim();
@@ -1079,7 +1081,361 @@ function renderValuationCurveChart(annualData, valInflection, revInflection) {
     ctx.fillStyle = '#38bdf8'; ctx.fillText('■ Annual Revenue ($B)', 240, 15);
 }
 
-// --- 7. PDF Generation & Toast ---
+// --- 7. Optimal QML Ultrasound Surface & CT Point Cloud Registration ---
+async function runQmlUsCtRegistration() {
+    const numQubits = parseInt(document.getElementById('qmlQubits')?.value) || 12;
+    const qmlLayers = parseInt(document.getElementById('qmlLayers')?.value) || 6;
+    const noiseSigma = parseFloat(document.getElementById('qmlNoiseSigma')?.value) || 0.18;
+
+    try {
+        const res = await fetch('/api/registration/qml_us_ct', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                num_qubits: numQubits,
+                qml_layers: qmlLayers,
+                noise_sigma_mm: noiseSigma
+            })
+        });
+        const d = await res.json();
+        cachedQmlData = d;
+
+        const m = d.metrics;
+        const elRmse = document.getElementById('qmlSurfaceRmse');
+        if (elRmse) elRmse.innerText = `${m.rmse_surface_mm.toFixed(4)} mm`;
+        const elUnreg = document.getElementById('qmlUnregRmse');
+        if (elUnreg) elUnreg.innerText = `Pre-QML Unreg: ${m.unregistered_rmse_mm.toFixed(3)} mm`;
+        const elH95 = document.getElementById('qmlHausdorff95');
+        if (elH95) elH95.innerText = `${m.hausdorff_95_mm.toFixed(4)} mm`;
+        const elWass = document.getElementById('qmlWasserstein');
+        if (elWass) elWass.innerText = `${m.wasserstein_distance_mm.toFixed(4)} mm`;
+        const elFid = document.getElementById('qmlKernelFidelity');
+        if (elFid) elFid.innerText = m.quantum_kernel_alignment.toFixed(4);
+        const elMut = document.getElementById('qmlMutualInfo');
+        if (elMut) elMut.innerText = `${m.quantum_mutual_information_bits.toFixed(3)} bits`;
+        const elParams = document.getElementById('qmlDistParams');
+        if (elParams) elParams.innerText = `m=${m.nakagami_m_parameter} | κ=${m.vmf_concentration_kappa}`;
+
+        renderQml3dSurfaceCanvas();
+        renderQmlResidualDistCanvas(d.distributions, m);
+        renderQmlAngularConvCanvas(d.distributions, d.convergence);
+    } catch (err) {
+        console.error("QML US-CT registration error:", err);
+    }
+}
+
+function project3DPoint(x, y, z, azDeg, elDeg, cx, cy, scale) {
+    const az = (azDeg * Math.PI) / 180.0;
+    const el = (elDeg * Math.PI) / 180.0;
+    const x1 = x * Math.cos(az) - y * Math.sin(az);
+    const y1 = x * Math.sin(az) + y * Math.cos(az);
+    const z1 = z;
+
+    const screenX = cx + x1 * scale;
+    const screenY = cy - (z1 * Math.cos(el) - y1 * Math.sin(el)) * scale;
+    const depth = z1 * Math.sin(el) + y1 * Math.cos(el);
+    return { sx: screenX, sy: screenY, depth };
+}
+
+function renderQml3dSurfaceCanvas() {
+    if (!cachedQmlData) return;
+    const canvas = document.getElementById('qmlSurfaceCloudCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#060910';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const cx = w / 2;
+    const cy = h / 2 + 22;
+    const scale = 9.5;
+
+    const azDeg = parseFloat(document.getElementById('qmlViewAzimuth')?.value || 28);
+    const elDeg = parseFloat(document.getElementById('qmlViewElev')?.value || 32);
+    const mode = document.getElementById('qmlOverlayMode')?.value || 'all';
+
+    // Draw background coordinate grid
+    ctx.strokeStyle = 'rgba(30, 41, 59, 0.65)';
+    ctx.lineWidth = 0.7;
+    for (let gx = -20; gx <= 20; gx += 5) {
+        const p1 = project3DPoint(gx, -8, -6, azDeg, elDeg, cx, cy, scale);
+        const p2 = project3DPoint(gx, 18, -6, azDeg, elDeg, cx, cy, scale);
+        ctx.beginPath();
+        ctx.moveTo(p1.sx, p1.sy);
+        ctx.lineTo(p2.sx, p2.sy);
+        ctx.stroke();
+    }
+
+    const geom = cachedQmlData.geometry;
+
+    // 1. Optional Unregistered US Pose (Pre-QML) in faint amber/magenta
+    if (mode === 'with_unreg' && geom.us_unregistered_cloud) {
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.45)';
+        geom.us_unregistered_cloud.forEach(pt => {
+            const p = project3DPoint(pt[0], pt[1], pt[2], azDeg, elDeg, cx, cy, scale);
+            ctx.beginPath();
+            ctx.arc(p.sx, p.sy, 1.7, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+    }
+
+    // 2. Render Registered US Surface Mesh Quads (S_US) with residual heatmap coloring
+    const grid = geom.us_registered_surface_grid;
+    const nV = grid.length;
+    const nU = grid[0].length;
+
+    for (let i = 0; i < nV - 1; i++) {
+        for (let j = 0; j < nU - 1; j++) {
+            const v00 = grid[i][j];
+            const v10 = grid[i + 1][j];
+            const v11 = grid[i + 1][j + 1];
+            const v01 = grid[i][j + 1];
+
+            const p00 = project3DPoint(v00[0], v00[1], v00[2], azDeg, elDeg, cx, cy, scale);
+            const p10 = project3DPoint(v10[0], v10[1], v10[2], azDeg, elDeg, cx, cy, scale);
+            const p11 = project3DPoint(v11[0], v11[1], v11[2], azDeg, elDeg, cx, cy, scale);
+            const p01 = project3DPoint(v01[0], v01[1], v01[2], azDeg, elDeg, cx, cy, scale);
+
+            const meanRes = 0.25 * (v00[3] + v10[3] + v11[3] + v01[3]);
+            const normErr = Math.min(1.0, meanRes / 0.085);
+
+            // Emerald green (low residual) -> Gold/Amber (higher residual)
+            const rCol = Math.floor(16 + normErr * 229);
+            const gCol = Math.floor(185 - normErr * 30);
+            const bCol = Math.floor(129 - normErr * 110);
+
+            ctx.fillStyle = `rgba(${rCol}, ${gCol}, ${bCol}, 0.24)`;
+            ctx.strokeStyle = `rgba(${rCol}, ${gCol}, ${bCol}, 0.72)`;
+            ctx.lineWidth = 0.85;
+
+            ctx.beginPath();
+            ctx.moveTo(p00.sx, p00.sy);
+            ctx.lineTo(p10.sx, p10.sy);
+            ctx.lineTo(p11.sx, p11.sy);
+            ctx.lineTo(p01.sx, p01.sy);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+    }
+
+    // 3. Render CT Cortical Point Cloud Geometry (P_CT)
+    geom.ct_point_cloud.forEach((pt, idx) => {
+        const p = project3DPoint(pt[0], pt[1], pt[2], azDeg, elDeg, cx, cy, scale);
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(p.sx, p.sy, 1.9, 0, 2 * Math.PI);
+        ctx.fill();
+    });
+
+    // 4. Render CT Inferior Alveolar Nerve (IAN) Canal Point Cloud Locus
+    if (mode === 'all' && geom.ct_ian_nerve_cloud) {
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
+        ctx.lineWidth = 2.0;
+        ctx.beginPath();
+        geom.ct_ian_nerve_cloud.forEach((pt, idx) => {
+            const p = project3DPoint(pt[0], pt[1], pt[2], azDeg, elDeg, cx, cy, scale);
+            if (idx === 0) ctx.moveTo(p.sx, p.sy);
+            else ctx.lineTo(p.sx, p.sy);
+        });
+        ctx.stroke();
+
+        geom.ct_ian_nerve_cloud.forEach(pt => {
+            const p = project3DPoint(pt[0], pt[1], pt[2], azDeg, elDeg, cx, cy, scale);
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(p.sx, p.sy, 2.2, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+    }
+
+    // HUD Readouts
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '10px JetBrains Mono';
+    ctx.fillText(`QML Hilbert Space: 2^${cachedQmlData.num_qubits} | US Mesh: ${nV}×${nU} | CT Cloud: ${cachedQmlData.num_ct_points} pts`, 12, 18);
+    ctx.fillStyle = '#10b981';
+    ctx.fillText(`Registered Surface RMSE: ${cachedQmlData.metrics.rmse_surface_mm} mm | d_H95: ${cachedQmlData.metrics.hausdorff_95_mm} mm`, 12, h - 12);
+}
+
+function renderQmlResidualDistCanvas(dist, metrics) {
+    const canvas = document.getElementById('qmlResidualDistCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#060910';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const padL = 42, padR = 18, padT = 24, padB = 26;
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
+
+    const centers = dist.bin_centers_mm;
+    const emp = dist.empirical_density;
+    const ray = dist.rayleigh_pdf;
+    const nak = dist.nakagami_pdf;
+    const gau = dist.gaussian_pdf;
+
+    const maxY = Math.max(...emp, ...ray, ...nak, ...gau, 1.0) * 1.08;
+    const n = centers.length;
+
+    // Grid
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 0.5;
+    for (let g = 0; g <= 3; g++) {
+        const y = padT + (g / 3) * plotH;
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(w - padR, y);
+        ctx.stroke();
+    }
+
+    // Empirical Histogram Bars
+    const barW = (plotW / n) * 0.72;
+    for (let i = 0; i < n; i++) {
+        const x = padL + (i / n) * plotW;
+        const bh = (emp[i] / maxY) * plotH;
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.28)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+        ctx.fillRect(x, padT + plotH - bh, barW, bh);
+        ctx.strokeRect(x, padT + plotH - bh, barW, bh);
+    }
+
+    // Helper for PDF curves
+    const drawCurve = (arr, color, width, dash = []) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.setLineDash(dash);
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+            const x = padL + ((i + 0.36) / n) * plotW;
+            const y = padT + plotH - (arr[i] / maxY) * plotH;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+    };
+
+    // Nakagami-m PDF (Emerald)
+    drawCurve(nak, '#10b981', 2.2);
+    // Rayleigh PDF (Amber)
+    drawCurve(ray, '#f59e0b', 1.8, [4, 2]);
+    // Gaussian PDF (Purple)
+    drawCurve(gau, '#a855f7', 1.6);
+
+    // Axis & Legend
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText('0.00 mm', padL, h - 8);
+    ctx.fillText(`${(centers[n - 1] * 0.5).toFixed(2)} mm`, padL + plotW * 0.45, h - 8);
+    ctx.fillText(`${centers[n - 1].toFixed(2)} mm`, w - padR - 45, h - 8);
+
+    ctx.fillStyle = '#38bdf8'; ctx.fillText('■ Empirical Hist', padL, 14);
+    ctx.fillStyle = '#10b981'; ctx.fillText(`■ Nakagami-m (${metrics.nakagami_m_parameter})`, padL + 108, 14);
+    ctx.fillStyle = '#f59e0b'; ctx.fillText(`■ Rayleigh (σ=${metrics.rayleigh_scale_sigma_mm})`, padL + 245, 14);
+    ctx.fillStyle = '#a855f7'; ctx.fillText('■ Gaussian', padL + 395, 14);
+}
+
+function renderQmlAngularConvCanvas(dist, conv) {
+    const canvas = document.getElementById('qmlAngularConvCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#060910';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const midX = Math.floor(w / 2);
+
+    // Divider
+    ctx.strokeStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.moveTo(midX, 10);
+    ctx.lineTo(midX, h - 10);
+    ctx.stroke();
+
+    // Left Half: von Mises-Fisher (vMF) Surface Normal Angular Error PDF
+    const angGrid = dist.angular_deg_grid;
+    const vmfPdf = dist.vmf_angular_pdf;
+    const maxVmf = Math.max(...vmfPdf, 0.1) * 1.1;
+
+    ctx.fillStyle = '#a855f7';
+    ctx.font = '9.5px JetBrains Mono';
+    ctx.fillText('vMF Normal Angle PDF f_vMF(θ)', 14, 16);
+
+    ctx.strokeStyle = '#a855f7';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    for (let i = 0; i < angGrid.length; i++) {
+        const x = 22 + (i / (angGrid.length - 1)) * (midX - 38);
+        const y = h - 24 - (vmfPdf[i] / maxVmf) * (h - 50);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Fill under vMF
+    ctx.lineTo(22 + (midX - 38), h - 24);
+    ctx.lineTo(22, h - 24);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(168, 85, 247, 0.18)';
+    ctx.fill();
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '8.5px JetBrains Mono';
+    ctx.fillText('0.0°', 20, h - 8);
+    ctx.fillText('2.2°', midX / 2 - 8, h - 8);
+    ctx.fillText('4.5°', midX - 34, h - 8);
+
+    // Right Half: QML Sinkhorn-Wasserstein W2 & Quantum Kernel Fidelity Convergence
+    const w2Hist = conv.wasserstein_history;
+    const qFidHist = conv.q_kernel_fidelity_history;
+    const maxW2 = Math.max(...w2Hist, 0.1);
+    const nEp = w2Hist.length;
+
+    const rStart = midX + 18;
+    const rWidth = w - rStart - 16;
+
+    ctx.fillStyle = '#10b981';
+    ctx.font = '9.5px JetBrains Mono';
+    ctx.fillText('■ Kernel K_Q', rStart, 16);
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('■ Sinkhorn W₂(mm)', rStart + 92, 16);
+
+    // W2 curve (Cyan)
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < nEp; i++) {
+        const x = rStart + (i / (nEp - 1)) * rWidth;
+        const y = h - 24 - (w2Hist[i] / maxW2) * (h - 50);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Q-Kernel Fidelity curve (Emerald)
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < nEp; i++) {
+        const x = rStart + (i / (nEp - 1)) * rWidth;
+        const normF = (qFidHist[i] - 0.65) / 0.36;
+        const y = h - 24 - Math.max(0, Math.min(1, normF)) * (h - 50);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '8.5px JetBrains Mono';
+    ctx.fillText('Epoch 1', rStart, h - 8);
+    ctx.fillText(`Epoch ${nEp}`, w - 58, h - 8);
+}
+
+// --- 8. PDF Generation & Toast ---
 async function generatePdf() {
     showToast("Recompiling Nature Preprint PDF...");
     try {

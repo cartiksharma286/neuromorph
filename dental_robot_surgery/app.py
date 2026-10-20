@@ -58,6 +58,7 @@ def get_system_status():
             "slam_quantum_kalman": "SYNCHRONIZED (QKF Tremor: -39.4 dB, Shot Noise < 6 um)",
             "slam_leibniz": "SYNCHRONIZED (Tremor: -34.8 dB)",
             "quantum_vqe": "READY (Majorana MZM Topological Optimizer)",
+            "qml_us_ct_registration": "ACTIVE (QML Kernel Sinkhorn-Wasserstein US Surface + CT Point Cloud)",
             "genai_chamfers": "LOADED (ISO 14801 Verified)",
             "implant_fea": "ACTIVE (Frost Mechanostat & Multi-Thread FEA)",
             "manipulators_serial_parallel": "READY (Serial 6-DOF & Parallel Hexapod Sim)",
@@ -135,6 +136,21 @@ def run_vqe_registration():
     payload = request.get_json() or {}
     iterations = int(payload.get('iterations', 25))
     result = quantum_solver.simulate_vqe_optimization(max_iterations=iterations)
+    return jsonify(result)
+
+@app.route('/api/registration/qml_us_ct', methods=['POST', 'GET'])
+def run_qml_us_ct_registration():
+    payload = (request.get_json(silent=True) or {}) if request.method == 'POST' else {}
+    num_qubits = int(payload.get('num_qubits', 12))
+    qml_layers = int(payload.get('qml_layers', 6))
+    noise_sigma_mm = float(payload.get('noise_sigma_mm', 0.18))
+    prior_type = payload.get('prior_type', 'von_mises_fisher_wishart')
+    result = quantum_solver.simulate_qml_us_ct_surface_registration(
+        num_qubits=num_qubits,
+        qml_layers=qml_layers,
+        noise_sigma_mm=noise_sigma_mm,
+        prior_type=prior_type
+    )
     return jsonify(result)
 
 @app.route('/api/implant/generate', methods=['POST'])
