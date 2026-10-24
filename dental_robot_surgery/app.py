@@ -30,6 +30,7 @@ from dental_robot_surgery.quantum_kalman_slam import QuantumKalmanSLAM
 from dental_robot_surgery.implant_fea_robotics import ImplantFEAAndRoboticsEngine
 from dental_robot_surgery.health_economics import HealthEconomicsAndRevenueEngine
 from dental_robot_surgery.tms_pain_management import DentalTMSPainManagementEngine
+from dental_robot_surgery.drill_path_planner import RecurrentPrimeDrillPathEngine
 
 app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'), static_folder=os.path.join(BASE_DIR, 'static'))
 
@@ -43,6 +44,7 @@ qkf_slam_engine = QuantumKalmanSLAM()
 fea_robotics_engine = ImplantFEAAndRoboticsEngine()
 health_econ_engine = HealthEconomicsAndRevenueEngine()
 tms_pain_engine = DentalTMSPainManagementEngine()
+drill_path_engine = RecurrentPrimeDrillPathEngine()
 
 PDF_PATH = os.path.join(PARENT_DIR, 'Nature_Dental_Image_Guided_Surgery_Robot_Preprint.pdf')
 
@@ -66,7 +68,8 @@ def get_system_status():
             "implant_fea": "ACTIVE (Frost Mechanostat & Multi-Thread FEA)",
             "manipulators_serial_parallel": "READY (Serial 6-DOF & Parallel Hexapod Sim)",
             "health_economics": "OPTIMIZED (Valuation >$1B at Month 21, Revenue >$1B at Month 64)",
-            "dental_arch_kinematics": "TRACKING (ISQ: 78.0)"
+            "dental_arch_kinematics": "TRACKING (ISQ: 78.0)",
+            "drill_path_research_sim": "AVAILABLE (Continued-fraction recurrent primes + 2-D FEA surrogate)",
         },
         "pdf_available": os.path.exists(PDF_PATH)
     })
@@ -172,6 +175,31 @@ def run_tms_pain_simulation():
         qml_qubits=qml_qubits
     )
     return jsonify(result)
+
+@app.route('/api/drill-path/simulate', methods=['POST', 'GET'])
+def simulate_drill_path():
+    payload = (request.get_json(silent=True) or {}) if request.method == 'POST' else {}
+    try:
+        planned_depth_mm = float(payload.get('planned_depth_mm', 4.0))
+        recurrence_amplitude_mm = float(payload.get('recurrence_amplitude_mm', 0.075))
+        prime_count = int(payload.get('prime_count', 8))
+    except (TypeError, ValueError):
+        return jsonify({
+            "error": "planned_depth_mm, recurrence_amplitude_mm, and prime_count must be numeric."
+        }), 400
+
+    if not 1.0 <= planned_depth_mm <= 8.0:
+        return jsonify({"error": "planned_depth_mm must be between 1.0 and 8.0."}), 400
+    if not 0.0 <= recurrence_amplitude_mm <= 0.12:
+        return jsonify({"error": "recurrence_amplitude_mm must be between 0.0 and 0.12."}), 400
+    if not 2 <= prime_count <= 8:
+        return jsonify({"error": "prime_count must be between 2 and 8."}), 400
+
+    return jsonify(drill_path_engine.simulate(
+        planned_depth_mm=planned_depth_mm,
+        recurrence_amplitude_mm=recurrence_amplitude_mm,
+        prime_count=prime_count,
+    ))
 
 @app.route('/api/implant/generate', methods=['POST'])
 def generate_implant():

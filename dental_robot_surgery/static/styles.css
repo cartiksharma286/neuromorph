@@ -325,6 +325,33 @@ select, input[type="number"], input[type="range"] {
     color: var(--text-secondary);
 }
 
+.legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+.legend-cavity { background: #f8fafc; }
+.legend-safe { background: #10b981; }
+.legend-path { background: #38bdf8; }
+.legend-tip { background: #a855f7; }
+.legend-soft { background: #fb7185; }
+.legend-hard { background: #64748b; }
+.legend-pulp { background: #f59e0b; }
+.legend-bit { background: #cbd5e1; }
+.legend-stress { background: linear-gradient(90deg, #2563eb, #10b981, #f59e0b, #ef4444); }
+
+.simulation-disclaimer {
+    border: 1px solid rgba(245, 158, 11, 0.55);
+    background: rgba(245, 158, 11, 0.1);
+    color: #fcd34d;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    font-size: 12px;
+}
+
 .legend-item {
     display: flex;
     align-items: center;

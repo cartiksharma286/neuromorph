@@ -51,6 +51,7 @@
             <button class="tab-btn" onclick="switchTab('biomarkers')">7. Arch Kinematics &amp; Biomarkers</button>
             <button class="tab-btn" onclick="switchTab('health_economics')">8. Health Economics &amp; >$1B Valuation</button>
             <button class="tab-btn" onclick="switchTab('preprint')">9. Nature Preprint Overview</button>
+            <button class="tab-btn" onclick="switchTab('drill_path')">10. Drill Path &amp; Tissue FEA</button>
         </nav>
 
         <!-- Main Content Grid -->
@@ -720,6 +721,116 @@ COGS decreases from $115,000 (unit #1) to $63,250 (unit #3,000+)</pre>
                         <div class="preprint-actions mt-3">
                             <button class="btn btn-secondary" onclick="generatePdf()">Recompile PDF Preprint</button>
                             <a href="/api/pdf/download" class="btn btn-primary">Download Preprint PDF (Letter)</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 10: Continued-Fraction Recurrent Prime Drill Path -->
+            <section id="tab-drill_path" class="tab-content">
+                <div class="simulation-disclaimer">
+                    <strong>Research visualization only.</strong> This deterministic model is not patient-specific, not a clinical plan, and not connected to drill hardware.
+                </div>
+                <div class="panel-row">
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Optimal Cavity Drill Path: Continued-Fraction Recurrent Primes</h2>
+                            <button class="btn btn-sm btn-primary" onclick="loadDrillPathSimulation()">Recompute Simulation</button>
+                        </div>
+                        <div class="controls-grid">
+                            <label>Visualization Depth (mm)
+                                <input id="drillPathDepth" type="number" value="4.0" min="1.0" max="8.0" step="0.25" onchange="loadDrillPathSimulation()">
+                            </label>
+                            <label>Recurrence Amplitude (mm)
+                                <input id="drillPathAmplitude" type="number" value="0.075" min="0" max="0.12" step="0.005" onchange="loadDrillPathSimulation()">
+                            </label>
+                            <label>Prime Terms
+                                <select id="drillPathPrimeCount" onchange="loadDrillPathSimulation()">
+                                    <option value="4">4 terms</option>
+                                    <option value="6">6 terms</option>
+                                    <option value="8" selected>8 terms</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="canvas-box">
+                            <canvas id="drillPathCanvas" width="520" height="290"></canvas>
+                        </div>
+                        <div class="slice-legend mt-2">
+                            <span class="legend-item"><span class="legend-swatch legend-cavity"></span> Cavity boundary</span>
+                            <span class="legend-item"><span class="legend-swatch legend-safe"></span> Optimization envelope</span>
+                            <span class="legend-item"><span class="legend-swatch legend-path"></span> Recurrent-prime path</span>
+                            <span class="legend-item"><span class="legend-swatch legend-tip"></span> Drill bit envelope</span>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>2-D Drill Bit and Dental Tissue FEA-Style Field</h2>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Entry / Terminal Error</span>
+                                <span class="metric-val text-success" id="drillEndpointError">0.0 / 0.0 μm</span>
+                                <span class="metric-sub">Taper-constrained endpoints</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Maximum Lateral Correction</span>
+                                <span class="metric-val text-info" id="drillPathCorrection">-- μm</span>
+                                <span class="metric-sub">Bounded recurrent-prime perturbation</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Peak Tissue Stress Proxy</span>
+                                <span class="metric-val text-purple" id="drillTissueStress">-- MPa</span>
+                                <span class="metric-sub">2-D material-field surrogate</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Peak Cutting Reaction</span>
+                                <span class="metric-val text-success" id="drillCuttingForce">-- N</span>
+                                <span class="metric-sub">Simulation trace only</span>
+                            </div>
+                        </div>
+                        <div class="canvas-box mt-2">
+                            <canvas id="drillFeaCanvas" width="520" height="290"></canvas>
+                        </div>
+                        <div class="slice-legend mt-2">
+                            <span class="legend-item"><span class="legend-swatch legend-soft"></span> Soft tissue</span>
+                            <span class="legend-item"><span class="legend-swatch legend-hard"></span> Tooth hard tissue</span>
+                            <span class="legend-item"><span class="legend-swatch legend-pulp"></span> Pulp-protection boundary</span>
+                            <span class="legend-item"><span class="legend-swatch legend-bit"></span> Drill bit</span>
+                            <span class="legend-item"><span class="legend-swatch legend-stress"></span> Stress intensity</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-row mt-3">
+                    <div class="panel panel-left-lg">
+                        <div class="panel-header">
+                            <h2>Path Deviation, Cutting Reaction, and Tissue-Stress Characteristics</h2>
+                        </div>
+                        <div class="canvas-box">
+                            <canvas id="drillCharacteristicsCanvas" width="760" height="220"></canvas>
+                        </div>
+                    </div>
+                    <div class="panel panel-right-sm">
+                        <div class="panel-header">
+                            <h2>Continued-Fraction Prime Characteristics</h2>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table" id="drillPrimeTable">
+                                <thead>
+                                    <tr>
+                                        <th>Prime</th>
+                                        <th>sqrt(p) CF</th>
+                                        <th>Convergent</th>
+                                        <th>Phase Fraction</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="info-card mt-2">
+                            <h4>Bounded Path Model</h4>
+                            <pre class="code-block" id="drillPathEquation">Loading model…</pre>
                         </div>
                     </div>
                 </div>

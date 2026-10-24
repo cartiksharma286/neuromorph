@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadManipulatorSim();
     loadHealthEconomics();
     loadBiomarkers();
+    loadDrillPathSimulation();
 });
 
 // --- Tab Navigation ---
@@ -1433,6 +1434,255 @@ function renderQmlAngularConvCanvas(dist, conv) {
     ctx.font = '8.5px JetBrains Mono';
     ctx.fillText('Epoch 1', rStart, h - 8);
     ctx.fillText(`Epoch ${nEp}`, w - 58, h - 8);
+}
+
+// --- 9. Continued-Fraction Recurrent Prime Drill Path Research Simulation ---
+async function loadDrillPathSimulation() {
+    const depthInput = document.getElementById('drillPathDepth');
+    const amplitudeInput = document.getElementById('drillPathAmplitude');
+    const primeCountInput = document.getElementById('drillPathPrimeCount');
+    if (!depthInput || !amplitudeInput || !primeCountInput) return;
+
+    const payload = {
+        planned_depth_mm: parseFloat(depthInput.value),
+        recurrence_amplitude_mm: parseFloat(amplitudeInput.value),
+        prime_count: parseInt(primeCountInput.value, 10)
+    };
+
+    try {
+        const res = await fetch('/api/drill-path/simulate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Drill-path simulation failed.');
+
+        const characteristics = data.characteristics;
+        document.getElementById('drillEndpointError').innerText =
+            `${characteristics.entry_error_um.toFixed(1)} / ${characteristics.terminal_error_um.toFixed(1)} μm`;
+        document.getElementById('drillPathCorrection').innerText =
+            `${characteristics.maximum_lateral_correction_um.toFixed(2)} μm`;
+        document.getElementById('drillTissueStress').innerText =
+            `${characteristics.peak_tissue_stress_mpa.toFixed(3)} MPa`;
+        document.getElementById('drillCuttingForce').innerText =
+            `${characteristics.peak_cutting_force_n.toFixed(2)} N`;
+        document.getElementById('drillPathEquation').innerText = data.model.equation;
+
+        renderDrillPathCanvas(data);
+        renderDrillFeaCanvas(data);
+        renderDrillCharacteristics(data.trace);
+        renderDrillPrimeTable(data.model.prime_terms);
+    } catch (err) {
+        console.error('Drill-path simulation error:', err);
+        showToast(err.message);
+    }
+}
+
+function renderDrillPathCanvas(data) {
+    const canvas = document.getElementById('drillPathCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const depth = data.model.planned_depth_mm;
+    const path = data.path_points;
+    const left = 56;
+    const top = 35;
+    const plotWidth = width - 112;
+    const plotHeight = height - 78;
+    const xScale = plotWidth / 9.0;
+    const yScale = plotHeight / depth;
+    const toX = (value) => width / 2 + value * xScale;
+    const toY = (value) => top + value * yScale;
+
+    ctx.fillStyle = '#060910';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = 'rgba(251, 113, 133, 0.18)';
+    ctx.fillRect(left, top - 20, plotWidth, 20);
+    ctx.fillStyle = '#fb7185';
+    ctx.font = '10px JetBrains Mono';
+    ctx.fillText('soft-tissue boundary', left + 8, top - 7);
+
+    ctx.strokeStyle = '#f8fafc';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(width / 2, top + plotHeight / 2, plotWidth * 0.34, plotHeight * 0.47, 0, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.72)';
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(toX(-0.14), toY(0));
+    ctx.lineTo(toX(-0.14), toY(depth));
+    ctx.moveTo(toX(0.14), toY(0));
+    ctx.lineTo(toX(0.14), toY(depth));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2.7;
+    ctx.beginPath();
+    path.forEach((point, index) => {
+        const x = toX(point.lateral_offset_mm);
+        const y = toY(point.depth_mm);
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    const tip = path[path.length - 1];
+    ctx.fillStyle = '#a855f7';
+    ctx.beginPath();
+    ctx.arc(toX(tip.lateral_offset_mm), toY(tip.depth_mm), 7, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(toX(tip.lateral_offset_mm), toY(tip.depth_mm - 0.5));
+    ctx.lineTo(toX(tip.lateral_offset_mm), toY(tip.depth_mm));
+    ctx.stroke();
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px JetBrains Mono';
+    ctx.fillText('Lateral offset (mm)', 10, 16);
+    ctx.fillText(`Depth: 0.00 -> ${depth.toFixed(2)} mm`, width - 152, height - 12);
+    ctx.fillText('Cavity cross-section and bounded recurrent-prime correction', 14, height - 32);
+}
+
+function stressColor(normalized) {
+    const value = Math.max(0, Math.min(1, normalized));
+    const red = Math.round(38 + 217 * value);
+    const green = Math.round(99 + 130 * Math.sin(value * Math.PI));
+    const blue = Math.round(235 - 200 * value);
+    return `rgb(${red}, ${green}, ${blue})`;
+}
+
+function renderDrillFeaCanvas(data) {
+    const canvas = document.getElementById('drillFeaCanvas');
+    const ctx = canvas.getContext('2d');
+    const field = data.finite_element_field;
+    const rows = field.stress_mpa.length;
+    const columns = field.stress_mpa[0].length;
+    const width = canvas.width;
+    const height = canvas.height;
+    const left = 46;
+    const top = 24;
+    const plotWidth = width - 82;
+    const plotHeight = height - 54;
+    const maxStress = Math.max(...field.stress_mpa.flat(), 0.1);
+
+    ctx.fillStyle = '#060910';
+    ctx.fillRect(0, 0, width, height);
+    for (let row = 0; row < rows; row += 1) {
+        for (let column = 0; column < columns; column += 1) {
+            const material = field.material_map[row][column];
+            const stress = field.stress_mpa[row][column];
+            const x = left + (column / columns) * plotWidth;
+            const y = top + (row / rows) * plotHeight;
+            const cellWidth = plotWidth / columns + 0.5;
+            const cellHeight = plotHeight / rows + 0.5;
+
+            if (material === 4) ctx.fillStyle = '#cbd5e1';
+            else if (material === 1) ctx.fillStyle = '#fb7185';
+            else if (material === 3) ctx.fillStyle = '#f59e0b';
+            else ctx.fillStyle = stressColor(stress / maxStress);
+            ctx.fillRect(x, y, cellWidth, cellHeight);
+        }
+    }
+
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    data.path_points.forEach((point, index) => {
+        const x = left + ((point.lateral_offset_mm - field.x_coordinates_mm[0]) /
+            (field.x_coordinates_mm[field.x_coordinates_mm.length - 1] - field.x_coordinates_mm[0])) * plotWidth;
+        const y = top + ((point.depth_mm - field.depth_coordinates_mm[0]) /
+            (field.depth_coordinates_mm[field.depth_coordinates_mm.length - 1] - field.depth_coordinates_mm[0])) * plotHeight;
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px JetBrains Mono';
+    ctx.fillText('2-D material-field stress proxy (MPa)', 12, 15);
+    ctx.fillText('surface', 4, top + 12);
+    ctx.fillText('depth', 7, height - 20);
+    ctx.fillText(`0.0`, width - 73, 15);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillText(`${maxStress.toFixed(2)} MPa`, width - 47, 15);
+}
+
+function renderDrillCharacteristics(trace) {
+    const canvas = document.getElementById('drillCharacteristicsCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const left = 46;
+    const top = 30;
+    const plotWidth = width - 68;
+    const plotHeight = height - 58;
+    const maxDepth = trace[trace.length - 1].depth_mm;
+    const maxForce = Math.max(...trace.map((point) => point.cutting_force_n));
+    const maxStress = Math.max(...trace.map((point) => point.tissue_stress_mpa));
+    const maxOffset = Math.max(...trace.map((point) => Math.abs(point.lateral_offset_mm)), 0.001);
+
+    ctx.fillStyle = '#060910';
+    ctx.fillRect(0, 0, width, height);
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1;
+    for (let row = 0; row < 4; row += 1) {
+        const y = top + (row / 3) * plotHeight;
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(left + plotWidth, y);
+        ctx.stroke();
+    }
+
+    const drawSeries = (color, selector, maximum) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        trace.forEach((point, index) => {
+            const x = left + (point.depth_mm / maxDepth) * plotWidth;
+            const y = top + plotHeight - (selector(point) / maximum) * plotHeight;
+            if (index === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+    };
+
+    drawSeries('#38bdf8', (point) => point.cutting_force_n, maxForce);
+    drawSeries('#a855f7', (point) => point.tissue_stress_mpa, maxStress);
+    drawSeries('#10b981', (point) => Math.abs(point.lateral_offset_mm), maxOffset);
+
+    ctx.font = '10px JetBrains Mono';
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('■ Cutting reaction (normalized)', left, 15);
+    ctx.fillStyle = '#a855f7';
+    ctx.fillText('■ Tissue stress (normalized)', left + 198, 15);
+    ctx.fillStyle = '#10b981';
+    ctx.fillText('■ Lateral correction (normalized)', left + 402, 15);
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('Entry', left, height - 10);
+    ctx.fillText(`Depth ${maxDepth.toFixed(2)} mm`, width - 118, height - 10);
+}
+
+function renderDrillPrimeTable(terms) {
+    const tableBody = document.querySelector('#drillPrimeTable tbody');
+    if (!tableBody) return;
+    tableBody.replaceChildren();
+    terms.forEach((term) => {
+        const row = document.createElement('tr');
+        [term.prime, `[${term.continued_fraction.join('; ')}]`, term.convergent, term.phase_fraction.toFixed(5)]
+            .forEach((value) => {
+                const cell = document.createElement('td');
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+        tableBody.appendChild(row);
+    });
 }
 
 // --- 8. PDF Generation & Toast ---
