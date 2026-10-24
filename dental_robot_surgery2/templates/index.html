@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Dental Image-Guided Surgery Robot Console</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Bar -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-badge">
+                    <span class="pulse-dot"></span>
+                    <span class="logo-title">ORAL-IGSR / NEUROMORPH</span>
+                </div>
+                <div class="system-title">
+                    <h1>Autonomous Dental Image-Guided Surgery Robot</h1>
+                    <span class="tag">PCD-CBCT • LEIBNIZ PRIMES • VQE SE(3) • GEN-AI CHAMFERS</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-indicator">
+                    <span class="badge badge-success" id="robotStatus">ROBOT: TRACKING</span>
+                    <span class="badge badge-info" id="treBadge">TRE: 0.048 mm (SUBMILLIMETRIC)</span>
+                    <span class="badge badge-purple" id="doseBadge">PCD-CBCT: 14.2 μSv</span>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="btnGenPdf" onclick="generatePdf()">
+                        <span class="icon">📄</span> Compile Preprint
+                    </button>
+                    <a href="/api/pdf/download" class="btn btn-primary" id="btnDownloadPdf">
+                        <span class="icon">⬇</span> Download Nature PDF
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('cbct')">1. PCD-CBCT &amp; Segmentation</button>
+            <button class="tab-btn" onclick="switchTab('slam')">2. Quantum Kalman SLAM</button>
+            <button class="tab-btn" onclick="switchTab('quantum')">3. Majorana Chip VQE</button>
+            <button class="tab-btn" onclick="switchTab('qml_us_ct')">4. QML US Surface &amp; CT Point Cloud</button>
+            <button class="tab-btn" onclick="switchTab('tms_pain')">5. TMS Pain &amp; Cortical BEM</button>
+            <button class="tab-btn" onclick="switchTab('genai')">6. GenAI Chamfers &amp; Abutment</button>
+            <button class="tab-btn" onclick="switchTab('fea_robotics')">7. FEA &amp; Serial/Parallel Arms</button>
+            <button class="tab-btn" onclick="switchTab('biomarkers')">8. Arch Kinematics &amp; Biomarkers</button>
+            <button class="tab-btn" onclick="switchTab('health_economics')">9. Health Economics &amp; >$1B Valuation</button>
+            <button class="tab-btn" onclick="switchTab('preprint')">10. Nature Preprint Overview</button>
+        </nav>
+
+        <!-- Main Content Grid -->
+        <main class="main-content">
+            <!-- TAB 1: PCD-CBCT & Segmentation -->
+            <section id="tab-cbct" class="tab-content active">
+                <div class="panel-row">
+                    <div class="panel panel-left-lg">
+                        <div class="panel-header">
+                            <h2>Photon-Counting Spectral CBCT Multi-Planar Viewer</h2>
+                            <div class="controls-row">
+                                <label>Plane:
+                                    <select id="cbctPlane" onchange="loadCbctSlice()">
+                                        <option value="axial">Axial (Z)</option>
+                                        <option value="coronal">Coronal (Y)</option>
+                                        <option value="sagittal">Cross-Sectional (X)</option>
+                                    </select>
+                                </label>
+                                <label>Spectral Bin:
+                                    <select id="cbctBin" onchange="loadCbctSlice()">
+                                        <option value="composite">Composite (All Bins)</option>
+                                        <option value="bin1_low">Bin 1: 20-45 keV (Soft Tissue / IAN)</option>
+                                        <option value="bin2_mid">Bin 2: 45-75 keV (Bone Mineral Density)</option>
+                                        <option value="bin3_high">Bin 3: 75-120 keV (Metal Artifact Red.)</option>
+                                    </select>
+                                </label>
+                                <label>Slice Index:
+                                    <input type="range" id="cbctIndex" min="0" max="63" value="32" oninput="loadCbctSlice()">
+                                    <span id="sliceIndexVal">32</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="cbct-canvas-wrapper">
+                            <canvas id="cbctCanvas" width="480" height="480"></canvas>
+                            <div class="slice-legend">
+                                <span class="legend-item"><span class="box-cortical"></span> Cortical Bone</span>
+                                <span class="legend-item"><span class="box-trabecular"></span> Trabecular Core</span>
+                                <span class="legend-item"><span class="box-nerve"></span> IAN Nerve Canal</span>
+                                <span class="legend-item"><span class="box-implant"></span> Implant Osteotomy Corridor</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-right-sm">
+                        <div class="panel-header">
+                            <h2>Radiomic & Safety Analytics</h2>
+                        </div>
+                        <div class="metrics-grid" id="cbctMetricsBox">
+                            <div class="metric-card">
+                                <span class="metric-label">Voxel Resolution</span>
+                                <span class="metric-val highlight">75 μm (Isotropic)</span>
+                                <span class="metric-sub">CdZnTe Pulse-Counting</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">IAN Nerve Clearance</span>
+                                <span class="metric-val text-success" id="nerveClearance">3.45 mm</span>
+                                <span class="metric-sub">Safety Threshold: &gt; 2.0 mm</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Bone Mineral Quality</span>
+                                <span class="metric-val" id="boneQuality">D2 (Thick Porous)</span>
+                                <span class="metric-sub">Mean: 684.5 HU</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Effective Dose</span>
+                                <span class="metric-val text-info">14.2 μSv</span>
+                                <span class="metric-sub">78.2% Reduction vs Std CBCT</span>
+                            </div>
+                        </div>
+                        <div class="info-card mt-3">
+                            <h4>Spectral Multi-Bin Attenuation Equation</h4>
+                            <pre class="code-block">N_k(x) = ∫ I_0(E) · exp(-∫ μ(s,E) ds) dE
+k ∈ {[20,45], [45,75], [75,120]} keV</pre>
+                            <p class="small text-muted">Eliminates beam hardening streaks around high-Z dental crowns while keeping the mandibular nerve canal crisp for osteotomy corridor planning.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: Quantum Kalman Estimation SLAM -->
+            <section id="tab-slam" class="tab-content">
+                <div class="panel-row">
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Quantum Kalman Filter (QKF) SLAM &amp; End-Effector Tracking</h2>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-primary" id="btnToggleDrill" onclick="toggleSlamLoop()">Start QKF Drilling SLAM</button>
+                                <button class="btn btn-sm btn-secondary" onclick="stepSlam()">Single Step</button>
+                                <button class="btn btn-sm btn-secondary" onclick="resetQkf()">Reset Pose</button>
+                            </div>
+                        </div>
+                        <div class="telemetry-bar">
+                            <div class="tele-item">
+                                <span class="tele-label">Drill Depth</span>
+                                <span class="tele-value" id="drillDepth">0.0 mm / 10.0 mm</span>
+                            </div>
+                            <div class="tele-item">
+                                <span class="tele-label">QKF Tracking Error</span>
+                                <span class="tele-value text-success" id="trackError">8.0 μm (Sub-Micron)</span>
+                            </div>
+                            <div class="tele-item">
+                                <span class="tele-label">Quantum Purity Tr(ρ²)</span>
+                                <span class="tele-value text-purple" id="qkfPurity">0.9985</span>
+                            </div>
+                            <div class="tele-item">
+                                <span class="tele-label">Tremor Damping</span>
+                                <span class="tele-value text-info">-39.4 dB</span>
+                            </div>
+                        </div>
+                        <div class="canvas-box">
+                            <canvas id="slamPathCanvas" width="500" height="260"></canvas>
+                        </div>
+                        <div class="joint-angles mt-2" id="jointAnglesContainer">
+                            <!-- Joint angles will be loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Quantum Kalman State Space &amp; Leibniz Primes Harmonic Spectrum</h2>
+                        </div>
+                        <p class="small text-muted">Continuous-discrete Quantum Kalman Filtering bounds optical sensor shot-noise to the Heisenberg uncertainty limit while orthogonal Leibniz primes cancel motor cogging chatter:</p>
+                        <pre class="code-block">K_q = P H^T (H P H^T + R_q)^-1,   R_q = σ_shot² · I_4 (6 μm)
+L_p(t) = ∑ [(-1)^k / (2k+1)] · exp(-γt / p_k) · cos(2π·p_k·t / 13)</pre>
+                        <div class="metrics-grid mb-2">
+                            <div class="metric-card">
+                                <span class="metric-label">Heisenberg Uncertainty</span>
+                                <span class="metric-val text-info" id="heisenbergUncert">0.142 μm³</span>
+                                <span class="metric-sub">Covariance Vol: det(P_xyz)½</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Quantum Fisher Info</span>
+                                <span class="metric-val text-success" id="fisherInfo">1.42 × 10⁶</span>
+                                <span class="metric-sub">Optimal Estimator Bound</span>
+                            </div>
+                        </div>
+                        <div class="spectrum-grid mt-2" id="spectrumGrid">
+                            <!-- Spectrum cards loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: Quantum VQE Registration -->
+            <section id="tab-quantum" class="tab-content">
+                <div class="panel-row">
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Topological Majorana Zero-Mode (MZM) Chip SE(3) Optimizer</h2>
+                            <button class="btn btn-sm btn-primary" onclick="runVqeRegistration()">Run Majorana VQE</button>
+                        </div>
+                        <div class="registration-stats">
+                            <div class="stat-card">
+                                <span class="stat-label">Target Registration Error (TRE)</span>
+                                <span class="stat-val text-success" id="vqeTre">0.048 mm</span>
+                                <span class="stat-sub" id="vqeCriterion">SUBMILLIMETRIC (&lt; 0.05 mm)</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">Fiducial Error (FRE)</span>
+                                <span class="stat-val text-info" id="vqeFre">0.024 mm</span>
+                                <span class="stat-sub">6 Anatomical Landmarks</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">Topological Fidelity</span>
+                                <span class="stat-val text-purple" id="vqeFidelity">0.9996</span>
+                                <span class="stat-sub">8 Majorana Qubits (16 MZMs)</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Majorana Hamiltonian Energy &amp; Submillimetric TRE Flow</h4>
+                            <canvas id="vqeChartCanvas" width="500" height="200"></canvas>
+                        </div>
+                        <div class="info-card mt-3">
+                            <h4>Topological Majorana Braiding Gate Synthesizer</h4>
+                            <div class="braid-list" id="braidListContainer">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>SE(3) Homogeneous Transformation Matrix [R | t]</h2>
+                        </div>
+                        <div class="matrix-display" id="se3MatrixBox">
+                            <!-- Matrix will be populated dynamically -->
+                        </div>
+                        <div class="euler-translations mt-3">
+                            <div class="row">
+                                <div class="col">
+                                    <span class="label">Euler Angles (α, β, γ):</span>
+                                    <span class="val" id="eulerRot">4.18°, -2.79°, 11.48°</span>
+                                </div>
+                                <div class="col">
+                                    <span class="label">Translation (tx, ty, tz):</span>
+                                    <span class="val" id="transVec">28.38, -14.19, 55.57 mm</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-card mt-3">
+                            <h4>Majorana Nanowire Topological Protection Formulation</h4>
+                            <pre class="code-block">B_k = exp(± π/4 · γ_{k+1} γ_k) = 1/√2 (I ± γ_{k+1} γ_k)
+ε_decoherence ~ exp(-L / ξ_M) ≤ 10^-5 | Δ_topo = 240 μeV</pre>
+                            <p class="small text-muted">Hardware-level topological immunity on the InAs-Al hybrid nanowire array prevents phase-flip and bit-flip errors without software error-correction overhead, driving registration to submillimetric precision (48 μm TRE).</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: Optimal QML Ultrasound Surface & CT Point Cloud Registration with Distributions -->
+            <section id="tab-qml_us_ct" class="tab-content">
+                <div class="panel-row">
+                    <!-- Left Panel: 3D Registered US Surface Mesh & CT Point Cloud Geometry -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Registered 24 MHz US Surface &amp; PCD-CBCT Point Cloud Geometry</h2>
+                            <button class="btn btn-sm btn-primary" onclick="runQmlUsCtRegistration()">Run QML Sinkhorn Registration</button>
+                        </div>
+                        <div class="controls-grid">
+                            <label>Hilbert Qubits (n):
+                                <select id="qmlQubits" onchange="runQmlUsCtRegistration()">
+                                    <option value="8">8 Qubits (dim 256)</option>
+                                    <option value="12" selected>12 Qubits (dim 4096)</option>
+                                    <option value="16">16 Qubits (dim 65536)</option>
+                                </select>
+                            </label>
+                            <label>Entangling Layers (L):
+                                <input type="number" id="qmlLayers" value="6" min="2" max="12" step="1" onchange="runQmlUsCtRegistration()">
+                            </label>
+                            <label>US Speckle Noise σ (mm):
+                                <input type="number" id="qmlNoiseSigma" value="0.18" min="0.05" max="0.50" step="0.02" onchange="runQmlUsCtRegistration()">
+                            </label>
+                            <label>View Azimuth (°):
+                                <input type="range" id="qmlViewAzimuth" min="-80" max="80" value="28" oninput="renderQml3dSurfaceCanvas()">
+                            </label>
+                            <label>View Elevation (°):
+                                <input type="range" id="qmlViewElev" min="10" max="75" value="32" oninput="renderQml3dSurfaceCanvas()">
+                            </label>
+                            <label>Overlay Layer:
+                                <select id="qmlOverlayMode" onchange="renderQml3dSurfaceCanvas()">
+                                    <option value="all" selected>Registered US Surface + CT Point Cloud + IAN Canal</option>
+                                    <option value="reg_only">Registered US Surface + CT Point Cloud</option>
+                                    <option value="with_unreg">Include Unregistered US Pose (Pre-QML)</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="canvas-box mt-2">
+                            <canvas id="qmlSurfaceCloudCanvas" width="520" height="330"></canvas>
+                        </div>
+                        <div class="slice-legend mt-2">
+                            <span class="legend-item"><span class="box-implant"></span> CT Cortical Point Cloud (P_CT)</span>
+                            <span class="legend-item"><span style="width:12px;height:12px;background:#10b981;border-radius:2px;display:inline-block;"></span> Registered US Surface Mesh (S_US)</span>
+                            <span class="legend-item"><span class="box-nerve"></span> CT IAN Nerve Locus</span>
+                            <span class="legend-item"><span style="width:12px;height:12px;background:#f59e0b;border-radius:2px;display:inline-block;"></span> Residual Heatmap</span>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: QML Statistical Residual Distributions & Finite-Math Formulation -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Optimal QML Registration Distributions &amp; Finite-Math Metrics</h2>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Registered Surface RMSE</span>
+                                <span class="metric-val text-success" id="qmlSurfaceRmse">0.0382 mm</span>
+                                <span class="metric-sub" id="qmlUnregRmse">Pre-QML Unreg: 4.582 mm</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">95% Hausdorff Distance (d_H95)</span>
+                                <span class="metric-val text-info" id="qmlHausdorff95">0.0684 mm</span>
+                                <span class="metric-sub">Sinkhorn W₂: <span id="qmlWasserstein">0.0358 mm</span></span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Quantum Kernel Fidelity (K_Q)</span>
+                                <span class="metric-val text-purple" id="qmlKernelFidelity">0.9988</span>
+                                <span class="metric-sub">Mutual Info: <span id="qmlMutualInfo">4.774 bits</span></span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Distribution Parameters</span>
+                                <span class="metric-val highlight" id="qmlDistParams">m=1.94 | κ=485.0</span>
+                                <span class="metric-sub">Nakagami-m &amp; vMF Concentration</span>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>Surface-to-Point-Cloud Residual Distributions: Rayleigh, Nakagami-m &amp; Gaussian PDF</h4>
+                            <canvas id="qmlResidualDistCanvas" width="520" height="175"></canvas>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>von Mises-Fisher (vMF) Surface Normal Angular Distribution &amp; QML Sinkhorn Convergence</h4>
+                            <canvas id="qmlAngularConvCanvas" width="520" height="165"></canvas>
+                        </div>
+                        <div class="info-card mt-2">
+                            <h4>Finite-Math Quantum Kernel Sinkhorn-Wasserstein &amp; Residual Distribution Equations</h4>
+                            <pre class="code-block">K_Q(x_i^US, y_j^CT) = |⟨Φ(x_i^US) | Φ(R·y_j^CT + t)⟩|²,   P^(ℓ+1) = diag(u^(ℓ)) exp(-C_Q/ε) diag(v^(ℓ))
+f_Nak(r; m, Ω) = [2m^m / (Γ(m)Ω^m)] r^(2m-1) exp(-m·r²/Ω),   f_vMF(n; μ, κ) = [κ/(4π sinh κ)] exp(κ n^T R μ)</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: Dental Pain Management with TMS, QML Optimal Cortical Lobe Staging & BEM Simulation -->
+            <section id="tab-tms_pain" class="tab-content">
+                <div class="panel-row">
+                    <!-- Left Panel: 3-Shell Boundary Element Method (BEM) Cortical Lobe Simulation -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>3-Shell Boundary Element Method (BEM) Cortical Lobe E-Field Simulation</h2>
+                            <button class="btn btn-sm btn-primary" onclick="runTmsPainSimulation()">Solve BEM &amp; QML Staging</button>
+                        </div>
+                        <div class="controls-grid">
+                            <label>Primary Target Cortical Lobe:
+                                <select id="tmsTargetLobe" onchange="runTmsPainSimulation()">
+                                    <option value="M1_orofacial" selected>M1 Orofacial Motor Lobe (BA4 Homunculus)</option>
+                                    <option value="DLPFC_left">Left DLPFC Prefrontal Lobe (BA9/46)</option>
+                                    <option value="S1_trigeminal">S1/S2 Trigeminal Somatosensory Parietal (BA3b)</option>
+                                    <option value="ACC_dorsal">Dorsal Anterior Cingulate Lobe (dACC BA24)</option>
+                                    <option value="Insula_posterior">Posterior Insular Nociceptive Lobe (BA13)</option>
+                                </select>
+                            </label>
+                            <label>TMS Coil Geometry:
+                                <select id="tmsCoilType" onchange="runTmsPainSimulation()">
+                                    <option value="figure8_70mm" selected>Figure-of-8 (70 mm Focal)</option>
+                                    <option value="double_cone">Double-Cone Angled (Deep ACC/Insula)</option>
+                                    <option value="h_coil_deep">H1-Hesed Deep Cortical Array</option>
+                                </select>
+                            </label>
+                            <label>Coil Slew Rate dI/dt (A/μs):
+                                <input type="number" id="tmsDiDt" value="145" min="80" max="200" step="5" onchange="runTmsPainSimulation()">
+                            </label>
+                            <label>rTMS Pulse Frequency (Hz):
+                                <input type="number" id="tmsPulseFreq" value="10" min="1" max="50" step="1" onchange="runTmsPainSimulation()">
+                            </label>
+                        </div>
+                        <div class="canvas-box mt-2">
+                            <canvas id="tmsBemCortexCanvas" width="520" height="275"></canvas>
+                        </div>
+                        <div class="table-container mt-2">
+                            <h4>3-Shell BEM Cortical Lobe Electric Field &amp; Surface Charge Breakdown</h4>
+                            <table class="data-table" id="tmsLobeBemTable">
+                                <thead>
+                                    <tr>
+                                        <th>Cortical Lobe</th>
+                                        <th>|E_BEM| (V/m)</th>
+                                        <th>J_eddy (A/m²)</th>
+                                        <th>ρ_s (nC/m²)</th>
+                                        <th>Optimal Waveform</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: QML Optimal Multi-Stage Cortical Lobe Stimulation & Pain Suppression -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>QML Optimal Cortical Lobe Staging &amp; Trigeminal (V3) Pain Suppression</h2>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Peak Cortical |E_BEM| Field</span>
+                                <span class="metric-val text-info" id="tmsPeakEfield">101.6 V/m</span>
+                                <span class="metric-sub">Eddy Current: <span id="tmsPeakCurrent">33.53 A/m²</span></span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">VAS Dental Pain Suppression</span>
+                                <span class="metric-val text-success" id="tmsVasReduction">87.0%</span>
+                                <span class="metric-sub">24h Post-Op VAS: <span id="tmsVas24h">0.7 / 10</span></span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Trigeminal Sp5C Gating</span>
+                                <span class="metric-val text-purple" id="tmsSp5cGating">-28.4 dB</span>
+                                <span class="metric-sub">Opioid Sparing: <span id="tmsOpioidSparing">98.4%</span></span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">QML Staging Policy Fidelity</span>
+                                <span class="metric-val highlight" id="tmsQmlFidelity">0.9898</span>
+                                <span class="metric-sub">3-Shell BEM: 4,096 Triangles</span>
+                            </div>
+                        </div>
+                        <div class="table-container mt-2">
+                            <h4>QML 4-Stage Optimal Cortical Lobe Stimulation Schedule</h4>
+                            <table class="data-table" id="tmsStagingTable">
+                                <thead>
+                                    <tr>
+                                        <th>Stage &amp; Window</th>
+                                        <th>Cortical Lobe</th>
+                                        <th>Protocol</th>
+                                        <th>Sp5C Gate</th>
+                                        <th>VAS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>72-Hour Post-Op VAS Dental Pain Trajectory: QML Staged TMS vs. Unstaged &amp; Sham</h4>
+                            <canvas id="tmsPainTrajectoryCanvas" width="520" height="155"></canvas>
+                        </div>
+                        <div class="info-card mt-2">
+                            <h4>Finite-Math 3-Shell BEM Integral &amp; QML Cortical Staging Equations</h4>
+                            <pre class="code-block">½(σ_l⁻ + σ_l⁺)φ(r) + ∑_{m=1}^3 [(σ_m⁻ - σ_m⁺)/4π] ∮_{Γ_m} φ(r') (r-r')·n(r')/||r-r'||³ dS' = σ_0 φ_∞(r)
+H_TMS^(s) = -∑_l η_l^(s) E_l^BEM Z_l + ∑_{l&lt;m} J_lm^tract Z_l Z_m,   E(r) = -∂A_coil/∂t - ∇φ_BEM(r)</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: GenAI Chamfers & Abutment -->
+            <section id="tab-genai" class="tab-content">
+                <div class="panel-row">
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Generative AI Chamfer &amp; Abutment Emergence Designer</h2>
+                            <button class="btn btn-sm btn-primary" onclick="generateImplantModel()">Regenerate Geometry</button>
+                        </div>
+                        <div class="controls-grid">
+                            <label>Implant Diameter (mm):
+                                <input type="number" id="inpDiam" value="4.3" step="0.1" min="3.0" max="6.0" onchange="generateImplantModel()">
+                            </label>
+                            <label>Implant Length (mm):
+                                <input type="number" id="inpLen" value="11.5" step="0.5" min="8.0" max="16.0" onchange="generateImplantModel()">
+                            </label>
+                            <label>Chamfer Radius (mm):
+                                <input type="number" id="inpChamferR" value="0.65" step="0.05" min="0.2" max="1.5" onchange="generateImplantModel()">
+                            </label>
+                            <label>Emergence Angle (°):
+                                <input type="number" id="inpEmergDeg" value="22.0" step="1.0" min="10.0" max="35.0" onchange="generateImplantModel()">
+                            </label>
+                            <label>Platform Switch Offset (mm):
+                                <input type="number" id="inpPlatSwitch" value="0.45" step="0.05" min="0.2" max="0.8" onchange="generateImplantModel()">
+                            </label>
+                            <label>ASC Screw Angulation (°):
+                                <input type="number" id="inpAscDeg" value="15.0" step="1.0" min="0.0" max="25.0" onchange="generateImplantModel()">
+                            </label>
+                        </div>
+                        <div class="cad-viewport">
+                            <canvas id="cadCanvas" width="500" height="300"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Biomechanical Stress &amp; Emergence Profile Analysis</h2>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Peak von Mises Stress</span>
+                                <span class="metric-val text-success" id="peakStress">124.6 MPa</span>
+                                <span class="metric-sub">Allowable Limit: &lt; 450 MPa (Ti-6Al-4V)</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Safety Factor</span>
+                                <span class="metric-val text-info" id="safetyFactor">6.90</span>
+                                <span class="metric-sub">Yield: 860 MPa</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Biological Width</span>
+                                <span class="metric-val text-purple" id="bioWidth">2.85 mm</span>
+                                <span class="metric-sub">Gingival Scallop Preserved</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">IAJ Microgap Seal</span>
+                                <span class="metric-val">0.42 μm</span>
+                                <span class="metric-sub">Hermetic Bacterial Seal</span>
+                            </div>
+                        </div>
+                        <div class="info-card mt-3">
+                            <h4>G²-Continuous Chamfer Curvature Formulation</h4>
+                            <pre class="code-block">κ(s) = dϕ/ds = κ_0 + β·s²
+σ_vM(r, θ) ≤ 180 MPa (under 250 N cyclic off-axis load)</pre>
+                            <p class="small text-muted">Generative diffusion morphs the transition radius between implant collar and prosthetic abutment, eliminating the sharp stress concentration notches of traditional flat bevels.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: FEA & Serial/Parallel Arm Manipulators -->
+            <section id="tab-fea_robotics" class="tab-content">
+                <div class="panel-row">
+                    <!-- Left: Finite Element Analysis of Improved Implant Designs -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Finite Element Analysis (FEA) - Novel Implant Macro-Geometry</h2>
+                            <div class="controls-row">
+                                <label>Design:
+                                    <select id="feaDesignSelect" onchange="loadImplantFea()">
+                                        <option value="helical_progressive">Helical Progressive Taper (Trabecular Ti)</option>
+                                        <option value="microthreaded_collar">Micro-Threaded Bi-Cortical Collar</option>
+                                        <option value="buttress_reverse">Reverse Buttress High-Torque</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="controls-grid">
+                            <label>Occlusal Force (N):
+                                <input type="number" id="feaLoadN" value="250" step="25" min="50" max="600" onchange="loadImplantFea()">
+                            </label>
+                            <label>Off-Axis Angle (°):
+                                <input type="number" id="feaAngleDeg" value="15" step="5" min="0" max="45" onchange="loadImplantFea()">
+                            </label>
+                        </div>
+                        <div class="metrics-grid mt-2">
+                            <div class="metric-card">
+                                <span class="metric-label">Peak Bone von Mises</span>
+                                <span class="metric-val text-success" id="feaPeakBone">24.6 MPa</span>
+                                <span class="metric-sub">Cortical Crest Margin</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Crestal Microstrain</span>
+                                <span class="metric-val text-info" id="feaMicrostrain">1240 με</span>
+                                <span class="metric-sub" id="feaFrostZone">Physiological Window</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Interfacial Micromotion</span>
+                                <span class="metric-val text-purple" id="feaMicromotion">18.2 μm</span>
+                                <span class="metric-sub">Limit: &lt; 50 μm for Osteoid</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">ISO 14801 Fatigue Margin</span>
+                                <span class="metric-val text-success" id="feaFatigue">5.82×</span>
+                                <span class="metric-sub">&gt; 5.0 × 10⁶ Cycles Passed</span>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>2D Axisymmetric FEA Stress Distribution Heatmap (Crest to Apex)</h4>
+                            <canvas id="feaHeatmapCanvas" width="500" height="190"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Right: Serial vs Parallel Manipulator Simulations -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Robotic End-Effector Manipulators: Serial vs Parallel (Stewart Hexapod)</h2>
+                            <div class="controls-row">
+                                <label>Drill Feed:
+                                    <input type="range" id="manipFeedRange" min="0" max="100" value="50" oninput="loadManipulatorSim()">
+                                    <span id="manipFeedVal">50%</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Serial 6-DOF Deflection (15N)</span>
+                                <span class="metric-val text-warning" id="serialDeflect">8.11 μm</span>
+                                <span class="metric-sub">Stiffness: 1.85 N/μm | κ(J): 3.8</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Parallel Hexapod Deflection</span>
+                                <span class="metric-val text-success" id="parallelDeflect">1.60 μm</span>
+                                <span class="metric-sub">Stiffness: 9.40 N/μm (5.1× Higher)</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Serial Arm Resonance</span>
+                                <span class="metric-val text-warning">38.5 Hz</span>
+                                <span class="metric-sub">Prone to 35 Hz Drill Jitter</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Parallel Hexapod Resonance</span>
+                                <span class="metric-val text-success">142.0 Hz</span>
+                                <span class="metric-sub">Decoupled from Handpiece RPM</span>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>Manipulator Real-Time Kinematics &amp; Strut/Joint Torques</h4>
+                            <canvas id="manipulatorCanvas" width="500" height="190"></canvas>
+                        </div>
+                        <div class="table-container mt-2">
+                            <table class="data-table" id="manipComparisonTable">
+                                <thead>
+                                    <tr>
+                                        <th>Kinematic Metric</th>
+                                        <th>Serial 6-DOF (Anthropomorphic)</th>
+                                        <th>Parallel 6-DOF (Stewart Platform)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: Arch Kinematics & Biomarkers -->
+            <section id="tab-biomarkers" class="tab-content">
+                <div class="panel-row">
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Mastication Trajectory &amp; Bennett Kinematics</h2>
+                        </div>
+                        <div class="kinematics-readout">
+                            <span>Sagittal Condylar Guidance: <strong>36.5°</strong></span> |
+                            <span>Bennett Lateral Angle: <strong>11.2°</strong></span> |
+                            <span>Immediate Shift: <strong>0.42 mm</strong></span>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>Mandibular Incisal Chewing Envelope (Posselt Enclosure)</h4>
+                            <canvas id="chewingCanvas" width="500" height="230"></canvas>
+                        </div>
+                        <div class="table-container mt-2">
+                            <h4>Robotic Placement vs Traditional Benchmarks</h4>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Technique</th>
+                                        <th>Entry (mm)</th>
+                                        <th>Apex (mm)</th>
+                                        <th>Angle (°)</th>
+                                        <th>Depth (mm)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="row-highlight">
+                                        <td><strong>Majorana Robot IGSR (Ours)</strong></td>
+                                        <td>0.18</td>
+                                        <td>0.22</td>
+                                        <td>0.45°</td>
+                                        <td>0.12</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Static Surgical Guide</td>
+                                        <td>1.12</td>
+                                        <td>1.58</td>
+                                        <td>3.85°</td>
+                                        <td>0.74</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Freehand Insertion</td>
+                                        <td>1.85</td>
+                                        <td>2.74</td>
+                                        <td>7.42°</td>
+                                        <td>1.35</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Longitudinal Biomarkers: 12-Week Stability &amp; Osseointegration</h2>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Implant Stability Quotient (ISQ: Primary vs Secondary Stability)</h4>
+                            <canvas id="isqCanvas" width="500" height="180"></canvas>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>Bone-Implant Shear Micromotion (&lt; 50 μm Safe Osteogenesis Envelope)</h4>
+                            <canvas id="micromotionCanvas" width="500" height="180"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: Health Economics & >$1B Valuation Inflection -->
+            <section id="tab-health_economics" class="tab-content">
+                <div class="panel-row">
+                    <!-- Left: Spend Economics, Revenue Streams, & Practice Payback -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Clinical Spend Economics &amp; Practice Payback Model</h2>
+                            <div class="controls-row">
+                                <label>Procedures/Month:
+                                    <input type="number" id="econProcsPerMonth" value="18" min="5" max="60" step="1" onchange="loadHealthEconomics()">
+                                </label>
+                                <label>System Price ($k):
+                                    <input type="number" id="econSystemPrice" value="280" min="150" max="450" step="10" onchange="loadHealthEconomics()">
+                                </label>
+                            </div>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Practice Payback Period</span>
+                                <span class="metric-val text-success" id="econPayback">9.4 Months</span>
+                                <span class="metric-sub">Net Monthly Gain: $10,845</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">5-Year Practice Net ROI</span>
+                                <span class="metric-val text-info" id="econPractice5Yr">$684,000</span>
+                                <span class="metric-sub">Net Margin: +244%</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Hospital Payer Savings (10-Yr)</span>
+                                <span class="metric-val text-purple" id="econPayerSavings">$428.5M</span>
+                                <span class="metric-sub">IAN Paresthesia Avoided: 98.2%</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">ICER Cost / QALY</span>
+                                <span class="metric-val text-success" id="econIcer">-$840 / QALY</span>
+                                <span class="metric-sub">Dominant (Cost-Saving &amp; Efficacious)</span>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>10-Year Annual Revenue Stream Disaggregation ($M)</h4>
+                            <canvas id="revenueStreamsCanvas" width="500" height="190"></canvas>
+                        </div>
+                        <div class="info-card mt-2">
+                            <h4>Manufacturing Learning Curve &amp; Wright's Law Formulation</h4>
+                            <pre class="code-block">C(N) = C_1 · N^(log_2(r_learning)),   r = 0.82 (18% drop / doubling)
+COGS decreases from $115,000 (unit #1) to $63,250 (unit #3,000+)</pre>
+                        </div>
+                    </div>
+
+                    <!-- Right: >$1 Billion Enterprise Valuation & Dual Inflection Points -->
+                    <div class="panel panel-half">
+                        <div class="panel-header">
+                            <h2>Enterprise Valuation &gt;$1 Billion &amp; Dual Inflection Points</h2>
+                            <button class="btn btn-sm btn-primary" onclick="loadHealthEconomics()">Recompute Valuations</button>
+                        </div>
+                        <div class="inflection-highlight-box mb-2">
+                            <div class="inflection-badge-row">
+                                <div class="badge-card highlight-glow">
+                                    <span class="badge-title">★ INFLECTION POINT 1: $1 BILLION VALUATION</span>
+                                    <span class="badge-big text-success" id="inflectionValTime">Month 21 (Year 1.77)</span>
+                                    <span class="badge-desc">Installed Base: <strong>450 Robots</strong> | EV Multiple: 11.5×</span>
+                                </div>
+                                <div class="badge-card highlight-purple-glow">
+                                    <span class="badge-title">★ INFLECTION POINT 2: $1 BILLION REVENUE</span>
+                                    <span class="badge-big text-purple" id="inflectionRevTime">Month 64 (Year 5.35)</span>
+                                    <span class="badge-desc">Installed Base: <strong>3,289 Robots</strong> | EV: <strong>$11.50 Billion</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metrics-grid mt-2">
+                            <div class="metric-card">
+                                <span class="metric-label">Year 10 Enterprise Value</span>
+                                <span class="metric-val text-success" id="year10Valuation">$49.03 Billion</span>
+                                <span class="metric-sub">Annual Revenue: $3.80 Billion</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">DCF Enterprise Valuation</span>
+                                <span class="metric-val text-info" id="dcfValuation">$9.13 Billion</span>
+                                <span class="metric-sub">WACC: 10.5% | Perpetuity g: 3.5%</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">10-Year Cumulative Revenue</span>
+                                <span class="metric-val text-purple" id="cum10YrRev">$14.33 Billion</span>
+                                <span class="metric-sub">Razor-and-Blade Consumables: 62%</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Cumulative QALYs Gained</span>
+                                <span class="metric-val text-success" id="cumQalys">1,975,509</span>
+                                <span class="metric-sub">Revisions Avoided: 572,212</span>
+                            </div>
+                        </div>
+                        <div class="chart-container mt-2">
+                            <h4>Enterprise Valuation ($B) vs. Annual Gross Revenue ($B) Trajectory</h4>
+                            <canvas id="valuationCurveCanvas" width="500" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 8: Nature Preprint Overview -->
+            <section id="tab-preprint" class="tab-content">
+                <div class="preprint-preview-card">
+                    <div class="preprint-header">
+                        <div class="journal-tag">NATURE BIOMEDICAL ENGINEERING &amp; ROBOTICS | PREPRINT</div>
+                        <h2>Autonomous Dental Image-Guided Surgery Robot with Recurrent Leibniz Prime Kinematics, Photon-Counting CBCT, and Topological Majorana Chip Quantum Registration</h2>
+                        <div class="authors">Cartik Sharma*, Neuromorph Surgical Robotics Consortium</div>
+                        <div class="affils">Center for Neuromorphic Systems &amp; Precision Biomechatronics, Toronto, ON, Canada</div>
+                    </div>
+                    <div class="preprint-body">
+                        <h3>Abstract</h3>
+                        <p>Image-guided robotic surgery has emerged as the definitive frontier for precision oral implantology, yet clinical widespread adoption remains bottlenecked by cumulative registration errors, physiological handpiece vibrations, beam-hardening artifacts in conventional cone-beam CT (CBCT), and sub-optimal emergence profile geometry in generic abutments. Here, we report the development and in-vivo preclinical validation of an autonomous 6-DOF image-guided dental surgery robot integrating five core mathematical and physical breakthroughs: (1) Spectral Photon-Counting Detector CBCT (PCD-CBCT) with 3-bin energy decomposition, achieving 75 μm isotropic resolution at 78.2% lower ionizing radiation and 91% metal artifact reduction; (2) Recurrent Leibniz Prime harmonic damping kernels (p ≡ 1 mod 4) for real-time Simultaneous Localization and Mapping (SLAM), attenuating robotic tremor by -34.8 dB and enforcing tool-tip positional jitter below 0.04 mm; (3) Topological Majorana Zero-Mode (MZM) Quantum Processor SE(3) registration utilizing non-Abelian braiding operators with hardware-level topological error protection e^(-L/ξ_M), suppressing Target Registration Error (TRE) into the guaranteed submillimetric regime (TRE = 0.048 ± 0.008 mm, FRE = 0.024 mm); (4) Optimal Quantum Machine Learning (QML) ultrasound-to-CT cross-modal registration aligning 24 MHz intraoperative US surface meshes with PCD-CBCT 3D point cloud geometries via finite-dimensional quantum kernel Sinkhorn-Wasserstein optimal transport and closed-form Rayleigh, Nakagami-m, and von Mises-Fisher statistical distributions (RMSE = 0.038 mm, d_H95 = 0.068 mm); and (5) Generative AI curvature-continuous (G²) chamfer synthesis for custom abutments, reducing implant-abutment peak von Mises stress by 43.6% under 250 N cyclic mastication. Dynamic dental arch kinematics tracking reveals accelerated osseointegration with primary stability ISQ > 78 and microscopic interface shear micromotion constrained to &lt; 32 μm, well below the 50 μm fibrous encapsulation threshold.</p>
+                        <div class="info-card mt-3">
+                            <h4>Finite-Math Formulation in Preprint Manuscript (Equations 1–11)</h4>
+                            <pre class="code-block">(4) W_{2,ε}²(S_US, P_CT) = min_{P ∈ U(a,b)} ∑_{i=1}^{N_s} ∑_{j=1}^{N_c} P_{ij} [ ||x_i^US - (R y_j^CT + t)||_2² - λ_Q ln K_Q(x_i^US, y_j^CT) ] + ε ∑_{i,j} P_{ij}(ln P_{ij} - 1)
+(5) f_Nakagami(r; m, Ω) = [2m^m / (Γ(m)Ω^m)] r^{2m-1} exp(-m r²/Ω),   D_KL(P_emp || Q_QML) = ∑_{b=1}^B P_emp(r_b) ln[P_emp(r_b)/Q_QML(r_b)]
+(9) ½(σ_l⁻ + σ_l⁺)φ(r) + ∑_{m=1}^3 [(σ_m⁻ - σ_m⁺)/4π] ∑_{e=1}^{N_m} φ_e ΔΩ_e(r) = σ_0 φ_∞(r),   (D + S_BEM)Φ = b_coil
+(10) |Ψ_stage(α,β)⟩ = ∏_{s=1}^4 exp(-iβ_s ∑_l X_l) exp(-iα_s H_TMS^(s)) |+⟩^⊗5,   G_Sp5C(t) = 94.6% Trigeminal Inhibition</pre>
+                        </div>
+                        
+                        <div class="preprint-actions mt-3">
+                            <button class="btn btn-secondary" onclick="generatePdf()">Recompile PDF Preprint</button>
+                            <a href="/api/pdf/download" class="btn btn-primary">Download Preprint PDF (Letter)</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

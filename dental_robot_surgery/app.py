@@ -29,6 +29,7 @@ from dental_robot_surgery.generate_nature_pdf import generate_dental_robot_natur
 from dental_robot_surgery.quantum_kalman_slam import QuantumKalmanSLAM
 from dental_robot_surgery.implant_fea_robotics import ImplantFEAAndRoboticsEngine
 from dental_robot_surgery.health_economics import HealthEconomicsAndRevenueEngine
+from dental_robot_surgery.tms_pain_management import DentalTMSPainManagementEngine
 
 app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'), static_folder=os.path.join(BASE_DIR, 'static'))
 
@@ -41,6 +42,7 @@ biomarkers_engine = DentalArchKinematicsAndBiomarkers()
 qkf_slam_engine = QuantumKalmanSLAM()
 fea_robotics_engine = ImplantFEAAndRoboticsEngine()
 health_econ_engine = HealthEconomicsAndRevenueEngine()
+tms_pain_engine = DentalTMSPainManagementEngine()
 
 PDF_PATH = os.path.join(PARENT_DIR, 'Nature_Dental_Image_Guided_Surgery_Robot_Preprint.pdf')
 
@@ -59,6 +61,7 @@ def get_system_status():
             "slam_leibniz": "SYNCHRONIZED (Tremor: -34.8 dB)",
             "quantum_vqe": "READY (Majorana MZM Topological Optimizer)",
             "qml_us_ct_registration": "ACTIVE (QML Kernel Sinkhorn-Wasserstein US Surface + CT Point Cloud)",
+            "tms_pain_qml_bem": "ACTIVE (3-Shell Cortical BEM & QML 4-Stage Trigeminal Analgesia)",
             "genai_chamfers": "LOADED (ISO 14801 Verified)",
             "implant_fea": "ACTIVE (Frost Mechanostat & Multi-Thread FEA)",
             "manipulators_serial_parallel": "READY (Serial 6-DOF & Parallel Hexapod Sim)",
@@ -153,6 +156,23 @@ def run_qml_us_ct_registration():
     )
     return jsonify(result)
 
+@app.route('/api/tms/pain_simulation', methods=['POST', 'GET'])
+def run_tms_pain_simulation():
+    payload = (request.get_json(silent=True) or {}) if request.method == 'POST' else {}
+    coil_type = payload.get('coil_type', 'figure8_70mm')
+    di_dt = float(payload.get('di_dt_a_per_us', 145.0))
+    pulse_freq_hz = float(payload.get('pulse_freq_hz', 10.0))
+    target_lobe = payload.get('target_lobe', 'M1_orofacial')
+    qml_qubits = int(payload.get('qml_qubits', 10))
+    result = tms_pain_engine.simulate_bem_and_qml_staging(
+        coil_type=coil_type,
+        di_dt_a_per_us=di_dt,
+        pulse_freq_hz=pulse_freq_hz,
+        target_lobe=target_lobe,
+        qml_qubits=qml_qubits
+    )
+    return jsonify(result)
+
 @app.route('/api/implant/generate', methods=['POST'])
 def generate_implant():
     payload = request.get_json() or {}
@@ -188,6 +208,6 @@ def download_pdf():
     return send_file(PDF_PATH, as_attachment=True, download_name="Nature_Dental_Image_Guided_Surgery_Robot_Preprint.pdf")
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5088))
+    port = int(os.environ.get('PORT', 5090))
     print(f"Starting Dental Image-Guided Surgery Robot Console on port {port}...")
     app.run(host='0.0.0.0', port=port, debug=False)

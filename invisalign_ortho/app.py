@@ -136,5 +136,5 @@ def api_download_fea_preprint():
                      download_name="Nature_Preprint_QML_FEA_Tooth_Biomechanics_HealthEconomics.pdf")
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5020))
+    port = int(os.environ.get("PORT", 5040))
     app.run(host="0.0.0.0", port=port, debug=True)
