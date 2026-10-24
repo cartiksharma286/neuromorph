@@ -1987,6 +1987,78 @@ def api_dementia_cure():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
+# ── Health Economics & Recurrent Prime Generative Revenue Endpoints ──────────
+from health_economics_engine import run_health_economics_pipeline
+from generate_nature_health_economics_pdf import build_nature_preprint_pdf
+
+@app.route('/api/health_economics/simulate', methods=['GET', 'POST'])
+def api_health_economics_simulate():
+    try:
+        if request.method == 'POST':
+            data = request.get_json(silent=True) or {}
+        else:
+            data = request.args.to_dict()
+            
+        capex = float(data.get('capex', 1850000.0))
+        base_scans_per_day = float(data.get('base_scans_per_day', 18.0))
+        base_reimbursement = float(data.get('base_reimbursement', 680.0))
+        discount_rate = float(data.get('discount_rate', 0.05))
+        annual_growth = float(data.get('annual_growth', 0.06))
+        prime_depth_K = int(data.get('prime_depth_K', 8))
+        prime_amplitude = float(data.get('prime_amplitude', 0.20))
+        
+        results = run_health_economics_pipeline(
+            capex=capex,
+            base_scans_per_day=base_scans_per_day,
+            base_reimbursement=base_reimbursement,
+            discount_rate=discount_rate,
+            annual_growth=annual_growth,
+            prime_depth_K=prime_depth_K,
+            prime_amplitude=prime_amplitude
+        )
+        return jsonify(results)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/health_economics/download_pdf', methods=['GET'])
+def api_health_economics_download_pdf():
+    try:
+        pdf_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Nature_Health_Economics_Recurrent_Primes_5Y.pdf')
+        if not os.path.exists(pdf_path):
+            build_nature_preprint_pdf(pdf_path)
+        return send_file(
+            pdf_path,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name='Nature_Health_Economics_Recurrent_Primes_5Y.pdf'
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/health_economics/export_data', methods=['GET'])
+def api_health_economics_export_data():
+    try:
+        results = run_health_economics_pipeline()
+        return jsonify({
+            'success': True,
+            'summary': results['summary'],
+            'annual_breakdown': results['annual_breakdown'],
+            'trajectory': {
+                'months': results['trajectory']['months'],
+                'revenue_mean': results['trajectory']['revenue_mean'],
+                'cum_cash_flow_mean': results['trajectory']['cum_cash_flow_mean'],
+                'psi_prime': results['trajectory']['psi_prime']
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('FLASK_RUN_PORT', 5050))
     app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False, threaded=True)

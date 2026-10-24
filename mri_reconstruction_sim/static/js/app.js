@@ -36,6 +36,8 @@ function switchView(viewId, buttonElement) {
             loadQuantumGeometry();
         } else if (viewId === 'robotics-analytics') {
             loadRoboticsAnalytics();
+        } else if (viewId === 'health-economics') {
+            if (typeof runHealthEconomics === 'function') runHealthEconomics();
         }
     }, 100);
 }

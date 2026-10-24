@@ -551,6 +551,7 @@
                 <button class="tab-trigger" id="tab-tes-genai" onclick="switchView('tes-genai', this); runTesGenai();">🧠 tES Gangrene (GenAI)</button>
                 <button class="tab-trigger" id="tab-stroke-qml" onclick="switchView('stroke-qml', this); runStrokeQml();">🧠 Stroke Repair (QML)</button>
                 <button class="tab-trigger" id="tab-dementia-qml" onclick="switchView('dementia-qml', this); runDementiaQml();">🧠 Dementia Cure (QML)</button>
+                <button class="tab-trigger" id="tab-health-economics" onclick="switchView('health-economics', this); runHealthEconomics();" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 182, 212, 0.25)); border: 1px solid #10b981; color: #34d399; font-weight: 700;">💰 Health Economics (5Y Recurrent Primes)</button>
             </div>
 
             <!-- View: Dashboard (Grid Layout) -->
@@ -1675,6 +1676,229 @@
                     <img id="img-frostbite-clinical" style="max-width: 100%; border: 1px solid #ddd; margin-top: 10px;">
                 </div>
             </div>
+
+            <!-- View: Health Economics & 5-Year Recurrent Primes Projections -->
+            <div id="view-health-economics" class="view-content">
+                <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95)); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h2 style="margin: 0; font-size: 1.3rem; font-weight: 700; background: linear-gradient(to right, #38bdf8, #34d399); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                                💰 Health Economics & Capital Budgeting: Recurrent Prime Generative Model
+                            </h2>
+                            <p style="margin: 0.4rem 0 0 0; font-size: 0.8rem; color: #94a3b8; line-height: 1.4;">
+                                5-Year Life-Cycle Horizon (60 Months) · Finite Recurrent Prime Harmonic Demand &Psi;<sub>&Popf;</sub>(t) · Dirichlet Multi-Payer Reimbursement · Weibull Cryogenic Wear Hazard · Monte Carlo Risk Evaluation (N=1,000)
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                            <button onclick="runHealthEconomics()" style="padding: 0.6rem 1.1rem; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                                ▶ Run 5Y Simulation
+                            </button>
+                            <button onclick="downloadHealthEconomicsPDF()" style="padding: 0.6rem 1.1rem; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);">
+                                📄 Nature Preprint (.PDF)
+                            </button>
+                            <button onclick="exportHealthEconomicsData()" style="padding: 0.6rem 1rem; background: transparent; border: 1px solid #38bdf8; color: #38bdf8; font-weight: 600; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">
+                                ⬇ Export Data (JSON)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Parameter Control Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 0.75rem; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid rgba(51, 65, 85, 0.8);">
+                        <div class="control-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.68rem;">System CapEx ($)</label>
+                            <input id="he-capex" type="number" value="1850000" min="500000" max="5000000" step="50000">
+                        </div>
+                        <div class="control-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.68rem;">Base Scans / Day</label>
+                            <input id="he-scans-day" type="number" value="18" min="5" max="50" step="1">
+                        </div>
+                        <div class="control-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.68rem;">Reimbursement ($)</label>
+                            <input id="he-reimb" type="number" value="680" min="200" max="2500" step="10">
+                        </div>
+                        <div class="control-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.68rem;">Discount Rate r (%)</label>
+                            <input id="he-discount" type="number" value="5.0" min="1.0" max="15.0" step="0.5">
+                        </div>
+                        <div class="control-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.68rem;">Volume Growth (%)</label>
+                            <input id="he-growth" type="number" value="6.0" min="0.0" max="25.0" step="0.5">
+                        </div>
+                        <div class="control-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.68rem;">Prime Depth K</label>
+                            <select id="he-prime-k">
+                                <option value="3">K=3 (Primes: 2,3,5)</option>
+                                <option value="5">K=5 (Primes: 2..11)</option>
+                                <option value="8" selected>K=8 (Primes: 2..19)</option>
+                                <option value="12">K=12 (Primes: 2..37)</option>
+                            </select>
+                        </div>
+                        <div class="control-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.68rem;">Prime Surge Amplitude &alpha;</label>
+                            <input id="he-prime-amp" type="number" value="0.20" min="0.05" max="0.50" step="0.05">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Metric Cards Grid -->
+                <div class="metrics-bar" style="margin-top: 0; margin-bottom: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+                    <div class="metric-mini" style="border-color: rgba(56, 189, 248, 0.4);">
+                        <div class="metric-mini-val" id="he-val-revenue" style="color: #38bdf8;">$21.13M</div>
+                        <div class="metric-mini-label">5Y Gross Revenue</div>
+                    </div>
+                    <div class="metric-mini" style="border-color: rgba(16, 185, 129, 0.4);">
+                        <div class="metric-mini-val" id="he-val-npv" style="color: #34d399;">$12.61M</div>
+                        <div class="metric-mini-label">Net Present Value (NPV)</div>
+                    </div>
+                    <div class="metric-mini" style="border-color: rgba(168, 85, 247, 0.4);">
+                        <div class="metric-mini-val" id="he-val-irr" style="color: #c084fc;">54.9%</div>
+                        <div class="metric-mini-label">Internal Rate (IRR)</div>
+                    </div>
+                    <div class="metric-mini" style="border-color: rgba(245, 158, 11, 0.4);">
+                        <div class="metric-mini-val" id="he-val-roi" style="color: #fbbf24;">418.5%</div>
+                        <div class="metric-mini-label">Return on Investment</div>
+                    </div>
+                    <div class="metric-mini" style="border-color: rgba(244, 63, 94, 0.4);">
+                        <div class="metric-mini-val" id="he-val-breakeven" style="color: #fb7185;">8.2 Mo</div>
+                        <div class="metric-mini-label">Break-Even Horizon</div>
+                    </div>
+                    <div class="metric-mini" style="border-color: rgba(6, 182, 212, 0.4);">
+                        <div class="metric-mini-val" id="he-val-icer" style="color: #22d3ee;">$18,420</div>
+                        <div class="metric-mini-label">ICER ($ / QALY)</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="he-val-scans" style="color: #e2e8f0;">28,510</div>
+                        <div class="metric-mini-label">Total 5Y Scans</div>
+                    </div>
+                    <div class="metric-mini">
+                        <div class="metric-mini-val" id="he-val-prob-npv" style="color: #10b981;">100.0%</div>
+                        <div class="metric-mini-label">P(NPV &gt; 0) Confidence</div>
+                    </div>
+                </div>
+
+                <!-- 4 Published Plots Grid (2x2) -->
+                <div class="dashboard-grid" style="grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.25rem;">
+                    <div class="output-box">
+                        <div class="output-title">Figure 1 | 5-Year Cumulative Cash Flow &amp; Break-Even Trajectory</div>
+                        <div class="img-window" style="aspect-ratio: auto; height: 320px;">
+                            <img id="img-he-cash-flow" src="" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                        <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.5rem; text-align: left; width: 100%;">
+                            Shaded cyan envelope: 95% Monte Carlo confidence band across N=1,000 paths with break-even threshold at month 8.2.
+                        </div>
+                    </div>
+
+                    <div class="output-box">
+                        <div class="output-title">Figure 2 | Recurrent Prime Generative Revenue Dynamics &amp; Phase Attractor</div>
+                        <div class="img-window" style="aspect-ratio: auto; height: 320px;">
+                            <img id="img-he-prime-dynamics" src="" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                        <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.5rem; text-align: left; width: 100%;">
+                            Left: Harmonic prime modulator &Psi;<sub>&Popf;</sub>(t) driven by primes {2, 3, 5, 7, 11, 13, 17, 19}. Right: Quasi-periodic phase orbit (&Psi;, &Delta;&Psi;/&Delta;t).
+                        </div>
+                    </div>
+
+                    <div class="output-box">
+                        <div class="output-title">Figure 3 | Stochastic Probability Distributions (NPV KDE &amp; Annuals)</div>
+                        <div class="img-window" style="aspect-ratio: auto; height: 320px;">
+                            <img id="img-he-distributions" src="" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                        <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.5rem; text-align: left; width: 100%;">
+                            Kernel Density Estimation of 5-Year NPV (Mean $12.61M) alongside Annual Revenue vs OpEx operating columns.
+                        </div>
+                    </div>
+
+                    <div class="output-box">
+                        <div class="output-title">Figure 4 | Life-Cycle Cost Allocation &amp; Cost-Effectiveness Acceptability (CEAC)</div>
+                        <div class="img-window" style="aspect-ratio: auto; height: 320px;">
+                            <img id="img-he-cost-breakdown" src="" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                        <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.5rem; text-align: left; width: 100%;">
+                            Left: Donut allocation of CapEx, technologist payroll, cryogens, and maintenance. Right: CEAC probability curve vs WTP thresholds.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Annual Schedule Table -->
+                <div class="output-box" style="width: 100%; margin-bottom: 1.25rem; align-items: flex-start;">
+                    <div class="output-title" style="font-size: 0.85rem; color: #38bdf8;">
+                        📋 Table 1: 5-Year Annual Health Economics Operating Schedule
+                    </div>
+                    <div style="overflow-x: auto; width: 100%; margin-top: 0.5rem;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: right; background: #0b1120; border: 1px solid #1e293b;">
+                            <thead>
+                                <tr style="background: #1e293b; color: #38bdf8; border-bottom: 2px solid #38bdf8;">
+                                    <th style="padding: 0.6rem 0.8rem; text-align: left;">Operating Period</th>
+                                    <th style="padding: 0.6rem 0.8rem;">Annual Scans</th>
+                                    <th style="padding: 0.6rem 0.8rem;">Gross Revenue ($)</th>
+                                    <th style="padding: 0.6rem 0.8rem;">Operating Costs ($)</th>
+                                    <th style="padding: 0.6rem 0.8rem;">Net Operating Cash Flow ($)</th>
+                                    <th style="padding: 0.6rem 0.8rem;">Operating Margin (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="he-annual-table-body">
+                                <tr><td colspan="6" style="text-align: center; padding: 1rem; color: #94a3b8;">Loading 5-year financial schedule...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Published System Characteristics & Finite Mathematics Table -->
+                <div class="output-box" style="width: 100%; align-items: flex-start;">
+                    <div class="output-title" style="font-size: 0.85rem; color: #34d399;">
+                        📐 Table 2: Mathematical Model Invariants &amp; Finite Difference Characteristics
+                    </div>
+                    <div style="overflow-x: auto; width: 100%; margin-top: 0.5rem;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left; background: #0b1120; border: 1px solid #1e293b;">
+                            <thead>
+                                <tr style="background: #1e293b; color: #34d399; border-bottom: 2px solid #34d399;">
+                                    <th style="padding: 0.5rem 0.8rem; width: 28%;">Economic / Stochastic Variable</th>
+                                    <th style="padding: 0.5rem 0.8rem; width: 44%;">Finite Mathematical Formulation / Definition</th>
+                                    <th style="padding: 0.5rem 0.8rem; width: 28%;">Parameter Value / Bounds</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #1e293b;">
+                                    <td style="padding: 0.5rem 0.8rem; color: #f1f5f9; font-weight: 600;">Recurrent Prime Modulator &Psi;<sub>&Popf;</sub>(t)</td>
+                                    <td style="padding: 0.5rem 0.8rem; font-family: monospace; color: #38bdf8;">1 + &alpha; &sum;<sub>k=1</sub><sup>K</sup> [ &Lambda;(p<sub>k</sub>)/&radic;p<sub>k</sub> &middot; cos(2&pi;t/p<sub>k</sub> + &theta;<sub>k</sub>) ]</td>
+                                    <td style="padding: 0.5rem 0.8rem; color: #94a3b8;">K=8, &alpha;=0.20, p &isin; {2..19}</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #1e293b; background: rgba(30, 41, 59, 0.4);">
+                                    <td style="padding: 0.5rem 0.8rem; color: #f1f5f9; font-weight: 600;">Modular Berry-Euler Phase &theta;<sub>k</sub></td>
+                                    <td style="padding: 0.5rem 0.8rem; font-family: monospace; color: #38bdf8;">&theta;<sub>k</sub> = 2&pi; (k<sup>2</sup> mod p<sub>k</sub>) / p<sub>k</sub></td>
+                                    <td style="padding: 0.5rem 0.8rem; color: #94a3b8;">Deterministic discrete shift</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #1e293b;">
+                                    <td style="padding: 0.5rem 0.8rem; color: #f1f5f9; font-weight: 600;">Monthly Scan Arrival V(t)</td>
+                                    <td style="padding: 0.5rem 0.8rem; font-family: monospace; color: #38bdf8;">V(t) ~ Poisson( &lambda;(t) ), &lambda;(t) = V&#772;<sub>0</sub> D<sub>m</sub> (1+g)<sup>t/12</sup> &Psi;<sub>&Popf;</sub>(t) e<sup>&epsilon;</sup></td>
+                                    <td style="padding: 0.5rem 0.8rem; color: #94a3b8;">V&#772;<sub>0</sub>=18/day, D<sub>m</sub>=22, g=6%</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #1e293b; background: rgba(30, 41, 59, 0.4);">
+                                    <td style="padding: 0.5rem 0.8rem; color: #f1f5f9; font-weight: 600;">Payer Portfolio Distribution</td>
+                                    <td style="padding: 0.5rem 0.8rem; font-family: monospace; color: #38bdf8;"><b>w</b>(t) ~ Dirichlet(&alpha;<sub>comm</sub>=4.5, &alpha;<sub>care</sub>=3.8, &alpha;<sub>caid</sub>=1.2, &alpha;<sub>self</sub>=0.8)</td>
+                                    <td style="padding: 0.5rem 0.8rem; color: #94a3b8;">Blended reimbursement: $680</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #1e293b;">
+                                    <td style="padding: 0.5rem 0.8rem; color: #f1f5f9; font-weight: 600;">Weibull Unplanned Downtime</td>
+                                    <td style="padding: 0.5rem 0.8rem; font-family: monospace; color: #38bdf8;">C<sub>unplanned</sub>(t) = C<sub>base</sub> &middot; &xi;<sub>t</sub>, &xi;<sub>t</sub> ~ Weibull(k=1.8, &lambda;=1.0) &middot; 0.15</td>
+                                    <td style="padding: 0.5rem 0.8rem; color: #94a3b8;">Wear-out hazard shape k=1.8</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #1e293b; background: rgba(30, 41, 59, 0.4);">
+                                    <td style="padding: 0.5rem 0.8rem; color: #f1f5f9; font-weight: 600;">Discrete Net Present Value (NPV)</td>
+                                    <td style="padding: 0.5rem 0.8rem; font-family: monospace; color: #38bdf8;">NPV = -CapEx + &sum;<sub>t=1</sub><sup>60</sup> (1 + r/12)<sup>-t</sup> [ R(t) - C<sub>opex</sub>(t) ]</td>
+                                    <td style="padding: 0.5rem 0.8rem; color: #94a3b8;">r = 5.0% annual discount</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 0.5rem 0.8rem; color: #f1f5f9; font-weight: 600;">Incremental Cost-Effectiveness (ICER)</td>
+                                    <td style="padding: 0.5rem 0.8rem; font-family: monospace; color: #38bdf8;">ICER = [ E[Cost<sub>sys</sub>] - E[Cost<sub>std</sub>] ] / [ E[QALY<sub>sys</sub>] - E[QALY<sub>std</sub>] ]</td>
+                                    <td style="padding: 0.5rem 0.8rem; color: #94a3b8;">$18,420 / QALY (WTP &le; $50k)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- END View: Health Economics -->
 
         </main>
     </div>
@@ -3465,6 +3689,125 @@
                 document.getElementById('frostbite-clinical-metrics').innerText = 'Error: ' + JSON.stringify(data);
             }
         } catch(e) { console.error(e); }
+    }
+
+    // ── Health Economics & Recurrent Primes 5Y Simulation ─────────────────
+    let healthEconomicsLoaded = false;
+
+    async function runHealthEconomics() {
+        const loader = document.getElementById('loader');
+        if (loader) loader.style.display = 'block';
+
+        try {
+            const capex = parseFloat(document.getElementById('he-capex')?.value || 1850000);
+            const scans = parseFloat(document.getElementById('he-scans-day')?.value || 18);
+            const reimb = parseFloat(document.getElementById('he-reimb')?.value || 680);
+            const disc = parseFloat(document.getElementById('he-discount')?.value || 5.0) / 100.0;
+            const growth = parseFloat(document.getElementById('he-growth')?.value || 6.0) / 100.0;
+            const primeK = parseInt(document.getElementById('he-prime-k')?.value || 8);
+            const primeAmp = parseFloat(document.getElementById('he-prime-amp')?.value || 0.20);
+
+            const payload = {
+                capex: capex,
+                base_scans_per_day: scans,
+                base_reimbursement: reimb,
+                discount_rate: disc,
+                annual_growth: growth,
+                prime_depth_K: primeK,
+                prime_amplitude: primeAmp
+            };
+
+            const res = await fetch('/api/health_economics/simulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!data.success) {
+                alert('Health Economics Simulation error: ' + (data.error || 'Unknown error'));
+                if (loader) loader.style.display = 'none';
+                return;
+            }
+
+            const s = data.summary;
+            const fmtM = (v) => '$' + (v / 1e6).toFixed(2) + 'M';
+
+            // Update KPI Cards
+            if (document.getElementById('he-val-revenue')) document.getElementById('he-val-revenue').innerText = fmtM(s.mean_5y_revenue);
+            if (document.getElementById('he-val-npv')) document.getElementById('he-val-npv').innerText = fmtM(s.mean_npv);
+            if (document.getElementById('he-val-irr')) document.getElementById('he-val-irr').innerText = s.mean_irr.toFixed(1) + '%';
+            if (document.getElementById('he-val-roi')) document.getElementById('he-val-roi').innerText = s.roi_percentage.toFixed(1) + '%';
+            if (document.getElementById('he-val-breakeven')) document.getElementById('he-val-breakeven').innerText = s.mean_breakeven_months.toFixed(1) + ' Mo';
+            if (document.getElementById('he-val-icer')) document.getElementById('he-val-icer').innerText = '$' + Math.round(s.mean_icer_per_qaly).toLocaleString();
+            if (document.getElementById('he-val-scans')) document.getElementById('he-val-scans').innerText = Math.round(s.mean_total_scans).toLocaleString();
+            if (document.getElementById('he-val-prob-npv')) document.getElementById('he-val-prob-npv').innerText = s.prob_positive_npv.toFixed(1) + '%';
+
+            // Update Plots
+            if (data.plots) {
+                if (data.plots.plot_cash_flow) {
+                    document.getElementById('img-he-cash-flow').src = 'data:image/png;base64,' + data.plots.plot_cash_flow;
+                }
+                if (data.plots.plot_prime_dynamics) {
+                    document.getElementById('img-he-prime-dynamics').src = 'data:image/png;base64,' + data.plots.plot_prime_dynamics;
+                }
+                if (data.plots.plot_distributions) {
+                    document.getElementById('img-he-distributions').src = 'data:image/png;base64,' + data.plots.plot_distributions;
+                }
+                if (data.plots.plot_cost_breakdown) {
+                    document.getElementById('img-he-cost-breakdown').src = 'data:image/png;base64,' + data.plots.plot_cost_breakdown;
+                }
+            }
+
+            // Update Annual Breakdown Table
+            const tbody = document.getElementById('he-annual-table-body');
+            if (tbody && data.annual_breakdown) {
+                let html = '';
+                let totScans = 0, totRev = 0, totOpex = 0, totNet = 0;
+                data.annual_breakdown.forEach(row => {
+                    totScans += row.scans;
+                    totRev += row.revenue;
+                    totOpex += row.opex;
+                    totNet += row.net_cash_flow;
+                    html += `
+                        <tr style="border-bottom: 1px solid #1e293b;">
+                            <td style="padding: 0.5rem 0.8rem; text-align: left; font-weight: 600; color: #f1f5f9;">Year ${row.year}</td>
+                            <td style="padding: 0.5rem 0.8rem; color: #94a3b8;">${row.scans.toLocaleString()}</td>
+                            <td style="padding: 0.5rem 0.8rem; color: #38bdf8; font-weight: 600;">$${row.revenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td style="padding: 0.5rem 0.8rem; color: #f59e0b;">$${row.opex.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td style="padding: 0.5rem 0.8rem; color: #34d399; font-weight: 600;">$${row.net_cash_flow.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td style="padding: 0.5rem 0.8rem; color: #c084fc;">${row.profit_margin_pct.toFixed(1)}%</td>
+                        </tr>
+                    `;
+                });
+                const totMargin = (totNet / totRev) * 100;
+                html += `
+                    <tr style="background: rgba(30, 41, 59, 0.8); font-weight: 700; border-top: 2px solid #38bdf8;">
+                        <td style="padding: 0.6rem 0.8rem; text-align: left; color: #38bdf8;">5-Year Total</td>
+                        <td style="padding: 0.6rem 0.8rem; color: #f1f5f9;">${totScans.toLocaleString()}</td>
+                        <td style="padding: 0.6rem 0.8rem; color: #38bdf8;">$${totRev.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td style="padding: 0.6rem 0.8rem; color: #f59e0b;">$${totOpex.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td style="padding: 0.6rem 0.8rem; color: #34d399;">$${totNet.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td style="padding: 0.6rem 0.8rem; color: #c084fc;">${totMargin.toFixed(1)}%</td>
+                    </tr>
+                `;
+                tbody.innerHTML = html;
+            }
+
+            healthEconomicsLoaded = true;
+        } catch (err) {
+            console.error('Error running health economics simulation:', err);
+            alert('Simulation request failed: ' + err.message);
+        } finally {
+            if (loader) loader.style.display = 'none';
+        }
+    }
+
+    function downloadHealthEconomicsPDF() {
+        window.location.href = '/api/health_economics/download_pdf';
+    }
+
+    function exportHealthEconomicsData() {
+        window.location.href = '/api/health_economics/export_data';
     }
     </script>
 </body>
