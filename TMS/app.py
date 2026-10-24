@@ -58,6 +58,11 @@ from logic.us_health_economics import (
     CLINICAL_INDICATIONS,
     CPT_RVU_BASELINE
 )
+from logic.bosonic_dementia_engine import (
+    BosonicDementiaEngine,
+    DEMENTIA_CORTICAL_LOBES,
+    GANGOBO_STAGING
+)
 
 app = Flask(
     __name__,
@@ -1441,6 +1446,71 @@ def neurodegenerative_economics_pdf():
         output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Neurodegenerative_Repair_Health_Economics_Quantum_Combinatorics.pdf')
         build_neurodegenerative_economics_pdf(output_path, sim_params={})
         return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Neurodegenerative_Repair_Health_Economics_Quantum_Combinatorics.pdf')
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+def _bosonic_dementia_params(data):
+    return dict(
+        squeezing_r=_arg(data, 'squeezing_r', 1.25, float),
+        displacement_alpha=_arg(data, 'displacement_alpha', 0.65, float),
+        kerr_chi=_arg(data, 'kerr_chi', 0.08, float),
+        num_partitions=_arg(data, 'num_partitions', 32, int),
+        target_lobe_key=_arg(data, 'target_lobe_key', 'precuneus_pcc', str),
+        baseline_stage=_arg(data, 'baseline_stage', 'mild_ad', str),
+        coil_current_a=_arg(data, 'coil_current_a', 4800.0, float),
+        horizon_months=_arg(data, 'horizon_months', 60, int),
+        seed=_arg(data, 'seed', 42, int),
+    )
+
+
+@app.route('/api/bosonic-dementia-defaults', methods=['GET'])
+def api_bosonic_dementia_defaults():
+    """Return default parameter definitions, cortical lobes affected in dementia, and Gangobo staging protocols."""
+    return jsonify({
+        "status": "success",
+        "lobes_affected": DEMENTIA_CORTICAL_LOBES,
+        "gangobo_staging": GANGOBO_STAGING,
+        "defaults": {
+            "squeezing_r": 1.25,
+            "displacement_alpha": 0.65,
+            "kerr_chi": 0.08,
+            "num_partitions": 32,
+            "target_lobe_key": "precuneus_pcc",
+            "baseline_stage": "mild_ad",
+            "coil_current_a": 4800.0,
+            "horizon_months": 60,
+        }
+    })
+
+
+@app.route('/api/bosonic-dementia-simulation', methods=['GET', 'POST'])
+def api_bosonic_dementia_simulation():
+    """Simulate continuous-variable bosonic waveforms, CV-QNN, cortical FEM E-fields, and Gangobo dementia staging."""
+    try:
+        data = request.get_json(silent=True) or {}
+        engine = BosonicDementiaEngine()
+        return jsonify(engine.simulate(**_bosonic_dementia_params(data)))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
+
+
+@app.route('/api/bosonic-dementia-pdf', methods=['GET'])
+def bosonic_dementia_pdf():
+    """Generate and stream the Nature preprint PDF on Bosonic Waveforms & Quantum Neural Net Dementia Repair."""
+    try:
+        from generate_nature_bosonic_dementia_preprint import build_bosonic_dementia_pdf
+        output_path = os.path.join(os.path.dirname(__file__), 'Nature_Preprint_Bosonic_Waveforms_Quantum_Neural_Net_Dementia.pdf')
+        build_bosonic_dementia_pdf(output_path, sim_params=_bosonic_dementia_params({}))
+        return send_file(output_path, as_attachment=True, download_name='Nature_Preprint_Bosonic_Waveforms_Quantum_Neural_Net_Dementia.pdf')
     except (TypeError, ValueError) as exc:
         return jsonify({'status': 'error', 'message': str(exc)}), 400
     except Exception as exc:

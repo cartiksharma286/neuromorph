@@ -43,6 +43,15 @@ from backend_ramanujan_modular_pqc import (
     ramanujan_tau,
 )
 
+from backend_measure_mmd_quantum_cloak import (
+    evaluate_ca_eu_signature_adversarial_risk,
+    evaluate_measure_theory_mmd_cloak,
+)
+
+from backend_economic_revenue_quantum import (
+    evaluate_10year_economic_revenue_projections,
+)
+
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
 NTT_Q = 3329
@@ -754,6 +763,112 @@ def view_preprint_ramanujan_eu():
     pdf_path = Path(__file__).parent / "Nature_Ramanujan_Modular_Harmonic_Forms_EU_Privacy_Preprint.pdf"
     if not pdf_path.exists():
         subprocess.run([sys.executable, str(Path(__file__).parent / "generate_nature_pdf_ramanujan_eu_preprint.py")], check=True)
+    return send_file(pdf_path, mimetype="application/pdf")
+
+
+@app.route("/api/measure/mmd_cloak", methods=["GET", "POST"])
+def api_measure_mmd_cloak():
+    """Evaluate Measure Theory with RKHS MMD Probability Measures, Quantum Variety & Combinatorics for EU Patient Privacy."""
+    payload = request.get_json(silent=True) or {}
+    sample_size = int(payload.get("sample_size", 32))
+    bandwidth = float(payload.get("bandwidth", 0.35))
+    quantum_dim = int(payload.get("quantum_dim", 6))
+    q_prime = int(payload.get("q_prime", 7))
+    subspace_n = int(payload.get("subspace_n", 8))
+    subspace_k = int(payload.get("subspace_k", 3))
+    epsilon = float(payload.get("epsilon", 0.45))
+    layers = int(payload.get("layers", 16))
+    seed = int(payload.get("seed", 2026))
+
+    result = evaluate_measure_theory_mmd_cloak(
+        sample_size=sample_size,
+        bandwidth=bandwidth,
+        quantum_dim=quantum_dim,
+        q_prime=q_prime,
+        subspace_n=subspace_n,
+        subspace_k=subspace_k,
+        epsilon=epsilon,
+        layers=layers,
+        seed=seed,
+    )
+    return jsonify({"success": True, **result})
+
+
+@app.route("/api/signatures/ca_eu_risk", methods=["GET", "POST"])
+def api_signatures_ca_eu_risk():
+    """Evaluate Adversarial Risk for Cryptographic Signatures in the Canadian-EU Bilateral Context."""
+    payload = request.get_json(silent=True) or {}
+    scheme = str(payload.get("scheme", "ML-DSA-87"))
+    log2_q_hash = int(payload.get("log2_q_hash", 48))
+    log2_q_sign = int(payload.get("log2_q_sign", 20))
+    corridor = str(payload.get("corridor", "Ontario PHIPA / PIPEDA <-> Germany BSI / EHDS"))
+    fault_rate = float(payload.get("fault_rate", 1e-6))
+    seed = int(payload.get("seed", 2026))
+
+    result = evaluate_ca_eu_signature_adversarial_risk(
+        scheme=scheme,
+        log2_q_hash=log2_q_hash,
+        log2_q_sign=log2_q_sign,
+        corridor=corridor,
+        fault_rate=fault_rate,
+        seed=seed,
+    )
+    return jsonify({"success": True, **result})
+
+
+@app.route("/api/economics/revenue_projections", methods=["GET", "POST"])
+def api_economics_revenue_projections():
+    """Evaluate 10-Year Economic Revenue Projections across MedTech, FinTech, Geospatial Navigation & Oil and Gas."""
+    payload = request.get_json(silent=True) or {}
+    epsilon = float(payload.get("epsilon", 0.45))
+    mmd2 = float(payload.get("mmd2", 3.8e-11))
+    attenuation_db = float(payload.get("attenuation_db", 98.6))
+    k_anonymity = int(payload.get("k_anonymity", 50))
+    qrom_security_bits = float(payload.get("qrom_security_bits", 159.0))
+    discount_rate = float(payload.get("discount_rate", 0.085))
+    temperature_q = float(payload.get("temperature_q", 0.65))
+
+    result = evaluate_10year_economic_revenue_projections(
+        epsilon=epsilon,
+        mmd2=mmd2,
+        attenuation_db=attenuation_db,
+        k_anonymity=k_anonymity,
+        qrom_security_bits=qrom_security_bits,
+        discount_rate=discount_rate,
+        temperature_q=temperature_q,
+    )
+    return jsonify({"success": True, **result})
+
+
+@app.route("/api/preprint/measure_mmd/download")
+def download_preprint_measure_mmd():
+    pdf_path = Path(__file__).parent / "Nature_Measure_Theory_MMD_Quantum_Cloak_CA_EU_Signatures.pdf"
+    if not pdf_path.exists():
+        subprocess.run([sys.executable, str(Path(__file__).parent / "generate_nature_measure_mmd_signature_preprint.py")], check=True)
+    return send_file(pdf_path, as_attachment=True, download_name="Nature_Measure_Theory_MMD_Quantum_Cloak_CA_EU_Signatures.pdf")
+
+
+@app.route("/api/preprint/measure_mmd/view")
+def view_preprint_measure_mmd():
+    pdf_path = Path(__file__).parent / "Nature_Measure_Theory_MMD_Quantum_Cloak_CA_EU_Signatures.pdf"
+    if not pdf_path.exists():
+        subprocess.run([sys.executable, str(Path(__file__).parent / "generate_nature_measure_mmd_signature_preprint.py")], check=True)
+    return send_file(pdf_path, mimetype="application/pdf")
+
+
+@app.route("/api/preprint/economic_revenue/download")
+def download_preprint_economic_revenue():
+    pdf_path = Path(__file__).parent / "Nature_Quantum_Economic_Revenue_Projections_Privacy_Ciphers.pdf"
+    if not pdf_path.exists():
+        subprocess.run([sys.executable, str(Path(__file__).parent / "generate_nature_economic_revenue_preprint.py")], check=True)
+    return send_file(pdf_path, as_attachment=True, download_name="Nature_Quantum_Economic_Revenue_Projections_Privacy_Ciphers.pdf")
+
+
+@app.route("/api/preprint/economic_revenue/view")
+def view_preprint_economic_revenue():
+    pdf_path = Path(__file__).parent / "Nature_Quantum_Economic_Revenue_Projections_Privacy_Ciphers.pdf"
+    if not pdf_path.exists():
+        subprocess.run([sys.executable, str(Path(__file__).parent / "generate_nature_economic_revenue_preprint.py")], check=True)
     return send_file(pdf_path, mimetype="application/pdf")
 
 

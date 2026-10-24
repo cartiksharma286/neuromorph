@@ -85,7 +85,8 @@
 
         .nav-tabs {
             display: flex;
-            gap: 8px;
+            flex-wrap: wrap;
+            gap: 6px;
             background: rgba(2, 6, 23, 0.6);
             padding: 4px;
             border-radius: 10px;
@@ -332,8 +333,10 @@
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="showTab('dashboard')">🛡️ Sovereign Enclave</button>
             <button class="nav-btn" onclick="showTab('ramanujan')">🌌 Ramanujan Modular PQC (EU)</button>
+            <button class="nav-btn" onclick="showTab('measure')">📐 Measure Theory, MMD &amp; CA-EU Sig Risk</button>
+            <button class="nav-btn" onclick="showTab('economics')">📈 10-Yr Economic Revenue</button>
             <button class="nav-btn" onclick="showTab('patient')">🧬 Patient Cloaking (7T MRI)</button>
-            <button class="nav-btn" onclick="showTab('algorithms')">⚡ NTT & Tensor Engine</button>
+            <button class="nav-btn" onclick="showTab('algorithms')">⚡ NTT &amp; Tensor Engine</button>
             <button class="nav-btn" onclick="showTab('compliance')">🇨🇦 🇪🇺 Regulatory Compliance</button>
             <button class="nav-btn" onclick="showTab('preprints')">📄 Nature Preprints</button>
         </div>
@@ -854,6 +857,371 @@ Awaiting clinical patient record ingestion…
                         <a href="/api/preprint/ramanujan_eu/download" class="btn-outline" style="text-align:center; border-color:var(--accent-indigo); color:var(--accent-indigo);">⬇️ Download Ramanujan PDF</a>
                     </div>
                 </div>
+
+                <div class="card" style="border-color: rgba(16,185,129,0.5); background: rgba(15,23,42,0.9);">
+                    <div class="card-header">
+                        <div class="card-title">📐 Measure Theory, MMD &amp; CA-EU Signatures Preprint</div>
+                        <span class="badge-status badge-active" style="background:rgba(16,185,129,0.2); color:var(--accent-emerald);">Quantum Variety &amp; QROM</span>
+                    </div>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+                        Title: <em>Measure-Theoretic MMD Probability Cloaks on Quantum Varieties and Cryptographic Signature Adversarial Risk in the Canadian-EU Health Context</em>
+                    </p>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <a href="/api/preprint/measure_mmd/view" target="_blank" class="btn-primary" style="justify-content:center; background:linear-gradient(135deg,#10b981,#0284c7);">📖 View Measure &amp; Signature PDF</a>
+                        <a href="/api/preprint/measure_mmd/download" class="btn-outline" style="text-align:center; border-color:var(--accent-emerald); color:var(--accent-emerald);">⬇️ Download Measure &amp; Signature PDF</a>
+                    </div>
+                </div>
+
+                <div class="card" style="border-color: rgba(245,158,11,0.5); background: rgba(15,23,42,0.9);">
+                    <div class="card-header">
+                        <div class="card-title">📈 10-Yr Quantum Economic Revenue Preprint</div>
+                        <span class="badge-status badge-active" style="background:rgba(245,158,11,0.2); color:var(--accent-amber);">4-Sector Econometrics</span>
+                    </div>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
+                        Title: <em>Quantum-Theoretic Distributions and 10-Year Economic Revenue Projections of Post-Quantum Privacy Ciphers for MedTech, FinTech, Geospatial &amp; Oil and Gas</em>
+                    </p>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <a href="/api/preprint/economic_revenue/view" target="_blank" class="btn-primary" style="justify-content:center; background:linear-gradient(135deg,#f59e0b,#2563eb);">📖 View 10-Yr Economic PDF</a>
+                        <a href="/api/preprint/economic_revenue/download" class="btn-outline" style="text-align:center; border-color:var(--accent-amber); color:var(--accent-amber);">⬇️ Download 10-Yr Economic PDF</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: MEASURE THEORY, MMD, QUANTUM VARIETY & CA-EU SIGNATURE RISK -->
+        <div id="tab-measure" class="tab-content">
+            <div class="grid-4" style="margin-bottom: 1.5rem;">
+                <div class="metric-card">
+                    <div class="metric-sub">RKHS QUANTUM MMD² BOUND</div>
+                    <div class="metric-val" id="metricMmd2Val" style="color:var(--accent-emerald);">3.82e-11</div>
+                    <div class="metric-sub">$\|\mu_{\mathbb{P}} - \mu_{\mathbb{Q}}\|_{\mathcal{H}_k}^2$ Indistinguishable</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-sub">QUANTUM VARIETY $\mathcal{V}_Q \subset \mathbb{C}\mathbb{P}^{d-1}$</div>
+                    <div class="metric-val" id="metricQuantumVarDim" style="color:var(--accent-cyan);">$\mathbb{C}\mathbb{P}^5$</div>
+                    <div class="metric-sub">Fubini-Study Haar Measure $\mu_{\mathrm{FS}}$</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-sub">GRASSMANNIAN $q$-BINOMIAL</div>
+                    <div class="metric-val" id="metricQBinomVal" style="color:var(--accent-indigo);">1.77e+8</div>
+                    <div class="metric-sub">$|\mathbf{Gr}_7(3,8)| = \binom{8}{3}_7$ Subspaces</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-sub">CA-EU SIGNATURE QROM RISK</div>
+                    <div class="metric-val" id="metricSigAdvVal" style="color:var(--accent-emerald);">&le; 2<sup>-159</sup></div>
+                    <div class="metric-sub">ML-DSA-87 / FIPS 204 EUF-CMA</div>
+                </div>
+            </div>
+
+            <!-- Banner with Preprint Quick Links -->
+            <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(6,95,70,0.35)); border-color: rgba(16,185,129,0.45);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h3 style="font-size:1.08rem; font-weight:700; color:var(--text-main);">
+                            📐 Measure-Theoretic RKHS MMD on Projective Quantum Varieties &amp; Canadian-EU Signature Adversarial Risk
+                        </h3>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
+                            Radon-Nikodym Bound $\|d\mathbb{P}/d\mathbb{Q}-1\|_\infty \le 10^{-5}$ &bull; Grassmannian $\mathbf{Gr}_q(k,n)$ Combinatorics &bull; NIST FIPS 204 Fiat-Shamir with Aborts ($P_{\mathrm{acc}} = 0.246$)
+                        </p>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <a href="/api/preprint/measure_mmd/view" target="_blank" class="btn-primary" style="text-decoration:none; background:linear-gradient(135deg,#10b981,#0284c7);">
+                            📄 View Nature Measure &amp; Signature PDF
+                        </a>
+                        <a href="/api/preprint/measure_mmd/download" class="btn-outline" style="text-decoration:none;">
+                            ⬇️ Download PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 1.5rem;">
+                <!-- Measure Theory & Quantum Variety Controls -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🌌 Measure Theory, MMD &amp; Quantum Variety Simulator (EU Patient Privacy)</div>
+                        <span class="badge-status badge-active">GDPR Art. 9 / EHDS</span>
+                    </div>
+                    <div class="grid-3">
+                        <div class="control-group">
+                            <label>RKHS Kernel Bandwidth ($\sigma$)</label>
+                            <input type="number" id="inputMmdSigma" value="0.35" step="0.05">
+                        </div>
+                        <div class="control-group">
+                            <label>Quantum Variety Dim ($d$)</label>
+                            <input type="number" id="inputQuantumDim" value="6" min="3" max="12">
+                        </div>
+                        <div class="control-group">
+                            <label>Privacy Budget ($\varepsilon$)</label>
+                            <input type="number" id="inputMmdEpsilon" value="0.45" step="0.05">
+                        </div>
+                    </div>
+                    <div class="grid-3">
+                        <div class="control-group">
+                            <label>Finite Field Prime ($q$)</label>
+                            <input type="number" id="inputQPrime" value="7" min="2" max="19">
+                        </div>
+                        <div class="control-group">
+                            <label>Vector Space Dim ($n$)</label>
+                            <input type="number" id="inputSubspaceN" value="8" min="4" max="12">
+                        </div>
+                        <div class="control-group">
+                            <label>Cloaked Subspace ($k$)</label>
+                            <input type="number" id="inputSubspaceK" value="3" min="1" max="7">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="runMeasureMmdSimulation()" style="width:100%; justify-content:center;">
+                        ⚡ Compute RKHS Quantum MMD², Radon-Nikodym &amp; Grassmannian Subspaces
+                    </button>
+
+                    <div style="margin-top: 1rem; font-size: 0.78rem; background: rgba(2,6,23,0.75); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; line-height: 1.6;">
+                        <div style="font-weight:700; color:var(--accent-cyan); margin-bottom:4px;">Finite Measure Theory &amp; Combinatorial Equations:</div>
+                        <div>&bull; <strong>RKHS MMD²:</strong> $\mathrm{MMD}^2_u(\mathcal{H}_k, \mathbb{P}, \mathbb{Q}) = \frac{1}{m(m-1)}\sum_{i\neq j} k_Q(x_i,x_j) - \frac{2}{mn}\sum k_Q(x_i,y_j) + \frac{1}{n(n-1)}\sum_{i\neq j} k_Q(y_i,y_j)$</div>
+                        <div>&bull; <strong>Quantum Variety Kernel:</strong> $|\psi(x)\rangle \in \mathcal{V}_Q \subset \mathbb{C}\mathbb{P}^{d-1}, \quad k_Q(x,y) = \frac{1}{2}e^{-\|x-y\|^2/2\sigma^2} + \frac{1}{2}|\langle\psi(x)\mid\psi(y)\rangle|^2$</div>
+                        <div>&bull; <strong>Grassmannian $q$-Binomial:</strong> $|\mathbf{Gr}_q(k,n)| = \binom{n}{k}_q = \prod_{i=1}^k \frac{q^{n-k+i}-1}{q^i-1}, \quad \mathcal{S}(N,m) = \frac{1}{m!}\sum_{j=0}^m (-1)^{m-j}\binom{m}{j}j^N$</div>
+                        <div>&bull; <strong>Radon-Nikodym Derivative:</strong> $\left\|\frac{d\mathbb{P}_{\mathrm{cloak}}}{d\mathbb{Q}_{\mathrm{Haar}}} - 1\right\|_{L^\infty(\Omega)} \le e^{\varepsilon e^{-\kappa L}} - 1 \le 10^{-5}$</div>
+                    </div>
+                </div>
+
+                <!-- RKHS MMD & Radon-Nikodym Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📈 RKHS Quantum $\mathrm{MMD}^2$ &amp; Borel Measure Equalization</div>
+                        <span class="badge-status badge-active">Measure Convergence</span>
+                    </div>
+                    <div style="height: 330px;">
+                        <canvas id="measureMmdChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canadian-EU Cryptographic Signature Adversarial Risk Section -->
+            <div class="grid-2" style="margin-bottom: 1.5rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🇨🇦 🇪🇺 Canadian-EU Cryptographic Signature Adversarial Risk (QROM)</div>
+                        <span class="badge-status badge-active">FIPS 204 / eIDAS 2.0 / CSE</span>
+                    </div>
+                    <div class="grid-2">
+                        <div class="control-group">
+                            <label>Post-Quantum Signature Scheme</label>
+                            <select id="selectSigScheme">
+                                <option value="ML-DSA-87" selected>ML-DSA-87 (NIST FIPS 204 Cat 5 Sovereign)</option>
+                                <option value="Hybrid-Ed25519-ML-DSA-87">Hybrid Ed25519 + ML-DSA-87 (BSI / ANSSI / CSE)</option>
+                                <option value="ML-DSA-65">ML-DSA-65 (NIST FIPS 204 Cat 3)</option>
+                                <option value="SLH-DSA-SHAKE-256s">SLH-DSA-SHAKE-256s (NIST FIPS 205 Hash-Based)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Bilateral Canadian-EU Health Corridor</label>
+                            <select id="selectSigCorridor">
+                                <option value="Ontario PHIPA / PIPEDA <-> Germany BSI / EHDS">Ontario PHIPA / PIPEDA &harr; Germany BSI / EHDS</option>
+                                <option value="Quebec Law 25 (CAI) <-> France ANSSI / CNIL">Quebec Law 25 (CAI) &harr; France ANSSI / CNIL</option>
+                                <option value="BC FIPPA / Alberta HIA <-> Sweden IMY / Netherlands AP">BC FIPPA / Alberta HIA &harr; Sweden IMY / Netherlands AP</option>
+                                <option value="Health Canada / CIHR <-> European Commission EHDS Central">Health Canada / CIHR &harr; European Commission EHDS</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="control-group">
+                            <label>QROM Oracle Queries $\log_2(q_H)$</label>
+                            <input type="number" id="inputSigLogQh" value="48" min="16" max="64" step="4">
+                        </div>
+                        <div class="control-group">
+                            <label>Adversarial Signing Queries $\log_2(q_S)$</label>
+                            <input type="number" id="inputSigLogQs" value="20" min="8" max="40" step="2">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="runCaEuSignatureRisk()" style="width:100%; justify-content:center;">
+                        🛡️ Evaluate QROM Signature Adversarial Forgery Risk &amp; Fiat-Shamir Aborts
+                    </button>
+
+                    <div style="margin-top: 1rem;">
+                        <div class="code-box" id="sigRiskJsonOutput" style="height: 195px;">
+Evaluating Canadian-EU signature adversarial risk…
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📊 QROM EUF-CMA Signature Forgery Risk Curve ($\log_{10} \mathrm{Adv}$)</div>
+                        <span class="badge-status badge-active">De Minimis &le; 10⁻⁹</span>
+                    </div>
+                    <div style="height: 250px;">
+                        <canvas id="signatureRiskChart"></canvas>
+                    </div>
+                    <div style="margin-top: 0.85rem;">
+                        <table>
+                            <thead>
+                                <tr><th>Adversarial Vector</th><th>CA-EU Standards</th><th>Risk Bound</th><th>Status</th></tr>
+                            </thead>
+                            <tbody id="sigThreatMatrixBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: 10-YEAR ECONOMIC REVENUE PROJECTIONS (MEDTECH, FINTECH, GEOSPATIAL, OIL & GAS) -->
+        <div id="tab-economics" class="tab-content">
+            <div class="grid-4" style="margin-bottom: 1.5rem;">
+                <div class="metric-card">
+                    <div class="metric-sub">10-YR CUMULATIVE REVENUE</div>
+                    <div class="metric-val" id="econMetricCumRev" style="color:var(--accent-emerald);">$34.82B</div>
+                    <div class="metric-sub">2027–2036 Across 4 Critical Sectors</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-sub">10-YR DISCOUNTED NPV (8.5%)</div>
+                    <div class="metric-val" id="econMetricNpv" style="color:var(--accent-cyan);">$19.45B</div>
+                    <div class="metric-sub">Privacy Multiplier $\Phi_{\mathrm{priv}}$ Coupled</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-sub">COMPOSITE 10-YR CAGR</div>
+                    <div class="metric-val" id="econMetricCagr" style="color:var(--accent-amber);">31.4%</div>
+                    <div class="metric-sub">Quantum Sharpe Ratio: 3.42</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-sub">BREACH CAPITAL SAVED</div>
+                    <div class="metric-val" id="econMetricBreach" style="color:var(--accent-indigo);">$54.18B</div>
+                    <div class="metric-sub">Q-VaR₉₉ Bounded by Wigner-Dyson GUE</div>
+                </div>
+            </div>
+
+            <!-- Banner with Economic Preprint PDF Links -->
+            <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(30,58,138,0.4)); border-color: rgba(245,158,11,0.45);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h3 style="font-size:1.08rem; font-weight:700; color:var(--text-main);">
+                            📈 10-Year Long-Term Economic Revenue Projections of Post-Quantum Privacy Ciphers (2027–2036)
+                        </h3>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
+                            MedTech &bull; FinTech &bull; Geospatial Navigation (PNT/GNSS) &bull; Oil &amp; Gas SCADA | Characterized by Wigner-Dyson GUE, Fermi-Dirac &amp; Lindblad Master Equation
+                        </p>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <a href="/api/preprint/economic_revenue/view" target="_blank" class="btn-primary" style="text-decoration:none; background:linear-gradient(135deg,#f59e0b,#2563eb);">
+                            📄 View 10-Yr Economic Nature Preprint PDF
+                        </a>
+                        <a href="/api/preprint/economic_revenue/download" class="btn-outline" style="text-decoration:none;">
+                            ⬇️ Download PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls + 10-Year Multi-Sector Revenue Chart -->
+            <div class="grid-2" style="margin-bottom: 1.5rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🎛️ Privacy-Metric Econometric Parameters &amp; Quantum Distribution Controls</div>
+                        <span class="badge-status badge-active">Lindblad + GUE Model</span>
+                    </div>
+                    <div class="grid-3">
+                        <div class="control-group">
+                            <label>Differential Privacy ($\varepsilon$)</label>
+                            <input type="number" id="econInputEps" value="0.45" step="0.05" min="0.05" max="2.0">
+                        </div>
+                        <div class="control-group">
+                            <label>Cloak Attenuation (dB)</label>
+                            <input type="number" id="econInputAtt" value="98.6" step="1.0" min="20" max="120">
+                        </div>
+                        <div class="control-group">
+                            <label>Cohort $k$-Anonymity ($k$)</label>
+                            <input type="number" id="econInputK" value="50" step="5" min="5" max="500">
+                        </div>
+                    </div>
+                    <div class="grid-3">
+                        <div class="control-group">
+                            <label>QROM Sig Security (bits)</label>
+                            <input type="number" id="econInputSigBits" value="159" step="5" min="80" max="256">
+                        </div>
+                        <div class="control-group">
+                            <label>Discount Rate WACC</label>
+                            <input type="number" id="econInputWacc" value="0.085" step="0.005">
+                        </div>
+                        <div class="control-group">
+                            <label>Quantum Temp ($T_Q$)</label>
+                            <input type="number" id="econInputTempQ" value="0.65" step="0.05" min="0.2" max="2.0">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="runEconomicProjections()" style="width:100%; justify-content:center;">
+                        ⚡ Recompute 10-Year Sectoral Revenue Projections &amp; Quantum Distributions
+                    </button>
+
+                    <div style="margin-top: 1rem; font-size: 0.78rem; background: rgba(2,6,23,0.75); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; line-height: 1.6;">
+                        <div style="font-weight:700; color:var(--accent-amber); margin-bottom:4px;">Quantum Econometric Finite Math Equations:</div>
+                        <div>&bull; <strong>Privacy Multiplier:</strong> $\Phi_{\mathrm{priv}} = Z_0^{-1}(1+\alpha_\varepsilon e^{-\varepsilon})(1+\alpha_{\mathrm{MMD}}/(1+10^9\mathrm{MMD}^2))(1+\alpha_{\mathrm{att}}\mathrm{Att}_{\mathrm{dB}}/100)(1+\alpha_k\ln k)$</div>
+                        <div>&bull; <strong>Wigner-Dyson GUE Spacing:</strong> $P_{\mathrm{GUE}}(s) = \frac{32}{\pi^2}s^2 \exp(-\frac{4}{\pi}s^2), \quad P_{\mathrm{FD}}(E) = [\exp((E-\mu)/T_Q)+1]^{-1}$</div>
+                        <div>&bull; <strong>Lindblad Revenue Evolution:</strong> $\frac{d\rho_R}{dt} = -i[H_{\mathrm{econ}},\rho_R] + \sum_k \gamma_k(L_k\rho_R L_k^\dagger - \frac{1}{2}\{L_k^\dagger L_k,\rho_R\})$</div>
+                        <div>&bull; <strong>10-Yr Sectoral Revenue:</strong> $R_i(t) = R_{i,0}(1 + g_i \Phi_{\mathrm{priv}})^{t-1}(1 - \beta_0 e^{-\lambda_i t})\mathrm{Tr}(\rho_R(t)\Pi_i)$</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📈 10-Year Revenue Projections by Sector (2027–2036, $M USD)</div>
+                        <span class="badge-status badge-active">4 Verticals</span>
+                    </div>
+                    <div style="height: 340px;">
+                        <canvas id="econRevenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quantum-Theoretic Distributions Chart + Sector Summary Cards -->
+            <div class="grid-2" style="margin-bottom: 1.5rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">⚛️ Quantum-Theoretic Distributions (Wigner-Dyson GUE, GOE, Fermi-Dirac &amp; Bose-Einstein)</div>
+                        <span class="badge-status badge-active">Random Matrix Theory</span>
+                    </div>
+                    <div style="height: 310px;">
+                        <canvas id="econQuantumDistChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🏛️ 4-Sector 10-Year Cumulative Performance &amp; Cipher Characterization</div>
+                        <span class="badge-status badge-active">2027–2036 Summary</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>Sector</th><th>Year 1</th><th>Year 10</th><th>10-Yr Cumul.</th><th>10-Yr NPV</th><th>CAGR</th><th>Breach Saved</th></tr>
+                        </thead>
+                        <tbody id="econSectorSummaryBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Full 10-Year Annual Schedule Table -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📅 Complete 10-Year Annual Revenue &amp; Breach-Avoidance Schedule (2027–2036)</div>
+                    <span class="badge-status badge-active" id="econMultiplierBadge">Privacy Multiplier: 1.18x</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>MedTech &amp; Biobanks ($M)</th>
+                            <th>FinTech &amp; CBDC ($M)</th>
+                            <th>Geospatial PNT ($M)</th>
+                            <th>Oil &amp; Gas SCADA ($M)</th>
+                            <th>Total Annual Revenue ($M)</th>
+                            <th>Wigner-Dyson 95% Band ($M)</th>
+                            <th>Breach Liability Avoided ($M)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="econYearlyScheduleBody">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -863,6 +1231,10 @@ Awaiting clinical patient record ingestion…
         let alarpChartInstance = null;
         let probMapChartInstance = null;
         let ramanujanChartInstance = null;
+        let measureMmdChartInstance = null;
+        let signatureRiskChartInstance = null;
+        let econRevenueChartInstance = null;
+        let econQuantumDistChartInstance = null;
 
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -871,7 +1243,9 @@ Awaiting clinical patient record ingestion…
             const target = document.getElementById('tab-' + tabName);
             if (target) target.classList.add('active');
             
-            event.currentTarget.classList.add('active');
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
 
             if (tabName === 'dashboard') {
                 if (!cloakChartInstance || !alarpChartInstance || !probMapChartInstance) {
@@ -881,6 +1255,423 @@ Awaiting clinical patient record ingestion…
                 if (!ramanujanChartInstance) {
                     initRamanujanChart();
                 }
+            } else if (tabName === 'measure') {
+                if (!measureMmdChartInstance || !signatureRiskChartInstance) {
+                    initMeasureTab();
+                }
+            } else if (tabName === 'economics') {
+                if (!econRevenueChartInstance || !econQuantumDistChartInstance) {
+                    initEconomicsTab();
+                }
+            }
+        }
+
+        async function initMeasureTab() {
+            const ctxMmd = document.getElementById('measureMmdChart').getContext('2d');
+            measureMmdChartInstance = new Chart(ctxMmd, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'RKHS Quantum MMD²_u(H_k, P, Q)',
+                            data: [],
+                            borderColor: '#0284c7',
+                            backgroundColor: 'rgba(2, 132, 199, 0.15)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'Quantum Trace Distance T(ρ_P, ρ_Q)',
+                            data: [],
+                            borderColor: '#6366f1',
+                            borderDash: [5, 4],
+                            tension: 0.3,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Radon-Nikodym Deviation ||dP/dQ - 1||_∞',
+                            data: [],
+                            borderColor: '#10b981',
+                            tension: 0.3,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Metamaterial Cloak Layer (L)', color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y: {
+                            type: 'logarithmic',
+                            title: { display: true, text: 'Measure Divergence (Log Scale)', color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc', boxWidth: 12 } }
+                    }
+                }
+            });
+
+            const ctxSig = document.getElementById('signatureRiskChart').getContext('2d');
+            signatureRiskChartInstance = new Chart(ctxSig, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'QROM EUF-CMA Forgery Risk log10(Adv)',
+                            data: [],
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'ALARP De Minimis Threshold (10^-9)',
+                            data: [],
+                            borderColor: '#10b981',
+                            borderDash: [5, 4],
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Quantum Oracle Queries log2(q_H)', color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Forgery Advantage log10(Adv)', color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc', boxWidth: 12 } }
+                    }
+                }
+            });
+
+            await runMeasureMmdSimulation();
+            await runCaEuSignatureRisk();
+        }
+
+        async function runMeasureMmdSimulation() {
+            const payload = {
+                bandwidth: parseFloat(document.getElementById('inputMmdSigma').value) || 0.35,
+                quantum_dim: parseInt(document.getElementById('inputQuantumDim').value) || 6,
+                epsilon: parseFloat(document.getElementById('inputMmdEpsilon').value) || 0.45,
+                q_prime: parseInt(document.getElementById('inputQPrime').value) || 7,
+                subspace_n: parseInt(document.getElementById('inputSubspaceN').value) || 8,
+                subspace_k: parseInt(document.getElementById('inputSubspaceK').value) || 3,
+                layers: 16
+            };
+
+            try {
+                const res = await fetch('/api/measure/mmd_cloak', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (data.measure_space) {
+                    document.getElementById('metricMmd2Val').innerText = Number(data.measure_space.cloaked_mmd2).toExponential(2);
+                    document.getElementById('metricQuantumVarDim').innerText = 'CP^' + data.measure_space.projective_variety_dimension;
+                }
+                if (data.combinatorial_cloak) {
+                    const qnum = Number(data.combinatorial_cloak.q_binomial_subspaces);
+                    document.getElementById('metricQBinomVal').innerText = qnum > 1e5 ? qnum.toExponential(2) : qnum.toLocaleString();
+                }
+
+                if (measureMmdChartInstance && data.layer_convergence) {
+                    measureMmdChartInstance.data.labels = data.layer_convergence.map(c => 'L' + c.layer);
+                    measureMmdChartInstance.data.datasets[0].data = data.layer_convergence.map(c => c.mmd2_rkhs);
+                    measureMmdChartInstance.data.datasets[1].data = data.layer_convergence.map(c => c.quantum_trace_distance);
+                    measureMmdChartInstance.data.datasets[2].data = data.layer_convergence.map(c => c.radon_nikodym_deviation);
+                    measureMmdChartInstance.update();
+                }
+            } catch (err) {
+                console.error('Error in Measure MMD simulation:', err);
+            }
+        }
+
+        async function runCaEuSignatureRisk() {
+            const payload = {
+                scheme: document.getElementById('selectSigScheme').value,
+                corridor: document.getElementById('selectSigCorridor').value,
+                log2_q_hash: parseInt(document.getElementById('inputSigLogQh').value) || 48,
+                log2_q_sign: parseInt(document.getElementById('inputSigLogQs').value) || 20
+            };
+
+            try {
+                const res = await fetch('/api/signatures/ca_eu_risk', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                document.getElementById('sigRiskJsonOutput').innerText = JSON.stringify({
+                    scheme: data.scheme,
+                    corridor: data.corridor,
+                    adversarial_risk_metrics: data.adversarial_risk_metrics,
+                    fiat_shamir_aborts: data.fiat_shamir_aborts,
+                    signature_artifact: data.signature_artifact
+                }, null, 2);
+
+                if (data.adversarial_risk_metrics) {
+                    document.getElementById('metricSigAdvVal').innerHTML = '&le; 2<sup>' + data.adversarial_risk_metrics.euf_cma_advantage_log2 + '</sup>';
+                }
+
+                if (signatureRiskChartInstance && data.qrom_risk_curve) {
+                    signatureRiskChartInstance.data.labels = data.qrom_risk_curve.map(pt => '2^' + pt.log2_q_hash);
+                    signatureRiskChartInstance.data.datasets[0].data = data.qrom_risk_curve.map(pt => pt.adv_log10);
+                    signatureRiskChartInstance.data.datasets[1].data = data.qrom_risk_curve.map(pt => pt.alarp_threshold_log10);
+                    signatureRiskChartInstance.update();
+                }
+
+                if (data.bilateral_threat_matrix) {
+                    const tbody = document.getElementById('sigThreatMatrixBody');
+                    tbody.innerHTML = data.bilateral_threat_matrix.map(item => `
+                        <tr>
+                            <td><strong>${item.attack_vector}</strong></td>
+                            <td style="font-size:0.76rem;">${item.canadian_standard}<br><span style="color:var(--accent-cyan);">${item.eu_standard}</span></td>
+                            <td style="font-family:'JetBrains Mono',monospace; font-size:0.76rem; color:var(--accent-emerald);">${item.adversarial_bound}</td>
+                            <td><span class="badge-status badge-active">${item.status}</span></td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error in CA-EU signature risk evaluation:', err);
+            }
+        }
+
+        async function initEconomicsTab() {
+            const ctxRev = document.getElementById('econRevenueChart').getContext('2d');
+            econRevenueChartInstance = new Chart(ctxRev, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'FinTech & CBDC/RTGS ($M)',
+                            data: [],
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                            tension: 0.3,
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'MedTech & 7T/WGS Biobanks ($M)',
+                            data: [],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.3,
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'Oil, Gas & Critical Energy SCADA ($M)',
+                            data: [],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.3,
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'Geospatial PNT & LEO GNSS ($M)',
+                            data: [],
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            tension: 0.3,
+                            pointRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Forecast Year (2027–2036)', color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Annual Revenue ($M USD)', color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc', boxWidth: 12 } }
+                    }
+                }
+            });
+
+            const ctxDist = document.getElementById('econQuantumDistChart').getContext('2d');
+            econQuantumDistChartInstance = new Chart(ctxDist, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Wigner-Dyson GUE P_GUE(s)',
+                            data: [],
+                            borderColor: '#0284c7',
+                            backgroundColor: 'rgba(2, 132, 199, 0.18)',
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Wigner-Dyson GOE P_GOE(s)',
+                            data: [],
+                            borderColor: '#10b981',
+                            borderDash: [5, 4],
+                            tension: 0.35,
+                            pointRadius: 2
+                        },
+                        {
+                            label: 'Fermi-Dirac Regulatory Adoption f_FD(E)',
+                            data: [],
+                            borderColor: '#6366f1',
+                            tension: 0.35,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Bose-Einstein Network Effect f_BE(E)',
+                            data: [],
+                            borderColor: '#f59e0b',
+                            borderDash: [3, 3],
+                            tension: 0.35,
+                            pointRadius: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Normalized Spectral Spacing s / Energy E', color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Probability Density / Occupancy', color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f8fafc', boxWidth: 12 } }
+                    }
+                }
+            });
+
+            await runEconomicProjections();
+        }
+
+        async function runEconomicProjections() {
+            const payload = {
+                epsilon: parseFloat(document.getElementById('econInputEps').value) || 0.45,
+                attenuation_db: parseFloat(document.getElementById('econInputAtt').value) || 98.6,
+                k_anonymity: parseInt(document.getElementById('econInputK').value) || 50,
+                qrom_security_bits: parseFloat(document.getElementById('econInputSigBits').value) || 159.0,
+                discount_rate: parseFloat(document.getElementById('econInputWacc').value) || 0.085,
+                temperature_q: parseFloat(document.getElementById('econInputTempQ').value) || 0.65
+            };
+
+            try {
+                const res = await fetch('/api/economics/revenue_projections', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (data.headline_metrics) {
+                    const hm = data.headline_metrics;
+                    document.getElementById('econMetricCumRev').innerText = '$' + hm.cumulative_10yr_revenue_b.toFixed(2) + 'B';
+                    document.getElementById('econMetricNpv').innerText = '$' + hm.net_present_value_10yr_b.toFixed(2) + 'B';
+                    document.getElementById('econMetricCagr').innerText = hm.composite_cagr_pct + '%';
+                    document.getElementById('econMetricBreach').innerText = '$' + hm.cumulative_breach_avoided_b.toFixed(2) + 'B';
+                }
+
+                if (data.privacy_elasticity) {
+                    document.getElementById('econMultiplierBadge').innerText = 'Privacy Multiplier: ' + data.privacy_elasticity.composite_privacy_multiplier + 'x';
+                }
+
+                if (econRevenueChartInstance && data.yearly_projections) {
+                    econRevenueChartInstance.data.labels = data.yearly_projections.map(r => r.year);
+                    econRevenueChartInstance.data.datasets[0].data = data.yearly_projections.map(r => r.fintech_rev_m);
+                    econRevenueChartInstance.data.datasets[1].data = data.yearly_projections.map(r => r.medtech_rev_m);
+                    econRevenueChartInstance.data.datasets[2].data = data.yearly_projections.map(r => r.oil_gas_rev_m);
+                    econRevenueChartInstance.data.datasets[3].data = data.yearly_projections.map(r => r.geospatial_rev_m);
+                    econRevenueChartInstance.update();
+                }
+
+                if (econQuantumDistChartInstance && data.quantum_distributions && data.quantum_distributions.distributions_grid) {
+                    const grid = data.quantum_distributions.distributions_grid;
+                    econQuantumDistChartInstance.data.labels = grid.map(g => 's=' + g.s_parameter.toFixed(2));
+                    econQuantumDistChartInstance.data.datasets[0].data = grid.map(g => g.wigner_dyson_gue);
+                    econQuantumDistChartInstance.data.datasets[1].data = grid.map(g => g.wigner_dyson_goe);
+                    econQuantumDistChartInstance.data.datasets[2].data = grid.map(g => g.fermi_dirac_adoption);
+                    econQuantumDistChartInstance.data.datasets[3].data = grid.map(g => g.bose_einstein_condensation);
+                    econQuantumDistChartInstance.update();
+                }
+
+                if (data.sector_summaries) {
+                    const secBody = document.getElementById('econSectorSummaryBody');
+                    secBody.innerHTML = data.sector_summaries.map(s => `
+                        <tr>
+                            <td>
+                                <strong>${s.sector_name}</strong>
+                                <div style="font-size:0.72rem; color:var(--text-muted);">${s.cipher_stack}</div>
+                            </td>
+                            <td>$${s.year_1_rev_m.toLocaleString()}M</td>
+                            <td>$${s.year_10_rev_m.toLocaleString()}M</td>
+                            <td style="color:var(--accent-emerald); font-weight:700;">$${s.cumulative_10yr_rev_b.toFixed(2)}B</td>
+                            <td style="color:var(--accent-cyan);">$${(s.npv_10yr_m / 1000.0).toFixed(2)}B</td>
+                            <td><span class="badge-status badge-active">${s.cagr_10yr_pct}%</span></td>
+                            <td style="color:var(--accent-indigo); font-weight:600;">$${s.breach_avoided_10yr_b.toFixed(2)}B</td>
+                        </tr>
+                    `).join('');
+                }
+
+                if (data.yearly_projections) {
+                    const yrBody = document.getElementById('econYearlyScheduleBody');
+                    yrBody.innerHTML = data.yearly_projections.map(r => `
+                        <tr>
+                            <td><strong>${r.year}</strong></td>
+                            <td>$${r.medtech_rev_m.toLocaleString()}M</td>
+                            <td>$${r.fintech_rev_m.toLocaleString()}M</td>
+                            <td>$${r.geospatial_rev_m.toLocaleString()}M</td>
+                            <td>$${r.oil_gas_rev_m.toLocaleString()}M</td>
+                            <td style="color:var(--accent-cyan); font-weight:700;">$${r.total_revenue_m.toLocaleString()}M ($${r.total_revenue_b.toFixed(2)}B)</td>
+                            <td style="font-family:'JetBrains Mono',monospace; font-size:0.76rem;">[$${r.gue_lower_95_m.toLocaleString()}M – $${r.gue_upper_95_m.toLocaleString()}M]</td>
+                            <td style="color:var(--accent-emerald); font-weight:700;">$${r.total_breach_avoided_m.toLocaleString()}M</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error computing economic projections:', err);
             }
         }
 

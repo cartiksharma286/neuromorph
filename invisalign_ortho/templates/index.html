@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invisalign® Smile Architect — Geodesics, Measure Theory & Ring Algebra</title>
+    <title>Invisalign® Smile Architect — Geodesics, QML-FEA & Health Economics</title>
+    <meta name="description" content="Advanced Invisalign orthodontic simulation with Quantum FEA biomechanics and health economic projections.">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -14,6 +15,14 @@
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #030712; color: #f9fafb; }
         .glass-panel { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(56, 189, 248, 0.2); }
         .tab-btn.active { border-bottom: 3px solid #38bdf8; color: #38bdf8; font-weight: 600; }
+        .metric-card { background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.8)); border: 1px solid rgba(100,116,139,0.3); border-radius: 12px; padding: 14px; }
+        .qml-badge { background: linear-gradient(90deg, #4f46e5, #7c3aed); font-size: 10px; padding: 2px 8px; border-radius: 20px; color: white; font-weight: 700; }
+        @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 8px rgba(56,189,248,0.3); } 50% { box-shadow: 0 0 20px rgba(56,189,248,0.7); } }
+        .glow-border { animation: pulseGlow 2.5s ease-in-out infinite; }
+        .stress-bar { height: 6px; border-radius: 3px; transition: width 0.8s ease; }
+        .zone-physiologic { color: #10b981; background: rgba(16,185,129,0.15); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+        .zone-overload { color: #f43f5e; background: rgba(244,63,94,0.15); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+        .zone-disuse { color: #f59e0b; background: rgba(245,158,11,0.15); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -22,39 +31,49 @@
     <header class="border-b border-slate-800 bg-slate-950/90 sticky top-0 z-50 backdrop-blur">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <div class="p-2.5 rounded-xl bg-gradient-to-tr from-cyan-500 via-sky-600 to-indigo-600 text-white shadow-lg shadow-cyan-500/20">
+                <div class="p-2.5 rounded-xl bg-gradient-to-tr from-cyan-500 via-sky-600 to-indigo-600 text-white shadow-lg shadow-cyan-500/20 glow-border">
                     <i class="fa-solid fa-tooth text-xl"></i>
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                        Invisalign® Smile Architect <span class="text-xs font-mono bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800">Geodesics & Ring Algebra</span>
+                        Invisalign® Smile Architect
+                        <span class="text-xs font-mono bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800">Geodesics · QML-FEA · Economics</span>
                     </h1>
-                    <p class="text-xs text-slate-400">Measure Theory Smile Signatures • Riemannian Dental Manifolds • Craniofacial Esthetics</p>
+                    <p class="text-xs text-slate-400">Measure Theory · Riemannian Dental Manifolds · Quantum FEA · Health Economics</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-3">
-                <a href="/api/preprint/download" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-xs font-semibold text-white flex items-center gap-1.5 transition shadow-lg shadow-sky-600/20">
-                    <i class="fa-solid fa-file-pdf"></i> Download Nature Preprint
+            <div class="flex items-center space-x-2">
+                <a href="/api/preprint/download" target="_blank" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-xs font-semibold text-white flex items-center gap-1.5 transition shadow-lg">
+                    <i class="fa-solid fa-file-pdf"></i> Smile Preprint
+                </a>
+                <a href="/api/preprint/fea/download" target="_blank" id="btn-dl-fea-preprint" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-xs font-semibold text-white flex items-center gap-1.5 transition shadow-lg">
+                    <i class="fa-solid fa-atom"></i> QML-FEA + Economics Preprint
                 </a>
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Aligner Ring Active
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Aligner Active
                 </span>
             </div>
         </div>
 
         <!-- Navigation Tabs -->
-        <div class="max-w-7xl mx-auto px-4 flex space-x-6 border-t border-slate-800/80 text-sm overflow-x-auto">
-            <button onclick="switchTab('tab-simulator')" class="tab-btn active py-3 px-2 text-slate-300 hover:text-white transition flex items-center gap-2" id="btn-tab-simulator">
-                <i class="fa-solid fa-wand-magic-sparkles text-sky-400"></i> Dental Arch & Smile Simulation
+        <div class="max-w-7xl mx-auto px-4 flex space-x-1 border-t border-slate-800/80 text-sm overflow-x-auto">
+            <button onclick="switchTab('tab-simulator')" class="tab-btn active py-3 px-3 text-slate-300 hover:text-white transition flex items-center gap-2 whitespace-nowrap" id="btn-tab-simulator">
+                <i class="fa-solid fa-wand-magic-sparkles text-sky-400"></i> Dental Arch & Smile
             </button>
-            <button onclick="switchTab('tab-staging')" class="tab-btn py-3 px-2 text-slate-400 hover:text-white transition flex items-center gap-2" id="btn-tab-staging">
-                <i class="fa-solid fa-layer-group text-purple-400"></i> Ring Algebra Aligner Staging
+            <button onclick="switchTab('tab-staging')" class="tab-btn py-3 px-3 text-slate-400 hover:text-white transition flex items-center gap-2 whitespace-nowrap" id="btn-tab-staging">
+                <i class="fa-solid fa-layer-group text-purple-400"></i> Ring Algebra Staging
             </button>
-            <button onclick="switchTab('tab-signatures')" class="tab-btn py-3 px-2 text-slate-400 hover:text-white transition flex items-center gap-2" id="btn-tab-signatures">
-                <i class="fa-solid fa-chart-pie text-teal-400"></i> Measure-Theoretic Smile Signatures
+            <button onclick="switchTab('tab-signatures')" class="tab-btn py-3 px-3 text-slate-400 hover:text-white transition flex items-center gap-2 whitespace-nowrap" id="btn-tab-signatures">
+                <i class="fa-solid fa-chart-pie text-teal-400"></i> Smile Signatures
             </button>
-            <button onclick="switchTab('tab-kinematics')" class="tab-btn py-3 px-2 text-slate-400 hover:text-white transition flex items-center gap-2" id="btn-tab-kinematics">
-                <i class="fa-solid fa-arrows-up-down-left-right text-amber-400"></i> 14-Tooth Kinematics & Torque
+            <button onclick="switchTab('tab-kinematics')" class="tab-btn py-3 px-3 text-slate-400 hover:text-white transition flex items-center gap-2 whitespace-nowrap" id="btn-tab-kinematics">
+                <i class="fa-solid fa-arrows-up-down-left-right text-amber-400"></i> 14-Tooth Kinematics
+            </button>
+            <button onclick="switchTab('tab-fea')" class="tab-btn py-3 px-3 text-slate-400 hover:text-white transition flex items-center gap-2 whitespace-nowrap" id="btn-tab-fea">
+                <i class="fa-solid fa-atom text-violet-400"></i> QML-FEA Simulator
+            </button>
+            <button onclick="switchTab('tab-economics')" class="tab-btn py-3 px-3 text-slate-400 hover:text-white transition flex items-center gap-2 whitespace-nowrap" id="btn-tab-economics">
+                <i class="fa-solid fa-chart-line text-emerald-400"></i> Health Economics
             </button>
         </div>
     </header>
@@ -65,33 +84,29 @@
         <!-- TAB 1: Dental Arch & Smile Simulation -->
         <section id="tab-simulator" class="space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Patient & Biomechanical Configuration -->
                 <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
                     <h2 class="text-base font-semibold text-sky-300 flex items-center gap-2">
                         <i class="fa-solid fa-sliders"></i> Clinical Orthodontic Parameters
                     </h2>
-                    
                     <div>
                         <label class="text-xs text-slate-400 block mb-1">Malocclusion Crowding Severity</label>
                         <select id="sim-crowding" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-sky-300 font-medium">
-                            <option value="mild">Mild Crowding (1.0 - 2.5 mm displacement)</option>
-                            <option value="moderate" selected>Moderate Crowding (2.5 - 5.0 mm displacement)</option>
-                            <option value="severe">Severe Crowding (> 5.0 mm displacement)</option>
+                            <option value="mild">Mild Crowding (1.0 - 2.5 mm)</option>
+                            <option value="moderate" selected>Moderate Crowding (2.5 - 5.0 mm)</option>
+                            <option value="severe">Severe Crowding (> 5.0 mm)</option>
                         </select>
                     </div>
-
                     <div>
-                        <label class="text-xs text-slate-400 block mb-1">Ideal Riemannian Archform Manifold</label>
+                        <label class="text-xs text-slate-400 block mb-1">Ideal Riemannian Archform</label>
                         <select id="sim-archform" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-sky-300 font-medium">
-                            <option value="catenary" selected>Catenary Manifold (Equal Tension Curve)</option>
-                            <option value="bonwill_hawley">Bonwill-Hawley (Trifocal Parabola)</option>
+                            <option value="catenary" selected>Catenary Manifold</option>
+                            <option value="bonwill_hawley">Bonwill-Hawley Trifocal</option>
                             <option value="brader_elliptic">Brader Elliptic Arch</option>
                         </select>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-xs text-slate-400 block mb-1">Lip Line Height (mm)</label>
+                            <label class="text-xs text-slate-400 block mb-1">Lip Line (mm)</label>
                             <input type="number" id="sim-lipline" value="14.0" step="0.5" class="w-full bg-slate-900 text-sky-400 font-bold border border-slate-700 rounded-xl p-2 text-sm text-center">
                         </div>
                         <div>
@@ -99,54 +114,43 @@
                             <input type="number" id="sim-smilewidth" value="62.0" step="1.0" class="w-full bg-slate-900 text-sky-400 font-bold border border-slate-700 rounded-xl p-2 text-sm text-center">
                         </div>
                     </div>
-
                     <button id="btn-run-sim" onclick="runSimulation()" class="w-full py-3 bg-gradient-to-r from-sky-600 via-cyan-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 active:scale-[0.98] font-semibold rounded-xl text-xs transition shadow-lg shadow-sky-600/30 flex items-center justify-center gap-2 cursor-pointer">
                         <i id="sim-btn-icon" class="fa-solid fa-play"></i>
                         <span id="sim-btn-text">Optimize Geodesic Smile Alignment</span>
                     </button>
-
                     <div class="space-y-2 text-xs pt-2">
                         <div class="p-3 rounded-xl bg-slate-900/80 border border-sky-900/50">
-                            <div class="text-slate-400 flex justify-between">
-                                <span>Composite Smile Attractiveness (CSAI):</span>
-                                <span class="text-sky-400 font-mono">Measure Theoretic</span>
-                            </div>
+                            <div class="text-slate-400 flex justify-between"><span>CSAI Score:</span><span class="text-sky-400 font-mono">Measure Theoretic</span></div>
                             <div id="display-csai" class="text-xl font-mono font-bold text-emerald-400 mt-0.5">94.8 / 100 (+38.2%)</div>
                         </div>
                         <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Wasserstein-2 ($W_2$) Discrepancy:</span>
+                            <span class="text-slate-400">W₂ Discrepancy:</span>
                             <span id="display-w2" class="font-mono font-bold text-cyan-400">0.084 mm</span>
                         </div>
                         <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex justify-between">
-                            <span class="text-slate-400">Total Aligner Ring Set:</span>
-                            <span id="display-stages" class="font-mono font-bold text-purple-400">18 Aligners (36 Weeks)</span>
+                            <span class="text-slate-400">Aligner Ring Set:</span>
+                            <span id="display-stages" class="font-mono font-bold text-purple-400">18 Aligners</span>
                         </div>
                     </div>
                 </div>
-
-                <!-- 2D / 3D Maxillary Dental Arch Plot -->
                 <div class="lg:col-span-2 space-y-6">
                     <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
                         <div class="flex justify-between items-center">
                             <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-                                <i class="fa-solid fa-circle-nodes text-sky-400"></i> Maxillary Dental Arch Geodesic Superimposition (FDI 17 to 27)
+                                <i class="fa-solid fa-circle-nodes text-sky-400"></i> Maxillary Dental Arch Geodesic (FDI 17–27)
                             </h3>
-                            <span class="text-xs font-mono text-cyan-400">Spatial Procrustes Aligned</span>
+                            <span class="text-xs font-mono text-cyan-400">Procrustes Aligned</span>
                         </div>
-                        <div class="h-64">
-                            <canvas id="archCanvas"></canvas>
-                        </div>
+                        <div class="h-64"><canvas id="archCanvas"></canvas></div>
                     </div>
-
-                    <!-- Craniofacial Facial Smile Arc Aesthetic Canvas -->
                     <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
                         <div class="flex justify-between items-center">
                             <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-                                <i class="fa-solid fa-face-smile text-emerald-400"></i> Craniofacial Smile Signature Visualizer
+                                <i class="fa-solid fa-face-smile text-emerald-400"></i> Craniofacial Smile Signature
                             </h3>
                             <span class="text-xs font-mono text-emerald-400" id="smile-arc-status">Consonant Smile Arc</span>
                         </div>
-                        <div class="h-44 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center relative overflow-hidden">
+                        <div class="h-44 bg-slate-950 rounded-xl border border-slate-800 relative overflow-hidden">
                             <canvas id="facialSmileCanvas" width="600" height="170" class="w-full h-full"></canvas>
                         </div>
                     </div>
@@ -161,36 +165,26 @@
                     <h2 class="text-base font-semibold text-purple-300 flex items-center gap-2">
                         <i class="fa-solid fa-layer-group text-purple-400"></i> Quotient Ring Staging
                     </h2>
-                    <p class="text-xs text-slate-400">
-                        Aligner transformation morphisms in polynomial ring $\mathcal{R} = \mathbb{R}[x, y, z] / \langle f_{\mathrm{arch}}, z - h_{\mathrm{occ}} \rangle$ bounded by maximal velocity $\delta \le 0.25\text{ mm/stage}$.
-                    </p>
-
+                    <p class="text-xs text-slate-400">Aligner morphisms in ℝ[x,y,z]/⟨f_arch, z−h_occ⟩ bounded by δ ≤ 0.22 mm/stage.</p>
                     <div>
-                        <label class="text-xs text-slate-400 block mb-1">Current Aligner Stage: <span id="current-stage-display" class="font-mono text-purple-300 font-bold">Stage 0 (Pre-Op)</span></label>
+                        <label class="text-xs text-slate-400 block mb-1">Stage: <span id="current-stage-display" class="font-mono text-purple-300 font-bold">Stage 0</span></label>
                         <input type="range" id="stage-slider" min="0" max="18" value="0" oninput="updateStageVisualization(parseInt(this.value))" class="w-full accent-purple-500">
                     </div>
-
-                    <div class="space-y-2 text-xs pt-1">
+                    <div class="space-y-2 text-xs">
                         <div class="flex justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                            <span class="text-slate-400">Remaining Discrepancy</span>
-                            <span id="stage-error-display" class="font-mono text-purple-400 font-bold">3.82 mm</span>
+                            <span class="text-slate-400">Remaining Discrepancy</span><span id="stage-error-display" class="font-mono text-purple-400 font-bold">3.82 mm</span>
                         </div>
                         <div class="flex justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                            <span class="text-slate-400">Interpolation Factor ($\alpha$)</span>
-                            <span id="stage-alpha-display" class="font-mono text-purple-400 font-bold">0.000</span>
+                            <span class="text-slate-400">Interpolation α</span><span id="stage-alpha-display" class="font-mono text-purple-400 font-bold">0.000</span>
                         </div>
                         <div class="flex justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                            <span class="text-slate-400">Material Stiffness</span>
-                            <span class="font-mono text-slate-200">SmartTrack™ 38.5 N/mm</span>
+                            <span class="text-slate-400">Material Stiffness</span><span class="font-mono text-slate-200">SmartTrack™ 38.5 N/mm</span>
                         </div>
                     </div>
                 </div>
-
                 <div class="lg:col-span-2 glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
-                    <h3 class="text-sm font-semibold text-white">Aligner Progression & Target Convergence Trajectory</h3>
-                    <div class="h-72">
-                        <canvas id="stagingChart"></canvas>
-                    </div>
+                    <h3 class="text-sm font-semibold text-white">Aligner Progression & Target Convergence</h3>
+                    <div class="h-72"><canvas id="stagingChart"></canvas></div>
                 </div>
             </div>
         </section>
@@ -200,22 +194,18 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
                     <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-radar text-teal-400"></i> Esthetic Measure Radar Profile
+                        <i class="fa-solid fa-radar text-teal-400"></i> Esthetic Measure Radar
                     </h3>
-                    <div class="h-64">
-                        <canvas id="radarChart"></canvas>
-                    </div>
+                    <div class="h-64"><canvas id="radarChart"></canvas></div>
                 </div>
                 <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
-                    <h3 class="text-sm font-semibold text-white">Measure Theory Parameters vs Golden Standards</h3>
-                    <div class="space-y-3 text-xs" id="measure-metrics-container">
-                        <!-- Populated by JavaScript -->
-                    </div>
+                    <h3 class="text-sm font-semibold text-white">Measure Theory vs Golden Standards</h3>
+                    <div class="space-y-3 text-xs" id="measure-metrics-container"></div>
                 </div>
             </div>
         </section>
 
-        <!-- TAB 4: 14-Tooth Kinematics & Torque -->
+        <!-- TAB 4: 14-Tooth Kinematics -->
         <section id="tab-kinematics" class="space-y-6 hidden">
             <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4 overflow-x-auto">
                 <h3 class="text-sm font-semibold text-white flex items-center gap-2">
@@ -233,10 +223,237 @@
                             <th class="py-2.5 px-3">Angulation (ϕ)</th>
                         </tr>
                     </thead>
-                    <tbody id="kinematics-table-body" class="divide-y divide-slate-800/60 font-mono">
-                        <!-- Populated by JS -->
-                    </tbody>
+                    <tbody id="kinematics-table-body" class="divide-y divide-slate-800/60 font-mono"></tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- TAB 5: QML-FEA Simulator -->
+        <section id="tab-fea" class="space-y-6 hidden">
+
+            <!-- Top Controls Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div class="glass-panel p-5 rounded-2xl border border-violet-900/40 space-y-4 lg:col-span-1">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-base font-semibold text-violet-300 flex items-center gap-2">
+                            <i class="fa-solid fa-atom text-violet-400"></i> FEA Parameters
+                        </h2>
+                        <span class="qml-badge">QML VQC</span>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Crowding Severity</label>
+                        <select id="fea-crowding" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-violet-300 font-medium">
+                            <option value="mild">Mild</option>
+                            <option value="moderate" selected>Moderate</option>
+                            <option value="severe">Severe</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Aligner Stage: <span id="fea-stage-label" class="text-violet-300 font-bold">1</span></label>
+                        <input type="range" id="fea-stage-slider" min="1" max="36" value="1"
+                               oninput="document.getElementById('fea-stage-label').textContent=this.value"
+                               class="w-full accent-violet-500">
+                    </div>
+                    <button onclick="runFEA()" id="btn-run-fea"
+                        class="w-full py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 active:scale-[0.98] font-semibold rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                        <i id="fea-btn-icon" class="fa-solid fa-microchip"></i>
+                        <span id="fea-btn-text">Run QML-FEA Simulation</span>
+                    </button>
+                    <div class="text-xs text-slate-500 italic text-center">4-qubit VQC · Ry-CNOT ansatz · Hill criterion · Gibson–Ashby model</div>
+                </div>
+
+                <!-- FEA KPI Cards -->
+                <div class="lg:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">Max Cortical σ_vm</div>
+                        <div id="fea-max-cort" class="text-2xl font-mono font-bold text-violet-400">—</div>
+                        <div class="text-[10px] text-slate-500">MPa · Hill power law n=2.5</div>
+                    </div>
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">Mean Cortical σ_vm</div>
+                        <div id="fea-mean-cort" class="text-2xl font-mono font-bold text-sky-400">—</div>
+                        <div class="text-[10px] text-slate-500">MPa · arch average</div>
+                    </div>
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">Mean Safety Factor</div>
+                        <div id="fea-sf" class="text-2xl font-mono font-bold text-emerald-400">—</div>
+                        <div class="text-[10px] text-slate-500">SF ≥ 1.5 clinical minimum</div>
+                    </div>
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">Max Trabecular σ_vm</div>
+                        <div id="fea-max-trab" class="text-2xl font-mono font-bold text-amber-400">—</div>
+                        <div class="text-[10px] text-slate-500">MPa · Gibson–Ashby</div>
+                    </div>
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">PDL Pressure Range</div>
+                        <div id="fea-pdl" class="text-xl font-mono font-bold text-cyan-400">—</div>
+                        <div class="text-[10px] text-slate-500">MPa (min – max)</div>
+                    </div>
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">Critical Tooth</div>
+                        <div id="fea-critical" class="text-lg font-mono font-bold text-rose-400">—</div>
+                        <div class="text-[10px] text-slate-500">highest cortical stress</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="glass-panel p-5 rounded-2xl border border-violet-900/30 space-y-3">
+                    <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-bar text-violet-400"></i>
+                        Cortical vs Trabecular Von Mises Stress (MPa)
+                    </h3>
+                    <div class="h-64"><canvas id="feaStressChart"></canvas></div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl border border-violet-900/30 space-y-3">
+                    <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                        Safety Factor & QML Correction Factor per Tooth
+                    </h3>
+                    <div class="h-64"><canvas id="feaSfChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Stage sweep chart -->
+            <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-wave-square text-fuchsia-400"></i>
+                    Von Mises Stress Evolution Over Aligner Stages (QML-corrected)
+                </h3>
+                <div class="h-56"><canvas id="feaStageSweepChart"></canvas></div>
+            </div>
+
+            <!-- Per-tooth FEA Table -->
+            <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3 overflow-x-auto">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-table text-violet-400"></i> Per-Tooth QML-FEA Results
+                    </h3>
+                    <span class="text-xs text-slate-400">Cortical · Trabecular · PDL · Mechanostat</span>
+                </div>
+                <table class="w-full text-xs text-left text-slate-300">
+                    <thead class="text-[11px] uppercase bg-violet-950/80 text-violet-300 border-b border-violet-900/50 font-mono">
+                        <tr>
+                            <th class="py-2.5 px-3">Tooth</th>
+                            <th class="py-2.5 px-3">F (N)</th>
+                            <th class="py-2.5 px-3">f_QML</th>
+                            <th class="py-2.5 px-3">E_cort (GPa)</th>
+                            <th class="py-2.5 px-3">σ_vm Cort (MPa)</th>
+                            <th class="py-2.5 px-3">SF Cort</th>
+                            <th class="py-2.5 px-3">E_trab (GPa)</th>
+                            <th class="py-2.5 px-3">σ_vm Trab (MPa)</th>
+                            <th class="py-2.5 px-3">SF Trab</th>
+                            <th class="py-2.5 px-3">PDL p (MPa)</th>
+                            <th class="py-2.5 px-3">µε</th>
+                            <th class="py-2.5 px-3">Zone</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fea-table-body" class="divide-y divide-slate-800/60 font-mono"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TAB 6: Health Economics -->
+        <section id="tab-economics" class="space-y-6 hidden">
+
+            <!-- Controls & KPIs -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div class="glass-panel p-5 rounded-2xl border border-emerald-900/40 space-y-4">
+                    <h2 class="text-base font-semibold text-emerald-300 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-emerald-400"></i> Economics Model
+                    </h2>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Practice Patient Base</label>
+                        <select id="econ-patients" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-emerald-300 font-medium">
+                            <option value="250">250 patients/yr</option>
+                            <option value="500">500 patients/yr</option>
+                            <option value="1000" selected>1,000 patients/yr</option>
+                            <option value="2500">2,500 patients/yr</option>
+                            <option value="5000">5,000 patients/yr</option>
+                        </select>
+                    </div>
+                    <button onclick="runEconomics()" id="btn-run-econ"
+                        class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.98] font-semibold rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                        <i id="econ-btn-icon" class="fa-solid fa-calculator"></i>
+                        <span id="econ-btn-text">Run Health Economic Model</span>
+                    </button>
+                    <div class="text-xs text-slate-500 italic text-center">QALY · ICER · NPV · CAGR · EQ-5D-5L</div>
+                </div>
+
+                <!-- Economics KPI Cards -->
+                <div class="lg:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">ICER (USD/QALY)</div>
+                        <div id="econ-icer" class="text-2xl font-mono font-bold text-emerald-400">—</div>
+                        <div class="text-[10px] text-slate-500">WTP threshold: $50K/QALY</div>
+                    </div>
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">ΔQALY (20-yr)</div>
+                        <div id="econ-dqaly" class="text-2xl font-mono font-bold text-sky-400">—</div>
+                        <div class="text-[10px] text-slate-500">Invisalign vs. braces</div>
+                    </div>
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">Net Monetary Benefit</div>
+                        <div id="econ-nmb" class="text-2xl font-mono font-bold text-teal-400">—</div>
+                        <div class="text-[10px] text-slate-500">USD per patient</div>
+                    </div>
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">NPV Invisalign</div>
+                        <div id="econ-npv-inv" class="text-xl font-mono font-bold text-violet-400">—</div>
+                        <div class="text-[10px] text-slate-500">10-yr discounted (r=3.5%)</div>
+                    </div>
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">NPV Delta</div>
+                        <div id="econ-npv-delta" class="text-xl font-mono font-bold text-amber-400">—</div>
+                        <div class="text-[10px] text-slate-500">vs. traditional braces</div>
+                    </div>
+                    <div class="metric-card space-y-1">
+                        <div class="text-xs text-slate-400">Market 2034 (USD Bn)</div>
+                        <div id="econ-market" class="text-xl font-mono font-bold text-rose-400">—</div>
+                        <div class="text-[10px] text-slate-500">Global clear aligner CAGR 11.8%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market & NPV Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="glass-panel p-5 rounded-2xl border border-emerald-900/30 space-y-3">
+                    <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-globe text-emerald-400"></i> Global Market Revenue Projection
+                    </h3>
+                    <div class="h-64"><canvas id="marketChart"></canvas></div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl border border-emerald-900/30 space-y-3">
+                    <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-money-bill-trend-up text-teal-400"></i> NPV Cash Flow Analysis (10-yr)
+                    </h3>
+                    <div class="h-64"><canvas id="npvChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Clinical Outcome Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-heart-pulse text-rose-400"></i> Treatment Success & Bone Density (20-yr)
+                    </h3>
+                    <div class="h-64"><canvas id="clinicalSuccessChart"></canvas></div>
+                </div>
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-face-smile text-amber-400"></i> Patient Satisfaction & Cumulative Cost
+                    </h3>
+                    <div class="h-64"><canvas id="satisfactionChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- QALY Summary Table -->
+            <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-table text-emerald-400"></i> QALY & Cost-Effectiveness Summary
+                </h3>
+                <div id="qaly-table-container" class="text-xs text-slate-300"></div>
             </div>
         </section>
 
@@ -244,68 +461,64 @@
 
     <!-- Footer -->
     <footer class="border-t border-slate-800 bg-slate-950/80 py-4 text-center text-xs text-slate-500">
-        Invisalign® Smile Architecture Platform • Nature Computational Orthodontics Preprint Companion
+        Invisalign® Smile Architecture Platform · QML-FEA Biomechanics · Nature Computational Orthodontics Preprint Companion
     </footer>
 
-    <!-- Interactive Script Logic -->
     <script>
         let currentSimData = null;
-        let archChart = null;
-        let stagingChart = null;
-        let radarChart = null;
+        let currentFeaData = null;
+        let currentEconData = null;
+
+        let archChart = null, stagingChart = null, radarChart = null;
+        let feaStressChart = null, feaSfChart = null, feaStageSweepChart = null;
+        let marketChart = null, npvChart = null, clinicalSuccessChart = null, satisfactionChart = null;
+
+        const ALL_TABS = ['tab-simulator','tab-staging','tab-signatures','tab-kinematics','tab-fea','tab-economics'];
 
         function switchTab(tabId) {
-            ['tab-simulator', 'tab-staging', 'tab-signatures', 'tab-kinematics'].forEach(id => {
+            ALL_TABS.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
                 const btn = document.getElementById('btn-' + id);
-                if (btn) {
-                    btn.classList.remove('active', 'text-sky-400');
-                    btn.classList.add('text-slate-400');
-                }
+                if (btn) { btn.classList.remove('active','text-sky-400'); btn.classList.add('text-slate-400'); }
             });
             const target = document.getElementById(tabId);
             if (target) target.classList.remove('hidden');
             const activeBtn = document.getElementById('btn-' + tabId);
-            if (activeBtn) {
-                activeBtn.classList.add('active', 'text-sky-400');
-                activeBtn.classList.remove('text-slate-400');
-            }
+            if (activeBtn) { activeBtn.classList.add('active','text-sky-400'); activeBtn.classList.remove('text-slate-400'); }
         }
 
+        const CHART_DEFAULTS = {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#cbd5e1', font: { size: 10 } } } },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8', font: { size: 9 } } },
+                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8', font: { size: 9 } } }
+            }
+        };
+
+        // ─── SMILE SIMULATION ─────────────────────────────────────────────────
         async function runSimulation() {
             const btn = document.getElementById('btn-run-sim');
             const icon = document.getElementById('sim-btn-icon');
             const text = document.getElementById('sim-btn-text');
-
             if (btn) btn.disabled = true;
             if (icon) icon.className = 'fa-solid fa-spinner fa-spin';
             if (text) text.innerText = 'Calculating Riemannian Geodesics...';
-
             try {
-                const crowding = document.getElementById('sim-crowding').value;
-                const archform = document.getElementById('sim-archform').value;
-                const lipline = parseFloat(document.getElementById('sim-lipline').value);
-                const smilewidth = parseFloat(document.getElementById('sim-smilewidth').value);
-
                 const res = await fetch('/api/invisalign/simulate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        crowding_severity: crowding,
-                        arch_form: archform,
-                        lip_line_height_mm: lipline,
-                        smile_width_mm: smilewidth
+                        crowding_severity: document.getElementById('sim-crowding').value,
+                        arch_form: document.getElementById('sim-archform').value,
+                        lip_line_height_mm: parseFloat(document.getElementById('sim-lipline').value),
+                        smile_width_mm: parseFloat(document.getElementById('sim-smilewidth').value)
                     })
                 });
                 const json = await res.json();
-                if (json.success) {
-                    currentSimData = json.data;
-                    renderSimulationData(currentSimData);
-                }
-            } catch (err) {
-                console.error("Simulation error:", err);
-            } finally {
+                if (json.success) { currentSimData = json.data; renderSimulationData(currentSimData); }
+            } catch(err) { console.error(err); }
+            finally {
                 if (btn) btn.disabled = false;
                 if (icon) icon.className = 'fa-solid fa-play';
                 if (text) text.innerText = 'Optimize Geodesic Smile Alignment';
@@ -313,192 +526,70 @@
         }
 
         function renderSimulationData(d) {
-            // Metrics Display
             document.getElementById('display-csai').innerText = `${d.postop_smile_signature.composite_smile_attractiveness_index} / 100 (+${(d.postop_smile_signature.composite_smile_attractiveness_index - d.preop_smile_signature.composite_smile_attractiveness_index).toFixed(1)}%)`;
             document.getElementById('display-w2').innerText = `${d.postop_smile_signature.wasserstein_2_discrepancy} mm`;
             document.getElementById('display-stages').innerText = `${d.staging.total_stages} Aligners (${d.staging.total_stages * 2} Weeks)`;
 
-            // Render Arch Chart
             const ctxArch = document.getElementById('archCanvas').getContext('2d');
             if (archChart) archChart.destroy();
-
-            const prePts = d.preop_coords.map(p => ({ x: p[0], y: p[1] }));
-            const tgtPts = d.target_coords.map(p => ({ x: p[0], y: p[1] }));
-
             archChart = new Chart(ctxArch, {
                 type: 'scatter',
-                data: {
-                    datasets: [
-                        {
-                            label: 'Pre-Op Malocclusion Arch',
-                            data: prePts,
-                            backgroundColor: '#f43f5e',
-                            pointRadius: 6,
-                            pointStyle: 'crossRot'
-                        },
-                        {
-                            label: 'Ideal Geodesic Target Arch',
-                            data: tgtPts,
-                            backgroundColor: '#38bdf8',
-                            pointRadius: 7,
-                            pointStyle: 'circle'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#cbd5e1' } } },
+                data: { datasets: [
+                    { label: 'Pre-Op Malocclusion', data: d.preop_coords.map(p=>({x:p[0],y:p[1]})), backgroundColor: '#f43f5e', pointRadius: 6, pointStyle: 'crossRot' },
+                    { label: 'Ideal Geodesic Target', data: d.target_coords.map(p=>({x:p[0],y:p[1]})), backgroundColor: '#38bdf8', pointRadius: 7 }
+                ]},
+                options: { ...CHART_DEFAULTS,
                     scales: {
-                        x: { title: { display: true, text: 'Transverse X (mm)', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                        y: { title: { display: true, text: 'Sagittal Y (mm)', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                        x: { title:{display:true,text:'Transverse X (mm)',color:'#94a3b8'}, grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#94a3b8'} },
+                        y: { title:{display:true,text:'Sagittal Y (mm)',color:'#94a3b8'}, grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#94a3b8'} }
                     }
                 }
             });
-
-            // Render Facial Smile Arc on Canvas
             drawFacialSmile(d);
-
-            // Populate Staging Slider & Chart
             const slider = document.getElementById('stage-slider');
-            slider.max = d.staging.total_stages;
-            slider.value = 0;
+            slider.max = d.staging.total_stages; slider.value = 0;
             updateStageVisualization(0);
-
-            // Staging Convergence Chart
             const ctxStaging = document.getElementById('stagingChart').getContext('2d');
             if (stagingChart) stagingChart.destroy();
             stagingChart = new Chart(ctxStaging, {
                 type: 'line',
-                data: {
-                    labels: d.staging.stages.map(s => `Stage ${s.stage}`),
-                    datasets: [{
-                        label: 'Mean Registration Error to Ideal Target (mm)',
-                        data: d.staging.stages.map(s => s.mean_error_to_target_mm),
-                        borderColor: '#a855f7',
-                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#cbd5e1' } } },
-                    scales: {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
-                    }
-                }
+                data: { labels: d.staging.stages.map(s=>`Stage ${s.stage}`),
+                    datasets: [{ label:'Mean Error to Target (mm)', data: d.staging.stages.map(s=>s.mean_error_to_target_mm), borderColor:'#a855f7', backgroundColor:'rgba(168,85,247,0.1)', fill:true, tension:0.3 }] },
+                options: CHART_DEFAULTS
             });
-
-            // Radar Chart for Measure Theory Signatures
             const ctxRadar = document.getElementById('radarChart').getContext('2d');
             if (radarChart) radarChart.destroy();
             radarChart = new Chart(ctxRadar, {
                 type: 'radar',
-                data: {
-                    labels: ['Smile Arc Concordance', 'Buccal Corridor Symmetry', 'Midline Coincidence', 'Incisal Display', 'Esthetic Harmony'],
-                    datasets: [
-                        {
-                            label: 'Pre-Op Malocclusion',
-                            data: [
-                                d.preop_smile_signature.smile_arc_concordance_pct,
-                                Math.max(0, 100 - Math.abs(d.preop_smile_signature.buccal_corridor_ratio_pct - 12.0)*4),
-                                Math.max(0, 100 - d.preop_smile_signature.midline_deviation_mm * 30),
-                                Math.min(100, (d.preop_smile_signature.incisal_display_mm / 10.5) * 100),
-                                d.preop_smile_signature.composite_smile_attractiveness_index
-                            ],
-                            borderColor: '#f43f5e',
-                            backgroundColor: 'rgba(244, 63, 94, 0.2)'
-                        },
-                        {
-                            label: 'Post-Op Invisalign Geodesic',
-                            data: [
-                                d.postop_smile_signature.smile_arc_concordance_pct,
-                                Math.max(0, 100 - Math.abs(d.postop_smile_signature.buccal_corridor_ratio_pct - 12.0)*4),
-                                Math.max(0, 100 - d.postop_smile_signature.midline_deviation_mm * 30),
-                                Math.min(100, (d.postop_smile_signature.incisal_display_mm / 10.5) * 100),
-                                d.postop_smile_signature.composite_smile_attractiveness_index
-                            ],
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.2)'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#cbd5e1' } } },
-                    scales: {
-                        r: {
-                            angleLines: { color: 'rgba(255,255,255,0.1)' },
-                            grid: { color: 'rgba(255,255,255,0.08)' },
-                            pointLabels: { color: '#94a3b8', font: { size: 10 } },
-                            ticks: { display: false }
-                        }
-                    }
-                }
+                data: { labels:['Smile Arc','Buccal Corridor','Midline','Incisal Display','Esthetic'],
+                    datasets:[
+                        { label:'Pre-Op', data:[d.preop_smile_signature.smile_arc_concordance_pct,Math.max(0,100-Math.abs(d.preop_smile_signature.buccal_corridor_ratio_pct-12)*4),Math.max(0,100-d.preop_smile_signature.midline_deviation_mm*30),Math.min(100,(d.preop_smile_signature.incisal_display_mm/10.5)*100),d.preop_smile_signature.composite_smile_attractiveness_index], borderColor:'#f43f5e', backgroundColor:'rgba(244,63,94,0.2)' },
+                        { label:'Post-Op', data:[d.postop_smile_signature.smile_arc_concordance_pct,Math.max(0,100-Math.abs(d.postop_smile_signature.buccal_corridor_ratio_pct-12)*4),Math.max(0,100-d.postop_smile_signature.midline_deviation_mm*30),Math.min(100,(d.postop_smile_signature.incisal_display_mm/10.5)*100),d.postop_smile_signature.composite_smile_attractiveness_index], borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.2)' }
+                    ]},
+                options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#cbd5e1'}}}, scales:{r:{angleLines:{color:'rgba(255,255,255,0.1)'},grid:{color:'rgba(255,255,255,0.08)'},pointLabels:{color:'#94a3b8',font:{size:9}},ticks:{display:false}}} }
             });
-
-            // Measure-Theoretic Table Comparison
             const container = document.getElementById('measure-metrics-container');
-            container.innerHTML = `
+            container.innerHTML = [
+                ['Smile Arc Concordance','Curvature matching: incisal edges & lower lip',`${d.preop_smile_signature.smile_arc_concordance_pct}%`,`${d.postop_smile_signature.smile_arc_concordance_pct}%`],
+                ['Buccal Corridor Ratio','Golden ideal: 10–15% transverse negative space',`${d.preop_smile_signature.buccal_corridor_ratio_pct}%`,`${d.postop_smile_signature.buccal_corridor_ratio_pct}%`],
+                ['Facial Midline Deviation','Distance philtrum–central incisors',`${d.preop_smile_signature.midline_deviation_mm} mm`,`${d.postop_smile_signature.midline_deviation_mm} mm`],
+                ['Wasserstein-2 Discrepancy','Optimal transport to divine esthetic distribution',`${d.preop_smile_signature.wasserstein_2_discrepancy}`,`${d.postop_smile_signature.wasserstein_2_discrepancy}`]
+            ].map(([title,desc,pre,post])=>`
                 <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex justify-between items-center">
-                    <div>
-                        <div class="font-semibold text-slate-200">Smile Arc Concordance Index</div>
-                        <div class="text-[10px] text-slate-400">Curvature matching between incisal edges & lower vermilion border</div>
-                    </div>
-                    <div class="text-right font-mono">
-                        <span class="text-rose-400 font-bold">${d.preop_smile_signature.smile_arc_concordance_pct}%</span> → 
-                        <span class="text-emerald-400 font-bold">${d.postop_smile_signature.smile_arc_concordance_pct}%</span>
-                    </div>
-                </div>
-                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex justify-between items-center">
-                    <div>
-                        <div class="font-semibold text-slate-200">Buccal Corridor Transverse Ratio</div>
-                        <div class="text-[10px] text-slate-400">Golden standard ideal: 10% - 15% transverse negative space</div>
-                    </div>
-                    <div class="text-right font-mono">
-                        <span class="text-rose-400 font-bold">${d.preop_smile_signature.buccal_corridor_ratio_pct}%</span> → 
-                        <span class="text-emerald-400 font-bold">${d.postop_smile_signature.buccal_corridor_ratio_pct}%</span>
-                    </div>
-                </div>
-                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex justify-between items-center">
-                    <div>
-                        <div class="font-semibold text-slate-200">Facial Midline Coincidence</div>
-                        <div class="text-[10px] text-slate-400">Distance between philtrum centerline and central incisors</div>
-                    </div>
-                    <div class="text-right font-mono">
-                        <span class="text-rose-400 font-bold">${d.preop_smile_signature.midline_deviation_mm} mm</span> → 
-                        <span class="text-emerald-400 font-bold">${d.postop_smile_signature.midline_deviation_mm} mm</span>
-                    </div>
-                </div>
-                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex justify-between items-center">
-                    <div>
-                        <div class="font-semibold text-slate-200">Wasserstein-2 ($W_2$) Metric Distance</div>
-                        <div class="text-[10px] text-slate-400">Measure-theoretic optimal transport to divine aesthetic distribution</div>
-                    </div>
-                    <div class="text-right font-mono">
-                        <span class="text-rose-400 font-bold">${d.preop_smile_signature.wasserstein_2_discrepancy}</span> → 
-                        <span class="text-emerald-400 font-bold">${d.postop_smile_signature.wasserstein_2_discrepancy}</span>
-                    </div>
-                </div>
-            `;
-
-            // Kinematics Table
+                    <div><div class="font-semibold text-slate-200">${title}</div><div class="text-[10px] text-slate-400">${desc}</div></div>
+                    <div class="text-right font-mono"><span class="text-rose-400 font-bold">${pre}</span> → <span class="text-emerald-400 font-bold">${post}</span></div>
+                </div>`).join('');
             const tbody = document.getElementById('kinematics-table-body');
-            tbody.innerHTML = d.tooth_movements.map(m => `
+            tbody.innerHTML = d.tooth_movements.map(m=>`
                 <tr class="hover:bg-slate-900/60 transition">
                     <td class="py-2 px-3 font-semibold text-sky-300">${m.tooth}</td>
                     <td class="py-2 px-3 text-emerald-400 font-bold">${m.total_translation_mm} mm</td>
-                    <td class="py-2 px-3">${m.mesiodistal_mm > 0 ? '+' : ''}${m.mesiodistal_mm} mm</td>
-                    <td class="py-2 px-3">${m.buccolingual_mm > 0 ? '+' : ''}${m.buccolingual_mm} mm</td>
-                    <td class="py-2 px-3">${m.extrusion_intrusion_mm > 0 ? '+' : ''}${m.extrusion_intrusion_mm} mm</td>
+                    <td class="py-2 px-3">${m.mesiodistal_mm>0?'+':''}${m.mesiodistal_mm} mm</td>
+                    <td class="py-2 px-3">${m.buccolingual_mm>0?'+':''}${m.buccolingual_mm} mm</td>
+                    <td class="py-2 px-3">${m.extrusion_intrusion_mm>0?'+':''}${m.extrusion_intrusion_mm} mm</td>
                     <td class="py-2 px-3 text-purple-300">${m.initial_rotation_deg}°</td>
                     <td class="py-2 px-3 text-amber-300">${m.initial_angulation_deg}°</td>
-                </tr>
-            `).join('');
+                </tr>`).join('');
         }
 
         function updateStageVisualization(stageIdx) {
@@ -512,68 +603,272 @@
         function drawFacialSmile(d) {
             const canvas = document.getElementById('facialSmileCanvas');
             const ctx = canvas.getContext('2d');
-            const W = canvas.width;
-            const H = canvas.height;
-
-            ctx.fillStyle = '#030712';
-            ctx.fillRect(0, 0, W, H);
-
-            const cx = W / 2;
-            const cy = H / 2 - 5;
-
-            // Outer Lip Contour
-            ctx.strokeStyle = '#f43f5e';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(cx - 160, cy);
-            ctx.bezierCurveTo(cx - 80, cy - 35, cx + 80, cy - 35, cx + 160, cy);
-            ctx.bezierCurveTo(cx + 80, cy + 50, cx - 80, cy + 50, cx - 160, cy);
-            ctx.stroke();
-
-            // Inner Vermilion Oral Cavity
-            ctx.fillStyle = '#0f172a';
-            ctx.beginPath();
-            ctx.moveTo(cx - 130, cy + 2);
-            ctx.bezierCurveTo(cx - 60, cy - 15, cx + 60, cy - 15, cx + 130, cy + 2);
-            ctx.bezierCurveTo(cx + 60, cy + 38, cx - 60, cy + 38, cx - 130, cy + 2);
-            ctx.fill();
-
-            // Draw 6 Anterior Teeth (Incisors & Canines)
-            const antIndices = [4, 5, 6, 7, 8, 9];
-            const teethWidths = [18, 16, 22, 22, 16, 18];
-            let curX = cx - 55;
-
-            antIndices.forEach((idx, i) => {
-                const targetPt = d.target_coords[idx];
-                const toothW = teethWidths[i];
-                const toothH = 26 - Math.abs(i - 2.5) * 2.5;
-
-                // Tooth Body
-                ctx.fillStyle = '#f8fafc';
-                ctx.strokeStyle = '#cbd5e1';
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.roundRect(curX, cy - 10 + (targetPt[1] - 30) * 0.4, toothW, toothH, [4, 4, 2, 2]);
-                ctx.fill();
-                ctx.stroke();
-
-                curX += toothW + 1.5;
+            const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2-5;
+            ctx.fillStyle='#030712'; ctx.fillRect(0,0,W,H);
+            ctx.strokeStyle='#f43f5e'; ctx.lineWidth=3; ctx.beginPath();
+            ctx.moveTo(cx-160,cy); ctx.bezierCurveTo(cx-80,cy-35,cx+80,cy-35,cx+160,cy);
+            ctx.bezierCurveTo(cx+80,cy+50,cx-80,cy+50,cx-160,cy); ctx.stroke();
+            ctx.fillStyle='#0f172a'; ctx.beginPath();
+            ctx.moveTo(cx-130,cy+2); ctx.bezierCurveTo(cx-60,cy-15,cx+60,cy-15,cx+130,cy+2);
+            ctx.bezierCurveTo(cx+60,cy+38,cx-60,cy+38,cx-130,cy+2); ctx.fill();
+            const teethWidths=[18,16,22,22,16,18]; let curX=cx-55;
+            [4,5,6,7,8,9].forEach((idx,i)=>{
+                const tP=d.target_coords[idx], tW=teethWidths[i], tH=26-Math.abs(i-2.5)*2.5;
+                ctx.fillStyle='#f8fafc'; ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=1.5; ctx.beginPath();
+                ctx.roundRect(curX,cy-10+(tP[1]-30)*0.4,tW,tH,[4,4,2,2]); ctx.fill(); ctx.stroke();
+                curX+=tW+1.5;
             });
-
-            // Incisal Smile Arc Curvature Line
-            ctx.strokeStyle = '#10b981';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            ctx.moveTo(cx - 120, cy + 18);
-            ctx.quadraticCurveTo(cx, cy + 30, cx + 120, cy + 18);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            ctx.strokeStyle='#10b981'; ctx.lineWidth=2; ctx.setLineDash([4,4]); ctx.beginPath();
+            ctx.moveTo(cx-120,cy+18); ctx.quadraticCurveTo(cx,cy+30,cx+120,cy+18); ctx.stroke(); ctx.setLineDash([]);
         }
 
-        // Auto-run default simulation on load
+        // ─── QML-FEA ──────────────────────────────────────────────────────────
+        async function runFEA() {
+            const btn = document.getElementById('btn-run-fea');
+            const icon = document.getElementById('fea-btn-icon');
+            const text = document.getElementById('fea-btn-text');
+            btn.disabled = true;
+            icon.className = 'fa-solid fa-spinner fa-spin';
+            text.innerText = 'Running QML Circuit + FEA...';
+            try {
+                const res = await fetch('/api/fea/simulate', {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        crowding_severity: document.getElementById('fea-crowding').value,
+                        aligner_stage: parseInt(document.getElementById('fea-stage-slider').value)
+                    })
+                });
+                const json = await res.json();
+                if (json.success) { currentFeaData = json.data; renderFEAData(currentFeaData); }
+                else alert('FEA Error: ' + json.error);
+            } catch(e) { console.error(e); }
+            finally {
+                btn.disabled=false; icon.className='fa-solid fa-microchip';
+                text.innerText='Run QML-FEA Simulation';
+            }
+        }
+
+        function renderFEAData(d) {
+            const s = d.arch_summary;
+            document.getElementById('fea-max-cort').innerText  = s.max_cortical_vm_MPa + ' MPa';
+            document.getElementById('fea-mean-cort').innerText = s.mean_cortical_vm_MPa + ' MPa';
+            document.getElementById('fea-sf').innerText        = s.mean_safety_factor_cortical;
+            document.getElementById('fea-max-trab').innerText  = s.max_trabecular_vm_MPa + ' MPa';
+            document.getElementById('fea-pdl').innerText       = s.pdl_pressure_range_MPa[0] + ' – ' + s.pdl_pressure_range_MPa[1];
+            document.getElementById('fea-critical').innerText  = s.critical_tooth.replace(/_/g,' ');
+
+            const labels = d.per_tooth_fea.map(r=>r.tooth_type.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()));
+            const vmCort = d.per_tooth_fea.map(r=>r.cortical.von_mises_stress_MPa);
+            const vmTrab = d.per_tooth_fea.map(r=>r.trabecular.von_mises_stress_MPa);
+            const sfCort = d.per_tooth_fea.map(r=>r.cortical.safety_factor);
+            const fQml   = d.per_tooth_fea.map(r=>r.qml_material_correction_factor);
+
+            // Stress chart
+            const ctx1 = document.getElementById('feaStressChart').getContext('2d');
+            if (feaStressChart) feaStressChart.destroy();
+            feaStressChart = new Chart(ctx1, {
+                type: 'bar',
+                data: { labels,
+                    datasets:[
+                        { label:'Cortical σ_vm (MPa)', data:vmCort, backgroundColor:'rgba(139,92,246,0.8)', borderColor:'#7c3aed', borderWidth:1 },
+                        { label:'Trabecular σ_vm (MPa)', data:vmTrab, backgroundColor:'rgba(245,158,11,0.7)', borderColor:'#d97706', borderWidth:1 }
+                    ]},
+                options:{ ...CHART_DEFAULTS, plugins:{...CHART_DEFAULTS.plugins,
+                    annotation:{annotations:{line1:{type:'line',yMin:12,yMax:12,borderColor:'#f43f5e',borderWidth:1.5,borderDash:[5,3]}}}}}
+            });
+
+            // Safety factor + QML chart
+            const ctx2 = document.getElementById('feaSfChart').getContext('2d');
+            if (feaSfChart) feaSfChart.destroy();
+            feaSfChart = new Chart(ctx2, {
+                type: 'bar',
+                data: { labels,
+                    datasets:[
+                        { label:'Safety Factor (Cortical)', data:sfCort, backgroundColor:'rgba(16,185,129,0.75)', borderColor:'#059669', borderWidth:1, yAxisID:'y' },
+                        { label:'f_QML Correction', data:fQml, type:'line', borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.15)', pointRadius:5, tension:0.3, yAxisID:'y2' }
+                    ]},
+                options:{ ...CHART_DEFAULTS,
+                    scales:{
+                        x:CHART_DEFAULTS.scales.x,
+                        y:{...CHART_DEFAULTS.scales.y, title:{display:true,text:'Safety Factor',color:'#94a3b8'}},
+                        y2:{position:'right', grid:{drawOnChartArea:false}, ticks:{color:'#f59e0b',font:{size:9}}, title:{display:true,text:'f_QML',color:'#f59e0b'}}
+                    }
+                }
+            });
+
+            // Stage sweep
+            const sweep = d.stage_sweep;
+            const ctx3 = document.getElementById('feaStageSweepChart').getContext('2d');
+            if (feaStageSweepChart) feaStageSweepChart.destroy();
+            feaStageSweepChart = new Chart(ctx3, {
+                type: 'line',
+                data:{ labels: sweep.map(s=>`Stage ${s.stage}`),
+                    datasets:[
+                        { label:'Mean σ_vm Cortical (MPa)', data:sweep.map(s=>s.mean_vm_cortical_MPa), borderColor:'#8b5cf6', backgroundColor:'rgba(139,92,246,0.1)', fill:true, tension:0.4, pointRadius:3 },
+                        { label:'Max σ_vm Cortical (MPa)', data:sweep.map(s=>s.max_vm_cortical_MPa), borderColor:'#f43f5e', borderDash:[5,3], tension:0.4, pointRadius:2 },
+                        { label:'Mean σ_vm Trabecular (MPa)', data:sweep.map(s=>s.mean_vm_trabecular_MPa), borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.08)', fill:true, tension:0.4, pointRadius:3 }
+                    ]},
+                options: CHART_DEFAULTS
+            });
+
+            // FEA table
+            function zoneClass(z) {
+                if (z==='Physiologic') return 'zone-physiologic';
+                if (z==='Overload') return 'zone-overload';
+                return 'zone-disuse';
+            }
+            const tbody = document.getElementById('fea-table-body');
+            tbody.innerHTML = d.per_tooth_fea.map(r=>`
+                <tr class="hover:bg-violet-950/20 transition">
+                    <td class="py-2 px-3 font-semibold text-violet-300">${r.tooth_type.replace(/_/g,' ')}</td>
+                    <td class="py-2 px-3">${r.applied_force_N}</td>
+                    <td class="py-2 px-3 text-amber-300">${r.qml_material_correction_factor}</td>
+                    <td class="py-2 px-3 text-sky-300">${r.cortical.E_modulus_GPa}</td>
+                    <td class="py-2 px-3 text-violet-300 font-bold">${r.cortical.von_mises_stress_MPa}</td>
+                    <td class="py-2 px-3 text-emerald-400 font-bold">${r.cortical.safety_factor}</td>
+                    <td class="py-2 px-3 text-cyan-300">${r.trabecular.E_modulus_GPa}</td>
+                    <td class="py-2 px-3 text-amber-300">${r.trabecular.von_mises_stress_MPa}</td>
+                    <td class="py-2 px-3 text-teal-400">${r.trabecular.safety_factor}</td>
+                    <td class="py-2 px-3">${r.pdl_hydrostatic_pressure_MPa}</td>
+                    <td class="py-2 px-3">${r.remodelling_signal.microstrain}</td>
+                    <td class="py-2 px-3"><span class="${zoneClass(r.remodelling_signal.zone)}">${r.remodelling_signal.zone}</span></td>
+                </tr>`).join('');
+        }
+
+        // ─── HEALTH ECONOMICS ─────────────────────────────────────────────────
+        async function runEconomics() {
+            const btn = document.getElementById('btn-run-econ');
+            const icon = document.getElementById('econ-btn-icon');
+            const text = document.getElementById('econ-btn-text');
+            btn.disabled=true; icon.className='fa-solid fa-spinner fa-spin';
+            text.innerText='Computing QALY / NPV / CAGR Models...';
+            try {
+                const res = await fetch('/api/economics/full', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ n_patients: parseInt(document.getElementById('econ-patients').value) })
+                });
+                const json = await res.json();
+                if (json.success) { currentEconData = json.data; renderEconomicsData(currentEconData); }
+                else alert('Economics Error: ' + json.error);
+            } catch(e) { console.error(e); }
+            finally { btn.disabled=false; icon.className='fa-solid fa-calculator'; text.innerText='Run Health Economic Model'; }
+        }
+
+        function fmt(n) { return n.toLocaleString('en-US', {maximumFractionDigits:2}); }
+        function fmtK(n) { return n >= 1e6 ? `$${(n/1e6).toFixed(1)}M` : n >= 1e3 ? `$${(n/1e3).toFixed(0)}K` : `$${fmt(n)}`; }
+
+        function renderEconomicsData(d) {
+            const q = d.qaly_model, npv = d.npv_analysis, mr = d.market_revenue, co = d.clinical_outcomes;
+
+            document.getElementById('econ-icer').innerText     = '$' + fmt(q.icer_usd_per_qaly);
+            document.getElementById('econ-dqaly').innerText    = '+' + q.delta_qaly.toFixed(4) + ' QALYs';
+            document.getElementById('econ-nmb').innerText      = fmtK(q.net_monetary_benefit_usd);
+            document.getElementById('econ-npv-inv').innerText  = fmtK(npv.npv_invisalign_usd);
+            document.getElementById('econ-npv-delta').innerText= fmtK(npv.npv_delta_usd);
+            document.getElementById('econ-market').innerText   = '$' + mr.global_market_size_usd_bn[mr.global_market_size_usd_bn.length-1].toFixed(2) + ' Bn';
+
+            // Market chart
+            const ctx1 = document.getElementById('marketChart').getContext('2d');
+            if (marketChart) marketChart.destroy();
+            marketChart = new Chart(ctx1, {
+                type:'line',
+                data:{ labels: mr.years,
+                    datasets:[
+                        { label:'Global Market (USD Bn)', data:mr.global_market_size_usd_bn, borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,0.08)', fill:true, tension:0.4, pointRadius:3 },
+                        { label:'Invisalign Brand Share', data:mr.invisalign_brand_share_usd_bn, borderColor:'#10b981', tension:0.4, pointRadius:3 },
+                        { label:'Competing Brands', data:mr.competing_brands_usd_bn, borderColor:'#f59e0b', borderDash:[4,3], tension:0.4, pointRadius:3 }
+                    ]},
+                options: CHART_DEFAULTS
+            });
+
+            // NPV chart
+            const ctx2 = document.getElementById('npvChart').getContext('2d');
+            if (npvChart) npvChart.destroy();
+            npvChart = new Chart(ctx2, {
+                type:'bar',
+                data:{ labels: npv.years.map(y=>`Yr ${y}`),
+                    datasets:[
+                        { label:'Invisalign NPV CF (USD)', data:npv.annual_cashflows_invisalign.map(v=>v/1e6), backgroundColor:'rgba(56,189,248,0.75)', borderColor:'#0ea5e9', borderWidth:1 },
+                        { label:'Braces NPV CF (USD)', data:npv.annual_cashflows_braces.map(v=>v/1e6), backgroundColor:'rgba(245,158,11,0.72)', borderColor:'#d97706', borderWidth:1 }
+                    ]},
+                options:{ ...CHART_DEFAULTS, scales:{...CHART_DEFAULTS.scales,
+                    y:{...CHART_DEFAULTS.scales.y, title:{display:true,text:'Discounted CF (USD Million)',color:'#94a3b8'}}}}
+            });
+
+            // Clinical outcomes chart (success + bone)
+            const ctx3 = document.getElementById('clinicalSuccessChart').getContext('2d');
+            if (clinicalSuccessChart) clinicalSuccessChart.destroy();
+            clinicalSuccessChart = new Chart(ctx3, {
+                type:'line',
+                data:{ labels: co.years,
+                    datasets:[
+                        { label:'Success Rate — Invisalign (%)', data:co.success_rate_invisalign.map(v=>v*100), borderColor:'#38bdf8', tension:0.4, pointRadius:2, yAxisID:'y' },
+                        { label:'Success Rate — Braces (%)', data:co.success_rate_traditional.map(v=>v*100), borderColor:'#f59e0b', borderDash:[5,3], tension:0.4, pointRadius:2, yAxisID:'y' },
+                        { label:'Bone Density (Invisalign)', data:co.bone_density_preservation_invisalign, borderColor:'#10b981', tension:0.4, pointRadius:2, yAxisID:'y2' },
+                        { label:'Bone Density (Braces)', data:co.bone_density_preservation_traditional, borderColor:'#f43f5e', borderDash:[5,3], tension:0.4, pointRadius:2, yAxisID:'y2' }
+                    ]},
+                options:{ ...CHART_DEFAULTS, scales:{
+                    x: CHART_DEFAULTS.scales.x,
+                    y:{ ...CHART_DEFAULTS.scales.y, title:{display:true,text:'Success Rate (%)',color:'#94a3b8'} },
+                    y2:{ position:'right', grid:{drawOnChartArea:false}, ticks:{color:'#10b981',font:{size:9}}, title:{display:true,text:'Bone Density (rel.)',color:'#10b981'} }
+                }}
+            });
+
+            // Satisfaction + cost chart
+            const ctx4 = document.getElementById('satisfactionChart').getContext('2d');
+            if (satisfactionChart) satisfactionChart.destroy();
+            satisfactionChart = new Chart(ctx4, {
+                type:'line',
+                data:{ labels: co.years,
+                    datasets:[
+                        { label:'Satisfaction — Invisalign (VAS)', data:co.patient_satisfaction_invisalign, borderColor:'#a78bfa', tension:0.4, pointRadius:2, yAxisID:'y' },
+                        { label:'Satisfaction — Braces (VAS)', data:co.patient_satisfaction_traditional, borderColor:'#fb923c', borderDash:[5,3], tension:0.4, pointRadius:2, yAxisID:'y' },
+                        { label:'Cumulative Cost Inv (USD K)', data:co.cumulative_cost_invisalign_usd.map(v=>v/1000), borderColor:'#38bdf8', tension:0.4, pointRadius:2, yAxisID:'y2' },
+                        { label:'Cumulative Cost Braces (USD K)', data:co.cumulative_cost_traditional_usd.map(v=>v/1000), borderColor:'#f59e0b', borderDash:[5,3], tension:0.4, pointRadius:2, yAxisID:'y2' }
+                    ]},
+                options:{ ...CHART_DEFAULTS, scales:{
+                    x: CHART_DEFAULTS.scales.x,
+                    y:{ ...CHART_DEFAULTS.scales.y, title:{display:true,text:'Patient Satisfaction (VAS)',color:'#94a3b8'} },
+                    y2:{ position:'right', grid:{drawOnChartArea:false}, ticks:{color:'#38bdf8',font:{size:9}}, title:{display:true,text:'Cum. Cost (USD ×10³)',color:'#38bdf8'} }
+                }}
+            });
+
+            // QALY table
+            document.getElementById('qaly-table-container').innerHTML = `
+                <table class="w-full">
+                    <thead><tr class="bg-emerald-950/80 text-emerald-300">
+                        <th class="py-2 px-3 text-left font-semibold">Parameter</th>
+                        <th class="py-2 px-3 text-center">Invisalign</th>
+                        <th class="py-2 px-3 text-center">Traditional Braces</th>
+                        <th class="py-2 px-3 text-center">Delta / Result</th>
+                    </tr></thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        ${[
+                            ['QALY (20-yr)', q.qaly_invisalign.toFixed(4), q.qaly_traditional_braces.toFixed(4), `ΔQ = ${q.delta_qaly.toFixed(4)}`],
+                            ['Treatment Cost (USD)', '$5,800', '$4,200', `ΔC = $${fmt(q.delta_cost_usd)}`],
+                            ['ICER (USD/QALY)', '—', '—', `$${fmt(q.icer_usd_per_qaly)}`],
+                            ['WTP Threshold', '—', '$50,000/QALY', q.cost_effective ? '✅ Cost-Effective' : '❌ Not Cost-Effective'],
+                            ['Net Monetary Benefit', '—', '—', `$${fmt(q.net_monetary_benefit_usd)}`],
+                            ['Success Probability', '91.8%', '88.7%', '+3.1 pp advantage'],
+                            ['Relapse @ 5yr (w/ retention)', '4.3%', '12.0%', '−7.7 pp Invisalign advantage'],
+                            ['Global Market 2034', '—', '—', `$${mr.global_market_size_usd_bn[mr.global_market_size_usd_bn.length-1].toFixed(2)} Bn (${mr.cagr_pct.toFixed(1)}% CAGR)`]
+                        ].map(([p,a,b,c])=>`
+                            <tr class="hover:bg-slate-900/50">
+                                <td class="py-2 px-3 font-semibold text-slate-200">${p}</td>
+                                <td class="py-2 px-3 text-center text-sky-400 font-mono">${a}</td>
+                                <td class="py-2 px-3 text-center text-amber-400 font-mono">${b}</td>
+                                <td class="py-2 px-3 text-center text-emerald-400 font-bold font-mono">${c}</td>
+                            </tr>`).join('')}
+                    </tbody>
+                </table>`;
+        }
+
+        // Auto-run on load
         window.addEventListener('DOMContentLoaded', () => {
             runSimulation();
+            // Pre-warm FEA and economics silently
+            setTimeout(() => runFEA(), 1500);
+            setTimeout(() => runEconomics(), 3000);
         });
     </script>
 </body>

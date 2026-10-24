@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const indigenousDepressionView = document.getElementById('indigenous-depression-view');
     const addictionRecoveryView = document.getElementById('addiction-recovery-view');
     const usHealthEconomicsView = document.getElementById('us-health-economics-view');
+    const bosonicDementiaView = document.getElementById('bosonic-dementia-view');
 
     // Sim result spans
     const finalFreq       = document.getElementById('final-freq');
@@ -259,6 +260,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title:    'US Health Economics & Multi-Payer Revenue Projections',
             subtitle: 'CMS 2026 Physician Fee Schedule (CPT 90867/90868/90869) · GPCI Regional Adjustment · Markov Cost-Utility & QALYs · 2,000-Trial Monte Carlo Revenue Density',
             view:     usHealthEconomicsView, showRunBtn: false
+        },
+        'bosonic-dementia': {
+            title:    'Bosonic Waveforms & Quantum Neural Net Architecture for Dementia Repair',
+            subtitle: 'Continuous-Variable CV-QNN Pulse Synthesis · Multi-Lobe Cortical Mapping · Quasi-Static Maxwell FEM (QML Partitions) · Gangobo et al. Staging & 60-Month Trajectories',
+            view:     bosonicDementiaView, showRunBtn: false
         }
     };
 
@@ -317,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'indigenous-depression')                runIndigenousDepressionTmsStudio();
             if (tab === 'addiction-recovery')                   runAddictionRecoveryStudio();
             if (tab === 'us-health-economics')                  runUSHealthEconomicsStudio();
+            if (tab === 'bosonic-dementia')                     runBosonicDementiaStudio();
             if (tab === 'paradigm') {
                 const cond = document.querySelector('.paradigm-cond-btn.active')
                     ?.getAttribute('data-cond') || 'stroke';
@@ -7129,4 +7136,312 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderUSHealthEconomicsViews = renderUSHealthEconomicsViews;
     window.runUSHealthEconomicsStudio = runUSHealthEconomicsStudio;
     window.runUSHealthEconomicsStudioDebounced = runUSHealthEconomicsStudioDebounced;
+
+    // ── Bosonic Waveforms & Quantum Neural Net Dementia Studio ──────
+    let cachedBosonicDementiaData = null;
+    let bdDebounceTimer = null;
+
+    const bdUpdateLabels = () => {
+        const sq = parseFloat(document.getElementById('bd-squeezing')?.value || '1.25');
+        const disp = parseFloat(document.getElementById('bd-displacement')?.value || '0.65');
+        const kerr = parseFloat(document.getElementById('bd-kerr')?.value || '0.08');
+        const parts = document.getElementById('bd-partitions')?.value || '32';
+        const curr = document.getElementById('bd-current')?.value || '4800';
+
+        const setT = (id, txt) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = txt;
+        };
+        const sqDb = (10.0 * Math.log10(Math.exp(2.0 * sq))).toFixed(1);
+        setT('label-bd-squeezing', `${sq.toFixed(2)} (${sqDb} dB)`);
+        setT('label-bd-displacement', disp.toFixed(2));
+        setT('label-bd-kerr', kerr.toFixed(3));
+        setT('label-bd-partitions', `${parts} Super-Elements`);
+        setT('label-bd-current', `${Number(curr).toLocaleString()} A`);
+    };
+
+    const renderBosonicDementiaViews = (data) => {
+        const d = data || cachedBosonicDementiaData;
+        if (!d) return;
+
+        const wave = d.bosonic_waveform || {};
+        const fem = d.cortical_fem_qml || {};
+        const clin = d.clinical_trajectories || {};
+        const kpi = d.summary_kpis || {};
+        const lobes = d.lobes_affected || {};
+        const staging = d.gangobo_staging || [];
+
+        // 1. KPI Cards
+        const setEl = (id, txt) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = txt;
+        };
+        setEl('bd-kpi-efield', `${(kpi.peak_e_field_v_m || 127.0).toFixed(1)} V/m`);
+        setEl('bd-kpi-squeezing', `${kpi.squeezing_db || 10.9} dB`);
+        setEl('bd-kpi-adas', `-${(kpi.adas_cog_improvement_pct || 61.6).toFixed(1)}%`);
+        setEl('bd-kpi-cdr', `-${(kpi.cdr_sb_improvement_pct || 68.2).toFixed(1)}%`);
+        setEl('bd-kpi-mmse', `+${(kpi.mmse_gain_points || 7.4).toFixed(1)} Pts`);
+        setEl('bd-kpi-delay', `${kpi.institutionalization_delay_years || 3.8} Yrs`);
+
+        const PL = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#94a3b8', family: 'system-ui, -apple-system, sans-serif', size: 10 },
+            xaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.12)' },
+            yaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.12)' }
+        };
+
+        // 2. Plot 1: Asymmetric Bosonic Pulse Waveform & Induced E-Field
+        if (wave.time_ms && document.getElementById('bd-waveform-chart')) {
+            const traceWave = {
+                x: wave.time_ms,
+                y: wave.induced_e_field_v_m,
+                name: 'Induced E-Field E(t)',
+                type: 'scatter', mode: 'lines',
+                line: { color: '#0284c7', width: 2.2 }
+            };
+            Plotly.newPlot('bd-waveform-chart', [traceWave], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Pulse Time (ms)' },
+                yaxis: { ...PL.yaxis, title: 'Induced Electric Field (V/m)' },
+                shapes: [
+                    { type: 'line', x0: 0, x1: 25, y0: 88.0, y1: 88.0, line: { color: '#fbbf24', width: 1.5, dash: 'dash' } }
+                ],
+                annotations: [
+                    { x: 12.5, y: 92.0, text: 'Pyramidal Depol Threshold (88 V/m)', showarrow: false, font: { size: 8.5, color: '#fbbf24' } }
+                ],
+                legend: { font: { color: '#e6edf3', size: 9 }, x: 0.65, y: 0.95 }
+            }, { responsive: true });
+        }
+
+        // 3. Plot 2: Bosonic Wigner Function W(x, p) in Phase Space
+        if (wave.wigner_matrix && document.getElementById('bd-wigner-chart')) {
+            const traceWigner = {
+                x: wave.wigner_x,
+                y: wave.wigner_p,
+                z: wave.wigner_matrix,
+                type: 'contour',
+                colorscale: 'Viridis',
+                contours: { coloring: 'heatmap' },
+                colorbar: {
+                    title: 'W(x, p)',
+                    len: 0.75, thickness: 10,
+                    tickfont: { color: '#cbd5e1', size: 8 },
+                    titlefont: { color: '#cbd5e1', size: 9 }
+                }
+            };
+            Plotly.newPlot('bd-wigner-chart', [traceWigner], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Field Quadrature X' },
+                yaxis: { ...PL.yaxis, title: 'Phase Quadrature P' }
+            }, { responsive: true });
+        }
+
+        // 4. Plot 3: Cortical & Subcortical Depth Attenuation
+        if (fem.depth_attenuation && document.getElementById('bd-cortical-depth-chart')) {
+            const da = fem.depth_attenuation;
+            const traceDepth = {
+                x: da.depth_mm,
+                y: da.e_field_v_m,
+                name: 'E-Field Attenuation',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#10b981', width: 2.4 },
+                marker: { size: 4 }
+            };
+            Plotly.newPlot('bd-cortical-depth-chart', [traceDepth], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Depth from Scalp (mm)' },
+                yaxis: { ...PL.yaxis, title: 'Electric Field (V/m)' },
+                shapes: [
+                    { type: 'line', x0: 0, x1: 45, y0: 88.0, y1: 88.0, line: { color: '#fbbf24', width: 1.5, dash: 'dash' } },
+                    { type: 'line', x0: 15.0, x1: 15.0, y0: 0, y1: 1, yref: 'paper', line: { color: '#64748b', width: 1.2, dash: 'dot' } },
+                    { type: 'line', x0: 32.0, x1: 32.0, y0: 0, y1: 1, yref: 'paper', line: { color: '#c4b5fd', width: 1.2, dash: 'dot' } }
+                ],
+                annotations: [
+                    { x: 15.0, y: 0.90, yref: 'paper', text: 'Gray/White Jct (15mm)', showarrow: false, font: { size: 8, color: '#94a3b8' } },
+                    { x: 32.0, y: 0.90, yref: 'paper', text: 'Deep Hippocampus (32mm)', showarrow: false, font: { size: 8, color: '#c4b5fd' } }
+                ],
+                legend: { font: { color: '#e6edf3', size: 9 }, x: 0.65, y: 0.95 }
+            }, { responsive: true });
+        }
+
+        // 5. Plot 4: Multi-Lobe Neuroprotection Profile (Radar Chart)
+        if (fem.lobe_summary && document.getElementById('bd-neuroprotection-radar-chart')) {
+            const lobeKeys = Object.keys(fem.lobe_summary);
+            const rVals = lobeKeys.map(k => fem.lobe_summary[k].neuroprotection_index);
+            const thetaLabels = lobeKeys.map(k => fem.lobe_summary[k].name.split('&')[0].trim());
+
+            rVals.push(rVals[0]);
+            thetaLabels.push(thetaLabels[0]);
+
+            const traceRadar = {
+                type: 'scatterpolar',
+                r: rVals,
+                theta: thetaLabels,
+                fill: 'toself',
+                fillcolor: 'rgba(2, 132, 199, 0.22)',
+                line: { color: '#0284c7', width: 2.2 },
+                name: 'Neuroprotection Index'
+            };
+            Plotly.newPlot('bd-neuroprotection-radar-chart', [traceRadar], {
+                ...PL,
+                margin: { l: 45, r: 45, t: 25, b: 25 },
+                polar: {
+                    radialaxis: { visible: true, range: [0, 100], tickfont: { size: 7.5, color: '#64748b' }, gridcolor: 'rgba(255,255,255,0.08)' },
+                    angularaxis: { tickfont: { size: 8, color: '#cbd5e1' }, gridcolor: 'rgba(255,255,255,0.08)' },
+                    bgcolor: 'rgba(0,0,0,0)'
+                }
+            }, { responsive: true });
+        }
+
+        // 6. Plot 5: 60-Month ADAS-Cog-14 Trajectory
+        if (clin.adas_cog_14 && document.getElementById('bd-adas-traj-chart')) {
+            const m = clin.months;
+            const traceAdasSoc = {
+                x: m, y: clin.adas_cog_14.soc,
+                name: 'Standard of Care (Donepezil/Memantine)',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#94a3b8', width: 1.8, dash: 'dot' },
+                marker: { size: 4 }
+            };
+            const traceAdasConv = {
+                x: m, y: clin.adas_cog_14.conventional_rtms,
+                name: 'Conventional 10 Hz rTMS',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#fbbf24', width: 2.0, dash: 'dash' },
+                marker: { size: 4 }
+            };
+            const traceAdasBosonic = {
+                x: m, y: clin.adas_cog_14.bosonic_qnn_rtms,
+                name: `Bosonic QNN rTMS (-${clin.adas_cog_14.improvement_pct}%)`,
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#10b981', width: 2.8 },
+                marker: { size: 5, color: '#10b981' }
+            };
+            Plotly.newPlot('bd-adas-traj-chart', [traceAdasSoc, traceAdasConv, traceAdasBosonic], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Follow-up Horizon (Months)' },
+                yaxis: { ...PL.yaxis, title: 'ADAS-Cog-14 Score (Lower = Better)' },
+                legend: { font: { color: '#e6edf3', size: 8.5 }, x: 0.05, y: 0.95 }
+            }, { responsive: true });
+        }
+
+        // 7. Plot 6: 60-Month Relapse-Free Remission & Community Independence Survival
+        if (clin.remission_survival_pct && document.getElementById('bd-survival-chart')) {
+            const traceSurvival = {
+                x: clin.months,
+                y: clin.remission_survival_pct,
+                name: 'Community Independence Survival S(t)',
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#059669', width: 2.6 },
+                marker: { size: 4 }
+            };
+            Plotly.newPlot('bd-survival-chart', [traceSurvival], {
+                ...PL,
+                margin: { l: 45, r: 20, t: 15, b: 40 },
+                xaxis: { ...PL.xaxis, title: 'Follow-up Horizon (Months)' },
+                yaxis: { ...PL.yaxis, title: 'Functional Independence (%)', range: [0, 105] },
+                shapes: [
+                    { type: 'line', x0: 0, x1: 60, y0: 50.0, y1: 50.0, line: { color: '#f43f5e', width: 1.2, dash: 'dot' } }
+                ],
+                annotations: [
+                    { x: 30, y: 53.0, text: 'Median Independence Survival Floor (50%)', showarrow: false, font: { size: 8, color: '#f43f5e' } }
+                ],
+                legend: { font: { color: '#e6edf3', size: 9 }, x: 0.05, y: 0.20 }
+            }, { responsive: true });
+        }
+
+        // 8. Table 1: Cortical Lobes Affected Table
+        const lobesTbody = document.getElementById('bd-lobes-tbody');
+        if (lobesTbody && fem.lobe_summary) {
+            lobesTbody.innerHTML = Object.entries(fem.lobe_summary).map(([k, l]) => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <td style="padding:6px 8px; font-weight:700; color:#38bdf8;">${l.name}</td>
+                    <td style="padding:6px 8px; font-family:monospace; color:#cbd5e1;">${l.brodmann_areas}</td>
+                    <td style="padding:6px 8px; color:#fbbf24;">${l.braak_stage}</td>
+                    <td style="padding:6px 8px; font-family:monospace; color:#94a3b8;">${lobes[k]?.conductivity_s_m || 0.38} S/m</td>
+                    <td style="padding:6px 8px; font-weight:600; color:#10b981;">${l.avg_e_field_v_m.toFixed(1)} V/m</td>
+                    <td style="padding:6px 8px; font-weight:600; color:${(l.avg_e_field_v_m - l.depolarization_threshold) >= 0 ? '#10b981' : '#f87171'};">
+                        ${(l.avg_e_field_v_m - l.depolarization_threshold) >= 0 ? '+' : ''}${(l.avg_e_field_v_m - l.depolarization_threshold).toFixed(1)} V/m
+                    </td>
+                    <td style="padding:6px 8px; font-weight:700; color:#c4b5fd;">${l.neuroprotection_index.toFixed(1)} / 100</td>
+                </tr>
+            `).join('');
+        }
+
+        // 9. Table 2: Gangobo Staging Protocol Table
+        const stgTbody = document.getElementById('bd-staging-tbody');
+        if (stgTbody && staging.length) {
+            stgTbody.innerHTML = staging.map(stg => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <td style="padding:6px 8px; font-weight:700; color:#38bdf8;">${stg.stage}</td>
+                    <td style="padding:6px 8px; font-weight:600; color:#fbbf24;">${stg.cdr_range}</td>
+                    <td style="padding:6px 8px; color:#cbd5e1;">${stg.target_lobes.map(k => lobes[k]?.lobe_name.split('&')[0].trim() || k).join(' + ')}</td>
+                    <td style="padding:6px 8px; color:#a7f3d0;">${stg.intervention}</td>
+                    <td style="padding:6px 8px; color:#94a3b8;">${stg.dwell_weeks} Weeks</td>
+                    <td style="padding:6px 8px; font-weight:700; color:#10b981;">${(stg.remission_probability * 100).toFixed(1)}%</td>
+                </tr>
+            `).join('');
+        }
+    };
+
+    const runBosonicDementiaStudio = async () => {
+        try {
+            const statusEl = document.getElementById('bd-status');
+            if (statusEl) statusEl.textContent = 'Simulating Bosonic CV-QNN & Cortical FEM...';
+
+            const target_lobe_key = document.getElementById('bd-target-lobe')?.value || 'precuneus_pcc';
+            const baseline_stage = document.getElementById('bd-stage')?.value || 'mild_ad';
+            const squeezing_r = parseFloat(document.getElementById('bd-squeezing')?.value || '1.25');
+            const displacement_alpha = parseFloat(document.getElementById('bd-displacement')?.value || '0.65');
+            const kerr_chi = parseFloat(document.getElementById('bd-kerr')?.value || '0.08');
+            const num_partitions = parseInt(document.getElementById('bd-partitions')?.value || '32');
+            const coil_current_a = parseFloat(document.getElementById('bd-current')?.value || '4800');
+
+            const resp = await fetch('/api/bosonic-dementia-simulation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    target_lobe_key,
+                    baseline_stage,
+                    squeezing_r,
+                    displacement_alpha,
+                    kerr_chi,
+                    num_partitions,
+                    coil_current_a,
+                    horizon_months: 60
+                })
+            });
+
+            const data = await resp.json();
+            if (data.status !== 'success') {
+                console.error('Bosonic dementia simulation failed:', data);
+                if (statusEl) statusEl.textContent = 'Error during simulation';
+                return;
+            }
+
+            cachedBosonicDementiaData = data;
+            if (statusEl) statusEl.textContent = 'Ready (' + new Date().toLocaleTimeString() + ')';
+            renderBosonicDementiaViews(data);
+        } catch (err) {
+            console.error('runBosonicDementiaStudio error:', err);
+            const statusEl = document.getElementById('bd-status');
+            if (statusEl) statusEl.textContent = 'Error during calculation';
+        }
+    };
+
+    const runBosonicDementiaStudioDebounced = () => {
+        clearTimeout(bdDebounceTimer);
+        bdDebounceTimer = setTimeout(runBosonicDementiaStudio, 250);
+    };
+
+    window.bdUpdateLabels = bdUpdateLabels;
+    window.renderBosonicDementiaViews = renderBosonicDementiaViews;
+    window.runBosonicDementiaStudio = runBosonicDementiaStudio;
+    window.runBosonicDementiaStudioDebounced = runBosonicDementiaStudioDebounced;
+
 
